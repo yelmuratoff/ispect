@@ -11,10 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   collection: any
-  async: any
-  meta: any
-  intl: any
-  js: any
   flutter_localizations:
     sdk: flutter
 
@@ -24,7 +20,6 @@ dependencies:
   talker_bloc_logger: ^4.1.0
 
     # Utils
-  platform_info: ^4.0.2
   path: ^1.8.3
   path_provider: ^2.1.2
   share_plus: ^7.2.2
@@ -34,14 +29,13 @@ dependencies:
     # UI
   gap: ^3.0.1
   group_button: ^5.3.4
-  flutter_easyloading: ^3.0.5
   auto_size_text: ^3.0.0
   feedback_plus: ^0.1.0
-  fluttertoast: ^8.2.4
   
   # Others
   provider: ^6.1.2
   performance: ^0.1.1
+  flutter_bloc: ^8.1.5
 
 dev_dependencies:
   flutter_test:

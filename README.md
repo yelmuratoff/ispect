@@ -1,7 +1,7 @@
 <div align="center">
 <p align="center">
     <a href="https://github.com/K1yoshiSho/ispect" align="center">
-        <img src="https://github.com/K1yoshiSho/ispect/blob/main/assets/ispect.png?raw=true" width="400px">
+        <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect.png?raw=true" width="400px">
     </a>
 </p>
 </div>
@@ -9,7 +9,9 @@
 <h2 align="center"> Wrapper around Inspector, Talker and etc 🚀 </h2>
 
 <p align="center">
-Description 😊
+This package was not created as something unique, it is a set of good tools from the expanse of pub.dev and my kind of implementation of all this for future projects, I decided to share it, maybe it will be useful to someone. I will improve, add along with the growth of the main packages used, and maybe add new functions. 😊
+
+
    <br>
    <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/K1yoshiSho/ispect.git">star the repo</a> to support the project! </span>
 </p>
@@ -30,7 +32,8 @@ Description 😊
 
 ## 📌 Features
 
-- ✅ Draggable button
+- ✅ Draggable button for route to ISpect page
+- ✅ Localizations: ru, en. (I will add more translations in the future.)
 - ✅ Talker logger implementation
 - ✅ Feedback
 - ✅ Inspector
@@ -55,18 +58,21 @@ import 'package:ispect/ispect.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 ```
 
-### Easy to use
+## Easy to use
 Simple example of use `ISpect`<br>
 Put this code in your project at an screen and learn how it works 😊
 
 <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
-  <img src="https://github.com/K1yoshiSho/ispect/blob/main/assets/screenshot.png?raw=true"
+  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/usage.gif?raw=true"
   alt="ISpect's example" width="250" style="margin-right: 10px;"/>
 </div>
 
 &nbsp;
 
-Widget part:
+### Code:
+
+Note: For handle `Dio`: [see](https://pub.dev/packages/talker_dio_logger#usage)  
+The simplest realization: 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -143,7 +149,66 @@ class _Home extends StatelessWidget {
     );
   }
 }
+```
 
+### For handle routing (GoRouter)
+You can use `NavigatorObserver`, but in practice it does not always work correctly.  
+Alternatively, you can use a `listener`:
+
+```dart
+    _router.routerDelegate.addListener(() {
+      final String location =
+          _router.routerDelegate.currentConfiguration.last.matchedLocation;
+      talkerWrapper.route(location);
+    });
+```
+
+### For handle providers (Riverpod)
+You can use `ProviderObserver`:
+
+```dart
+class ProviderLoggerObserver extends ProviderObserver {
+  @override
+  void didAddProvider(
+    ProviderBase<Object?> provider,
+    Object? value,
+    ProviderContainer container,
+  ) {
+    talkerWrapper.provider('Provider ${provider.name} was initialized with $value');
+  }
+
+  @override
+  void didDisposeProvider(
+    ProviderBase<Object?> provider,
+    ProviderContainer container,
+  ) {
+    talkerWrapper.provider('Provider ${provider.name} was disposed');
+  }
+
+  @override
+  void didUpdateProvider(
+    ProviderBase<Object?> provider,
+    Object? previousValue,
+    Object? newValue,
+    ProviderContainer container,
+  ) {
+    talkerWrapper.provider('Provider ${provider.name} was updated from $previousValue to $newValue');
+  }
+
+  @override
+  void providerDidFail(
+    ProviderBase<Object?> provider,
+    Object error,
+    StackTrace stackTrace,
+    ProviderContainer container,
+  ) {
+    talkerWrapper.handle(
+      error,
+      stackTrace,
+      'Provider ${provider.name} failed with error $error',
+    );
+  }
+}
 ```
 
 <br>

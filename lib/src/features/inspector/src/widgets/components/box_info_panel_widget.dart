@@ -215,39 +215,31 @@ class BoxInfoPanelWidget extends StatelessWidget {
           data: theme.copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             initiallyExpanded: true,
-            // shape: RoundedRectangleBorder(
-            //   borderRadius: BorderRadius.circular(16),
-            // ),
-            // collapsedShape: RoundedRectangleBorder(
-            //   borderRadius: BorderRadius.circular(16),
-            // ),
-
             title: Row(
               children: [
                 Expanded(
-                  flex: 7,
                   child: Text(
                     describeIdentity(boxInfo.targetRenderBox),
                     style: theme.textTheme.bodySmall,
                   ),
                 ),
-                Flexible(
-                  flex: 4,
-                  child: TextButton(
+                TextButton(
+                  child: Center(
                     child: AutoSizeText(
                       context.ispectL10n.copy,
                       maxLines: 1,
+                      textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       minFontSize: 10,
                     ),
-                    onPressed: () {
-                      Clipboard.setData(
-                        ClipboardData(
-                          text: boxInfo.targetRenderBox.toStringDeep(),
-                        ),
-                      );
-                    },
                   ),
+                  onPressed: () {
+                    Clipboard.setData(
+                      ClipboardData(
+                        text: boxInfo.targetRenderBox.toStringDeep(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

@@ -7,6 +7,7 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   final talker = TalkerFlutter.init();
   talker.debug('Hello World!');
+  ISpectTalker.initHandling(talker: talker);
   runApp(App(talker: talker));
 }
 
@@ -38,12 +39,15 @@ class _AppState extends State<App> {
           brightness: Brightness.dark,
         ),
       ),
-      locale: const Locale('ru'),
+      locale: const Locale('en'),
       controller: controller,
     );
 
     return MaterialApp(
       navigatorKey: navigatorKey,
+      navigatorObservers: [
+        TalkerRouteObserver(widget.talker),
+      ],
       theme: ThemeData.light(),
       darkTheme: options.darkTheme,
       themeMode: ThemeMode.dark,

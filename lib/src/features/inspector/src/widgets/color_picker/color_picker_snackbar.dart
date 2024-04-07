@@ -24,6 +24,7 @@ void showColorPickerResultSnackbar({
         ),
       ),
       content: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 16.0,
