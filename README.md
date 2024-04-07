@@ -1,7 +1,7 @@
 <div align="center">
 <p align="center">
     <a href="https://github.com/K1yoshiSho/ispect" align="center">
-        <img src="https://github.com/K1yoshiSho/ispect/blob/main/assets/images/ispect.png?raw=true" width="400px">
+        <img src="https://github.com/K1yoshiSho/ispect/blob/main/assets/ispect.png?raw=true" width="400px">
     </a>
 </p>
 </div>
