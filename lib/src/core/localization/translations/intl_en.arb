@@ -1,0 +1,155 @@
+{
+   "@@locale": "en",
+   "change_theme": "Change theme",
+   "talker_type_debug": "Verbose & debug",
+   "talker_type_debug_count": "Verbose and debug logs count: {text}",
+   "@talker_type_debug_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_good": "Good",
+   "talker_type_good_count": "Good logs count: {text}",
+   "@talker_type_good_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_provider": "Providers",
+   "talker_type_provider_count": "Provider logs count: {text}",
+   "@talker_type_provider_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_info": "Info",
+   "talker_type_info_count": "Info logs count: {text}",
+   "@talker_type_info_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_warnings": "Warnings",
+   "talker_type_warnings_count": "Warning logs count: {text}",
+   "@talker_type_warnings_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_exceptions": "Exceptions",
+   "talker_type_exceptions_count": "Exception logs count: {text}",
+   "@talker_type_exceptions_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_errors": "Errors",
+   "talker_type_errors_count": "Error logs count: {text}",
+   "@talker_type_errors_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_http": "HTTP requests",
+   "talker_http_requests_count": "HTTP request logs count: {text}",
+   "@talker_http_requests_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_http_responses_count": "HTTP response logs count: {text}",
+   "@talker_http_responses_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_http_failues_count": "HTTP failure logs count: {text}",
+   "@talker_http_failues_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_bloc": "BLoC",
+   "talker_bloc_transition_count": "BLoC transitions count: {text}",
+   "@talker_bloc_transition_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_events_count": "BLoC events count: {text}",
+   "@talker_bloc_events_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_close_count": "BLoC closes count: {text}",
+   "@talker_bloc_close_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_create_count": "BLoC creates count: {text}",
+   "@talker_bloc_create_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "actions": "Actions",
+   "reverse_logs": "Reverse logs",
+   "copy_all_logs": "Copy all logs",
+   "collapse_logs": "Collapse logs",
+   "expand_logs": "Expand logs",
+   "clean_history": "Clean history",
+   "share_logs_file": "Share logs file",
+   "log_item_copied": "Log item is copied in clipboard",
+   "basic_settings": "Basic settings",
+   "enabled": "Enabled",
+   "use_console_logs": "Use console logs",
+   "use_history": "Use history",
+   "settings": "Settings",
+   "search": "Search",
+   "all_logs_copied": "All logs copied in buffer",
+   "page_not_found": "Oops, the page on this path",
+   "not_found": "not found",
+   "back_to_home": "Go back to the main page",
+   "fix": "Report",
+   "clear_cache": "Clear cache",
+   "cache_cleared": "Cache cleared",
+   "error_cache_clearing": "Error on clearing cache",
+   "app_version": "App version",
+   "build_version": "Build version",
+   "change_environment": "Change current environment",
+   "go_to_logger": "Go to logger",
+   "environment_tap_number": "To open the dialog, it remains: {number}",
+   "@environment_tap_number": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "counter_times_text": "You have pushed the button this many times: {number}",
+   "@counter_times_text": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "performance_tracker": "Performance tracking",
+   "login": "Login",
+   "initialization_failed": "Initialization failed",
+   "error_type": "Error type",
+   "retry": "Retry",
+   "logout": "Log Out",
+   "you_already_in_logger": "You are already in the logger page",
+   "turn_on_inspector": "Turn on inspector",
+   "turn_off_inspector": "Turn off inspector",
+   "view_and_manage_data": "Viewing and managing application data",
+   "app_data": "App data",
+   "total_files_count": "Total files count: {number}",
+   "@total_files_count": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "app_info": "Check device info & package info",
+   "copied_to_clipboard": "Copied to clipboard",
+   "copy": "Copy"
+}

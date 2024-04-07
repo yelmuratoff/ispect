@@ -1,0 +1,155 @@
+{
+   "@@locale": "ru",
+   "change_theme": "Сменить тему",
+   "talker_type_debug": "Подробные и отладочные",
+   "talker_type_debug_count": "Количество подробных и отладочных записей: {text}",
+   "@talker_type_debug_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_good": "Хорошие",
+   "talker_type_good_count": "Количество хороших записей: {text}",
+   "@talker_type_good_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_provider": "Провайдеры",
+   "talker_type_provider_count": "Количество записей провайдеров: {text}",
+   "@talker_type_provider_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_info": "Информация",
+   "talker_type_info_count": "Количество информационных записей: {text}",
+   "@talker_type_info_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_warnings": "Предупреждения",
+   "talker_type_warnings_count": "Количество предупреждений: {text}",
+   "@talker_type_warnings_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_exceptions": "Исключения",
+   "talker_type_exceptions_count": "Количество записей исключений: {text}",
+   "@talker_type_exceptions_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_errors": "Ошибки",
+   "talker_type_errors_count": "Количество записей об ошибках: {text}",
+   "@talker_type_errors_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_http": "HTTP запросы",
+   "talker_http_requests_count": "Количество записей HTTP запросов: {text}",
+   "@talker_http_requests_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_http_responses_count": "Количество записей HTTP ответов: {text}",
+   "@talker_http_responses_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_http_failues_count": "Количество записей неудачных HTTP запросов: {text}",
+   "@talker_http_failues_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_type_bloc": "BLoC",
+   "talker_bloc_transition_count": "Количество переходов BLoC: {text}",
+   "@talker_bloc_transition_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_events_count": "Количество событий BLoC: {text}",
+   "@talker_bloc_events_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_close_count": "Количество закрытий BLoC: {text}",
+   "@talker_bloc_close_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talker_bloc_create_count": "Количество созданий BLoC: {text}",
+   "@talker_bloc_create_count": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "actions": "Действия",
+   "reverse_logs": "Инвертировать журнал",
+   "copy_all_logs": "Копировать все записи",
+   "collapse_logs": "Свернуть журнал",
+   "expand_logs": "Развернуть журнал",
+   "clean_history": "Очистить историю",
+   "share_logs_file": "Поделиться файлом журнала",
+   "log_item_copied": "Запись скопирована в буфер обмена",
+   "basic_settings": "Основные настройки",
+   "enabled": "Включено",
+   "use_console_logs": "Использовать запись в консоль",
+   "use_history": "Использовать историю",
+   "settings": "Настройки",
+   "search": "Поиск",
+   "all_logs_copied": "Все записи скопированы в буфер обмена",
+   "page_not_found": "Ой, страница по этому пути",
+   "not_found": "не найдена",
+   "back_to_home": "Вернуться на главную страницу",
+   "fix": "Сообщить",
+   "clear_cache": "Очистить кэш",
+   "cache_cleared": "Кэш очищен",
+   "error_cache_clearing": "Ошибка при очистке кэша",
+   "app_version": "Версия приложения",
+   "build_version": "Версия сборки",
+   "change_environment": "Сменить текущее окружение",
+   "go_to_logger": "Перейти к журналу",
+   "environment_tap_number": "Для открытия диалога осталось: {number}",
+   "@environment_tap_number": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "counter_times_text": "Вы нажали кнопку столько раз: {number}",
+   "@counter_times_text": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "performance_tracker": "Отслеживание производительности",
+   "login": "Вход",
+   "initialization_failed": "Ошибка инициализации",
+   "error_type": "Тип ошибки",
+   "retry": "Повторить",
+   "logout": "Выйти",
+   "you_already_in_logger": "Вы уже на странице ISpect",
+   "turn_on_inspector": "Включить инспектор",
+   "turn_off_inspector": "Выключить инспектор",
+   "view_and_manage_data": "Просмотр и управление данными приложения",
+   "app_data": "Данные приложения",
+   "total_files_count": "Общее количество файлов: {number}",
+   "@total_files_count": {
+      "placeholders": {
+         "number": {}
+      }
+   },
+   "app_info": "Проверить информацию об устройстве и пакете",
+   "copied_to_clipboard": "Скопировано в буфер обмена",
+   "copy": "Скопировать"
+}

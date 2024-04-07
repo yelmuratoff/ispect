@@ -1,0 +1,11 @@
+include: package:flutter_lints/flutter.yaml
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+analyzer:
+  exclude: 
+    - "lib/src/core/localization/generated/**"
+  errors:
+    depend_on_referenced_packages: ignore
+    invalid_use_of_visible_for_testing_member: ignore
+    non_constant_identifier_names: ignore
