@@ -34,7 +34,7 @@ class _AppState extends State<App> {
       lightTheme: ThemeData.light(),
       darkTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 9, 90, 12),
+          seedColor: Colors.blue,
           brightness: Brightness.dark,
         ),
       ),

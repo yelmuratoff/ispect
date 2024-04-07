@@ -1,3 +1,3 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Wrapper around Inspector, Talker and etc. First release.

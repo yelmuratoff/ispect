@@ -2,7 +2,7 @@ import 'app_localizations.dart';
 
 /// The translations for Russian (`ru`).
 class AppLocalizationsRu extends AppLocalizations {
-  AppLocalizationsRu([String locale = 'ru']) : super(locale);
+  AppLocalizationsRu([super.locale = 'ru']);
 
   @override
   String get change_theme => 'Сменить тему';

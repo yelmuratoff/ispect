@@ -1,7 +1,8 @@
 name: ispect
 description: "Wrapper around Inspector, Talker and etc."
 version: 0.0.1
-homepage:
+homepage: https://github.com/K1yoshiSho/ispect.git
+issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
