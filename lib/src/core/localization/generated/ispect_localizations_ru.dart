@@ -1,8 +1,8 @@
-import 'app_localizations.dart';
+import 'ispect_localizations.dart';
 
 /// The translations for Russian (`ru`).
-class AppLocalizationsRu extends AppLocalizations {
-  AppLocalizationsRu([String locale = 'ru']) : super(locale);
+class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
+  ISpectGeneratedLocalizationRu([String locale = 'ru']) : super(locale);
 
   @override
   String get change_theme => 'Сменить тему';
@@ -238,4 +238,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get copy => 'Скопировать';
+
+  @override
+  String cache_size(Object size) {
+    return 'Размер кэша: $size';
+  }
 }

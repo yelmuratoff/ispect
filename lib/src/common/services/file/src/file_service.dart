@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:ispect/src/common/services/file/file_service.dart';
 import 'package:path_provider/path_provider.dart';
 
-class FileService implements BaseFileService {
-  FileService._();
+class AppFileService implements BaseFileService {
+  AppFileService._();
 
-  static final BaseFileService _service = FileService._();
+  static final BaseFileService _service = AppFileService._();
   static BaseFileService get instance => _service;
 
   @override

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ispect/src/core/localization/translations/app_localizations.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 
-export 'translations/app_localizations.dart';
+export 'generated/ispect_localizations.dart';
 
 /// Localization class which is used to localize app.
 /// This class provides handy methods and tools.
@@ -10,9 +10,9 @@ final class ISpectLocalization {
   const ISpectLocalization._({required this.locale});
 
   /// List of supported locales.
-  static List<Locale> get supportedLocales => ISpectAppLocalizations.supportedLocales;
+  static List<Locale> get supportedLocales => ISpectGeneratedLocalization.supportedLocales;
 
-  static const _delegate = ISpectAppLocalizations.delegate;
+  static const _delegate = ISpectGeneratedLocalization.delegate;
 
   /// List of localization delegates.
   static List<LocalizationsDelegate<void>> get localizationDelegates => [
@@ -41,24 +41,24 @@ final class ISpectLocalization {
   }
 
   /// Obtain [ISpectAppLocalizations] instance from [BuildContext].
-  static ISpectAppLocalizations of(BuildContext context) {
+  static ISpectGeneratedLocalization of(BuildContext context) {
     debugCheckHasISpectAppLocalizations(context);
-    return Localizations.of<ISpectAppLocalizations>(
+    return Localizations.of<ISpectGeneratedLocalization>(
       context,
-      ISpectAppLocalizations,
+      ISpectGeneratedLocalization,
     )!;
   }
 }
 
 bool debugCheckHasISpectAppLocalizations(BuildContext context) {
   assert(() {
-    if (Localizations.of<ISpectAppLocalizations>(
+    if (Localizations.of<ISpectGeneratedLocalization>(
           context,
-          ISpectAppLocalizations,
+          ISpectGeneratedLocalization,
         ) ==
         null) {
       throw FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary('No ISpectAppLocalizations found.'),
+        ErrorSummary('No ISpectGeneratedLocalization found.'),
         ErrorDescription(
           '${context.widget.runtimeType} widgets require ISpectAppLocalizations '
           'to be provided by a Localizations widget ancestor.',
@@ -68,7 +68,7 @@ bool debugCheckHasISpectAppLocalizations(BuildContext context) {
           'and abbreviations which are used by the feedback library.',
         ),
         ...context.describeMissingAncestor(
-          expectedAncestorType: ISpectAppLocalizations,
+          expectedAncestorType: ISpectGeneratedLocalization,
         )
       ]);
     }

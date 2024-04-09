@@ -5,22 +5,22 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'app_localizations_en.dart';
-import 'app_localizations_ru.dart';
+import 'ispect_localizations_en.dart';
+import 'ispect_localizations_ru.dart';
 
-/// Callers can lookup localized strings with an instance of AppLocalizations
-/// returned by `AppLocalizations.of(context)`.
+/// Callers can lookup localized strings with an instance of ISpectGeneratedLocalization
+/// returned by `ISpectGeneratedLocalization.of(context)`.
 ///
-/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// Applications need to include `ISpectGeneratedLocalization.delegate()` in their app's
 /// `localizationDelegates` list, and the locales they support in the app's
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'generated/app_localizations.dart';
+/// import 'generated/ispect_localizations.dart';
 ///
 /// return MaterialApp(
-///   localizationsDelegates: AppLocalizations.localizationsDelegates,
-///   supportedLocales: AppLocalizations.supportedLocales,
+///   localizationsDelegates: ISpectGeneratedLocalization.localizationsDelegates,
+///   supportedLocales: ISpectGeneratedLocalization.supportedLocales,
 ///   home: MyApplicationHome(),
 /// );
 /// ```
@@ -57,18 +57,18 @@ import 'app_localizations_ru.dart';
 /// Select and expand the newly-created Localizations item then, for each
 /// locale your application supports, add a new item and select the locale
 /// you wish to add from the pop-up menu in the Value field. This list should
-/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// be consistent with the languages listed in the ISpectGeneratedLocalization.supportedLocales
 /// property.
-abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+abstract class ISpectGeneratedLocalization {
+  ISpectGeneratedLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static ISpectGeneratedLocalization? of(BuildContext context) {
+    return Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate = _ISpectGeneratedLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -494,34 +494,40 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy'**
   String get copy;
+
+  /// No description provided for @cache_size.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache size: {size}'**
+  String cache_size(Object size);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
+class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocalization> {
+  const _ISpectGeneratedLocalizationDelegate();
 
   @override
-  Future<AppLocalizations> load(Locale locale) {
-    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  Future<ISpectGeneratedLocalization> load(Locale locale) {
+    return SynchronousFuture<ISpectGeneratedLocalization>(lookupISpectGeneratedLocalization(locale));
   }
 
   @override
   bool isSupported(Locale locale) => <String>['en', 'ru'].contains(locale.languageCode);
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
+  bool shouldReload(_ISpectGeneratedLocalizationDelegate old) => false;
 }
 
-AppLocalizations lookupAppLocalizations(Locale locale) {
+ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
 
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'ru': return AppLocalizationsRu();
+    case 'en': return ISpectGeneratedLocalizationEn();
+    case 'ru': return ISpectGeneratedLocalizationRu();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
     'that was used.'

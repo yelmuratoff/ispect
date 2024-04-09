@@ -1,6 +1,6 @@
 name: ispect
 description: "Wrapper around Inspector, Talker and etc."
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -13,46 +13,35 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-
     # Logging
   talker_flutter: ^4.1.0
   talker_dio_logger: ^4.1.0
   talker_bloc_logger: ^4.1.0
 
-    # Utils
+  # Utils
   path: ^1.8.3
   path_provider: ^2.1.2
   share_plus: ^7.2.2
   package_info_plus: ^5.0.1
   device_info_plus: ^9.0.3
-  
-    # UI
+
+  # UI
   gap: ^3.0.1
   group_button: ^5.3.4
   auto_size_text: ^3.0.0
   feedback_plus: ^0.1.2
-  
+
   # Others
   provider: ^6.1.2
   performance: ^0.1.1
   flutter_bloc: ^8.1.5
+  flutter_cache_manager: ^3.3.1
+  simple_app_cache_manager: ^0.0.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
 
-
 flutter:
   generate: true
-
-flutter_gen:
-  output: lib/src/core/assets/generated
-  line_length: 80
-
-flutter_intl:
-  enabled: true
-  class_name: ISpectGeneratedLocalization
-  main_locale: en
-  arb_dir: lib/src/core/localization/translations
-  output_dir: lib/src/core/localization/generated

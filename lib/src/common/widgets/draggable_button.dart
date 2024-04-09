@@ -64,7 +64,6 @@ class _InfospectInvokerState extends State<DraggableButton> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
 
-    /// TODO add Localizations override
     return AnimatedBuilder(
       animation: controller,
       builder: (context, child) {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
-import 'package:ispect/src/core/localization/localization.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 
 import 'performance_overlay_builder.dart';

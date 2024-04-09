@@ -1,6 +1,6 @@
 import 'dart:io';
 
-abstract class BaseFileService {
+abstract interface class BaseFileService {
   Future<void> deleteCacheDir();
   Future<void> deleteAppDir();
   Future<List<File>> getFiles();

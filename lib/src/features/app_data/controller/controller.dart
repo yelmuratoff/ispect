@@ -9,14 +9,14 @@ class AppDataController extends ChangeNotifier {
     required Talker talker,
   }) async {
     try {
-      final f = await FileService.instance.getFiles();
+      final f = await AppFileService.instance.getFiles();
       _files = f;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
     } on Exception catch (e, st) {
-      talker.handle(e, st);
-      if (context.mounted) {
+      if (context.mounted && !e.toString().contains("No such file or directory")) {
+        talker.handle(e, st);
         await ISpectToaster.showErrorToast(
           context,
           title: e.toString(),

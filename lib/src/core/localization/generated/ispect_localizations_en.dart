@@ -1,8 +1,8 @@
-import 'app_localizations.dart';
+import 'ispect_localizations.dart';
 
 /// The translations for English (`en`).
-class AppLocalizationsEn extends ISpectAppLocalizations {
-  AppLocalizationsEn([super.locale = 'en']);
+class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
+  ISpectGeneratedLocalizationEn([String locale = 'en']) : super(locale);
 
   @override
   String get change_theme => 'Change theme';
@@ -238,4 +238,9 @@ class AppLocalizationsEn extends ISpectAppLocalizations {
 
   @override
   String get copy => 'Copy';
+
+  @override
+  String cache_size(Object size) {
+    return 'Cache size: $size';
+  }
 }

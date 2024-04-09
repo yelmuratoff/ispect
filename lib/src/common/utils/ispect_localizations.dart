@@ -9,7 +9,7 @@ final class ISpectLocalizations {
       GlobalMaterialLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
-      ISpectAppLocalizations.delegate,
+      ISpectGeneratedLocalization.delegate,
       GlobalFeedbackLocalizationsDelegate.delegate,
     ];
 

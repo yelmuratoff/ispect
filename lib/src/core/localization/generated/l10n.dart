@@ -720,6 +720,16 @@ class ISpectGeneratedLocalization {
       args: [],
     );
   }
+
+  /// `Cache size: {size}`
+  String cache_size(Object size) {
+    return Intl.message(
+      'Cache size: $size',
+      name: 'cache_size',
+      desc: '',
+      args: [size],
+    );
+  }
 }
 
 class AppLocalizationDelegate

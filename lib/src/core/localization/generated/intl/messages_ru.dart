@@ -20,41 +20,43 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ru';
 
-  static String m0(number) => "Вы нажали кнопку столько раз: ${number}";
+  static String m0(size) => "Размер кэша: ${size}";
 
-  static String m1(number) => "Для открытия диалога осталось: ${number}";
+  static String m1(number) => "Вы нажали кнопку столько раз: ${number}";
 
-  static String m2(text) => "Количество закрытий BLoC: ${text}";
+  static String m2(number) => "Для открытия диалога осталось: ${number}";
 
-  static String m3(text) => "Количество созданий BLoC: ${text}";
+  static String m3(text) => "Количество закрытий BLoC: ${text}";
 
-  static String m4(text) => "Количество событий BLoC: ${text}";
+  static String m4(text) => "Количество созданий BLoC: ${text}";
 
-  static String m5(text) => "Количество переходов BLoC: ${text}";
+  static String m5(text) => "Количество событий BLoC: ${text}";
 
-  static String m6(text) =>
+  static String m6(text) => "Количество переходов BLoC: ${text}";
+
+  static String m7(text) =>
       "Количество записей неудачных HTTP запросов: ${text}";
 
-  static String m7(text) => "Количество записей HTTP запросов: ${text}";
+  static String m8(text) => "Количество записей HTTP запросов: ${text}";
 
-  static String m8(text) => "Количество записей HTTP ответов: ${text}";
+  static String m9(text) => "Количество записей HTTP ответов: ${text}";
 
-  static String m9(text) =>
+  static String m10(text) =>
       "Количество подробных и отладочных записей: ${text}";
 
-  static String m10(text) => "Количество записей об ошибках: ${text}";
+  static String m11(text) => "Количество записей об ошибках: ${text}";
 
-  static String m11(text) => "Количество записей исключений: ${text}";
+  static String m12(text) => "Количество записей исключений: ${text}";
 
-  static String m12(text) => "Количество хороших записей: ${text}";
+  static String m13(text) => "Количество хороших записей: ${text}";
 
-  static String m13(text) => "Количество информационных записей: ${text}";
+  static String m14(text) => "Количество информационных записей: ${text}";
 
-  static String m14(text) => "Количество записей провайдеров: ${text}";
+  static String m15(text) => "Количество записей провайдеров: ${text}";
 
-  static String m15(text) => "Количество предупреждений: ${text}";
+  static String m16(text) => "Количество предупреждений: ${text}";
 
-  static String m16(number) => "Общее количество файлов: ${number}";
+  static String m17(number) => "Общее количество файлов: ${number}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -72,6 +74,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Основные настройки"),
         "build_version": MessageLookupByLibrary.simpleMessage("Версия сборки"),
         "cache_cleared": MessageLookupByLibrary.simpleMessage("Кэш очищен"),
+        "cache_size": m0,
         "change_environment":
             MessageLookupByLibrary.simpleMessage("Сменить текущее окружение"),
         "change_theme": MessageLookupByLibrary.simpleMessage("Сменить тему"),
@@ -85,9 +88,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "copy": MessageLookupByLibrary.simpleMessage("Скопировать"),
         "copy_all_logs":
             MessageLookupByLibrary.simpleMessage("Копировать все записи"),
-        "counter_times_text": m0,
+        "counter_times_text": m1,
         "enabled": MessageLookupByLibrary.simpleMessage("Включено"),
-        "environment_tap_number": m1,
+        "environment_tap_number": m2,
         "error_cache_clearing":
             MessageLookupByLibrary.simpleMessage("Ошибка при очистке кэша"),
         "error_type": MessageLookupByLibrary.simpleMessage("Тип ошибки"),
@@ -114,35 +117,35 @@ class MessageLookup extends MessageLookupByLibrary {
         "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
         "share_logs_file":
             MessageLookupByLibrary.simpleMessage("Поделиться файлом журнала"),
-        "talker_bloc_close_count": m2,
-        "talker_bloc_create_count": m3,
-        "talker_bloc_events_count": m4,
-        "talker_bloc_transition_count": m5,
-        "talker_http_failues_count": m6,
-        "talker_http_requests_count": m7,
-        "talker_http_responses_count": m8,
+        "talker_bloc_close_count": m3,
+        "talker_bloc_create_count": m4,
+        "talker_bloc_events_count": m5,
+        "talker_bloc_transition_count": m6,
+        "talker_http_failues_count": m7,
+        "talker_http_requests_count": m8,
+        "talker_http_responses_count": m9,
         "talker_type_bloc": MessageLookupByLibrary.simpleMessage("BLoC"),
         "talker_type_debug":
             MessageLookupByLibrary.simpleMessage("Подробные и отладочные"),
-        "talker_type_debug_count": m9,
+        "talker_type_debug_count": m10,
         "talker_type_errors": MessageLookupByLibrary.simpleMessage("Ошибки"),
-        "talker_type_errors_count": m10,
+        "talker_type_errors_count": m11,
         "talker_type_exceptions":
             MessageLookupByLibrary.simpleMessage("Исключения"),
-        "talker_type_exceptions_count": m11,
+        "talker_type_exceptions_count": m12,
         "talker_type_good": MessageLookupByLibrary.simpleMessage("Хорошие"),
-        "talker_type_good_count": m12,
+        "talker_type_good_count": m13,
         "talker_type_http":
             MessageLookupByLibrary.simpleMessage("HTTP запросы"),
         "talker_type_info": MessageLookupByLibrary.simpleMessage("Информация"),
-        "talker_type_info_count": m13,
+        "talker_type_info_count": m14,
         "talker_type_provider":
             MessageLookupByLibrary.simpleMessage("Провайдеры"),
-        "talker_type_provider_count": m14,
+        "talker_type_provider_count": m15,
         "talker_type_warnings":
             MessageLookupByLibrary.simpleMessage("Предупреждения"),
-        "talker_type_warnings_count": m15,
-        "total_files_count": m16,
+        "talker_type_warnings_count": m16,
+        "total_files_count": m17,
         "turn_off_inspector":
             MessageLookupByLibrary.simpleMessage("Выключить инспектор"),
         "turn_on_inspector":

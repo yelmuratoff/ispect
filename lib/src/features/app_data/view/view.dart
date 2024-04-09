@@ -4,10 +4,14 @@ class _AppDataView extends StatelessWidget {
   final AppDataController controller;
   final void Function() deleteFiles;
   final void Function(int) deleteFile;
+  final ValueNotifier<String> cacheSizeNotifier;
+  final void Function() clearCache;
   const _AppDataView({
     required this.controller,
     required this.deleteFiles,
     required this.deleteFile,
+    required this.cacheSizeNotifier,
+    required this.clearCache,
   });
 
   @override
@@ -23,6 +27,32 @@ class _AppDataView extends StatelessWidget {
           builder: (BuildContext context, Widget? child) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ValueListenableBuilder(
+                      valueListenable: cacheSizeNotifier,
+                      builder: (context, cacheSize, child) => AutoSizeText(
+                        context.ispectL10n.cache_size(cacheSize),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    if (cacheSizeNotifier.value != "0.00 B")
+                      ElevatedButton(
+                        onPressed: clearCache,
+                        child: Text(context.ispectL10n.clear_cache),
+                      ),
+                  ],
+                ),
+              ),
               const Gap(10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -44,16 +74,6 @@ class _AppDataView extends StatelessWidget {
                           style: context.ispectTheme.textTheme.bodyMedium,
                         ),
                       ],
-                    ),
-                    Visibility(
-                      visible: controller.files.isNotEmpty,
-                      child: IconButton(
-                        onPressed: deleteFiles,
-                        icon: Icon(
-                          Icons.delete_outline_rounded,
-                          color: context.ispectTheme.colorScheme.error,
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -77,13 +97,6 @@ class _AppDataView extends StatelessWidget {
                             child: Text(
                               "$i. File:\n ${f.path}",
                               style: context.ispectTheme.textTheme.labelMedium,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => deleteFile(i),
-                            icon: Icon(
-                              Icons.delete_outline_rounded,
-                              color: context.ispectTheme.colorScheme.error,
                             ),
                           ),
                         ],

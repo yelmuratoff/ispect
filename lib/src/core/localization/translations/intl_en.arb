@@ -151,5 +151,11 @@
    },
    "app_info": "Check device info & package info",
    "copied_to_clipboard": "Copied to clipboard",
-   "copy": "Copy"
+   "copy": "Copy",
+   "cache_size": "Cache size: {size}",
+   "@cache_size": {
+      "placeholders": {
+         "size": {}
+      }
+   }
 }

@@ -20,40 +20,42 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(number) =>
+  static String m0(size) => "Cache size: ${size}";
+
+  static String m1(number) =>
       "You have pushed the button this many times: ${number}";
 
-  static String m1(number) => "To open the dialog, it remains: ${number}";
+  static String m2(number) => "To open the dialog, it remains: ${number}";
 
-  static String m2(text) => "BLoC closes count: ${text}";
+  static String m3(text) => "BLoC closes count: ${text}";
 
-  static String m3(text) => "BLoC creates count: ${text}";
+  static String m4(text) => "BLoC creates count: ${text}";
 
-  static String m4(text) => "BLoC events count: ${text}";
+  static String m5(text) => "BLoC events count: ${text}";
 
-  static String m5(text) => "BLoC transitions count: ${text}";
+  static String m6(text) => "BLoC transitions count: ${text}";
 
-  static String m6(text) => "HTTP failure logs count: ${text}";
+  static String m7(text) => "HTTP failure logs count: ${text}";
 
-  static String m7(text) => "HTTP request logs count: ${text}";
+  static String m8(text) => "HTTP request logs count: ${text}";
 
-  static String m8(text) => "HTTP response logs count: ${text}";
+  static String m9(text) => "HTTP response logs count: ${text}";
 
-  static String m9(text) => "Verbose and debug logs count: ${text}";
+  static String m10(text) => "Verbose and debug logs count: ${text}";
 
-  static String m10(text) => "Error logs count: ${text}";
+  static String m11(text) => "Error logs count: ${text}";
 
-  static String m11(text) => "Exception logs count: ${text}";
+  static String m12(text) => "Exception logs count: ${text}";
 
-  static String m12(text) => "Good logs count: ${text}";
+  static String m13(text) => "Good logs count: ${text}";
 
-  static String m13(text) => "Info logs count: ${text}";
+  static String m14(text) => "Info logs count: ${text}";
 
-  static String m14(text) => "Provider logs count: ${text}";
+  static String m15(text) => "Provider logs count: ${text}";
 
-  static String m15(text) => "Warning logs count: ${text}";
+  static String m16(text) => "Warning logs count: ${text}";
 
-  static String m16(number) => "Total files count: ${number}";
+  static String m17(number) => "Total files count: ${number}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -70,6 +72,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Basic settings"),
         "build_version": MessageLookupByLibrary.simpleMessage("Build version"),
         "cache_cleared": MessageLookupByLibrary.simpleMessage("Cache cleared"),
+        "cache_size": m0,
         "change_environment":
             MessageLookupByLibrary.simpleMessage("Change current environment"),
         "change_theme": MessageLookupByLibrary.simpleMessage("Change theme"),
@@ -80,9 +83,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Copied to clipboard"),
         "copy": MessageLookupByLibrary.simpleMessage("Copy"),
         "copy_all_logs": MessageLookupByLibrary.simpleMessage("Copy all logs"),
-        "counter_times_text": m0,
+        "counter_times_text": m1,
         "enabled": MessageLookupByLibrary.simpleMessage("Enabled"),
-        "environment_tap_number": m1,
+        "environment_tap_number": m2,
         "error_cache_clearing":
             MessageLookupByLibrary.simpleMessage("Error on clearing cache"),
         "error_type": MessageLookupByLibrary.simpleMessage("Error type"),
@@ -106,35 +109,35 @@ class MessageLookup extends MessageLookupByLibrary {
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "share_logs_file":
             MessageLookupByLibrary.simpleMessage("Share logs file"),
-        "talker_bloc_close_count": m2,
-        "talker_bloc_create_count": m3,
-        "talker_bloc_events_count": m4,
-        "talker_bloc_transition_count": m5,
-        "talker_http_failues_count": m6,
-        "talker_http_requests_count": m7,
-        "talker_http_responses_count": m8,
+        "talker_bloc_close_count": m3,
+        "talker_bloc_create_count": m4,
+        "talker_bloc_events_count": m5,
+        "talker_bloc_transition_count": m6,
+        "talker_http_failues_count": m7,
+        "talker_http_requests_count": m8,
+        "talker_http_responses_count": m9,
         "talker_type_bloc": MessageLookupByLibrary.simpleMessage("BLoC"),
         "talker_type_debug":
             MessageLookupByLibrary.simpleMessage("Verbose & debug"),
-        "talker_type_debug_count": m9,
+        "talker_type_debug_count": m10,
         "talker_type_errors": MessageLookupByLibrary.simpleMessage("Errors"),
-        "talker_type_errors_count": m10,
+        "talker_type_errors_count": m11,
         "talker_type_exceptions":
             MessageLookupByLibrary.simpleMessage("Exceptions"),
-        "talker_type_exceptions_count": m11,
+        "talker_type_exceptions_count": m12,
         "talker_type_good": MessageLookupByLibrary.simpleMessage("Good"),
-        "talker_type_good_count": m12,
+        "talker_type_good_count": m13,
         "talker_type_http":
             MessageLookupByLibrary.simpleMessage("HTTP requests"),
         "talker_type_info": MessageLookupByLibrary.simpleMessage("Info"),
-        "talker_type_info_count": m13,
+        "talker_type_info_count": m14,
         "talker_type_provider":
             MessageLookupByLibrary.simpleMessage("Providers"),
-        "talker_type_provider_count": m14,
+        "talker_type_provider_count": m15,
         "talker_type_warnings":
             MessageLookupByLibrary.simpleMessage("Warnings"),
-        "talker_type_warnings_count": m15,
-        "total_files_count": m16,
+        "talker_type_warnings_count": m16,
+        "total_files_count": m17,
         "turn_off_inspector":
             MessageLookupByLibrary.simpleMessage("Turn off inspector"),
         "turn_on_inspector":
