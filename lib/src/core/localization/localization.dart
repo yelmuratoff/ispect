@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/src/core/localization/translations/app_localizations.dart';
 
+export 'translations/app_localizations.dart';
+
 /// Localization class which is used to localize app.
 /// This class provides handy methods and tools.
-final class Localization {
-  const Localization._({required this.locale});
+final class ISpectLocalization {
+  const ISpectLocalization._({required this.locale});
 
   /// List of supported locales.
-  static List<Locale> get supportedLocales => AppLocalizations.supportedLocales;
+  static List<Locale> get supportedLocales => ISpectAppLocalizations.supportedLocales;
 
-  static const _delegate = AppLocalizations.delegate;
+  static const _delegate = ISpectAppLocalizations.delegate;
 
   /// List of localization delegates.
   static List<LocalizationsDelegate<void>> get localizationDelegates => [
@@ -20,9 +22,9 @@ final class Localization {
         _delegate,
       ];
 
-  static Localization? get current => _current;
+  static ISpectLocalization? get current => _current;
 
-  static Localization? _current;
+  static ISpectLocalization? _current;
 
   /// Locale which is currently used.
   final Locale locale;
@@ -38,27 +40,27 @@ final class Localization {
     return const Locale('en');
   }
 
-  /// Obtain [AppLocalizations] instance from [BuildContext].
-  static AppLocalizations of(BuildContext context) {
-    debugCheckHasFeedbackLocalizations(context);
-    return Localizations.of<AppLocalizations>(
+  /// Obtain [ISpectAppLocalizations] instance from [BuildContext].
+  static ISpectAppLocalizations of(BuildContext context) {
+    debugCheckHasISpectAppLocalizations(context);
+    return Localizations.of<ISpectAppLocalizations>(
       context,
-      AppLocalizations,
+      ISpectAppLocalizations,
     )!;
   }
 }
 
-bool debugCheckHasFeedbackLocalizations(BuildContext context) {
+bool debugCheckHasISpectAppLocalizations(BuildContext context) {
   assert(() {
-    if (Localizations.of<AppLocalizations>(
+    if (Localizations.of<ISpectAppLocalizations>(
           context,
-          AppLocalizations,
+          ISpectAppLocalizations,
         ) ==
         null) {
       throw FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary('No AppLocalizations found.'),
+        ErrorSummary('No ISpectAppLocalizations found.'),
         ErrorDescription(
-          '${context.widget.runtimeType} widgets require AppLocalizations '
+          '${context.widget.runtimeType} widgets require ISpectAppLocalizations '
           'to be provided by a Localizations widget ancestor.',
         ),
         ErrorDescription(
@@ -66,7 +68,7 @@ bool debugCheckHasFeedbackLocalizations(BuildContext context) {
           'and abbreviations which are used by the feedback library.',
         ),
         ...context.describeMissingAncestor(
-          expectedAncestorType: AppLocalizations,
+          expectedAncestorType: ISpectAppLocalizations,
         )
       ]);
     }

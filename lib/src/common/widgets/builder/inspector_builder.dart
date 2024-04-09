@@ -54,7 +54,7 @@ class ISpectWrapper extends StatelessWidget {
         /// Add feedback button to the widget tree
         child = BetterFeedback(
           themeMode: options.themeMode,
-          localizationsDelegates: Localization.localizationDelegates,
+          localizationsDelegates: ISpectLocalization.localizationDelegates,
           localeOverride: options.locale,
           theme: FeedbackThemeData(
             background: Colors.grey[800]!,
@@ -89,6 +89,7 @@ class ISpectWrapper extends StatelessWidget {
           ),
           child: child,
         );
+
         return child;
       },
       child: child,

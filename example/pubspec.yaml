@@ -9,10 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: any
+  flutter_localizations:
+    sdk: flutter
   ispect:
     path: ../
   
   talker_flutter: ^4.1.0
+  feedback_plus: ^0.1.2
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +25,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
+
+flutter_gen:
+  output: lib/src/core/assets/generated
+  line_length: 80
+
+flutter_intl:
+  enabled: true
+  class_name: AppGeneratedLocalization
+  main_locale: en
+  arb_dir: lib/src/core/localization/translations
+  output_dir: lib/src/core/localization/generated

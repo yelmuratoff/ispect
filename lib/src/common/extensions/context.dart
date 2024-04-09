@@ -7,6 +7,6 @@ extension ISpectContextExtension on BuildContext {
   /// `theme` returns the current `ThemeData` of the `BuildContext`.
   ThemeData get ispectTheme => Theme.of(this);
 
-  /// Returns the current `AppLocalizations` of the `BuildContext`.
-  AppLocalizations get ispectL10n => Localization.of(this);
+  /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
+  ISpectAppLocalizations get ispectL10n => ISpectLocalization.of(this);
 }

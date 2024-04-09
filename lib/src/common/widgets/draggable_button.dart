@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/core/localization/localization.dart';
 
 import '../controllers/draggable_button_controller.dart';
 
@@ -65,68 +64,65 @@ class _InfospectInvokerState extends State<DraggableButton> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
 
-    return Localizations(
-      locale: widget.options.locale,
-      delegates: Localization.localizationDelegates,
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (context, child) {
-          return _ButtonView(
-            onTap: () {
-              if (widget.state != InvokerState.alwaysOpened) {
-                if (!controller.isCollapsed) {
-                  controller.setIsCollapsed(true);
-                  if (widget.state == InvokerState.autoCollapse) {
-                    controller.startAutoCollapseTimer();
-                  }
-                }
-              }
-            },
-            xPos: controller.xPos,
-            yPos: controller.yPos,
-            screenWidth: screenWidth,
-            onPanUpdate: (DragUpdateDetails details) {
+    /// TODO add Localizations override
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        return _ButtonView(
+          onTap: () {
+            if (widget.state != InvokerState.alwaysOpened) {
               if (!controller.isCollapsed) {
-                controller.xPos += details.delta.dx;
-                controller.yPos += details.delta.dy;
-              }
-            },
-            onPanEnd: (DragEndDetails details) {
-              if (!controller.isCollapsed) {
-                final screenWidth = MediaQuery.of(context).size.width;
-                const buttonWidth = 50;
-
-                final halfScreenWidth = screenWidth / 2;
-                double targetXPos;
-
-                if (controller.xPos + buttonWidth / 2 < halfScreenWidth) {
-                  targetXPos = 0;
-                } else {
-                  targetXPos = screenWidth - buttonWidth;
-                }
-
-                controller.xPos = targetXPos;
-
+                controller.setIsCollapsed(true);
                 if (widget.state == InvokerState.autoCollapse) {
                   controller.startAutoCollapseTimer();
                 }
               }
-            },
-            onButtonTap: () {
-              controller.setIsCollapsed(!controller.isCollapsed);
-              if (controller.isCollapsed) {
-                controller.cancelAutoCollapseTimer();
-                _launchInfospect();
-              } else if (widget.state == InvokerState.autoCollapse) {
+            }
+          },
+          xPos: controller.xPos,
+          yPos: controller.yPos,
+          screenWidth: screenWidth,
+          onPanUpdate: (DragUpdateDetails details) {
+            if (!controller.isCollapsed) {
+              controller.xPos += details.delta.dx;
+              controller.yPos += details.delta.dy;
+            }
+          },
+          onPanEnd: (DragEndDetails details) {
+            if (!controller.isCollapsed) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              const buttonWidth = 50;
+
+              final halfScreenWidth = screenWidth / 2;
+              double targetXPos;
+
+              if (controller.xPos + buttonWidth / 2 < halfScreenWidth) {
+                targetXPos = 0;
+              } else {
+                targetXPos = screenWidth - buttonWidth;
+              }
+
+              controller.xPos = targetXPos;
+
+              if (widget.state == InvokerState.autoCollapse) {
                 controller.startAutoCollapseTimer();
               }
-            },
-            isCollapsed: controller.isCollapsed,
-            inLoggerPage: controller.inLoggerPage,
-            child: widget.child,
-          );
-        },
-      ),
+            }
+          },
+          onButtonTap: () {
+            controller.setIsCollapsed(!controller.isCollapsed);
+            if (controller.isCollapsed) {
+              controller.cancelAutoCollapseTimer();
+              _launchInfospect();
+            } else if (widget.state == InvokerState.autoCollapse) {
+              controller.startAutoCollapseTimer();
+            }
+          },
+          isCollapsed: controller.isCollapsed,
+          inLoggerPage: controller.inLoggerPage,
+          child: widget.child,
+        );
+      },
     );
   }
 

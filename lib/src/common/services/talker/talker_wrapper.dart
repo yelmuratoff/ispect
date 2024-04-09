@@ -27,13 +27,13 @@ final class ISpectTalker {
   // static ISpectTalker get instance => _instance;
 
   /// `initHandling` - This function initializes handling of the app.
-  static Future<void> initHandling({
+  Future<void> initHandling({
     required Talker talker,
     Function()? onPlatformDispatcherError,
     Function()? onFlutterError,
   }) async {
     ISpectTalker.talker = talker;
-    ISpectTalker.info(message: 'ISpectTalker: Initialize started.');
+    info(message: 'ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         instance._talker.handle(details, details.stack);
@@ -58,10 +58,10 @@ final class ISpectTalker {
       instance._talker.handle(details, details.stack);
     };
 
-    ISpectTalker.good(message: 'ISpectTalker: Success initialized.');
+    good(message: 'ISpectTalker: Success initialized.');
   }
 
-  static void log({
+  void log({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -77,7 +77,7 @@ final class ISpectTalker {
     );
   }
 
-  static void good({
+  void good({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -91,7 +91,7 @@ final class ISpectTalker {
     );
   }
 
-  static void route({
+  void route({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -105,7 +105,7 @@ final class ISpectTalker {
     );
   }
 
-  static void provider({
+  void provider({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -119,7 +119,7 @@ final class ISpectTalker {
     );
   }
 
-  static void debug({
+  void debug({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -131,7 +131,7 @@ final class ISpectTalker {
     );
   }
 
-  static void info({
+  void info({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -143,7 +143,7 @@ final class ISpectTalker {
     );
   }
 
-  static void warning({
+  void warning({
     required String message,
     Object? exception,
     StackTrace? stackTrace,
@@ -155,32 +155,32 @@ final class ISpectTalker {
     );
   }
 
-  static void error({
-    required String message,
+  void error({
+    String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {
     instance._talker.error(
-      message,
+      message ?? 'An error occurred.',
       exception,
       stackTrace,
     );
   }
 
-  static void critical({
-    required String message,
+  void critical({
+    String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {
     instance._talker.critical(
-      message,
+      message ?? 'A critical error occurred.',
       exception,
       stackTrace,
     );
   }
 
-  static void handle({
-    required String message,
+  void handle({
+    String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {

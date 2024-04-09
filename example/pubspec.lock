@@ -114,13 +114,13 @@ packages:
     source: hosted
     version: "1.3.1"
   feedback_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: feedback_plus
-      sha256: "8ac1f83b8106464e69a8b08b181ecaf1471a8c4ae8b15a5858feba5f2a338ef8"
+      sha256: "96f30bf86301b6ed7b8a72f6e186848b21bbab5e3905946008a04b96fa498962"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.2"
   ffi:
     dependency: transitive
     description:
@@ -167,7 +167,7 @@ packages:
     source: hosted
     version: "3.0.2"
   flutter_localizations:
-    dependency: transitive
+    dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -214,7 +214,7 @@ packages:
     source: hosted
     version: "4.0.2"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
@@ -227,7 +227,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.11"
   leak_tracker:
     dependency: transitive
     description:

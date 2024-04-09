@@ -48,7 +48,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^0.0.1
+  ispect: ^1.0.0
 ```
 
 ### Add import package
@@ -76,6 +76,7 @@ The simplest realization:
 ```dart
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect_example/src/core/localization/generated/l10n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -83,6 +84,7 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   final talker = TalkerFlutter.init();
   talker.debug('Hello World!');
+  talkerWrapper.initHandling(talker: talker);
   runApp(App(talker: talker));
 }
 
@@ -114,12 +116,16 @@ class _AppState extends State<App> {
           brightness: Brightness.dark,
         ),
       ),
-      locale: const Locale('ru'),
+      locale: const Locale('en'),
       controller: controller,
     );
 
     return MaterialApp(
       navigatorKey: navigatorKey,
+      navigatorObservers: [
+        TalkerRouteObserver(widget.talker),
+      ],
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
       theme: ThemeData.light(),
       darkTheme: options.darkTheme,
       themeMode: ThemeMode.dark,
@@ -142,9 +148,9 @@ class _Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text('Hello World!'),
+        child: Text(AppGeneratedLocalization.of(context).app_title),
       ),
     );
   }
@@ -174,7 +180,9 @@ class ProviderLoggerObserver extends ProviderObserver {
     Object? value,
     ProviderContainer container,
   ) {
-    talkerWrapper.provider('Provider ${provider.name} was initialized with $value');
+    talkerWrapper.provider(
+      message: 'Provider ${provider.name} was initialized with $value',
+    );
   }
 
   @override
@@ -182,7 +190,9 @@ class ProviderLoggerObserver extends ProviderObserver {
     ProviderBase<Object?> provider,
     ProviderContainer container,
   ) {
-    talkerWrapper.provider('Provider ${provider.name} was disposed');
+    talkerWrapper.provider(
+      message: 'Provider ${provider.name} was disposed',
+    );
   }
 
   @override
@@ -192,7 +202,10 @@ class ProviderLoggerObserver extends ProviderObserver {
     Object? newValue,
     ProviderContainer container,
   ) {
-    talkerWrapper.provider('Provider ${provider.name} was updated from $previousValue to $newValue');
+    talkerWrapper.provider(
+      message:
+          'Provider ${provider.name} was updated from $previousValue to $newValue',
+    );
   }
 
   @override
@@ -203,9 +216,9 @@ class ProviderLoggerObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     talkerWrapper.handle(
-      error,
-      stackTrace,
-      'Provider ${provider.name} failed with error $error',
+      exception: error,
+      stackTrace: stackTrace,
+      message: 'Provider ${provider.name} failed with error $error',
     );
   }
 }

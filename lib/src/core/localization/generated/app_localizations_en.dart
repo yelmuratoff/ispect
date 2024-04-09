@@ -1,8 +1,8 @@
 import 'app_localizations.dart';
 
 /// The translations for English (`en`).
-class AppLocalizationsEn extends ISpectAppLocalizations {
-  AppLocalizationsEn([super.locale = 'en']);
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
   String get change_theme => 'Change theme';

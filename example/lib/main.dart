@@ -1,5 +1,8 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect_example/src/core/localization/generated/l10n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -7,7 +10,7 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   final talker = TalkerFlutter.init();
   talker.debug('Hello World!');
-  ISpectTalker.initHandling(talker: talker);
+  talkerWrapper.initHandling(talker: talker);
   runApp(App(talker: talker));
 }
 
@@ -48,6 +51,7 @@ class _AppState extends State<App> {
       navigatorObservers: [
         TalkerRouteObserver(widget.talker),
       ],
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
       theme: ThemeData.light(),
       darkTheme: options.darkTheme,
       themeMode: ThemeMode.dark,
@@ -70,9 +74,9 @@ class _Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text('Hello World!'),
+        child: Text(AppGeneratedLocalization.of(context).app_title),
       ),
     );
   }
