@@ -2,6 +2,7 @@ import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/common/widgets/draggable_panel.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 
@@ -42,6 +43,30 @@ class ISpectWrapper extends StatelessWidget {
           options: options,
           child: child,
         );
+
+        // child = DraggableButtonPanel(
+        //   options: [
+        //     IconButton(
+        //       icon: Icon(Icons.bug_report),
+        //       onPressed: () {
+        //         // Navigator.of(context).pushNamed(Inspector.routeName);
+        //       },
+        //     ),
+        //     IconButton(
+        //       icon: Icon(Icons.build_circle),
+        //       onPressed: () {
+        //         // Navigator.of(context).pushNamed(Inspector.routeName);
+        //       },
+        //     ),
+        //     IconButton(
+        //       icon: Icon(Icons.bungalow_rounded),
+        //       onPressed: () {
+        //         // Navigator.of(context).pushNamed(Inspector.routeName);
+        //       },
+        //     ),
+        //   ],
+        //   child: child,
+        // );
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(

@@ -7,12 +7,14 @@ final class DraggableButtonController extends ChangeNotifier {
   double _xPos = 0.0;
   double _yPos = 600.0;
   bool _isCollapsed = false;
+  bool _isActionsCollapsed = false;
   Timer? _collapseTimer;
   bool _inLoggerPage = false;
 
   double get xPos => _xPos;
   double get yPos => _yPos;
   bool get isCollapsed => _isCollapsed;
+  bool get isActionsCollapsed => _isActionsCollapsed;
   Timer? get collapseTimer => _collapseTimer;
   bool get inLoggerPage => _inLoggerPage;
 
@@ -20,6 +22,7 @@ final class DraggableButtonController extends ChangeNotifier {
     cancelAutoCollapseTimer();
     _collapseTimer = Timer(const Duration(seconds: 5), () {
       _isCollapsed = true;
+      _isActionsCollapsed = true;
       notifyListeners();
     });
   }
@@ -43,6 +46,11 @@ final class DraggableButtonController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setIsActionsCollapsed(bool isActionsCollapsed) {
+    _isActionsCollapsed = isActionsCollapsed;
+    notifyListeners();
+  }
+
   void setInLoggerPage(bool inLoggerPage) {
     _inLoggerPage = inLoggerPage;
     notifyListeners();
@@ -52,6 +60,7 @@ final class DraggableButtonController extends ChangeNotifier {
     _xPos = 0.0;
     _yPos = 600.0;
     _isCollapsed = false;
+    _isActionsCollapsed = false;
     _collapseTimer = null;
     _inLoggerPage = false;
     notifyListeners();
