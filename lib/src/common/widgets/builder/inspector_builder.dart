@@ -9,7 +9,7 @@ import 'performance_overlay_builder.dart';
 
 class ISpectWrapper extends StatelessWidget {
   final ISpectOptions options;
-
+  final bool isPanelVisible;
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
 
@@ -18,6 +18,7 @@ class ISpectWrapper extends StatelessWidget {
     required this.options,
     required this.child,
     required this.navigatorKey,
+    this.isPanelVisible = false,
   });
 
   @override
@@ -28,19 +29,14 @@ class ISpectWrapper extends StatelessWidget {
       builder: (BuildContext context, Widget? child) {
         /// Add inspector to the widget tree
         child = Inspector(
-          isPanelVisible: options.controller.isInspectorEnabled,
+          options: options,
+          navigatorKey: navigatorKey,
+          isPanelVisible: isPanelVisible,
           backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onBackground,
           selectedTextColor: theme.colorScheme.onBackground,
           child: child ?? const SizedBox(),
-        );
-
-        /// Add draggable button to the widget tree
-        child = DraggableButton(
-          navigatorKey: navigatorKey,
-          options: options,
-          child: child,
         );
 
         /// Add performance overlay to the widget tree

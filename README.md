@@ -48,7 +48,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.0.1
+  ispect: ^1.0.2
 ```
 
 ### Add import package
@@ -63,7 +63,7 @@ Simple example of use `ISpect`<br>
 Put this code in your project at an screen and learn how it works 😊
 
 <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
-  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/usage.gif?raw=true"
+  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/preview_usage.gif?raw=true"
   alt="ISpect's example" width="250" style="margin-right: 10px;"/>
 </div>
 
@@ -133,6 +133,7 @@ class _AppState extends State<App> {
         child = ISpectWrapper(
           navigatorKey: navigatorKey,
           options: options,
+          isPanelVisible: true,
           child: child,
         );
 

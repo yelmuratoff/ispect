@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/adjust_color.dart';
 
 import '../controllers/draggable_button_controller.dart';
 
@@ -32,7 +33,6 @@ enum InvokerState { alwaysOpened, collapsible, autoCollapse }
 class DraggableButton extends StatefulWidget {
   final Widget child;
   final InvokerState state;
-  final bool newWindowInDesktop;
   final ISpectOptions options;
   final GlobalKey<NavigatorState> navigatorKey;
 
@@ -40,8 +40,7 @@ class DraggableButton extends StatefulWidget {
     required this.child,
     required this.navigatorKey,
     super.key,
-    this.state = InvokerState.autoCollapse,
-    this.newWindowInDesktop = true,
+    this.state = InvokerState.collapsible,
     required this.options,
   });
 
@@ -182,45 +181,86 @@ class _ButtonView extends StatelessWidget {
     return Stack(
       children: [
         child,
-        Positioned(
-          top: yPos,
-          left: (xPos < 50) ? xPos + 5 : null,
-          right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
-          child: TapRegion(
-            onTapOutside: (event) {
-              onTap.call();
-            },
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                onPanUpdate.call(details);
-              },
-              onPanEnd: (details) {
-                onPanEnd.call(details);
-              },
-              onTap: () {
-                onButtonTap.call();
-              },
-              child: AnimatedContainer(
-                width: isCollapsed ? 50 * 0.2 : 50,
-                height: 50,
-                duration: const Duration(milliseconds: 300),
-                decoration: BoxDecoration(
-                  color: context.ispectTheme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
+        TapRegion(
+          onTapOutside: (event) {
+            onTap.call();
+          },
+          child: Stack(
+            children: [
+              Positioned(
+                top: yPos,
+                left: (xPos < 50) ? xPos + 5 : null,
+                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 50,
+                  width: isCollapsed ? 50 * 0.2 : 50 * 5,
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: adjustColorDarken(context.ispectTheme.colorScheme.primaryContainer, 0.3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: xPos < 50,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.format_shapes_rounded),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.colorize_rounded),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.zoom_in_rounded),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt_rounded),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
                 ),
-                child: !isCollapsed
-                    ? inLoggerPage
-                        ? const Icon(
-                            Icons.undo_rounded,
-                            color: Colors.white,
-                          )
-                        : const Icon(
-                            Icons.monitor_heart,
-                            color: Colors.white,
-                          )
-                    : null,
               ),
-            ),
+              Positioned(
+                top: yPos,
+                left: (xPos < 50) ? xPos + 5 : null,
+                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    onPanUpdate.call(details);
+                  },
+                  onPanEnd: (details) {
+                    onPanEnd.call(details);
+                  },
+                  onTap: () {
+                    onButtonTap.call();
+                  },
+                  child: AnimatedContainer(
+                    width: isCollapsed ? 50 * 0.2 : 50,
+                    height: 50,
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      color: context.ispectTheme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: !isCollapsed
+                        ? inLoggerPage
+                            ? const Icon(
+                                Icons.undo_rounded,
+                                color: Colors.white,
+                              )
+                            : const Icon(
+                                Icons.monitor_heart,
+                                color: Colors.white,
+                              )
+                        : null,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
