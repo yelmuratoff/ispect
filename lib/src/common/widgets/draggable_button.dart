@@ -33,7 +33,6 @@ enum InvokerState { alwaysOpened, collapsible, autoCollapse }
 class DraggableButton extends StatefulWidget {
   final Widget child;
   final InvokerState state;
-  final bool newWindowInDesktop;
   final ISpectOptions options;
   final GlobalKey<NavigatorState> navigatorKey;
 
@@ -42,7 +41,6 @@ class DraggableButton extends StatefulWidget {
     required this.navigatorKey,
     super.key,
     this.state = InvokerState.collapsible,
-    this.newWindowInDesktop = true,
     required this.options,
   });
 

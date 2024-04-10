@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect/src/common/utils/ispect_options.dart';
 
 import './widgets/panel/inspector_panel.dart';
 import 'keyboard_handler.dart';
@@ -43,6 +44,8 @@ class Inspector extends StatefulWidget {
   const Inspector({
     super.key,
     required this.child,
+    required this.navigatorKey,
+    required this.options,
     this.backgroundColor,
     this.textColor,
     this.selectedColor,
@@ -87,6 +90,8 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
+  final GlobalKey<NavigatorState> navigatorKey;
+  final ISpectOptions options;
 
   static InspectorState of(BuildContext context) {
     final InspectorState? result = maybeOf(context);
@@ -537,10 +542,8 @@ class InspectorState extends State<Inspector> {
                 onZoomStateChanged: _onZoomStateChanged,
                 isColorPickerLoading: _byteDataStateNotifier.value == null && _colorPickerStateNotifier.value,
                 isZoomLoading: _byteDataStateNotifier.value == null && _zoomStateNotifier.value,
-                backgroundColor: widget.backgroundColor,
-                textColor: widget.textColor,
-                selectedColor: widget.selectedColor,
-                selectedTextColor: widget.selectedTextColor,
+                navigatorKey: widget.navigatorKey,
+                options: widget.options,
               ),
             ),
           ),

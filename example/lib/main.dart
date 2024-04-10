@@ -59,6 +59,7 @@ class _AppState extends State<App> {
         child = ISpectWrapper(
           navigatorKey: navigatorKey,
           options: options,
+          isPanelVisible: true,
           child: child,
         );
 

@@ -2,7 +2,6 @@ import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
-import 'package:ispect/src/common/widgets/draggable_panel.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 
@@ -10,7 +9,7 @@ import 'performance_overlay_builder.dart';
 
 class ISpectWrapper extends StatelessWidget {
   final ISpectOptions options;
-
+  final bool isPanelVisible;
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
 
@@ -19,6 +18,7 @@ class ISpectWrapper extends StatelessWidget {
     required this.options,
     required this.child,
     required this.navigatorKey,
+    this.isPanelVisible = false,
   });
 
   @override
@@ -29,44 +29,15 @@ class ISpectWrapper extends StatelessWidget {
       builder: (BuildContext context, Widget? child) {
         /// Add inspector to the widget tree
         child = Inspector(
-          isPanelVisible: options.controller.isInspectorEnabled,
+          options: options,
+          navigatorKey: navigatorKey,
+          isPanelVisible: isPanelVisible,
           backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onBackground,
           selectedTextColor: theme.colorScheme.onBackground,
           child: child ?? const SizedBox(),
         );
-
-        /// Add draggable button to the widget tree
-        child = DraggableButton(
-          navigatorKey: navigatorKey,
-          options: options,
-          child: child,
-        );
-
-        // child = DraggableButtonPanel(
-        //   options: [
-        //     IconButton(
-        //       icon: Icon(Icons.bug_report),
-        //       onPressed: () {
-        //         // Navigator.of(context).pushNamed(Inspector.routeName);
-        //       },
-        //     ),
-        //     IconButton(
-        //       icon: Icon(Icons.build_circle),
-        //       onPressed: () {
-        //         // Navigator.of(context).pushNamed(Inspector.routeName);
-        //       },
-        //     ),
-        //     IconButton(
-        //       icon: Icon(Icons.bungalow_rounded),
-        //       onPressed: () {
-        //         // Navigator.of(context).pushNamed(Inspector.routeName);
-        //       },
-        //     ),
-        //   ],
-        //   child: child,
-        // );
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(

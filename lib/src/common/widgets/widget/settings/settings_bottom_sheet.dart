@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member, implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
@@ -89,17 +90,6 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
           widget.talker.notifyListeners();
         },
       ),
-      TalkerSettingsCardItem(
-        talkerScreenTheme: widget.talkerScreenTheme,
-        title: widget.options.controller.isInspectorEnabled ? context.ispectL10n.turn_off_inspector : context.ispectL10n.turn_on_inspector,
-        backgroundColor: widget.talkerScreenTheme.cardColor,
-        enabled: widget.options.controller.isInspectorEnabled,
-        onChanged: (enabled) {
-          widget.options.controller.toggleInspector();
-          setState(() {});
-          widget.talker.notifyListeners();
-        },
-      ),
     ];
 
     return BaseBottomSheet(
@@ -108,7 +98,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
       child: Expanded(
         child: CustomScrollView(
           slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            const SliverToBoxAdapter(child: Gap(16)),
             ...settings.map((e) => SliverToBoxAdapter(child: e)),
           ],
         ),
