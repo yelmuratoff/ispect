@@ -1,7 +1,7 @@
 {
    "@@locale": "ru",
-   "change_theme": "Сменить тему",
-   "talker_type_debug": "Подробные и отладочные",
+   "changeTheme": "Сменить тему",
+   "talkerTypeDebug": "Подробные и отладочные",
    "talker_type_debug_count": "Количество подробных и отладочных записей: {text}",
    "@talker_type_debug_count": {
       "placeholders": {

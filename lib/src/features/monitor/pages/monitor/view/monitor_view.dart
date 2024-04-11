@@ -286,13 +286,13 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: verboseDebug,
-                    title: context.ispectL10n.talker_type_debug,
+                    title: context.ispectL10n.talkerTypeDebug,
                     color: theme.logColors.getByType(TalkerLogType.verbose),
                     icon: Icons.remove_red_eye_outlined,
                     subtitle: context.ispectL10n.talker_type_debug_count(verboseDebug.length),
                     onTap: () => openTypedLogsPage(
                       verboseDebug,
-                      context.ispectL10n.talker_type_debug,
+                      context.ispectL10n.talkerTypeDebug,
                     ),
                   ),
                 ),

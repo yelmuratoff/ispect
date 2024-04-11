@@ -5,10 +5,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   ISpectGeneratedLocalizationRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get change_theme => 'Сменить тему';
+  String get changeTheme => 'Сменить тему';
 
   @override
-  String get talker_type_debug => 'Подробные и отладочные';
+  String get talkerTypeDebug => 'Подробные и отладочные';
 
   @override
   String talker_type_debug_count(Object text) {

@@ -1,6 +1,6 @@
 name: ispect
-description: "Wrapper around Inspector, Talker and etc."
-version: 1.0.2
+description: "Wrapper around Inspector, Talker and etc. This package was not created as something unique, it is a set of good tools from the expanse of pub.dev and my kind of implementation of all this for future projects"
+version: 1.0.4
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 

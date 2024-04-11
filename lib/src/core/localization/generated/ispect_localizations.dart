@@ -93,17 +93,17 @@ abstract class ISpectGeneratedLocalization {
     Locale('ru')
   ];
 
-  /// No description provided for @change_theme.
+  /// No description provided for @changeTheme.
   ///
   /// In en, this message translates to:
   /// **'Change theme'**
-  String get change_theme;
+  String get changeTheme;
 
-  /// No description provided for @talker_type_debug.
+  /// No description provided for @talkerTypeDebug.
   ///
   /// In en, this message translates to:
   /// **'Verbose & debug'**
-  String get talker_type_debug;
+  String get talkerTypeDebug;
 
   /// No description provided for @talker_type_debug_count.
   ///

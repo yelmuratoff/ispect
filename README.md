@@ -32,11 +32,10 @@ This package was not created as something unique, it is a set of good tools from
 
 ## 📌 Features
 
-- ✅ Draggable button for route to ISpect page
+- ✅ Draggable button for route to ISpect page, manage Inspector tools
 - ✅ Localizations: ru, en. (I will add more translations in the future.)
 - ✅ Talker logger implementation
 - ✅ Feedback
-- ✅ Inspector
 - ✅ Debug tools
 - ✅ Cache manager
 - ✅ Device and app info
@@ -48,7 +47,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.0.2
+  ispect: ^1.0.4
 ```
 
 ### Add import package
@@ -60,7 +59,8 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 ## Easy to use
 Simple example of use `ISpect`<br>
-Put this code in your project at an screen and learn how it works 😊
+You can manage ISpect using `ISpect.read(context)`.
+Put this code in your project at an screen and learn how it works. 😊
 
 <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
   <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/preview_usage.gif?raw=true"
@@ -83,7 +83,9 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   final talker = TalkerFlutter.init();
-  talker.debug('Hello World!');
+
+  /// Use global variable [talkerWrapper] for logging.
+  talkerWrapper.debug('Hello World!');
   talkerWrapper.initHandling(talker: talker);
   runApp(App(talker: talker));
 }
@@ -97,8 +99,6 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final ISpectController controller = ISpectController();
-
   @override
   void initState() {
     super.initState();
@@ -117,29 +117,33 @@ class _AppState extends State<App> {
         ),
       ),
       locale: const Locale('en'),
-      controller: controller,
     );
 
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      navigatorObservers: [
-        TalkerRouteObserver(widget.talker),
-      ],
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
-      theme: ThemeData.light(),
-      darkTheme: options.darkTheme,
-      themeMode: ThemeMode.dark,
-      builder: (context, child) {
-        child = ISpectWrapper(
-          navigatorKey: navigatorKey,
-          options: options,
-          isPanelVisible: true,
-          child: child,
-        );
+    /// It is necessary to wrap `MaterialApp` with `ISpectScopeWrapper`.
+    return ISpectScopeWrapper(
+      options: options,
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        navigatorObservers: [
+          TalkerRouteObserver(widget.talker),
+        ],
 
-        return child;
-      },
-      home: const _Home(),
+        /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
+        localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
+        theme: options.lightTheme,
+        darkTheme: options.darkTheme,
+        themeMode: options.themeMode,
+        builder: (context, child) {
+          /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
+          child = ISpectBuilder(
+            navigatorKey: navigatorKey,
+            child: child,
+          );
+
+          return child;
+        },
+        home: const _Home(),
+      ),
     );
   }
 }
@@ -151,7 +155,19 @@ class _Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text(AppGeneratedLocalization.of(context).app_title),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(AppGeneratedLocalization.of(context).app_title),
+            ElevatedButton(
+              onPressed: () {
+                /// Use `ISpect` to toggle `ISpect` visibility.
+                ISpect.read(context).toggleISpect();
+              },
+              child: const Text('Toggle ISpect'),
+            ),
+          ],
+        ),
       ),
     );
   }

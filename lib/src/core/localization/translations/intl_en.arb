@@ -1,7 +1,7 @@
 {
    "@@locale": "en",
-   "change_theme": "Change theme",
-   "talker_type_debug": "Verbose & debug",
+   "changeTheme": "Change theme",
+   "talkerTypeDebug": "Verbose & debug",
    "talker_type_debug_count": "Verbose and debug logs count: {text}",
    "@talker_type_debug_count": {
       "placeholders": {

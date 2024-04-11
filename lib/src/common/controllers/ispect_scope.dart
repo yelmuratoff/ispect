@@ -21,12 +21,12 @@ class ISpectScopeModel with ChangeNotifier {
 
   ISpectOptions get options => _options;
 
-  void toggleISpectEnabled() {
+  void toggleISpect() {
     _isISpectEnabled = !_isISpectEnabled;
     notifyListeners();
   }
 
-  void togglePerformanceTrackingEnabled() {
+  void togglePerformanceTracking() {
     _isPerformanceTrackingEnabled = !_isPerformanceTrackingEnabled;
     notifyListeners();
   }

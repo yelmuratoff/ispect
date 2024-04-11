@@ -8,11 +8,11 @@ import 'package:provider/provider.dart';
 
 import 'performance_overlay_builder.dart';
 
-class ISpectWrapper extends StatelessWidget {
+class ISpectBuilder extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
 
-  const ISpectWrapper({
+  const ISpectBuilder({
     super.key,
     required this.child,
     required this.navigatorKey,
@@ -20,9 +20,8 @@ class ISpectWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isISpectEnabled = Provider.of<ISpectScopeModel>(context).isISpectEnabled;
-    final isPerformanceTrackingEnabled = Provider.of<ISpectScopeModel>(context).isPerformanceTrackingEnabled;
-    final options = Provider.of<ISpectScopeModel>(context).options;
+    final ispectModel = ISpect.watch(context);
+
     final theme = Theme.of(context);
     return Consumer<ISpectScopeModel>(
       builder: (
@@ -32,9 +31,9 @@ class ISpectWrapper extends StatelessWidget {
       ) {
         /// Add inspector to the widget tree
         child = Inspector(
-          options: options,
+          options: ispectModel.options,
           navigatorKey: navigatorKey,
-          isPanelVisible: isISpectEnabled,
+          isPanelVisible: ispectModel.isISpectEnabled,
           backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onBackground,
@@ -44,22 +43,22 @@ class ISpectWrapper extends StatelessWidget {
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled: isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
 
         /// Add feedback button to the widget tree
         child = BetterFeedback(
-          themeMode: options.themeMode,
+          themeMode: ispectModel.options.themeMode,
           localizationsDelegates: ISpectLocalization.localizationDelegates,
-          localeOverride: options.locale,
+          localeOverride: ispectModel.options.locale,
           theme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor: options.lightTheme.colorScheme.surface,
-            activeFeedbackModeColor: options.lightTheme.colorScheme.primary,
-            cardColor: options.lightTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle: options.lightTheme.textTheme.bodyMedium!.copyWith(
+            feedbackSheetColor: ispectModel.options.lightTheme.colorScheme.surface,
+            activeFeedbackModeColor: ispectModel.options.lightTheme.colorScheme.primary,
+            cardColor: ispectModel.options.lightTheme.scaffoldBackgroundColor,
+            bottomSheetDescriptionStyle: ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[800],
             ),
             dragHandleColor: Colors.grey[400],
@@ -68,10 +67,10 @@ class ISpectWrapper extends StatelessWidget {
           ),
           darkTheme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor: options.darkTheme.colorScheme.surface,
-            activeFeedbackModeColor: options.darkTheme.colorScheme.primary,
-            cardColor: options.darkTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle: options.lightTheme.textTheme.bodyMedium!.copyWith(
+            feedbackSheetColor: ispectModel.options.darkTheme.colorScheme.surface,
+            activeFeedbackModeColor: ispectModel.options.darkTheme.colorScheme.primary,
+            cardColor: ispectModel.options.darkTheme.scaffoldBackgroundColor,
+            bottomSheetDescriptionStyle: ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[300],
             ),
             dragHandleColor: Colors.grey[400],
@@ -92,9 +91,5 @@ class ISpectWrapper extends StatelessWidget {
       },
       child: child,
     );
-  }
-
-  static ISpectScopeModel provideOnce(BuildContext context) {
-    return Provider.of<ISpectScopeModel>(context, listen: false);
   }
 }

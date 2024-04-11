@@ -1,5 +1,3 @@
-// ignore_for_file: depend_on_referenced_packages
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
@@ -9,7 +7,9 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   final talker = TalkerFlutter.init();
-  talker.debug('Hello World!');
+
+  /// Use global variable [talkerWrapper] for logging.
+  talkerWrapper.debug('Hello World!');
   talkerWrapper.initHandling(talker: talker);
   runApp(App(talker: talker));
 }
@@ -43,6 +43,7 @@ class _AppState extends State<App> {
       locale: const Locale('en'),
     );
 
+    /// It is necessary to wrap `MaterialApp` with `ISpectScopeWrapper`.
     return ISpectScopeWrapper(
       options: options,
       child: MaterialApp(
@@ -50,12 +51,15 @@ class _AppState extends State<App> {
         navigatorObservers: [
           TalkerRouteObserver(widget.talker),
         ],
+
+        /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
         localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
-        theme: ThemeData.light(),
+        theme: options.lightTheme,
         darkTheme: options.darkTheme,
-        themeMode: ThemeMode.dark,
+        themeMode: options.themeMode,
         builder: (context, child) {
-          child = ISpectWrapper(
+          /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
+          child = ISpectBuilder(
             navigatorKey: navigatorKey,
             child: child,
           );
@@ -81,9 +85,10 @@ class _Home extends StatelessWidget {
             Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
-                ISpectWrapper.provideOnce(context).toggleISpectEnabled();
+                /// Use `ISpect` to toggle `ISpect` visibility.
+                ISpect.read(context).toggleISpect();
               },
-              child: const Text('Open ISpect'),
+              child: const Text('Toggle ISpect'),
             ),
           ],
         ),

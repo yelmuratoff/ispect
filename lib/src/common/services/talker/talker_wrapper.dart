@@ -33,7 +33,7 @@ final class ISpectTalker {
     Function()? onFlutterError,
   }) async {
     ISpectTalker.talker = talker;
-    info(message: 'ISpectTalker: Initialize started.');
+    info('ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         instance._talker.handle(details, details.stack);
@@ -58,11 +58,11 @@ final class ISpectTalker {
       instance._talker.handle(details, details.stack);
     };
 
-    good(message: 'ISpectTalker: Success initialized.');
+    good('ISpectTalker: Success initialized.');
   }
 
-  void log({
-    required String message,
+  void log(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
     LogLevel? level,
@@ -77,8 +77,8 @@ final class ISpectTalker {
     );
   }
 
-  void good({
-    required String message,
+  void good(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
@@ -91,8 +91,8 @@ final class ISpectTalker {
     );
   }
 
-  void route({
-    required String message,
+  void route(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
@@ -105,8 +105,8 @@ final class ISpectTalker {
     );
   }
 
-  void provider({
-    required String message,
+  void provider(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
@@ -119,8 +119,8 @@ final class ISpectTalker {
     );
   }
 
-  void debug({
-    required String message,
+  void debug(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
@@ -131,8 +131,8 @@ final class ISpectTalker {
     );
   }
 
-  void info({
-    required String message,
+  void info(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
@@ -143,8 +143,8 @@ final class ISpectTalker {
     );
   }
 
-  void warning({
-    required String message,
+  void warning(
+    String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {

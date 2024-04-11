@@ -5,10 +5,10 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   ISpectGeneratedLocalizationEn([String locale = 'en']) : super(locale);
 
   @override
-  String get change_theme => 'Change theme';
+  String get changeTheme => 'Change theme';
 
   @override
-  String get talker_type_debug => 'Verbose & debug';
+  String get talkerTypeDebug => 'Verbose & debug';
 
   @override
   String talker_type_debug_count(Object text) {
