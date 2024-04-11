@@ -6,10 +6,14 @@
 </p>
 </div>
 
-<h2 align="center"> Wrapper around Inspector, Talker and etc 🚀 </h2>
+<h2 align="center"> A package combining Inspector, Talker, and more from pub.dev for efficient project implementation. 🚀 </h2>
 
 <p align="center">
-This package was not created as something unique, it is a set of good tools from the expanse of pub.dev and my kind of implementation of all this for future projects, I decided to share it, maybe it will be useful to someone. I will improve, add along with the growth of the main packages used, and maybe add new functions. 😊
+This package is not meant to be a groundbreaking innovation but rather a curated collection of high-quality tools from pub.dev, tailored for my future projects. I've decided to share it with the community in hopes it might be of use to others. It combines time-tested utilities and my personal enhancements aimed at improving project efficiency and adaptability.
+
+As the underlying packages evolve, I plan to update and enhance this package, possibly adding new features based on community feedback and emerging needs. This package is meant to be a dynamic toolset that grows and improves over time, facilitating smoother development processes for Flutter developers.
+
+Your feedback is highly valued as it will help shape future updates and ensure the package remains relevant and useful. 😊
 
 
    <br>
@@ -34,7 +38,7 @@ This package was not created as something unique, it is a set of good tools from
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
 - ✅ Localizations: ru, en. (I will add more translations in the future.)
-- ✅ Talker logger implementation
+- ✅ Talker logger implementation: BLoC, Dio, Routing, Provider
 - ✅ Feedback
 - ✅ Debug tools
 - ✅ Cache manager
