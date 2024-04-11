@@ -6,6 +6,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/settings/settings_card.dart';
+import 'package:provider/provider.dart';
 
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -39,6 +40,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
 
   @override
   Widget build(BuildContext context) {
+    final scopedModel = Provider.of<ISpectScopeModel>(context);
     final settings = <Widget>[
       TalkerSettingsCardItem(
         talkerScreenTheme: widget.talkerScreenTheme,
@@ -84,10 +86,9 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
         talkerScreenTheme: widget.talkerScreenTheme,
         title: context.ispectL10n.performance_tracker,
         backgroundColor: widget.talkerScreenTheme.cardColor,
-        enabled: widget.options.controller.isPerformanceTrackingEnabled,
+        enabled: scopedModel.isPerformanceTrackingEnabled,
         onChanged: (enabled) {
-          widget.options.controller.togglePerformanceTracking();
-          widget.talker.notifyListeners();
+          scopedModel.togglePerformanceTrackingEnabled();
         },
       ),
     ];

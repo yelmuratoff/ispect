@@ -23,8 +23,6 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final ISpectController controller = ISpectController();
-
   @override
   void initState() {
     super.initState();
@@ -43,29 +41,29 @@ class _AppState extends State<App> {
         ),
       ),
       locale: const Locale('en'),
-      controller: controller,
     );
 
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      navigatorObservers: [
-        TalkerRouteObserver(widget.talker),
-      ],
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
-      theme: ThemeData.light(),
-      darkTheme: options.darkTheme,
-      themeMode: ThemeMode.dark,
-      builder: (context, child) {
-        child = ISpectWrapper(
-          navigatorKey: navigatorKey,
-          options: options,
-          isPanelVisible: true,
-          child: child,
-        );
+    return ISpectScopeWrapper(
+      options: options,
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        navigatorObservers: [
+          TalkerRouteObserver(widget.talker),
+        ],
+        localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
+        theme: ThemeData.light(),
+        darkTheme: options.darkTheme,
+        themeMode: ThemeMode.dark,
+        builder: (context, child) {
+          child = ISpectWrapper(
+            navigatorKey: navigatorKey,
+            child: child,
+          );
 
-        return child;
-      },
-      home: const _Home(),
+          return child;
+        },
+        home: const _Home(),
+      ),
     );
   }
 }
@@ -77,7 +75,18 @@ class _Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text(AppGeneratedLocalization.of(context).app_title),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(AppGeneratedLocalization.of(context).app_title),
+            ElevatedButton(
+              onPressed: () {
+                ISpectWrapper.provideOnce(context).toggleISpectEnabled();
+              },
+              child: const Text('Open ISpect'),
+            ),
+          ],
+        ),
       ),
     );
   }

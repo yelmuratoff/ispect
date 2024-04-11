@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/controllers/ispect_controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 final class ISpectOptions {
@@ -8,7 +7,6 @@ final class ISpectOptions {
   final ThemeData lightTheme;
   final ThemeData darkTheme;
   final Locale locale;
-  final ISpectController controller;
   final bool isInitialized;
 
   const ISpectOptions({
@@ -17,7 +15,6 @@ final class ISpectOptions {
     required this.lightTheme,
     required this.darkTheme,
     required this.locale,
-    required this.controller,
     this.isInitialized = false,
   });
 
@@ -27,7 +24,6 @@ final class ISpectOptions {
     ThemeData? lightTheme,
     ThemeData? darkTheme,
     Locale? locale,
-    ISpectController? controller,
     bool? isInitialized,
   }) {
     return ISpectOptions(
@@ -36,7 +32,6 @@ final class ISpectOptions {
       lightTheme: lightTheme ?? this.lightTheme,
       darkTheme: darkTheme ?? this.darkTheme,
       locale: locale ?? this.locale,
-      controller: controller ?? this.controller,
       isInitialized: isInitialized ?? this.isInitialized,
     );
   }

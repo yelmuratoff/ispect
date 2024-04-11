@@ -4,34 +4,37 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
+import 'package:provider/provider.dart';
 
 import 'performance_overlay_builder.dart';
 
 class ISpectWrapper extends StatelessWidget {
-  final ISpectOptions options;
-  final bool isPanelVisible;
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
 
   const ISpectWrapper({
     super.key,
-    required this.options,
     required this.child,
     required this.navigatorKey,
-    this.isPanelVisible = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = options.themeMode == ThemeMode.light ? options.lightTheme : options.darkTheme;
-    return AnimatedBuilder(
-      animation: options.controller,
-      builder: (BuildContext context, Widget? child) {
+    final isISpectEnabled = Provider.of<ISpectScopeModel>(context).isISpectEnabled;
+    final isPerformanceTrackingEnabled = Provider.of<ISpectScopeModel>(context).isPerformanceTrackingEnabled;
+    final options = Provider.of<ISpectScopeModel>(context).options;
+    final theme = Theme.of(context);
+    return Consumer<ISpectScopeModel>(
+      builder: (
+        BuildContext context,
+        ISpectScopeModel model,
+        Widget? child,
+      ) {
         /// Add inspector to the widget tree
         child = Inspector(
           options: options,
           navigatorKey: navigatorKey,
-          isPanelVisible: isPanelVisible,
+          isPanelVisible: isISpectEnabled,
           backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onBackground,
@@ -41,7 +44,7 @@ class ISpectWrapper extends StatelessWidget {
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled: options.controller.isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled: isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
@@ -89,5 +92,9 @@ class ISpectWrapper extends StatelessWidget {
       },
       child: child,
     );
+  }
+
+  static ISpectScopeModel provideOnce(BuildContext context) {
+    return Provider.of<ISpectScopeModel>(context, listen: false);
   }
 }

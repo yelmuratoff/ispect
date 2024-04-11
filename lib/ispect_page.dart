@@ -27,7 +27,11 @@ class ISpectPage extends StatelessWidget {
   final ISpectOptions options;
 
   @override
-  Widget build(BuildContext context) => _View(talker: options.talker, appBarTitle: appBarTitle, options: options);
+  Widget build(BuildContext context) => _View(
+        talker: options.talker,
+        appBarTitle: appBarTitle,
+        options: options,
+      );
 }
 
 class _View extends StatelessWidget {

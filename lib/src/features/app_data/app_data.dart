@@ -59,7 +59,10 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
             cache: defaultCacheManager,
             isAndroid: context.ispectTheme.platform == TargetPlatform.android,
           );
-          updateCacheSize();
+          await updateCacheSize();
+          if (context.mounted) {
+            await _controller.loadFilesList(context: context, talker: widget.talker);
+          }
           if (context.mounted) {
             await ISpectToaster.showSuccessToast(
               context,
@@ -85,7 +88,7 @@ mixin CacheMixin on State<AppDataPage> {
     updateCacheSize();
   }
 
-  void updateCacheSize() async {
+  Future<void> updateCacheSize() async {
     final cacheSize = await cacheManager.getTotalCacheSize();
     cacheSizeNotifier.value = cacheSize;
   }
