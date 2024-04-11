@@ -11,96 +11,96 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Verbose & debug';
 
   @override
-  String talker_type_debug_count(Object text) {
+  String talkerTypeDebugCount(Object text) {
     return 'Verbose and debug logs count: $text';
   }
 
   @override
-  String get talker_type_good => 'Good';
+  String get talkerTypeGood => 'Good';
 
   @override
-  String talker_type_good_count(Object text) {
+  String talkerTypeGoodCount(Object text) {
     return 'Good logs count: $text';
   }
 
   @override
-  String get talker_type_provider => 'Providers';
+  String get talkerTypeProvider => 'Providers';
 
   @override
-  String talker_type_provider_count(Object text) {
+  String talkerTypeProviderCount(Object text) {
     return 'Provider logs count: $text';
   }
 
   @override
-  String get talker_type_info => 'Info';
+  String get talkerTypeInfo => 'Info';
 
   @override
-  String talker_type_info_count(Object text) {
+  String talkerTypeInfoCount(Object text) {
     return 'Info logs count: $text';
   }
 
   @override
-  String get talker_type_warnings => 'Warnings';
+  String get talkerTypeWarnings => 'Warnings';
 
   @override
-  String talker_type_warnings_count(Object text) {
+  String talkerTypeWarningsCount(Object text) {
     return 'Warning logs count: $text';
   }
 
   @override
-  String get talker_type_exceptions => 'Exceptions';
+  String get talkerTypeExceptions => 'Exceptions';
 
   @override
-  String talker_type_exceptions_count(Object text) {
+  String talkerTypeExceptionsCount(Object text) {
     return 'Exception logs count: $text';
   }
 
   @override
-  String get talker_type_errors => 'Errors';
+  String get talkerTypeErrors => 'Errors';
 
   @override
-  String talker_type_errors_count(Object text) {
+  String talkerTypeErrorsCount(Object text) {
     return 'Error logs count: $text';
   }
 
   @override
-  String get talker_type_http => 'HTTP requests';
+  String get talkerTypeHttp => 'HTTP requests';
 
   @override
-  String talker_http_requests_count(Object text) {
+  String talkerHttpRequestsCount(Object text) {
     return 'HTTP request logs count: $text';
   }
 
   @override
-  String talker_http_responses_count(Object text) {
+  String talkerHttpResponsesCount(Object text) {
     return 'HTTP response logs count: $text';
   }
 
   @override
-  String talker_http_failues_count(Object text) {
+  String talkerHttpFailuresCount(Object text) {
     return 'HTTP failure logs count: $text';
   }
 
   @override
-  String get talker_type_bloc => 'BLoC';
+  String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talker_bloc_transition_count(Object text) {
+  String talkerBlocTransitionCount(Object text) {
     return 'BLoC transitions count: $text';
   }
 
   @override
-  String talker_bloc_events_count(Object text) {
+  String talkerBlocEventsCount(Object text) {
     return 'BLoC events count: $text';
   }
 
   @override
-  String talker_bloc_close_count(Object text) {
+  String talkerBlocClosesCount(Object text) {
     return 'BLoC closes count: $text';
   }
 
   @override
-  String talker_bloc_create_count(Object text) {
+  String talkerBlocCreatesCount(Object text) {
     return 'BLoC creates count: $text';
   }
 
@@ -108,37 +108,37 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get actions => 'Actions';
 
   @override
-  String get reverse_logs => 'Reverse logs';
+  String get reverseLogs => 'Reverse logs';
 
   @override
-  String get copy_all_logs => 'Copy all logs';
+  String get copyAllLogs => 'Copy all logs';
 
   @override
-  String get collapse_logs => 'Collapse logs';
+  String get collapseLogs => 'Collapse logs';
 
   @override
-  String get expand_logs => 'Expand logs';
+  String get expandLogs => 'Expand logs';
 
   @override
-  String get clean_history => 'Clean history';
+  String get cleanHistory => 'Clean history';
 
   @override
-  String get share_logs_file => 'Share logs file';
+  String get shareLogsFile => 'Share logs file';
 
   @override
-  String get log_item_copied => 'Log item is copied in clipboard';
+  String get logItemCopied => 'Log item is copied in clipboard';
 
   @override
-  String get basic_settings => 'Basic settings';
+  String get basicSettings => 'Basic settings';
 
   @override
   String get enabled => 'Enabled';
 
   @override
-  String get use_console_logs => 'Use console logs';
+  String get useConsoleLogs => 'Use console logs';
 
   @override
-  String get use_history => 'Use history';
+  String get useHistory => 'Use history';
 
   @override
   String get settings => 'Settings';
@@ -147,62 +147,62 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get search => 'Search';
 
   @override
-  String get all_logs_copied => 'All logs copied in buffer';
+  String get allLogsCopied => 'All logs copied in buffer';
 
   @override
-  String get page_not_found => 'Oops, the page on this path';
+  String get pageNotFound => 'Oops, the page on this path';
 
   @override
-  String get not_found => 'not found';
+  String get notFound => 'not found';
 
   @override
-  String get back_to_home => 'Go back to the main page';
+  String get backToHome => 'Go back to the main page';
 
   @override
   String get fix => 'Report';
 
   @override
-  String get clear_cache => 'Clear cache';
+  String get clearCache => 'Clear cache';
 
   @override
-  String get cache_cleared => 'Cache cleared';
+  String get cacheCleared => 'Cache cleared';
 
   @override
-  String get error_cache_clearing => 'Error on clearing cache';
+  String get errorCacheClearing => 'Error on clearing cache';
 
   @override
-  String get app_version => 'App version';
+  String get appVersion => 'App version';
 
   @override
-  String get build_version => 'Build version';
+  String get buildVersion => 'Build version';
 
   @override
-  String get change_environment => 'Change current environment';
+  String get changeEnvironment => 'Change current environment';
 
   @override
-  String get go_to_logger => 'Go to logger';
+  String get goToLogger => 'Go to logger';
 
   @override
-  String environment_tap_number(Object number) {
+  String environmentTapNumber(Object number) {
     return 'To open the dialog, it remains: $number';
   }
 
   @override
-  String counter_times_text(Object number) {
+  String counterTimesText(Object number) {
     return 'You have pushed the button this many times: $number';
   }
 
   @override
-  String get performance_tracker => 'Performance tracking';
+  String get performanceTracker => 'Performance tracking';
 
   @override
   String get login => 'Login';
 
   @override
-  String get initialization_failed => 'Initialization failed';
+  String get initializationFailed => 'Initialization failed';
 
   @override
-  String get error_type => 'Error type';
+  String get errorType => 'Error type';
 
   @override
   String get retry => 'Retry';
@@ -211,36 +211,36 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get logout => 'Log Out';
 
   @override
-  String get you_already_in_logger => 'You are already in the logger page';
+  String get youAlreadyInLogger => 'You are already in the logger page';
 
   @override
-  String get turn_on_inspector => 'Turn on inspector';
+  String get turnOnInspector => 'Turn on inspector';
 
   @override
-  String get turn_off_inspector => 'Turn off inspector';
+  String get turnOffInspector => 'Turn off inspector';
 
   @override
-  String get view_and_manage_data => 'Viewing and managing application data';
+  String get viewAndManageData => 'Viewing and managing application data';
 
   @override
-  String get app_data => 'App data';
+  String get appData => 'App data';
 
   @override
-  String total_files_count(Object number) {
+  String totalFilesCount(Object number) {
     return 'Total files count: $number';
   }
 
   @override
-  String get app_info => 'Check device info & package info';
+  String get appInfo => 'Check device info & package info';
 
   @override
-  String get copied_to_clipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Copied to clipboard';
 
   @override
   String get copy => 'Copy';
 
   @override
-  String cache_size(Object size) {
+  String cacheSize(Object size) {
     return 'Cache size: $size';
   }
 }

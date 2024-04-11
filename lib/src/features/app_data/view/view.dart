@@ -35,7 +35,7 @@ class _AppDataView extends StatelessWidget {
                     ValueListenableBuilder(
                       valueListenable: cacheSizeNotifier,
                       builder: (context, cacheSize, child) => AutoSizeText(
-                        context.ispectL10n.cache_size(cacheSize),
+                        context.ispectL10n.cacheSize(cacheSize),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
@@ -48,7 +48,7 @@ class _AppDataView extends StatelessWidget {
                     if (cacheSizeNotifier.value != "0.00 B")
                       ElevatedButton(
                         onPressed: clearCache,
-                        child: Text(context.ispectL10n.clear_cache),
+                        child: Text(context.ispectL10n.clearCache),
                       ),
                   ],
                 ),
@@ -63,14 +63,14 @@ class _AppDataView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          context.ispectL10n.app_data,
+                          context.ispectL10n.appData,
                           style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
                         Text(
-                          context.ispectL10n.total_files_count(controller.files.length),
+                          context.ispectL10n.totalFilesCount(controller.files.length),
                           style: context.ispectTheme.textTheme.bodyMedium,
                         ),
                       ],

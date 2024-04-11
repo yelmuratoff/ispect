@@ -11,134 +11,134 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Подробные и отладочные';
 
   @override
-  String talker_type_debug_count(Object text) {
+  String talkerTypeDebugCount(Object text) {
     return 'Количество подробных и отладочных записей: $text';
   }
 
   @override
-  String get talker_type_good => 'Хорошие';
+  String get talkerTypeGood => 'Хорошие';
 
   @override
-  String talker_type_good_count(Object text) {
+  String talkerTypeGoodCount(Object text) {
     return 'Количество хороших записей: $text';
   }
 
   @override
-  String get talker_type_provider => 'Провайдеры';
+  String get talkerTypeProvider => 'Провайдеры';
 
   @override
-  String talker_type_provider_count(Object text) {
+  String talkerTypeProviderCount(Object text) {
     return 'Количество записей провайдеров: $text';
   }
 
   @override
-  String get talker_type_info => 'Информация';
+  String get talkerTypeInfo => 'Информация';
 
   @override
-  String talker_type_info_count(Object text) {
+  String talkerTypeInfoCount(Object text) {
     return 'Количество информационных записей: $text';
   }
 
   @override
-  String get talker_type_warnings => 'Предупреждения';
+  String get talkerTypeWarnings => 'Предупреждения';
 
   @override
-  String talker_type_warnings_count(Object text) {
+  String talkerTypeWarningsCount(Object text) {
     return 'Количество предупреждений: $text';
   }
 
   @override
-  String get talker_type_exceptions => 'Исключения';
+  String get talkerTypeExceptions => 'Исключения';
 
   @override
-  String talker_type_exceptions_count(Object text) {
+  String talkerTypeExceptionsCount(Object text) {
     return 'Количество записей исключений: $text';
   }
 
   @override
-  String get talker_type_errors => 'Ошибки';
+  String get talkerTypeErrors => 'Ошибки';
 
   @override
-  String talker_type_errors_count(Object text) {
+  String talkerTypeErrorsCount(Object text) {
     return 'Количество записей об ошибках: $text';
   }
 
   @override
-  String get talker_type_http => 'HTTP запросы';
+  String get talkerTypeHttp => 'HTTP запросы';
 
   @override
-  String talker_http_requests_count(Object text) {
+  String talkerHttpRequestsCount(Object text) {
     return 'Количество записей HTTP запросов: $text';
   }
 
   @override
-  String talker_http_responses_count(Object text) {
+  String talkerHttpResponsesCount(Object text) {
     return 'Количество записей HTTP ответов: $text';
   }
 
   @override
-  String talker_http_failues_count(Object text) {
+  String talkerHttpFailuresCount(Object text) {
     return 'Количество записей неудачных HTTP запросов: $text';
   }
 
   @override
-  String get talker_type_bloc => 'BLoC';
+  String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talker_bloc_transition_count(Object text) {
+  String talkerBlocTransitionCount(Object text) {
     return 'Количество переходов BLoC: $text';
   }
 
   @override
-  String talker_bloc_events_count(Object text) {
+  String talkerBlocEventsCount(Object text) {
     return 'Количество событий BLoC: $text';
   }
 
   @override
-  String talker_bloc_close_count(Object text) {
-    return 'Количество закрытий BLoC: $text';
+  String talkerBlocClosesCount(Object text) {
+    return 'BLoC closes count: $text';
   }
 
   @override
-  String talker_bloc_create_count(Object text) {
-    return 'Количество созданий BLoC: $text';
+  String talkerBlocCreatesCount(Object text) {
+    return 'BLoC creates count: $text';
   }
 
   @override
   String get actions => 'Действия';
 
   @override
-  String get reverse_logs => 'Инвертировать журнал';
+  String get reverseLogs => 'Инвертировать журнал';
 
   @override
-  String get copy_all_logs => 'Копировать все записи';
+  String get copyAllLogs => 'Копировать все записи';
 
   @override
-  String get collapse_logs => 'Свернуть журнал';
+  String get collapseLogs => 'Свернуть журнал';
 
   @override
-  String get expand_logs => 'Развернуть журнал';
+  String get expandLogs => 'Развернуть журнал';
 
   @override
-  String get clean_history => 'Очистить историю';
+  String get cleanHistory => 'Очистить историю';
 
   @override
-  String get share_logs_file => 'Поделиться файлом журнала';
+  String get shareLogsFile => 'Поделиться файлом журнала';
 
   @override
-  String get log_item_copied => 'Запись скопирована в буфер обмена';
+  String get logItemCopied => 'Запись скопирована в буфер обмена';
 
   @override
-  String get basic_settings => 'Основные настройки';
+  String get basicSettings => 'Основные настройки';
 
   @override
   String get enabled => 'Включено';
 
   @override
-  String get use_console_logs => 'Использовать запись в консоль';
+  String get useConsoleLogs => 'Использовать запись в консоль';
 
   @override
-  String get use_history => 'Использовать историю';
+  String get useHistory => 'Использовать историю';
 
   @override
   String get settings => 'Настройки';
@@ -147,62 +147,62 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get search => 'Поиск';
 
   @override
-  String get all_logs_copied => 'Все записи скопированы в буфер обмена';
+  String get allLogsCopied => 'Все записи скопированы в буфер обмена';
 
   @override
-  String get page_not_found => 'Ой, страница по этому пути';
+  String get pageNotFound => 'Ой, страница по этому пути';
 
   @override
-  String get not_found => 'не найдена';
+  String get notFound => 'не найдена';
 
   @override
-  String get back_to_home => 'Вернуться на главную страницу';
+  String get backToHome => 'Вернуться на главную страницу';
 
   @override
   String get fix => 'Сообщить';
 
   @override
-  String get clear_cache => 'Очистить кэш';
+  String get clearCache => 'Очистить кэш';
 
   @override
-  String get cache_cleared => 'Кэш очищен';
+  String get cacheCleared => 'Кэш очищен';
 
   @override
-  String get error_cache_clearing => 'Ошибка при очистке кэша';
+  String get errorCacheClearing => 'Ошибка при очистке кэша';
 
   @override
-  String get app_version => 'Версия приложения';
+  String get appVersion => 'Версия приложения';
 
   @override
-  String get build_version => 'Версия сборки';
+  String get buildVersion => 'Версия сборки';
 
   @override
-  String get change_environment => 'Сменить текущее окружение';
+  String get changeEnvironment => 'Сменить текущее окружение';
 
   @override
-  String get go_to_logger => 'Перейти к журналу';
+  String get goToLogger => 'Перейти к журналу';
 
   @override
-  String environment_tap_number(Object number) {
+  String environmentTapNumber(Object number) {
     return 'Для открытия диалога осталось: $number';
   }
 
   @override
-  String counter_times_text(Object number) {
+  String counterTimesText(Object number) {
     return 'Вы нажали кнопку столько раз: $number';
   }
 
   @override
-  String get performance_tracker => 'Отслеживание производительности';
+  String get performanceTracker => 'Отслеживание производительности';
 
   @override
   String get login => 'Вход';
 
   @override
-  String get initialization_failed => 'Ошибка инициализации';
+  String get initializationFailed => 'Ошибка инициализации';
 
   @override
-  String get error_type => 'Тип ошибки';
+  String get errorType => 'Тип ошибки';
 
   @override
   String get retry => 'Повторить';
@@ -211,36 +211,36 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get logout => 'Выйти';
 
   @override
-  String get you_already_in_logger => 'Вы уже на странице ISpect';
+  String get youAlreadyInLogger => 'Вы уже на странице ISpect';
 
   @override
-  String get turn_on_inspector => 'Включить инспектор';
+  String get turnOnInspector => 'Включить инспектор';
 
   @override
-  String get turn_off_inspector => 'Выключить инспектор';
+  String get turnOffInspector => 'Выключить инспектор';
 
   @override
-  String get view_and_manage_data => 'Просмотр и управление данными приложения';
+  String get viewAndManageData => 'Просмотр и управление данными приложения';
 
   @override
-  String get app_data => 'Данные приложения';
+  String get appData => 'Данные приложения';
 
   @override
-  String total_files_count(Object number) {
+  String totalFilesCount(Object number) {
     return 'Общее количество файлов: $number';
   }
 
   @override
-  String get app_info => 'Проверить информацию об устройстве и пакете';
+  String get appInfo => 'Проверить информацию об устройстве и пакете';
 
   @override
-  String get copied_to_clipboard => 'Скопировано в буфер обмена';
+  String get copiedToClipboard => 'Скопировано в буфер обмена';
 
   @override
   String get copy => 'Скопировать';
 
   @override
-  String cache_size(Object size) {
+  String cacheSize(Object size) {
     return 'Размер кэша: $size';
   }
 }

@@ -7,7 +7,6 @@ final class ISpectOptions {
   final ThemeData lightTheme;
   final ThemeData darkTheme;
   final Locale locale;
-  final bool isInitialized;
 
   const ISpectOptions({
     required this.talker,
@@ -15,7 +14,6 @@ final class ISpectOptions {
     required this.lightTheme,
     required this.darkTheme,
     required this.locale,
-    this.isInitialized = false,
   });
 
   ISpectOptions copyWith({
@@ -32,7 +30,6 @@ final class ISpectOptions {
       lightTheme: lightTheme ?? this.lightTheme,
       darkTheme: darkTheme ?? this.darkTheme,
       locale: locale ?? this.locale,
-      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 }

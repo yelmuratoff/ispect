@@ -46,7 +46,7 @@ class KeyValueLine extends StatelessWidget {
                   Clipboard.setData(ClipboardData(text: "$k $v"));
                   ISpectToaster.showInfoToast(
                     context,
-                    title: context.ispectL10n.copied_to_clipboard,
+                    title: context.ispectL10n.copiedToClipboard,
                   );
                 },
                 child: DecoratedBox(

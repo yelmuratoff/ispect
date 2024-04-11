@@ -54,7 +54,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         talkerScreenTheme: widget.talkerScreenTheme,
-        title: context.ispectL10n.use_console_logs,
+        title: context.ispectL10n.useConsoleLogs,
         backgroundColor: widget.talkerScreenTheme.cardColor,
         enabled: widget.talker.value.settings.useConsoleLogs,
         onChanged: (enabled) {
@@ -69,7 +69,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         talkerScreenTheme: widget.talkerScreenTheme,
-        title: context.ispectL10n.use_history,
+        title: context.ispectL10n.useHistory,
         backgroundColor: widget.talkerScreenTheme.cardColor,
         enabled: widget.talker.value.settings.useHistory,
         onChanged: (enabled) {
@@ -83,7 +83,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
       ),
       TalkerSettingsCardItem(
         talkerScreenTheme: widget.talkerScreenTheme,
-        title: context.ispectL10n.performance_tracker,
+        title: context.ispectL10n.performanceTracker,
         backgroundColor: widget.talkerScreenTheme.cardColor,
         enabled: scopedModel.isPerformanceTrackingEnabled,
         onChanged: (enabled) {

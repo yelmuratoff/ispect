@@ -105,137 +105,137 @@ abstract class ISpectGeneratedLocalization {
   /// **'Verbose & debug'**
   String get talkerTypeDebug;
 
-  /// No description provided for @talker_type_debug_count.
+  /// No description provided for @talkerTypeDebugCount.
   ///
   /// In en, this message translates to:
   /// **'Verbose and debug logs count: {text}'**
-  String talker_type_debug_count(Object text);
+  String talkerTypeDebugCount(Object text);
 
-  /// No description provided for @talker_type_good.
+  /// No description provided for @talkerTypeGood.
   ///
   /// In en, this message translates to:
   /// **'Good'**
-  String get talker_type_good;
+  String get talkerTypeGood;
 
-  /// No description provided for @talker_type_good_count.
+  /// No description provided for @talkerTypeGoodCount.
   ///
   /// In en, this message translates to:
   /// **'Good logs count: {text}'**
-  String talker_type_good_count(Object text);
+  String talkerTypeGoodCount(Object text);
 
-  /// No description provided for @talker_type_provider.
+  /// No description provided for @talkerTypeProvider.
   ///
   /// In en, this message translates to:
   /// **'Providers'**
-  String get talker_type_provider;
+  String get talkerTypeProvider;
 
-  /// No description provided for @talker_type_provider_count.
+  /// No description provided for @talkerTypeProviderCount.
   ///
   /// In en, this message translates to:
   /// **'Provider logs count: {text}'**
-  String talker_type_provider_count(Object text);
+  String talkerTypeProviderCount(Object text);
 
-  /// No description provided for @talker_type_info.
+  /// No description provided for @talkerTypeInfo.
   ///
   /// In en, this message translates to:
   /// **'Info'**
-  String get talker_type_info;
+  String get talkerTypeInfo;
 
-  /// No description provided for @talker_type_info_count.
+  /// No description provided for @talkerTypeInfoCount.
   ///
   /// In en, this message translates to:
   /// **'Info logs count: {text}'**
-  String talker_type_info_count(Object text);
+  String talkerTypeInfoCount(Object text);
 
-  /// No description provided for @talker_type_warnings.
+  /// No description provided for @talkerTypeWarnings.
   ///
   /// In en, this message translates to:
   /// **'Warnings'**
-  String get talker_type_warnings;
+  String get talkerTypeWarnings;
 
-  /// No description provided for @talker_type_warnings_count.
+  /// No description provided for @talkerTypeWarningsCount.
   ///
   /// In en, this message translates to:
   /// **'Warning logs count: {text}'**
-  String talker_type_warnings_count(Object text);
+  String talkerTypeWarningsCount(Object text);
 
-  /// No description provided for @talker_type_exceptions.
+  /// No description provided for @talkerTypeExceptions.
   ///
   /// In en, this message translates to:
   /// **'Exceptions'**
-  String get talker_type_exceptions;
+  String get talkerTypeExceptions;
 
-  /// No description provided for @talker_type_exceptions_count.
+  /// No description provided for @talkerTypeExceptionsCount.
   ///
   /// In en, this message translates to:
   /// **'Exception logs count: {text}'**
-  String talker_type_exceptions_count(Object text);
+  String talkerTypeExceptionsCount(Object text);
 
-  /// No description provided for @talker_type_errors.
+  /// No description provided for @talkerTypeErrors.
   ///
   /// In en, this message translates to:
   /// **'Errors'**
-  String get talker_type_errors;
+  String get talkerTypeErrors;
 
-  /// No description provided for @talker_type_errors_count.
+  /// No description provided for @talkerTypeErrorsCount.
   ///
   /// In en, this message translates to:
   /// **'Error logs count: {text}'**
-  String talker_type_errors_count(Object text);
+  String talkerTypeErrorsCount(Object text);
 
-  /// No description provided for @talker_type_http.
+  /// No description provided for @talkerTypeHttp.
   ///
   /// In en, this message translates to:
   /// **'HTTP requests'**
-  String get talker_type_http;
+  String get talkerTypeHttp;
 
-  /// No description provided for @talker_http_requests_count.
+  /// No description provided for @talkerHttpRequestsCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP request logs count: {text}'**
-  String talker_http_requests_count(Object text);
+  String talkerHttpRequestsCount(Object text);
 
-  /// No description provided for @talker_http_responses_count.
+  /// No description provided for @talkerHttpResponsesCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP response logs count: {text}'**
-  String talker_http_responses_count(Object text);
+  String talkerHttpResponsesCount(Object text);
 
-  /// No description provided for @talker_http_failues_count.
+  /// No description provided for @talkerHttpFailuresCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP failure logs count: {text}'**
-  String talker_http_failues_count(Object text);
+  String talkerHttpFailuresCount(Object text);
 
-  /// No description provided for @talker_type_bloc.
+  /// No description provided for @talkerTypeBloc.
   ///
   /// In en, this message translates to:
   /// **'BLoC'**
-  String get talker_type_bloc;
+  String get talkerTypeBloc;
 
-  /// No description provided for @talker_bloc_transition_count.
+  /// No description provided for @talkerBlocTransitionCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC transitions count: {text}'**
-  String talker_bloc_transition_count(Object text);
+  String talkerBlocTransitionCount(Object text);
 
-  /// No description provided for @talker_bloc_events_count.
+  /// No description provided for @talkerBlocEventsCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC events count: {text}'**
-  String talker_bloc_events_count(Object text);
+  String talkerBlocEventsCount(Object text);
 
-  /// No description provided for @talker_bloc_close_count.
+  /// No description provided for @talkerBlocClosesCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC closes count: {text}'**
-  String talker_bloc_close_count(Object text);
+  String talkerBlocClosesCount(Object text);
 
-  /// No description provided for @talker_bloc_create_count.
+  /// No description provided for @talkerBlocCreatesCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC creates count: {text}'**
-  String talker_bloc_create_count(Object text);
+  String talkerBlocCreatesCount(Object text);
 
   /// No description provided for @actions.
   ///
@@ -243,53 +243,53 @@ abstract class ISpectGeneratedLocalization {
   /// **'Actions'**
   String get actions;
 
-  /// No description provided for @reverse_logs.
+  /// No description provided for @reverseLogs.
   ///
   /// In en, this message translates to:
   /// **'Reverse logs'**
-  String get reverse_logs;
+  String get reverseLogs;
 
-  /// No description provided for @copy_all_logs.
+  /// No description provided for @copyAllLogs.
   ///
   /// In en, this message translates to:
   /// **'Copy all logs'**
-  String get copy_all_logs;
+  String get copyAllLogs;
 
-  /// No description provided for @collapse_logs.
+  /// No description provided for @collapseLogs.
   ///
   /// In en, this message translates to:
   /// **'Collapse logs'**
-  String get collapse_logs;
+  String get collapseLogs;
 
-  /// No description provided for @expand_logs.
+  /// No description provided for @expandLogs.
   ///
   /// In en, this message translates to:
   /// **'Expand logs'**
-  String get expand_logs;
+  String get expandLogs;
 
-  /// No description provided for @clean_history.
+  /// No description provided for @cleanHistory.
   ///
   /// In en, this message translates to:
   /// **'Clean history'**
-  String get clean_history;
+  String get cleanHistory;
 
-  /// No description provided for @share_logs_file.
+  /// No description provided for @shareLogsFile.
   ///
   /// In en, this message translates to:
   /// **'Share logs file'**
-  String get share_logs_file;
+  String get shareLogsFile;
 
-  /// No description provided for @log_item_copied.
+  /// No description provided for @logItemCopied.
   ///
   /// In en, this message translates to:
   /// **'Log item is copied in clipboard'**
-  String get log_item_copied;
+  String get logItemCopied;
 
-  /// No description provided for @basic_settings.
+  /// No description provided for @basicSettings.
   ///
   /// In en, this message translates to:
   /// **'Basic settings'**
-  String get basic_settings;
+  String get basicSettings;
 
   /// No description provided for @enabled.
   ///
@@ -297,17 +297,17 @@ abstract class ISpectGeneratedLocalization {
   /// **'Enabled'**
   String get enabled;
 
-  /// No description provided for @use_console_logs.
+  /// No description provided for @useConsoleLogs.
   ///
   /// In en, this message translates to:
   /// **'Use console logs'**
-  String get use_console_logs;
+  String get useConsoleLogs;
 
-  /// No description provided for @use_history.
+  /// No description provided for @useHistory.
   ///
   /// In en, this message translates to:
   /// **'Use history'**
-  String get use_history;
+  String get useHistory;
 
   /// No description provided for @settings.
   ///
@@ -321,29 +321,29 @@ abstract class ISpectGeneratedLocalization {
   /// **'Search'**
   String get search;
 
-  /// No description provided for @all_logs_copied.
+  /// No description provided for @allLogsCopied.
   ///
   /// In en, this message translates to:
   /// **'All logs copied in buffer'**
-  String get all_logs_copied;
+  String get allLogsCopied;
 
-  /// No description provided for @page_not_found.
+  /// No description provided for @pageNotFound.
   ///
   /// In en, this message translates to:
   /// **'Oops, the page on this path'**
-  String get page_not_found;
+  String get pageNotFound;
 
-  /// No description provided for @not_found.
+  /// No description provided for @notFound.
   ///
   /// In en, this message translates to:
   /// **'not found'**
-  String get not_found;
+  String get notFound;
 
-  /// No description provided for @back_to_home.
+  /// No description provided for @backToHome.
   ///
   /// In en, this message translates to:
   /// **'Go back to the main page'**
-  String get back_to_home;
+  String get backToHome;
 
   /// No description provided for @fix.
   ///
@@ -351,65 +351,65 @@ abstract class ISpectGeneratedLocalization {
   /// **'Report'**
   String get fix;
 
-  /// No description provided for @clear_cache.
+  /// No description provided for @clearCache.
   ///
   /// In en, this message translates to:
   /// **'Clear cache'**
-  String get clear_cache;
+  String get clearCache;
 
-  /// No description provided for @cache_cleared.
+  /// No description provided for @cacheCleared.
   ///
   /// In en, this message translates to:
   /// **'Cache cleared'**
-  String get cache_cleared;
+  String get cacheCleared;
 
-  /// No description provided for @error_cache_clearing.
+  /// No description provided for @errorCacheClearing.
   ///
   /// In en, this message translates to:
   /// **'Error on clearing cache'**
-  String get error_cache_clearing;
+  String get errorCacheClearing;
 
-  /// No description provided for @app_version.
+  /// No description provided for @appVersion.
   ///
   /// In en, this message translates to:
   /// **'App version'**
-  String get app_version;
+  String get appVersion;
 
-  /// No description provided for @build_version.
+  /// No description provided for @buildVersion.
   ///
   /// In en, this message translates to:
   /// **'Build version'**
-  String get build_version;
+  String get buildVersion;
 
-  /// No description provided for @change_environment.
+  /// No description provided for @changeEnvironment.
   ///
   /// In en, this message translates to:
   /// **'Change current environment'**
-  String get change_environment;
+  String get changeEnvironment;
 
-  /// No description provided for @go_to_logger.
+  /// No description provided for @goToLogger.
   ///
   /// In en, this message translates to:
   /// **'Go to logger'**
-  String get go_to_logger;
+  String get goToLogger;
 
-  /// No description provided for @environment_tap_number.
+  /// No description provided for @environmentTapNumber.
   ///
   /// In en, this message translates to:
   /// **'To open the dialog, it remains: {number}'**
-  String environment_tap_number(Object number);
+  String environmentTapNumber(Object number);
 
-  /// No description provided for @counter_times_text.
+  /// No description provided for @counterTimesText.
   ///
   /// In en, this message translates to:
   /// **'You have pushed the button this many times: {number}'**
-  String counter_times_text(Object number);
+  String counterTimesText(Object number);
 
-  /// No description provided for @performance_tracker.
+  /// No description provided for @performanceTracker.
   ///
   /// In en, this message translates to:
   /// **'Performance tracking'**
-  String get performance_tracker;
+  String get performanceTracker;
 
   /// No description provided for @login.
   ///
@@ -417,17 +417,17 @@ abstract class ISpectGeneratedLocalization {
   /// **'Login'**
   String get login;
 
-  /// No description provided for @initialization_failed.
+  /// No description provided for @initializationFailed.
   ///
   /// In en, this message translates to:
   /// **'Initialization failed'**
-  String get initialization_failed;
+  String get initializationFailed;
 
-  /// No description provided for @error_type.
+  /// No description provided for @errorType.
   ///
   /// In en, this message translates to:
   /// **'Error type'**
-  String get error_type;
+  String get errorType;
 
   /// No description provided for @retry.
   ///
@@ -441,53 +441,53 @@ abstract class ISpectGeneratedLocalization {
   /// **'Log Out'**
   String get logout;
 
-  /// No description provided for @you_already_in_logger.
+  /// No description provided for @youAlreadyInLogger.
   ///
   /// In en, this message translates to:
   /// **'You are already in the logger page'**
-  String get you_already_in_logger;
+  String get youAlreadyInLogger;
 
-  /// No description provided for @turn_on_inspector.
+  /// No description provided for @turnOnInspector.
   ///
   /// In en, this message translates to:
   /// **'Turn on inspector'**
-  String get turn_on_inspector;
+  String get turnOnInspector;
 
-  /// No description provided for @turn_off_inspector.
+  /// No description provided for @turnOffInspector.
   ///
   /// In en, this message translates to:
   /// **'Turn off inspector'**
-  String get turn_off_inspector;
+  String get turnOffInspector;
 
-  /// No description provided for @view_and_manage_data.
+  /// No description provided for @viewAndManageData.
   ///
   /// In en, this message translates to:
   /// **'Viewing and managing application data'**
-  String get view_and_manage_data;
+  String get viewAndManageData;
 
-  /// No description provided for @app_data.
+  /// No description provided for @appData.
   ///
   /// In en, this message translates to:
   /// **'App data'**
-  String get app_data;
+  String get appData;
 
-  /// No description provided for @total_files_count.
+  /// No description provided for @totalFilesCount.
   ///
   /// In en, this message translates to:
   /// **'Total files count: {number}'**
-  String total_files_count(Object number);
+  String totalFilesCount(Object number);
 
-  /// No description provided for @app_info.
+  /// No description provided for @appInfo.
   ///
   /// In en, this message translates to:
   /// **'Check device info & package info'**
-  String get app_info;
+  String get appInfo;
 
-  /// No description provided for @copied_to_clipboard.
+  /// No description provided for @copiedToClipboard.
   ///
   /// In en, this message translates to:
   /// **'Copied to clipboard'**
-  String get copied_to_clipboard;
+  String get copiedToClipboard;
 
   /// No description provided for @copy.
   ///
@@ -495,11 +495,11 @@ abstract class ISpectGeneratedLocalization {
   /// **'Copy'**
   String get copy;
 
-  /// No description provided for @cache_size.
+  /// No description provided for @cacheSize.
   ///
   /// In en, this message translates to:
   /// **'Cache size: {size}'**
-  String cache_size(Object size);
+  String cacheSize(Object size);
 }
 
 class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocalization> {

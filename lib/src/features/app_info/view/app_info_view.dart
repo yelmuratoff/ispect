@@ -23,7 +23,7 @@ class _AppInfoView extends StatelessWidget {
                 if (context.mounted) {
                   await ISpectToaster.showInfoToast(
                     context,
-                    title: context.ispectL10n.copied_to_clipboard,
+                    title: context.ispectL10n.copiedToClipboard,
                   );
                 }
               },

@@ -175,7 +175,7 @@ class _TalkerViewState extends State<TalkerView> {
   void _copyTalkerDataItemText(TalkerData data) {
     final text = data.generateTextMessage();
     Clipboard.setData(ClipboardData(text: text));
-    _showSnackBar(context, context.ispectL10n.log_item_copied);
+    _showSnackBar(context, context.ispectL10n.logItemCopied);
   }
 
   void _showSnackBar(BuildContext context, String text) {
@@ -191,37 +191,37 @@ class _TalkerViewState extends State<TalkerView> {
         actions: [
           TalkerActionItem(
             onTap: _controller.toggleLogOrder,
-            title: context.ispectL10n.reverse_logs,
+            title: context.ispectL10n.reverseLogs,
             icon: Icons.swap_vert,
           ),
           TalkerActionItem(
             onTap: () => _copyAllLogs(context),
-            title: context.ispectL10n.copy_all_logs,
+            title: context.ispectL10n.copyAllLogs,
             icon: Icons.copy,
           ),
           TalkerActionItem(
             onTap: _toggleLogsExpanded,
-            title: _controller.expandedLogs ? context.ispectL10n.collapse_logs : context.ispectL10n.expand_logs,
+            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
             icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: _cleanHistory,
-            title: context.ispectL10n.clean_history,
+            title: context.ispectL10n.cleanHistory,
             icon: Icons.delete_outline,
           ),
           TalkerActionItem(
             onTap: _shareLogsInFile,
-            title: context.ispectL10n.share_logs_file,
+            title: context.ispectL10n.shareLogsFile,
             icon: Icons.ios_share_outlined,
           ),
           TalkerActionItem(
             onTap: _manageAppData,
-            title: context.ispectL10n.view_and_manage_data,
+            title: context.ispectL10n.viewAndManageData,
             icon: Icons.data_usage_sharp,
           ),
           TalkerActionItem(
             onTap: _checkAppInfo,
-            title: context.ispectL10n.app_info,
+            title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),
         ],
@@ -267,6 +267,6 @@ class _TalkerViewState extends State<TalkerView> {
 
   void _copyAllLogs(BuildContext context) {
     Clipboard.setData(ClipboardData(text: widget.talker.history.text));
-    _showSnackBar(context, context.ispectL10n.all_logs_copied);
+    _showSnackBar(context, context.ispectL10n.allLogsCopied);
   }
 }

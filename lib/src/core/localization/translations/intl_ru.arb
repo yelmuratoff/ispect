@@ -2,158 +2,158 @@
    "@@locale": "ru",
    "changeTheme": "Сменить тему",
    "talkerTypeDebug": "Подробные и отладочные",
-   "talker_type_debug_count": "Количество подробных и отладочных записей: {text}",
-   "@talker_type_debug_count": {
+   "talkerTypeDebugCount": "Количество подробных и отладочных записей: {text}",
+   "@talkerTypeDebugCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_good": "Хорошие",
-   "talker_type_good_count": "Количество хороших записей: {text}",
-   "@talker_type_good_count": {
+   "talkerTypeGood": "Хорошие",
+   "talkerTypeGoodCount": "Количество хороших записей: {text}",
+   "@talkerTypeGoodCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_provider": "Провайдеры",
-   "talker_type_provider_count": "Количество записей провайдеров: {text}",
-   "@talker_type_provider_count": {
+   "talkerTypeProvider": "Провайдеры",
+   "talkerTypeProviderCount": "Количество записей провайдеров: {text}",
+   "@talkerTypeProviderCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_info": "Информация",
-   "talker_type_info_count": "Количество информационных записей: {text}",
-   "@talker_type_info_count": {
+   "talkerTypeInfo": "Информация",
+   "talkerTypeInfoCount": "Количество информационных записей: {text}",
+   "@talkerTypeInfoCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_warnings": "Предупреждения",
-   "talker_type_warnings_count": "Количество предупреждений: {text}",
-   "@talker_type_warnings_count": {
+   "talkerTypeWarnings": "Предупреждения",
+   "talkerTypeWarningsCount": "Количество предупреждений: {text}",
+   "@talkerTypeWarningsCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_exceptions": "Исключения",
-   "talker_type_exceptions_count": "Количество записей исключений: {text}",
-   "@talker_type_exceptions_count": {
+   "talkerTypeExceptions": "Исключения",
+   "talkerTypeExceptionsCount": "Количество записей исключений: {text}",
+   "@talkerTypeExceptionsCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_errors": "Ошибки",
-   "talker_type_errors_count": "Количество записей об ошибках: {text}",
-   "@talker_type_errors_count": {
+   "talkerTypeErrors": "Ошибки",
+   "talkerTypeErrorsCount": "Количество записей об ошибках: {text}",
+   "@talkerTypeErrorsCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_http": "HTTP запросы",
-   "talker_http_requests_count": "Количество записей HTTP запросов: {text}",
-   "@talker_http_requests_count": {
+   "talkerTypeHttp": "HTTP запросы",
+   "talkerHttpRequestsCount": "Количество записей HTTP запросов: {text}",
+   "@talkerHttpRequestsCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_http_responses_count": "Количество записей HTTP ответов: {text}",
-   "@talker_http_responses_count": {
+   "talkerHttpResponsesCount": "Количество записей HTTP ответов: {text}",
+   "@talkerHttpResponsesCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_http_failues_count": "Количество записей неудачных HTTP запросов: {text}",
-   "@talker_http_failues_count": {
+   "talkerHttpFailuresCount": "Количество записей неудачных HTTP запросов: {text}",
+   "@talkerHttpFailuresCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_type_bloc": "BLoC",
-   "talker_bloc_transition_count": "Количество переходов BLoC: {text}",
-   "@talker_bloc_transition_count": {
+   "talkerTypeBloc": "BLoC",
+   "talkerBlocTransitionCount": "Количество переходов BLoC: {text}",
+   "@talkerBlocTransitionCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_bloc_events_count": "Количество событий BLoC: {text}",
-   "@talker_bloc_events_count": {
+   "talkerBlocEventsCount": "Количество событий BLoC: {text}",
+   "@talkerBlocEventsCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_bloc_close_count": "Количество закрытий BLoC: {text}",
-   "@talker_bloc_close_count": {
+   "talkerBlocCloseCount": "Количество закрытий BLoC: {text}",
+   "@talkerBlocCloseCount": {
       "placeholders": {
          "text": {}
       }
    },
-   "talker_bloc_create_count": "Количество созданий BLoC: {text}",
-   "@talker_bloc_create_count": {
+   "talkerBlocCreateCount": "Количество созданий BLoC: {text}",
+   "@talkerBlocCreateCount": {
       "placeholders": {
          "text": {}
       }
    },
    "actions": "Действия",
-   "reverse_logs": "Инвертировать журнал",
-   "copy_all_logs": "Копировать все записи",
-   "collapse_logs": "Свернуть журнал",
-   "expand_logs": "Развернуть журнал",
-   "clean_history": "Очистить историю",
-   "share_logs_file": "Поделиться файлом журнала",
-   "log_item_copied": "Запись скопирована в буфер обмена",
-   "basic_settings": "Основные настройки",
+   "reverseLogs": "Инвертировать журнал",
+   "copyAllLogs": "Копировать все записи",
+   "collapseLogs": "Свернуть журнал",
+   "expandLogs": "Развернуть журнал",
+   "cleanHistory": "Очистить историю",
+   "shareLogsFile": "Поделиться файлом журнала",
+   "logItemCopied": "Запись скопирована в буфер обмена",
+   "basicSettings": "Основные настройки",
    "enabled": "Включено",
-   "use_console_logs": "Использовать запись в консоль",
-   "use_history": "Использовать историю",
+   "useConsoleLogs": "Использовать запись в консоль",
+   "useHistory": "Использовать историю",
    "settings": "Настройки",
    "search": "Поиск",
-   "all_logs_copied": "Все записи скопированы в буфер обмена",
-   "page_not_found": "Ой, страница по этому пути",
-   "not_found": "не найдена",
-   "back_to_home": "Вернуться на главную страницу",
+   "allLogsCopied": "Все записи скопированы в буфер обмена",
+   "pageNotFound": "Ой, страница по этому пути",
+   "notFound": "не найдена",
+   "backToHome": "Вернуться на главную страницу",
    "fix": "Сообщить",
-   "clear_cache": "Очистить кэш",
-   "cache_cleared": "Кэш очищен",
-   "error_cache_clearing": "Ошибка при очистке кэша",
-   "app_version": "Версия приложения",
-   "build_version": "Версия сборки",
-   "change_environment": "Сменить текущее окружение",
-   "go_to_logger": "Перейти к журналу",
-   "environment_tap_number": "Для открытия диалога осталось: {number}",
-   "@environment_tap_number": {
+   "clearCache": "Очистить кэш",
+   "cacheCleared": "Кэш очищен",
+   "errorCacheClearing": "Ошибка при очистке кэша",
+   "appVersion": "Версия приложения",
+   "buildVersion": "Версия сборки",
+   "changeEnvironment": "Сменить текущее окружение",
+   "goToLogger": "Перейти к журналу",
+   "environmentTapNumber": "Для открытия диалога осталось: {number}",
+   "@environmentTapNumber": {
       "placeholders": {
          "number": {}
       }
    },
-   "counter_times_text": "Вы нажали кнопку столько раз: {number}",
-   "@counter_times_text": {
+   "counterTimesText": "Вы нажали кнопку столько раз: {number}",
+   "@counterTimesText": {
       "placeholders": {
          "number": {}
       }
    },
-   "performance_tracker": "Отслеживание производительности",
+   "performanceTracker": "Отслеживание производительности",
    "login": "Вход",
-   "initialization_failed": "Ошибка инициализации",
-   "error_type": "Тип ошибки",
+   "initializationFailed": "Ошибка инициализации",
+   "errorType": "Тип ошибки",
    "retry": "Повторить",
    "logout": "Выйти",
-   "you_already_in_logger": "Вы уже на странице ISpect",
-   "turn_on_inspector": "Включить инспектор",
-   "turn_off_inspector": "Выключить инспектор",
-   "view_and_manage_data": "Просмотр и управление данными приложения",
-   "app_data": "Данные приложения",
-   "total_files_count": "Общее количество файлов: {number}",
-   "@total_files_count": {
+   "youAlreadyInLogger": "Вы уже на странице ISpect",
+   "turnOnInspector": "Включить инспектор",
+   "turnOffInspector": "Выключить инспектор",
+   "viewAndManageData": "Просмотр и управление данными приложения",
+   "appData": "Данные приложения",
+   "totalFilesCount": "Общее количество файлов: {number}",
+   "@totalFilesCount": {
       "placeholders": {
          "number": {}
       }
    },
-   "app_info": "Проверить информацию об устройстве и пакете",
-   "copied_to_clipboard": "Скопировано в буфер обмена",
+   "appInfo": "Проверить информацию об устройстве и пакете",
+   "copiedToClipboard": "Скопировано в буфер обмена",
    "copy": "Скопировать",
-   "cache_size": "Размер кэша: {size}",
-   "@cache_size": {
+   "cacheSize": "Размер кэша: {size}",
+   "@cacheSize": {
       "placeholders": {
          "size": {}
       }

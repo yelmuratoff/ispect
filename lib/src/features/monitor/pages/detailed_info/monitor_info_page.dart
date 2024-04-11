@@ -35,10 +35,10 @@ class MonitorPage extends StatelessWidget {
   void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
     final text = data.generateTextMessage();
     Clipboard.setData(ClipboardData(text: text));
-    _showSnackBar(context, context.ispectL10n.log_item_copied);
+    _showSnackBar(context, context.ispectL10n.logItemCopied);
   }
 
   void _showSnackBar(BuildContext context, String text) {
-    ISpectToaster.showInfoToast(context, title: context.ispectL10n.copied_to_clipboard);
+    ISpectToaster.showInfoToast(context, title: context.ispectL10n.copiedToClipboard);
   }
 }

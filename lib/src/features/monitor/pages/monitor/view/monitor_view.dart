@@ -76,18 +76,18 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: httpRequests,
-                    title: context.ispectL10n.talker_type_http,
+                    title: context.ispectL10n.talkerTypeHttp,
                     color: Colors.green,
                     icon: Icons.http_rounded,
                     onTap: () => openTypedLogsPage(
                       allHttps,
-                      context.ispectL10n.talker_type_http,
+                      context.ispectL10n.talkerTypeHttp,
                     ),
                     subtitleWidget: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          context.ispectL10n.talker_http_requests_count(
+                          context.ispectL10n.talkerHttpRequestsCount(
                             httpRequests.length,
                           ),
                           style: const TextStyle(
@@ -95,7 +95,7 @@ class _MonitorView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          context.ispectL10n.talker_http_failues_count(
+                          context.ispectL10n.talkerHttpFailuresCount(
                             httpErrors.length,
                           ),
                           style: const TextStyle(
@@ -103,7 +103,7 @@ class _MonitorView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          context.ispectL10n.talker_http_responses_count(
+                          context.ispectL10n.talkerHttpResponsesCount(
                             httpResponses.length,
                           ),
                           style: const TextStyle(
@@ -120,18 +120,18 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: allBlocs,
-                    title: context.ispectL10n.talker_type_bloc,
+                    title: context.ispectL10n.talkerTypeBloc,
                     color: Colors.grey,
                     icon: Icons.code_rounded,
                     onTap: () => openTypedLogsPage(
                       allBlocs,
-                      context.ispectL10n.talker_type_bloc,
+                      context.ispectL10n.talkerTypeBloc,
                     ),
                     subtitleWidget: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          context.ispectL10n.talker_bloc_events_count(
+                          context.ispectL10n.talkerBlocEventsCount(
                             blocEvents.length,
                           ),
                           style: TextStyle(
@@ -142,7 +142,7 @@ class _MonitorView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          context.ispectL10n.talker_bloc_transition_count(
+                          context.ispectL10n.talkerBlocTransitionCount(
                             blocTransitions.length,
                           ),
                           style: TextStyle(
@@ -153,7 +153,7 @@ class _MonitorView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          context.ispectL10n.talker_bloc_create_count(
+                          context.ispectL10n.talkerBlocCreatesCount(
                             blocCreates.length,
                           ),
                           style: TextStyle(
@@ -164,7 +164,7 @@ class _MonitorView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          context.ispectL10n.talker_bloc_close_count(
+                          context.ispectL10n.talkerBlocClosesCount(
                             blocCloses.length,
                           ),
                           style: TextStyle(
@@ -184,13 +184,13 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: errors,
-                    title: context.ispectL10n.talker_type_errors,
+                    title: context.ispectL10n.talkerTypeErrors,
                     color: theme.logColors.getByType(TalkerLogType.error),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n.talker_type_errors_count(errors.length),
+                    subtitle: context.ispectL10n.talkerTypeErrorsCount(errors.length),
                     onTap: () => openTypedLogsPage(
                       errors,
-                      context.ispectL10n.talker_type_errors,
+                      context.ispectL10n.talkerTypeErrors,
                     ),
                   ),
                 ),
@@ -200,13 +200,13 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: exceptions,
-                    title: context.ispectL10n.talker_type_exceptions,
+                    title: context.ispectL10n.talkerTypeExceptions,
                     color: theme.logColors.getByType(TalkerLogType.exception),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n.talker_type_exceptions_count(exceptions.length),
+                    subtitle: context.ispectL10n.talkerTypeExceptionsCount(exceptions.length),
                     onTap: () => openTypedLogsPage(
                       exceptions,
-                      context.ispectL10n.talker_type_exceptions,
+                      context.ispectL10n.talkerTypeExceptions,
                     ),
                   ),
                 ),
@@ -216,13 +216,13 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: warnings,
-                    title: context.ispectL10n.talker_type_warnings,
+                    title: context.ispectL10n.talkerTypeWarnings,
                     color: theme.logColors.getByType(TalkerLogType.warning),
                     icon: Icons.warning_amber_rounded,
-                    subtitle: context.ispectL10n.talker_type_warnings_count(warnings.length),
+                    subtitle: context.ispectL10n.talkerTypeWarningsCount(warnings.length),
                     onTap: () => openTypedLogsPage(
                       warnings,
-                      context.ispectL10n.talker_type_warnings,
+                      context.ispectL10n.talkerTypeWarnings,
                     ),
                   ),
                 ),
@@ -232,13 +232,13 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: infos,
-                    title: context.ispectL10n.talker_type_info,
+                    title: context.ispectL10n.talkerTypeInfo,
                     color: theme.logColors.getByType(TalkerLogType.info),
                     icon: Icons.info_outline_rounded,
-                    subtitle: context.ispectL10n.talker_type_info_count(infos.length),
+                    subtitle: context.ispectL10n.talkerTypeInfoCount(infos.length),
                     onTap: () => openTypedLogsPage(
                       infos,
-                      context.ispectL10n.talker_type_info,
+                      context.ispectL10n.talkerTypeInfo,
                     ),
                   ),
                 ),
@@ -248,16 +248,16 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: goods,
-                    title: context.ispectL10n.talker_type_good,
+                    title: context.ispectL10n.talkerTypeGood,
                     color: getTypeColor(
                       isDark: options.themeMode == ThemeMode.dark,
                       key: "good",
                     ),
                     icon: Icons.check_circle_outline_rounded,
-                    subtitle: context.ispectL10n.talker_type_good_count(goods.length),
+                    subtitle: context.ispectL10n.talkerTypeGoodCount(goods.length),
                     onTap: () => openTypedLogsPage(
                       goods,
-                      context.ispectL10n.talker_type_good,
+                      context.ispectL10n.talkerTypeGood,
                     ),
                   ),
                 ),
@@ -267,16 +267,16 @@ class _MonitorView extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: providers,
-                    title: context.ispectL10n.talker_type_provider,
+                    title: context.ispectL10n.talkerTypeProvider,
                     color: getTypeColor(
                       isDark: options.themeMode == ThemeMode.dark,
                       key: "provider",
                     ),
                     icon: Icons.cast_rounded,
-                    subtitle: context.ispectL10n.talker_type_provider_count(providers.length),
+                    subtitle: context.ispectL10n.talkerTypeProviderCount(providers.length),
                     onTap: () => openTypedLogsPage(
                       providers,
-                      context.ispectL10n.talker_type_provider,
+                      context.ispectL10n.talkerTypeProvider,
                     ),
                   ),
                 ),
@@ -289,7 +289,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeDebug,
                     color: theme.logColors.getByType(TalkerLogType.verbose),
                     icon: Icons.remove_red_eye_outlined,
-                    subtitle: context.ispectL10n.talker_type_debug_count(verboseDebug.length),
+                    subtitle: context.ispectL10n.talkerTypeDebugCount(verboseDebug.length),
                     onTap: () => openTypedLogsPage(
                       verboseDebug,
                       context.ispectL10n.talkerTypeDebug,

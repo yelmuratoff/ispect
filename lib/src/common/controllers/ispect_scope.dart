@@ -26,8 +26,18 @@ class ISpectScopeModel with ChangeNotifier {
     notifyListeners();
   }
 
+  set setISpect(bool value) {
+    _isISpectEnabled = value;
+    notifyListeners();
+  }
+
   void togglePerformanceTracking() {
     _isPerformanceTrackingEnabled = !_isPerformanceTrackingEnabled;
+    notifyListeners();
+  }
+
+  set setPerformanceTracking(bool value) {
+    _isPerformanceTrackingEnabled = value;
     notifyListeners();
   }
 
@@ -41,13 +51,21 @@ class ISpectScopeModel with ChangeNotifier {
 class ISpectScopeWrapper extends StatelessWidget {
   final Widget child;
   final ISpectOptions options;
+  final bool isISpectEnabled;
 
-  const ISpectScopeWrapper({super.key, required this.child, required this.options});
+  const ISpectScopeWrapper({
+    super.key,
+    required this.child,
+    required this.options,
+    required this.isISpectEnabled,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<ISpectScopeModel>(
-      create: (context) => ISpectScopeModel()..setOptions(options),
+      create: (context) => ISpectScopeModel()
+        ..setOptions(options)
+        ..setISpect = isISpectEnabled,
       child: child,
     );
   }

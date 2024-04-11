@@ -47,7 +47,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.0.4
+  ispect: ^1.0.5
 ```
 
 ### Add import package
@@ -85,8 +85,8 @@ void main() {
   final talker = TalkerFlutter.init();
 
   /// Use global variable [talkerWrapper] for logging.
-  talkerWrapper.debug('Hello World!');
   talkerWrapper.initHandling(talker: talker);
+  talkerWrapper.debug('Hello World!');
   runApp(App(talker: talker));
 }
 
@@ -122,6 +122,7 @@ class _AppState extends State<App> {
     /// It is necessary to wrap `MaterialApp` with `ISpectScopeWrapper`.
     return ISpectScopeWrapper(
       options: options,
+      isISpectEnabled: true,
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [

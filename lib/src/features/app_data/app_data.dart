@@ -66,7 +66,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
           if (context.mounted) {
             await ISpectToaster.showSuccessToast(
               context,
-              title: context.ispectL10n.cache_cleared,
+              title: context.ispectL10n.cacheCleared,
             );
           }
         },
