@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -14,9 +14,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
     # Logging
-  talker_flutter: ^4.1.0
-  talker_dio_logger: ^4.1.0
-  talker_bloc_logger: ^4.1.0
+  talker_flutter: ^4.1.2
+  talker_dio_logger: ^4.1.2
+  talker_bloc_logger: ^4.1.2
 
   # Utils
   path: ^1.8.3
