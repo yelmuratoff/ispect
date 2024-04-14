@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 final class ISpectOptions {
-  Talker talker;
-  ThemeMode themeMode;
-  ThemeData lightTheme;
-  ThemeData darkTheme;
-  Locale locale;
+  final Talker talker;
+  final ThemeMode themeMode;
+  final ThemeData lightTheme;
+  final ThemeData darkTheme;
+  final Locale locale;
 
   ISpectOptions({
     required this.talker,

@@ -45,6 +45,11 @@ class ISpectScopeModel with ChangeNotifier {
     _options = options;
     notifyListeners();
   }
+
+  void setThemeMode(ThemeMode themeMode) {
+    _options = _options.copyWith(themeMode: themeMode);
+    notifyListeners();
+  }
 }
 
 /// `ISpectScopeWrapper` is a wrapper widget that provides the `ISpectScopeModel` to its children.

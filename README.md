@@ -51,7 +51,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.0.6
+  ispect: ^1.0.7
 ```
 
 ### Add import package
@@ -177,6 +177,11 @@ class _Home extends StatelessWidget {
     );
   }
 }
+```
+
+### For change `ISpect` theme:
+```dart
+ISpect.read(context).setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
 ```
 
 ### For handle routing (GoRouter)
