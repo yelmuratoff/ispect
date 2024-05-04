@@ -1,3 +1,7 @@
+## 1.0.8
+
+* Upgrade dependencies to latest version
+
 ## 1.0.5
 
 * ISpectWrapper changed to builder, and fields moved to Scope Wrapper
