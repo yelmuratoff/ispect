@@ -15,7 +15,8 @@ class MultiValueListenableBuilder extends StatefulWidget {
   State createState() => _MultiValueListenableBuilderState();
 }
 
-class _MultiValueListenableBuilderState extends State<MultiValueListenableBuilder> {
+class _MultiValueListenableBuilderState
+    extends State<MultiValueListenableBuilder> {
   @override
   void initState() {
     super.initState();

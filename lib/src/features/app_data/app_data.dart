@@ -61,7 +61,10 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
           );
           await updateCacheSize();
           if (context.mounted) {
-            await _controller.loadFilesList(context: context, talker: widget.talker);
+            await _controller.loadFilesList(
+              context: context,
+              talker: widget.talker,
+            );
           }
           if (context.mounted) {
             await ISpectToaster.showSuccessToast(

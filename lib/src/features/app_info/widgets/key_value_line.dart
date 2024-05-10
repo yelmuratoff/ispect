@@ -20,7 +20,8 @@ class KeyValueLine extends StatelessWidget {
               flex: 3,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: context.ispectTheme.colorScheme.primary.withOpacity(0.1),
+                  color:
+                      context.ispectTheme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Padding(
@@ -51,7 +52,8 @@ class KeyValueLine extends StatelessWidget {
                 },
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: context.ispectTheme.colorScheme.primary.withOpacity(0.1),
+                    color: context.ispectTheme.colorScheme.primary
+                        .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Padding(

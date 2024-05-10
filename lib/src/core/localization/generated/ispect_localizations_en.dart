@@ -11,7 +11,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Verbose & debug';
 
   @override
-  String talkerTypeDebugCount(Object text) => 'Verbose and debug logs count: $text';
+  String talkerTypeDebugCount(Object text) =>
+      'Verbose and debug logs count: $text';
 
   @override
   String get talkerTypeGood => 'Good';
@@ -41,7 +42,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get talkerTypeExceptions => 'Exceptions';
 
   @override
-  String talkerTypeExceptionsCount(Object text) => 'Exception logs count: $text';
+  String talkerTypeExceptionsCount(Object text) =>
+      'Exception logs count: $text';
 
   @override
   String get talkerTypeErrors => 'Errors';
@@ -53,19 +55,23 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get talkerTypeHttp => 'HTTP requests';
 
   @override
-  String talkerHttpRequestsCount(Object text) => 'HTTP request logs count: $text';
+  String talkerHttpRequestsCount(Object text) =>
+      'HTTP request logs count: $text';
 
   @override
-  String talkerHttpResponsesCount(Object text) => 'HTTP response logs count: $text';
+  String talkerHttpResponsesCount(Object text) =>
+      'HTTP response logs count: $text';
 
   @override
-  String talkerHttpFailuresCount(Object text) => 'HTTP failure logs count: $text';
+  String talkerHttpFailuresCount(Object text) =>
+      'HTTP failure logs count: $text';
 
   @override
   String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talkerBlocTransitionCount(Object text) => 'BLoC transitions count: $text';
+  String talkerBlocTransitionCount(Object text) =>
+      'BLoC transitions count: $text';
 
   @override
   String talkerBlocEventsCount(Object text) => 'BLoC events count: $text';
@@ -155,10 +161,12 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get goToLogger => 'Go to logger';
 
   @override
-  String environmentTapNumber(Object number) => 'To open the dialog, it remains: $number';
+  String environmentTapNumber(Object number) =>
+      'To open the dialog, it remains: $number';
 
   @override
-  String counterTimesText(Object number) => 'You have pushed the button this many times: $number';
+  String counterTimesText(Object number) =>
+      'You have pushed the button this many times: $number';
 
   @override
   String get performanceTracker => 'Performance tracking';

@@ -27,10 +27,12 @@ class TalkerSettingsBottomSheets extends StatefulWidget {
   final ISpectOptions options;
 
   @override
-  State<TalkerSettingsBottomSheets> createState() => _TalkerSettingsBottomSheetState();
+  State<TalkerSettingsBottomSheets> createState() =>
+      _TalkerSettingsBottomSheetState();
 }
 
-class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> {
+class _TalkerSettingsBottomSheetState
+    extends State<TalkerSettingsBottomSheets> {
   @override
   void initState() {
     widget.talker.addListener(() => setState(() {}));
@@ -47,7 +49,8 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
         enabled: widget.talker.value.settings.enabled,
         backgroundColor: widget.talkerScreenTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.talker.value.enable : widget.talker.value.disable).call();
+          (enabled ? widget.talker.value.enable : widget.talker.value.disable)
+              .call();
           widget.talker.notifyListeners();
         },
       ),

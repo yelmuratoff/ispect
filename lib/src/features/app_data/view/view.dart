@@ -38,7 +38,8 @@ class _AppDataView extends StatelessWidget {
                         context.ispectL10n.cacheSize(cacheSize),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
+                        style:
+                            context.ispectTheme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -64,13 +65,15 @@ class _AppDataView extends StatelessWidget {
                       children: [
                         Text(
                           context.ispectL10n.appData,
-                          style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
+                          style:
+                              context.ispectTheme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
                         Text(
-                          context.ispectL10n.totalFilesCount(controller.files.length),
+                          context.ispectL10n
+                              .totalFilesCount(controller.files.length),
                           style: context.ispectTheme.textTheme.bodyMedium,
                         ),
                       ],

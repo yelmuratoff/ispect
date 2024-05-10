@@ -28,7 +28,9 @@ class ISpectGeneratedLocalization {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<ISpectGeneratedLocalization> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false)
+        ? locale.languageCode
+        : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -49,7 +51,10 @@ class ISpectGeneratedLocalization {
   }
 
   static ISpectGeneratedLocalization? maybeOf(BuildContext context) =>
-      Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
+      Localizations.of<ISpectGeneratedLocalization>(
+        context,
+        ISpectGeneratedLocalization,
+      );
 
   /// `Change theme`
   String get change_theme => Intl.message(
@@ -596,7 +601,8 @@ class ISpectGeneratedLocalization {
       );
 }
 
-class AppLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocalization> {
+class AppLocalizationDelegate
+    extends LocalizationsDelegate<ISpectGeneratedLocalization> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales => const <Locale>[
@@ -607,7 +613,8 @@ class AppLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocal
   @override
   bool isSupported(Locale locale) => _isSupported(locale);
   @override
-  Future<ISpectGeneratedLocalization> load(Locale locale) => ISpectGeneratedLocalization.load(locale);
+  Future<ISpectGeneratedLocalization> load(Locale locale) =>
+      ISpectGeneratedLocalization.load(locale);
   @override
   bool shouldReload(AppLocalizationDelegate old) => false;
 

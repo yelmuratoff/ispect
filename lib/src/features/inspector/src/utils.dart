@@ -38,6 +38,9 @@ class InspectorUtils {
       position: renderObjectWithoutAbsorbPointer.globalToLocal(pointerOffset),
     );
 
-    return hitTestResult.path.where((v) => v.target is RenderBox).map((v) => v.target).cast<RenderBox>();
+    return hitTestResult.path
+        .where((v) => v.target is RenderBox)
+        .map((v) => v.target)
+        .cast<RenderBox>();
   }
 }

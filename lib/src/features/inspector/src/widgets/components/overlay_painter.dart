@@ -42,5 +42,7 @@ class OverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(OverlayPainter oldDelegate) =>
-      oldDelegate.boxInfo != boxInfo || oldDelegate.containerRectColor != containerRectColor || oldDelegate.targetRectColor != targetRectColor;
+      oldDelegate.boxInfo != boxInfo ||
+      oldDelegate.containerRectColor != containerRectColor ||
+      oldDelegate.targetRectColor != targetRectColor;
 }

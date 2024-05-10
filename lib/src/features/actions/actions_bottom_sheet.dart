@@ -18,7 +18,8 @@ class TalkerActionsBottomSheet extends StatelessWidget {
         title: context.ispectL10n.actions,
         talkerScreenTheme: talkerScreenTheme,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16)
+              .copyWith(bottom: 16, top: 8),
           decoration: BoxDecoration(
             color: talkerScreenTheme.cardColor,
             borderRadius: BorderRadius.circular(16),

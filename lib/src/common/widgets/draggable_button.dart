@@ -193,7 +193,10 @@ class _ButtonView extends StatelessWidget {
                     width: isCollapsed ? 50 * 0.2 : 50 * 5,
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: adjustColorDarken(context.ispectTheme.colorScheme.primaryContainer, 0.3),
+                      color: adjustColorDarken(
+                        context.ispectTheme.colorScheme.primaryContainer,
+                        0.3,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ListView(

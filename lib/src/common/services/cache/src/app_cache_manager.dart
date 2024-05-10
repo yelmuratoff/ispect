@@ -7,7 +7,10 @@ import 'package:path_provider/path_provider.dart';
 
 final class AppCacheManager implements BaseCacheService {
   @override
-  Future<void> deleteCacheDir({required DefaultCacheManager cache, required bool isAndroid}) async {
+  Future<void> deleteCacheDir({
+    required DefaultCacheManager cache,
+    required bool isAndroid,
+  }) async {
     try {
       final cacheDir = await getTemporaryDirectory();
       final appDir = await getApplicationSupportDirectory();
@@ -42,7 +45,11 @@ final class AppCacheManager implements BaseCacheService {
 
       await cache.emptyCache();
     } on Exception catch (e, st) {
-      talkerWrapper.handle(exception: e, stackTrace: st, message: "Failed to clear cache");
+      talkerWrapper.handle(
+        exception: e,
+        stackTrace: st,
+        message: "Failed to clear cache",
+      );
     }
   }
 

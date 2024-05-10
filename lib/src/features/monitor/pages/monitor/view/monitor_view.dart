@@ -34,28 +34,49 @@ class _MonitorView extends StatelessWidget {
             final logs = data.whereType<TalkerLog>().toList();
             final errors = data.whereType<TalkerError>().toList();
             final exceptions = data.whereType<TalkerException>().toList();
-            final warnings = logs.where((e) => e.logLevel == LogLevel.warning).toList();
+            final warnings =
+                logs.where((e) => e.logLevel == LogLevel.warning).toList();
             final goods = logs.where((e) => e.title == "good").toList();
 
-            final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
+            final infos =
+                logs.where((e) => e.logLevel == LogLevel.info).toList();
             final verboseDebug = logs
                 .where(
-                  (e) => e.logLevel == LogLevel.verbose || e.logLevel == LogLevel.debug,
+                  (e) =>
+                      e.logLevel == LogLevel.verbose ||
+                      e.logLevel == LogLevel.debug,
                 )
                 .toList();
 
-            final httpRequests = data.where((e) => e.key == TalkerLogType.httpRequest.key).toList();
-            final httpErrors = data.where((e) => e.key == TalkerLogType.httpError.key).toList();
-            final httpResponses = data.where((e) => e.key == TalkerLogType.httpResponse.key).toList();
+            final httpRequests = data
+                .where((e) => e.key == TalkerLogType.httpRequest.key)
+                .toList();
+            final httpErrors = data
+                .where((e) => e.key == TalkerLogType.httpError.key)
+                .toList();
+            final httpResponses = data
+                .where((e) => e.key == TalkerLogType.httpResponse.key)
+                .toList();
             final allHttps = data
                 .where(
-                  (e) => e.key == TalkerLogType.httpRequest.key || e.key == TalkerLogType.httpError.key || e.key == TalkerLogType.httpResponse.key,
+                  (e) =>
+                      e.key == TalkerLogType.httpRequest.key ||
+                      e.key == TalkerLogType.httpError.key ||
+                      e.key == TalkerLogType.httpResponse.key,
                 )
                 .toList();
-            final blocEvents = data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
-            final blocTransitions = data.where((e) => e.key == TalkerLogType.blocTransition.key).toList();
-            final blocCreates = data.where((e) => e.key == TalkerLogType.blocCreate.key).toList();
-            final blocCloses = data.where((e) => e.key == TalkerLogType.blocClose.key).toList();
+            final blocEvents = data
+                .where((e) => e.key == TalkerLogType.blocEvent.key)
+                .toList();
+            final blocTransitions = data
+                .where((e) => e.key == TalkerLogType.blocTransition.key)
+                .toList();
+            final blocCreates = data
+                .where((e) => e.key == TalkerLogType.blocCreate.key)
+                .toList();
+            final blocCloses = data
+                .where((e) => e.key == TalkerLogType.blocClose.key)
+                .toList();
             final allBlocs = data
                 .where(
                   (e) =>
@@ -186,7 +207,8 @@ class _MonitorView extends StatelessWidget {
                       title: context.ispectL10n.talkerTypeErrors,
                       color: theme.logColors.getByType(TalkerLogType.error),
                       icon: Icons.error_outline_rounded,
-                      subtitle: context.ispectL10n.talkerTypeErrorsCount(errors.length),
+                      subtitle: context.ispectL10n
+                          .talkerTypeErrorsCount(errors.length),
                       onTap: () => openTypedLogsPage(
                         errors,
                         context.ispectL10n.talkerTypeErrors,
@@ -202,7 +224,8 @@ class _MonitorView extends StatelessWidget {
                       title: context.ispectL10n.talkerTypeExceptions,
                       color: theme.logColors.getByType(TalkerLogType.exception),
                       icon: Icons.error_outline_rounded,
-                      subtitle: context.ispectL10n.talkerTypeExceptionsCount(exceptions.length),
+                      subtitle: context.ispectL10n
+                          .talkerTypeExceptionsCount(exceptions.length),
                       onTap: () => openTypedLogsPage(
                         exceptions,
                         context.ispectL10n.talkerTypeExceptions,
@@ -218,7 +241,8 @@ class _MonitorView extends StatelessWidget {
                       title: context.ispectL10n.talkerTypeWarnings,
                       color: theme.logColors.getByType(TalkerLogType.warning),
                       icon: Icons.warning_amber_rounded,
-                      subtitle: context.ispectL10n.talkerTypeWarningsCount(warnings.length),
+                      subtitle: context.ispectL10n
+                          .talkerTypeWarningsCount(warnings.length),
                       onTap: () => openTypedLogsPage(
                         warnings,
                         context.ispectL10n.talkerTypeWarnings,
@@ -234,7 +258,8 @@ class _MonitorView extends StatelessWidget {
                       title: context.ispectL10n.talkerTypeInfo,
                       color: theme.logColors.getByType(TalkerLogType.info),
                       icon: Icons.info_outline_rounded,
-                      subtitle: context.ispectL10n.talkerTypeInfoCount(infos.length),
+                      subtitle:
+                          context.ispectL10n.talkerTypeInfoCount(infos.length),
                       onTap: () => openTypedLogsPage(
                         infos,
                         context.ispectL10n.talkerTypeInfo,
@@ -253,7 +278,8 @@ class _MonitorView extends StatelessWidget {
                         key: "good",
                       ),
                       icon: Icons.check_circle_outline_rounded,
-                      subtitle: context.ispectL10n.talkerTypeGoodCount(goods.length),
+                      subtitle:
+                          context.ispectL10n.talkerTypeGoodCount(goods.length),
                       onTap: () => openTypedLogsPage(
                         goods,
                         context.ispectL10n.talkerTypeGood,
@@ -272,7 +298,8 @@ class _MonitorView extends StatelessWidget {
                         key: "provider",
                       ),
                       icon: Icons.cast_rounded,
-                      subtitle: context.ispectL10n.talkerTypeProviderCount(providers.length),
+                      subtitle: context.ispectL10n
+                          .talkerTypeProviderCount(providers.length),
                       onTap: () => openTypedLogsPage(
                         providers,
                         context.ispectL10n.talkerTypeProvider,
@@ -288,7 +315,8 @@ class _MonitorView extends StatelessWidget {
                       title: context.ispectL10n.talkerTypeDebug,
                       color: theme.logColors.getByType(TalkerLogType.verbose),
                       icon: Icons.remove_red_eye_outlined,
-                      subtitle: context.ispectL10n.talkerTypeDebugCount(verboseDebug.length),
+                      subtitle: context.ispectL10n
+                          .talkerTypeDebugCount(verboseDebug.length),
                       onTap: () => openTypedLogsPage(
                         verboseDebug,
                         context.ispectL10n.talkerTypeDebug,

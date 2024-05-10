@@ -104,7 +104,8 @@ class TalkerAppBar extends StatelessWidget {
                           controller: titlesController,
                           isRadio: false,
                           buttonBuilder: (selected, value, context) {
-                            final count = titles.where((e) => e == value).length;
+                            final count =
+                                titles.where((e) => e == value).length;
                             return Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -112,29 +113,38 @@ class TalkerAppBar extends StatelessWidget {
                                 border: Border.all(
                                   color: selected
                                       ? isDark
-                                          ? context.ispectTheme.colorScheme.primaryContainer
-                                          : context.ispectTheme.colorScheme.primary
+                                          ? context.ispectTheme.colorScheme
+                                              .primaryContainer
+                                          : context
+                                              .ispectTheme.colorScheme.primary
                                       : context.ispectTheme.dividerColor,
                                 ),
                                 color: selected
                                     ? isDark
-                                        ? context.ispectTheme.colorScheme.primaryContainer
-                                        : context.ispectTheme.colorScheme.primary
+                                        ? context.ispectTheme.colorScheme
+                                            .primaryContainer
+                                        : context
+                                            .ispectTheme.colorScheme.primary
                                     : context.ispectTheme.cardColor,
                               ),
                               child: Row(
                                 children: [
                                   Text(
                                     '$count  $value',
-                                    style: context.ispectTheme.textTheme.bodyMedium!.copyWith(
-                                      color: selected ? Colors.white : talkerTheme.textColor,
+                                    style: context
+                                        .ispectTheme.textTheme.bodyMedium!
+                                        .copyWith(
+                                      color: selected
+                                          ? Colors.white
+                                          : talkerTheme.textColor,
                                     ),
                                   ),
                                 ],
                               ),
                             );
                           },
-                          onSelected: (_, i, selected) => _onToggle(uniqTitles[i], selected),
+                          onSelected: (_, i, selected) =>
+                              _onToggle(uniqTitles[i], selected),
                           buttons: uniqTitles,
                         ),
                       ],
@@ -183,7 +193,9 @@ class _SearchTextField extends StatelessWidget {
           color: talkerTheme.textColor,
           fontSize: 14,
         ),
-        cursorColor: isDark ? context.ispectTheme.colorScheme.primaryContainer : context.ispectTheme.colorScheme.primary,
+        cursorColor: isDark
+            ? context.ispectTheme.colorScheme.primaryContainer
+            : context.ispectTheme.colorScheme.primary,
         focusNode: focusNode,
         onTapOutside: (event) {
           FocusManager.instance.primaryFocus?.unfocus();
@@ -196,7 +208,9 @@ class _SearchTextField extends StatelessWidget {
           fillColor: theme.cardColor,
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: isDark ? context.ispectTheme.colorScheme.primaryContainer : context.ispectTheme.colorScheme.primary,
+              color: isDark
+                  ? context.ispectTheme.colorScheme.primaryContainer
+                  : context.ispectTheme.colorScheme.primary,
             ),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -244,7 +258,9 @@ class _MonitorButton extends StatelessWidget {
   Widget build(BuildContext context) => TalkerBuilder(
         talker: talker,
         builder: (context, data) {
-          final haveErrors = data.where((e) => e is TalkerError || e is TalkerException).isNotEmpty;
+          final haveErrors = data
+              .where((e) => e is TalkerError || e is TalkerException)
+              .isNotEmpty;
           return Stack(
             children: [
               Center(

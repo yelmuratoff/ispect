@@ -22,7 +22,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(size) => "Cache size: ${size}";
 
-  static String m1(number) => "You have pushed the button this many times: ${number}";
+  static String m1(number) =>
+      "You have pushed the button this many times: ${number}";
 
   static String m2(number) => "To open the dialog, it remains: ${number}";
 
@@ -59,43 +60,57 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "actions": MessageLookupByLibrary.simpleMessage("Actions"),
-        "all_logs_copied": MessageLookupByLibrary.simpleMessage("All logs copied in buffer"),
+        "all_logs_copied":
+            MessageLookupByLibrary.simpleMessage("All logs copied in buffer"),
         "app_data": MessageLookupByLibrary.simpleMessage("App data"),
-        "app_info": MessageLookupByLibrary.simpleMessage("Check device info & package info"),
+        "app_info": MessageLookupByLibrary.simpleMessage(
+          "Check device info & package info",
+        ),
         "app_version": MessageLookupByLibrary.simpleMessage("App version"),
-        "back_to_home": MessageLookupByLibrary.simpleMessage("Go back to the main page"),
-        "basic_settings": MessageLookupByLibrary.simpleMessage("Basic settings"),
+        "back_to_home":
+            MessageLookupByLibrary.simpleMessage("Go back to the main page"),
+        "basic_settings":
+            MessageLookupByLibrary.simpleMessage("Basic settings"),
         "build_version": MessageLookupByLibrary.simpleMessage("Build version"),
         "cache_cleared": MessageLookupByLibrary.simpleMessage("Cache cleared"),
         "cache_size": m0,
-        "change_environment": MessageLookupByLibrary.simpleMessage("Change current environment"),
+        "change_environment":
+            MessageLookupByLibrary.simpleMessage("Change current environment"),
         "change_theme": MessageLookupByLibrary.simpleMessage("Change theme"),
         "clean_history": MessageLookupByLibrary.simpleMessage("Clean history"),
         "clear_cache": MessageLookupByLibrary.simpleMessage("Clear cache"),
         "collapse_logs": MessageLookupByLibrary.simpleMessage("Collapse logs"),
-        "copied_to_clipboard": MessageLookupByLibrary.simpleMessage("Copied to clipboard"),
+        "copied_to_clipboard":
+            MessageLookupByLibrary.simpleMessage("Copied to clipboard"),
         "copy": MessageLookupByLibrary.simpleMessage("Copy"),
         "copy_all_logs": MessageLookupByLibrary.simpleMessage("Copy all logs"),
         "counter_times_text": m1,
         "enabled": MessageLookupByLibrary.simpleMessage("Enabled"),
         "environment_tap_number": m2,
-        "error_cache_clearing": MessageLookupByLibrary.simpleMessage("Error on clearing cache"),
+        "error_cache_clearing":
+            MessageLookupByLibrary.simpleMessage("Error on clearing cache"),
         "error_type": MessageLookupByLibrary.simpleMessage("Error type"),
         "expand_logs": MessageLookupByLibrary.simpleMessage("Expand logs"),
         "fix": MessageLookupByLibrary.simpleMessage("Report"),
         "go_to_logger": MessageLookupByLibrary.simpleMessage("Go to logger"),
-        "initialization_failed": MessageLookupByLibrary.simpleMessage("Initialization failed"),
-        "log_item_copied": MessageLookupByLibrary.simpleMessage("Log item is copied in clipboard"),
+        "initialization_failed":
+            MessageLookupByLibrary.simpleMessage("Initialization failed"),
+        "log_item_copied": MessageLookupByLibrary.simpleMessage(
+          "Log item is copied in clipboard",
+        ),
         "login": MessageLookupByLibrary.simpleMessage("Login"),
         "logout": MessageLookupByLibrary.simpleMessage("Log Out"),
         "not_found": MessageLookupByLibrary.simpleMessage("not found"),
-        "page_not_found": MessageLookupByLibrary.simpleMessage("Oops, the page on this path"),
-        "performance_tracker": MessageLookupByLibrary.simpleMessage("Performance tracking"),
+        "page_not_found":
+            MessageLookupByLibrary.simpleMessage("Oops, the page on this path"),
+        "performance_tracker":
+            MessageLookupByLibrary.simpleMessage("Performance tracking"),
         "retry": MessageLookupByLibrary.simpleMessage("Retry"),
         "reverse_logs": MessageLookupByLibrary.simpleMessage("Reverse logs"),
         "search": MessageLookupByLibrary.simpleMessage("Search"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-        "share_logs_file": MessageLookupByLibrary.simpleMessage("Share logs file"),
+        "share_logs_file":
+            MessageLookupByLibrary.simpleMessage("Share logs file"),
         "talker_bloc_close_count": m3,
         "talker_bloc_create_count": m4,
         "talker_bloc_events_count": m5,
@@ -104,27 +119,39 @@ class MessageLookup extends MessageLookupByLibrary {
         "talker_http_requests_count": m8,
         "talker_http_responses_count": m9,
         "talker_type_bloc": MessageLookupByLibrary.simpleMessage("BLoC"),
-        "talker_type_debug": MessageLookupByLibrary.simpleMessage("Verbose & debug"),
+        "talker_type_debug":
+            MessageLookupByLibrary.simpleMessage("Verbose & debug"),
         "talker_type_debug_count": m10,
         "talker_type_errors": MessageLookupByLibrary.simpleMessage("Errors"),
         "talker_type_errors_count": m11,
-        "talker_type_exceptions": MessageLookupByLibrary.simpleMessage("Exceptions"),
+        "talker_type_exceptions":
+            MessageLookupByLibrary.simpleMessage("Exceptions"),
         "talker_type_exceptions_count": m12,
         "talker_type_good": MessageLookupByLibrary.simpleMessage("Good"),
         "talker_type_good_count": m13,
-        "talker_type_http": MessageLookupByLibrary.simpleMessage("HTTP requests"),
+        "talker_type_http":
+            MessageLookupByLibrary.simpleMessage("HTTP requests"),
         "talker_type_info": MessageLookupByLibrary.simpleMessage("Info"),
         "talker_type_info_count": m14,
-        "talker_type_provider": MessageLookupByLibrary.simpleMessage("Providers"),
+        "talker_type_provider":
+            MessageLookupByLibrary.simpleMessage("Providers"),
         "talker_type_provider_count": m15,
-        "talker_type_warnings": MessageLookupByLibrary.simpleMessage("Warnings"),
+        "talker_type_warnings":
+            MessageLookupByLibrary.simpleMessage("Warnings"),
         "talker_type_warnings_count": m16,
         "total_files_count": m17,
-        "turn_off_inspector": MessageLookupByLibrary.simpleMessage("Turn off inspector"),
-        "turn_on_inspector": MessageLookupByLibrary.simpleMessage("Turn on inspector"),
-        "use_console_logs": MessageLookupByLibrary.simpleMessage("Use console logs"),
+        "turn_off_inspector":
+            MessageLookupByLibrary.simpleMessage("Turn off inspector"),
+        "turn_on_inspector":
+            MessageLookupByLibrary.simpleMessage("Turn on inspector"),
+        "use_console_logs":
+            MessageLookupByLibrary.simpleMessage("Use console logs"),
         "use_history": MessageLookupByLibrary.simpleMessage("Use history"),
-        "view_and_manage_data": MessageLookupByLibrary.simpleMessage("Viewing and managing application data"),
-        "you_already_in_logger": MessageLookupByLibrary.simpleMessage("You are already in the logger page"),
+        "view_and_manage_data": MessageLookupByLibrary.simpleMessage(
+          "Viewing and managing application data",
+        ),
+        "you_already_in_logger": MessageLookupByLibrary.simpleMessage(
+          "You are already in the logger page",
+        ),
       };
 }

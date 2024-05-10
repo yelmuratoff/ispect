@@ -57,7 +57,8 @@ class _TalkerMonitorsCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onTap != null) Icon(Icons.arrow_forward_ios_rounded, color: color),
+              if (onTap != null)
+                Icon(Icons.arrow_forward_ios_rounded, color: color),
             ],
           ),
         ),

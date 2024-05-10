@@ -4,7 +4,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 
 final class ISpectLocalizations {
-  static List<LocalizationsDelegate<Object>> localizationDelegates(List<LocalizationsDelegate<Object>> appDelegates) {
+  static List<LocalizationsDelegate<Object>> localizationDelegates(
+    List<LocalizationsDelegate<Object>> appDelegates,
+  ) {
     final localizationList = [
       GlobalMaterialLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,

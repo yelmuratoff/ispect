@@ -10,7 +10,8 @@ final class ISpectLocalization {
   const ISpectLocalization._({required this.locale});
 
   /// List of supported locales.
-  static List<Locale> get supportedLocales => ISpectGeneratedLocalization.supportedLocales;
+  static List<Locale> get supportedLocales =>
+      ISpectGeneratedLocalization.supportedLocales;
 
   static const _delegate = ISpectGeneratedLocalization.delegate;
 

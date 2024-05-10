@@ -29,7 +29,8 @@ class MonitorPage extends StatelessWidget {
         theme: theme,
         exceptions: exceptions,
         options: options,
-        onCopyTap: (itemContext, data) => _copyTalkerDataItemText(itemContext, data),
+        onCopyTap: (itemContext, data) =>
+            _copyTalkerDataItemText(itemContext, data),
       );
 
   void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
@@ -39,6 +40,9 @@ class MonitorPage extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String text) {
-    ISpectToaster.showInfoToast(context, title: context.ispectL10n.copiedToClipboard);
+    ISpectToaster.showInfoToast(
+      context,
+      title: context.ispectL10n.copiedToClipboard,
+    );
   }
 }

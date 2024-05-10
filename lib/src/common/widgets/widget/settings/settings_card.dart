@@ -31,7 +31,8 @@ class TalkerSettingsCardItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TalkerBaseCard(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8).copyWith(right: 4),
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8)
+                .copyWith(right: 4),
             color: context.ispectTheme.dividerColor,
             backgroundColor: backgroundColor,
             child: Material(

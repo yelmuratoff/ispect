@@ -170,7 +170,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
         onFeedbackToggle: () {
           if (!BetterFeedback.of(context).isVisible) {
             BetterFeedback.of(context).show((UserFeedback feedback) async {
-              final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+              final screenshotFilePath =
+                  await writeImageToStorage(feedback.screenshot);
 
               await Share.shareXFiles(
                 [screenshotFilePath],
@@ -255,7 +256,9 @@ class _ButtonView extends StatelessWidget {
         children: [
           TapRegion(
             onTapOutside: (event) {
-              if (!isInspectorEnabled && !isColorPickerEnabled && !isZoomEnabled) {
+              if (!isInspectorEnabled &&
+                  !isColorPickerEnabled &&
+                  !isZoomEnabled) {
                 onTap.call();
               }
             },
@@ -271,7 +274,10 @@ class _ButtonView extends StatelessWidget {
                     width: isCollapsed ? 50 * 0.2 : 50 * 5,
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: adjustColorDarken(context.ispectTheme.colorScheme.primaryContainer, 0.3),
+                      color: adjustColorDarken(
+                        context.ispectTheme.colorScheme.primaryContainer,
+                        0.3,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ListView(
@@ -357,15 +363,25 @@ class _PanelIconButton extends StatelessWidget {
   final IconData icon;
   final bool isActive;
   final void Function() onPressed;
-  const _PanelIconButton({required this.icon, required this.isActive, required this.onPressed});
+  const _PanelIconButton({
+    required this.icon,
+    required this.isActive,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) => IconButton.filled(
         icon: Icon(icon),
         style: ButtonStyle(
           foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-          backgroundColor: MaterialStateProperty.all<Color>(isActive ? context.ispectTheme.colorScheme.primaryContainer : Colors.transparent),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+          backgroundColor: MaterialStateProperty.all<Color>(
+            isActive
+                ? context.ispectTheme.colorScheme.primaryContainer
+                : Colors.transparent,
+          ),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
         ),
         onPressed: () {
           onPressed.call();

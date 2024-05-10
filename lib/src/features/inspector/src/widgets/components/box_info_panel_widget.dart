@@ -131,7 +131,9 @@ class BoxInfoPanelWidget extends StatelessWidget {
           backgroundColor: theme.chipTheme.backgroundColor,
           iconColor: decoration.color,
           child: Text(
-            decoration.color != null ? '#${colorToHexString(decoration.color!, withAlpha: true)}' : 'n/a',
+            decoration.color != null
+                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
+                : 'n/a',
             style: TextStyle(color: decoration.color),
           ),
         ),
@@ -179,7 +181,9 @@ class BoxInfoPanelWidget extends StatelessWidget {
           iconColor: style.color,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
-            renderParagraph.text.style?.color != null ? '#${colorToHexString(style.color!, withAlpha: true)}' : 'n/a',
+            renderParagraph.text.style?.color != null
+                ? '#${colorToHexString(style.color!, withAlpha: true)}'
+                : 'n/a',
             style: TextStyle(
               color: style.color,
             ),

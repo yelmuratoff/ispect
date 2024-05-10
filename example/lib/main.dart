@@ -54,7 +54,8 @@ class _AppState extends State<App> {
         ],
 
         /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
+        localizationsDelegates: ISpectLocalizations.localizationDelegates(
+            [AppGeneratedLocalization.delegate]),
         theme: options.lightTheme,
         darkTheme: options.darkTheme,
         themeMode: options.themeMode,

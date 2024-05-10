@@ -80,11 +80,14 @@ class _StringFeedbackState extends State<StringFeedback> {
                     Text(
                       FeedbackLocalizations.of(context).feedbackDescriptionText,
                       maxLines: 2,
-                      style: FeedbackTheme.of(context).bottomSheetDescriptionStyle,
+                      style:
+                          FeedbackTheme.of(context).bottomSheetDescriptionStyle,
                     ),
                     const Gap(8),
                     TextField(
-                      style: FeedbackTheme.of(context).bottomSheetTextInputStyle.copyWith(
+                      style: FeedbackTheme.of(context)
+                          .bottomSheetTextInputStyle
+                          .copyWith(
                             color: widget.theme.textTheme.bodyMedium?.color,
                           ),
                       key: const Key('text_input_field'),
@@ -99,9 +102,11 @@ class _StringFeedbackState extends State<StringFeedback> {
                       textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.all(12),
-                        hintText: FeedbackLocalizations.of(context).feedbackDescriptionText,
+                        hintText: FeedbackLocalizations.of(context)
+                            .feedbackDescriptionText,
                         hintStyle: TextStyle(
-                          color: widget.theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+                          color: widget.theme.textTheme.bodyMedium?.color
+                              ?.withOpacity(0.5),
                           fontSize: 14,
                         ),
                         border: OutlineInputBorder(
@@ -114,7 +119,8 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ),
                   ],
                 ),
-                if (widget.scrollController != null) const FeedbackSheetDragHandle(),
+                if (widget.scrollController != null)
+                  const FeedbackSheetDragHandle(),
               ],
             ),
           ),
