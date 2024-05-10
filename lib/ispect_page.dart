@@ -3,18 +3,18 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/features/view/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:ispect/src/features/view/talker_view.dart' as view;
 
 /// UI view for output of all Talker logs and errors
 class ISpectPage extends StatelessWidget {
   const ISpectPage({
+    required this.options,
     super.key,
     this.appBarTitle = 'ISpect',
     this.itemsBuilder,
-    required this.options,
   });
 
   /// Screen [AppBar] title
@@ -46,23 +46,21 @@ class _View extends StatelessWidget {
   final ISpectOptions options;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: view.TalkerView(
-        talker: talker,
-        appBarTitle: appBarTitle,
-        appBarLeading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back,
+  Widget build(BuildContext context) => Scaffold(
+        body: view.TalkerView(
+          talker: talker,
+          appBarTitle: appBarTitle,
+          appBarLeading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              Icons.arrow_back,
+            ),
           ),
+          options: options,
         ),
-        options: options,
-      ),
-    );
-  }
+      );
 }
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {

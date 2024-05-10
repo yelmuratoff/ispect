@@ -16,7 +16,7 @@ part 'controller/controller.dart';
 
 class AppDataPage extends StatefulWidget {
   final Talker talker;
-  const AppDataPage({super.key, required this.talker});
+  const AppDataPage({required this.talker, super.key});
 
   @override
   State<AppDataPage> createState() => _AppDataPageState();

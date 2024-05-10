@@ -1,8 +1,8 @@
-import 'ispect_localizations.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 
 /// The translations for English (`en`).
 class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
-  ISpectGeneratedLocalizationEn([String locale = 'en']) : super(locale);
+  ISpectGeneratedLocalizationEn([super.locale = 'en']);
 
   @override
   String get changeTheme => 'Change theme';
@@ -11,98 +11,70 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Verbose & debug';
 
   @override
-  String talkerTypeDebugCount(Object text) {
-    return 'Verbose and debug logs count: $text';
-  }
+  String talkerTypeDebugCount(Object text) => 'Verbose and debug logs count: $text';
 
   @override
   String get talkerTypeGood => 'Good';
 
   @override
-  String talkerTypeGoodCount(Object text) {
-    return 'Good logs count: $text';
-  }
+  String talkerTypeGoodCount(Object text) => 'Good logs count: $text';
 
   @override
   String get talkerTypeProvider => 'Providers';
 
   @override
-  String talkerTypeProviderCount(Object text) {
-    return 'Provider logs count: $text';
-  }
+  String talkerTypeProviderCount(Object text) => 'Provider logs count: $text';
 
   @override
   String get talkerTypeInfo => 'Info';
 
   @override
-  String talkerTypeInfoCount(Object text) {
-    return 'Info logs count: $text';
-  }
+  String talkerTypeInfoCount(Object text) => 'Info logs count: $text';
 
   @override
   String get talkerTypeWarnings => 'Warnings';
 
   @override
-  String talkerTypeWarningsCount(Object text) {
-    return 'Warning logs count: $text';
-  }
+  String talkerTypeWarningsCount(Object text) => 'Warning logs count: $text';
 
   @override
   String get talkerTypeExceptions => 'Exceptions';
 
   @override
-  String talkerTypeExceptionsCount(Object text) {
-    return 'Exception logs count: $text';
-  }
+  String talkerTypeExceptionsCount(Object text) => 'Exception logs count: $text';
 
   @override
   String get talkerTypeErrors => 'Errors';
 
   @override
-  String talkerTypeErrorsCount(Object text) {
-    return 'Error logs count: $text';
-  }
+  String talkerTypeErrorsCount(Object text) => 'Error logs count: $text';
 
   @override
   String get talkerTypeHttp => 'HTTP requests';
 
   @override
-  String talkerHttpRequestsCount(Object text) {
-    return 'HTTP request logs count: $text';
-  }
+  String talkerHttpRequestsCount(Object text) => 'HTTP request logs count: $text';
 
   @override
-  String talkerHttpResponsesCount(Object text) {
-    return 'HTTP response logs count: $text';
-  }
+  String talkerHttpResponsesCount(Object text) => 'HTTP response logs count: $text';
 
   @override
-  String talkerHttpFailuresCount(Object text) {
-    return 'HTTP failure logs count: $text';
-  }
+  String talkerHttpFailuresCount(Object text) => 'HTTP failure logs count: $text';
 
   @override
   String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talkerBlocTransitionCount(Object text) {
-    return 'BLoC transitions count: $text';
-  }
+  String talkerBlocTransitionCount(Object text) => 'BLoC transitions count: $text';
 
   @override
-  String talkerBlocEventsCount(Object text) {
-    return 'BLoC events count: $text';
-  }
+  String talkerBlocEventsCount(Object text) => 'BLoC events count: $text';
 
   @override
-  String talkerBlocClosesCount(Object text) {
-    return 'BLoC closes count: $text';
-  }
+  String talkerBlocClosesCount(Object text) => 'BLoC closes count: $text';
 
   @override
-  String talkerBlocCreatesCount(Object text) {
-    return 'BLoC creates count: $text';
-  }
+  String talkerBlocCreatesCount(Object text) => 'BLoC creates count: $text';
 
   @override
   String get actions => 'Actions';
@@ -183,14 +155,10 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get goToLogger => 'Go to logger';
 
   @override
-  String environmentTapNumber(Object number) {
-    return 'To open the dialog, it remains: $number';
-  }
+  String environmentTapNumber(Object number) => 'To open the dialog, it remains: $number';
 
   @override
-  String counterTimesText(Object number) {
-    return 'You have pushed the button this many times: $number';
-  }
+  String counterTimesText(Object number) => 'You have pushed the button this many times: $number';
 
   @override
   String get performanceTracker => 'Performance tracking';
@@ -226,9 +194,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get appData => 'App data';
 
   @override
-  String totalFilesCount(Object number) {
-    return 'Total files count: $number';
-  }
+  String totalFilesCount(Object number) => 'Total files count: $number';
 
   @override
   String get appInfo => 'Check device info & package info';
@@ -240,7 +206,5 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get copy => 'Copy';
 
   @override
-  String cacheSize(Object size) {
-    return 'Cache size: $size';
-  }
+  String cacheSize(Object size) => 'Cache size: $size';
 }

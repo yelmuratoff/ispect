@@ -5,16 +5,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 
-import '../color_picker/utils.dart';
-import '../inspector/box_info.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 
 class BoxInfoPanelWidget extends StatelessWidget {
   const BoxInfoPanelWidget({
-    super.key,
     required this.boxInfo,
     required this.targetColor,
     required this.containerColor,
     required this.onVisibilityChanged,
+    super.key,
     this.isVisible = true,
   });
 

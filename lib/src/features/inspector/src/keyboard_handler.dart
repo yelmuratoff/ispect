@@ -20,9 +20,9 @@ class KeyboardHandler {
     ],
   });
 
-  final void Function(bool) onInspectorStateChanged;
-  final void Function(bool) onColorPickerStateChanged;
-  final void Function(bool) onZoomStateChanged;
+  final void Function({required bool value}) onInspectorStateChanged;
+  final void Function({required bool value}) onColorPickerStateChanged;
+  final void Function({required bool value}) onZoomStateChanged;
   final List<LogicalKeyboardKey> inspectorStateKeys;
   final List<LogicalKeyboardKey> colorPickerStateKeys;
   final List<LogicalKeyboardKey> zoomStateKeys;
@@ -47,11 +47,11 @@ class KeyboardHandler {
     if (event is KeyRepeatEvent) return false;
 
     if (inspectorStateKeys.contains(event.logicalKey)) {
-      onInspectorStateChanged(event is! KeyUpEvent);
+      onInspectorStateChanged(value: event is! KeyUpEvent);
     } else if (colorPickerStateKeys.contains(event.logicalKey)) {
-      onColorPickerStateChanged(event is! KeyUpEvent);
+      onColorPickerStateChanged(value: event is! KeyUpEvent);
     } else if (zoomStateKeys.contains(event.logicalKey)) {
-      onZoomStateChanged(event is! KeyUpEvent);
+      onZoomStateChanged(value: event is! KeyUpEvent);
     }
 
     return false;

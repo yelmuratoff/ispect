@@ -2,20 +2,19 @@ import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/common/widgets/builder/performance_overlay_builder.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:provider/provider.dart';
-
-import 'performance_overlay_builder.dart';
 
 class ISpectBuilder extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
 
   const ISpectBuilder({
-    super.key,
     required this.child,
     required this.navigatorKey,
+    super.key,
   });
 
   @override
@@ -34,8 +33,7 @@ class ISpectBuilder extends StatelessWidget {
           options: ispectModel.options,
           navigatorKey: navigatorKey,
           isPanelVisible: ispectModel.isISpectEnabled,
-          backgroundColor:
-              adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
+          backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onBackground,
           selectedTextColor: theme.colorScheme.onBackground,
@@ -44,8 +42,7 @@ class ISpectBuilder extends StatelessWidget {
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled:
-              ispectModel.isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
@@ -57,13 +54,10 @@ class ISpectBuilder extends StatelessWidget {
           localeOverride: ispectModel.options.locale,
           theme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor:
-                ispectModel.options.lightTheme.colorScheme.surface,
-            activeFeedbackModeColor:
-                ispectModel.options.lightTheme.colorScheme.primary,
+            feedbackSheetColor: ispectModel.options.lightTheme.colorScheme.surface,
+            activeFeedbackModeColor: ispectModel.options.lightTheme.colorScheme.primary,
             cardColor: ispectModel.options.lightTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle:
-                ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
+            bottomSheetDescriptionStyle: ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[800],
             ),
             dragHandleColor: Colors.grey[400],
@@ -72,13 +66,10 @@ class ISpectBuilder extends StatelessWidget {
           ),
           darkTheme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor:
-                ispectModel.options.darkTheme.colorScheme.surface,
-            activeFeedbackModeColor:
-                ispectModel.options.darkTheme.colorScheme.primary,
+            feedbackSheetColor: ispectModel.options.darkTheme.colorScheme.surface,
+            activeFeedbackModeColor: ispectModel.options.darkTheme.colorScheme.primary,
             cardColor: ispectModel.options.darkTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle:
-                ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
+            bottomSheetDescriptionStyle: ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[300],
             ),
             dragHandleColor: Colors.grey[400],
@@ -86,8 +77,7 @@ class ISpectBuilder extends StatelessWidget {
             textColor: Colors.grey[300]!,
           ),
           mode: FeedbackMode.navigate,
-          feedbackBuilder: (context, extras, scrollController) =>
-              simpleFeedbackBuilder(
+          feedbackBuilder: (context, extras, scrollController) => simpleFeedbackBuilder(
             context,
             extras,
             scrollController,

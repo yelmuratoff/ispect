@@ -5,8 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'ispect_localizations_en.dart';
-import 'ispect_localizations_ru.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_ru.dart';
 
 /// Callers can lookup localized strings with an instance of ISpectGeneratedLocalization
 /// returned by `ISpectGeneratedLocalization.of(context)`.
@@ -64,9 +64,7 @@ abstract class ISpectGeneratedLocalization {
 
   final String localeName;
 
-  static ISpectGeneratedLocalization? of(BuildContext context) {
-    return Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
-  }
+  static ISpectGeneratedLocalization? of(BuildContext context) => Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
 
   static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate = _ISpectGeneratedLocalizationDelegate();
 
@@ -88,10 +86,7 @@ abstract class ISpectGeneratedLocalization {
   ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('ru')
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('ru')];
 
   /// No description provided for @changeTheme.
   ///
@@ -506,9 +501,8 @@ class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectG
   const _ISpectGeneratedLocalizationDelegate();
 
   @override
-  Future<ISpectGeneratedLocalization> load(Locale locale) {
-    return SynchronousFuture<ISpectGeneratedLocalization>(lookupISpectGeneratedLocalization(locale));
-  }
+  Future<ISpectGeneratedLocalization> load(Locale locale) =>
+      SynchronousFuture<ISpectGeneratedLocalization>(lookupISpectGeneratedLocalization(locale));
 
   @override
   bool isSupported(Locale locale) => <String>['en', 'ru'].contains(locale.languageCode);
@@ -518,18 +512,16 @@ class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectG
 }
 
 ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return ISpectGeneratedLocalizationEn();
-    case 'ru': return ISpectGeneratedLocalizationRu();
+    case 'en':
+      return ISpectGeneratedLocalizationEn();
+    case 'ru':
+      return ISpectGeneratedLocalizationRu();
   }
 
-  throw FlutterError(
-    'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+  throw FlutterError('ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

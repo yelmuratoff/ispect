@@ -29,8 +29,8 @@ final class ISpectTalker {
   /// `initHandling` - This function initializes handling of the app.
   Future<void> initHandling({
     required Talker talker,
-    Function()? onPlatformDispatcherError,
-    Function()? onFlutterError,
+    void Function()? onPlatformDispatcherError,
+    void Function()? onFlutterError,
   }) async {
     ISpectTalker.talker = talker;
     info('ISpectTalker: Initialize started.');

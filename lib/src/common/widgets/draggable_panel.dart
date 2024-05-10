@@ -50,7 +50,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel> with SingleT
   void initState() {
     super.initState();
 
-    double childrenWidth = widget.options.fold(
+    final double childrenWidth = widget.options.fold(
       0.0,
       (double previousValue, IconButton iconButton) => previousValue + (iconButton.iconSize != null ? iconButton.iconSize! : 50.0),
     );
@@ -150,7 +150,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel> with SingleT
   Widget _buildMainPanel(BuildContext context) {
     if (widget.options.length == 1) {
       setState(() {
-        IconButton firstButton = widget.options.first;
+        final IconButton firstButton = widget.options.first;
         widget.options.first = IconButton(
           icon: firstButton.icon,
           onPressed: firstButton.onPressed,
@@ -178,7 +178,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel> with SingleT
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.5),
                       blurRadius: 4,
-                    )
+                    ),
                   ],
                 ),
                 child: ListView.builder(

@@ -2,7 +2,7 @@ import 'package:flutter/rendering.dart';
 
 /// Contains information about the currently selected [RenderBox].
 ///
-/// [containerRect] may be [null].
+/// [containerRect] may be `null`.
 class BoxInfo {
   BoxInfo({
     required this.targetRenderBox,
@@ -113,9 +113,7 @@ class BoxInfo {
   }
 }
 
-Rect? getRectFromRenderBox(RenderBox renderBox) {
-  return renderBox.attached ? (renderBox.localToGlobal(Offset.zero)) & renderBox.size : null;
-}
+Rect? getRectFromRenderBox(RenderBox renderBox) => renderBox.attached ? (renderBox.localToGlobal(Offset.zero)) & renderBox.size : null;
 
 double calculateBoxPosition({
   required Rect rect,

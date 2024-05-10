@@ -1,6 +1,12 @@
 ## 1.0.8
 
 * Upgrade dependencies to latest version
+* Formatted and some refactoring
+* Default lints replaced to `sizzle_lints`
+
+## 1.0.8
+
+* Upgrade dependencies to latest version
 
 ## 1.0.5
 

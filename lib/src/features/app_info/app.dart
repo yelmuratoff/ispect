@@ -16,7 +16,7 @@ part 'widgets/key_value_line.dart';
 
 class AppInfoPage extends StatefulWidget {
   final Talker talker;
-  const AppInfoPage({super.key, required this.talker});
+  const AppInfoPage({required this.talker, super.key});
 
   @override
   State<AppInfoPage> createState() => _AppInfoPageState();

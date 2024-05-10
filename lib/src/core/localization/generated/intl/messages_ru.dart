@@ -34,15 +34,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(text) => "Количество переходов BLoC: ${text}";
 
-  static String m7(text) =>
-      "Количество записей неудачных HTTP запросов: ${text}";
+  static String m7(text) => "Количество записей неудачных HTTP запросов: ${text}";
 
   static String m8(text) => "Количество записей HTTP запросов: ${text}";
 
   static String m9(text) => "Количество записей HTTP ответов: ${text}";
 
-  static String m10(text) =>
-      "Количество подробных и отладочных записей: ${text}";
+  static String m10(text) => "Количество подробных и отладочных записей: ${text}";
 
   static String m11(text) => "Количество записей об ошибках: ${text}";
 
@@ -62,61 +60,52 @@ class MessageLookup extends MessageLookupByLibrary {
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "actions": MessageLookupByLibrary.simpleMessage("Действия"),
         "all_logs_copied": MessageLookupByLibrary.simpleMessage(
-            "Все записи скопированы в буфер обмена"),
+          "Все записи скопированы в буфер обмена",
+        ),
         "app_data": MessageLookupByLibrary.simpleMessage("Данные приложения"),
         "app_info": MessageLookupByLibrary.simpleMessage(
-            "Проверить информацию об устройстве и пакете"),
-        "app_version":
-            MessageLookupByLibrary.simpleMessage("Версия приложения"),
+          "Проверить информацию об устройстве и пакете",
+        ),
+        "app_version": MessageLookupByLibrary.simpleMessage("Версия приложения"),
         "back_to_home": MessageLookupByLibrary.simpleMessage(
-            "Вернуться на главную страницу"),
-        "basic_settings":
-            MessageLookupByLibrary.simpleMessage("Основные настройки"),
+          "Вернуться на главную страницу",
+        ),
+        "basic_settings": MessageLookupByLibrary.simpleMessage("Основные настройки"),
         "build_version": MessageLookupByLibrary.simpleMessage("Версия сборки"),
         "cache_cleared": MessageLookupByLibrary.simpleMessage("Кэш очищен"),
         "cache_size": m0,
-        "change_environment":
-            MessageLookupByLibrary.simpleMessage("Сменить текущее окружение"),
+        "change_environment": MessageLookupByLibrary.simpleMessage("Сменить текущее окружение"),
         "change_theme": MessageLookupByLibrary.simpleMessage("Сменить тему"),
-        "clean_history":
-            MessageLookupByLibrary.simpleMessage("Очистить историю"),
+        "clean_history": MessageLookupByLibrary.simpleMessage("Очистить историю"),
         "clear_cache": MessageLookupByLibrary.simpleMessage("Очистить кэш"),
-        "collapse_logs":
-            MessageLookupByLibrary.simpleMessage("Свернуть журнал"),
-        "copied_to_clipboard":
-            MessageLookupByLibrary.simpleMessage("Скопировано в буфер обмена"),
+        "collapse_logs": MessageLookupByLibrary.simpleMessage("Свернуть журнал"),
+        "copied_to_clipboard": MessageLookupByLibrary.simpleMessage("Скопировано в буфер обмена"),
         "copy": MessageLookupByLibrary.simpleMessage("Скопировать"),
-        "copy_all_logs":
-            MessageLookupByLibrary.simpleMessage("Копировать все записи"),
+        "copy_all_logs": MessageLookupByLibrary.simpleMessage("Копировать все записи"),
         "counter_times_text": m1,
         "enabled": MessageLookupByLibrary.simpleMessage("Включено"),
         "environment_tap_number": m2,
-        "error_cache_clearing":
-            MessageLookupByLibrary.simpleMessage("Ошибка при очистке кэша"),
+        "error_cache_clearing": MessageLookupByLibrary.simpleMessage("Ошибка при очистке кэша"),
         "error_type": MessageLookupByLibrary.simpleMessage("Тип ошибки"),
-        "expand_logs":
-            MessageLookupByLibrary.simpleMessage("Развернуть журнал"),
+        "expand_logs": MessageLookupByLibrary.simpleMessage("Развернуть журнал"),
         "fix": MessageLookupByLibrary.simpleMessage("Сообщить"),
-        "go_to_logger":
-            MessageLookupByLibrary.simpleMessage("Перейти к журналу"),
-        "initialization_failed":
-            MessageLookupByLibrary.simpleMessage("Ошибка инициализации"),
+        "go_to_logger": MessageLookupByLibrary.simpleMessage("Перейти к журналу"),
+        "initialization_failed": MessageLookupByLibrary.simpleMessage("Ошибка инициализации"),
         "log_item_copied": MessageLookupByLibrary.simpleMessage(
-            "Запись скопирована в буфер обмена"),
+          "Запись скопирована в буфер обмена",
+        ),
         "login": MessageLookupByLibrary.simpleMessage("Вход"),
         "logout": MessageLookupByLibrary.simpleMessage("Выйти"),
         "not_found": MessageLookupByLibrary.simpleMessage("не найдена"),
-        "page_not_found":
-            MessageLookupByLibrary.simpleMessage("Ой, страница по этому пути"),
+        "page_not_found": MessageLookupByLibrary.simpleMessage("Ой, страница по этому пути"),
         "performance_tracker": MessageLookupByLibrary.simpleMessage(
-            "Отслеживание производительности"),
+          "Отслеживание производительности",
+        ),
         "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
-        "reverse_logs":
-            MessageLookupByLibrary.simpleMessage("Инвертировать журнал"),
+        "reverse_logs": MessageLookupByLibrary.simpleMessage("Инвертировать журнал"),
         "search": MessageLookupByLibrary.simpleMessage("Поиск"),
         "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
-        "share_logs_file":
-            MessageLookupByLibrary.simpleMessage("Поделиться файлом журнала"),
+        "share_logs_file": MessageLookupByLibrary.simpleMessage("Поделиться файлом журнала"),
         "talker_bloc_close_count": m3,
         "talker_bloc_create_count": m4,
         "talker_bloc_events_count": m5,
@@ -125,38 +114,31 @@ class MessageLookup extends MessageLookupByLibrary {
         "talker_http_requests_count": m8,
         "talker_http_responses_count": m9,
         "talker_type_bloc": MessageLookupByLibrary.simpleMessage("BLoC"),
-        "talker_type_debug":
-            MessageLookupByLibrary.simpleMessage("Подробные и отладочные"),
+        "talker_type_debug": MessageLookupByLibrary.simpleMessage("Подробные и отладочные"),
         "talker_type_debug_count": m10,
         "talker_type_errors": MessageLookupByLibrary.simpleMessage("Ошибки"),
         "talker_type_errors_count": m11,
-        "talker_type_exceptions":
-            MessageLookupByLibrary.simpleMessage("Исключения"),
+        "talker_type_exceptions": MessageLookupByLibrary.simpleMessage("Исключения"),
         "talker_type_exceptions_count": m12,
         "talker_type_good": MessageLookupByLibrary.simpleMessage("Хорошие"),
         "talker_type_good_count": m13,
-        "talker_type_http":
-            MessageLookupByLibrary.simpleMessage("HTTP запросы"),
+        "talker_type_http": MessageLookupByLibrary.simpleMessage("HTTP запросы"),
         "talker_type_info": MessageLookupByLibrary.simpleMessage("Информация"),
         "talker_type_info_count": m14,
-        "talker_type_provider":
-            MessageLookupByLibrary.simpleMessage("Провайдеры"),
+        "talker_type_provider": MessageLookupByLibrary.simpleMessage("Провайдеры"),
         "talker_type_provider_count": m15,
-        "talker_type_warnings":
-            MessageLookupByLibrary.simpleMessage("Предупреждения"),
+        "talker_type_warnings": MessageLookupByLibrary.simpleMessage("Предупреждения"),
         "talker_type_warnings_count": m16,
         "total_files_count": m17,
-        "turn_off_inspector":
-            MessageLookupByLibrary.simpleMessage("Выключить инспектор"),
-        "turn_on_inspector":
-            MessageLookupByLibrary.simpleMessage("Включить инспектор"),
+        "turn_off_inspector": MessageLookupByLibrary.simpleMessage("Выключить инспектор"),
+        "turn_on_inspector": MessageLookupByLibrary.simpleMessage("Включить инспектор"),
         "use_console_logs": MessageLookupByLibrary.simpleMessage(
-            "Использовать запись в консоль"),
-        "use_history":
-            MessageLookupByLibrary.simpleMessage("Использовать историю"),
+          "Использовать запись в консоль",
+        ),
+        "use_history": MessageLookupByLibrary.simpleMessage("Использовать историю"),
         "view_and_manage_data": MessageLookupByLibrary.simpleMessage(
-            "Просмотр и управление данными приложения"),
-        "you_already_in_logger":
-            MessageLookupByLibrary.simpleMessage("Вы уже на странице ISpect")
+          "Просмотр и управление данными приложения",
+        ),
+        "you_already_in_logger": MessageLookupByLibrary.simpleMessage("Вы уже на странице ISpect"),
       };
 }

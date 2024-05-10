@@ -3,21 +3,19 @@ import 'package:flutter/material.dart';
 
 class MultiValueListenableBuilder extends StatefulWidget {
   const MultiValueListenableBuilder({
-    super.key,
     required this.valueListenables,
     required this.builder,
+    super.key,
   });
 
-  final List<ValueListenable> valueListenables;
+  final List<ValueListenable<dynamic>> valueListenables;
   final WidgetBuilder builder;
 
   @override
-  State createState() =>
-      _MultiValueListenableBuilderState();
+  State createState() => _MultiValueListenableBuilderState();
 }
 
-class _MultiValueListenableBuilderState
-    extends State<MultiValueListenableBuilder> {
+class _MultiValueListenableBuilderState extends State<MultiValueListenableBuilder> {
   @override
   void initState() {
     super.initState();
@@ -47,7 +45,5 @@ class _MultiValueListenableBuilderState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return widget.builder(context);
-  }
+  Widget build(BuildContext context) => widget.builder(context);
 }

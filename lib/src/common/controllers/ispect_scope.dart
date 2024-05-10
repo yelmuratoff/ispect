@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_setters_without_getters
+
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/ispect_options.dart';
 import 'package:provider/provider.dart';
@@ -59,19 +61,17 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   const ISpectScopeWrapper({
-    super.key,
     required this.child,
     required this.options,
     required this.isISpectEnabled,
+    super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<ISpectScopeModel>(
-      create: (context) => ISpectScopeModel()
-        ..setOptions(options)
-        ..setISpect = isISpectEnabled,
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
+        create: (context) => ISpectScopeModel()
+          ..setOptions(options)
+          ..setISpect = isISpectEnabled,
+        child: child,
+      );
 }

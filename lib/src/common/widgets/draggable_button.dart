@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
+import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
-
-import '../controllers/draggable_button_controller.dart';
 
 /// state for the invoker widget (defaults to alwaysOpened)
 ///
@@ -39,9 +38,9 @@ class DraggableButton extends StatefulWidget {
   const DraggableButton({
     required this.child,
     required this.navigatorKey,
+    required this.options,
     super.key,
     this.state = InvokerState.collapsible,
-    required this.options,
   });
 
   @override
@@ -65,62 +64,60 @@ class _InfospectInvokerState extends State<DraggableButton> {
 
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) {
-        return _ButtonView(
-          onTap: () {
-            if (widget.state != InvokerState.alwaysOpened) {
-              if (!controller.isCollapsed) {
-                controller.setIsCollapsed(true);
-                if (widget.state == InvokerState.autoCollapse) {
-                  controller.startAutoCollapseTimer();
-                }
-              }
-            }
-          },
-          xPos: controller.xPos,
-          yPos: controller.yPos,
-          screenWidth: screenWidth,
-          onPanUpdate: (DragUpdateDetails details) {
+      builder: (context, child) => _ButtonView(
+        onTap: () {
+          if (widget.state != InvokerState.alwaysOpened) {
             if (!controller.isCollapsed) {
-              controller.xPos += details.delta.dx;
-              controller.yPos += details.delta.dy;
-            }
-          },
-          onPanEnd: (DragEndDetails details) {
-            if (!controller.isCollapsed) {
-              final screenWidth = MediaQuery.of(context).size.width;
-              const buttonWidth = 50;
-
-              final halfScreenWidth = screenWidth / 2;
-              double targetXPos;
-
-              if (controller.xPos + buttonWidth / 2 < halfScreenWidth) {
-                targetXPos = 0;
-              } else {
-                targetXPos = screenWidth - buttonWidth;
-              }
-
-              controller.xPos = targetXPos;
-
+              controller.setIsCollapsed(true);
               if (widget.state == InvokerState.autoCollapse) {
                 controller.startAutoCollapseTimer();
               }
             }
-          },
-          onButtonTap: () {
-            controller.setIsCollapsed(!controller.isCollapsed);
-            if (controller.isCollapsed) {
-              controller.cancelAutoCollapseTimer();
-              _launchInfospect();
-            } else if (widget.state == InvokerState.autoCollapse) {
+          }
+        },
+        xPos: controller.xPos,
+        yPos: controller.yPos,
+        screenWidth: screenWidth,
+        onPanUpdate: (DragUpdateDetails details) {
+          if (!controller.isCollapsed) {
+            controller.xPos += details.delta.dx;
+            controller.yPos += details.delta.dy;
+          }
+        },
+        onPanEnd: (DragEndDetails details) {
+          if (!controller.isCollapsed) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            const buttonWidth = 50;
+
+            final halfScreenWidth = screenWidth / 2;
+            double targetXPos;
+
+            if (controller.xPos + buttonWidth / 2 < halfScreenWidth) {
+              targetXPos = 0;
+            } else {
+              targetXPos = screenWidth - buttonWidth;
+            }
+
+            controller.xPos = targetXPos;
+
+            if (widget.state == InvokerState.autoCollapse) {
               controller.startAutoCollapseTimer();
             }
-          },
-          isCollapsed: controller.isCollapsed,
-          inLoggerPage: controller.inLoggerPage,
-          child: widget.child,
-        );
-      },
+          }
+        },
+        onButtonTap: () {
+          controller.setIsCollapsed(!controller.isCollapsed);
+          if (controller.isCollapsed) {
+            controller.cancelAutoCollapseTimer();
+            _launchInfospect();
+          } else if (widget.state == InvokerState.autoCollapse) {
+            controller.startAutoCollapseTimer();
+          }
+        },
+        isCollapsed: controller.isCollapsed,
+        inLoggerPage: controller.inLoggerPage,
+        child: widget.child,
+      ),
     );
   }
 
@@ -138,7 +135,7 @@ class _InfospectInvokerState extends State<DraggableButton> {
       } else {
         Navigator.push(
           widget.navigatorKey.currentContext!,
-          MaterialPageRoute(
+          MaterialPageRoute<dynamic>(
             builder: (context) => ISpectPage(
               options: widget.options,
             ),
@@ -153,14 +150,14 @@ class _InfospectInvokerState extends State<DraggableButton> {
 }
 
 class _ButtonView extends StatelessWidget {
-  final Function() onTap;
+  final void Function() onTap;
   final Widget child;
   final double xPos;
   final double yPos;
   final double screenWidth;
-  final Function(DragUpdateDetails) onPanUpdate;
-  final Function(DragEndDetails) onPanEnd;
-  final Function() onButtonTap;
+  final void Function(DragUpdateDetails) onPanUpdate;
+  final void Function(DragEndDetails) onPanEnd;
+  final void Function() onButtonTap;
   final bool isCollapsed;
   final bool inLoggerPage;
   const _ButtonView({
@@ -177,93 +174,91 @@ class _ButtonView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        TapRegion(
-          onTapOutside: (event) {
-            onTap.call();
-          },
-          child: Stack(
-            children: [
-              Positioned(
-                top: yPos,
-                left: (xPos < 50) ? xPos + 5 : null,
-                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: 50,
-                  width: isCollapsed ? 50 * 0.2 : 50 * 5,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: adjustColorDarken(context.ispectTheme.colorScheme.primaryContainer, 0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: xPos < 50,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.format_shapes_rounded),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.colorize_rounded),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.zoom_in_rounded),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt_rounded),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: yPos,
-                left: (xPos < 50) ? xPos + 5 : null,
-                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
-                child: GestureDetector(
-                  onPanUpdate: (details) {
-                    onPanUpdate.call(details);
-                  },
-                  onPanEnd: (details) {
-                    onPanEnd.call(details);
-                  },
-                  onTap: () {
-                    onButtonTap.call();
-                  },
+  Widget build(BuildContext context) => Stack(
+        children: [
+          child,
+          TapRegion(
+            onTapOutside: (event) {
+              onTap.call();
+            },
+            child: Stack(
+              children: [
+                Positioned(
+                  top: yPos,
+                  left: (xPos < 50) ? xPos + 5 : null,
+                  right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
                   child: AnimatedContainer(
-                    width: isCollapsed ? 50 * 0.2 : 50,
-                    height: 50,
                     duration: const Duration(milliseconds: 300),
+                    height: 50,
+                    width: isCollapsed ? 50 * 0.2 : 50 * 5,
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: context.ispectTheme.colorScheme.primaryContainer,
+                      color: adjustColorDarken(context.ispectTheme.colorScheme.primaryContainer, 0.3),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: !isCollapsed
-                        ? inLoggerPage
-                            ? const Icon(
-                                Icons.undo_rounded,
-                                color: Colors.white,
-                              )
-                            : const Icon(
-                                Icons.monitor_heart,
-                                color: Colors.white,
-                              )
-                        : null,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: xPos < 50,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.format_shapes_rounded),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.colorize_rounded),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.zoom_in_rounded),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.camera_alt_rounded),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Positioned(
+                  top: yPos,
+                  left: (xPos < 50) ? xPos + 5 : null,
+                  right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                  child: GestureDetector(
+                    onPanUpdate: (details) {
+                      onPanUpdate.call(details);
+                    },
+                    onPanEnd: (details) {
+                      onPanEnd.call(details);
+                    },
+                    onTap: () {
+                      onButtonTap.call();
+                    },
+                    child: AnimatedContainer(
+                      width: isCollapsed ? 50 * 0.2 : 50,
+                      height: 50,
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        color: context.ispectTheme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: !isCollapsed
+                          ? inLoggerPage
+                              ? const Icon(
+                                  Icons.undo_rounded,
+                                  color: Colors.white,
+                                )
+                              : const Icon(
+                                  Icons.monitor_heart,
+                                  color: Colors.white,
+                                )
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      );
 }

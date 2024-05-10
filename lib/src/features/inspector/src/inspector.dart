@@ -1,3 +1,5 @@
+// ignore_for_file: comment_references
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -5,18 +7,18 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:ispect/src/common/utils/ispect_options.dart';
 
-import './widgets/panel/inspector_panel.dart';
-import 'keyboard_handler.dart';
-import 'utils.dart';
-import 'widgets/color_picker/color_picker_overlay.dart';
-import 'widgets/color_picker/color_picker_snackbar.dart';
-import 'widgets/color_picker/utils.dart';
-import 'widgets/inspector/box_info.dart';
-import 'widgets/inspector/overlay.dart';
-import 'widgets/multi_value_listenable.dart';
-import 'widgets/zoom/zoom_overlay.dart';
+import 'package:ispect/src/common/utils/ispect_options.dart';
+import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
+import 'package:ispect/src/features/inspector/src/utils.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
+import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
+import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
+import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
+import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -24,10 +26,10 @@ import 'widgets/zoom/zoom_overlay.dart';
 /// You should use [Inspector] as a wrapper to [WidgetsApp.builder] or
 /// [MaterialApp.builder].
 ///
-/// If [isEnabled] is [null], then [Inspector] is automatically disabled on
-/// production builds (i.e. [kReleaseMode] is [true]).
+/// If [isEnabled] is `null`, then [Inspector] is automatically disabled on
+/// production builds (i.e. [kReleaseMode] is `true`).
 ///
-/// You can disable the widget inspector or the color picker by passing [false]
+/// You can disable the widget inspector or the color picker by passing `false`
 /// to either [isWidgetInspectorEnabled] or [isColorPickerEnabled].
 ///
 /// There are also keyboard shortcuts for the widget inspector and the color
@@ -37,15 +39,15 @@ import 'widgets/zoom/zoom_overlay.dart';
 /// [colorPickerShortcuts].
 ///
 /// [isPanelVisible] controls the visibility of the control panel - setting it
-/// to [false] will hide the panel, but the other functionality can still be
+/// to `false` will hide the panel, but the other functionality can still be
 /// accessed through keyboard shortcuts. If you want to disable the inspector
 /// entirely, use [isEnabled].
 class Inspector extends StatefulWidget {
   const Inspector({
-    super.key,
     required this.child,
     required this.navigatorKey,
     required this.options,
+    super.key,
     this.backgroundColor,
     this.textColor,
     this.selectedColor,
@@ -106,9 +108,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) {
-    return context?.findAncestorStateOfType<InspectorState>();
-  }
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -150,9 +150,15 @@ class InspectorState extends State<Inspector> {
     super.initState();
 
     _keyboardHandler = KeyboardHandler(
-      onInspectorStateChanged: _onInspectorStateChanged,
-      onColorPickerStateChanged: _onColorPickerStateChanged,
-      onZoomStateChanged: _onZoomStateChanged,
+      onInspectorStateChanged: ({required value}) {
+        _onInspectorStateChanged(value);
+      },
+      onColorPickerStateChanged: ({required value}) {
+        _onColorPickerStateChanged(value);
+      },
+      onZoomStateChanged: ({required value}) {
+        _onZoomStateChanged(value);
+      },
       colorPickerStateKeys: widget.colorPickerShortcuts,
       inspectorStateKeys: widget.widgetInspectorShortcuts,
       zoomStateKeys: widget.zoomShortcuts,
@@ -193,7 +199,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset = (_stackKey.currentContext!.findRenderObject() as RenderStack).localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -320,6 +326,7 @@ class InspectorState extends State<Inspector> {
 
     var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
+    // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
 
     return offset0;
@@ -339,7 +346,7 @@ class InspectorState extends State<Inspector> {
       y: y,
     );
 
-    final overlayOffset = (_stackKey.currentContext!.findRenderObject() as RenderStack).localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _selectedColorOffsetNotifier.value = offset - overlayOffset;
   }
@@ -349,7 +356,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset = (_stackKey.currentContext!.findRenderObject() as RenderStack).localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -415,7 +422,7 @@ class InspectorState extends State<Inspector> {
               _zoomStateNotifier,
             ],
             builder: (context) {
-              Widget child = widget.child;
+              final Widget child = widget.child;
 
               final isAbsorbingPointer = _colorPickerStateNotifier.value || _inspectorStateNotifier.value || _zoomStateNotifier.value;
 

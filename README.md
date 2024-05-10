@@ -1,7 +1,7 @@
 <div align="center">
 <p align="center">
     <a href="https://github.com/K1yoshiSho/ispect" align="center">
-        <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect.png?raw=true" width="400px">
+        <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400px">
     </a>
 </p>
 </div>
@@ -67,7 +67,7 @@ You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
 <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
-  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/preview_usage.gif?raw=true"
+  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/preview_usage.gif?raw=true"
   alt="ISpect's example" width="250" style="margin-right: 10px;"/>
 </div>
 

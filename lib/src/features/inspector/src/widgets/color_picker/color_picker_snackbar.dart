@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 
-import 'utils.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 
 void showColorPickerResultSnackbar({
   required BuildContext context,
@@ -20,7 +20,6 @@ void showColorPickerResultSnackbar({
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: Theme.of(context).dividerColor,
-          width: 1.0,
         ),
       ),
       content: Row(
@@ -34,7 +33,6 @@ void showColorPickerResultSnackbar({
               borderRadius: BorderRadius.circular(4.0),
               border: Border.all(
                 color: Theme.of(context).dividerColor,
-                width: 1.0,
               ),
             ),
           ),

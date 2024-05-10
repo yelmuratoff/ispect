@@ -23,13 +23,12 @@ final class ISpectOptions {
     ThemeData? darkTheme,
     Locale? locale,
     bool? isInitialized,
-  }) {
-    return ISpectOptions(
-      talker: talker ?? this.talker,
-      themeMode: themeMode ?? this.themeMode,
-      lightTheme: lightTheme ?? this.lightTheme,
-      darkTheme: darkTheme ?? this.darkTheme,
-      locale: locale ?? this.locale,
-    );
-  }
+  }) =>
+      ISpectOptions(
+        talker: talker ?? this.talker,
+        themeMode: themeMode ?? this.themeMode,
+        lightTheme: lightTheme ?? this.lightTheme,
+        darkTheme: darkTheme ?? this.darkTheme,
+        locale: locale ?? this.locale,
+      );
 }

@@ -40,7 +40,7 @@ final class ISpectLocalization {
     return const Locale('en');
   }
 
-  /// Obtain [ISpectAppLocalizations] instance from [BuildContext].
+  /// Obtain `ISpectAppLocalizations` instance from `BuildContext`.
   static ISpectGeneratedLocalization of(BuildContext context) {
     debugCheckHasISpectAppLocalizations(context);
     return Localizations.of<ISpectGeneratedLocalization>(
@@ -69,7 +69,7 @@ bool debugCheckHasISpectAppLocalizations(BuildContext context) {
         ),
         ...context.describeMissingAncestor(
           expectedAncestorType: ISpectGeneratedLocalization,
-        )
+        ),
       ]);
     }
     return true;

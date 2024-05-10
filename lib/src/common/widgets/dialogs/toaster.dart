@@ -40,8 +40,8 @@ final class ISpectToaster {
   static Future<void> _showToast(
     BuildContext context, {
     required String title,
-    String? message,
     required Color color,
+    String? message,
   }) async =>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
