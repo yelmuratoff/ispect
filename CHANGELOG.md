@@ -1,7 +1,8 @@
-## 1.1.3
+## 1.1.4
 
 * Riverpod logs added.
 * Some updates in Talker Page.
+* Some updates with Feedback builder.
 
 ## 1.1.2
 

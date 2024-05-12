@@ -134,7 +134,7 @@ class _StringFeedbackState extends State<StringFeedback> {
             child: Text(
               FeedbackLocalizations.of(context).submitButtonText,
               style: TextStyle(
-                color: FeedbackTheme.of(context).activeFeedbackModeColor,
+                color: FeedbackTheme.of(context).textColor,
               ),
             ),
             onPressed: () => widget.onSubmit(controller.text),
