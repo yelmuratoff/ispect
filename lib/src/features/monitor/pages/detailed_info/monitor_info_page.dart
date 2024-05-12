@@ -12,21 +12,18 @@ part 'view/monitor_info_view.dart';
 class MonitorPage extends StatelessWidget {
   const MonitorPage({
     required this.exceptions,
-    required this.theme,
     required this.typeName,
     required this.options,
     super.key,
   });
 
   final String typeName;
-  final TalkerScreenTheme theme;
   final List<TalkerData> exceptions;
   final ISpectOptions options;
 
   @override
   Widget build(BuildContext context) => _MonitorView(
         typeName: typeName,
-        theme: theme,
         exceptions: exceptions,
         options: options,
         onCopyTap: (itemContext, data) =>

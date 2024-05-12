@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:provider/provider.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -11,7 +12,12 @@ void main() {
   /// Use global variable [talkerWrapper] for logging.
   talkerWrapper.initHandling(talker: talker);
   talkerWrapper.debug('Hello World!');
-  runApp(App(talker: talker));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: App(talker: talker),
+    ),
+  );
 }
 
 class App extends StatefulWidget {
@@ -30,10 +36,15 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    final ISpectOptions options = ISpectOptions(
-      talker: widget.talker,
-      themeMode: ThemeMode.dark,
-      lightTheme: ThemeData.light(),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final options = ISpectOptions(
+      themeMode: themeProvider.themeMode,
+      lightTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+      ),
       darkTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
@@ -56,9 +67,20 @@ class _AppState extends State<App> {
         /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
         localizationsDelegates: ISpectLocalizations.localizationDelegates(
             [AppGeneratedLocalization.delegate]),
-        theme: options.lightTheme,
-        darkTheme: options.darkTheme,
-        themeMode: options.themeMode,
+        theme: ThemeData.from(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          ),
+        ),
+
+        darkTheme: ThemeData.from(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
+        ),
+        themeMode: themeProvider.themeMode,
         builder: (context, child) {
           /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
           child = ISpectBuilder(
@@ -79,6 +101,8 @@ class _Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final iSpect = ISpect.read(context);
     return Scaffold(
       body: Center(
         child: Column(
@@ -87,8 +111,15 @@ class _Home extends StatelessWidget {
             Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
+                themeProvider.toggleTheme();
+                iSpect.setThemeMode(themeProvider.themeMode);
+              },
+              child: const Text('Toggle theme'),
+            ),
+            ElevatedButton(
+              onPressed: () {
                 /// Use `ISpect` to toggle `ISpect` visibility.
-                ISpect.read(context).toggleISpect();
+                iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),
             ),
@@ -96,5 +127,17 @@ class _Home extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.dark;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode =
+        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    notifyListeners();
   }
 }

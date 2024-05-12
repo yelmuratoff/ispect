@@ -1,5 +1,10 @@
 ## 1.1.0
 
+* TalkerScreenTheme was removed. Use ISpectOptions theme properties.
+* TalkerScreenTheme was removed. Use ISpectOptions theme properties.
+
+## 1.1.0
+
 * Upgrade dependencies to latest version
 * Some refactoring with `ISpectTalker`
 

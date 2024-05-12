@@ -12,13 +12,9 @@ import 'package:talker_flutter/talker_flutter.dart';
 class TalkerSettingsBottomSheets extends StatefulWidget {
   const TalkerSettingsBottomSheets({
     required this.talker,
-    required this.talkerScreenTheme,
     required this.options,
     super.key,
   });
-
-  /// Theme for customize [TalkerScreen]
-  final TalkerScreenTheme talkerScreenTheme;
 
   /// Talker implementation
   final ValueNotifier<Talker> talker;
@@ -44,10 +40,9 @@ class _TalkerSettingsBottomSheetState
     final scopedModel = ISpect.watch(context);
     final settings = <Widget>[
       TalkerSettingsCardItem(
-        talkerScreenTheme: widget.talkerScreenTheme,
         title: context.ispectL10n.enabled,
         enabled: widget.talker.value.settings.enabled,
-        backgroundColor: widget.talkerScreenTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
           (enabled ? widget.talker.value.enable : widget.talker.value.disable)
               .call();
@@ -56,9 +51,8 @@ class _TalkerSettingsBottomSheetState
       ),
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
-        talkerScreenTheme: widget.talkerScreenTheme,
         title: context.ispectL10n.useConsoleLogs,
-        backgroundColor: widget.talkerScreenTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useConsoleLogs,
         onChanged: (enabled) {
           widget.talker.value.configure(
@@ -71,9 +65,8 @@ class _TalkerSettingsBottomSheetState
       ),
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
-        talkerScreenTheme: widget.talkerScreenTheme,
         title: context.ispectL10n.useHistory,
-        backgroundColor: widget.talkerScreenTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useHistory,
         onChanged: (enabled) {
           widget.talker.value.configure(
@@ -85,9 +78,8 @@ class _TalkerSettingsBottomSheetState
         },
       ),
       TalkerSettingsCardItem(
-        talkerScreenTheme: widget.talkerScreenTheme,
         title: context.ispectL10n.performanceTracker,
-        backgroundColor: widget.talkerScreenTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         enabled: scopedModel.isPerformanceTrackingEnabled,
         onChanged: (enabled) {
           scopedModel.togglePerformanceTracking();
@@ -97,7 +89,6 @@ class _TalkerSettingsBottomSheetState
 
     return BaseBottomSheet(
       title: context.ispectL10n.settings,
-      talkerScreenTheme: widget.talkerScreenTheme,
       child: Expanded(
         child: CustomScrollView(
           slivers: [

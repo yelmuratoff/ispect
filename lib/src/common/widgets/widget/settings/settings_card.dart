@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/src/ui/widgets/base_card.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 class TalkerSettingsCardItem extends StatelessWidget {
   const TalkerSettingsCardItem({
-    required this.talkerScreenTheme,
     required this.title,
     required this.enabled,
     required this.onChanged,
@@ -20,7 +18,6 @@ class TalkerSettingsCardItem extends StatelessWidget {
   final String title;
   final bool enabled;
   final Function(bool enabled) onChanged;
-  final TalkerScreenTheme talkerScreenTheme;
   final bool canEdit;
   final Color backgroundColor;
 
@@ -46,7 +43,7 @@ class TalkerSettingsCardItem extends StatelessWidget {
                 title: Text(
                   title,
                   style: TextStyle(
-                    color: talkerScreenTheme.textColor,
+                    color: context.ispectTheme.textColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),

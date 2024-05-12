@@ -11,7 +11,6 @@ class TalkerAppBar extends StatelessWidget {
     required this.title,
     required this.leading,
     required this.talker,
-    required this.talkerTheme,
     required this.titlesController,
     required this.controller,
     required this.titles,
@@ -29,7 +28,7 @@ class TalkerAppBar extends StatelessWidget {
   final Widget? leading;
 
   final Talker talker;
-  final TalkerScreenTheme talkerTheme;
+
   final GroupButtonController titlesController;
   final TalkerViewController controller;
 
@@ -59,7 +58,6 @@ class TalkerAppBar extends StatelessWidget {
             child: _MonitorButton(
               talker: talker,
               onPressed: onMonitorTap,
-              talkerTheme: talkerTheme,
             ),
           ),
           UnconstrainedBox(
@@ -136,7 +134,7 @@ class TalkerAppBar extends StatelessWidget {
                                         .copyWith(
                                       color: selected
                                           ? Colors.white
-                                          : talkerTheme.textColor,
+                                          : context.ispectTheme.textColor,
                                     ),
                                   ),
                                 ],
@@ -154,7 +152,6 @@ class TalkerAppBar extends StatelessWidget {
                   _SearchTextField(
                     controller: controller,
                     focusNode: focusNode,
-                    talkerTheme: talkerTheme,
                     isDark: isDark,
                   ),
                 ],
@@ -172,13 +169,11 @@ class TalkerAppBar extends StatelessWidget {
 
 class _SearchTextField extends StatelessWidget {
   const _SearchTextField({
-    required this.talkerTheme,
     required this.controller,
     required this.focusNode,
     required this.isDark,
   });
 
-  final TalkerScreenTheme talkerTheme;
   final TalkerViewController controller;
   final FocusNode focusNode;
   final bool isDark;
@@ -190,7 +185,7 @@ class _SearchTextField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextFormField(
         style: theme.textTheme.bodyLarge!.copyWith(
-          color: talkerTheme.textColor,
+          color: context.ispectTheme.textColor,
           fontSize: 14,
         ),
         cursorColor: isDark
@@ -234,7 +229,7 @@ class _SearchTextField extends StatelessWidget {
           ),
           hintText: context.ispectL10n.search,
           hintStyle: theme.textTheme.bodyLarge!.copyWith(
-            color: talkerTheme.textColor,
+            color: context.ispectTheme.textColor,
             fontSize: 14,
           ),
         ),
@@ -247,11 +242,10 @@ class _MonitorButton extends StatelessWidget {
   const _MonitorButton({
     required this.talker,
     required this.onPressed,
-    required this.talkerTheme,
   });
 
   final Talker talker;
-  final TalkerScreenTheme talkerTheme;
+
   final VoidCallback onPressed;
 
   @override

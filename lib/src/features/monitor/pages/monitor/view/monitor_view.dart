@@ -1,12 +1,10 @@
 part of '../talker_monitor_page.dart';
 
 class _MonitorView extends StatelessWidget {
-  final TalkerScreenTheme theme;
   final ISpectOptions options;
   final void Function(List<TalkerData>, String) openTypedLogsPage;
 
   const _MonitorView({
-    required this.theme,
     required this.options,
     required this.openTypedLogsPage,
   });
@@ -29,7 +27,7 @@ class _MonitorView extends StatelessWidget {
           ),
         ),
         body: TalkerBuilder(
-          talker: options.talker,
+          talker: talkerWrapper.talker,
           builder: (context, data) {
             final logs = data.whereType<TalkerLog>().toList();
             final errors = data.whereType<TalkerError>().toList();
@@ -205,7 +203,9 @@ class _MonitorView extends StatelessWidget {
                     child: _TalkerMonitorsCard(
                       logs: errors,
                       title: context.ispectL10n.talkerTypeErrors,
-                      color: theme.logColors.getByType(TalkerLogType.error),
+                      color: const TalkerScreenTheme()
+                          .logColors
+                          .getByType(TalkerLogType.error),
                       icon: Icons.error_outline_rounded,
                       subtitle: context.ispectL10n
                           .talkerTypeErrorsCount(errors.length),
@@ -222,7 +222,9 @@ class _MonitorView extends StatelessWidget {
                     child: _TalkerMonitorsCard(
                       logs: exceptions,
                       title: context.ispectL10n.talkerTypeExceptions,
-                      color: theme.logColors.getByType(TalkerLogType.exception),
+                      color: const TalkerScreenTheme()
+                          .logColors
+                          .getByType(TalkerLogType.exception),
                       icon: Icons.error_outline_rounded,
                       subtitle: context.ispectL10n
                           .talkerTypeExceptionsCount(exceptions.length),
@@ -239,7 +241,9 @@ class _MonitorView extends StatelessWidget {
                     child: _TalkerMonitorsCard(
                       logs: warnings,
                       title: context.ispectL10n.talkerTypeWarnings,
-                      color: theme.logColors.getByType(TalkerLogType.warning),
+                      color: const TalkerScreenTheme()
+                          .logColors
+                          .getByType(TalkerLogType.warning),
                       icon: Icons.warning_amber_rounded,
                       subtitle: context.ispectL10n
                           .talkerTypeWarningsCount(warnings.length),
@@ -256,7 +260,9 @@ class _MonitorView extends StatelessWidget {
                     child: _TalkerMonitorsCard(
                       logs: infos,
                       title: context.ispectL10n.talkerTypeInfo,
-                      color: theme.logColors.getByType(TalkerLogType.info),
+                      color: const TalkerScreenTheme()
+                          .logColors
+                          .getByType(TalkerLogType.info),
                       icon: Icons.info_outline_rounded,
                       subtitle:
                           context.ispectL10n.talkerTypeInfoCount(infos.length),
@@ -313,7 +319,9 @@ class _MonitorView extends StatelessWidget {
                     child: _TalkerMonitorsCard(
                       logs: verboseDebug,
                       title: context.ispectL10n.talkerTypeDebug,
-                      color: theme.logColors.getByType(TalkerLogType.verbose),
+                      color: const TalkerScreenTheme()
+                          .logColors
+                          .getByType(TalkerLogType.verbose),
                       icon: Icons.remove_red_eye_outlined,
                       subtitle: context.ispectL10n
                           .talkerTypeDebugCount(verboseDebug.length),

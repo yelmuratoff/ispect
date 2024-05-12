@@ -13,17 +13,14 @@ part 'view/monitor_view.dart';
 
 class TalkerMonitorPage extends StatelessWidget {
   const TalkerMonitorPage({
-    required this.theme,
     required this.options,
     super.key,
   });
 
-  final TalkerScreenTheme theme;
   final ISpectOptions options;
 
   @override
   Widget build(BuildContext context) => _MonitorView(
-        theme: theme,
         options: options,
         openTypedLogsPage: (list, type) {
           _openTypedLogsScreen(context, list, type);
@@ -39,7 +36,6 @@ class TalkerMonitorPage extends StatelessWidget {
       MaterialPageRoute<Widget>(
         builder: (context) => MonitorPage(
           exceptions: logs,
-          theme: theme,
           typeName: typeName,
           options: options,
         ),

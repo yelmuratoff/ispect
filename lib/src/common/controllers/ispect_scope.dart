@@ -1,16 +1,14 @@
 // ignore_for_file: avoid_setters_without_getters
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/utils/ispect_options.dart';
+import 'package:ispect/ispect.dart';
 import 'package:provider/provider.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 /// `ISpectScopeModel` is a model class that holds the state of the ISpect scope.
 class ISpectScopeModel with ChangeNotifier {
   bool _isISpectEnabled = false;
   bool _isPerformanceTrackingEnabled = false;
   ISpectOptions _options = ISpectOptions(
-    talker: Talker(),
     themeMode: ThemeMode.system,
     lightTheme: ThemeData.light(),
     darkTheme: ThemeData.dark(),

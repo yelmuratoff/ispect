@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 
 class BaseBottomSheet extends StatelessWidget {
   const BaseBottomSheet({
-    required this.talkerScreenTheme,
     required this.child,
     required this.title,
     super.key,
   });
 
-  final TalkerScreenTheme talkerScreenTheme;
   final Widget child;
   final String title;
 
@@ -25,7 +23,7 @@ class BaseBottomSheet extends StatelessWidget {
           bottom: mq.padding.bottom,
         ),
         decoration: BoxDecoration(
-          color: talkerScreenTheme.backgroundColor,
+          color: context.ispectTheme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -42,14 +40,14 @@ class BaseBottomSheet extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.headlineSmall
-                        ?.copyWith(color: talkerScreenTheme.textColor),
+                        ?.copyWith(color: context.ispectTheme.textColor),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     visualDensity: VisualDensity.compact,
                     icon: Icon(
                       Icons.close_rounded,
-                      color: talkerScreenTheme.textColor,
+                      color: context.ispectTheme.textColor,
                     ),
                   ),
                 ],

@@ -9,3 +9,7 @@ extension ISpectContextExtension on BuildContext {
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 }
+
+extension ISpectColorExtension on ThemeData {
+  Color get textColor => colorScheme.onSurface;
+}

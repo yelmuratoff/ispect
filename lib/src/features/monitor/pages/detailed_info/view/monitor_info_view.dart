@@ -2,13 +2,12 @@ part of '../monitor_info_page.dart';
 
 class _MonitorView extends StatelessWidget {
   final String typeName;
-  final TalkerScreenTheme theme;
+
   final List<TalkerData> exceptions;
   final ISpectOptions options;
   final void Function(BuildContext, TalkerData)? onCopyTap;
   const _MonitorView({
     required this.typeName,
-    required this.theme,
     required this.exceptions,
     required this.options,
     required this.onCopyTap,
