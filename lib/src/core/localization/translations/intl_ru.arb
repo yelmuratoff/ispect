@@ -94,6 +94,31 @@
          "text": {}
       }
    },
+   "talkerTypeRiverpod": "Riverpod",
+   "talkerRiverpodAddCount": "Количество добавлений Riverpod: {text}",
+   "@talkerRiverpodAddCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodUpdateCount": "Количество обновлений Riverpod: {text}",
+   "@talkerRiverpodUpdateCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodDisposeCount": "Количество закрытий Riverpod: {text}",
+   "@talkerRiverpodDisposeCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodFailsCount": "Количество ошибок Riverpod: {text}",
+   "@talkerRiverpodFailsCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
    "actions": "Действия",
    "reverseLogs": "Инвертировать журнал",
    "copyAllLogs": "Копировать все записи",

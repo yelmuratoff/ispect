@@ -1,44 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
-import 'package:provider/provider.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
-GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+
+class ThemeManager extends StateNotifier<ThemeMode> {
+  ThemeManager() : super(ThemeMode.dark);
+
+  void toggleTheme() {
+    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  }
+}
 
 void main() {
   final talker = TalkerFlutter.init();
-
-  /// Use global variable [talkerWrapper] for logging.
   talkerWrapper.initHandling(talker: talker);
   talkerWrapper.debug('Hello World!');
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    ProviderScope(
+      observers: [
+        TalkerRiverpodObserver(talker: talker),
+      ],
       child: App(talker: talker),
     ),
   );
 }
 
-class App extends StatefulWidget {
+class App extends ConsumerWidget {
   final Talker talker;
   const App({super.key, required this.talker});
 
   @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
     final options = ISpectOptions(
-      themeMode: themeProvider.themeMode,
+      themeMode: themeMode,
       lightTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
@@ -51,43 +52,39 @@ class _AppState extends State<App> {
           brightness: Brightness.dark,
         ),
       ),
-      locale: const Locale('en'),
+      locale: const Locale('ru'),
     );
 
-    /// It is necessary to wrap `MaterialApp` with `ISpectScopeWrapper`.
     return ISpectScopeWrapper(
       options: options,
       isISpectEnabled: true,
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
-          TalkerRouteObserver(widget.talker),
+          TalkerRouteObserver(talker),
         ],
-
-        /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
-        localizationsDelegates: ISpectLocalizations.localizationDelegates(
-            [AppGeneratedLocalization.delegate]),
+        locale: options.locale,
+        localizationsDelegates: ISpectLocalizations.localizationDelegates([
+          AppGeneratedLocalization.delegate,
+        ]),
         theme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
             brightness: Brightness.light,
           ),
         ),
-
         darkTheme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
             brightness: Brightness.dark,
           ),
         ),
-        themeMode: themeProvider.themeMode,
+        themeMode: themeMode,
         builder: (context, child) {
-          /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
             child: child,
           );
-
           return child;
         },
         home: const _Home(),
@@ -96,12 +93,12 @@ class _AppState extends State<App> {
   }
 }
 
-class _Home extends StatelessWidget {
+class _Home extends ConsumerWidget {
   const _Home();
 
   @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
     final iSpect = ISpect.read(context);
     return Scaffold(
       body: Center(
@@ -111,14 +108,13 @@ class _Home extends StatelessWidget {
             Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
-                themeProvider.toggleTheme();
-                iSpect.setThemeMode(themeProvider.themeMode);
+                ref.read(themeProvider.notifier).toggleTheme();
+                iSpect.setThemeMode(themeMode);
               },
               child: const Text('Toggle theme'),
             ),
             ElevatedButton(
               onPressed: () {
-                /// Use `ISpect` to toggle `ISpect` visibility.
                 iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),
@@ -127,17 +123,5 @@ class _Home extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.dark;
-
-  ThemeMode get themeMode => _themeMode;
-
-  void toggleTheme() {
-    _themeMode =
-        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    notifyListeners();
   }
 }

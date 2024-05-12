@@ -94,6 +94,31 @@
          "text": {}
       }
    },
+   "talkerTypeRiverpod": "Riverpod",
+   "talkerRiverpodAddCount": "Riverpod adds count: {text}",
+   "@talkerRiverpodAddCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodUpdateCount": "Riverpod updates count: {text}",
+   "@talkerRiverpodUpdateCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodDisposeCount": "Riverpod disposes count: {text}",
+   "@talkerRiverpodDisposeCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
+   "talkerRiverpodFailsCount": "Riverpod fails count: {text}",
+   "@talkerRiverpodFailsCount": {
+      "placeholders": {
+         "text": {}
+      }
+   },
    "actions": "Actions",
    "reverseLogs": "Reverse logs",
    "copyAllLogs": "Copy all logs",

@@ -1,3 +1,8 @@
+## 1.1.3
+
+* Riverpod logs added.
+* Some updates in Talker Page.
+
 ## 1.1.2
 
 * Fixed issues with light theme.

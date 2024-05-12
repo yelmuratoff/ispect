@@ -60,19 +60,13 @@ import 'package:ispect/src/core/localization/generated/ispect_localizations_ru.d
 /// be consistent with the languages listed in the ISpectGeneratedLocalization.supportedLocales
 /// property.
 abstract class ISpectGeneratedLocalization {
-  ISpectGeneratedLocalization(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ISpectGeneratedLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
-  static ISpectGeneratedLocalization? of(BuildContext context) =>
-      Localizations.of<ISpectGeneratedLocalization>(
-        context,
-        ISpectGeneratedLocalization,
-      );
+  static ISpectGeneratedLocalization? of(BuildContext context) => Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
 
-  static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate =
-      _ISpectGeneratedLocalizationDelegate();
+  static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate = _ISpectGeneratedLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,8 +78,7 @@ abstract class ISpectGeneratedLocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -93,10 +86,7 @@ abstract class ISpectGeneratedLocalization {
   ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('ru'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('ru')];
 
   /// No description provided for @changeTheme.
   ///
@@ -241,6 +231,36 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'BLoC creates count: {text}'**
   String talkerBlocCreatesCount(Object text);
+
+  /// No description provided for @talkerTypeRiverpod.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod'**
+  String get talkerTypeRiverpod;
+
+  /// No description provided for @talkerRiverpodAddCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod adds count: {text}'**
+  String talkerRiverpodAddCount(Object text);
+
+  /// No description provided for @talkerRiverpodUpdateCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod updates count: {text}'**
+  String talkerRiverpodUpdateCount(Object text);
+
+  /// No description provided for @talkerRiverpodDisposeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod disposes count: {text}'**
+  String talkerRiverpodDisposeCount(Object text);
+
+  /// No description provided for @talkerRiverpodFailsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod fails count: {text}'**
+  String talkerRiverpodFailsCount(Object text);
 
   /// No description provided for @actions.
   ///
@@ -507,19 +527,15 @@ abstract class ISpectGeneratedLocalization {
   String cacheSize(Object size);
 }
 
-class _ISpectGeneratedLocalizationDelegate
-    extends LocalizationsDelegate<ISpectGeneratedLocalization> {
+class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocalization> {
   const _ISpectGeneratedLocalizationDelegate();
 
   @override
   Future<ISpectGeneratedLocalization> load(Locale locale) =>
-      SynchronousFuture<ISpectGeneratedLocalization>(
-        lookupISpectGeneratedLocalization(locale),
-      );
+      SynchronousFuture<ISpectGeneratedLocalization>(lookupISpectGeneratedLocalization(locale));
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'ru'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectGeneratedLocalizationDelegate old) => false;
@@ -534,8 +550,7 @@ ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
       return ISpectGeneratedLocalizationRu();
   }
 
-  throw FlutterError(
-      'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+  throw FlutterError('ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
       'an issue with the localizations generation tool. Please file an issue '
       'on GitHub with a reproducible sample app and the gen-l10n configuration '
       'that was used.');

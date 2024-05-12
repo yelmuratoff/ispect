@@ -17,7 +17,8 @@ dependencies:
   
   talker_flutter: ^4.2.0
   feedback_plus: ^0.1.2
-  provider: ^6.1.2
+  flutter_riverpod: ^2.5.1
+  talker_riverpod_logger: ^1.0.0
 
 dev_dependencies:
   flutter_test:
