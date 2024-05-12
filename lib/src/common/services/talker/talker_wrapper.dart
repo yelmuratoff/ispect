@@ -22,11 +22,8 @@ final class ISpectTalker {
     }
   }
 
-  static Talker get talker => instance._talker;
-  static set talker(Talker talker) => instance._talker = talker;
-
-  // static final ISpectTalker _instance = ISpectTalker._();
-  // static ISpectTalker get instance => _instance;
+  Talker get talker => instance._talker;
+  set talker(Talker talker) => instance._talker = talker;
 
   /// `initHandling` - This function initializes handling of the app.
   Future<void> initHandling({
@@ -34,7 +31,7 @@ final class ISpectTalker {
     void Function()? onPlatformDispatcherError,
     void Function()? onFlutterError,
   }) async {
-    ISpectTalker.talker = talker;
+    talkerWrapper.talker = talker;
     info('ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -1,3 +1,8 @@
+## 1.1.0
+
+* Upgrade dependencies to latest version
+* Some refactoring with `ISpectTalker`
+
 ## 1.0.8
 
 * Upgrade dependencies to latest version
