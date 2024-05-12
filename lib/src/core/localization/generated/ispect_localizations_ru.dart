@@ -11,61 +11,72 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Подробные и отладочные';
 
   @override
-  String talkerTypeDebugCount(Object text) => 'Количество подробных и отладочных записей: $text';
+  String talkerTypeDebugCount(Object text) =>
+      'Количество подробных и отладочных записей: $text';
 
   @override
   String get talkerTypeGood => 'Хорошие';
 
   @override
-  String talkerTypeGoodCount(Object text) => 'Количество хороших записей: $text';
+  String talkerTypeGoodCount(Object text) =>
+      'Количество хороших записей: $text';
 
   @override
   String get talkerTypeProvider => 'Провайдеры';
 
   @override
-  String talkerTypeProviderCount(Object text) => 'Количество записей провайдеров: $text';
+  String talkerTypeProviderCount(Object text) =>
+      'Количество записей провайдеров: $text';
 
   @override
   String get talkerTypeInfo => 'Информация';
 
   @override
-  String talkerTypeInfoCount(Object text) => 'Количество информационных записей: $text';
+  String talkerTypeInfoCount(Object text) =>
+      'Количество информационных записей: $text';
 
   @override
   String get talkerTypeWarnings => 'Предупреждения';
 
   @override
-  String talkerTypeWarningsCount(Object text) => 'Количество предупреждений: $text';
+  String talkerTypeWarningsCount(Object text) =>
+      'Количество предупреждений: $text';
 
   @override
   String get talkerTypeExceptions => 'Исключения';
 
   @override
-  String talkerTypeExceptionsCount(Object text) => 'Количество записей исключений: $text';
+  String talkerTypeExceptionsCount(Object text) =>
+      'Количество записей исключений: $text';
 
   @override
   String get talkerTypeErrors => 'Ошибки';
 
   @override
-  String talkerTypeErrorsCount(Object text) => 'Количество записей об ошибках: $text';
+  String talkerTypeErrorsCount(Object text) =>
+      'Количество записей об ошибках: $text';
 
   @override
   String get talkerTypeHttp => 'HTTP запросы';
 
   @override
-  String talkerHttpRequestsCount(Object text) => 'Количество записей HTTP запросов: $text';
+  String talkerHttpRequestsCount(Object text) =>
+      'Количество записей HTTP запросов: $text';
 
   @override
-  String talkerHttpResponsesCount(Object text) => 'Количество записей HTTP ответов: $text';
+  String talkerHttpResponsesCount(Object text) =>
+      'Количество записей HTTP ответов: $text';
 
   @override
-  String talkerHttpFailuresCount(Object text) => 'Количество записей неудачных HTTP запросов: $text';
+  String talkerHttpFailuresCount(Object text) =>
+      'Количество записей неудачных HTTP запросов: $text';
 
   @override
   String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talkerBlocTransitionCount(Object text) => 'Количество переходов BLoC: $text';
+  String talkerBlocTransitionCount(Object text) =>
+      'Количество переходов BLoC: $text';
 
   @override
   String talkerBlocEventsCount(Object text) => 'Количество событий BLoC: $text';
@@ -80,16 +91,20 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get talkerTypeRiverpod => 'Riverpod';
 
   @override
-  String talkerRiverpodAddCount(Object text) => 'Количество добавлений Riverpod: $text';
+  String talkerRiverpodAddCount(Object text) =>
+      'Количество добавлений Riverpod: $text';
 
   @override
-  String talkerRiverpodUpdateCount(Object text) => 'Количество обновлений Riverpod: $text';
+  String talkerRiverpodUpdateCount(Object text) =>
+      'Количество обновлений Riverpod: $text';
 
   @override
-  String talkerRiverpodDisposeCount(Object text) => 'Количество закрытий Riverpod: $text';
+  String talkerRiverpodDisposeCount(Object text) =>
+      'Количество закрытий Riverpod: $text';
 
   @override
-  String talkerRiverpodFailsCount(Object text) => 'Количество ошибок Riverpod: $text';
+  String talkerRiverpodFailsCount(Object text) =>
+      'Количество ошибок Riverpod: $text';
 
   @override
   String get actions => 'Действия';
@@ -170,10 +185,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get goToLogger => 'Перейти к журналу';
 
   @override
-  String environmentTapNumber(Object number) => 'Для открытия диалога осталось: $number';
+  String environmentTapNumber(Object number) =>
+      'Для открытия диалога осталось: $number';
 
   @override
-  String counterTimesText(Object number) => 'Вы нажали кнопку столько раз: $number';
+  String counterTimesText(Object number) =>
+      'Вы нажали кнопку столько раз: $number';
 
   @override
   String get performanceTracker => 'Отслеживание производительности';
