@@ -1,6 +1,6 @@
-## 1.1.0
+## 1.1.2
 
-* TalkerScreenTheme was removed. Use ISpectOptions theme properties.
+* Fixed issues with light theme.
 * TalkerScreenTheme was removed. Use ISpectOptions theme properties.
 
 ## 1.1.0
