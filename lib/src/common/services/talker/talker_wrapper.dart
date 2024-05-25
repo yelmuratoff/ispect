@@ -32,7 +32,7 @@ final class ISpectTalker {
     void Function()? onFlutterError,
   }) async {
     talkerWrapper.talker = talker;
-    info('ISpectTalker: Initialize started.');
+    info('🚀 ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         instance._talker.handle(details, details.stack);
@@ -57,7 +57,7 @@ final class ISpectTalker {
       instance._talker.handle(details, details.stack);
     };
 
-    good('ISpectTalker: Success initialized.');
+    good('✅ ISpectTalker: Success initialized.');
   }
 
   void log(
@@ -229,5 +229,4 @@ class _ProviderLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
 }
 
-AnsiPen getAnsiPenFromColor(Color color) =>
-    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
