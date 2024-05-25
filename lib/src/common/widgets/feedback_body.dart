@@ -124,18 +124,18 @@ class _StringFeedbackState extends State<StringFeedback> {
               ],
             ),
           ),
-          ElevatedButton(
+          TextButton(
             key: const Key('submit_feedback_button'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.theme.colorScheme.primaryContainer,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            style: TextButton.styleFrom(
+              foregroundColor:
+                  FeedbackTheme.of(context).activeFeedbackModeColor,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(
               FeedbackLocalizations.of(context).submitButtonText,
-              style: TextStyle(
-                color: FeedbackTheme.of(context).textColor,
-              ),
             ),
             onPressed: () => widget.onSubmit(controller.text),
           ),

@@ -15,15 +15,15 @@ dependencies:
   ispect:
     path: ../
   
-  talker_flutter: ^4.2.0
+  talker_flutter: ^4.2.2
   feedback_plus: ^0.1.2
   flutter_riverpod: ^2.5.1
-  talker_riverpod_logger: ^1.0.0
+  talker_riverpod_logger: ^1.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.2
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true

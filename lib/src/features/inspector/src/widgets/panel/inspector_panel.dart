@@ -373,13 +373,13 @@ class _PanelIconButton extends StatelessWidget {
   Widget build(BuildContext context) => IconButton.filled(
         icon: Icon(icon),
         style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-          backgroundColor: MaterialStateProperty.all<Color>(
+          foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+          backgroundColor: WidgetStateProperty.all<Color>(
             isActive
                 ? context.ispectTheme.colorScheme.primaryContainer
                 : Colors.transparent,
           ),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ),

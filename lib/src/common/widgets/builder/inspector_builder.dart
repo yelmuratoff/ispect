@@ -1,6 +1,7 @@
 import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/builder/performance_overlay_builder.dart';
 import 'package:ispect/src/common/widgets/feedback_body.dart';
@@ -36,8 +37,8 @@ class ISpectBuilder extends StatelessWidget {
           backgroundColor:
               adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
-          textColor: theme.colorScheme.onBackground,
-          selectedTextColor: theme.colorScheme.onBackground,
+          textColor: theme.colorScheme.onSurface,
+          selectedTextColor: theme.colorScheme.onSurface,
           child: child ?? const SizedBox(),
         );
 
@@ -56,13 +57,11 @@ class ISpectBuilder extends StatelessWidget {
           localeOverride: ispectModel.options.locale,
           theme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor:
-                ispectModel.options.lightTheme.colorScheme.surface,
-            activeFeedbackModeColor:
-                ispectModel.options.lightTheme.colorScheme.primary,
-            cardColor: ispectModel.options.lightTheme.scaffoldBackgroundColor,
+            feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+            activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+            cardColor: context.ispectTheme.scaffoldBackgroundColor,
             bottomSheetDescriptionStyle:
-                ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
+                context.ispectTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[800],
             ),
             dragHandleColor: Colors.grey[400],
@@ -71,13 +70,11 @@ class ISpectBuilder extends StatelessWidget {
           ),
           darkTheme: FeedbackThemeData(
             background: Colors.grey[800]!,
-            feedbackSheetColor:
-                ispectModel.options.darkTheme.colorScheme.surface,
-            activeFeedbackModeColor:
-                ispectModel.options.darkTheme.colorScheme.primary,
-            cardColor: ispectModel.options.darkTheme.scaffoldBackgroundColor,
+            feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+            activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+            cardColor: context.ispectTheme.scaffoldBackgroundColor,
             bottomSheetDescriptionStyle:
-                ispectModel.options.lightTheme.textTheme.bodyMedium!.copyWith(
+                context.ispectTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[300],
             ),
             dragHandleColor: Colors.grey[400],

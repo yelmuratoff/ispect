@@ -1,4 +1,9 @@
-## 1.1.4
+## 1.1.6
+
+* Some refactoring with Riverpod logs on Talker Page.
+* Dependency updates.
+
+## 1.1.5
 
 * Riverpod logs added.
 * Some updates in Talker Page.

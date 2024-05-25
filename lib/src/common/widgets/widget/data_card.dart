@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/src/ui/widgets/base_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 class TalkerDataCards extends StatefulWidget {
   const TalkerDataCards({
@@ -56,6 +57,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
     final errorType = _type;
     final message = _message;
     final stackTrace = _stackTrace;
+    final riverpodFullLog = _riverpodFullLog;
     return Padding(
       padding: widget.margin ?? const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -142,6 +144,14 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                             fontSize: 12,
                           ),
                         ),
+                      if (_expanded && riverpodFullLog != null)
+                        Text(
+                          riverpodFullLog,
+                          style: TextStyle(
+                            color: widget.color,
+                            fontSize: 12,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -213,5 +223,21 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
       return null;
     }
     return 'Type: ${widget.data.exception?.runtimeType.toString() ?? widget.data.error?.runtimeType.toString() ?? ''}';
+  }
+
+  String? get _riverpodFullLog {
+    final data = widget.data;
+
+    if (data is RiverpodUpdateLog) {
+      return 'Detailed: \nPREVIOUS state: ${data.previousValue} \nNEW state: ${data.newValue}';
+    } else if (data is RiverpodAddLog) {
+      return 'Detailed: \nINITIAL state: ${data.value}';
+    } else if (data is RiverpodDisposeLog) {
+      return 'Detailed: \nDISPOSED';
+    } else if (data is RiverpodFailLog) {
+      return 'Detailed: \nError: ${data.error} \nStackTrace: ${data.exception}';
+    }
+
+    return null;
   }
 }

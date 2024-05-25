@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -16,6 +16,12 @@ class ThemeManager extends StateNotifier<ThemeMode> {
   void toggleTheme() {
     state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
   }
+
+  void setTheme(ThemeMode themeMode) {
+    state = themeMode;
+  }
+
+  ThemeMode get themeMode => state;
 }
 
 void main() {
@@ -25,7 +31,10 @@ void main() {
   runApp(
     ProviderScope(
       observers: [
-        TalkerRiverpodObserver(talker: talker),
+        TalkerRiverpodObserver(
+          talker: talker,
+          settings: const TalkerRiverpodLoggerSettings(),
+        ),
       ],
       child: App(talker: talker),
     ),
@@ -41,18 +50,6 @@ class App extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
     final options = ISpectOptions(
       themeMode: themeMode,
-      lightTheme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-      ),
-      darkTheme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-      ),
       locale: const Locale('ru'),
     );
 
@@ -99,7 +96,7 @@ class _Home extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
+    final themeNotifier = ref.watch(themeProvider.notifier);
     final iSpect = ISpect.read(context);
     return Scaffold(
       body: Center(
@@ -110,7 +107,7 @@ class _Home extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 ref.read(themeProvider.notifier).toggleTheme();
-                iSpect.setThemeMode(themeMode);
+                iSpect.setThemeMode(themeNotifier.themeMode);
               },
               child: const Text('Toggle theme'),
             ),

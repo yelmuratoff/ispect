@@ -18,9 +18,9 @@ class PerformanceOverlayBuilder extends StatelessWidget {
         child: CustomPerformanceOverlay(
           enabled: isPerformanceTrackingEnabled,
           alignment: Alignment.topCenter,
-          backgroundColor: theme.colorScheme.background,
-          textColor: theme.colorScheme.onBackground,
-          textBackgroundColor: theme.colorScheme.background.withOpacity(0.5),
+          backgroundColor: theme.colorScheme.surface,
+          textColor: theme.colorScheme.onSurface,
+          textBackgroundColor: theme.colorScheme.surface.withOpacity(0.5),
           child: child,
         ),
       );

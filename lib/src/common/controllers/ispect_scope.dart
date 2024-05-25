@@ -8,11 +8,9 @@ import 'package:provider/provider.dart';
 class ISpectScopeModel with ChangeNotifier {
   bool _isISpectEnabled = false;
   bool _isPerformanceTrackingEnabled = false;
-  ISpectOptions _options = ISpectOptions(
+  ISpectOptions _options = const ISpectOptions(
     themeMode: ThemeMode.system,
-    lightTheme: ThemeData.light(),
-    darkTheme: ThemeData.dark(),
-    locale: const Locale('en'),
+    locale: Locale('en'),
   );
 
   bool get isISpectEnabled => _isISpectEnabled;
