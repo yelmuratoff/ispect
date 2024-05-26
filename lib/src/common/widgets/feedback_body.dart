@@ -80,7 +80,6 @@ class _StringFeedbackState extends State<StringFeedback> {
                     Text(
                       FeedbackLocalizations.of(context).feedbackDescriptionText,
                       maxLines: 2,
-                      style: FeedbackTheme.of(context).bottomSheetDescriptionStyle,
                     ),
                     const Gap(8),
                     TextField(

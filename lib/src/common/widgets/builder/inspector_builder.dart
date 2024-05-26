@@ -11,10 +11,16 @@ import 'package:provider/provider.dart';
 class ISpectBuilder extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget? child;
+  final FeedbackThemeData? feedbackTheme;
+  final FeedbackThemeData? feedBackDarkTheme;
+  final Widget Function(BuildContext, Future<void> Function(String, {Map<String, dynamic>? extras}), ScrollController?)? feedbackBuilder;
 
   const ISpectBuilder({
     required this.child,
     required this.navigatorKey,
+    this.feedbackTheme,
+    this.feedBackDarkTheme,
+    this.feedbackBuilder,
     super.key,
   });
 
@@ -34,8 +40,7 @@ class ISpectBuilder extends StatelessWidget {
           options: ispectModel.options,
           navigatorKey: navigatorKey,
           isPanelVisible: ispectModel.isISpectEnabled,
-          backgroundColor:
-              adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
+          backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onSurface,
           selectedTextColor: theme.colorScheme.onSurface,
@@ -44,51 +49,50 @@ class ISpectBuilder extends StatelessWidget {
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled:
-              ispectModel.isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
 
         /// Add feedback button to the widget tree
         child = BetterFeedback(
-          themeMode: ispectModel.options.themeMode,
+          themeMode: context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           localizationsDelegates: ISpectLocalization.localizationDelegates,
           localeOverride: ispectModel.options.locale,
-          theme: FeedbackThemeData(
-            background: Colors.grey[800]!,
-            feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-            activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
-            cardColor: context.ispectTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle:
-                context.ispectTheme.textTheme.bodyMedium!.copyWith(
-              color: Colors.grey[800],
-            ),
-            dragHandleColor: Colors.grey[400],
-            inactiveColor: Colors.grey[700]!,
-            textColor: Colors.grey[800]!,
-          ),
-          darkTheme: FeedbackThemeData(
-            background: Colors.grey[800]!,
-            feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-            activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
-            cardColor: context.ispectTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle:
-                context.ispectTheme.textTheme.bodyMedium!.copyWith(
-              color: Colors.grey[300],
-            ),
-            dragHandleColor: Colors.grey[400],
-            inactiveColor: Colors.grey[600]!,
-            textColor: Colors.grey[300]!,
-          ),
+          theme: feedbackTheme ??
+              FeedbackThemeData(
+                background: Colors.grey[800]!,
+                feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+                cardColor: context.ispectTheme.scaffoldBackgroundColor,
+                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                  color: Colors.grey[800],
+                ),
+                dragHandleColor: Colors.grey[400],
+                inactiveColor: Colors.grey[700]!,
+                textColor: Colors.grey[800]!,
+              ),
+          darkTheme: feedBackDarkTheme ??
+              FeedbackThemeData(
+                background: Colors.grey[800]!,
+                feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+                cardColor: context.ispectTheme.scaffoldBackgroundColor,
+                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                  color: Colors.grey[300],
+                ),
+                dragHandleColor: Colors.grey[400],
+                inactiveColor: Colors.grey[600]!,
+                textColor: Colors.grey[300]!,
+              ),
           mode: FeedbackMode.navigate,
-          feedbackBuilder: (context, extras, scrollController) =>
-              simpleFeedbackBuilder(
-            context,
-            extras,
-            scrollController,
-            theme,
-          ),
+          feedbackBuilder: feedbackBuilder ??
+              (context, extras, scrollController) => simpleFeedbackBuilder(
+                    context,
+                    extras,
+                    scrollController,
+                    theme,
+                  ),
           child: child,
         );
 

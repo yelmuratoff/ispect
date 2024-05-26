@@ -27,8 +27,7 @@ class DraggableButtonPanel extends StatefulWidget {
   State<DraggableButtonPanel> createState() => DraggableButtonPanelState();
 }
 
-class DraggableButtonPanelState extends State<DraggableButtonPanel>
-    with SingleTickerProviderStateMixin {
+class DraggableButtonPanelState extends State<DraggableButtonPanel> with SingleTickerProviderStateMixin {
   bool _isOpen = false;
   bool _isLeftPositioned = false;
 
@@ -53,9 +52,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel>
 
     final double childrenWidth = widget.options.fold(
       0.0,
-      (double previousValue, IconButton iconButton) =>
-          previousValue +
-          (iconButton.iconSize != null ? iconButton.iconSize! : 50.0),
+      (double previousValue, IconButton iconButton) => previousValue + (iconButton.iconSize != null ? iconButton.iconSize! : 50.0),
     );
 
     _panelWidth = childrenWidth + widget.buttonSize + 30;
@@ -109,11 +106,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel>
     final screenHeight = size.height;
     final padding = MediaQuery.of(context).padding;
 
-    final availableHeight = screenHeight -
-        padding.top -
-        padding.bottom -
-        kToolbarHeight -
-        kBottomNavigationBarHeight;
+    final availableHeight = screenHeight - padding.top - padding.bottom - kToolbarHeight - kBottomNavigationBarHeight;
     final availableWidth = screenWidth - padding.left - padding.right;
 
     final newPosition = Offset(
@@ -174,10 +167,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel>
           if (widget.options.length > 1)
             Positioned(
               top: widget.top,
-              left: _isLeftPositioned
-                  ? 0
-                  : (MediaQuery.of(context).size.width -
-                      _panelWidth * _animation.value),
+              left: _isLeftPositioned ? 0 : (MediaQuery.of(context).size.width - _panelWidth * _animation.value),
               child: Container(
                 height: widget.buttonSize,
                 width: _panelWidth * _animation.value,
@@ -204,9 +194,7 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel>
             ),
           Positioned(
             top: widget.top,
-            left: _isLeftPositioned
-                ? 0
-                : MediaQuery.of(context).size.width - widget.buttonSize,
+            left: _isLeftPositioned ? 0 : MediaQuery.of(context).size.width - widget.buttonSize,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: _isLeftPositioned

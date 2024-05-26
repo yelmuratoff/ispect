@@ -47,9 +47,8 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    final options = ISpectOptions(
-      themeMode: themeMode,
-      locale: const Locale('ru'),
+    const options = ISpectOptions(
+      locale: Locale('ru'),
     );
 
     return ISpectScopeWrapper(
@@ -95,7 +94,7 @@ class _Home extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeNotifier = ref.watch(themeProvider.notifier);
+    ref.watch(themeProvider.notifier);
     final iSpect = ISpect.read(context);
     return Scaffold(
       body: Center(
@@ -106,7 +105,7 @@ class _Home extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 ref.read(themeProvider.notifier).toggleTheme();
-                iSpect.setThemeMode(themeNotifier.themeMode);
+                // iSpect.setThemeMode(themeNotifier.themeMode);
               },
               child: const Text('Toggle theme'),
             ),

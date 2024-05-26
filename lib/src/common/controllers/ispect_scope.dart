@@ -9,7 +9,6 @@ class ISpectScopeModel with ChangeNotifier {
   bool _isISpectEnabled = false;
   bool _isPerformanceTrackingEnabled = false;
   ISpectOptions _options = const ISpectOptions(
-    themeMode: ThemeMode.system,
     locale: Locale('en'),
   );
 
@@ -43,11 +42,6 @@ class ISpectScopeModel with ChangeNotifier {
     _options = options;
     notifyListeners();
   }
-
-  void setThemeMode(ThemeMode themeMode) {
-    _options = _options.copyWith(themeMode: themeMode);
-    notifyListeners();
-  }
 }
 
 /// `ISpectScopeWrapper` is a wrapper widget that provides the `ISpectScopeModel` to its children.
@@ -64,8 +58,7 @@ class ISpectScopeWrapper extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) =>
-      ChangeNotifierProvider<ISpectScopeModel>(
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
         create: (context) => ISpectScopeModel()
           ..setOptions(options)
           ..setISpect = isISpectEnabled,

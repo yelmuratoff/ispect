@@ -1,3 +1,8 @@
+## 1.1.7
+
+* Refactored feedback theme.
+* Refactored options theme of ISpect.
+
 ## 1.1.6
 
 * Some refactoring with Riverpod logs on Talker Page.

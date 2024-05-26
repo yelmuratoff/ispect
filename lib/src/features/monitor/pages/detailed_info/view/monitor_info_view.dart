@@ -36,7 +36,7 @@ class _MonitorView extends StatelessWidget {
                     data: data,
                     onCopyTap: () => onCopyTap?.call(context, data),
                     color: getTypeColor(
-                      isDark: options.themeMode == ThemeMode.dark,
+                      isDark: context.isDarkMode,
                       key: data.title,
                     ),
                     backgroundColor: context.ispectTheme.cardColor,
