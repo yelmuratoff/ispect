@@ -229,4 +229,5 @@ class _ProviderLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
 }
 
-AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+AnsiPen getAnsiPenFromColor(Color color) =>
+    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);

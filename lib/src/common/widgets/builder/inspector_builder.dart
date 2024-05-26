@@ -13,7 +13,11 @@ class ISpectBuilder extends StatelessWidget {
   final Widget? child;
   final FeedbackThemeData? feedbackTheme;
   final FeedbackThemeData? feedBackDarkTheme;
-  final Widget Function(BuildContext, Future<void> Function(String, {Map<String, dynamic>? extras}), ScrollController?)? feedbackBuilder;
+  final Widget Function(
+    BuildContext,
+    Future<void> Function(String, {Map<String, dynamic>? extras}),
+    ScrollController?,
+  )? feedbackBuilder;
 
   const ISpectBuilder({
     required this.child,
@@ -40,7 +44,8 @@ class ISpectBuilder extends StatelessWidget {
           options: ispectModel.options,
           navigatorKey: navigatorKey,
           isPanelVisible: ispectModel.isISpectEnabled,
-          backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
+          backgroundColor:
+              adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onSurface,
           selectedTextColor: theme.colorScheme.onSurface,
@@ -49,7 +54,8 @@ class ISpectBuilder extends StatelessWidget {
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled:
+              ispectModel.isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
@@ -63,9 +69,11 @@ class ISpectBuilder extends StatelessWidget {
               FeedbackThemeData(
                 background: Colors.grey[800]!,
                 feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+                activeFeedbackModeColor:
+                    context.ispectTheme.colorScheme.primary,
                 cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                bottomSheetDescriptionStyle:
+                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
                   color: Colors.grey[800],
                 ),
                 dragHandleColor: Colors.grey[400],
@@ -76,9 +84,11 @@ class ISpectBuilder extends StatelessWidget {
               FeedbackThemeData(
                 background: Colors.grey[800]!,
                 feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
+                activeFeedbackModeColor:
+                    context.ispectTheme.colorScheme.primary,
                 cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                bottomSheetDescriptionStyle:
+                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
                   color: Colors.grey[300],
                 ),
                 dragHandleColor: Colors.grey[400],
