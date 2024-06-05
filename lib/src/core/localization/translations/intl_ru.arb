@@ -3,122 +3,32 @@
    "changeTheme": "Сменить тему",
    "talkerTypeDebug": "Подробные и отладочные",
    "talkerTypeDebugCount": "Количество подробных и отладочных записей: {text}",
-   "@talkerTypeDebugCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeGood": "Хорошие",
    "talkerTypeGoodCount": "Количество хороших записей: {text}",
-   "@talkerTypeGoodCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeProvider": "Провайдеры",
    "talkerTypeProviderCount": "Количество записей провайдеров: {text}",
-   "@talkerTypeProviderCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeInfo": "Информация",
    "talkerTypeInfoCount": "Количество информационных записей: {text}",
-   "@talkerTypeInfoCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeWarnings": "Предупреждения",
    "talkerTypeWarningsCount": "Количество предупреждений: {text}",
-   "@talkerTypeWarningsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeExceptions": "Исключения",
    "talkerTypeExceptionsCount": "Количество записей исключений: {text}",
-   "@talkerTypeExceptionsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeErrors": "Ошибки",
    "talkerTypeErrorsCount": "Количество записей об ошибках: {text}",
-   "@talkerTypeErrorsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeHttp": "HTTP запросы",
    "talkerHttpRequestsCount": "Количество записей HTTP запросов: {text}",
-   "@talkerHttpRequestsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerHttpResponsesCount": "Количество записей HTTP ответов: {text}",
-   "@talkerHttpResponsesCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerHttpFailuresCount": "Количество записей неудачных HTTP запросов: {text}",
-   "@talkerHttpFailuresCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeBloc": "BLoC",
    "talkerBlocTransitionCount": "Количество переходов BLoC: {text}",
-   "@talkerBlocTransitionCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocEventsCount": "Количество событий BLoC: {text}",
-   "@talkerBlocEventsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocCloseCount": "Количество закрытий BLoC: {text}",
-   "@talkerBlocCloseCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocCreateCount": "Количество созданий BLoC: {text}",
-   "@talkerBlocCreateCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeRiverpod": "Riverpod",
    "talkerRiverpodAddCount": "Количество добавлений Riverpod: {text}",
-   "@talkerRiverpodAddCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodUpdateCount": "Количество обновлений Riverpod: {text}",
-   "@talkerRiverpodUpdateCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodDisposeCount": "Количество закрытий Riverpod: {text}",
-   "@talkerRiverpodDisposeCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodFailsCount": "Количество ошибок Riverpod: {text}",
-   "@talkerRiverpodFailsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "actions": "Действия",
    "reverseLogs": "Инвертировать журнал",
    "copyAllLogs": "Копировать все записи",
@@ -146,17 +56,7 @@
    "changeEnvironment": "Сменить текущее окружение",
    "goToLogger": "Перейти к журналу",
    "environmentTapNumber": "Для открытия диалога осталось: {number}",
-   "@environmentTapNumber": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "counterTimesText": "Вы нажали кнопку столько раз: {number}",
-   "@counterTimesText": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "performanceTracker": "Отслеживание производительности",
    "login": "Вход",
    "initializationFailed": "Ошибка инициализации",
@@ -169,18 +69,8 @@
    "viewAndManageData": "Просмотр и управление данными приложения",
    "appData": "Данные приложения",
    "totalFilesCount": "Общее количество файлов: {number}",
-   "@totalFilesCount": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "appInfo": "Проверить информацию об устройстве и пакете",
    "copiedToClipboard": "Скопировано в буфер обмена",
    "copy": "Скопировать",
-   "cacheSize": "Размер кэша: {size}",
-   "@cacheSize": {
-      "placeholders": {
-         "size": {}
-      }
-   }
+   "cacheSize": "Размер кэша: {size}"
 }

@@ -3,122 +3,32 @@
    "changeTheme": "Change theme",
    "talkerTypeDebug": "Verbose & debug",
    "talkerTypeDebugCount": "Verbose and debug logs count: {text}",
-   "@talkerTypeDebugCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeGood": "Good",
    "talkerTypeGoodCount": "Good logs count: {text}",
-   "@talkerTypeGoodCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeProvider": "Providers",
    "talkerTypeProviderCount": "Provider logs count: {text}",
-   "@talkerTypeProviderCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeInfo": "Info",
    "talkerTypeInfoCount": "Info logs count: {text}",
-   "@talkerTypeInfoCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeWarnings": "Warnings",
    "talkerTypeWarningsCount": "Warning logs count: {text}",
-   "@talkerTypeWarningsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeExceptions": "Exceptions",
    "talkerTypeExceptionsCount": "Exception logs count: {text}",
-   "@talkerTypeExceptionsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeErrors": "Errors",
    "talkerTypeErrorsCount": "Error logs count: {text}",
-   "@talkerTypeErrorsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeHttp": "HTTP requests",
    "talkerHttpRequestsCount": "HTTP request logs count: {text}",
-   "@talkerHttpRequestsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerHttpResponsesCount": "HTTP response logs count: {text}",
-   "@talkerHttpResponsesCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerHttpFailuresCount": "HTTP failure logs count: {text}",
-   "@talkerHttpFailuresCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeBloc": "BLoC",
    "talkerBlocTransitionCount": "BLoC transitions count: {text}",
-   "@talkerBlocTransitionCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocEventsCount": "BLoC events count: {text}",
-   "@talkerBlocEventsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocClosesCount": "BLoC closes count: {text}",
-   "@talkerBlocClosesCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerBlocCreatesCount": "BLoC creates count: {text}",
-   "@talkerBlocCreatesCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerTypeRiverpod": "Riverpod",
    "talkerRiverpodAddCount": "Riverpod adds count: {text}",
-   "@talkerRiverpodAddCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodUpdateCount": "Riverpod updates count: {text}",
-   "@talkerRiverpodUpdateCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodDisposeCount": "Riverpod disposes count: {text}",
-   "@talkerRiverpodDisposeCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "talkerRiverpodFailsCount": "Riverpod fails count: {text}",
-   "@talkerRiverpodFailsCount": {
-      "placeholders": {
-         "text": {}
-      }
-   },
    "actions": "Actions",
    "reverseLogs": "Reverse logs",
    "copyAllLogs": "Copy all logs",
@@ -146,17 +56,7 @@
    "changeEnvironment": "Change current environment",
    "goToLogger": "Go to logger",
    "environmentTapNumber": "To open the dialog, it remains: {number}",
-   "@environmentTapNumber": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "counterTimesText": "You have pushed the button this many times: {number}",
-   "@counterTimesText": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "performanceTracker": "Performance tracking",
    "login": "Login",
    "initializationFailed": "Initialization failed",
@@ -169,18 +69,8 @@
    "viewAndManageData": "Viewing and managing application data",
    "appData": "App data",
    "totalFilesCount": "Total files count: {number}",
-   "@totalFilesCount": {
-      "placeholders": {
-         "number": {}
-      }
-   },
    "appInfo": "Check device info & package info",
    "copiedToClipboard": "Copied to clipboard",
    "copy": "Copy",
-   "cacheSize": "Cache size: {size}",
-   "@cacheSize": {
-      "placeholders": {
-         "size": {}
-      }
-   }
+   "cacheSize": "Cache size: {size}"
 }

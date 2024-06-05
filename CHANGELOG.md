@@ -1,3 +1,7 @@
+## 1.1.8
+
+* Kazakh language added.
+
 ## 1.1.7
 
 * Refactored feedback theme.
