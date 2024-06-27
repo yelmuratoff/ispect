@@ -64,8 +64,7 @@ class _TalkerViewState extends State<TalkerView> {
           builder: (context, child) => TalkerBuilder(
             talker: widget.talker,
             builder: (context, data) {
-              final filtredElements =
-                  data.where((e) => _controller.filter.filter(e)).toList();
+              final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
               final titles = data.map((e) => e.title).toList();
               final uniqTitles = titles.toSet().toList();
 
@@ -133,8 +132,7 @@ class _TalkerViewState extends State<TalkerView> {
     List<TalkerData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[
-        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
@@ -192,12 +190,8 @@ class _TalkerViewState extends State<TalkerView> {
           ),
           TalkerActionItem(
             onTap: _toggleLogsExpanded,
-            title: _controller.expandedLogs
-                ? context.ispectL10n.collapseLogs
-                : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: _cleanHistory,
@@ -226,7 +220,7 @@ class _TalkerViewState extends State<TalkerView> {
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(
-      widget.talker.history.text,
+      widget.talker.history.text(),
     );
   }
 
@@ -262,7 +256,7 @@ class _TalkerViewState extends State<TalkerView> {
   }
 
   void _copyAllLogs(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: widget.talker.history.text));
+    Clipboard.setData(ClipboardData(text: widget.talker.history.text()));
     _showSnackBar(context, context.ispectL10n.allLogsCopied);
   }
 }

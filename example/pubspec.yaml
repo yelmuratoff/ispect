@@ -15,10 +15,10 @@ dependencies:
   ispect:
     path: ../
   
-  talker_flutter: ^4.2.2
+  talker_flutter: ^4.3.1
   feedback_plus: ^0.1.2
   flutter_riverpod: ^2.5.1
-  talker_riverpod_logger: ^1.0.2
+  talker_riverpod_logger: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -31,7 +31,7 @@ flutter:
 
 flutter_gen:
   output: lib/src/core/assets/generated
-  line_length: 80
+  line_length: 120
 
 flutter_intl:
   enabled: true
