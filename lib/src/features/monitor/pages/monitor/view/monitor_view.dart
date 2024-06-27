@@ -34,19 +34,27 @@ class _MonitorView extends StatelessWidget {
           final logs = data.whereType<TalkerLog>().toList();
           final errors = data.whereType<TalkerError>().toList();
           final exceptions = data.whereType<TalkerException>().toList();
-          final warnings = logs.where((e) => e.logLevel == LogLevel.warning).toList();
+          final warnings =
+              logs.where((e) => e.logLevel == LogLevel.warning).toList();
           final goods = logs.where((e) => e.title == "good").toList();
 
           final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
           final verboseDebug = logs
               .where(
-                (e) => e.logLevel == LogLevel.verbose || e.logLevel == LogLevel.debug,
+                (e) =>
+                    e.logLevel == LogLevel.verbose ||
+                    e.logLevel == LogLevel.debug,
               )
               .toList();
 
-          final httpRequests = data.where((e) => e.key == TalkerLogType.httpRequest.key).toList();
-          final httpErrors = data.where((e) => e.key == TalkerLogType.httpError.key).toList();
-          final httpResponses = data.where((e) => e.key == TalkerLogType.httpResponse.key).toList();
+          final httpRequests = data
+              .where((e) => e.key == TalkerLogType.httpRequest.key)
+              .toList();
+          final httpErrors =
+              data.where((e) => e.key == TalkerLogType.httpError.key).toList();
+          final httpResponses = data
+              .where((e) => e.key == TalkerLogType.httpResponse.key)
+              .toList();
           final allHttps = data
               .where(
                 (e) =>
@@ -55,10 +63,15 @@ class _MonitorView extends StatelessWidget {
                     e.key == TalkerLogType.httpResponse.key,
               )
               .toList();
-          final blocEvents = data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
-          final blocTransitions = data.where((e) => e.key == TalkerLogType.blocTransition.key).toList();
-          final blocCreates = data.where((e) => e.key == TalkerLogType.blocCreate.key).toList();
-          final blocCloses = data.where((e) => e.key == TalkerLogType.blocClose.key).toList();
+          final blocEvents =
+              data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
+          final blocTransitions = data
+              .where((e) => e.key == TalkerLogType.blocTransition.key)
+              .toList();
+          final blocCreates =
+              data.where((e) => e.key == TalkerLogType.blocCreate.key).toList();
+          final blocCloses =
+              data.where((e) => e.key == TalkerLogType.blocClose.key).toList();
           final allBlocs = data
               .where(
                 (e) =>
@@ -78,10 +91,18 @@ class _MonitorView extends StatelessWidget {
                     e.key == TalkerLogType.riverpodFail.key,
               )
               .toList();
-          final riverpodAdds = data.where((e) => e.key == TalkerLogType.riverpodAdd.key).toList();
-          final riverpodUpdates = data.where((e) => e.key == TalkerLogType.riverpodUpdate.key).toList();
-          final riverpodDisposes = data.where((e) => e.key == TalkerLogType.riverpodDispose.key).toList();
-          final riverpodFails = data.where((e) => e.key == TalkerLogType.riverpodFail.key).toList();
+          final riverpodAdds = data
+              .where((e) => e.key == TalkerLogType.riverpodAdd.key)
+              .toList();
+          final riverpodUpdates = data
+              .where((e) => e.key == TalkerLogType.riverpodUpdate.key)
+              .toList();
+          final riverpodDisposes = data
+              .where((e) => e.key == TalkerLogType.riverpodDispose.key)
+              .toList();
+          final riverpodFails = data
+              .where((e) => e.key == TalkerLogType.riverpodFail.key)
+              .toList();
 
           return CustomScrollView(
             slivers: [
@@ -277,7 +298,8 @@ class _MonitorView extends StatelessWidget {
                       key: "error",
                     ),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n.talkerTypeErrorsCount(errors.length),
+                    subtitle:
+                        context.ispectL10n.talkerTypeErrorsCount(errors.length),
                     onTap: () => openTypedLogsPage(
                       errors,
                       context.ispectL10n.talkerTypeErrors,
@@ -296,7 +318,8 @@ class _MonitorView extends StatelessWidget {
                       key: "exception",
                     ),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n.talkerTypeExceptionsCount(exceptions.length),
+                    subtitle: context.ispectL10n
+                        .talkerTypeExceptionsCount(exceptions.length),
                     onTap: () => openTypedLogsPage(
                       exceptions,
                       context.ispectL10n.talkerTypeExceptions,
@@ -315,7 +338,8 @@ class _MonitorView extends StatelessWidget {
                       key: "warning",
                     ),
                     icon: Icons.warning_amber_rounded,
-                    subtitle: context.ispectL10n.talkerTypeWarningsCount(warnings.length),
+                    subtitle: context.ispectL10n
+                        .talkerTypeWarningsCount(warnings.length),
                     onTap: () => openTypedLogsPage(
                       warnings,
                       context.ispectL10n.talkerTypeWarnings,
@@ -334,7 +358,8 @@ class _MonitorView extends StatelessWidget {
                       key: "info",
                     ),
                     icon: Icons.info_outline_rounded,
-                    subtitle: context.ispectL10n.talkerTypeInfoCount(infos.length),
+                    subtitle:
+                        context.ispectL10n.talkerTypeInfoCount(infos.length),
                     onTap: () => openTypedLogsPage(
                       infos,
                       context.ispectL10n.talkerTypeInfo,
@@ -353,7 +378,8 @@ class _MonitorView extends StatelessWidget {
                       key: "good",
                     ),
                     icon: Icons.check_circle_outline_rounded,
-                    subtitle: context.ispectL10n.talkerTypeGoodCount(goods.length),
+                    subtitle:
+                        context.ispectL10n.talkerTypeGoodCount(goods.length),
                     onTap: () => openTypedLogsPage(
                       goods,
                       context.ispectL10n.talkerTypeGood,
@@ -372,7 +398,8 @@ class _MonitorView extends StatelessWidget {
                       key: "verbose",
                     ),
                     icon: Icons.remove_red_eye_outlined,
-                    subtitle: context.ispectL10n.talkerTypeDebugCount(verboseDebug.length),
+                    subtitle: context.ispectL10n
+                        .talkerTypeDebugCount(verboseDebug.length),
                     onTap: () => openTypedLogsPage(
                       verboseDebug,
                       context.ispectL10n.talkerTypeDebug,
