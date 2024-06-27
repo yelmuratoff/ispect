@@ -77,7 +77,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${widget.data.title} | ${widget.data.displayTime}',
+                          '${widget.data.title} | ${widget.data.displayTime()}',
                           style: TextStyle(
                             color: widget.color,
                             fontWeight: FontWeight.w700,
@@ -114,11 +114,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
               if (_expanded)
                 Container(
                   width: double.infinity,
-                  margin:
-                      stackTrace != null ? const EdgeInsets.only(top: 8) : null,
-                  padding: stackTrace != null
-                      ? const EdgeInsets.all(6)
-                      : EdgeInsets.zero,
+                  margin: stackTrace != null ? const EdgeInsets.only(top: 8) : null,
+                  padding: stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
                   decoration: stackTrace != null
                       ? BoxDecoration(
                           border: Border.all(color: widget.color),
@@ -209,8 +206,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _errorMessage {
-    var txt =
-        widget.data.exception?.toString() ?? widget.data.exception?.toString();
+    var txt = widget.data.exception?.toString() ?? widget.data.exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';

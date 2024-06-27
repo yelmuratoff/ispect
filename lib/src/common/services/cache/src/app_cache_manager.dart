@@ -17,12 +17,12 @@ final class AppCacheManager implements BaseCacheService {
 
       if (cacheDir.existsSync()) {
         await cacheDir.delete(recursive: true);
-        talkerWrapper.info("Cleared: cacheDir: ${cacheDir.path}");
+        ISpectTalker.info("Cleared: cacheDir: ${cacheDir.path}");
       }
 
       if (appDir.existsSync()) {
         await appDir.delete(recursive: true);
-        talkerWrapper.info("Cleared: appDir: ${appDir.path}");
+        ISpectTalker.info("Cleared: appDir: ${appDir.path}");
       }
 
       if (isAndroid) {
@@ -31,7 +31,7 @@ final class AppCacheManager implements BaseCacheService {
           for (final Directory dir in list) {
             if (dir.existsSync()) {
               await dir.delete(recursive: true);
-              talkerWrapper.info("Cleared: ${dir.path}");
+              ISpectTalker.info("Cleared: ${dir.path}");
             }
           }
         }
@@ -39,13 +39,13 @@ final class AppCacheManager implements BaseCacheService {
 
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
-      talkerWrapper.info(
+      ISpectTalker.info(
         "Cleared: imageCache: ${PaintingBinding.instance.imageCache.currentSize}, clearLiveImages: ${PaintingBinding.instance.imageCache.liveImageCount}",
       );
 
       await cache.emptyCache();
     } on Exception catch (e, st) {
-      talkerWrapper.handle(
+      ISpectTalker.handle(
         exception: e,
         stackTrace: st,
         message: "Failed to clear cache",

@@ -4,38 +4,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-final ISpectTalker talkerWrapper = ISpectTalker.instance;
-
 final class ISpectTalker {
+  factory ISpectTalker() => _instance;
   ISpectTalker._();
 
   late final Talker _talker;
 
   static final ISpectTalker _instance = ISpectTalker._();
-  static ISpectTalker get instance {
-    try {
-      return _instance;
-    } catch (e) {
-      throw Exception(
-        'ISpectTalker is not initialized. Please call ISpectTalker.initHandling() first.',
-      );
-    }
-  }
 
-  Talker get talker => instance._talker;
-  set talker(Talker talker) => instance._talker = talker;
+  static ISpectTalker get instance => _instance;
+
+  static Talker get talker => _instance._talker;
+  static set talker(Talker talker) => _instance._talker = talker;
 
   /// `initHandling` - This function initializes handling of the app.
-  Future<void> initHandling({
+  static Future<void> initHandling({
     required Talker talker,
     void Function()? onPlatformDispatcherError,
     void Function()? onFlutterError,
   }) async {
-    talkerWrapper.talker = talker;
+    _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        instance._talker.handle(details, details.stack);
+        _instance._talker.handle(details, details.stack);
       });
     };
 
@@ -48,26 +40,26 @@ final class ISpectTalker {
 
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call();
-      instance._talker.handle(error, stack);
+      _instance._talker.handle(error, stack);
       return true;
     };
 
     FlutterError.onError = (details) {
       onFlutterError?.call();
-      instance._talker.handle(details, details.stack);
+      _instance._talker.handle(details, details.stack);
     };
 
     good('✅ ISpectTalker: Success initialized.');
   }
 
-  void log(
+  static void log(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
     LogLevel? level,
     AnsiPen? pen,
   }) {
-    instance._talker.log(
+    _instance._talker.log(
       message,
       exception: exception,
       stackTrace: stackTrace,
@@ -76,12 +68,12 @@ final class ISpectTalker {
     );
   }
 
-  void good(
+  static void good(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.logTyped(
+    _instance._talker.logTyped(
       _GoodLog(
         message,
         exception: exception,
@@ -90,12 +82,12 @@ final class ISpectTalker {
     );
   }
 
-  void route(
+  static void route(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.logTyped(
+    _instance._talker.logTyped(
       _RouteLog(
         message,
         exception: exception,
@@ -104,12 +96,12 @@ final class ISpectTalker {
     );
   }
 
-  void provider(
+  static void provider(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.logTyped(
+    _instance._talker.logTyped(
       _ProviderLog(
         message,
         exception: exception,
@@ -118,73 +110,73 @@ final class ISpectTalker {
     );
   }
 
-  void debug(
+  static void debug(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.debug(
+    _instance._talker.debug(
       message,
       exception,
       stackTrace,
     );
   }
 
-  void info(
+  static void info(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.info(
+    _instance._talker.info(
       message,
       exception,
       stackTrace,
     );
   }
 
-  void warning(
+  static void warning(
     String message, {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.warning(
+    _instance._talker.warning(
       message,
       exception,
       stackTrace,
     );
   }
 
-  void error({
+  static void error({
     String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.error(
+    _instance._talker.error(
       message ?? 'An error occurred.',
       exception,
       stackTrace,
     );
   }
 
-  void critical({
+  static void critical({
     String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    instance._talker.critical(
+    _instance._talker.critical(
       message ?? 'A critical error occurred.',
       exception,
       stackTrace,
     );
   }
 
-  void handle({
+  static void handle({
     String? message,
     Object? exception,
     StackTrace? stackTrace,
   }) {
     if (exception != null) {
-      instance._talker.handle(exception, stackTrace, message);
+      _instance._talker.handle(exception, stackTrace, message);
     }
   }
 }
@@ -229,5 +221,4 @@ class _ProviderLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
 }
 
-AnsiPen getAnsiPenFromColor(Color color) =>
-    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);

@@ -7,8 +7,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 class ThemeManager extends StateNotifier<ThemeMode> {
   ThemeManager() : super(ThemeMode.dark);
@@ -26,8 +25,8 @@ class ThemeManager extends StateNotifier<ThemeMode> {
 
 void main() {
   final talker = TalkerFlutter.init();
-  talkerWrapper.initHandling(talker: talker);
-  talkerWrapper.debug('Hello World!');
+  ISpectTalker.initHandling(talker: talker);
+  ISpectTalker.debug('Hello World!');
   runApp(
     ProviderScope(
       observers: [
