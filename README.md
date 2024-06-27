@@ -88,9 +88,9 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   final talker = TalkerFlutter.init();
 
-  /// Use global variable [talkerWrapper] for logging.
-  talkerWrapper.initHandling(talker: talker);
-  talkerWrapper.debug('Hello World!');
+  /// Use global variable [ISpectTalker] for logging.
+  ISpectTalker.initHandling(talker: talker);
+  ISpectTalker.debug('Hello World!');
   runApp(App(talker: talker));
 }
 

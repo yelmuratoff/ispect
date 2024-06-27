@@ -1,3 +1,8 @@
+## 1.2.0
+
+* Bump dependencies to latest version
+* Some refactoring. Use `ISpectTalker` instead of `talkerWrapper`
+
 ## 1.1.8
 
 * Kazakh language added.
