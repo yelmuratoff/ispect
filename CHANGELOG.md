@@ -1,5 +1,9 @@
 ## 1.2.0
 
+* Upgrade talker to 4.3.2
+
+## 1.2.0
+
 * Bump dependencies to latest version
 * Some refactoring. Use `ISpectTalker` instead of `talkerWrapper`
 
