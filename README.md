@@ -43,6 +43,7 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 - ✅ Debug tools
 - ✅ Cache manager
 - ✅ Device and app info
+- ✅ Performance tracker
 
 ## 📌 Getting Started
 Follow these steps to use this package
