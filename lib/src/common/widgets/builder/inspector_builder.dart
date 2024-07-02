@@ -9,7 +9,7 @@ import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:provider/provider.dart';
 
 class ISpectBuilder extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
   final Widget? child;
   final FeedbackThemeData? feedbackTheme;
   final FeedbackThemeData? feedBackDarkTheme;
@@ -21,7 +21,7 @@ class ISpectBuilder extends StatelessWidget {
 
   const ISpectBuilder({
     required this.child,
-    required this.navigatorKey,
+    this.navigatorKey,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,

@@ -37,7 +37,7 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 ## 📌 Features
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
-- ✅ Localizations: ru, en. (I will add more translations in the future.)
+- ✅ Localizations: ru, en, kk. (I will add more translations in the future.)
 - ✅ Talker logger implementation: BLoC, Dio, Routing, Provider
 - ✅ Feedback
 - ✅ Debug tools
@@ -51,7 +51,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.2.1
+  ispect: ^1.2.3
 ```
 
 ### Add import package
@@ -141,7 +141,7 @@ class _AppState extends State<App> {
         builder: (context, child) {
           /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
           child = ISpectBuilder(
-            navigatorKey: navigatorKey,
+            navigatorKey: navigatorKey, // By default it's null
             child: child,
           );
 

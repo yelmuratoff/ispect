@@ -1,3 +1,8 @@
+## 1.2.3
+
+* Now, navigatorContext is not required for ISpectBuilder:
+   - If you want that use Draggable button also inside ISpectPage you need pass key. By default, it is not possible to use Draggable button inside ISpectPage.
+
 ## 1.2.0
 
 * Upgrade talker to 4.3.2

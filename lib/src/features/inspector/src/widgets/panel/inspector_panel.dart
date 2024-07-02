@@ -35,8 +35,8 @@ class InspectorPanel extends StatefulWidget {
     required this.isColorPickerLoading,
     required this.isZoomEnabled,
     required this.isZoomLoading,
-    required this.navigatorKey,
     required this.options,
+    this.navigatorKey,
     super.key,
     this.onInspectorStateChanged,
     this.onColorPickerStateChanged,
@@ -59,7 +59,7 @@ class InspectorPanel extends StatefulWidget {
   ///
   final InvokerState state;
   final ISpectOptions options;
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   @override
   State createState() => _InspectorPanelState();
@@ -153,7 +153,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
           _controller.setIsCollapsed(!_controller.isCollapsed);
           if (_controller.isCollapsed) {
             _controller.cancelAutoCollapseTimer();
-            _launchInfospect();
+            _launchInfospect(context);
           } else if (widget.state == InvokerState.autoCollapse) {
             _controller.startAutoCollapseTimer();
           }
@@ -187,14 +187,15 @@ class _InspectorPanelState extends State<InspectorPanel> {
     );
   }
 
-  void _launchInfospect() {
-    final BuildContext? context = widget.navigatorKey.currentContext;
-    if (_controller.isCollapsed && context != null) {
+  void _launchInfospect(BuildContext context) {
+    final BuildContext _context =
+        widget.navigatorKey?.currentContext ?? context;
+    if (_controller.isCollapsed) {
       if (_controller.inLoggerPage) {
-        Navigator.pop(context);
+        Navigator.pop(_context);
       } else {
         Navigator.push(
-          widget.navigatorKey.currentContext!,
+          _context,
           MaterialPageRoute<dynamic>(
             builder: (context) => ISpectPage(
               options: widget.options,

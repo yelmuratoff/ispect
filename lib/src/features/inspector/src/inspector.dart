@@ -45,8 +45,8 @@ import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart
 class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,
-    required this.navigatorKey,
     required this.options,
+    this.navigatorKey,
     super.key,
     this.backgroundColor,
     this.textColor,
@@ -92,7 +92,7 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
   final ISpectOptions options;
 
   static InspectorState of(BuildContext context) {
