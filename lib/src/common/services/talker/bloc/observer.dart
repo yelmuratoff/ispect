@@ -23,21 +23,21 @@ class TalkerBlocObserver extends BlocObserver {
   }
 
   late Talker _talker;
-  final void Function({Bloc<dynamic, dynamic> bloc, Object? event})?
+  final void Function([Bloc<dynamic, dynamic> bloc, Object? event])?
       onBlocEvent;
-  final void Function({
+  final void Function([
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
-  })? onBlocTransition;
-  final void Function({BlocBase<dynamic> bloc, Change<dynamic> change})?
+  ])? onBlocTransition;
+  final void Function([BlocBase<dynamic> bloc, Change<dynamic> change])?
       onBlocChange;
-  final void Function({
+  final void Function([
     BlocBase<dynamic> bloc,
     Object error,
     StackTrace stackTrace,
-  })? onBlocError;
-  final void Function({BlocBase<dynamic> bloc})? onBlocCreate;
-  final void Function({BlocBase<dynamic> bloc})? onBlocClose;
+  ])? onBlocError;
+  final void Function([BlocBase<dynamic> bloc])? onBlocCreate;
+  final void Function([BlocBase<dynamic> bloc])? onBlocClose;
   final TalkerBlocLoggerSettings settings;
 
   @override
@@ -105,7 +105,7 @@ class TalkerBlocObserver extends BlocObserver {
   @mustCallSuper
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    onBlocError?.call(bloc: bloc, error: error, stackTrace: stackTrace);
+    onBlocError?.call(bloc, error, stackTrace);
     _talker.error('${bloc.runtimeType}', error, stackTrace);
   }
 

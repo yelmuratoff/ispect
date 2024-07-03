@@ -24,35 +24,35 @@ final class ISpectTalker {
   /// `initHandling` - This function initializes handling of the app.
   static Future<void> initHandling({
     required Talker talker,
-    void Function({Object error, StackTrace stackTrace})?
+    void Function([Object error, StackTrace stackTrace])?
         onPlatformDispatcherError,
-    void Function({FlutterErrorDetails details, StackTrace? stackTrace})?
+    void Function([FlutterErrorDetails details, StackTrace? stackTrace])?
         onFlutterError,
-    void Function({FlutterErrorDetails details, StackTrace? stackTrace})?
+    void Function([FlutterErrorDetails details, StackTrace? stackTrace])?
         onPresentError,
-    final void Function({Bloc<dynamic, dynamic> bloc, Object? event})?
+    final void Function([Bloc<dynamic, dynamic> bloc, Object? event])?
         onBlocEvent,
-    final void Function({
+    final void Function([
       Bloc<dynamic, dynamic> bloc,
       Transition<dynamic, dynamic> transition,
-    })? onBlocTransition,
-    final void Function({BlocBase<dynamic> bloc, Change<dynamic> change})?
+    ])? onBlocTransition,
+    final void Function([BlocBase<dynamic> bloc, Change<dynamic> change])?
         onBlocChange,
-    final void Function({
+    final void Function([
       BlocBase<dynamic> bloc,
       Object error,
       StackTrace stackTrace,
-    })? onBlocError,
-    final void Function({BlocBase<dynamic> bloc})? onBlocCreate,
-    final void Function({BlocBase<dynamic> bloc})? onBlocClose,
-    void Function({List<dynamic> pair})? onUncaughtErrors,
+    ])? onBlocError,
+    final void Function([BlocBase<dynamic> bloc])? onBlocCreate,
+    final void Function([BlocBase<dynamic> bloc])? onBlocClose,
+    void Function([List<dynamic> pair])? onUncaughtErrors,
     final ISpectTalkerOptions options = const ISpectTalkerOptions(),
   }) async {
     _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        onPresentError?.call(details: details, stackTrace: details.stack);
+        onPresentError?.call(details, details.stack);
         if (options.isFlutterPresentHandlingEnabled) {
           _instance._talker.handle(details, details.stack);
         }
@@ -74,7 +74,7 @@ final class ISpectTalker {
     );
 
     PlatformDispatcher.instance.onError = (error, stack) {
-      onPlatformDispatcherError?.call(error: error, stackTrace: stack);
+      onPlatformDispatcherError?.call(error, stack);
       if (options.isPlatformDispatcherHandlingEnabled) {
         _instance._talker.handle(error, stack);
       }
@@ -82,7 +82,7 @@ final class ISpectTalker {
     };
 
     FlutterError.onError = (details) {
-      onFlutterError?.call(details: details, stackTrace: details.stack);
+      onFlutterError?.call(details, details.stack);
       if (options.isFlutterErrorHandlingEnabled) {
         _instance._talker.handle(details, details.stack);
       }
@@ -93,7 +93,7 @@ final class ISpectTalker {
       ..addErrorListener(
         RawReceivePort(
           (List<dynamic> pair) {
-            onUncaughtErrors?.call(pair: pair);
+            onUncaughtErrors?.call(pair);
             if (options.isUncaughtErrorsHandlingEnabled) {
               _instance._talker.error(pair);
             }
