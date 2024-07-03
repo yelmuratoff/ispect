@@ -1,7 +1,11 @@
+import 'dart:isolate';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:talker_bloc_logger/talker_bloc_logger.dart';
+import 'package:ispect/src/common/services/talker/bloc/observer.dart';
+import 'package:ispect/src/common/services/talker/talker_options.dart';
+import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 final class ISpectTalker {
@@ -22,32 +26,68 @@ final class ISpectTalker {
     required Talker talker,
     void Function()? onPlatformDispatcherError,
     void Function()? onFlutterError,
+    void Function()? onPresentError,
+    void Function()? onBlocError,
+    void Function()? onBlocTransition,
+    void Function()? onBlocEvent,
+    void Function()? onBlocChange,
+    void Function()? onBlocCreate,
+    void Function()? onBlocClose,
+    void Function()? onUncaughtErrors,
+    final ISpectTalkerOptions options = const ISpectTalkerOptions(),
   }) async {
     _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _instance._talker.handle(details, details.stack);
+        onPresentError?.call();
+        if (options.isFlutterPresentHandlingEnabled) {
+          _instance._talker.handle(details, details.stack);
+        }
       });
     };
 
     Bloc.observer = TalkerBlocObserver(
       talker: talker,
-      settings: const TalkerBlocLoggerSettings(
+      settings: TalkerBlocLoggerSettings(
+        enabled: options.isBlocHandlingEnabled,
         printStateFullData: false,
       ),
+      onBlocError: onBlocError,
+      onBlocTransition: onBlocTransition,
+      onBlocEvent: onBlocEvent,
+      onBlocChange: onBlocChange,
+      onBlocCreate: onBlocCreate,
+      onBlocClose: onBlocClose,
     );
 
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call();
-      _instance._talker.handle(error, stack);
+      if (options.isPlatformDispatcherHandlingEnabled) {
+        _instance._talker.handle(error, stack);
+      }
       return true;
     };
 
     FlutterError.onError = (details) {
       onFlutterError?.call();
-      _instance._talker.handle(details, details.stack);
+      if (options.isFlutterErrorHandlingEnabled) {
+        _instance._talker.handle(details, details.stack);
+      }
     };
+
+    Isolate.current
+      ..setErrorsFatal(false)
+      ..addErrorListener(
+        RawReceivePort(
+          (List<dynamic> pair) {
+            onUncaughtErrors?.call();
+            if (options.isUncaughtErrorsHandlingEnabled) {
+              _instance._talker.error(pair);
+            }
+          },
+        ).sendPort,
+      );
 
     good('✅ ISpectTalker: Success initialized.');
   }

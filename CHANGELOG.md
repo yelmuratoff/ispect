@@ -1,3 +1,8 @@
+## 1.2.7
+
+* Added more options to `ISpectTalker.initHandling`.
+   - Now you can customize more options during initialization of `ISpectTalker` like BLoC, Dispatcher error and etc.
+
 ## 1.2.6
 
 * Updated docs: added a video preview of the package.
