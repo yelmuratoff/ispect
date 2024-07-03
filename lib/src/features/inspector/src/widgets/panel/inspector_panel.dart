@@ -170,7 +170,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
         onFeedbackToggle: () {
           if (!BetterFeedback.of(context).isVisible) {
             BetterFeedback.of(context).show((UserFeedback feedback) async {
-              final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+              final screenshotFilePath =
+                  await writeImageToStorage(feedback.screenshot);
 
               await Share.shareXFiles(
                 [screenshotFilePath],
@@ -187,7 +188,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   void _launchInfospect(BuildContext context) {
-    final BuildContext _context = widget.navigatorKey?.currentContext ?? context;
+    final BuildContext _context =
+        widget.navigatorKey?.currentContext ?? context;
     if (_controller.isCollapsed) {
       if (_controller.inLoggerPage) {
         Navigator.pop(_context);
@@ -257,7 +259,9 @@ class _ButtonView extends StatelessWidget {
       children: [
         TapRegion(
           onTapOutside: (event) {
-            if (!isInspectorEnabled && !isColorPickerEnabled && !isZoomEnabled) {
+            if (!isInspectorEnabled &&
+                !isColorPickerEnabled &&
+                !isZoomEnabled) {
               onTap.call();
             }
           },
@@ -382,7 +386,9 @@ class _PanelIconButton extends StatelessWidget {
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           backgroundColor: WidgetStateProperty.all<Color>(
-            isActive ? context.ispectTheme.colorScheme.primaryContainer : Colors.transparent,
+            isActive
+                ? context.ispectTheme.colorScheme.primaryContainer
+                : Colors.transparent,
           ),
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
