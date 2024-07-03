@@ -1,3 +1,7 @@
+## 1.2.8
+
+* Updated options of `ISpectTalker.initHandling`.
+
 ## 1.2.7
 
 * Added more options to `ISpectTalker.initHandling`.

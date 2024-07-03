@@ -1,7 +1,7 @@
-import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
-import 'package:talker/talker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 /// `BLoC` logger on `Talker` base
 ///
@@ -23,12 +23,21 @@ class TalkerBlocObserver extends BlocObserver {
   }
 
   late Talker _talker;
-  final void Function()? onBlocEvent;
-  final void Function()? onBlocTransition;
-  final void Function()? onBlocChange;
-  final void Function()? onBlocError;
-  final void Function()? onBlocCreate;
-  final void Function()? onBlocClose;
+  final void Function({Bloc<dynamic, dynamic> bloc, Object? event})?
+      onBlocEvent;
+  final void Function({
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  })? onBlocTransition;
+  final void Function({BlocBase<dynamic> bloc, Change<dynamic> change})?
+      onBlocChange;
+  final void Function({
+    BlocBase<dynamic> bloc,
+    Object error,
+    StackTrace stackTrace,
+  })? onBlocError;
+  final void Function({BlocBase<dynamic> bloc})? onBlocCreate;
+  final void Function({BlocBase<dynamic> bloc})? onBlocClose;
   final TalkerBlocLoggerSettings settings;
 
   @override
@@ -96,7 +105,7 @@ class TalkerBlocObserver extends BlocObserver {
   @mustCallSuper
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    onBlocError?.call();
+    onBlocError?.call(bloc: bloc, error: error, stackTrace: stackTrace);
     _talker.error('${bloc.runtimeType}', error, stackTrace);
   }
 
