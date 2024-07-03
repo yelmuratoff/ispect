@@ -1,4 +1,4 @@
-## 1.2.5
+## 1.2.6
 
 * Updated docs: added a video preview of the package.
 

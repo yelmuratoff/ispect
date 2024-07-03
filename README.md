@@ -67,16 +67,10 @@ Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
-<video width="320" height="640" controls>
-  <source src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_preview.mp4?raw=true" type="video/mp4">
-</video>
-
-<!-- <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
-  <video width="250" controls style="margin-right: 10px;">
-    <source src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_preview.mov" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div> -->
+<div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
+  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_preview.gif?raw=true"
+  alt="ISpect's example" width="250" style="margin-right: 10px;"/>
+</div>
 
 &nbsp;
 
