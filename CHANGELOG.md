@@ -1,5 +1,5 @@
-## 1.2.9
-Also (1.2.8)
+## 1.3.0
+Also (1.2.8, 1.2.9)
 * Updated options of `ISpectTalker.initHandling`.
 
 ## 1.2.7

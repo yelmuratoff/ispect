@@ -23,21 +23,20 @@ class TalkerBlocObserver extends BlocObserver {
   }
 
   late Talker _talker;
-  final void Function([Bloc<dynamic, dynamic> bloc, Object? event])?
-      onBlocEvent;
-  final void Function([
+  final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
+  final void Function(
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
-  ])? onBlocTransition;
-  final void Function([BlocBase<dynamic> bloc, Change<dynamic> change])?
+  )? onBlocTransition;
+  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
       onBlocChange;
-  final void Function([
+  final void Function(
     BlocBase<dynamic> bloc,
     Object error,
     StackTrace stackTrace,
-  ])? onBlocError;
-  final void Function([BlocBase<dynamic> bloc])? onBlocCreate;
-  final void Function([BlocBase<dynamic> bloc])? onBlocClose;
+  )? onBlocError;
+  final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
+  final void Function(BlocBase<dynamic> bloc)? onBlocClose;
   final TalkerBlocLoggerSettings settings;
 
   @override
@@ -51,7 +50,7 @@ class TalkerBlocObserver extends BlocObserver {
     if (!accepted) {
       return;
     }
-    onBlocEvent?.call();
+    onBlocEvent?.call(bloc, event);
     _talker.logTyped(
       BlocEventLog(
         bloc: bloc,
@@ -75,7 +74,7 @@ class TalkerBlocObserver extends BlocObserver {
     if (!accepted) {
       return;
     }
-    onBlocTransition?.call();
+    onBlocTransition?.call(bloc, transition);
     _talker.logTyped(
       BlocStateLog(
         bloc: bloc,
@@ -91,7 +90,7 @@ class TalkerBlocObserver extends BlocObserver {
     if (!settings.enabled || !settings.printChanges) {
       return;
     }
-    onBlocChange?.call();
+    onBlocChange?.call(bloc, change);
     _talker.logTyped(
       BlocChangeLog(
         bloc: bloc,
@@ -115,7 +114,7 @@ class TalkerBlocObserver extends BlocObserver {
     if (!settings.enabled || !settings.printCreations) {
       return;
     }
-    onBlocCreate?.call();
+    onBlocCreate?.call(bloc);
     _talker.logTyped(BlocCreateLog(bloc: bloc));
   }
 
@@ -125,7 +124,7 @@ class TalkerBlocObserver extends BlocObserver {
     if (!settings.enabled || !settings.printClosings) {
       return;
     }
-    onBlocClose?.call();
+    onBlocClose?.call(bloc);
     _talker.logTyped(BlocCloseLog(bloc: bloc));
   }
 }
