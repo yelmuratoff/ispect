@@ -37,7 +37,6 @@ class _TalkerSettingsBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final scopedModel = ISpect.watch(context);
     final settings = <Widget>[
       TalkerSettingsCardItem(
         title: context.ispectL10n.enabled,
@@ -75,14 +74,6 @@ class _TalkerSettingsBottomSheetState
             ),
           );
           widget.talker.notifyListeners();
-        },
-      ),
-      TalkerSettingsCardItem(
-        title: context.ispectL10n.performanceTracker,
-        backgroundColor: context.ispectTheme.cardColor,
-        enabled: scopedModel.isPerformanceTrackingEnabled,
-        onChanged: (enabled) {
-          scopedModel.togglePerformanceTracking();
         },
       ),
     ];

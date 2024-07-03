@@ -52,7 +52,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.2.3
+  ispect: ^1.2.4
 ```
 
 ### Add import package

@@ -1,3 +1,8 @@
+## 1.2.4
+
+* Added some options to `Talker` detailed monitor page: reverse all logs and toggle expansion.
+* Performance tracker moved to `Draggable` button and removed from settings sheet.
+
 ## 1.2.3
 
 * Now, navigatorContext is not required for ISpectBuilder:

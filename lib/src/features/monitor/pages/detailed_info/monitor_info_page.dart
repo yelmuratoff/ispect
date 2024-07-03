@@ -9,26 +9,55 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/monitor_info_view.dart';
 
-class MonitorPage extends StatelessWidget {
+class MonitorPage extends StatefulWidget {
   const MonitorPage({
-    required this.exceptions,
+    required this.data,
     required this.typeName,
     required this.options,
     super.key,
   });
 
   final String typeName;
-  final List<TalkerData> exceptions;
+  final List<TalkerData> data;
   final ISpectOptions options;
 
   @override
+  State<MonitorPage> createState() => _MonitorPageState();
+}
+
+class _MonitorPageState extends State<MonitorPage> {
+  final List<TalkerData> logs = [];
+  bool _isLogsExpanded = false;
+
+  @override
+  void initState() {
+    logs.addAll(widget.data);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) => _MonitorView(
-        typeName: typeName,
-        exceptions: exceptions,
-        options: options,
+        typeName: widget.typeName,
+        logs: logs,
+        options: widget.options,
         onCopyTap: (itemContext, data) =>
             _copyTalkerDataItemText(itemContext, data),
+        onReverseLogsOrder: _reverseLogsOrder,
+        isLogsExpanded: _isLogsExpanded,
+        toggleLogsExpansion: _toggleLogsExpansion,
       );
+
+  void _reverseLogsOrder() {
+    setState(() {
+      logs.setAll(0, logs.reversed.toList());
+    });
+  }
+
+  void _toggleLogsExpansion() {
+    setState(() {
+      _isLogsExpanded = !_isLogsExpanded;
+    });
+  }
 
   void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
     final text = data.generateTextMessage();

@@ -1,10 +1,10 @@
 import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
-import 'package:ispect/src/common/utils/ispect_options.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// state for the invoker widget (defaults to alwaysOpened)
@@ -170,8 +170,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
         onFeedbackToggle: () {
           if (!BetterFeedback.of(context).isVisible) {
             BetterFeedback.of(context).show((UserFeedback feedback) async {
-              final screenshotFilePath =
-                  await writeImageToStorage(feedback.screenshot);
+              final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
 
               await Share.shareXFiles(
                 [screenshotFilePath],
@@ -188,8 +187,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   void _launchInfospect(BuildContext context) {
-    final BuildContext _context =
-        widget.navigatorKey?.currentContext ?? context;
+    final BuildContext _context = widget.navigatorKey?.currentContext ?? context;
     if (_controller.isCollapsed) {
       if (_controller.inLoggerPage) {
         Navigator.pop(_context);
@@ -253,111 +251,119 @@ class _ButtonView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          TapRegion(
-            onTapOutside: (event) {
-              if (!isInspectorEnabled &&
-                  !isColorPickerEnabled &&
-                  !isZoomEnabled) {
-                onTap.call();
-              }
-            },
-            child: Stack(
-              children: [
-                Positioned(
-                  top: yPos,
-                  left: (xPos < 50) ? xPos + 5 : null,
-                  right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    height: 50,
-                    width: isCollapsed ? 50 * 0.2 : 50 * 5,
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: adjustColorDarken(
-                        context.ispectTheme.colorScheme.primaryContainer,
-                        0.3,
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return Stack(
+      children: [
+        TapRegion(
+          onTapOutside: (event) {
+            if (!isInspectorEnabled && !isColorPickerEnabled && !isZoomEnabled) {
+              onTap.call();
+            }
+          },
+          child: Stack(
+            children: [
+              Positioned(
+                top: yPos,
+                left: (xPos < 50) ? xPos + 5 : null,
+                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 50,
+                  width: isCollapsed ? 50 * 0.2 : 50 * 6,
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: adjustColorDarken(
+                      context.ispectTheme.colorScheme.primaryContainer,
+                      0.3,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: xPos < 50,
+                    children: [
+                      _PanelIconButton(
+                        icon: Icons.monitor_heart_outlined,
+                        isActive: iSpect.isPerformanceTrackingEnabled,
+                        onPressed: () {
+                          iSpect.togglePerformanceTracking();
+                        },
                       ),
+                      _PanelIconButton(
+                        icon: Icons.format_shapes_rounded,
+                        isActive: isInspectorEnabled,
+                        onPressed: () {
+                          onInspectorToggle.call();
+                        },
+                      ),
+                      _PanelIconButton(
+                        icon: Icons.colorize_rounded,
+                        isActive: isColorPickerEnabled,
+                        onPressed: () {
+                          onColorPickerToggle.call();
+                        },
+                      ),
+                      _PanelIconButton(
+                        icon: Icons.zoom_in_rounded,
+                        isActive: isZoomEnabled,
+                        onPressed: () {
+                          onZoomToggle.call();
+                        },
+                      ),
+                      _PanelIconButton(
+                        icon: Icons.camera_alt_rounded,
+                        isActive: isFeedbackEnabled,
+                        onPressed: () {
+                          onFeedbackToggle.call();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: yPos,
+                left: (xPos < 50) ? xPos + 5 : null,
+                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    onPanUpdate.call(details);
+                  },
+                  onPanEnd: (details) {
+                    onPanEnd.call(details);
+                  },
+                  onTap: () {
+                    onButtonTap.call();
+                  },
+                  child: AnimatedContainer(
+                    width: isCollapsed ? 50 * 0.2 : 50,
+                    height: 50,
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      color: context.ispectTheme.colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: xPos < 50,
-                      children: [
-                        _PanelIconButton(
-                          icon: Icons.format_shapes_rounded,
-                          isActive: isInspectorEnabled,
-                          onPressed: () {
-                            onInspectorToggle.call();
-                          },
-                        ),
-                        _PanelIconButton(
-                          icon: Icons.colorize_rounded,
-                          isActive: isColorPickerEnabled,
-                          onPressed: () {
-                            onColorPickerToggle.call();
-                          },
-                        ),
-                        _PanelIconButton(
-                          icon: Icons.zoom_in_rounded,
-                          isActive: isZoomEnabled,
-                          onPressed: () {
-                            onZoomToggle.call();
-                          },
-                        ),
-                        _PanelIconButton(
-                          icon: Icons.camera_alt_rounded,
-                          isActive: isFeedbackEnabled,
-                          onPressed: () {
-                            onFeedbackToggle.call();
-                          },
-                        ),
-                      ],
-                    ),
+                    child: !isCollapsed
+                        ? inLoggerPage
+                            ? const Icon(
+                                Icons.undo_rounded,
+                                color: Colors.white,
+                              )
+                            : const Icon(
+                                Icons.reorder_rounded,
+                                color: Colors.white,
+                              )
+                        : null,
                   ),
                 ),
-                Positioned(
-                  top: yPos,
-                  left: (xPos < 50) ? xPos + 5 : null,
-                  right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
-                  child: GestureDetector(
-                    onPanUpdate: (details) {
-                      onPanUpdate.call(details);
-                    },
-                    onPanEnd: (details) {
-                      onPanEnd.call(details);
-                    },
-                    onTap: () {
-                      onButtonTap.call();
-                    },
-                    child: AnimatedContainer(
-                      width: isCollapsed ? 50 * 0.2 : 50,
-                      height: 50,
-                      duration: const Duration(milliseconds: 300),
-                      decoration: BoxDecoration(
-                        color: context.ispectTheme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: !isCollapsed
-                          ? inLoggerPage
-                              ? const Icon(
-                                  Icons.undo_rounded,
-                                  color: Colors.white,
-                                )
-                              : const Icon(
-                                  Icons.monitor_heart,
-                                  color: Colors.white,
-                                )
-                          : null,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 }
 
 class _PanelIconButton extends StatelessWidget {
@@ -376,9 +382,7 @@ class _PanelIconButton extends StatelessWidget {
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           backgroundColor: WidgetStateProperty.all<Color>(
-            isActive
-                ? context.ispectTheme.colorScheme.primaryContainer
-                : Colors.transparent,
+            isActive ? context.ispectTheme.colorScheme.primaryContainer : Colors.transparent,
           ),
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

@@ -86,7 +86,6 @@ class _TalkerViewState extends State<TalkerView> {
                     onActionsTap: () => _showActionsBottomSheet(context),
                     onSettingsTap: () {
                       _openTalkerSettings(context);
-                      // ISpectToaster.showInfoToast(context, title: context.ispectL10n.app_data);
                     },
                     onToggleTitle: _onToggleTitle,
                     isDark: context.isDarkMode,

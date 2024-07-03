@@ -3,14 +3,20 @@ part of '../monitor_info_page.dart';
 class _MonitorView extends StatelessWidget {
   final String typeName;
 
-  final List<TalkerData> exceptions;
+  final List<TalkerData> logs;
   final ISpectOptions options;
   final void Function(BuildContext, TalkerData)? onCopyTap;
+  final void Function() onReverseLogsOrder;
+  final void Function() toggleLogsExpansion;
+  final bool isLogsExpanded;
   const _MonitorView({
     required this.typeName,
-    required this.exceptions,
+    required this.logs,
     required this.options,
     required this.onCopyTap,
+    required this.onReverseLogsOrder,
+    required this.isLogsExpanded,
+    required this.toggleLogsExpansion,
   });
 
   @override
@@ -24,6 +30,20 @@ class _MonitorView extends StatelessWidget {
             typeName,
             style: const TextStyle(fontSize: 18),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.swap_vert_rounded),
+              onPressed: onReverseLogsOrder,
+            ),
+            IconButton(
+              icon: Icon(
+                isLogsExpanded
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+              ),
+              onPressed: toggleLogsExpansion,
+            ),
+          ],
         ),
         body: CustomScrollView(
           slivers: [
@@ -31,7 +51,7 @@ class _MonitorView extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final data = exceptions[index];
+                  final data = logs[index];
                   return TalkerDataCards(
                     data: data,
                     onCopyTap: () => onCopyTap?.call(context, data),
@@ -39,10 +59,11 @@ class _MonitorView extends StatelessWidget {
                       isDark: context.isDarkMode,
                       key: data.title,
                     ),
+                    expanded: isLogsExpanded,
                     backgroundColor: context.ispectTheme.cardColor,
                   );
                 },
-                childCount: exceptions.length,
+                childCount: logs.length,
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
