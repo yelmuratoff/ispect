@@ -67,8 +67,8 @@ Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
-<video width="320" height="500" controls>
-  <source src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_preview.mov" type="video/mov">
+<video width="320" height="640" controls>
+  <source src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_preview.mp4?raw=true" type="video/mp4">
 </video>
 
 <!-- <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">

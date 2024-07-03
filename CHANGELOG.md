@@ -1,3 +1,7 @@
+## 1.2.5
+
+* Updated docs: added a video preview of the package.
+
 ## 1.2.4
 
 * Added some options to `Talker` detailed monitor page: reverse all logs and toggle expansion.
