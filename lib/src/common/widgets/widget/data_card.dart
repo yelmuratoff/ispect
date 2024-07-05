@@ -35,8 +35,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
 
   @override
   void initState() {
-    _expanded = widget.expanded;
     super.initState();
+    _expanded = widget.expanded;
   }
 
   @override
@@ -121,8 +121,11 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       : EdgeInsets.zero,
                   decoration: stackTrace != null
                       ? BoxDecoration(
-                          border: Border.all(color: widget.color),
-                          borderRadius: BorderRadius.circular(10),
+                          border: Border.fromBorderSide(
+                            BorderSide(color: widget.color),
+                          ),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
                         )
                       : null,
                   child: Column(
@@ -160,8 +163,10 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: widget.color),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.fromBorderSide(
+                      BorderSide(color: widget.color),
+                    ),
                   ),
                   child: Text(
                     stackTrace,

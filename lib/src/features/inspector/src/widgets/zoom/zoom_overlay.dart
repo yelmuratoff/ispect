@@ -28,16 +28,18 @@ class ZoomOverlayWidget extends StatelessWidget {
         height: overlaySize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.inverseSurface,
-            width: 2.0,
-            strokeAlign: BorderSide.strokeAlignOutside,
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: Theme.of(context).colorScheme.inverseSurface,
+              width: 2,
+              strokeAlign: BorderSide.strokeAlignOutside,
+            ),
           ),
           boxShadow: const [
             BoxShadow(
-              blurRadius: 12.0,
+              blurRadius: 12,
               color: Colors.black45,
-              offset: Offset(0.0, 8.0),
+              offset: Offset(0, 8),
             ),
           ],
         ),
@@ -61,7 +63,7 @@ class ZoomOverlayWidget extends StatelessWidget {
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: _ZoomLevelDisplay(zoomScale: zoomScale),
               ),
             ),
@@ -71,7 +73,7 @@ class ZoomOverlayWidget extends StatelessWidget {
 }
 
 class _ZoomPainter extends CustomPainter {
-  _ZoomPainter({
+  const _ZoomPainter({
     required this.image,
     required this.imageOffset,
     required this.overlayOffset,
@@ -92,10 +94,11 @@ class _ZoomPainter extends CustomPainter {
     // ignore: no_leading_underscores_for_local_identifiers
     final _imageOffset = -imageOffset;
 
-    canvas.clipRect(Offset.zero & size);
-    canvas.translate(overlaySize / 2.0, overlaySize / 2.0);
-    canvas.scale((1 / pixelRatio) * zoomScale);
-    canvas.drawImage(image, _imageOffset, Paint());
+    canvas
+      ..clipRect(Offset.zero & size)
+      ..translate(overlaySize / 2.0, overlaySize / 2.0)
+      ..scale((1 / pixelRatio) * zoomScale)
+      ..drawImage(image, _imageOffset, Paint());
   }
 
   @override
@@ -159,7 +162,7 @@ class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
         opacity: _isZoomScaleVisible ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
         child: InformationBoxWidget(
-          child: Text('x${widget.zoomScale.toString()}'),
+          child: Text('x${widget.zoomScale}'),
         ),
       );
 }

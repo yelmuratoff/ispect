@@ -7,17 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
 /// Prompt the user for feedback using `StringFeedback`.
-Widget simpleFeedbackBuilder(
-  BuildContext context,
-  OnSubmit onSubmit,
-  ScrollController? scrollController,
-  ThemeData theme,
-) =>
-    StringFeedback(
-      onSubmit: onSubmit,
-      scrollController: scrollController,
-      theme: theme,
-    );
+class SimpleFeedbackBuilder extends StatelessWidget {
+  const SimpleFeedbackBuilder({
+    required this.onSubmit,
+    required this.theme,
+    this.scrollController,
+    super.key,
+  });
+  final OnSubmit onSubmit;
+  final ScrollController? scrollController;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) => StringFeedback(
+        onSubmit: onSubmit,
+        scrollController: scrollController,
+        theme: theme,
+      );
+}
 
 /// A form that prompts the user for feedback with a single text field.
 /// This is the default feedback widget used by [BetterFeedback].
@@ -47,18 +54,18 @@ class StringFeedback extends StatefulWidget {
 }
 
 class _StringFeedbackState extends State<StringFeedback> {
-  late TextEditingController controller;
+  late TextEditingController _controller;
 
   @override
   void dispose() {
-    controller.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController();
+    _controller = TextEditingController();
   }
 
   @override
@@ -70,11 +77,10 @@ class _StringFeedbackState extends State<StringFeedback> {
                 ListView(
                   controller: widget.scrollController,
                   // Pad the top by 20 to match the corner radius if drag enabled.
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    widget.scrollController != null ? 20 : 16,
-                    16,
-                    0,
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    top: widget.scrollController != null ? 20 : 16,
+                    right: 16,
                   ),
                   children: <Widget>[
                     Text(
@@ -93,8 +99,8 @@ class _StringFeedbackState extends State<StringFeedback> {
                       minLines: 2,
                       maxLength: 500,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
-                      controller: controller,
-                      onTapOutside: (event) {
+                      controller: _controller,
+                      onTapOutside: (_) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
                       textInputAction: TextInputAction.done,
@@ -107,12 +113,12 @@ class _StringFeedbackState extends State<StringFeedback> {
                               ?.withOpacity(0.5),
                           fontSize: 14,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
                       onChanged: (_) {
-                        //print(_);
+                        debugPrint('onChanged');
                       },
                     ),
                   ],
@@ -128,14 +134,14 @@ class _StringFeedbackState extends State<StringFeedback> {
               foregroundColor:
                   FeedbackTheme.of(context).activeFeedbackModeColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
             ),
             child: Text(
               FeedbackLocalizations.of(context).submitButtonText,
             ),
-            onPressed: () => widget.onSubmit(controller.text),
+            onPressed: () => widget.onSubmit(_controller.text),
           ),
           const Gap(20),
         ],

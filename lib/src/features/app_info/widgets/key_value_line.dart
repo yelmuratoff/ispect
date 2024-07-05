@@ -22,7 +22,7 @@ class KeyValueLine extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       context.ispectTheme.colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
@@ -42,9 +42,9 @@ class KeyValueLine extends StatelessWidget {
             Flexible(
               flex: 2,
               child: InkWell(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onTap: () {
-                  Clipboard.setData(ClipboardData(text: "$k $v"));
+                  Clipboard.setData(ClipboardData(text: '$k $v'));
                   ISpectToaster.showInfoToast(
                     context,
                     title: context.ispectL10n.copiedToClipboard,
@@ -54,7 +54,7 @@ class KeyValueLine extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: context.ispectTheme.colorScheme.primary
                         .withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(4),

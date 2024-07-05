@@ -1,3 +1,10 @@
+## 1.3.1
+* Code was refactored and optimized.
+* Now draggable button's position saves in cache.
+* Updated `analysis_options.yaml` file.
+* Updated `README.md` file.
+
+
 ## 1.3.0
 Also (1.2.8, 1.2.9)
 * Updated options of `ISpectTalker.initHandling`.

@@ -13,9 +13,8 @@ final class ISpectLocalizations {
       GlobalWidgetsLocalizations.delegate,
       ISpectGeneratedLocalization.delegate,
       GlobalFeedbackLocalizationsDelegate.delegate,
+      ...appDelegates,
     ];
-
-    localizationList.addAll(appDelegates);
     return localizationList;
   }
 }

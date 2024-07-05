@@ -17,7 +17,7 @@ void showColorPickerResultSnackbar({
       backgroundColor: Theme.of(context).cardColor,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
           color: Theme.of(context).dividerColor,
         ),
@@ -26,17 +26,19 @@ void showColorPickerResultSnackbar({
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 16.0,
-            height: 16.0,
+            width: 16,
+            height: 16,
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(4.0),
-              border: Border.all(
-                color: Theme.of(context).dividerColor,
+              borderRadius: const BorderRadius.all(Radius.circular(4)),
+              border: Border.fromBorderSide(
+                BorderSide(
+                  color: Theme.of(context).dividerColor,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 8.0),
+          const SizedBox(width: 8),
           Text(
             'Color: $colorString',
             style: Theme.of(context).textTheme.bodyMedium,

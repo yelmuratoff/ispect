@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 
 class OverlayPainter extends CustomPainter {
-  OverlayPainter({
+  const OverlayPainter({
     required this.boxInfo,
     required this.targetRectColor,
     required this.containerRectColor,

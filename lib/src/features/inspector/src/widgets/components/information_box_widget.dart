@@ -34,19 +34,19 @@ class InformationBoxWidget extends StatelessWidget {
   final Widget child;
   final Color? color;
 
-  static double get preferredHeight => 24.0;
+  static double get preferredHeight => 24;
 
   @override
   Widget build(BuildContext context) => Container(
         height: preferredHeight,
         decoration: BoxDecoration(
           color: color ?? Colors.blue,
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: DefaultTextStyle(
           style: const TextStyle(
-            fontSize: 14.0,
+            fontSize: 14,
             color: Colors.white,
           ),
           maxLines: 1,

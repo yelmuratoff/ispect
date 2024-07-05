@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_final_parameters, lines_longer_than_80_chars, inference_failure_on_untyped_parameter
+
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
@@ -10,6 +12,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 final class ISpectTalker {
   factory ISpectTalker() => _instance;
+  // ignore: prefer_const_constructor_declarations
   ISpectTalker._();
 
   late final Talker _talker;
@@ -92,6 +95,7 @@ final class ISpectTalker {
       ..setErrorsFatal(false)
       ..addErrorListener(
         RawReceivePort(
+          // ignore: avoid_types_on_closure_parameters
           (List<dynamic> pair) {
             onUncaughtErrors?.call(pair);
             if (options.isUncaughtErrorsHandlingEnabled) {

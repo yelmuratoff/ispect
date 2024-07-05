@@ -36,8 +36,8 @@ class TalkerSettingsCardItem extends StatelessWidget {
               color: Colors.transparent,
               child: ListTile(
                 dense: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
                 contentPadding: EdgeInsets.zero,
                 title: Text(

@@ -34,7 +34,7 @@ class TalkerMonitorPage extends StatelessWidget {
   ) {
     Navigator.of(context).push(
       MaterialPageRoute<Widget>(
-        builder: (context) => MonitorPage(
+        builder: (_) => MonitorPage(
           data: logs,
           typeName: typeName,
           options: options,

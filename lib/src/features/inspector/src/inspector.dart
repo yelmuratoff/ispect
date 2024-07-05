@@ -1,4 +1,4 @@
-// ignore_for_file: comment_references
+// ignore_for_file: comment_references, avoid_public_members_in_states
 
 import 'dart:ui' as ui;
 
@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect/src/common/db/shared_preference.dart';
 
 import 'package:ispect/src/common/utils/ispect_options.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
@@ -96,15 +97,15 @@ class Inspector extends StatefulWidget {
   final ISpectOptions options;
 
   static InspectorState of(BuildContext context) {
-    final InspectorState? result = maybeOf(context);
+    final result = maybeOf(context);
     if (result != null) {
       return result;
     }
     throw FlutterError.fromParts([
       ErrorSummary(
-        "Inspector.of() error.",
+        'Inspector.of() error.',
       ),
-      context.describeElement("the context"),
+      context.describeElement('the context'),
     ]);
   }
 
@@ -139,7 +140,7 @@ class InspectorState extends State<Inspector> {
   final _selectedColorStateNotifier = ValueNotifier<Color?>(null);
 
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
-  final _zoomScaleNotifier = ValueNotifier<double>(2.0);
+  final _zoomScaleNotifier = ValueNotifier<double>(2);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
 
   late final KeyboardHandler _keyboardHandler;
@@ -148,8 +149,15 @@ class InspectorState extends State<Inspector> {
 
   @override
   void initState() {
-    _isPanelVisible = widget.isPanelVisible;
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await sharedPreference.init();
+      // ignore: avoid_empty_blocks
+      setState(() {});
+    });
+
+    _isPanelVisible = widget.isPanelVisible;
 
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
@@ -320,14 +328,14 @@ class InspectorState extends State<Inspector> {
     final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
         as RenderRepaintBoundary;
 
-    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
     _image = await boundary.toImage(pixelRatio: pixelRatio);
     _byteDataStateNotifier.value = await _image!.toByteData();
   }
 
   Offset _extractShiftedOffset(Offset offset) {
-    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
     var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
             as RenderRepaintBoundary)
@@ -405,6 +413,16 @@ class InspectorState extends State<Inspector> {
 
   @override
   void dispose() {
+    _zoomOverlayOffsetNotifier.dispose();
+    _zoomScaleNotifier.dispose();
+    _zoomImageOffsetNotifier.dispose();
+    _selectedColorStateNotifier.dispose();
+    _selectedColorOffsetNotifier.dispose();
+    _zoomStateNotifier.dispose();
+    _colorPickerStateNotifier.dispose();
+    _inspectorStateNotifier.dispose();
+    _currentRenderBoxNotifier.dispose();
+    _byteDataStateNotifier.dispose();
     _image?.dispose();
     _byteDataStateNotifier.value = null;
     _keyboardHandler.dispose();
@@ -435,8 +453,8 @@ class InspectorState extends State<Inspector> {
               _inspectorStateNotifier,
               _zoomStateNotifier,
             ],
-            builder: (context) {
-              final Widget child = widget.child;
+            builder: (_) {
+              final child = widget.child;
 
               final isAbsorbingPointer = _colorPickerStateNotifier.value ||
                   _inspectorStateNotifier.value ||
@@ -471,7 +489,7 @@ class InspectorState extends State<Inspector> {
               _selectedColorOffsetNotifier,
               _selectedColorStateNotifier,
             ],
-            builder: (context) {
+            builder: (_) {
               final offset = _selectedColorOffsetNotifier.value;
               final color = _selectedColorStateNotifier.value;
 
@@ -495,8 +513,8 @@ class InspectorState extends State<Inspector> {
               _inspectorStateNotifier,
               _zoomStateNotifier,
             ],
-            builder: (context) => LayoutBuilder(
-              builder: (context, constraints) => _inspectorStateNotifier.value
+            builder: (_) => LayoutBuilder(
+              builder: (_, constraints) => _inspectorStateNotifier.value
                   ? InspectorOverlay(
                       size: constraints.biggest,
                       boxInfo: _currentRenderBoxNotifier.value,
@@ -522,13 +540,11 @@ class InspectorState extends State<Inspector> {
                 return const SizedBox.shrink();
               }
 
-              final overlaySize = ui
-                  .lerpDouble(
-                    128.0,
-                    256.0,
-                    ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-                  )!
-                  .toDouble();
+              final overlaySize = ui.lerpDouble(
+                128.0,
+                256.0,
+                ((zoomScale - 2.0) / 10.0).clamp(0, 1),
+              )!;
 
               return Positioned(
                 left: offset.dx - overlaySize / 2,
@@ -540,13 +556,13 @@ class InspectorState extends State<Inspector> {
                     imageOffset: imageOffset,
                     overlaySize: overlaySize,
                     zoomScale: zoomScale,
-                    pixelRatio: MediaQuery.of(context).devicePixelRatio,
+                    pixelRatio: MediaQuery.devicePixelRatioOf(context),
                   ),
                 ),
               );
             },
           ),
-        if (_isPanelVisible)
+        if (_isPanelVisible && sharedPreference.isInitialized)
           Align(
             alignment: Alignment.centerRight,
             child: MultiValueListenableBuilder(
@@ -556,7 +572,7 @@ class InspectorState extends State<Inspector> {
                 _zoomStateNotifier,
                 _byteDataStateNotifier,
               ],
-              builder: (context) => InspectorPanel(
+              builder: (_) => InspectorPanel(
                 isInspectorEnabled: _inspectorStateNotifier.value,
                 isColorPickerEnabled: _colorPickerStateNotifier.value,
                 isZoomEnabled: _zoomStateNotifier.value,

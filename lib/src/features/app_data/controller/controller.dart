@@ -14,14 +14,19 @@ class AppDataController extends ChangeNotifier {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
-    } on Exception catch (e, st) {
+    } catch (e, st) {
       if (context.mounted &&
-          !e.toString().contains("No such file or directory")) {
+          !e.toString().contains('No such file or directory')) {
         talker.handle(e, st);
         await ISpectToaster.showErrorToast(
           context,
           title: e.toString(),
         );
+      } else {
+        _files = [];
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
     }
   }

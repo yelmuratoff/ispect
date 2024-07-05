@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 
-class BoxModelPainter extends CustomPainter {
-  BoxModelPainter({
+final class BoxModelPainter extends CustomPainter {
+  const BoxModelPainter({
     required this.boxInfo,
     required this.targetColor,
     required this.containerColor,
@@ -22,24 +22,23 @@ class BoxModelPainter extends CustomPainter {
   Paint get _containerDashPaint =>
       Paint()..color = containerColor.withOpacity(0.35);
 
-  final double _dashWidth = 4.0;
-  final double _dashSkip = 0.0;
+  static const double _dashWidth = 4;
+  static const double _dashSkip = 0;
 
   void _paintBackground(Canvas canvas, Size size) {
-    final sizePath = Path();
-    sizePath.moveTo(0.0, 0.0);
-    sizePath.lineTo(size.width, 0.0);
-    sizePath.lineTo(size.width, size.height);
-    sizePath.lineTo(0.0, size.height);
+    final sizePath = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height);
 
-    double dashPosition = 0.0;
+    var dashPosition = 0.0;
     while (dashPosition < size.height * 2) {
-      final path = Path();
-
-      path.moveTo(0.0, dashPosition);
-      path.lineTo(dashPosition, 0.0);
-      path.lineTo(dashPosition + _dashWidth, 0.0);
-      path.lineTo(0.0, dashPosition + _dashWidth);
+      final path = Path()
+        ..moveTo(0, dashPosition)
+        ..lineTo(dashPosition, 0)
+        ..lineTo(dashPosition + _dashWidth, 0)
+        ..lineTo(0, dashPosition + _dashWidth);
 
       canvas.drawPath(
         Path.combine(PathOperation.intersect, path, sizePath),
@@ -63,15 +62,15 @@ class BoxModelPainter extends CustomPainter {
   }
 
   TextPainter _getTextPainter(String text) {
-    const textStyle = TextStyle(fontSize: 8.0);
+    const textStyle = TextStyle(fontSize: 8);
 
     final span = TextSpan(text: text, style: textStyle);
     return TextPainter(text: span, textDirection: TextDirection.ltr);
   }
 
   void _paintBoxSize(Canvas canvas, Size size) {
-    final painter = _getTextPainter('144 x 50');
-    painter.layout(maxWidth: size.width / 2.0);
+    final painter = _getTextPainter('144 x 50')
+      ..layout(maxWidth: size.width / 2.0);
 
     painter.paint(
       canvas,
@@ -85,8 +84,8 @@ class BoxModelPainter extends CustomPainter {
     required double padding,
     required Offset offset,
   }) {
-    final painter = _getTextPainter(padding.toStringAsFixed(1));
-    painter.layout(maxWidth: size.width / 4.0);
+    final painter = _getTextPainter(padding.toStringAsFixed(1))
+      ..layout(maxWidth: size.width / 4.0);
 
     final topLeft = Offset(
       offset.dx - painter.width / 2.0,
@@ -96,7 +95,7 @@ class BoxModelPainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         topLeft & painter.size,
-        const Radius.circular(2.0),
+        const Radius.circular(2),
       ),
       _containerPaint,
     );

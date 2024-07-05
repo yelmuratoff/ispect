@@ -20,30 +20,6 @@ class BoxInfoWidget extends StatelessWidget {
   Color get _targetColor => Colors.blue.shade700;
   Color get _containerColor => Colors.yellow.shade700;
 
-  Widget _buildTargetBoxSizeWidget(BuildContext context) => Positioned(
-        top: calculateBoxPosition(
-          rect: boxInfo.targetRectShifted,
-          height: InformationBoxWidget.preferredHeight,
-        ),
-        left: boxInfo.targetRectShifted.left,
-        child: IgnorePointer(
-          child: Align(
-            child: InformationBoxWidget.size(
-              size: boxInfo.targetRect.size,
-              color: _targetColor,
-            ),
-          ),
-        ),
-      );
-
-  Widget _buildTargetBoxInfoPanel(BuildContext context) => BoxInfoPanelWidget(
-        boxInfo: boxInfo,
-        targetColor: _targetColor,
-        containerColor: _containerColor,
-        isVisible: isPanelVisible,
-        onVisibilityChanged: onPanelVisibilityChanged,
-      );
-
   @override
   Widget build(BuildContext context) => Stack(
         children: [
@@ -57,14 +33,49 @@ class BoxInfoWidget extends StatelessWidget {
             ),
           ),
           // ..._buildPaddingWidgets(context),
-          _buildTargetBoxSizeWidget(context),
+          _TargetBoxSizeWidget(
+            boxInfo: boxInfo,
+            targetColor: _targetColor,
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: _buildTargetBoxInfoPanel(context),
+              padding: const EdgeInsets.all(12),
+              child: BoxInfoPanelWidget(
+                boxInfo: boxInfo,
+                targetColor: _targetColor,
+                containerColor: _containerColor,
+                isVisible: isPanelVisible,
+                onVisibilityChanged: onPanelVisibilityChanged,
+              ),
             ),
           ),
         ],
+      );
+}
+
+class _TargetBoxSizeWidget extends StatelessWidget {
+  const _TargetBoxSizeWidget({
+    required this.boxInfo,
+    required this.targetColor,
+  });
+  final BoxInfo boxInfo;
+  final Color targetColor;
+
+  @override
+  Widget build(BuildContext context) => Positioned(
+        top: calculateBoxPosition(
+          rect: boxInfo.targetRectShifted,
+          height: InformationBoxWidget.preferredHeight,
+        ),
+        left: boxInfo.targetRectShifted.left,
+        child: IgnorePointer(
+          child: Align(
+            child: InformationBoxWidget.size(
+              size: boxInfo.targetRect.size,
+              color: targetColor,
+            ),
+          ),
+        ),
       );
 }

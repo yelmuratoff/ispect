@@ -57,7 +57,7 @@ class _AndroidInfoBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width,
       child: Column(
@@ -106,7 +106,7 @@ class _AndroidInfoBody extends StatelessWidget {
         ]
             .map(
               (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 2.0),
+                padding: const EdgeInsets.only(bottom: 2),
                 child: e,
               ),
             )
@@ -125,7 +125,7 @@ class _IosInfoBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width,
       child: Column(
@@ -162,7 +162,7 @@ class _IosInfoBody extends StatelessWidget {
         ]
             .map(
               (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 2.0),
+                padding: const EdgeInsets.only(bottom: 2),
                 child: e,
               ),
             )

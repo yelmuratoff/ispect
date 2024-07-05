@@ -107,15 +107,18 @@ class TalkerAppBar extends StatelessWidget {
                             return Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: selected
-                                      ? isDark
-                                          ? context.ispectTheme.colorScheme
-                                              .primaryContainer
-                                          : context
-                                              .ispectTheme.colorScheme.primary
-                                      : context.ispectTheme.dividerColor,
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                                border: Border.fromBorderSide(
+                                  BorderSide(
+                                    color: selected
+                                        ? isDark
+                                            ? context.ispectTheme.colorScheme
+                                                .primaryContainer
+                                            : context
+                                                .ispectTheme.colorScheme.primary
+                                        : context.ispectTheme.dividerColor,
+                                  ),
                                 ),
                                 color: selected
                                     ? isDark
@@ -125,19 +128,17 @@ class TalkerAppBar extends StatelessWidget {
                                             .ispectTheme.colorScheme.primary
                                     : context.ispectTheme.cardColor,
                               ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    '$count  $value',
-                                    style: context
-                                        .ispectTheme.textTheme.bodyMedium!
-                                        .copyWith(
-                                      color: selected
-                                          ? Colors.white
-                                          : context.ispectTheme.textColor,
-                                    ),
+                              child: Align(
+                                child: Text(
+                                  '$count  $value',
+                                  style: context
+                                      .ispectTheme.textTheme.bodyMedium!
+                                      .copyWith(
+                                    color: selected
+                                        ? Colors.white
+                                        : context.ispectTheme.textColor,
                                   ),
-                                ],
+                                ),
                               ),
                             );
                           },
@@ -192,12 +193,10 @@ class _SearchTextField extends StatelessWidget {
             ? context.ispectTheme.colorScheme.primaryContainer
             : context.ispectTheme.colorScheme.primary,
         focusNode: focusNode,
-        onTapOutside: (event) {
+        onTapOutside: (_) {
           FocusManager.instance.primaryFocus?.unfocus();
         },
-        onTap: () {
-          controller.update();
-        },
+        onTap: controller.update,
         onChanged: controller.updateFilterSearchQuery,
         decoration: InputDecoration(
           fillColor: theme.cardColor,
@@ -207,15 +206,15 @@ class _SearchTextField extends StatelessWidget {
                   ? context.ispectTheme.colorScheme.primaryContainer
                   : context.ispectTheme.colorScheme.primary,
             ),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: context.ispectTheme.dividerColor),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           border: OutlineInputBorder(
             borderSide: BorderSide(color: context.ispectTheme.dividerColor),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           prefixIcon: Icon(
@@ -251,10 +250,9 @@ class _MonitorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TalkerBuilder(
         talker: talker,
-        builder: (context, data) {
-          final haveErrors = data
-              .where((e) => e is TalkerError || e is TalkerException)
-              .isNotEmpty;
+        builder: (_, data) {
+          final haveErrors =
+              data.any((e) => e is TalkerError || e is TalkerException);
           return Stack(
             children: [
               Center(

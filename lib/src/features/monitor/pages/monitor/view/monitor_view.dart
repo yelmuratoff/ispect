@@ -1,17 +1,16 @@
 part of '../talker_monitor_page.dart';
 
 class _MonitorView extends StatelessWidget {
-  final ISpectOptions options;
-  final void Function(List<TalkerData>, String) openTypedLogsPage;
-
   const _MonitorView({
     required this.options,
     required this.openTypedLogsPage,
   });
+  final ISpectOptions options;
+  final void Function(List<TalkerData> data, String type) openTypedLogsPage;
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = context.isDarkMode;
+    final isDark = context.isDarkMode;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -36,7 +35,7 @@ class _MonitorView extends StatelessWidget {
           final exceptions = data.whereType<TalkerException>().toList();
           final warnings =
               logs.where((e) => e.logLevel == LogLevel.warning).toList();
-          final goods = logs.where((e) => e.title == "good").toList();
+          final goods = logs.where((e) => e.title == 'good').toList();
 
           final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
           final verboseDebug = logs
@@ -128,7 +127,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "http-request",
+                              key: 'http-request',
                             ),
                           ),
                         ),
@@ -139,7 +138,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "http-error",
+                              key: 'http-error',
                             ),
                           ),
                         ),
@@ -150,7 +149,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "http-response",
+                              key: 'http-response',
                             ),
                           ),
                         ),
@@ -181,7 +180,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "bloc-event",
+                              key: 'bloc-event',
                             ),
                           ),
                         ),
@@ -192,7 +191,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "bloc-transition",
+                              key: 'bloc-transition',
                             ),
                           ),
                         ),
@@ -203,7 +202,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "bloc-create",
+                              key: 'bloc-create',
                             ),
                           ),
                         ),
@@ -214,7 +213,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "bloc-close",
+                              key: 'bloc-close',
                             ),
                           ),
                         ),
@@ -245,7 +244,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "riverpod-add",
+                              key: 'riverpod-add',
                             ),
                           ),
                         ),
@@ -256,7 +255,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "riverpod-update",
+                              key: 'riverpod-update',
                             ),
                           ),
                         ),
@@ -267,7 +266,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "riverpod-dispose",
+                              key: 'riverpod-dispose',
                             ),
                           ),
                         ),
@@ -278,7 +277,7 @@ class _MonitorView extends StatelessWidget {
                           style: TextStyle(
                             color: getTypeColor(
                               isDark: isDark,
-                              key: "riverpod-fail",
+                              key: 'riverpod-fail',
                             ),
                           ),
                         ),
@@ -295,7 +294,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeErrors,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "error",
+                      key: 'error',
                     ),
                     icon: Icons.error_outline_rounded,
                     subtitle:
@@ -315,7 +314,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeExceptions,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "exception",
+                      key: 'exception',
                     ),
                     icon: Icons.error_outline_rounded,
                     subtitle: context.ispectL10n
@@ -335,7 +334,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeWarnings,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "warning",
+                      key: 'warning',
                     ),
                     icon: Icons.warning_amber_rounded,
                     subtitle: context.ispectL10n
@@ -355,7 +354,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeInfo,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "info",
+                      key: 'info',
                     ),
                     icon: Icons.info_outline_rounded,
                     subtitle:
@@ -375,7 +374,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeGood,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "good",
+                      key: 'good',
                     ),
                     icon: Icons.check_circle_outline_rounded,
                     subtitle:
@@ -395,7 +394,7 @@ class _MonitorView extends StatelessWidget {
                     title: context.ispectL10n.talkerTypeDebug,
                     color: getTypeColor(
                       isDark: isDark,
-                      key: "verbose",
+                      key: 'verbose',
                     ),
                     icon: Icons.remove_red_eye_outlined,
                     subtitle: context.ispectL10n

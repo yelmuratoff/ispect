@@ -56,39 +56,41 @@ class AppInfoController extends ChangeNotifier {
   }
 
   Future<String> allData() async {
-    final StringBuffer buffer = StringBuffer();
-    buffer.writeln('App Info');
-    buffer.writeln('App Name: ${packageInfo!.appName}');
-    buffer.writeln('Package Name: ${packageInfo!.packageName}');
-    buffer.writeln('Version: ${packageInfo!.version}');
-    buffer.writeln('Build Number: ${packageInfo!.buildNumber}');
-    buffer.writeln('Device Info');
+    final buffer = StringBuffer()
+      ..writeln('App Info')
+      ..writeln('App Name: ${packageInfo!.appName}')
+      ..writeln('Package Name: ${packageInfo!.packageName}')
+      ..writeln('Version: ${packageInfo!.version}')
+      ..writeln('Build Number: ${packageInfo!.buildNumber}')
+      ..writeln('Device Info');
     if (Platform.isIOS) {
-      buffer.writeln('Name: ${iosDeviceInfo!.name}');
-      buffer.writeln('System Name: ${iosDeviceInfo!.systemName}');
-      buffer.writeln('System Version: ${iosDeviceInfo!.systemVersion}');
-      buffer.writeln('Model: ${iosDeviceInfo!.model}');
-      buffer.writeln('Localized Model: ${iosDeviceInfo!.localizedModel}');
-      buffer.writeln(
-        'Identifier For Vendor: ${iosDeviceInfo!.identifierForVendor}',
-      );
+      buffer
+        ..writeln('Name: ${iosDeviceInfo!.name}')
+        ..writeln('System Name: ${iosDeviceInfo!.systemName}')
+        ..writeln('System Version: ${iosDeviceInfo!.systemVersion}')
+        ..writeln('Model: ${iosDeviceInfo!.model}')
+        ..writeln('Localized Model: ${iosDeviceInfo!.localizedModel}')
+        ..writeln(
+          'Identifier For Vendor: ${iosDeviceInfo!.identifierForVendor}',
+        );
     } else if (Platform.isAndroid) {
-      buffer.writeln('Version: ${androidDeviceInfo!.version}');
-      buffer.writeln('Board: ${androidDeviceInfo!.board}');
-      buffer.writeln('Bootloader: ${androidDeviceInfo!.bootloader}');
-      buffer.writeln('Brand: ${androidDeviceInfo!.brand}');
-      buffer.writeln('Device: ${androidDeviceInfo!.device}');
-      buffer.writeln('Display: ${androidDeviceInfo!.display}');
-      buffer.writeln('Fingerprint: ${androidDeviceInfo!.fingerprint}');
-      buffer.writeln('Hardware: ${androidDeviceInfo!.hardware}');
-      buffer.writeln('Host: ${androidDeviceInfo!.host}');
-      buffer.writeln('Id: ${androidDeviceInfo!.id}');
-      buffer.writeln('Manufacturer: ${androidDeviceInfo!.manufacturer}');
-      buffer.writeln('Model: ${androidDeviceInfo!.model}');
-      buffer.writeln('Product: ${androidDeviceInfo!.product}');
-      buffer.writeln('Tags: ${androidDeviceInfo!.tags}');
-      buffer.writeln('Type: ${androidDeviceInfo!.type}');
-      buffer.writeln('Android ID: ${androidDeviceInfo!.id}');
+      buffer
+        ..writeln('Version: ${androidDeviceInfo!.version}')
+        ..writeln('Board: ${androidDeviceInfo!.board}')
+        ..writeln('Bootloader: ${androidDeviceInfo!.bootloader}')
+        ..writeln('Brand: ${androidDeviceInfo!.brand}')
+        ..writeln('Device: ${androidDeviceInfo!.device}')
+        ..writeln('Display: ${androidDeviceInfo!.display}')
+        ..writeln('Fingerprint: ${androidDeviceInfo!.fingerprint}')
+        ..writeln('Hardware: ${androidDeviceInfo!.hardware}')
+        ..writeln('Host: ${androidDeviceInfo!.host}')
+        ..writeln('Id: ${androidDeviceInfo!.id}')
+        ..writeln('Manufacturer: ${androidDeviceInfo!.manufacturer}')
+        ..writeln('Model: ${androidDeviceInfo!.model}')
+        ..writeln('Product: ${androidDeviceInfo!.product}')
+        ..writeln('Tags: ${androidDeviceInfo!.tags}')
+        ..writeln('Type: ${androidDeviceInfo!.type}')
+        ..writeln('Android ID: ${androidDeviceInfo!.id}');
     }
     return buffer.toString();
   }

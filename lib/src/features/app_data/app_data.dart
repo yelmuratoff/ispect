@@ -15,8 +15,8 @@ part 'view/view.dart';
 part 'controller/controller.dart';
 
 class AppDataPage extends StatefulWidget {
-  final Talker talker;
   const AppDataPage({required this.talker, super.key});
+  final Talker talker;
 
   @override
   State<AppDataPage> createState() => _AppDataPageState();
@@ -27,13 +27,16 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.loadFilesList(
-        context: context,
-        talker: widget.talker,
-      );
-    });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.loadFilesList(context: context, talker: widget.talker);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

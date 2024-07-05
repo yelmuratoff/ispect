@@ -1,14 +1,6 @@
 part of '../monitor_info_page.dart';
 
 class _MonitorView extends StatelessWidget {
-  final String typeName;
-
-  final List<TalkerData> logs;
-  final ISpectOptions options;
-  final void Function(BuildContext, TalkerData)? onCopyTap;
-  final void Function() onReverseLogsOrder;
-  final void Function() toggleLogsExpansion;
-  final bool isLogsExpanded;
   const _MonitorView({
     required this.typeName,
     required this.logs,
@@ -18,6 +10,14 @@ class _MonitorView extends StatelessWidget {
     required this.isLogsExpanded,
     required this.toggleLogsExpansion,
   });
+  final String typeName;
+
+  final List<TalkerData> logs;
+  final ISpectOptions options;
+  final void Function(BuildContext context, TalkerData data)? onCopyTap;
+  final VoidCallback onReverseLogsOrder;
+  final VoidCallback toggleLogsExpansion;
+  final bool isLogsExpanded;
 
   @override
   Widget build(BuildContext context) => Scaffold(

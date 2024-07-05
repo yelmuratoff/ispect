@@ -12,16 +12,16 @@ class ColorPickerOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 56.0,
-        height: 56.0,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
           boxShadow: const [
             BoxShadow(
-              blurRadius: 12.0,
+              blurRadius: 12,
               color: Colors.black12,
-              offset: Offset(0.0, 8.0),
+              offset: Offset(0, 8),
             ),
           ],
         ),
@@ -32,7 +32,7 @@ class ColorPickerOverlay extends StatelessWidget {
             colorToHexString(color),
             style: TextStyle(
               color: getTextColorOnBackground(color),
-              fontSize: 12.0,
+              fontSize: 12,
             ),
           ),
         ),

@@ -1,5 +1,3 @@
-library ispect;
-
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:provider/provider.dart';

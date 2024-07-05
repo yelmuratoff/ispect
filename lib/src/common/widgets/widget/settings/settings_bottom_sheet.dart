@@ -31,8 +31,9 @@ class _TalkerSettingsBottomSheetState
     extends State<TalkerSettingsBottomSheets> {
   @override
   void initState() {
-    widget.talker.addListener(() => setState(() {}));
     super.initState();
+    // ignore: avoid_empty_blocks
+    widget.talker.addListener(() => setState(() {}));
   }
 
   @override

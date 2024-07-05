@@ -15,8 +15,8 @@ part 'widgets/package_info_body.dart';
 part 'widgets/key_value_line.dart';
 
 class AppInfoPage extends StatefulWidget {
-  final Talker talker;
   const AppInfoPage({required this.talker, super.key});
+  final Talker talker;
 
   @override
   State<AppInfoPage> createState() => _AppInfoPageState();
@@ -27,11 +27,14 @@ class _AppInfoPageState extends State<AppInfoPage> {
 
   @override
   void initState() {
-    _contorller.loadAll(
-      context: context,
-      talker: widget.talker,
-    );
     super.initState();
+    _contorller.loadAll(context: context, talker: widget.talker);
+  }
+
+  @override
+  void dispose() {
+    _contorller.dispose();
+    super.dispose();
   }
 
   @override

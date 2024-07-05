@@ -26,22 +26,21 @@ class MonitorPage extends StatefulWidget {
 }
 
 class _MonitorPageState extends State<MonitorPage> {
-  final List<TalkerData> logs = [];
+  final _logs = <TalkerData>[];
   bool _isLogsExpanded = false;
 
   @override
   void initState() {
-    logs.addAll(widget.data);
     super.initState();
+    _logs.addAll(widget.data);
   }
 
   @override
   Widget build(BuildContext context) => _MonitorView(
         typeName: widget.typeName,
-        logs: logs,
+        logs: _logs,
         options: widget.options,
-        onCopyTap: (itemContext, data) =>
-            _copyTalkerDataItemText(itemContext, data),
+        onCopyTap: _copyTalkerDataItemText,
         onReverseLogsOrder: _reverseLogsOrder,
         isLogsExpanded: _isLogsExpanded,
         toggleLogsExpansion: _toggleLogsExpansion,
@@ -49,7 +48,7 @@ class _MonitorPageState extends State<MonitorPage> {
 
   void _reverseLogsOrder() {
     setState(() {
-      logs.setAll(0, logs.reversed.toList());
+      _logs.setAll(0, _logs.reversed.toList());
     });
   }
 
@@ -62,10 +61,10 @@ class _MonitorPageState extends State<MonitorPage> {
   void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
     final text = data.generateTextMessage();
     Clipboard.setData(ClipboardData(text: text));
-    _showSnackBar(context, context.ispectL10n.logItemCopied);
+    _showSnackBar(context);
   }
 
-  void _showSnackBar(BuildContext context, String text) {
+  void _showSnackBar(BuildContext context) {
     ISpectToaster.showInfoToast(
       context,
       title: context.ispectL10n.copiedToClipboard,

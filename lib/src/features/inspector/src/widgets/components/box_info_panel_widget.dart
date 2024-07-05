@@ -24,189 +24,6 @@ class BoxInfoPanelWidget extends StatelessWidget {
   final Color targetColor;
   final Color containerColor;
 
-  Widget _buildInfoRow(
-    BuildContext context, {
-    required IconData icon,
-    required Widget child,
-    required String subtitle,
-    Color? iconColor,
-    Color? backgroundColor,
-  }) {
-    final theme = Theme.of(context);
-
-    Widget child0 = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 20.0,
-          color: iconColor ?? theme.textTheme.bodySmall?.color,
-        ),
-        const SizedBox(width: 12.0),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            child,
-            const SizedBox(height: 0.0),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(fontSize: 10.0),
-            ),
-          ],
-        ),
-      ],
-    );
-
-    if (backgroundColor != null) {
-      child0 = Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        child: child0,
-      );
-    }
-
-    return child0;
-  }
-
-  Widget _buildMainRow(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Wrap(
-      spacing: 12.0,
-      runSpacing: 8.0,
-      children: [
-        _buildInfoRow(
-          context,
-          icon: Icons.format_shapes,
-          subtitle: 'size',
-          child: Text(
-            '${boxInfo.targetRect.width} × ${boxInfo.targetRect.height}',
-          ),
-          backgroundColor: theme.chipTheme.backgroundColor,
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.straighten,
-          subtitle: 'padding (LTRB)',
-          child: Text(boxInfo.describePadding()),
-          backgroundColor: theme.chipTheme.backgroundColor,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRenderDecoratedBoxInfo(BuildContext context) {
-    final theme = Theme.of(context);
-    final renderDecoratedBox = boxInfo.targetRenderBox as RenderDecoratedBox;
-
-    final decoration = renderDecoratedBox.decoration;
-
-    if (decoration is! BoxDecoration) return const SizedBox.shrink();
-
-    return Wrap(
-      spacing: 12.0,
-      runSpacing: 8.0,
-      children: [
-        _buildInfoRow(
-          context,
-          icon: Icons.rounded_corner,
-          subtitle: 'border radius',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(decoration.borderRadius.toString()),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.circle_outlined,
-          subtitle: 'shape',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(decoration.shape.toString()),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.palette,
-          subtitle: 'color',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          iconColor: decoration.color,
-          child: Text(
-            decoration.color != null
-                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
-                : 'n/a',
-            style: TextStyle(color: decoration.color),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRenderParagraphInfo(BuildContext context) {
-    final theme = Theme.of(context);
-    final renderParagraph = boxInfo.targetRenderBox as RenderParagraph;
-
-    final style = renderParagraph.text.style;
-
-    if (style == null) return const SizedBox.shrink();
-
-    return Wrap(
-      spacing: 12.0,
-      runSpacing: 8.0,
-      children: [
-        _buildInfoRow(
-          context,
-          icon: Icons.font_download,
-          subtitle: 'font family',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(style.fontFamily ?? 'n/a'),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.format_size,
-          subtitle: 'font size',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(style.fontSize?.toStringAsFixed(1) ?? 'n/a'),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.text_format,
-          subtitle: 'decoration',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(style.decoration?.toString() ?? 'n/a'),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.color_lens,
-          subtitle: 'color',
-          iconColor: style.color,
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(
-            renderParagraph.text.style?.color != null
-                ? '#${colorToHexString(style.color!, withAlpha: true)}'
-                : 'n/a',
-            style: TextStyle(
-              color: style.color,
-            ),
-          ),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.height,
-          subtitle: 'height',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(style.height?.toStringAsFixed(1) ?? 'n/a'),
-        ),
-        _buildInfoRow(
-          context,
-          icon: Icons.line_weight,
-          subtitle: 'weight',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(style.fontWeight?.toString() ?? 'n/a'),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -248,36 +65,233 @@ class BoxInfoPanelWidget extends StatelessWidget {
               ],
             ),
             childrenPadding: const EdgeInsets.only(
-              left: 12.0,
-              right: 12.0,
-              bottom: 12.0,
+              left: 12,
+              right: 12,
+              bottom: 12,
             ),
             expandedAlignment: Alignment.centerLeft,
             expandedCrossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // const SizedBox(height: 4.0),
-              // _buildSizeRow(context),
               if (boxInfo.containerRect != null) ...[
-                _buildMainRow(context),
+                _MainRow(boxInfo: boxInfo),
               ],
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
-                  height: 16.0,
+                  height: 16,
                   color: theme.dividerColor,
                 ),
-                _buildRenderParagraphInfo(context),
+                _RenderParagraphInfo(boxInfo: boxInfo),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
-                  height: 16.0,
+                  height: 16,
                   color: theme.dividerColor,
                 ),
-                _buildRenderDecoratedBoxInfo(context),
+                _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.child,
+    required this.subtitle,
+    this.iconColor,
+    this.backgroundColor,
+  });
+  final IconData icon;
+  final Widget child;
+  final String subtitle;
+  final Color? iconColor;
+  final Color? backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    Widget child0 = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: iconColor ?? theme.textTheme.bodySmall?.color,
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            child,
+            const SizedBox(height: 0),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    if (backgroundColor != null) {
+      child0 = Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: child0,
+      );
+    }
+
+    return child0;
+  }
+}
+
+class _MainRow extends StatelessWidget {
+  const _MainRow({
+    required this.boxInfo,
+  });
+  final BoxInfo boxInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        _InfoRow(
+          icon: Icons.format_shapes,
+          subtitle: 'size',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(
+            '${boxInfo.targetRect.width} × ${boxInfo.targetRect.height}',
+          ),
+        ),
+        _InfoRow(
+          icon: Icons.straighten,
+          subtitle: 'padding (LTRB)',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(boxInfo.describePadding()),
+        ),
+      ],
+    );
+  }
+}
+
+class _RenderDecoratedBoxInfo extends StatelessWidget {
+  const _RenderDecoratedBoxInfo({required this.boxInfo});
+  final BoxInfo boxInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final renderDecoratedBox = boxInfo.targetRenderBox as RenderDecoratedBox;
+
+    final decoration = renderDecoratedBox.decoration;
+
+    if (decoration is! BoxDecoration) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        _InfoRow(
+          icon: Icons.rounded_corner,
+          subtitle: 'border radius',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(decoration.borderRadius.toString()),
+        ),
+        _InfoRow(
+          icon: Icons.circle_outlined,
+          subtitle: 'shape',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(decoration.shape.toString()),
+        ),
+        _InfoRow(
+          icon: Icons.palette,
+          subtitle: 'color',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          iconColor: decoration.color,
+          child: Text(
+            decoration.color != null
+                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
+                : 'n/a',
+            style: TextStyle(color: decoration.color),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RenderParagraphInfo extends StatelessWidget {
+  const _RenderParagraphInfo({required this.boxInfo});
+  final BoxInfo boxInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final renderParagraph = boxInfo.targetRenderBox as RenderParagraph;
+
+    final style = renderParagraph.text.style;
+
+    if (style == null) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        _InfoRow(
+          icon: Icons.font_download,
+          subtitle: 'font family',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(style.fontFamily ?? 'n/a'),
+        ),
+        _InfoRow(
+          icon: Icons.format_size,
+          subtitle: 'font size',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(style.fontSize?.toStringAsFixed(1) ?? 'n/a'),
+        ),
+        _InfoRow(
+          icon: Icons.text_format,
+          subtitle: 'decoration',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(style.decoration?.toString() ?? 'n/a'),
+        ),
+        _InfoRow(
+          icon: Icons.color_lens,
+          subtitle: 'color',
+          iconColor: style.color,
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(
+            renderParagraph.text.style?.color != null
+                ? '#${colorToHexString(style.color!, withAlpha: true)}'
+                : 'n/a',
+            style: TextStyle(
+              color: style.color,
+            ),
+          ),
+        ),
+        _InfoRow(
+          icon: Icons.height,
+          subtitle: 'height',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(style.height?.toStringAsFixed(1) ?? 'n/a'),
+        ),
+        _InfoRow(
+          icon: Icons.line_weight,
+          subtitle: 'weight',
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(style.fontWeight?.toString() ?? 'n/a'),
+        ),
+      ],
     );
   }
 }

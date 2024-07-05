@@ -57,11 +57,19 @@ class _TalkerViewState extends State<TalkerView> {
   late final _controller = widget.controller ?? TalkerViewController();
 
   @override
+  void dispose() {
+    _focusNode.dispose();
+    _titlesController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
         child: AnimatedBuilder(
           animation: _controller,
-          builder: (context, child) => TalkerBuilder(
+          builder: (_, __) => TalkerBuilder(
             talker: widget.talker,
             builder: (context, data) {
               final filtredElements =
@@ -145,7 +153,7 @@ class _TalkerViewState extends State<TalkerView> {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => TalkerSettingsBottomSheets(
+      builder: (_) => TalkerSettingsBottomSheets(
         options: widget.options,
         talker: talker,
       ),
@@ -155,7 +163,7 @@ class _TalkerViewState extends State<TalkerView> {
   void _openTalkerMonitor(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<Widget>(
-        builder: (context) => TalkerMonitorPage(
+        builder: (_) => TalkerMonitorPage(
           options: widget.options,
         ),
       ),
@@ -233,7 +241,7 @@ class _TalkerViewState extends State<TalkerView> {
     await Navigator.push(
       context,
       MaterialPageRoute<dynamic>(
-        builder: (context) => AppDataPage(
+        builder: (_) => AppDataPage(
           talker: widget.talker,
         ),
       ),
@@ -244,7 +252,7 @@ class _TalkerViewState extends State<TalkerView> {
     await Navigator.push(
       context,
       MaterialPageRoute<dynamic>(
-        builder: (context) => AppInfoPage(
+        builder: (_) => AppInfoPage(
           talker: widget.talker,
         ),
       ),

@@ -1,8 +1,8 @@
 part of '../app.dart';
 
 class _AppInfoView extends StatelessWidget {
-  final AppInfoController controller;
   const _AppInfoView({required this.controller});
+  final AppInfoController controller;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -32,7 +32,7 @@ class _AppInfoView extends StatelessWidget {
         ),
         body: AnimatedBuilder(
           animation: controller,
-          builder: (context, _) => ListView(
+          builder: (_, __) => ListView(
             physics: const BouncingScrollPhysics(),
             children: [
               const SizedBox(height: 10),

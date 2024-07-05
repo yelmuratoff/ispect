@@ -9,16 +9,6 @@ import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:provider/provider.dart';
 
 class ISpectBuilder extends StatelessWidget {
-  final GlobalKey<NavigatorState>? navigatorKey;
-  final Widget? child;
-  final FeedbackThemeData? feedbackTheme;
-  final FeedbackThemeData? feedBackDarkTheme;
-  final Widget Function(
-    BuildContext,
-    Future<void> Function(String, {Map<String, dynamic>? extras}),
-    ScrollController?,
-  )? feedbackBuilder;
-
   const ISpectBuilder({
     required this.child,
     this.navigatorKey,
@@ -27,6 +17,15 @@ class ISpectBuilder extends StatelessWidget {
     this.feedbackBuilder,
     super.key,
   });
+  final GlobalKey<NavigatorState>? navigatorKey;
+  final Widget? child;
+  final FeedbackThemeData? feedbackTheme;
+  final FeedbackThemeData? feedBackDarkTheme;
+  final Widget Function(
+    BuildContext context,
+    Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
+    ScrollController? controller,
+  )? feedbackBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +34,9 @@ class ISpectBuilder extends StatelessWidget {
     final theme = Theme.of(context);
     return Consumer<ISpectScopeModel>(
       builder: (
-        BuildContext context,
-        ISpectScopeModel model,
-        Widget? child,
+        context,
+        _,
+        child,
       ) {
         /// Add inspector to the widget tree
         child = Inspector(
@@ -97,11 +96,10 @@ class ISpectBuilder extends StatelessWidget {
               ),
           mode: FeedbackMode.navigate,
           feedbackBuilder: feedbackBuilder ??
-              (context, extras, scrollController) => simpleFeedbackBuilder(
-                    context,
-                    extras,
-                    scrollController,
-                    theme,
+              (_, extras, scrollController) => SimpleFeedbackBuilder(
+                    onSubmit: extras,
+                    scrollController: scrollController,
+                    theme: theme,
                   ),
           child: child,
         );

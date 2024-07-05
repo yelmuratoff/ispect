@@ -46,21 +46,20 @@ class ISpectScopeModel with ChangeNotifier {
 
 /// `ISpectScopeWrapper` is a wrapper widget that provides the `ISpectScopeModel` to its children.
 class ISpectScopeWrapper extends StatelessWidget {
-  final Widget child;
-  final ISpectOptions options;
-  final bool isISpectEnabled;
-
   const ISpectScopeWrapper({
     required this.child,
     required this.options,
     required this.isISpectEnabled,
     super.key,
   });
+  final Widget child;
+  final ISpectOptions options;
+  final bool isISpectEnabled;
 
   @override
   Widget build(BuildContext context) =>
       ChangeNotifierProvider<ISpectScopeModel>(
-        create: (context) => ISpectScopeModel()
+        create: (_) => ISpectScopeModel()
           ..setOptions(options)
           ..setISpect = isISpectEnabled,
         child: child,

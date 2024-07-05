@@ -13,24 +13,24 @@ class BaseBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
+    final mqPadding = MediaQuery.paddingOf(context);
     final theme = Theme.of(context);
     return SafeArea(
       bottom: false,
       child: Container(
         padding: EdgeInsets.only(
           top: 10,
-          bottom: mq.padding.bottom,
+          bottom: mqPadding.bottom,
         ),
         decoration: BoxDecoration(
           color: context.ispectTheme.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8)
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
                   .copyWith(
                 bottom: 8,
               ),

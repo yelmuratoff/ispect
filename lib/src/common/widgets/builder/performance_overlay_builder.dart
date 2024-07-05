@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:performance/performance.dart';
 
 class PerformanceOverlayBuilder extends StatelessWidget {
-  final Widget child;
-  final bool isPerformanceTrackingEnabled;
-  final ThemeData theme;
   const PerformanceOverlayBuilder({
     required this.child,
     required this.isPerformanceTrackingEnabled,
     required this.theme,
     super.key,
   });
+  final Widget child;
+  final bool isPerformanceTrackingEnabled;
+  final ThemeData theme;
 
   @override
   Widget build(BuildContext context) => Directionality(

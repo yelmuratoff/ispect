@@ -1,11 +1,6 @@
 part of '../app_data.dart';
 
 class _AppDataView extends StatelessWidget {
-  final AppDataController controller;
-  final void Function() deleteFiles;
-  final void Function(int) deleteFile;
-  final ValueNotifier<String> cacheSizeNotifier;
-  final void Function() clearCache;
   const _AppDataView({
     required this.controller,
     required this.deleteFiles,
@@ -13,6 +8,11 @@ class _AppDataView extends StatelessWidget {
     required this.cacheSizeNotifier,
     required this.clearCache,
   });
+  final AppDataController controller;
+  final VoidCallback deleteFiles;
+  final void Function(int index) deleteFile;
+  final ValueNotifier<String> cacheSizeNotifier;
+  final VoidCallback clearCache;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -24,7 +24,7 @@ class _AppDataView extends StatelessWidget {
         ),
         body: AnimatedBuilder(
           animation: controller,
-          builder: (BuildContext context, Widget? child) => Column(
+          builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
@@ -34,7 +34,7 @@ class _AppDataView extends StatelessWidget {
                   children: [
                     ValueListenableBuilder(
                       valueListenable: cacheSizeNotifier,
-                      builder: (context, cacheSize, child) => AutoSizeText(
+                      builder: (context, cacheSize, _) => AutoSizeText(
                         context.ispectL10n.cacheSize(cacheSize),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -46,7 +46,8 @@ class _AppDataView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    if (cacheSizeNotifier.value != "0.00 B")
+                    if (cacheSizeNotifier.value != '0.00 B' &&
+                        controller.files.isNotEmpty)
                       ElevatedButton(
                         onPressed: clearCache,
                         child: Text(context.ispectL10n.clearCache),
@@ -56,27 +57,19 @@ class _AppDataView extends StatelessWidget {
               ),
               const Gap(10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.ispectL10n.appData,
-                          style:
-                              context.ispectTheme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        Text(
-                          context.ispectL10n
-                              .totalFilesCount(controller.files.length),
-                          style: context.ispectTheme.textTheme.bodyMedium,
-                        ),
-                      ],
+                    Text(
+                      context.ispectL10n.appData,
+                      style: context.ispectTheme.textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    Text(
+                      context.ispectL10n
+                          .totalFilesCount(controller.files.length),
+                      style: context.ispectTheme.textTheme.bodyMedium,
                     ),
                   ],
                 ),
@@ -84,21 +77,18 @@ class _AppDataView extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 10.0),
+                  padding: const EdgeInsets.only(top: 10),
                   itemCount: controller.files.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 0),
-                  itemBuilder: (BuildContext ctx, i) {
+                  itemBuilder: (_, i) {
                     final f = controller.files[i];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
-                      ),
+                      padding: const EdgeInsets.all(10),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              "$i. File:\n ${f.path}",
+                              '$i. File:\n ${f.path}',
                               style: context.ispectTheme.textTheme.labelMedium,
                             ),
                           ),

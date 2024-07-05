@@ -64,9 +64,9 @@ class _View extends StatelessWidget {
 }
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
-  final Directory output = await getTemporaryDirectory();
-  final String screenshotFilePath = '${output.path}/feedback.png';
-  final File screenshotFile = File(screenshotFilePath);
+  final output = await getTemporaryDirectory();
+  final screenshotFilePath = '${output.path}/feedback.png';
+  final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);
 }

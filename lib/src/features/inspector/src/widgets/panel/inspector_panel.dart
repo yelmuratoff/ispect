@@ -2,6 +2,7 @@ import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
+import 'package:ispect/src/common/constants/ispect_constants.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
@@ -75,6 +76,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
   @override
   void initState() {
     super.initState();
+
     _controller.setIsCollapsed(true);
     if (widget.state == InvokerState.autoCollapse) {
       _controller.startAutoCollapseTimer();
@@ -83,8 +85,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 
   void _toggleInspectorState() {
@@ -108,7 +110,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => _ButtonView(
+      builder: (context, _) => _ButtonView(
         onTap: () {
           if (widget.state != InvokerState.alwaysOpened) {
             if (!_controller.isCollapsed) {
@@ -122,24 +124,25 @@ class _InspectorPanelState extends State<InspectorPanel> {
         xPos: _controller.xPos,
         yPos: _controller.yPos,
         screenWidth: screenWidth,
-        onPanUpdate: (DragUpdateDetails details) {
+        onPanUpdate: (details) {
           if (!_controller.isCollapsed) {
-            _controller.xPos += details.delta.dx;
-            _controller.yPos += details.delta.dy;
+            _controller
+              ..xPos += details.delta.dx
+              ..yPos += details.delta.dy;
           }
         },
-        onPanEnd: (DragEndDetails details) {
+        onPanEnd: (_) {
           if (!_controller.isCollapsed) {
-            final screenWidth = MediaQuery.of(context).size.width;
-            const buttonWidth = 50;
+            final screenWidth = MediaQuery.sizeOf(context).width;
 
             final halfScreenWidth = screenWidth / 2;
             double targetXPos;
 
-            if (_controller.xPos + buttonWidth / 2 < halfScreenWidth) {
+            if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
+                halfScreenWidth) {
               targetXPos = 0;
             } else {
-              targetXPos = screenWidth - buttonWidth;
+              targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
             }
 
             _controller.xPos = targetXPos;
@@ -169,7 +172,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
         isFeedbackEnabled: BetterFeedback.of(context).isVisible,
         onFeedbackToggle: () {
           if (!BetterFeedback.of(context).isVisible) {
-            BetterFeedback.of(context).show((UserFeedback feedback) async {
+            BetterFeedback.of(context).show((feedback) async {
               final screenshotFilePath =
                   await writeImageToStorage(feedback.screenshot);
 
@@ -181,6 +184,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
           } else {
             BetterFeedback.of(context).hide();
           }
+          // ignore: avoid_empty_blocks
           setState(() {});
         },
       ),
@@ -188,20 +192,20 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   void _launchInfospect(BuildContext context) {
-    final BuildContext _context =
-        widget.navigatorKey?.currentContext ?? context;
+    final context0 = widget.navigatorKey?.currentContext ?? context;
     if (_controller.isCollapsed) {
       if (_controller.inLoggerPage) {
-        Navigator.pop(_context);
+        Navigator.pop(context0);
       } else {
+        // ignore: prefer_async_await
         Navigator.push(
-          _context,
+          context0,
           MaterialPageRoute<dynamic>(
-            builder: (context) => ISpectPage(
+            builder: (_) => ISpectPage(
               options: widget.options,
             ),
           ),
-        ).then((value) {
+        ).then((_) {
           _controller.setInLoggerPage(false);
         });
         _controller.setInLoggerPage(true);
@@ -211,27 +215,6 @@ class _InspectorPanelState extends State<InspectorPanel> {
 }
 
 class _ButtonView extends StatelessWidget {
-  final void Function() onTap;
-  final double xPos;
-  final double yPos;
-  final double screenWidth;
-  final void Function(DragUpdateDetails) onPanUpdate;
-  final void Function(DragEndDetails) onPanEnd;
-  final void Function() onButtonTap;
-  final bool isCollapsed;
-  final bool inLoggerPage;
-
-  final bool isInspectorEnabled;
-  final void Function() onInspectorToggle;
-
-  final bool isColorPickerEnabled;
-  final void Function() onColorPickerToggle;
-
-  final bool isZoomEnabled;
-  final void Function() onZoomToggle;
-
-  final bool isFeedbackEnabled;
-  final void Function() onFeedbackToggle;
   const _ButtonView({
     required this.onTap,
     required this.xPos,
@@ -251,6 +234,27 @@ class _ButtonView extends StatelessWidget {
     required this.isFeedbackEnabled,
     required this.onFeedbackToggle,
   });
+  final VoidCallback onTap;
+  final double xPos;
+  final double yPos;
+  final double screenWidth;
+  final void Function(DragUpdateDetails details) onPanUpdate;
+  final void Function(DragEndDetails details) onPanEnd;
+  final VoidCallback onButtonTap;
+  final bool isCollapsed;
+  final bool inLoggerPage;
+
+  final bool isInspectorEnabled;
+  final VoidCallback onInspectorToggle;
+
+  final bool isColorPickerEnabled;
+  final VoidCallback onColorPickerToggle;
+
+  final bool isZoomEnabled;
+  final VoidCallback onZoomToggle;
+
+  final bool isFeedbackEnabled;
+  final VoidCallback onFeedbackToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +262,7 @@ class _ButtonView extends StatelessWidget {
     return Stack(
       children: [
         TapRegion(
-          onTapOutside: (event) {
+          onTapOutside: (_) {
             if (!isInspectorEnabled &&
                 !isColorPickerEnabled &&
                 !isZoomEnabled) {
@@ -269,58 +273,54 @@ class _ButtonView extends StatelessWidget {
             children: [
               Positioned(
                 top: yPos,
-                left: (xPos < 50) ? xPos + 5 : null,
-                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                left: (xPos < ISpectConstants.draggableButtonWidth)
+                    ? xPos + 5
+                    : null,
+                right: (xPos > ISpectConstants.draggableButtonWidth)
+                    ? (screenWidth - xPos - 55)
+                    : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  height: 50,
-                  width: isCollapsed ? 50 * 0.2 : 50 * 6,
+                  height: ISpectConstants.draggableButtonHeight,
+                  width: isCollapsed
+                      ? ISpectConstants.draggableButtonWidth * 0.2
+                      : ISpectConstants.draggableButtonWidth * 5.3,
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: adjustColorDarken(
                       context.ispectTheme.colorScheme.primaryContainer,
                       0.3,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
                   ),
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    reverse: xPos < 50,
+                    reverse: xPos < ISpectConstants.draggableButtonWidth,
                     children: [
                       _PanelIconButton(
                         icon: Icons.monitor_heart_outlined,
                         isActive: iSpect.isPerformanceTrackingEnabled,
-                        onPressed: () {
-                          iSpect.togglePerformanceTracking();
-                        },
+                        onPressed: iSpect.togglePerformanceTracking,
                       ),
                       _PanelIconButton(
                         icon: Icons.format_shapes_rounded,
                         isActive: isInspectorEnabled,
-                        onPressed: () {
-                          onInspectorToggle.call();
-                        },
+                        onPressed: onInspectorToggle.call,
                       ),
                       _PanelIconButton(
                         icon: Icons.colorize_rounded,
                         isActive: isColorPickerEnabled,
-                        onPressed: () {
-                          onColorPickerToggle.call();
-                        },
+                        onPressed: onColorPickerToggle.call,
                       ),
                       _PanelIconButton(
                         icon: Icons.zoom_in_rounded,
                         isActive: isZoomEnabled,
-                        onPressed: () {
-                          onZoomToggle.call();
-                        },
+                        onPressed: onZoomToggle.call,
                       ),
                       _PanelIconButton(
                         icon: Icons.camera_alt_rounded,
                         isActive: isFeedbackEnabled,
-                        onPressed: () {
-                          onFeedbackToggle.call();
-                        },
+                        onPressed: onFeedbackToggle.call,
                       ),
                     ],
                   ),
@@ -328,25 +328,25 @@ class _ButtonView extends StatelessWidget {
               ),
               Positioned(
                 top: yPos,
-                left: (xPos < 50) ? xPos + 5 : null,
-                right: (xPos > 50) ? (screenWidth - xPos - 45) : null,
+                left: (xPos < ISpectConstants.draggableButtonWidth)
+                    ? xPos + 5
+                    : null,
+                right: (xPos > ISpectConstants.draggableButtonWidth)
+                    ? (screenWidth - xPos - 55)
+                    : null,
                 child: GestureDetector(
-                  onPanUpdate: (details) {
-                    onPanUpdate.call(details);
-                  },
-                  onPanEnd: (details) {
-                    onPanEnd.call(details);
-                  },
-                  onTap: () {
-                    onButtonTap.call();
-                  },
+                  onPanUpdate: onPanUpdate.call,
+                  onPanEnd: onPanEnd.call,
+                  onTap: onButtonTap.call,
                   child: AnimatedContainer(
-                    width: isCollapsed ? 50 * 0.2 : 50,
-                    height: 50,
+                    width: isCollapsed
+                        ? ISpectConstants.draggableButtonWidth * 0.25
+                        : ISpectConstants.draggableButtonWidth,
+                    height: ISpectConstants.draggableButtonHeight,
                     duration: const Duration(milliseconds: 300),
                     decoration: BoxDecoration(
                       color: context.ispectTheme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
                     ),
                     child: !isCollapsed
                         ? inLoggerPage
@@ -371,18 +371,19 @@ class _ButtonView extends StatelessWidget {
 }
 
 class _PanelIconButton extends StatelessWidget {
-  final IconData icon;
-  final bool isActive;
-  final void Function() onPressed;
   const _PanelIconButton({
     required this.icon,
     required this.isActive,
     required this.onPressed,
   });
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) => IconButton.filled(
         icon: Icon(icon),
+        splashColor: Colors.white,
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           backgroundColor: WidgetStateProperty.all<Color>(
@@ -391,11 +392,11 @@ class _PanelIconButton extends StatelessWidget {
                 : Colors.transparent,
           ),
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
           ),
         ),
-        onPressed: () {
-          onPressed.call();
-        },
+        onPressed: onPressed.call,
       );
 }

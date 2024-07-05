@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 ///
 /// [containerRect] may be `null`.
 class BoxInfo {
-  BoxInfo({
+  const BoxInfo({
     required this.targetRenderBox,
     this.containerRenderBox,
     this.overlayOffset = Offset.zero,

@@ -27,12 +27,14 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
 
   @override
   void dispose() {
+    _panelVisibilityNotifier.dispose();
     super.dispose();
   }
 
   void _onTick(Duration? tick) {
     if (!mounted) return;
 
+    // ignore: avoid_empty_blocks
     setState(() {});
 
     WidgetsBinding.instance.scheduleFrameCallback(
@@ -54,7 +56,7 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
       height: widget.size.height,
       child: ValueListenableBuilder(
         valueListenable: _panelVisibilityNotifier,
-        builder: (context, bool isVisible, _) => BoxInfoWidget(
+        builder: (_, isVisible, __) => BoxInfoWidget(
           boxInfo: widget.boxInfo!,
           isPanelVisible: isVisible,
           onPanelVisibilityChanged: (v) => _panelVisibilityNotifier.value = v,

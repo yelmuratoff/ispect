@@ -18,8 +18,10 @@ class TalkerActionsBottomSheet extends StatelessWidget {
               .copyWith(bottom: 16, top: 8),
           decoration: BoxDecoration(
             color: context.ispectTheme.cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.ispectTheme.dividerColor),
+            borderRadius: const BorderRadius.all(Radius.circular(16)),
+            border: Border.fromBorderSide(
+              BorderSide(color: context.ispectTheme.dividerColor),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -53,8 +55,8 @@ class _ActionTile extends StatelessWidget {
             color: Colors.transparent,
             child: ListTile(
               onTap: () => _onTap(context),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
               dense: true,
               title: Text(
