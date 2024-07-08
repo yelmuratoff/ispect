@@ -12,7 +12,11 @@ final navigatorKey = GlobalKey<NavigatorState>();
 final themeProvider =
     StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
-final dio = Dio();
+final dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://jsonplaceholder.typicode.com',
+  ),
+);
 
 class ThemeManager extends StateNotifier<ThemeMode> {
   ThemeManager() : super(ThemeMode.dark);
@@ -40,9 +44,7 @@ void main() {
         // printResponseHeaders: true,
         ),
   ));
-  dio.options.headers.addAll({
-    'Authorization': 'Bearer token',
-  });
+
   runApp(
     ProviderScope(
       observers: [
@@ -133,19 +135,23 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                dio.get('https://jsonplaceholder.typicode.com/posts/1');
+                dio.get('/posts/1');
               },
               child: const Text('Send HTTP request'),
             ),
             ElevatedButton(
               onPressed: () {
-                dio.get('https://jsonplaceholder.typicode.com/post3s/1');
+                dio.get('/post3s/1');
               },
               child: const Text('Send HTTP request with error'),
             ),
             ElevatedButton(
               onPressed: () {
-                dio.get('https://jsonplaceholder.typicode.com/posts/1');
+                dio.options.headers.addAll({
+                  'Authorization': 'Bearer token',
+                });
+                dio.get('/posts/1');
+                dio.options.headers.remove('Authorization');
               },
               child: const Text('Send HTTP request with Token'),
             ),

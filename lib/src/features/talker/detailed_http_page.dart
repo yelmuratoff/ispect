@@ -107,6 +107,7 @@ class _ResponseBodyState extends State<_ResponseBody> {
         dataKey: widget.log.key,
         request: request,
         path: response.requestOptions.path,
+        fullUrl: response.requestOptions.uri.toString(),
         statusCode: statusCode,
         statusMessage: statusMessage,
         requestHeaders: requestHeaders,
@@ -147,6 +148,7 @@ class _RequestBodyState extends State<_RequestBody> {
         dataKey: widget.log.key,
         request: request,
         path: request.path,
+        fullUrl: request.uri.toString(),
         statusCode: null,
         statusMessage: null,
         requestHeaders: _requestHeaders,
@@ -194,6 +196,7 @@ class _ErrorBodyState extends State<_ErrorBody> {
         dataKey: widget.log.key,
         request: request,
         path: response?.requestOptions.path,
+        fullUrl: response?.requestOptions.uri.toString(),
         statusCode: statusCode,
         statusMessage: statusMessage,
         requestHeaders: _requestHeaders,
@@ -211,6 +214,7 @@ class _HTTPBody extends StatelessWidget {
     required this.dataKey,
     required this.request,
     required this.path,
+    required this.fullUrl,
     required this.statusCode,
     required this.statusMessage,
     required Map<String, dynamic>? requestHeaders,
@@ -223,6 +227,7 @@ class _HTTPBody extends StatelessWidget {
   final String dataKey;
   final RequestOptions? request;
   final String? path;
+  final String? fullUrl;
   final int? statusCode;
   final String? statusMessage;
   final Map<String, dynamic>? _requestHeaders;
@@ -281,6 +286,35 @@ class _HTTPBody extends StatelessWidget {
                     ),
                     TextSpan(
                       text: path,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: JsonColors.stringColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+        if (fullUrl != null) ...[
+          const Gap(8),
+          _DetailedItemContainer(
+            child: GestureDetector(
+              onLongPress: () {
+                copyClipboard(context, value: fullUrl!);
+              },
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'Full URL: ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(
+                      text: fullUrl,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: JsonColors.stringColor,
@@ -364,33 +398,35 @@ class _HTTPBody extends StatelessWidget {
             ),
           ),
         ],
-        const Gap(8),
-        _DetailedItemContainer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Request headers: ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+        if (_requestHeaders != null && _requestHeaders!.isNotEmpty) ...[
+          const Gap(8),
+          _DetailedItemContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Request headers: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const Gap(8),
-              JsonWidget(
-                json: _requestHeaders,
-                jsonController: jsonController,
-                keyColor: context.ispectTheme.textColor,
-                indentLeftEndJsonNode: 0,
-              ),
-            ],
+                const Gap(8),
+                JsonWidget(
+                  json: _requestHeaders,
+                  jsonController: jsonController,
+                  keyColor: context.ispectTheme.textColor,
+                  indentLeftEndJsonNode: 0,
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
         if (data != null && data!.isNotEmpty) ...[
           const Gap(8),
           _DetailedItemContainer(
