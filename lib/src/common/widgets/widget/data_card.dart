@@ -1,6 +1,8 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:ispect/src/features/talker/detailed_http_page.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/src/ui/widgets/base_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -109,6 +111,29 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       onPressed: widget.onCopyTap,
                     ),
                   ),
+                  if (widget.data.key?.contains('http') ?? false) ...[
+                    const Gap(8),
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 20,
+                        icon: Icon(
+                          Icons.zoom_out_map_rounded,
+                          color: widget.color,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) =>
+                                  DetailedHTTPPage(data: widget.data),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               ),
               if (_expanded)

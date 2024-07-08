@@ -16,9 +16,11 @@ dependencies:
     path: ../
   
   talker_flutter: ^4.3.2
+  dio: ^5.5.0
   feedback_plus: ^0.1.2
   flutter_riverpod: ^2.5.1
   talker_riverpod_logger: ^1.1.2
+  talker_dio_logger: ^4.3.2
 
 dev_dependencies:
   flutter_test:

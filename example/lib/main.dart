@@ -1,14 +1,18 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final navigatorKey = GlobalKey<NavigatorState>();
 
 final themeProvider =
     StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+
+final dio = Dio();
 
 class ThemeManager extends StateNotifier<ThemeMode> {
   ThemeManager() : super(ThemeMode.dark);
@@ -28,6 +32,17 @@ void main() {
   final talker = TalkerFlutter.init();
   ISpectTalker.initHandling(talker: talker);
   ISpectTalker.debug('Hello World!');
+
+  dio.interceptors.add(TalkerDioLogger(
+    talker: ISpectTalker.talker,
+    settings: const TalkerDioLoggerSettings(
+        // printRequestHeaders: true,
+        // printResponseHeaders: true,
+        ),
+  ));
+  dio.options.headers.addAll({
+    'Authorization': 'Bearer token',
+  });
   runApp(
     ProviderScope(
       observers: [
@@ -115,6 +130,24 @@ class _Home extends ConsumerWidget {
                 iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                dio.get('https://jsonplaceholder.typicode.com/posts/1');
+              },
+              child: const Text('Send HTTP request'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                dio.get('https://jsonplaceholder.typicode.com/post3s/1');
+              },
+              child: const Text('Send HTTP request with error'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                dio.get('https://jsonplaceholder.typicode.com/posts/1');
+              },
+              child: const Text('Send HTTP request with Token'),
             ),
           ],
         ),

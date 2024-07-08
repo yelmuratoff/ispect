@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
-import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 import 'package:ispect/src/common/widgets/widget/data_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -60,14 +59,6 @@ class _MonitorPageState extends State<MonitorPage> {
 
   void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
     final text = data.generateTextMessage();
-    Clipboard.setData(ClipboardData(text: text));
-    _showSnackBar(context);
-  }
-
-  void _showSnackBar(BuildContext context) {
-    ISpectToaster.showInfoToast(
-      context,
-      title: context.ispectL10n.copiedToClipboard,
-    );
+    copyClipboard(context, value: text);
   }
 }

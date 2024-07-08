@@ -2,9 +2,9 @@ import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/ispect_page.dart';
-import 'package:ispect/src/common/constants/ispect_constants.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/res/constants/ispect_constants.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:share_plus/share_plus.dart';
 

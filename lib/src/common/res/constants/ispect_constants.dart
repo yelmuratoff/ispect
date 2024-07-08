@@ -7,4 +7,6 @@ final class ISpectConstants {
 
   /// The default height of the draggable button.
   static const double draggableButtonHeight = 60;
+
+  static const hidden = 'Hidden';
 }

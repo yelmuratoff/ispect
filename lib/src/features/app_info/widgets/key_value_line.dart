@@ -44,11 +44,7 @@ class KeyValueLine extends StatelessWidget {
               child: InkWell(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onTap: () {
-                  Clipboard.setData(ClipboardData(text: '$k $v'));
-                  ISpectToaster.showInfoToast(
-                    context,
-                    title: context.ispectL10n.copiedToClipboard,
-                  );
+                  copyClipboard(context, value: '$k $v');
                 },
                 child: DecoratedBox(
                   decoration: BoxDecoration(

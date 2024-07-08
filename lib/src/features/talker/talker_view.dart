@@ -1,12 +1,11 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:group_button/group_button.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
-import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 import 'package:ispect/src/common/widgets/widget/data_card.dart';
 import 'package:ispect/src/common/widgets/widget/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/view_app_bar.dart';
@@ -172,12 +171,7 @@ class _TalkerViewState extends State<TalkerView> {
 
   void _copyTalkerDataItemText(TalkerData data) {
     final text = data.generateTextMessage();
-    Clipboard.setData(ClipboardData(text: text));
-    _showSnackBar(context, context.ispectL10n.logItemCopied);
-  }
-
-  void _showSnackBar(BuildContext context, String text) {
-    ISpectToaster.showInfoToast(context, title: text);
+    copyClipboard(context, value: text);
   }
 
   Future<void> _showActionsBottomSheet(BuildContext context) async {
@@ -269,7 +263,11 @@ class _TalkerViewState extends State<TalkerView> {
   }
 
   void _copyAllLogs(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: widget.talker.history.text()));
-    _showSnackBar(context, context.ispectL10n.allLogsCopied);
+    copyClipboard(
+      context,
+      value: widget.talker.history.text(),
+      title: '✅ ${context.ispectL10n.allLogsCopied}',
+      showValue: false,
+    );
   }
 }
