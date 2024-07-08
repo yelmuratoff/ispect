@@ -72,5 +72,14 @@
    "appInfo": "Проверить информацию об устройстве и пакете",
    "copiedToClipboard": "Скопировано в буфер обмена",
    "copy": "Скопировать",
-   "cacheSize": "Размер кэша: {size}"
+   "cacheSize": "Размер кэша: {size}",
+   "method": "Метод",
+   "path": "Путь",
+   "fullURL": "Полная ссылка",
+   "statusCode": "Код статуса",
+   "statusMessage": "Cтатус",
+   "requestHeaders": "Headers запроса",
+   "data": "Данные",
+   "headers": "Headers",
+   "errorMessage": "Текст ошибки"
 }

@@ -1,8 +1,8 @@
-import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'ispect_localizations.dart';
 
 /// The translations for Kazakh (`kk`).
 class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
-  ISpectGeneratedLocalizationKk([super.locale = 'kk']);
+  ISpectGeneratedLocalizationKk([String locale = 'kk']) : super(locale);
 
   @override
   String get changeTheme => 'Тақырыпты өзгерту';
@@ -11,97 +11,121 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Толық және жөндеу';
 
   @override
-  String talkerTypeDebugCount(Object text) =>
-      'Толық және жөндеу жазбаларының саны: $text';
+  String talkerTypeDebugCount(Object text) {
+    return 'Толық және жөндеу жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeGood => 'Жақсы';
 
   @override
-  String talkerTypeGoodCount(Object text) => 'Жақсы жазбаларының саны: $text';
+  String talkerTypeGoodCount(Object text) {
+    return 'Жақсы жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeProvider => 'Провайдерлер';
 
   @override
-  String talkerTypeProviderCount(Object text) =>
-      'Провайдерлер жазбаларының саны: $text';
+  String talkerTypeProviderCount(Object text) {
+    return 'Провайдерлер жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeInfo => 'Ақпарат';
 
   @override
-  String talkerTypeInfoCount(Object text) =>
-      'Ақпараттық жазбаларының саны: $text';
+  String talkerTypeInfoCount(Object text) {
+    return 'Ақпараттық жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeWarnings => 'Ескертулер';
 
   @override
-  String talkerTypeWarningsCount(Object text) => 'Ескертулер саны: $text';
+  String talkerTypeWarningsCount(Object text) {
+    return 'Ескертулер саны: $text';
+  }
 
   @override
   String get talkerTypeExceptions => 'Ерекшеліктер';
 
   @override
-  String talkerTypeExceptionsCount(Object text) =>
-      'Ерекшелік жазбаларының саны: $text';
+  String talkerTypeExceptionsCount(Object text) {
+    return 'Ерекшелік жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeErrors => 'Қателер';
 
   @override
-  String talkerTypeErrorsCount(Object text) => 'Қате жазбаларының саны: $text';
+  String talkerTypeErrorsCount(Object text) {
+    return 'Қате жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeHttp => 'HTTP сұраныстар';
 
   @override
-  String talkerHttpRequestsCount(Object text) =>
-      'HTTP сұраныстарының саны: $text';
+  String talkerHttpRequestsCount(Object text) {
+    return 'HTTP сұраныстарының саны: $text';
+  }
 
   @override
-  String talkerHttpResponsesCount(Object text) =>
-      'HTTP жауаптары жазбаларының саны: $text';
+  String talkerHttpResponsesCount(Object text) {
+    return 'HTTP жауаптары жазбаларының саны: $text';
+  }
 
   @override
-  String talkerHttpFailuresCount(Object text) =>
-      'Сәтсіз HTTP сұраныстары жазбаларының саны: $text';
+  String talkerHttpFailuresCount(Object text) {
+    return 'Сәтсіз HTTP сұраныстары жазбаларының саны: $text';
+  }
 
   @override
   String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talkerBlocTransitionCount(Object text) =>
-      'BLoC өтпеліктерінің саны: $text';
+  String talkerBlocTransitionCount(Object text) {
+    return 'BLoC өтпеліктерінің саны: $text';
+  }
 
   @override
-  String talkerBlocEventsCount(Object text) => 'BLoC оқиғаларының саны: $text';
+  String talkerBlocEventsCount(Object text) {
+    return 'BLoC оқиғаларының саны: $text';
+  }
 
   @override
-  String talkerBlocClosesCount(Object text) => 'BLoC closes count: $text';
+  String talkerBlocClosesCount(Object text) {
+    return 'BLoC closes count: $text';
+  }
 
   @override
-  String talkerBlocCreatesCount(Object text) => 'BLoC creates count: $text';
+  String talkerBlocCreatesCount(Object text) {
+    return 'BLoC creates count: $text';
+  }
 
   @override
   String get talkerTypeRiverpod => 'Riverpod';
 
   @override
-  String talkerRiverpodAddCount(Object text) =>
-      'Riverpod қосуларының саны: $text';
+  String talkerRiverpodAddCount(Object text) {
+    return 'Riverpod қосуларының саны: $text';
+  }
 
   @override
-  String talkerRiverpodUpdateCount(Object text) =>
-      'Riverpod жаңартуларының саны: $text';
+  String talkerRiverpodUpdateCount(Object text) {
+    return 'Riverpod жаңартуларының саны: $text';
+  }
 
   @override
-  String talkerRiverpodDisposeCount(Object text) =>
-      'Riverpod жабулар саны: $text';
+  String talkerRiverpodDisposeCount(Object text) {
+    return 'Riverpod жабулар саны: $text';
+  }
 
   @override
-  String talkerRiverpodFailsCount(Object text) =>
-      'Riverpod қателер саны: $text';
+  String talkerRiverpodFailsCount(Object text) {
+    return 'Riverpod қателер саны: $text';
+  }
 
   @override
   String get actions => 'Әрекеттер';
@@ -182,12 +206,14 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get goToLogger => 'Журналға өту';
 
   @override
-  String environmentTapNumber(Object number) =>
-      'Диалогты ашу үшін қалған: $number';
+  String environmentTapNumber(Object number) {
+    return 'Диалогты ашу үшін қалған: $number';
+  }
 
   @override
-  String counterTimesText(Object number) =>
-      'Сіз түймені сонша рет басқансыз: $number';
+  String counterTimesText(Object number) {
+    return 'Сіз түймені сонша рет басқансыз: $number';
+  }
 
   @override
   String get performanceTracker => 'Өнімділікті қадағалау';
@@ -223,7 +249,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get appData => 'Қолданба мәліметтері';
 
   @override
-  String totalFilesCount(Object number) => 'Барлық файлдар саны: $number';
+  String totalFilesCount(Object number) {
+    return 'Барлық файлдар саны: $number';
+  }
 
   @override
   String get appInfo => 'Құрылғы және пакет туралы ақпаратты тексеру';
@@ -235,5 +263,34 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copy => 'Көшіру';
 
   @override
-  String cacheSize(Object size) => 'Кэш көлемі: $size';
+  String cacheSize(Object size) {
+    return 'Кэш көлемі: $size';
+  }
+
+  @override
+  String get method => 'Әдіс';
+
+  @override
+  String get path => 'Жол';
+
+  @override
+  String get fullURL => 'Толық сілтеме';
+
+  @override
+  String get statusCode => 'Статус коды';
+
+  @override
+  String get statusMessage => 'Cтатус';
+
+  @override
+  String get requestHeaders => 'Запростың headers-і';
+
+  @override
+  String get data => 'Деректер';
+
+  @override
+  String get headers => 'Headers';
+
+  @override
+  String get errorMessage => 'Қате туралы хабар';
 }

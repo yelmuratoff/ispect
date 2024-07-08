@@ -72,5 +72,14 @@
    "appInfo": "Check device info & package info",
    "copiedToClipboard": "Copied to clipboard",
    "copy": "Copy",
-   "cacheSize": "Cache size: {size}"
+   "cacheSize": "Cache size: {size}",
+   "method": "Method",
+   "path": "Path",
+   "fullURL": "Full URL",
+   "statusCode": "Status code",
+   "statusMessage": "Status message",
+   "requestHeaders": "Request headers",
+   "data": "Data",
+   "headers": "Headers",
+   "errorMessage": "Error message"
 }

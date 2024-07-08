@@ -1,3 +1,8 @@
+## 1.4.1
+* Draggable button's updates. I changed max point for button reverse.
+* Localization for Detailed HTTP logs page.
+* And some minor changes with Detailed HTTP logs page.
+
 ## 1.4.0
 * Added new feature: detailed screens for HTTP logs: request, response, error.
 

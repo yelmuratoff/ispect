@@ -66,10 +66,9 @@ class _JsonNodeWidgetState extends State<JsonNodeWidget> {
           ),
         ),
 
-        SizedBox(height: widget.indentHeight),
-
         /// Child Node (final)
-        if (_isExpanded && !_isLeaf)
+        if (_isExpanded && !_isLeaf) ...[
+          SizedBox(height: widget.indentHeight),
           Padding(
             padding: EdgeInsets.only(left: widget.indentWidth),
             child: JsonNodesWidget(
@@ -83,6 +82,7 @@ class _JsonNodeWidgetState extends State<JsonNodeWidget> {
               underTree: widget.underTree,
             ),
           ),
+        ],
       ],
     );
   }

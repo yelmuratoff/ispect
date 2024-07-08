@@ -1,8 +1,8 @@
-import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'ispect_localizations.dart';
 
 /// The translations for Russian (`ru`).
 class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
-  ISpectGeneratedLocalizationRu([super.locale = 'ru']);
+  ISpectGeneratedLocalizationRu([String locale = 'ru']) : super(locale);
 
   @override
   String get changeTheme => 'Сменить тему';
@@ -11,100 +11,121 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get talkerTypeDebug => 'Подробные и отладочные';
 
   @override
-  String talkerTypeDebugCount(Object text) =>
-      'Количество подробных и отладочных записей: $text';
+  String talkerTypeDebugCount(Object text) {
+    return 'Количество подробных и отладочных записей: $text';
+  }
 
   @override
   String get talkerTypeGood => 'Хорошие';
 
   @override
-  String talkerTypeGoodCount(Object text) =>
-      'Количество хороших записей: $text';
+  String talkerTypeGoodCount(Object text) {
+    return 'Количество хороших записей: $text';
+  }
 
   @override
   String get talkerTypeProvider => 'Провайдеры';
 
   @override
-  String talkerTypeProviderCount(Object text) =>
-      'Количество записей провайдеров: $text';
+  String talkerTypeProviderCount(Object text) {
+    return 'Количество записей провайдеров: $text';
+  }
 
   @override
   String get talkerTypeInfo => 'Информация';
 
   @override
-  String talkerTypeInfoCount(Object text) =>
-      'Количество информационных записей: $text';
+  String talkerTypeInfoCount(Object text) {
+    return 'Количество информационных записей: $text';
+  }
 
   @override
   String get talkerTypeWarnings => 'Предупреждения';
 
   @override
-  String talkerTypeWarningsCount(Object text) =>
-      'Количество предупреждений: $text';
+  String talkerTypeWarningsCount(Object text) {
+    return 'Количество предупреждений: $text';
+  }
 
   @override
   String get talkerTypeExceptions => 'Исключения';
 
   @override
-  String talkerTypeExceptionsCount(Object text) =>
-      'Количество записей исключений: $text';
+  String talkerTypeExceptionsCount(Object text) {
+    return 'Количество записей исключений: $text';
+  }
 
   @override
   String get talkerTypeErrors => 'Ошибки';
 
   @override
-  String talkerTypeErrorsCount(Object text) =>
-      'Количество записей об ошибках: $text';
+  String talkerTypeErrorsCount(Object text) {
+    return 'Количество записей об ошибках: $text';
+  }
 
   @override
   String get talkerTypeHttp => 'HTTP запросы';
 
   @override
-  String talkerHttpRequestsCount(Object text) =>
-      'Количество записей HTTP запросов: $text';
+  String talkerHttpRequestsCount(Object text) {
+    return 'Количество записей HTTP запросов: $text';
+  }
 
   @override
-  String talkerHttpResponsesCount(Object text) =>
-      'Количество записей HTTP ответов: $text';
+  String talkerHttpResponsesCount(Object text) {
+    return 'Количество записей HTTP ответов: $text';
+  }
 
   @override
-  String talkerHttpFailuresCount(Object text) =>
-      'Количество записей неудачных HTTP запросов: $text';
+  String talkerHttpFailuresCount(Object text) {
+    return 'Количество записей неудачных HTTP запросов: $text';
+  }
 
   @override
   String get talkerTypeBloc => 'BLoC';
 
   @override
-  String talkerBlocTransitionCount(Object text) =>
-      'Количество переходов BLoC: $text';
+  String talkerBlocTransitionCount(Object text) {
+    return 'Количество переходов BLoC: $text';
+  }
 
   @override
-  String talkerBlocEventsCount(Object text) => 'Количество событий BLoC: $text';
+  String talkerBlocEventsCount(Object text) {
+    return 'Количество событий BLoC: $text';
+  }
 
   @override
-  String talkerBlocClosesCount(Object text) => 'BLoC closes count: $text';
+  String talkerBlocClosesCount(Object text) {
+    return 'BLoC closes count: $text';
+  }
 
   @override
-  String talkerBlocCreatesCount(Object text) => 'BLoC creates count: $text';
+  String talkerBlocCreatesCount(Object text) {
+    return 'BLoC creates count: $text';
+  }
 
   @override
   String get talkerTypeRiverpod => 'Riverpod';
 
   @override
-  String talkerRiverpodAddCount(Object text) =>
-      'Количество добавлений Riverpod: $text';
+  String talkerRiverpodAddCount(Object text) {
+    return 'Количество добавлений Riverpod: $text';
+  }
 
   @override
-  String talkerRiverpodUpdateCount(Object text) =>
-      'Количество обновлений Riverpod: $text';
+  String talkerRiverpodUpdateCount(Object text) {
+    return 'Количество обновлений Riverpod: $text';
+  }
 
   @override
-  String talkerRiverpodDisposeCount(Object text) =>
-      'Количество закрытий Riverpod: $text';
+  String talkerRiverpodDisposeCount(Object text) {
+    return 'Количество закрытий Riverpod: $text';
+  }
 
   @override
-  String talkerRiverpodFailsCount(Object text) =>
-      'Количество ошибок Riverpod: $text';
+  String talkerRiverpodFailsCount(Object text) {
+    return 'Количество ошибок Riverpod: $text';
+  }
 
   @override
   String get actions => 'Действия';
@@ -185,12 +206,14 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get goToLogger => 'Перейти к журналу';
 
   @override
-  String environmentTapNumber(Object number) =>
-      'Для открытия диалога осталось: $number';
+  String environmentTapNumber(Object number) {
+    return 'Для открытия диалога осталось: $number';
+  }
 
   @override
-  String counterTimesText(Object number) =>
-      'Вы нажали кнопку столько раз: $number';
+  String counterTimesText(Object number) {
+    return 'Вы нажали кнопку столько раз: $number';
+  }
 
   @override
   String get performanceTracker => 'Отслеживание производительности';
@@ -226,7 +249,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get appData => 'Данные приложения';
 
   @override
-  String totalFilesCount(Object number) => 'Общее количество файлов: $number';
+  String totalFilesCount(Object number) {
+    return 'Общее количество файлов: $number';
+  }
 
   @override
   String get appInfo => 'Проверить информацию об устройстве и пакете';
@@ -238,5 +263,34 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get copy => 'Скопировать';
 
   @override
-  String cacheSize(Object size) => 'Размер кэша: $size';
+  String cacheSize(Object size) {
+    return 'Размер кэша: $size';
+  }
+
+  @override
+  String get method => 'Метод';
+
+  @override
+  String get path => 'Путь';
+
+  @override
+  String get fullURL => 'Полная ссылка';
+
+  @override
+  String get statusCode => 'Код статуса';
+
+  @override
+  String get statusMessage => 'Cтатус';
+
+  @override
+  String get requestHeaders => 'Headers запроса';
+
+  @override
+  String get data => 'Данные';
+
+  @override
+  String get headers => 'Headers';
+
+  @override
+  String get errorMessage => 'Текст ошибки';
 }

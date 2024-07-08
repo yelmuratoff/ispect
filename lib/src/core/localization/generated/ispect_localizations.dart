@@ -5,9 +5,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
-import 'package:ispect/src/core/localization/generated/ispect_localizations_kk.dart';
-import 'package:ispect/src/core/localization/generated/ispect_localizations_ru.dart';
+import 'ispect_localizations_en.dart';
+import 'ispect_localizations_kk.dart';
+import 'ispect_localizations_ru.dart';
 
 /// Callers can lookup localized strings with an instance of ISpectGeneratedLocalization
 /// returned by `ISpectGeneratedLocalization.of(context)`.
@@ -66,11 +66,10 @@ abstract class ISpectGeneratedLocalization {
 
   final String localeName;
 
-  static ISpectGeneratedLocalization? of(BuildContext context) =>
-      Localizations.of<ISpectGeneratedLocalization>(
-        context,
-        ISpectGeneratedLocalization,
-      );
+  static ISpectGeneratedLocalization? of(BuildContext context) {
+    return Localizations.of<ISpectGeneratedLocalization>(
+        context, ISpectGeneratedLocalization);
+  }
 
   static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate =
       _ISpectGeneratedLocalizationDelegate();
@@ -97,7 +96,7 @@ abstract class ISpectGeneratedLocalization {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('kk'),
-    Locale('ru'),
+    Locale('ru')
   ];
 
   /// No description provided for @changeTheme.
@@ -537,6 +536,60 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Cache size: {size}'**
   String cacheSize(Object size);
+
+  /// No description provided for @method.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get method;
+
+  /// No description provided for @path.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get path;
+
+  /// No description provided for @fullURL.
+  ///
+  /// In en, this message translates to:
+  /// **'Full URL'**
+  String get fullURL;
+
+  /// No description provided for @statusCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Status code'**
+  String get statusCode;
+
+  /// No description provided for @statusMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Status message'**
+  String get statusMessage;
+
+  /// No description provided for @requestHeaders.
+  ///
+  /// In en, this message translates to:
+  /// **'Request headers'**
+  String get requestHeaders;
+
+  /// No description provided for @data.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get data;
+
+  /// No description provided for @headers.
+  ///
+  /// In en, this message translates to:
+  /// **'Headers'**
+  String get headers;
+
+  /// No description provided for @errorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error message'**
+  String get errorMessage;
 }
 
 class _ISpectGeneratedLocalizationDelegate
@@ -544,10 +597,10 @@ class _ISpectGeneratedLocalizationDelegate
   const _ISpectGeneratedLocalizationDelegate();
 
   @override
-  Future<ISpectGeneratedLocalization> load(Locale locale) =>
-      SynchronousFuture<ISpectGeneratedLocalization>(
-        lookupISpectGeneratedLocalization(locale),
-      );
+  Future<ISpectGeneratedLocalization> load(Locale locale) {
+    return SynchronousFuture<ISpectGeneratedLocalization>(
+        lookupISpectGeneratedLocalization(locale));
+  }
 
   @override
   bool isSupported(Locale locale) =>

@@ -250,9 +250,9 @@ class _HTTPBody extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                    text: 'Method: ',
-                    style: TextStyle(
+                  TextSpan(
+                    text: '${context.ispectL10n.method}: ',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -278,9 +278,9 @@ class _HTTPBody extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   children: [
-                    const TextSpan(
-                      text: 'Path: ',
-                      style: TextStyle(
+                    TextSpan(
+                      text: '${context.ispectL10n.path}: ',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -307,9 +307,9 @@ class _HTTPBody extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   children: [
-                    const TextSpan(
-                      text: 'Full URL: ',
-                      style: TextStyle(
+                    TextSpan(
+                      text: '${context.ispectL10n.fullURL}: ',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -332,9 +332,9 @@ class _HTTPBody extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                    text: 'Status code: ',
-                    style: TextStyle(
+                  TextSpan(
+                    text: '${context.ispectL10n.statusCode}: ',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -356,9 +356,9 @@ class _HTTPBody extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                    text: 'Status message: ',
-                    style: TextStyle(
+                  TextSpan(
+                    text: '${context.ispectL10n.statusMessage}: ',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -380,9 +380,9 @@ class _HTTPBody extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                    text: 'Error message: ',
-                    style: TextStyle(
+                  TextSpan(
+                    text: '${context.ispectL10n.errorMessage}: ',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -404,12 +404,12 @@ class _HTTPBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text.rich(
+                Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Request headers: ',
-                        style: TextStyle(
+                        text: '${context.ispectL10n.requestHeaders}: ',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -422,6 +422,8 @@ class _HTTPBody extends StatelessWidget {
                   jsonController: jsonController,
                   keyColor: context.ispectTheme.textColor,
                   indentLeftEndJsonNode: 0,
+                  indentHeight: 10,
+                  indentWidth: 10,
                 ),
               ],
             ),
@@ -433,12 +435,12 @@ class _HTTPBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text.rich(
+                Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Data: ',
-                        style: TextStyle(
+                        text: '${context.ispectL10n.data}: ',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -451,6 +453,8 @@ class _HTTPBody extends StatelessWidget {
                   jsonController: jsonController,
                   keyColor: context.ispectTheme.textColor,
                   indentLeftEndJsonNode: 0,
+                  indentHeight: 10,
+                  indentWidth: 10,
                 ),
               ],
             ),
@@ -462,12 +466,12 @@ class _HTTPBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text.rich(
+                Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Headers: ',
-                        style: TextStyle(
+                        text: '${context.ispectL10n.headers}: ',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -479,6 +483,8 @@ class _HTTPBody extends StatelessWidget {
                   json: headers?.map as Map<String, dynamic>?,
                   jsonController: jsonController,
                   keyColor: context.ispectTheme.textColor,
+                  indentHeight: 10,
+                  indentWidth: 10,
                 ),
               ],
             ),

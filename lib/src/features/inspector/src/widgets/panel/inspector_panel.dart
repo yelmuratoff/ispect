@@ -8,6 +8,9 @@ import 'package:ispect/src/common/res/constants/ispect_constants.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:share_plus/share_plus.dart';
 
+part 'panel_icon_button.dart';
+part 'view.dart';
+
 /// state for the invoker widget (defaults to alwaysOpened)
 ///
 /// `alwaysOpened`:
@@ -73,6 +76,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   final DraggableButtonController _controller = DraggableButtonController();
 
+  double _screenWidth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +86,12 @@ class _InspectorPanelState extends State<InspectorPanel> {
     if (widget.state == InvokerState.autoCollapse) {
       _controller.startAutoCollapseTimer();
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _screenWidth = MediaQuery.sizeOf(context).width;
+      });
+    });
   }
 
   @override
@@ -105,91 +116,87 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) => _ButtonView(
-        onTap: () {
-          if (widget.state != InvokerState.alwaysOpened) {
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) => _ButtonView(
+          onTap: () {
+            if (widget.state != InvokerState.alwaysOpened) {
+              if (!_controller.isCollapsed) {
+                _controller.setIsCollapsed(true);
+                if (widget.state == InvokerState.autoCollapse) {
+                  _controller.startAutoCollapseTimer();
+                }
+              }
+            }
+          },
+          xPos: _controller.xPos,
+          yPos: _controller.yPos,
+          screenWidth: _screenWidth,
+          onPanUpdate: (details) {
             if (!_controller.isCollapsed) {
-              _controller.setIsCollapsed(true);
+              _controller
+                ..xPos += details.delta.dx
+                ..yPos += details.delta.dy;
+            }
+          },
+          onPanEnd: (_) {
+            if (!_controller.isCollapsed) {
+              final screenWidth = MediaQuery.sizeOf(context).width;
+
+              final halfScreenWidth = screenWidth / 2;
+              double targetXPos;
+
+              if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
+                  halfScreenWidth) {
+                targetXPos = 0;
+              } else {
+                targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
+              }
+
+              _controller.xPos = targetXPos;
+
               if (widget.state == InvokerState.autoCollapse) {
                 _controller.startAutoCollapseTimer();
               }
             }
-          }
-        },
-        xPos: _controller.xPos,
-        yPos: _controller.yPos,
-        screenWidth: screenWidth,
-        onPanUpdate: (details) {
-          if (!_controller.isCollapsed) {
-            _controller
-              ..xPos += details.delta.dx
-              ..yPos += details.delta.dy;
-          }
-        },
-        onPanEnd: (_) {
-          if (!_controller.isCollapsed) {
-            final screenWidth = MediaQuery.sizeOf(context).width;
-
-            final halfScreenWidth = screenWidth / 2;
-            double targetXPos;
-
-            if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
-                halfScreenWidth) {
-              targetXPos = 0;
-            } else {
-              targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
-            }
-
-            _controller.xPos = targetXPos;
-
-            if (widget.state == InvokerState.autoCollapse) {
+          },
+          onButtonTap: () {
+            _controller.setIsCollapsed(!_controller.isCollapsed);
+            if (_controller.isCollapsed) {
+              _controller.cancelAutoCollapseTimer();
+              _launchInfospect(context);
+            } else if (widget.state == InvokerState.autoCollapse) {
               _controller.startAutoCollapseTimer();
             }
-          }
-        },
-        onButtonTap: () {
-          _controller.setIsCollapsed(!_controller.isCollapsed);
-          if (_controller.isCollapsed) {
-            _controller.cancelAutoCollapseTimer();
-            _launchInfospect(context);
-          } else if (widget.state == InvokerState.autoCollapse) {
-            _controller.startAutoCollapseTimer();
-          }
-        },
-        isCollapsed: _controller.isCollapsed,
-        inLoggerPage: _controller.inLoggerPage,
-        isInspectorEnabled: widget.isInspectorEnabled,
-        onInspectorToggle: _toggleInspectorState,
-        isColorPickerEnabled: widget.isColorPickerEnabled,
-        onColorPickerToggle: _toggleColorPickerState,
-        isZoomEnabled: widget.isZoomEnabled,
-        onZoomToggle: _toogleZoomState,
-        isFeedbackEnabled: BetterFeedback.of(context).isVisible,
-        onFeedbackToggle: () {
-          if (!BetterFeedback.of(context).isVisible) {
-            BetterFeedback.of(context).show((feedback) async {
-              final screenshotFilePath =
-                  await writeImageToStorage(feedback.screenshot);
+          },
+          isCollapsed: _controller.isCollapsed,
+          inLoggerPage: _controller.inLoggerPage,
+          isInspectorEnabled: widget.isInspectorEnabled,
+          onInspectorToggle: _toggleInspectorState,
+          isColorPickerEnabled: widget.isColorPickerEnabled,
+          onColorPickerToggle: _toggleColorPickerState,
+          isZoomEnabled: widget.isZoomEnabled,
+          onZoomToggle: _toogleZoomState,
+          isFeedbackEnabled: BetterFeedback.of(context).isVisible,
+          onFeedbackToggle: () {
+            if (!BetterFeedback.of(context).isVisible) {
+              BetterFeedback.of(context).show((feedback) async {
+                final screenshotFilePath =
+                    await writeImageToStorage(feedback.screenshot);
 
-              await Share.shareXFiles(
-                [screenshotFilePath],
-                text: feedback.text,
-              );
-            });
-          } else {
-            BetterFeedback.of(context).hide();
-          }
-          // ignore: avoid_empty_blocks
-          setState(() {});
-        },
-      ),
-    );
-  }
+                await Share.shareXFiles(
+                  [screenshotFilePath],
+                  text: feedback.text,
+                );
+              });
+            } else {
+              BetterFeedback.of(context).hide();
+            }
+            // ignore: avoid_empty_blocks
+            setState(() {});
+          },
+        ),
+      );
 
   void _launchInfospect(BuildContext context) {
     final context0 = widget.navigatorKey?.currentContext ?? context;
@@ -212,191 +219,4 @@ class _InspectorPanelState extends State<InspectorPanel> {
       }
     }
   }
-}
-
-class _ButtonView extends StatelessWidget {
-  const _ButtonView({
-    required this.onTap,
-    required this.xPos,
-    required this.yPos,
-    required this.screenWidth,
-    required this.onPanUpdate,
-    required this.onPanEnd,
-    required this.onButtonTap,
-    required this.isCollapsed,
-    required this.inLoggerPage,
-    required this.isInspectorEnabled,
-    required this.onInspectorToggle,
-    required this.isColorPickerEnabled,
-    required this.onColorPickerToggle,
-    required this.isZoomEnabled,
-    required this.onZoomToggle,
-    required this.isFeedbackEnabled,
-    required this.onFeedbackToggle,
-  });
-  final VoidCallback onTap;
-  final double xPos;
-  final double yPos;
-  final double screenWidth;
-  final void Function(DragUpdateDetails details) onPanUpdate;
-  final void Function(DragEndDetails details) onPanEnd;
-  final VoidCallback onButtonTap;
-  final bool isCollapsed;
-  final bool inLoggerPage;
-
-  final bool isInspectorEnabled;
-  final VoidCallback onInspectorToggle;
-
-  final bool isColorPickerEnabled;
-  final VoidCallback onColorPickerToggle;
-
-  final bool isZoomEnabled;
-  final VoidCallback onZoomToggle;
-
-  final bool isFeedbackEnabled;
-  final VoidCallback onFeedbackToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    return Stack(
-      children: [
-        TapRegion(
-          onTapOutside: (_) {
-            if (!isInspectorEnabled &&
-                !isColorPickerEnabled &&
-                !isZoomEnabled) {
-              onTap.call();
-            }
-          },
-          child: Stack(
-            children: [
-              Positioned(
-                top: yPos,
-                left: (xPos < ISpectConstants.draggableButtonWidth)
-                    ? xPos + 5
-                    : null,
-                right: (xPos > ISpectConstants.draggableButtonWidth)
-                    ? (screenWidth - xPos - 55)
-                    : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: ISpectConstants.draggableButtonHeight,
-                  width: isCollapsed
-                      ? ISpectConstants.draggableButtonWidth * 0.2
-                      : ISpectConstants.draggableButtonWidth * 5.3,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: adjustColorDarken(
-                      context.ispectTheme.colorScheme.primaryContainer,
-                      0.3,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  ),
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: xPos < ISpectConstants.draggableButtonWidth,
-                    children: [
-                      _PanelIconButton(
-                        icon: Icons.monitor_heart_outlined,
-                        isActive: iSpect.isPerformanceTrackingEnabled,
-                        onPressed: iSpect.togglePerformanceTracking,
-                      ),
-                      _PanelIconButton(
-                        icon: Icons.format_shapes_rounded,
-                        isActive: isInspectorEnabled,
-                        onPressed: onInspectorToggle.call,
-                      ),
-                      _PanelIconButton(
-                        icon: Icons.colorize_rounded,
-                        isActive: isColorPickerEnabled,
-                        onPressed: onColorPickerToggle.call,
-                      ),
-                      _PanelIconButton(
-                        icon: Icons.zoom_in_rounded,
-                        isActive: isZoomEnabled,
-                        onPressed: onZoomToggle.call,
-                      ),
-                      _PanelIconButton(
-                        icon: Icons.camera_alt_rounded,
-                        isActive: isFeedbackEnabled,
-                        onPressed: onFeedbackToggle.call,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: yPos,
-                left: (xPos < ISpectConstants.draggableButtonWidth)
-                    ? xPos + 5
-                    : null,
-                right: (xPos > ISpectConstants.draggableButtonWidth)
-                    ? (screenWidth - xPos - 55)
-                    : null,
-                child: GestureDetector(
-                  onPanUpdate: onPanUpdate.call,
-                  onPanEnd: onPanEnd.call,
-                  onTap: onButtonTap.call,
-                  child: AnimatedContainer(
-                    width: isCollapsed
-                        ? ISpectConstants.draggableButtonWidth * 0.25
-                        : ISpectConstants.draggableButtonWidth,
-                    height: ISpectConstants.draggableButtonHeight,
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      color: context.ispectTheme.colorScheme.primaryContainer,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    ),
-                    child: !isCollapsed
-                        ? inLoggerPage
-                            ? const Icon(
-                                Icons.undo_rounded,
-                                color: Colors.white,
-                              )
-                            : const Icon(
-                                Icons.reorder_rounded,
-                                color: Colors.white,
-                              )
-                        : null,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PanelIconButton extends StatelessWidget {
-  const _PanelIconButton({
-    required this.icon,
-    required this.isActive,
-    required this.onPressed,
-  });
-  final IconData icon;
-  final bool isActive;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => IconButton.filled(
-        icon: Icon(icon),
-        splashColor: Colors.white,
-        style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-          backgroundColor: WidgetStateProperty.all<Color>(
-            isActive
-                ? context.ispectTheme.colorScheme.primaryContainer
-                : Colors.transparent,
-          ),
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-            ),
-          ),
-        ),
-        onPressed: onPressed.call,
-      );
 }

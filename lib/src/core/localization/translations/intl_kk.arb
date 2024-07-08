@@ -72,5 +72,14 @@
    "appInfo": "Құрылғы және пакет туралы ақпаратты тексеру",
    "copiedToClipboard": "Алмасу буферіне көшірілді",
    "copy": "Көшіру",
-   "cacheSize": "Кэш көлемі: {size}"
+   "cacheSize": "Кэш көлемі: {size}",
+   "method": "Әдіс",
+   "path": "Жол",
+   "fullURL": "Толық сілтеме",
+   "statusCode": "Статус коды",
+   "statusMessage": "Cтатус",
+   "requestHeaders": "Запростың headers-і",
+   "data": "Деректер",
+   "headers": "Headers",
+   "errorMessage": "Қате туралы хабар"
 }
