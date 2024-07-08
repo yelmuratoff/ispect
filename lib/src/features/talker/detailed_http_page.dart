@@ -24,6 +24,14 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
     uncovered: 3,
   );
 
+  late final TalkerData _data;
+
+  @override
+  void initState() {
+    super.initState();
+    _data = widget.data;
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -31,23 +39,23 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Text(_title(widget.data.key ?? '')),
+          title: Text(_title(_data.key ?? '')),
         ),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              switch (widget.data.key) {
+              switch (_data.key) {
                 'http-request' => _RequestBody(
-                    log: widget.data as DioRequestLog,
+                    log: _data as DioRequestLog,
                     jsonController: _jsonController,
                   ),
                 'http-response' => _ResponseBody(
-                    log: widget.data as DioResponseLog,
+                    log: _data as DioResponseLog,
                     jsonController: _jsonController,
                   ),
                 'http-error' => _ErrorBody(
-                    log: widget.data as DioErrorLog,
+                    log: _data as DioErrorLog,
                     jsonController: _jsonController,
                   ),
                 _ => const SizedBox(),
@@ -126,7 +134,6 @@ class _RequestBodyState extends State<_RequestBody> {
   void initState() {
     super.initState();
     _requestHeaders = widget.log.requestOptions.headers;
-    _requestHeaders = _getUpdatedMap(widget.log.requestOptions.headers);
   }
 
   @override
@@ -169,9 +176,6 @@ class _ErrorBodyState extends State<_ErrorBody> {
   void initState() {
     super.initState();
     _requestHeaders = widget.log.dioException.response?.requestOptions.headers;
-    _requestHeaders = _getUpdatedMap(
-      widget.log.dioException.response?.requestOptions.headers ?? {},
-    );
   }
 
   @override
@@ -459,7 +463,8 @@ class _DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: context.ispectTheme.dividerColor,
+          color:
+              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(
@@ -469,15 +474,15 @@ class _DetailedItemContainer extends StatelessWidget {
       );
 }
 
-Map<String, dynamic> _getUpdatedMap(Map<String, dynamic> map) {
-  final updatedMap = <String, dynamic>{};
-  // Must change Authorization header value to 'Hidden'
-  map.forEach((key, value) {
-    if (key == 'Authorization') {
-      updatedMap[key] = 'Hidden';
-    } else {
-      updatedMap[key] = value;
-    }
-  });
-  return updatedMap;
-}
+// Map<String, dynamic> _getUpdatedMap(Map<String, dynamic> map) {
+//   final updatedMap = <String, dynamic>{};
+//   // Must change Authorization header value to 'Hidden'
+//   map.forEach((key, value) {
+//     if (key == 'Authorization') {
+//       updatedMap[key] = 'Hidden';
+//     } else {
+//       updatedMap[key] = value;
+//     }
+//   });
+//   return updatedMap;
+// }

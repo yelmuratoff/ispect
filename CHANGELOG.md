@@ -1,4 +1,4 @@
-## 1.3.2
+## 1.3.3
 * Added new feature: detailed screens for HTTP logs: request, response, error.
 
 ## 1.3.1

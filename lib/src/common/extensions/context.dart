@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/core/localization/localization.dart';
 
 /// List of extensions for `BuildContext`
@@ -10,6 +11,10 @@ extension ISpectContextExtension on BuildContext {
 
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
+
+  Color adjustColor(Color color) => isDarkMode
+      ? adjustColorBrightness(color, 0.9)
+      : adjustColorDarken(color, 0.1);
 }
 
 extension ISpectColorExtension on ThemeData {
