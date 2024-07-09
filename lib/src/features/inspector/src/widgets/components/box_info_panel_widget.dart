@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
@@ -27,6 +28,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final iSpect = ISpect.read(context);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -78,14 +80,18 @@ class BoxInfoPanelWidget extends StatelessWidget {
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
                   height: 16,
-                  color: theme.dividerColor,
+                  color:
+                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                          theme.dividerColor,
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
                   height: 16,
-                  color: theme.dividerColor,
+                  color:
+                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                          theme.dividerColor,
                 ),
                 _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],

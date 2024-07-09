@@ -123,7 +123,10 @@ class TalkerAppBar extends StatelessWidget {
                                               .primaryContainer
                                           : context
                                               .ispectTheme.colorScheme.primary
-                                      : context.ispectTheme.dividerColor,
+                                      : iSpect.theme.dividerColor(
+                                            isDark: context.isDarkMode,
+                                          ) ??
+                                          context.ispectTheme.dividerColor,
                                 ),
                               ),
                               color: selected
@@ -194,6 +197,7 @@ class _SearchTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final iSpect = ISpect.read(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextFormField(
@@ -221,11 +225,17 @@ class _SearchTextField extends StatelessWidget {
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: context.ispectTheme.dividerColor),
+            borderSide: BorderSide(
+              color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                  context.ispectTheme.dividerColor,
+            ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           border: OutlineInputBorder(
-            borderSide: BorderSide(color: context.ispectTheme.dividerColor),
+            borderSide: BorderSide(
+              color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                  context.ispectTheme.dividerColor,
+            ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -235,7 +245,8 @@ class _SearchTextField extends StatelessWidget {
                 ? isDark
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary
-                : context.ispectTheme.dividerColor,
+                : iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                    context.ispectTheme.dividerColor,
             size: 20,
           ),
           hintText: context.ispectL10n.search,

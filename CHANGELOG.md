@@ -1,4 +1,4 @@
-## 1.4.5
+## 1.4.6
 - Added a new parameter `theme` to `ISpectOptions` for customizing the theme of the `ISpect` page.
 
 ## 1.4.4

@@ -38,7 +38,8 @@ class KeyValueLine extends StatelessWidget {
           Flexible(
             flex: 5,
             child: Divider(
-              color: context.ispectTheme.dividerColor,
+              color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                  context.ispectTheme.dividerColor,
             ),
           ),
           Flexible(

@@ -63,7 +63,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('en');
+    const locale = Locale('ru');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -93,6 +93,7 @@ class App extends ConsumerWidget {
           TalkerRouteObserver(talker),
         ],
         locale: locale,
+        supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
         localizationsDelegates: ISpectLocalizations.localizationDelegates([
           AppGeneratedLocalization.delegate,
         ]),

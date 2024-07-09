@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
@@ -9,6 +10,7 @@ void showColorPickerResultSnackbar({
   required Color color,
 }) {
   final colorString = '#${colorToHexString(color)}';
+  final iSpect = ISpect.read(context);
 
   ScaffoldMessenger.of(context).clearSnackBars();
 
@@ -19,7 +21,8 @@ void showColorPickerResultSnackbar({
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: Theme.of(context).dividerColor,
+          color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+              context.ispectTheme.dividerColor,
         ),
       ),
       content: Row(
@@ -33,7 +36,9 @@ void showColorPickerResultSnackbar({
               borderRadius: const BorderRadius.all(Radius.circular(4)),
               border: Border.fromBorderSide(
                 BorderSide(
-                  color: Theme.of(context).dividerColor,
+                  color:
+                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                          context.ispectTheme.dividerColor,
                 ),
               ),
             ),

@@ -28,7 +28,10 @@ class TalkerActionsBottomSheet extends StatelessWidget {
                 context.ispectTheme.cardColor,
             borderRadius: const BorderRadius.all(Radius.circular(16)),
             border: Border.fromBorderSide(
-              BorderSide(color: context.ispectTheme.dividerColor),
+              BorderSide(
+                color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                    context.ispectTheme.dividerColor,
+              ),
             ),
           ),
           child: SingleChildScrollView(
@@ -60,31 +63,35 @@ class _ActionTile extends StatelessWidget {
   final bool showDivider;
 
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: ListTile(
-              onTap: () => _onTap(context),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(16)),
-              ),
-              dense: true,
-              title: Text(
-                action.title,
-                style: context.ispectTheme.textTheme.bodyLarge,
-              ),
-              leading: Icon(action.icon, color: context.ispectTheme.textColor),
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: ListTile(
+            onTap: () => _onTap(context),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
             ),
+            dense: true,
+            title: Text(
+              action.title,
+              style: context.ispectTheme.textTheme.bodyLarge,
+            ),
+            leading: Icon(action.icon, color: context.ispectTheme.textColor),
           ),
-          if (showDivider)
-            Divider(
-              color: context.ispectTheme.dividerColor,
-              height: 1,
-            ),
-        ],
-      );
+        ),
+        if (showDivider)
+          Divider(
+            color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                context.ispectTheme.dividerColor,
+            height: 1,
+          ),
+      ],
+    );
+  }
 
   void _onTap(BuildContext context) {
     Navigator.pop(context);
