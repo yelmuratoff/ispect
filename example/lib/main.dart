@@ -9,8 +9,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -67,19 +66,28 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const options = ISpectOptions(
-      locale: Locale('ru'),
-    );
+    const locale = Locale('en');
 
     return ISpectScopeWrapper(
-      options: options,
+      options: ISpectOptions(
+        locale: locale,
+        actionItems: [
+          TalkerActionItem(
+            title: 'Test',
+            icon: Icons.account_tree_rounded,
+            onTap: () {
+              debugPrint('Test');
+            },
+          ),
+        ],
+      ),
       isISpectEnabled: true,
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
           TalkerRouteObserver(talker),
         ],
-        locale: options.locale,
+        locale: locale,
         localizationsDelegates: ISpectLocalizations.localizationDelegates([
           AppGeneratedLocalization.delegate,
         ]),

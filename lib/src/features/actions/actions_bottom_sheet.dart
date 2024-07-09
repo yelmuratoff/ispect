@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/models/talker_action_item.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 
 class TalkerActionsBottomSheet extends StatelessWidget {
@@ -13,26 +14,33 @@ class TalkerActionsBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BaseBottomSheet(
         title: context.ispectL10n.actions,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16)
-              .copyWith(bottom: 16, top: 8),
-          decoration: BoxDecoration(
-            color: context.ispectTheme.cardColor,
-            borderRadius: const BorderRadius.all(Radius.circular(16)),
-            border: Border.fromBorderSide(
-              BorderSide(color: context.ispectTheme.dividerColor),
-            ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.8,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ...actions.asMap().entries.map(
-                    (e) => _ActionTile(
-                      action: e.value,
-                      showDivider: e.key != actions.length - 1,
-                    ),
-                  ),
-            ],
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16)
+                .copyWith(bottom: 16, top: 8),
+            decoration: BoxDecoration(
+              color: context.ispectTheme.cardColor,
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
+              border: Border.fromBorderSide(
+                BorderSide(color: context.ispectTheme.dividerColor),
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...actions.asMap().entries.map(
+                        (e) => _ActionTile(
+                          action: e.value,
+                          showDivider: e.key != actions.length - 1,
+                        ),
+                      ),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -78,16 +86,4 @@ class _ActionTile extends StatelessWidget {
     Navigator.pop(context);
     action.onTap();
   }
-}
-
-class TalkerActionItem {
-  const TalkerActionItem({
-    required this.onTap,
-    required this.title,
-    required this.icon,
-  });
-
-  final VoidCallback onTap;
-  final String title;
-  final IconData icon;
 }

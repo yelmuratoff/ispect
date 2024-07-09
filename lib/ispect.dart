@@ -3,6 +3,7 @@ import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:provider/provider.dart';
 
 export 'package:ispect/src/common/controllers/ispect_scope.dart';
+export 'package:ispect/src/common/models/talker_action_item.dart';
 export 'package:ispect/src/common/services/talker/talker_wrapper.dart';
 export 'package:ispect/src/common/utils/ispect_localizations.dart';
 export 'package:ispect/src/common/utils/ispect_options.dart';

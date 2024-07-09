@@ -1,3 +1,6 @@
+## 1.4.4
+- Added a new parameter `actionItems` to `ISpectOptions` for adding custom actions to the `ISpect` page's actions sheet.
+
 ## 1.4.3
 - Initial ISpectTalker page logs are now collapsed by default.
 - Added a new parameter `filters` to the `initHandling` method. 
