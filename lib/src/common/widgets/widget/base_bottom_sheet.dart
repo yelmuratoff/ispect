@@ -25,15 +25,16 @@ class BaseBottomSheet extends StatelessWidget {
           bottom: mqPadding.bottom,
         ),
         decoration: BoxDecoration(
-          color:
-              iSpect.theme.backgroundColor(isDark: context.isDarkMode) ?? context.ispectTheme.scaffoldBackgroundColor,
+          color: iSpect.theme.backgroundColor(isDark: context.isDarkMode) ??
+              context.ispectTheme.scaffoldBackgroundColor,
           borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+                  .copyWith(
                 bottom: 8,
               ),
               child: Row(
@@ -41,7 +42,8 @@ class BaseBottomSheet extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: theme.textTheme.headlineSmall?.copyWith(color: context.ispectTheme.textColor),
+                    style: theme.textTheme.headlineSmall
+                        ?.copyWith(color: context.ispectTheme.textColor),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

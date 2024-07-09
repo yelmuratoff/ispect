@@ -26,7 +26,8 @@ class _TalkerMonitorsCard extends StatelessWidget {
       onTap: onTap,
       child: TalkerBaseCard(
         color: color,
-        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
+            context.ispectTheme.cardColor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -59,7 +60,8 @@ class _TalkerMonitorsCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (onTap != null) Icon(Icons.arrow_forward_ios_rounded, color: color),
+            if (onTap != null)
+              Icon(Icons.arrow_forward_ios_rounded, color: color),
           ],
         ),
       ),

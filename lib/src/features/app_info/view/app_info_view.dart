@@ -10,7 +10,8 @@ class _AppInfoView extends StatelessWidget {
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
       appBar: AppBar(
-        backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor:
+            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),

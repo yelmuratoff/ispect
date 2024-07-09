@@ -39,7 +39,8 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
       appBar: AppBar(
-        backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor:
+            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -509,7 +510,8 @@ class _DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
+          color:
+              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(

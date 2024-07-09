@@ -21,9 +21,11 @@ class TalkerActionsBottomSheet extends StatelessWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.8,
         ),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16)
+              .copyWith(bottom: 16, top: 8),
           decoration: BoxDecoration(
-            color: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+            color: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
+                context.ispectTheme.cardColor,
             borderRadius: const BorderRadius.all(Radius.circular(16)),
             border: Border.fromBorderSide(
               BorderSide(color: context.ispectTheme.dividerColor),

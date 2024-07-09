@@ -48,7 +48,9 @@ class _View extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: ISpect.read(context).theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: ISpect.read(context)
+            .theme
+            .backgroundColor(isDark: context.isDarkMode),
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,

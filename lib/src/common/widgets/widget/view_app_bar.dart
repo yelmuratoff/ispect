@@ -59,7 +59,8 @@ class TalkerAppBar extends StatelessWidget {
       toolbarHeight: 60,
       leading: leading,
       scrolledUnderElevation: 0,
-      backgroundColor: backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
+      backgroundColor:
+          backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
       actions: [
         UnconstrainedBox(
           child: _MonitorButton(
@@ -112,36 +113,48 @@ class TalkerAppBar extends StatelessWidget {
                           final count = titles.where((e) => e == value).length;
                           return DecoratedBox(
                             decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
                               border: Border.fromBorderSide(
                                 BorderSide(
                                   color: selected
                                       ? isDark
-                                          ? context.ispectTheme.colorScheme.primaryContainer
-                                          : context.ispectTheme.colorScheme.primary
+                                          ? context.ispectTheme.colorScheme
+                                              .primaryContainer
+                                          : context
+                                              .ispectTheme.colorScheme.primary
                                       : context.ispectTheme.dividerColor,
                                 ),
                               ),
                               color: selected
                                   ? isDark
-                                      ? context.ispectTheme.colorScheme.primaryContainer
+                                      ? context.ispectTheme.colorScheme
+                                          .primaryContainer
                                       : context.ispectTheme.colorScheme.primary
-                                  : iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+                                  : iSpect.theme.cardColor(
+                                        isDark: context.isDarkMode,
+                                      ) ??
+                                      context.ispectTheme.cardColor,
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(8),
                               child: Align(
                                 child: Text(
                                   '$count  $value',
-                                  style: context.ispectTheme.textTheme.bodyMedium!.copyWith(
-                                    color: selected ? Colors.white : context.ispectTheme.textColor,
+                                  style: context
+                                      .ispectTheme.textTheme.bodyMedium!
+                                      .copyWith(
+                                    color: selected
+                                        ? Colors.white
+                                        : context.ispectTheme.textColor,
                                   ),
                                 ),
                               ),
                             ),
                           );
                         },
-                        onSelected: (_, i, selected) => _onToggle(uniqTitles[i], selected),
+                        onSelected: (_, i, selected) =>
+                            _onToggle(uniqTitles[i], selected),
                         buttons: uniqTitles,
                       ),
                     ],
@@ -188,8 +201,9 @@ class _SearchTextField extends StatelessWidget {
           color: context.ispectTheme.textColor,
           fontSize: 14,
         ),
-        cursorColor:
-            isDark ? context.ispectTheme.colorScheme.primaryContainer : context.ispectTheme.colorScheme.primary,
+        cursorColor: isDark
+            ? context.ispectTheme.colorScheme.primaryContainer
+            : context.ispectTheme.colorScheme.primary,
         focusNode: focusNode,
         onTapOutside: (_) {
           FocusManager.instance.primaryFocus?.unfocus();
@@ -200,8 +214,9 @@ class _SearchTextField extends StatelessWidget {
           fillColor: theme.cardColor,
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color:
-                  isDark ? context.ispectTheme.colorScheme.primaryContainer : context.ispectTheme.colorScheme.primary,
+              color: isDark
+                  ? context.ispectTheme.colorScheme.primaryContainer
+                  : context.ispectTheme.colorScheme.primary,
             ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
@@ -248,7 +263,8 @@ class _MonitorButton extends StatelessWidget {
   Widget build(BuildContext context) => TalkerBuilder(
         talker: talker,
         builder: (_, data) {
-          final haveErrors = data.any((e) => e is TalkerError || e is TalkerException);
+          final haveErrors =
+              data.any((e) => e is TalkerError || e is TalkerException);
           return Stack(
             children: [
               Center(

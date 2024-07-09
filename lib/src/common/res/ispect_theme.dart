@@ -36,9 +36,12 @@ class ISpectTheme {
         darkDividerColor: darkDividerColor ?? this.darkDividerColor,
       );
 
-  Color? backgroundColor({required bool isDark}) => isDark ? darkBackgroundColor : lightBackgroundColor;
+  Color? backgroundColor({required bool isDark}) =>
+      isDark ? darkBackgroundColor : lightBackgroundColor;
 
-  Color? cardColor({required bool isDark}) => isDark ? darkCardColor : lightCardColor;
+  Color? cardColor({required bool isDark}) =>
+      isDark ? darkCardColor : lightCardColor;
 
-  Color? dividerColor({required bool isDark}) => isDark ? darkDividerColor : lightDividerColor;
+  Color? dividerColor({required bool isDark}) =>
+      isDark ? darkDividerColor : lightDividerColor;
 }
