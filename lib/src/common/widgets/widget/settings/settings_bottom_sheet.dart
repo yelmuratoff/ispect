@@ -23,12 +23,10 @@ class TalkerSettingsBottomSheets extends StatefulWidget {
   final ISpectOptions options;
 
   @override
-  State<TalkerSettingsBottomSheets> createState() =>
-      _TalkerSettingsBottomSheetState();
+  State<TalkerSettingsBottomSheets> createState() => _TalkerSettingsBottomSheetState();
 }
 
-class _TalkerSettingsBottomSheetState
-    extends State<TalkerSettingsBottomSheets> {
+class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> {
   @override
   void initState() {
     super.initState();
@@ -38,21 +36,21 @@ class _TalkerSettingsBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
     final settings = <Widget>[
       TalkerSettingsCardItem(
         title: context.ispectL10n.enabled,
         enabled: widget.talker.value.settings.enabled,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.talker.value.enable : widget.talker.value.disable)
-              .call();
+          (enabled ? widget.talker.value.enable : widget.talker.value.disable).call();
           widget.talker.notifyListeners();
         },
       ),
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         title: context.ispectL10n.useConsoleLogs,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useConsoleLogs,
         onChanged: (enabled) {
           widget.talker.value.configure(
@@ -66,7 +64,7 @@ class _TalkerSettingsBottomSheetState
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         title: context.ispectL10n.useHistory,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useHistory,
         onChanged: (enabled) {
           widget.talker.value.configure(

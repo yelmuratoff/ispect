@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/json_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/res/json_color.dart';
@@ -33,37 +34,42 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: Text(_title(_data.key ?? '')),
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return Scaffold(
+      backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+      appBar: AppBar(
+        backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              switch (_data.key) {
-                'http-request' => _RequestBody(
-                    log: _data as DioRequestLog,
-                    jsonController: _jsonController,
-                  ),
-                'http-response' => _ResponseBody(
-                    log: _data as DioResponseLog,
-                    jsonController: _jsonController,
-                  ),
-                'http-error' => _ErrorBody(
-                    log: _data as DioErrorLog,
-                    jsonController: _jsonController,
-                  ),
-                _ => const SizedBox(),
-              },
-            ],
-          ),
+        title: Text(_title(_data.key ?? '')),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            switch (_data.key) {
+              'http-request' => _RequestBody(
+                  log: _data as DioRequestLog,
+                  jsonController: _jsonController,
+                ),
+              'http-response' => _ResponseBody(
+                  log: _data as DioResponseLog,
+                  jsonController: _jsonController,
+                ),
+              'http-error' => _ErrorBody(
+                  log: _data as DioErrorLog,
+                  jsonController: _jsonController,
+                ),
+              _ => const SizedBox(),
+            },
+          ],
         ),
-      );
+      ),
+    );
+  }
 
   String _title(String key) => switch (key) {
         'http-request' => 'HTTP Request',
@@ -503,8 +509,7 @@ class _DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color:
-              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
+          color: context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(

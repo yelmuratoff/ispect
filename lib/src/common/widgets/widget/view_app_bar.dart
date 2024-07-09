@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -47,85 +48,88 @@ class TalkerAppBar extends StatelessWidget {
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context) => SliverAppBar(
-        elevation: 0,
-        pinned: true,
-        floating: true,
-        expandedHeight: 174,
-        collapsedHeight: 60,
-        toolbarHeight: 60,
-        leading: leading,
-        scrolledUnderElevation: 0,
-        backgroundColor: backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
-        actions: [
-          UnconstrainedBox(
-            child: _MonitorButton(
-              talker: talker,
-              onPressed: onMonitorTap,
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return SliverAppBar(
+      elevation: 0,
+      pinned: true,
+      floating: true,
+      expandedHeight: 174,
+      collapsedHeight: 60,
+      toolbarHeight: 60,
+      leading: leading,
+      scrolledUnderElevation: 0,
+      backgroundColor: backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
+      actions: [
+        UnconstrainedBox(
+          child: _MonitorButton(
+            talker: talker,
+            onPressed: onMonitorTap,
+          ),
+        ),
+        UnconstrainedBox(
+          child: IconButton(
+            onPressed: onSettingsTap,
+            icon: const Icon(
+              Icons.settings_rounded,
             ),
           ),
-          UnconstrainedBox(
-            child: IconButton(
-              onPressed: onSettingsTap,
-              icon: const Icon(
-                Icons.settings_rounded,
-              ),
+        ),
+        UnconstrainedBox(
+          child: IconButton(
+            onPressed: onActionsTap,
+            icon: const Icon(
+              Icons.menu_rounded,
             ),
           ),
-          UnconstrainedBox(
-            child: IconButton(
-              onPressed: onActionsTap,
-              icon: const Icon(
-                Icons.menu_rounded,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-        ],
-        title: title != null
-            ? Text(
-                title!,
-                style: context.ispectTheme.textTheme.headlineSmall,
-              )
-            : null,
-        flexibleSpace: FlexibleSpaceBar(
-          background: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 60),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 50,
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        GroupButton(
-                          controller: titlesController,
-                          isRadio: false,
-                          buttonBuilder: (selected, value, context) {
-                            final count = titles.where((e) => e == value).length;
-                            return Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                border: Border.fromBorderSide(
-                                  BorderSide(
-                                    color: selected
-                                        ? isDark
-                                            ? context.ispectTheme.colorScheme.primaryContainer
-                                            : context.ispectTheme.colorScheme.primary
-                                        : context.ispectTheme.dividerColor,
-                                  ),
+        ),
+        const SizedBox(width: 10),
+      ],
+      title: title != null
+          ? Text(
+              title!,
+              style: context.ispectTheme.textTheme.headlineSmall,
+            )
+          : null,
+      flexibleSpace: FlexibleSpaceBar(
+        background: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 60),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 50,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                    ),
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      GroupButton(
+                        controller: titlesController,
+                        isRadio: false,
+                        buttonBuilder: (selected, value, context) {
+                          final count = titles.where((e) => e == value).length;
+                          return DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                              border: Border.fromBorderSide(
+                                BorderSide(
+                                  color: selected
+                                      ? isDark
+                                          ? context.ispectTheme.colorScheme.primaryContainer
+                                          : context.ispectTheme.colorScheme.primary
+                                      : context.ispectTheme.dividerColor,
                                 ),
-                                color: selected
-                                    ? isDark
-                                        ? context.ispectTheme.colorScheme.primaryContainer
-                                        : context.ispectTheme.colorScheme.primary
-                                    : context.ispectTheme.cardColor,
                               ),
+                              color: selected
+                                  ? isDark
+                                      ? context.ispectTheme.colorScheme.primaryContainer
+                                      : context.ispectTheme.colorScheme.primary
+                                  : iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
                               child: Align(
                                 child: Text(
                                   '$count  $value',
@@ -134,26 +138,28 @@ class TalkerAppBar extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            );
-                          },
-                          onSelected: (_, i, selected) => _onToggle(uniqTitles[i], selected),
-                          buttons: uniqTitles,
-                        ),
-                      ],
-                    ),
+                            ),
+                          );
+                        },
+                        onSelected: (_, i, selected) => _onToggle(uniqTitles[i], selected),
+                        buttons: uniqTitles,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  _SearchTextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    isDark: isDark,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 4),
+                _SearchTextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  isDark: isDark,
+                ),
+              ],
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 
   void _onToggle(String? title, bool selected) {
     if (title == null) return;

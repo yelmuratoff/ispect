@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/talker/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -47,6 +48,7 @@ class _View extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        backgroundColor: ISpect.read(context).theme.backgroundColor(isDark: context.isDarkMode),
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,

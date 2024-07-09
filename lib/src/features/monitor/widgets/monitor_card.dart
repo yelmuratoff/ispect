@@ -20,47 +20,49 @@ class _TalkerMonitorsCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: TalkerBaseCard(
-          color: color,
-          backgroundColor: context.ispectTheme.cardColor,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Row(
-                  children: [
-                    Icon(icon, color: color),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: color,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: TalkerBaseCard(
+        color: color,
+        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Row(
+                children: [
+                  Icon(icon, color: color),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                           ),
-                          if (subtitle != null)
-                            Text(
-                              subtitle!,
-                              style: context.ispectTheme.textTheme.bodyMedium,
-                            ),
-                          if (subtitleWidget != null) subtitleWidget!,
-                        ],
-                      ),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: context.ispectTheme.textTheme.bodyMedium,
+                          ),
+                        if (subtitleWidget != null) subtitleWidget!,
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (onTap != null)
-                Icon(Icons.arrow_forward_ios_rounded, color: color),
-            ],
-          ),
+            ),
+            if (onTap != null) Icon(Icons.arrow_forward_ios_rounded, color: color),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }

@@ -40,10 +40,6 @@ void main() {
 
   dio.interceptors.add(TalkerDioLogger(
     talker: ISpectTalker.talker,
-    settings: const TalkerDioLoggerSettings(
-        // printRequestHeaders: true,
-        // printResponseHeaders: true,
-        ),
   ));
 
   runApp(
@@ -69,6 +65,14 @@ class App extends ConsumerWidget {
     const locale = Locale('en');
 
     return ISpectScopeWrapper(
+      // theme: const ISpectTheme(
+      //   lightBackgroundColor: Colors.white,
+      //   darkBackgroundColor: Colors.black,
+      //   lightCardColor: Color.fromARGB(255, 241, 240, 240),
+      //   darkCardColor: Color.fromARGB(255, 23, 23, 23),
+      //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
+      //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
+      // ),
       options: ISpectOptions(
         locale: locale,
         actionItems: [

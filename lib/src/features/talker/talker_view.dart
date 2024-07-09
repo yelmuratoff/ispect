@@ -70,67 +70,72 @@ class _TalkerViewState extends State<TalkerView> {
   }
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (_, __) => TalkerBuilder(
-            talker: widget.talker,
-            builder: (context, data) {
-              final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
-              final titles = data.map((e) => e.title).toList();
-              final uniqTitles = titles.toSet().toList();
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (_, __) => TalkerBuilder(
+          talker: widget.talker,
+          builder: (context, data) {
+            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
+            final titles = data.map((e) => e.title).toList();
+            final uniqTitles = titles.toSet().toList();
 
-              return CustomScrollView(
-                controller: widget.scrollController,
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  TalkerAppBar(
-                    focusNode: _focusNode,
-                    title: widget.appBarTitle,
-                    leading: widget.appBarLeading,
-                    talker: widget.talker,
-                    titlesController: _titlesController,
-                    titles: titles,
-                    uniqTitles: uniqTitles,
-                    controller: _controller,
-                    onMonitorTap: () => _openTalkerMonitor(context),
-                    onActionsTap: () => _showActionsBottomSheet(context),
-                    onSettingsTap: () {
-                      _openTalkerSettings(context);
+            return CustomScrollView(
+              controller: widget.scrollController,
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                TalkerAppBar(
+                  focusNode: _focusNode,
+                  title: widget.appBarTitle,
+                  leading: widget.appBarLeading,
+                  talker: widget.talker,
+                  titlesController: _titlesController,
+                  titles: titles,
+                  uniqTitles: uniqTitles,
+                  controller: _controller,
+                  onMonitorTap: () => _openTalkerMonitor(context),
+                  onActionsTap: () => _showActionsBottomSheet(context),
+                  onSettingsTap: () {
+                    _openTalkerSettings(context);
+                  },
+                  onToggleTitle: _onToggleTitle,
+                  isDark: context.isDarkMode,
+                  backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      final data = _getListItem(filtredElements, i);
+                      if (widget.itemsBuilder != null) {
+                        return widget.itemsBuilder!.call(context, data);
+                      }
+                      return TalkerDataCards(
+                        data: data,
+                        backgroundColor:
+                            iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+                        onCopyTap: () => _copyTalkerDataItemText(data),
+                        expanded: _controller.expandedLogs,
+                        color: getTypeColor(
+                          isDark: context.isDarkMode,
+                          key: data.title,
+                        ),
+                      );
                     },
-                    onToggleTitle: _onToggleTitle,
-                    isDark: context.isDarkMode,
+                    childCount: filtredElements.length,
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) {
-                        final data = _getListItem(filtredElements, i);
-                        if (widget.itemsBuilder != null) {
-                          return widget.itemsBuilder!.call(context, data);
-                        }
-                        return TalkerDataCards(
-                          data: data,
-                          backgroundColor: context.ispectTheme.cardColor,
-                          onCopyTap: () => _copyTalkerDataItemText(data),
-                          expanded: _controller.expandedLogs,
-                          color: getTypeColor(
-                            isDark: context.isDarkMode,
-                            key: data.title,
-                          ),
-                        );
-                      },
-                      childCount: filtredElements.length,
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                ],
-              );
-            },
-          ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              ],
+            );
+          },
         ),
-      );
+      ),
+    );
+  }
 
   void _onToggleTitle(String title, bool selected) {
     if (selected) {
