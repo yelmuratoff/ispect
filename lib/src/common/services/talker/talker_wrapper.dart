@@ -25,6 +25,9 @@ final class ISpectTalker {
   static set talker(Talker talker) => _instance._talker = talker;
 
   /// `initHandling` - This function initializes handling of the app.
+  ///
+  /// Filters works only for `BLoC` and Excetions: `FlutterError`, `PlatformDispatcher`, `UncaughtErrors`.
+  /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required Talker talker,
     void Function(Object error, StackTrace stackTrace)?
@@ -50,13 +53,16 @@ final class ISpectTalker {
     final void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
     final ISpectTalkerOptions options = const ISpectTalkerOptions(),
+    final List<String> filters = const [],
   }) async {
     _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         onPresentError?.call(details, details.stack);
-        if (options.isFlutterPresentHandlingEnabled) {
+        final exceptionAsString = details.exceptionAsString();
+        final isFilterContains = filters.any(exceptionAsString.contains);
+        if (options.isFlutterPresentHandlingEnabled && !isFilterContains) {
           _instance._talker.handle(details, details.stack);
         }
       });
@@ -74,11 +80,16 @@ final class ISpectTalker {
       onBlocChange: onBlocChange,
       onBlocCreate: onBlocCreate,
       onBlocClose: onBlocClose,
+      filters: filters,
     );
 
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
-      if (options.isPlatformDispatcherHandlingEnabled) {
+      final exceptionAsString = error.toString();
+
+      final isFilterContains = filters.any(exceptionAsString.contains);
+
+      if (options.isPlatformDispatcherHandlingEnabled && !isFilterContains) {
         _instance._talker.handle(error, stack);
       }
       return true;
@@ -86,7 +97,11 @@ final class ISpectTalker {
 
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
-      if (options.isFlutterErrorHandlingEnabled) {
+      final exceptionAsString = details.exceptionAsString();
+
+      final isFilterContains = filters.any(exceptionAsString.contains);
+
+      if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
         _instance._talker.handle(details, details.stack);
       }
     };
@@ -98,7 +113,9 @@ final class ISpectTalker {
           // ignore: avoid_types_on_closure_parameters
           (List<dynamic> pair) {
             onUncaughtErrors?.call(pair);
-            if (options.isUncaughtErrorsHandlingEnabled) {
+            final exceptionAsString = pair.toString();
+            final isFilterContains = filters.any(exceptionAsString.contains);
+            if (options.isUncaughtErrorsHandlingEnabled && !isFilterContains) {
               _instance._talker.error(pair);
             }
           },

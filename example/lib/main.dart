@@ -34,7 +34,9 @@ class ThemeManager extends StateNotifier<ThemeMode> {
 
 void main() {
   final talker = TalkerFlutter.init();
-  ISpectTalker.initHandling(talker: talker);
+  ISpectTalker.initHandling(
+    talker: talker,
+  );
   ISpectTalker.debug('Hello World!');
 
   dio.interceptors.add(TalkerDioLogger(
@@ -154,6 +156,12 @@ class _Home extends ConsumerWidget {
                 dio.options.headers.remove('Authorization');
               },
               child: const Text('Send HTTP request with Token'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                throw Exception('Test exception');
+              },
+              child: const Text('Throw exception'),
             ),
           ],
         ),

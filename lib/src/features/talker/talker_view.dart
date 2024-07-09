@@ -56,6 +56,12 @@ class _TalkerViewState extends State<TalkerView> {
   late final _controller = widget.controller ?? TalkerViewController();
 
   @override
+  void initState() {
+    super.initState();
+    _controller.toggleExpandedLogs();
+  }
+
+  @override
   void dispose() {
     _focusNode.dispose();
     _titlesController.dispose();

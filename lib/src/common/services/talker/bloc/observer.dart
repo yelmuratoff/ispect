@@ -18,6 +18,7 @@ class TalkerBlocObserver extends BlocObserver {
     this.onBlocError,
     this.onBlocCreate,
     this.onBlocClose,
+    this.filters = const [],
   }) {
     _talker = talker ?? Talker();
   }
@@ -38,12 +39,15 @@ class TalkerBlocObserver extends BlocObserver {
   final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
   final void Function(BlocBase<dynamic> bloc)? onBlocClose;
   final TalkerBlocLoggerSettings settings;
+  final List<String> filters;
 
   @override
   @mustCallSuper
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!settings.enabled || !settings.printEvents) {
+    final eventString = event.toString();
+    final isFilterContains = filters.any(eventString.contains);
+    if (!settings.enabled || !settings.printEvents || isFilterContains) {
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
@@ -67,7 +71,9 @@ class TalkerBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    if (!settings.enabled || !settings.printTransitions) {
+    final transitionString = transition.toString();
+    final isFilterContains = filters.any(transitionString.contains);
+    if (!settings.enabled || !settings.printTransitions || isFilterContains) {
       return;
     }
     final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
@@ -87,7 +93,9 @@ class TalkerBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!settings.enabled || !settings.printChanges) {
+    final changeString = change.toString();
+    final isFilterContains = filters.any(changeString.contains);
+    if (!settings.enabled || !settings.printChanges || isFilterContains) {
       return;
     }
     onBlocChange?.call(bloc, change);
@@ -104,6 +112,11 @@ class TalkerBlocObserver extends BlocObserver {
   @mustCallSuper
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
+    final errorAsString = error.toString();
+    final isFilterContains = filters.any(errorAsString.contains);
+    if (!settings.enabled || isFilterContains) {
+      return;
+    }
     onBlocError?.call(bloc, error, stackTrace);
     _talker.error('${bloc.runtimeType}', error, stackTrace);
   }
@@ -111,7 +124,9 @@ class TalkerBlocObserver extends BlocObserver {
   @override
   void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    if (!settings.enabled || !settings.printCreations) {
+    final blocAsString = bloc.toString();
+    final isFilterContains = filters.any(blocAsString.contains);
+    if (!settings.enabled || !settings.printCreations || isFilterContains) {
       return;
     }
     onBlocCreate?.call(bloc);
@@ -121,7 +136,9 @@ class TalkerBlocObserver extends BlocObserver {
   @override
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
-    if (!settings.enabled || !settings.printClosings) {
+    final blocAsString = bloc.toString();
+    final isFilterContains = filters.any(blocAsString.contains);
+    if (!settings.enabled || !settings.printClosings || isFilterContains) {
       return;
     }
     onBlocClose?.call(bloc);

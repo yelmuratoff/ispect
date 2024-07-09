@@ -173,11 +173,9 @@ class _ErrorBody extends StatefulWidget {
 }
 
 class _ErrorBodyState extends State<_ErrorBody> {
-  Map<String, dynamic>? _requestHeaders;
   @override
   void initState() {
     super.initState();
-    _requestHeaders = widget.log.dioException.response?.requestOptions.headers;
   }
 
   @override
@@ -187,7 +185,7 @@ class _ErrorBodyState extends State<_ErrorBody> {
     final headers = response?.headers;
     final statusCode = response?.statusCode;
     final statusMessage = response?.statusMessage;
-    final request = response?.requestOptions;
+    final request = widget.log.dioException.requestOptions;
     final errorMessage = widget.log.dioException.message;
 
     return Padding(
@@ -195,11 +193,11 @@ class _ErrorBodyState extends State<_ErrorBody> {
       child: _HTTPBody(
         dataKey: widget.log.key,
         request: request,
-        path: response?.requestOptions.path,
-        fullUrl: response?.requestOptions.uri.toString(),
+        path: request.path,
+        fullUrl: request.uri.toString(),
         statusCode: statusCode,
         statusMessage: statusMessage,
-        requestHeaders: _requestHeaders,
+        requestHeaders: request.headers,
         data: data as Map<String, dynamic>?,
         headers: headers,
         errorMessage: errorMessage,

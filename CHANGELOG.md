@@ -1,102 +1,80 @@
-## 1.4.1
-* Draggable button's updates. I changed max point for button reverse.
-* Localization for Detailed HTTP logs page.
-* And some minor changes with Detailed HTTP logs page.
+## 1.4.3
+- Initial ISpectTalker page logs are now collapsed by default.
+- Added a new parameter `filters` to the `initHandling` method. 
+  - Filters work only for `BLoC` and exceptions such as `FlutterError`, `PlatformDispatcher`, and `UncaughtErrors`.
+  - For Riverpod, routes, Dio, etc., manual configuration is required.
+
+## 1.4.2
+- Updated draggable button functionality with a new maximum reverse point.
+- Added localization for the Detailed HTTP Logs page.
+- Made minor updates to the Detailed HTTP Logs page.
 
 ## 1.4.0
-* Added new feature: detailed screens for HTTP logs: request, response, error.
+- Introduced new feature: detailed screens for HTTP logs, including request, response, and error.
 
 ## 1.3.1
-* Code was refactored and optimized.
-* Now draggable button's position saves in cache.
-* Updated `analysis_options.yaml` file.
-* Updated `README.md` file.
-
+- Refactored and optimized the code.
+- Draggable button's position is now saved in cache.
+- Updated `analysis_options.yaml` file.
+- Updated `README.md` file.
 
 ## 1.3.0
-Also (1.2.8, 1.2.9)
-* Updated options of `ISpectTalker.initHandling`.
+- Updated options of `ISpectTalker.initHandling` (also applies to versions 1.2.8 and 1.2.9).
 
 ## 1.2.7
-
-* Added more options to `ISpectTalker.initHandling`.
-   - Now you can customize more options during initialization of `ISpectTalker` like BLoC, Dispatcher error and etc.
+- Added more options to `ISpectTalker.initHandling`.
+  - You can now customize more options during the initialization of `ISpectTalker`, such as BLoC, Dispatcher error, etc.
 
 ## 1.2.6
-
-* Updated docs: added a video preview of the package.
+- Updated documentation: added a video preview of the package.
 
 ## 1.2.4
-
-* Added some options to `Talker` detailed monitor page: reverse all logs and toggle expansion.
-* Performance tracker moved to `Draggable` button and removed from settings sheet.
+- Added some options to the `Talker` detailed monitor page: reverse all logs and toggle expansion.
+- Moved performance tracker to the `Draggable` button and removed it from the settings sheet.
 
 ## 1.2.3
-
-* Now, navigatorContext is not required for ISpectBuilder:
-   - If you want that use Draggable button also inside ISpectPage you need pass key. By default, it is not possible to use Draggable button inside ISpectPage.
-
-## 1.2.0
-
-* Upgrade talker to 4.3.2
+- `navigatorContext` is no longer required for ISpectBuilder.
+  - To use the Draggable button inside ISpectPage, pass the key. By default, it is not possible to use the Draggable button inside ISpectPage.
 
 ## 1.2.0
-
-* Bump dependencies to latest version
-* Some refactoring. Use `ISpectTalker` instead of `talkerWrapper`
+- Upgraded Talker to version 4.3.2.
 
 ## 1.1.8
-
-* Kazakh language added.
+- Added Kazakh language support.
 
 ## 1.1.7
-
-* Refactored feedback theme.
-* Refactored options theme of ISpect.
+- Refactored feedback theme.
+- Refactored options theme of ISpect.
 
 ## 1.1.6
-
-* Some refactoring with Riverpod logs on Talker Page.
-* Dependency updates.
+- Refactored Riverpod logs on the Talker Page.
+- Updated dependencies.
 
 ## 1.1.5
-
-* Riverpod logs added.
-* Some updates in Talker Page.
-* Some updates with Feedback builder.
+- Added Riverpod logs.
+- Made updates to the Talker Page and Feedback builder.
 
 ## 1.1.2
-
-* Fixed issues with light theme.
-* TalkerScreenTheme was removed. Use ISpectOptions theme properties.
+- Fixed issues with the light theme.
+- Removed `TalkerScreenTheme`. Use ISpectOptions theme properties instead.
 
 ## 1.1.0
-
-* Upgrade dependencies to latest version
-* Some refactoring with `ISpectTalker`
-
-## 1.0.8
-
-* Upgrade dependencies to latest version
-* Formatted and some refactoring
-* Default lints replaced to `sizzle_lints`
+- Upgraded dependencies to the latest version.
+- Refactored `ISpectTalker`.
 
 ## 1.0.8
-
-* Upgrade dependencies to latest version
+- Upgraded dependencies to the latest version.
+- Performed formatting and refactoring.
+- Replaced default lints with `sizzle_lints`.
 
 ## 1.0.5
-
-* ISpectWrapper changed to builder, and fields moved to Scope Wrapper
+- Changed ISpectWrapper to builder, and moved fields to Scope Wrapper.
 
 ## 1.0.2
-
-* Inspector buttons moved to draggable buttons
+- Moved inspector buttons to draggable buttons.
 
 ## 1.0.1
-
-* ISpectLocalization, cache management added
+- Added ISpectLocalization and cache management.
 
 ## 1.0.0
-
-* Wrapper around Inspector, Talker and etc. First release.
+- Initial release: Wrapper around Inspector, Talker, etc.
