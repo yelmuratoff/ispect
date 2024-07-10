@@ -226,9 +226,10 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _stackTrace {
-    if (widget.data is TalkerError ||
-        widget.data is TalkerException ||
-        widget.data.message == 'FlutterErrorDetails') {
+    if ((widget.data is TalkerError ||
+            widget.data is TalkerException ||
+            widget.data.message == 'FlutterErrorDetails') &&
+        widget.data.stackTrace != null) {
       return 'StackTrace:\n${widget.data.stackTrace}';
     }
     return null;
