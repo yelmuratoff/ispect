@@ -81,7 +81,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   final DraggableButtonController _controller = DraggableButtonController();
 
-  double _screenWidth = 0;
+  // double _screenWidth = 0;
+  // double _screenHeight = 0;
 
   @override
   void initState() {
@@ -97,11 +98,12 @@ class _InspectorPanelState extends State<InspectorPanel> {
       _controller.startAutoCollapseTimer();
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _screenWidth = MediaQuery.sizeOf(context).width;
-      });
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   setState(() {
+    //     _screenWidth = MediaQuery.sizeOf(context).width;
+    //     _screenHeight = MediaQuery.sizeOf(context).height;
+    //   });
+    // });
   }
 
   @override
@@ -126,90 +128,112 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) => _ButtonView(
-          onTap: () {
-            if (widget.state != InvokerState.alwaysOpened) {
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (_, constraints) => AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) => _ButtonView(
+            onTap: () {
+              if (widget.state != InvokerState.alwaysOpened) {
+                if (!_controller.isCollapsed) {
+                  _controller.setIsCollapsed(true);
+                  _buttonToEnd(context);
+                  if (widget.state == InvokerState.autoCollapse) {
+                    _controller.startAutoCollapseTimer();
+                  }
+                }
+              }
+            },
+            xPos: _controller.xPos,
+            yPos: _controller.yPos,
+            screenWidth: constraints.maxWidth,
+            onPanUpdate: (details) {
               if (!_controller.isCollapsed) {
-                _controller.setIsCollapsed(true);
+                _controller
+                  ..xPos += details.delta.dx
+                  ..yPos += details.delta.dy
+                  ..xPos = _controller.xPos.clamp(
+                    0.0,
+                    constraints.maxWidth - ISpectConstants.draggableButtonWidth,
+                  )
+                  ..yPos = _controller.yPos.clamp(
+                    0.0,
+                    MediaQuery.sizeOf(context).height -
+                        ISpectConstants.draggableButtonHeight,
+                  );
+              }
+            },
+            onPanEnd: (_) {
+              if (!_controller.isCollapsed) {
+                _buttonToEnd(context);
+
                 if (widget.state == InvokerState.autoCollapse) {
                   _controller.startAutoCollapseTimer();
                 }
               }
-            }
-          },
-          xPos: _controller.xPos,
-          yPos: _controller.yPos,
-          screenWidth: _screenWidth,
-          onPanUpdate: (details) {
-            if (!_controller.isCollapsed) {
-              _controller
-                ..xPos += details.delta.dx
-                ..yPos += details.delta.dy;
-            }
-          },
-          onPanEnd: (_) {
-            if (!_controller.isCollapsed) {
-              final screenWidth = MediaQuery.sizeOf(context).width;
-
-              final halfScreenWidth = screenWidth / 2;
-              double targetXPos;
-
-              if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
-                  halfScreenWidth) {
-                targetXPos = 0;
-              } else {
-                targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
-              }
-
-              _controller.xPos = targetXPos;
-
-              widget.onPositionChanged
-                  ?.call(_controller.xPos, _controller.yPos);
-
-              if (widget.state == InvokerState.autoCollapse) {
+            },
+            onButtonTap: () {
+              _controller.setIsCollapsed(!_controller.isCollapsed);
+              if (_controller.isCollapsed) {
+                _controller.cancelAutoCollapseTimer();
+                _launchInfospect(context);
+              } else if (widget.state == InvokerState.autoCollapse) {
                 _controller.startAutoCollapseTimer();
               }
-            }
-          },
-          onButtonTap: () {
-            _controller.setIsCollapsed(!_controller.isCollapsed);
-            if (_controller.isCollapsed) {
-              _controller.cancelAutoCollapseTimer();
-              _launchInfospect(context);
-            } else if (widget.state == InvokerState.autoCollapse) {
-              _controller.startAutoCollapseTimer();
-            }
-          },
-          isCollapsed: _controller.isCollapsed,
-          inLoggerPage: _controller.inLoggerPage,
-          isInspectorEnabled: widget.isInspectorEnabled,
-          onInspectorToggle: _toggleInspectorState,
-          isColorPickerEnabled: widget.isColorPickerEnabled,
-          onColorPickerToggle: _toggleColorPickerState,
-          isZoomEnabled: widget.isZoomEnabled,
-          onZoomToggle: _toogleZoomState,
-          isFeedbackEnabled: BetterFeedback.of(context).isVisible,
-          onFeedbackToggle: () {
-            if (!BetterFeedback.of(context).isVisible) {
-              BetterFeedback.of(context).show((feedback) async {
-                final screenshotFilePath =
-                    await writeImageToStorage(feedback.screenshot);
+            },
+            isCollapsed: _controller.isCollapsed,
+            inLoggerPage: _controller.inLoggerPage,
+            isInspectorEnabled: widget.isInspectorEnabled,
+            onInspectorToggle: _toggleInspectorState,
+            isColorPickerEnabled: widget.isColorPickerEnabled,
+            onColorPickerToggle: _toggleColorPickerState,
+            isZoomEnabled: widget.isZoomEnabled,
+            onZoomToggle: _toogleZoomState,
+            isFeedbackEnabled: BetterFeedback.of(context).isVisible,
+            onFeedbackToggle: () {
+              if (!BetterFeedback.of(context).isVisible) {
+                BetterFeedback.of(context).show((feedback) async {
+                  final screenshotFilePath =
+                      await writeImageToStorage(feedback.screenshot);
 
-                await Share.shareXFiles(
-                  [screenshotFilePath],
-                  text: feedback.text,
-                );
-              });
-            } else {
-              BetterFeedback.of(context).hide();
-            }
-            // ignore: avoid_empty_blocks
-            setState(() {});
-          },
+                  await Share.shareXFiles(
+                    [screenshotFilePath],
+                    text: feedback.text,
+                  );
+                });
+              } else {
+                BetterFeedback.of(context).hide();
+              }
+              // ignore: avoid_empty_blocks
+              setState(() {});
+            },
+          ),
         ),
       );
+
+  void _buttonToEnd(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final halfScreenWidth = screenWidth / 2;
+    double targetXPos;
+
+    if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
+        halfScreenWidth) {
+      targetXPos = 0;
+    } else {
+      targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
+    }
+
+    setState(() {
+      _controller
+        ..xPos = targetXPos
+        ..yPos = _controller.yPos.clamp(
+          0.0,
+          MediaQuery.sizeOf(context).height -
+              ISpectConstants.draggableButtonHeight,
+        );
+    });
+
+    widget.onPositionChanged?.call(_controller.xPos, _controller.yPos);
+  }
 
   void _launchInfospect(BuildContext context) {
     final context0 = widget.navigatorKey?.currentContext ?? context;

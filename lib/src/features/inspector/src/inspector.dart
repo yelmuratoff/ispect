@@ -7,18 +7,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect/ispect.dart';
 
-import 'package:ispect/src/common/utils/ispect_options.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
-import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
-import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
-import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -156,6 +153,8 @@ class InspectorState extends State<Inspector> {
 
     _isPanelVisible = widget.isPanelVisible;
 
+    ISpectTalker.info('Inspector is enabled: $_isPanelVisible');
+
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
@@ -171,7 +170,7 @@ class InspectorState extends State<Inspector> {
       zoomStateKeys: widget.zoomShortcuts,
     );
 
-    if (_isEnabled && widget.areKeyboardShortcutsEnabled) {
+    if (_isPanelVisible && widget.areKeyboardShortcutsEnabled) {
       _keyboardHandler.register();
     }
   }
@@ -394,7 +393,7 @@ class InspectorState extends State<Inspector> {
   @override
   void didUpdateWidget(covariant Inspector oldWidget) {
     if (oldWidget.isEnabled != widget.isEnabled) {
-      if (_isEnabled && widget.areKeyboardShortcutsEnabled) {
+      if (_isPanelVisible && widget.areKeyboardShortcutsEnabled) {
         _keyboardHandler.register();
       } else {
         _keyboardHandler.dispose();
@@ -426,16 +425,9 @@ class InspectorState extends State<Inspector> {
     super.dispose();
   }
 
-  /// The inspector is enabled if:
-  /// 1. [widget.isEnabled] is [null] and we're running in debug mode, or
-  /// 2. [widget.isEnabled] is [true]
-  bool get _isEnabled =>
-      (widget.isEnabled == null && !kReleaseMode) ||
-      (widget.isEnabled != null && widget.isEnabled!);
-
   @override
   Widget build(BuildContext context) {
-    if (!_isEnabled) {
+    if (!_isPanelVisible) {
       return widget.child;
     }
 
@@ -480,85 +472,6 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
-        if (widget.isColorPickerEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _selectedColorOffsetNotifier,
-              _selectedColorStateNotifier,
-            ],
-            builder: (_) {
-              final offset = _selectedColorOffsetNotifier.value;
-              final color = _selectedColorStateNotifier.value;
-
-              if (offset == null || color == null) {
-                return const SizedBox.shrink();
-              }
-
-              return Positioned(
-                left: offset.dx + 8.0,
-                top: offset.dy - 64.0,
-                child: ColorPickerOverlay(
-                  color: color,
-                ),
-              );
-            },
-          ),
-        if (widget.isWidgetInspectorEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _currentRenderBoxNotifier,
-              _inspectorStateNotifier,
-              _zoomStateNotifier,
-            ],
-            builder: (_) => LayoutBuilder(
-              builder: (_, constraints) => _inspectorStateNotifier.value
-                  ? InspectorOverlay(
-                      size: constraints.biggest,
-                      boxInfo: _currentRenderBoxNotifier.value,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ),
-        if (widget.isZoomEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _zoomImageOffsetNotifier,
-              _zoomOverlayOffsetNotifier,
-              _byteDataStateNotifier,
-              _zoomScaleNotifier,
-            ],
-            builder: (context) {
-              final offset = _zoomOverlayOffsetNotifier.value;
-              final imageOffset = _zoomImageOffsetNotifier.value;
-              final byteData = _byteDataStateNotifier.value;
-              final zoomScale = _zoomScaleNotifier.value;
-
-              if (offset == null || byteData == null || imageOffset == null) {
-                return const SizedBox.shrink();
-              }
-
-              final overlaySize = ui.lerpDouble(
-                128.0,
-                256.0,
-                ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-              )!;
-
-              return Positioned(
-                left: offset.dx - overlaySize / 2,
-                top: offset.dy - overlaySize / 2,
-                child: IgnorePointer(
-                  child: ZoomOverlayWidget(
-                    image: _image!,
-                    overlayOffset: offset,
-                    imageOffset: imageOffset,
-                    overlaySize: overlaySize,
-                    zoomScale: zoomScale,
-                    pixelRatio: MediaQuery.devicePixelRatioOf(context),
-                  ),
-                ),
-              );
-            },
-          ),
         if (_isPanelVisible)
           Align(
             alignment: Alignment.centerRight,

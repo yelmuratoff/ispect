@@ -1,3 +1,6 @@
+## 1.5.0
+- Fix issues with Draggable button. Enable ISpect on the release build: manage confitions with `isISpectEnabled`.
+
 ## 1.4.8
 - Removed shared preference because it is not work with shrink. So, now you can use parameters inside ISpectBuilder for manipulating the Draggable button.
 

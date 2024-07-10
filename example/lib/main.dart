@@ -74,6 +74,7 @@ class App extends ConsumerWidget {
       //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
+
       options: ISpectOptions(
         locale: locale,
         actionItems: [

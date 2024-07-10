@@ -57,6 +57,7 @@ class _ButtonView extends StatelessWidget {
             }
           },
           child: Stack(
+            clipBehavior: Clip.antiAlias,
             children: [
               Positioned(
                 top: yPos,
@@ -79,7 +80,7 @@ class _ButtonView extends StatelessWidget {
                   ),
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    reverse: xPos < ISpectConstants.draggableButtonWidth,
+                    reverse: xPos < screenWidth / 2,
                     children: [
                       _PanelIconButton(
                         icon: Icons.monitor_heart_outlined,
@@ -112,12 +113,9 @@ class _ButtonView extends StatelessWidget {
               ),
               Positioned(
                 top: yPos,
-                left: (xPos < ISpectConstants.draggableButtonWidth)
-                    ? xPos + 5
-                    : null,
-                right: (xPos > ISpectConstants.draggableButtonWidth)
-                    ? (screenWidth - xPos - 55)
-                    : null,
+                left: (xPos < screenWidth / 2) ? xPos + 5 : null,
+                right:
+                    (xPos > screenWidth / 2) ? (screenWidth - xPos - 55) : null,
                 child: GestureDetector(
                   onPanUpdate: onPanUpdate.call,
                   onPanEnd: onPanEnd.call,
