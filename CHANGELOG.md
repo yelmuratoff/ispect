@@ -1,4 +1,4 @@
-## 1.4.7
+## 1.4.8
 - Removed shared preference because it is not work with shrink. So, now you can use parameters inside ISpectBuilder for manipulating the Draggable button.
 
 ## 1.4.6

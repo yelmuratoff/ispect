@@ -147,9 +147,6 @@ class _InspectorPanelState extends State<InspectorPanel> {
               _controller
                 ..xPos += details.delta.dx
                 ..yPos += details.delta.dy;
-
-              widget.onPositionChanged
-                  ?.call(_controller.xPos, _controller.yPos);
             }
           },
           onPanEnd: (_) {
@@ -167,6 +164,9 @@ class _InspectorPanelState extends State<InspectorPanel> {
               }
 
               _controller.xPos = targetXPos;
+
+              widget.onPositionChanged
+                  ?.call(_controller.xPos, _controller.yPos);
 
               if (widget.state == InvokerState.autoCollapse) {
                 _controller.startAutoCollapseTimer();
