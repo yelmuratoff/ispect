@@ -48,9 +48,7 @@ class _View extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: ISpect.read(context)
-            .theme
-            .backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: ISpect.read(context).theme.backgroundColor(isDark: context.isDarkMode),
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,
@@ -69,7 +67,7 @@ class _View extends StatelessWidget {
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
   final output = await getTemporaryDirectory();
-  final screenshotFilePath = '${output.path}/feedback.png';
+  final screenshotFilePath = '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
   final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);

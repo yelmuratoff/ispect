@@ -1,4 +1,4 @@
-## 1.5.3
+## 1.5.4
 - Fix issues with Draggable button. Enable ISpect on the release build: manage confitions with `isISpectEnabled`.
 
 ## 1.4.8
