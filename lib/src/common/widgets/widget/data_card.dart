@@ -95,6 +95,15 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                               fontSize: 12,
                             ),
                           ),
+                        if (message == 'FlutterErrorDetails' && !_expanded)
+                          Text(
+                            errorMessage.toString(),
+                            maxLines: 2,
+                            style: TextStyle(
+                              color: widget.color,
+                              fontSize: 12,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -217,10 +226,12 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _stackTrace {
-    if (widget.data is! TalkerError && widget.data is! TalkerException) {
-      return null;
+    if (widget.data is TalkerError ||
+        widget.data is TalkerException ||
+        widget.data.message == 'FlutterErrorDetails') {
+      return 'StackTrace:\n${widget.data.stackTrace}';
     }
-    return 'StackTrace:\n${widget.data.stackTrace}';
+    return null;
   }
 
   String? get _message {

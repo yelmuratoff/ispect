@@ -102,7 +102,11 @@ final class ISpectTalker {
       final isFilterContains = filters.any(exceptionAsString.contains);
 
       if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
-        _instance._talker.handle(details, details.stack);
+        _instance._talker.error(
+          'FlutterErrorDetails',
+          details,
+          details.stack,
+        );
       }
     };
 

@@ -37,6 +37,8 @@ class _MonitorView extends StatelessWidget {
           final logs = data.whereType<TalkerLog>().toList();
           final errors = data.whereType<TalkerError>().toList();
           final exceptions = data.whereType<TalkerException>().toList();
+          final flutterErrors =
+              data.where((e) => e.message == 'FlutterErrorDetails').toList();
           final warnings =
               logs.where((e) => e.logLevel == LogLevel.warning).toList();
           final goods = logs.where((e) => e.title == 'good').toList();
@@ -306,6 +308,26 @@ class _MonitorView extends StatelessWidget {
                     onTap: () => openTypedLogsPage(
                       errors,
                       context.ispectL10n.talkerTypeErrors,
+                    ),
+                  ),
+                ),
+              ],
+              if (flutterErrors.isNotEmpty) ...[
+                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                SliverToBoxAdapter(
+                  child: _TalkerMonitorsCard(
+                    logs: flutterErrors,
+                    title: '${context.ispectL10n.talkerTypeErrors} (flutter)',
+                    color: getTypeColor(
+                      isDark: isDark,
+                      key: 'error',
+                    ),
+                    icon: Icons.error_outline_rounded,
+                    subtitle: context.ispectL10n
+                        .talkerTypeErrorsCount(flutterErrors.length),
+                    onTap: () => openTypedLogsPage(
+                      flutterErrors,
+                      '${context.ispectL10n.talkerTypeErrors} (flutter)',
                     ),
                   ),
                 ),
