@@ -192,7 +192,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                     ],
                   ),
                 ),
-              if (_expanded && stackTrace != null)
+              if (_expanded && stackTrace != null && stackTrace.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(6),
