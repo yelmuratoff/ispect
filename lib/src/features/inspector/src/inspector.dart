@@ -11,11 +11,14 @@ import 'package:ispect/ispect.dart';
 
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
+import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
+import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -472,6 +475,85 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
+        if (widget.isColorPickerEnabled)
+          MultiValueListenableBuilder(
+            valueListenables: [
+              _selectedColorOffsetNotifier,
+              _selectedColorStateNotifier,
+            ],
+            builder: (_) {
+              final offset = _selectedColorOffsetNotifier.value;
+              final color = _selectedColorStateNotifier.value;
+
+              if (offset == null || color == null) {
+                return const SizedBox.shrink();
+              }
+
+              return Positioned(
+                left: offset.dx + 8.0,
+                top: offset.dy - 64.0,
+                child: ColorPickerOverlay(
+                  color: color,
+                ),
+              );
+            },
+          ),
+        if (widget.isWidgetInspectorEnabled)
+          MultiValueListenableBuilder(
+            valueListenables: [
+              _currentRenderBoxNotifier,
+              _inspectorStateNotifier,
+              _zoomStateNotifier,
+            ],
+            builder: (_) => LayoutBuilder(
+              builder: (_, constraints) => _inspectorStateNotifier.value
+                  ? InspectorOverlay(
+                      size: constraints.biggest,
+                      boxInfo: _currentRenderBoxNotifier.value,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        if (widget.isZoomEnabled)
+          MultiValueListenableBuilder(
+            valueListenables: [
+              _zoomImageOffsetNotifier,
+              _zoomOverlayOffsetNotifier,
+              _byteDataStateNotifier,
+              _zoomScaleNotifier,
+            ],
+            builder: (context) {
+              final offset = _zoomOverlayOffsetNotifier.value;
+              final imageOffset = _zoomImageOffsetNotifier.value;
+              final byteData = _byteDataStateNotifier.value;
+              final zoomScale = _zoomScaleNotifier.value;
+
+              if (offset == null || byteData == null || imageOffset == null) {
+                return const SizedBox.shrink();
+              }
+
+              final overlaySize = ui.lerpDouble(
+                128.0,
+                256.0,
+                ((zoomScale - 2.0) / 10.0).clamp(0, 1),
+              )!;
+
+              return Positioned(
+                left: offset.dx - overlaySize / 2,
+                top: offset.dy - overlaySize / 2,
+                child: IgnorePointer(
+                  child: ZoomOverlayWidget(
+                    image: _image!,
+                    overlayOffset: offset,
+                    imageOffset: imageOffset,
+                    overlaySize: overlaySize,
+                    zoomScale: zoomScale,
+                    pixelRatio: MediaQuery.devicePixelRatioOf(context),
+                  ),
+                ),
+              );
+            },
+          ),
         if (_isPanelVisible)
           Align(
             alignment: Alignment.centerRight,
