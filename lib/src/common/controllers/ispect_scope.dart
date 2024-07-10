@@ -72,9 +72,9 @@ class ISpectScopeWrapper extends StatelessWidget {
   Widget build(BuildContext context) =>
       ChangeNotifierProvider<ISpectScopeModel>(
         create: (_) => ISpectScopeModel()
+          ..setISpect = isISpectEnabled
           ..setOptions(options)
-          ..setTheme(theme)
-          ..setISpect = isISpectEnabled,
+          ..setTheme(theme),
         child: child,
       );
 }

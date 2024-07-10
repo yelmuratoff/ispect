@@ -7,7 +7,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:ispect/src/common/db/shared_preference.dart';
 
 import 'package:ispect/src/common/utils/ispect_options.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
@@ -47,6 +46,7 @@ class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,
     required this.options,
+    this.onPositionChanged,
     this.navigatorKey,
     super.key,
     this.backgroundColor,
@@ -76,6 +76,7 @@ class Inspector extends StatefulWidget {
       LogicalKeyboardKey.keyZ,
     ],
     this.isEnabled,
+    this.initialPosition,
   });
 
   final Widget child;
@@ -95,6 +96,8 @@ class Inspector extends StatefulWidget {
   final Color? selectedTextColor;
   final GlobalKey<NavigatorState>? navigatorKey;
   final ISpectOptions options;
+  final void Function(double x, double y)? onPositionChanged;
+  final (double x, double y)? initialPosition;
 
   static InspectorState of(BuildContext context) {
     final result = maybeOf(context);
@@ -150,12 +153,6 @@ class InspectorState extends State<Inspector> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await sharedPreference.init();
-      // ignore: avoid_empty_blocks
-      setState(() {});
-    });
 
     _isPanelVisible = widget.isPanelVisible;
 
@@ -562,7 +559,7 @@ class InspectorState extends State<Inspector> {
               );
             },
           ),
-        if (_isPanelVisible && sharedPreference.isInitialized)
+        if (_isPanelVisible)
           Align(
             alignment: Alignment.centerRight,
             child: MultiValueListenableBuilder(
@@ -585,6 +582,10 @@ class InspectorState extends State<Inspector> {
                     _zoomStateNotifier.value,
                 navigatorKey: widget.navigatorKey,
                 options: widget.options,
+                initialPosition: widget.initialPosition,
+                onPositionChanged: (x, y) {
+                  widget.onPositionChanged?.call(x, y);
+                },
               ),
             ),
           ),

@@ -3,12 +3,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/db/shared_preference.dart';
 
 /// `DraggableButtonController` is a controller class for the `DraggableButton` widget.
 final class DraggableButtonController extends ChangeNotifier {
-  double _xPos = sharedPreference.draggableButtonOx;
-  double _yPos = sharedPreference.draggableButtonOy;
+  double _xPos = 0;
+  double _yPos = 600;
   bool _isCollapsed = false;
   bool _isActionsCollapsed = false;
   Timer? _collapseTimer;
@@ -36,13 +35,11 @@ final class DraggableButtonController extends ChangeNotifier {
 
   set xPos(double xPos) {
     _xPos = xPos;
-    sharedPreference.setDraggableButtonOx(xPos);
     notifyListeners();
   }
 
   set yPos(double yPos) {
     _yPos = yPos;
-    sharedPreference.setDraggableButtonOy(yPos);
     notifyListeners();
   }
 

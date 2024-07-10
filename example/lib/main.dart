@@ -113,6 +113,10 @@ class App extends ConsumerWidget {
         builder: (context, child) {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
+            initialPosition: (0, 300),
+            onPositionChanged: (x, y) {
+              debugPrint('x: $x, y: $y');
+            },
             child: child,
           );
           return child;

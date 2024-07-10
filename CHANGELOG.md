@@ -1,5 +1,8 @@
+## 1.4.7
+- Removed shared preference because it is not work with shrink. So, now you can use parameters inside ISpectBuilder for manipulating the Draggable button.
+
 ## 1.4.6
-- Added a new parameter `theme` to `ISpectOptions` for customizing the theme of the `ISpect` page.
+- Added a new parameter `theme` to `ISpectScopeWrapper` for customizing the theme of the `ISpect` page.
 
 ## 1.4.4
 - Added a new parameter `actionItems` to `ISpectOptions` for adding custom actions to the `ISpect` page's actions sheet.

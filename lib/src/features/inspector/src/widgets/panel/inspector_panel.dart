@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_positional_fields_in_records
 import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -40,6 +41,8 @@ class InspectorPanel extends StatefulWidget {
     required this.isZoomEnabled,
     required this.isZoomLoading,
     required this.options,
+    required this.onPositionChanged,
+    this.initialPosition,
     this.navigatorKey,
     super.key,
     this.onInspectorStateChanged,
@@ -59,11 +62,13 @@ class InspectorPanel extends StatefulWidget {
 
   final bool isColorPickerLoading;
   final bool isZoomLoading;
+  final (double x, double y)? initialPosition;
 
   ///
   final InvokerState state;
   final ISpectOptions options;
   final GlobalKey<NavigatorState>? navigatorKey;
+  final void Function(double x, double y)? onPositionChanged;
 
   @override
   State createState() => _InspectorPanelState();
@@ -83,6 +88,11 @@ class _InspectorPanelState extends State<InspectorPanel> {
     super.initState();
 
     _controller.setIsCollapsed(true);
+    if (widget.initialPosition != null) {
+      _controller
+        ..xPos = widget.initialPosition!.$1
+        ..yPos = widget.initialPosition!.$2;
+    }
     if (widget.state == InvokerState.autoCollapse) {
       _controller.startAutoCollapseTimer();
     }
@@ -137,6 +147,9 @@ class _InspectorPanelState extends State<InspectorPanel> {
               _controller
                 ..xPos += details.delta.dx
                 ..yPos += details.delta.dy;
+
+              widget.onPositionChanged
+                  ?.call(_controller.xPos, _controller.yPos);
             }
           },
           onPanEnd: (_) {

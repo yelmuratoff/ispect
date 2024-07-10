@@ -11,10 +11,12 @@ import 'package:provider/provider.dart';
 class ISpectBuilder extends StatelessWidget {
   const ISpectBuilder({
     required this.child,
+    this.initialPosition,
     this.navigatorKey,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
+    this.onPositionChanged,
     super.key,
   });
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -26,6 +28,8 @@ class ISpectBuilder extends StatelessWidget {
     Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
     ScrollController? controller,
   )? feedbackBuilder;
+  final void Function(double x, double y)? onPositionChanged;
+  final (double x, double y)? initialPosition;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,8 @@ class ISpectBuilder extends StatelessWidget {
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onSurface,
           selectedTextColor: theme.colorScheme.onSurface,
+          onPositionChanged: onPositionChanged,
+          initialPosition: initialPosition,
           child: child ?? const SizedBox(),
         );
 
