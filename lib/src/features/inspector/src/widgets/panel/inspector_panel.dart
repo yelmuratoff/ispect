@@ -81,9 +81,6 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   final DraggableButtonController _controller = DraggableButtonController();
 
-  // double _screenWidth = 0;
-  // double _screenHeight = 0;
-
   @override
   void initState() {
     super.initState();
@@ -97,13 +94,6 @@ class _InspectorPanelState extends State<InspectorPanel> {
     if (widget.state == InvokerState.autoCollapse) {
       _controller.startAutoCollapseTimer();
     }
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   setState(() {
-    //     _screenWidth = MediaQuery.sizeOf(context).width;
-    //     _screenHeight = MediaQuery.sizeOf(context).height;
-    //   });
-    // });
   }
 
   @override

@@ -61,14 +61,14 @@ class _ButtonView extends StatelessWidget {
             children: [
               Positioned(
                 top: yPos,
-                left: (xPos < screenWidth / 2) ? xPos + 5 : null,
+                left: (xPos < screenWidth / 2) ? xPos + 7 : null,
                 right:
-                    (xPos > screenWidth / 2) ? (screenWidth - xPos - 55) : null,
+                    (xPos > screenWidth / 2) ? (screenWidth - xPos - 53) : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   height: ISpectConstants.draggableButtonHeight,
                   width: isCollapsed
-                      ? ISpectConstants.draggableButtonWidth * 0.2
+                      ? ISpectConstants.draggableButtonWidth * 0.25
                       : ISpectConstants.draggableButtonWidth * 5.3,
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
@@ -113,9 +113,9 @@ class _ButtonView extends StatelessWidget {
               ),
               Positioned(
                 top: yPos,
-                left: (xPos < screenWidth / 2) ? xPos + 5 : null,
+                left: (xPos < screenWidth / 2) ? xPos + 7 : null,
                 right:
-                    (xPos > screenWidth / 2) ? (screenWidth - xPos - 55) : null,
+                    (xPos > screenWidth / 2) ? (screenWidth - xPos - 53) : null,
                 child: GestureDetector(
                   onPanUpdate: onPanUpdate.call,
                   onPanEnd: onPanEnd.call,

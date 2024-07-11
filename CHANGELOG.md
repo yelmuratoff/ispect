@@ -1,3 +1,6 @@
+## 1.5.6
+- Increased padding for the Draggable button.
+
 ## 1.5.5
 - Fix issues with Draggable button. Enable ISpect on the release build: manage confitions with `isISpectEnabled`.
 
