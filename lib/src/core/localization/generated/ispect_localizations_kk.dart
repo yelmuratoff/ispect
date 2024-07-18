@@ -293,4 +293,71 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get errorMessage => 'Қате туралы хабар';
+
+  @override
+  String get talkerLogsInfo => 'Жазба бойынша ақпарат';
+
+  @override
+  String get common => 'Жалпы';
+
+  @override
+  String get errorLogDesc => 'Қате журналы';
+
+  @override
+  String get criticalLogDesc => 'Сын қате журналы';
+
+  @override
+  String get infoLogDesc => 'Ақпараттық хабарлама журналы';
+
+  @override
+  String get debugLogDesc => 'Отладка хабарламасы журналы';
+
+  @override
+  String get verboseLogDesc => 'Толық хабарлама журналы';
+
+  @override
+  String get warningLogDesc => 'Ескерту журналы';
+
+  @override
+  String get exceptionLogDesc => 'Ерекше жағдай журналы';
+
+  @override
+  String get goodLogDesc => 'Сәтті әрекет журналы';
+
+  @override
+  String get routeLogDesc => 'Экрандар арасындағы навигация журналы';
+
+  @override
+  String get httpRequestLogDesc => 'Серверге жіберілген сұраныс журналы';
+
+  @override
+  String get httpResponseLogDesc =>
+      'Жіберілген сұранысқа серверден жауап журналы';
+
+  @override
+  String get httpErrorLogDesc => 'Серверге сұраныс жіберу қатесі журналы';
+
+  @override
+  String get blocEventLogDesc => 'Блоктағы оқиға журналы';
+
+  @override
+  String get blocTransitionLogDesc => 'Блоктағы күй ауысуы журналы';
+
+  @override
+  String get blocCloseLogDesc => 'Блокты жабу журналы';
+
+  @override
+  String get blocCreateLogDesc => 'Блокты құру журналы';
+
+  @override
+  String get riverpodAddLogDesc => 'Провайдер қосу журналы';
+
+  @override
+  String get riverpodUpdateLogDesc => 'Провайдерді жаңарту журналы';
+
+  @override
+  String get riverpodDisposeLogDesc => 'Провайдерді жою журналы';
+
+  @override
+  String get riverpodFailLogDesc => 'Провайдермен жұмыс істеу қатесі журналы';
 }

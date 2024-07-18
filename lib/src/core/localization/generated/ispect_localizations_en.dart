@@ -293,4 +293,70 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get errorMessage => 'Error message';
+
+  @override
+  String get talkerLogsInfo => 'Info about logs';
+
+  @override
+  String get common => 'Common';
+
+  @override
+  String get errorLogDesc => 'Error log';
+
+  @override
+  String get criticalLogDesc => 'Critical error log';
+
+  @override
+  String get infoLogDesc => 'Informational message log';
+
+  @override
+  String get debugLogDesc => 'Debug message log';
+
+  @override
+  String get verboseLogDesc => 'Verbose message log';
+
+  @override
+  String get warningLogDesc => 'Warning log';
+
+  @override
+  String get exceptionLogDesc => 'Exception log';
+
+  @override
+  String get goodLogDesc => 'Successful action log';
+
+  @override
+  String get routeLogDesc => 'Screen navigation log';
+
+  @override
+  String get httpRequestLogDesc => 'Server request log';
+
+  @override
+  String get httpResponseLogDesc => 'Server response log';
+
+  @override
+  String get httpErrorLogDesc => 'Server request error log';
+
+  @override
+  String get blocEventLogDesc => 'Bloc event log';
+
+  @override
+  String get blocTransitionLogDesc => 'Bloc state transition log';
+
+  @override
+  String get blocCloseLogDesc => 'Bloc close log';
+
+  @override
+  String get blocCreateLogDesc => 'Bloc creation log';
+
+  @override
+  String get riverpodAddLogDesc => 'Provider addition log';
+
+  @override
+  String get riverpodUpdateLogDesc => 'Provider update log';
+
+  @override
+  String get riverpodDisposeLogDesc => 'Provider disposal log';
+
+  @override
+  String get riverpodFailLogDesc => 'Provider error log';
 }

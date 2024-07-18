@@ -19,6 +19,7 @@ class TalkerAppBar extends StatelessWidget {
     required this.onMonitorTap,
     required this.onSettingsTap,
     required this.onActionsTap,
+    required this.onInfoTap,
     required this.onToggleTitle,
     required this.focusNode,
     required this.isDark,
@@ -40,6 +41,7 @@ class TalkerAppBar extends StatelessWidget {
   final VoidCallback onMonitorTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onActionsTap;
+  final VoidCallback onInfoTap;
 
   final FocusNode focusNode;
 
@@ -62,6 +64,14 @@ class TalkerAppBar extends StatelessWidget {
       backgroundColor:
           backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
       actions: [
+        UnconstrainedBox(
+          child: IconButton(
+            onPressed: onInfoTap,
+            icon: const Icon(
+              Icons.info_rounded,
+            ),
+          ),
+        ),
         UnconstrainedBox(
           child: _MonitorButton(
             talker: talker,

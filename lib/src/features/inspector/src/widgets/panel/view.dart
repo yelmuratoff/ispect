@@ -127,7 +127,9 @@ class _ButtonView extends StatelessWidget {
                     height: ISpectConstants.draggableButtonHeight,
                     duration: const Duration(milliseconds: 300),
                     decoration: BoxDecoration(
-                      color: context.ispectTheme.colorScheme.primaryContainer,
+                      color: context.isDarkMode
+                          ? context.ispectTheme.colorScheme.primaryContainer
+                          : context.ispectTheme.colorScheme.primary,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                     ),
                     child: !isCollapsed

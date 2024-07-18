@@ -293,4 +293,70 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get errorMessage => 'Текст ошибки';
+
+  @override
+  String get talkerLogsInfo => 'Информация про логи';
+
+  @override
+  String get common => 'Общие';
+
+  @override
+  String get errorLogDesc => 'Лог ошибки';
+
+  @override
+  String get criticalLogDesc => 'Лог критической ошибки';
+
+  @override
+  String get infoLogDesc => 'Лог информативного сообщения';
+
+  @override
+  String get debugLogDesc => 'Лог отладочного сообщения';
+
+  @override
+  String get verboseLogDesc => 'Лог подробного сообщения';
+
+  @override
+  String get warningLogDesc => 'Лог предупреждения';
+
+  @override
+  String get exceptionLogDesc => 'Лог исключения';
+
+  @override
+  String get goodLogDesc => 'Лог успешного действия';
+
+  @override
+  String get routeLogDesc => 'Лог навигации между экранами';
+
+  @override
+  String get httpRequestLogDesc => 'Лог отправленного запроса на сервер';
+
+  @override
+  String get httpResponseLogDesc => 'Лог ответа сервера на отправленный запрос';
+
+  @override
+  String get httpErrorLogDesc => 'Лог ошибки при отправке запроса на сервер';
+
+  @override
+  String get blocEventLogDesc => 'Лог события в блоке';
+
+  @override
+  String get blocTransitionLogDesc => 'Лог перехода состояния в блоке';
+
+  @override
+  String get blocCloseLogDesc => 'Лог закрытия блока';
+
+  @override
+  String get blocCreateLogDesc => 'Лог создания блока';
+
+  @override
+  String get riverpodAddLogDesc => 'Лог добавления провайдера';
+
+  @override
+  String get riverpodUpdateLogDesc => 'Лог обновления провайдера';
+
+  @override
+  String get riverpodDisposeLogDesc => 'Лог удаления провайдера';
+
+  @override
+  String get riverpodFailLogDesc => 'Лог ошибки при работе с провайдером';
 }

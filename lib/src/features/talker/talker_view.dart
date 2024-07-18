@@ -7,6 +7,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
 import 'package:ispect/src/common/widgets/widget/data_card.dart';
+import 'package:ispect/src/common/widgets/widget/info_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/view_app_bar.dart';
 import 'package:ispect/src/features/actions/actions_bottom_sheet.dart';
@@ -101,6 +102,14 @@ class _TalkerViewState extends State<TalkerView> {
                   onActionsTap: () => _showActionsBottomSheet(context),
                   onSettingsTap: () {
                     _openTalkerSettings(context);
+                  },
+                  onInfoTap: () {
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const ISpectLogsInfoBottomSheet(),
+                    );
                   },
                   onToggleTitle: _onToggleTitle,
                   isDark: context.isDarkMode,

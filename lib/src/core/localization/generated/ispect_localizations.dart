@@ -590,6 +590,138 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Error message'**
   String get errorMessage;
+
+  /// No description provided for @talkerLogsInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info about logs'**
+  String get talkerLogsInfo;
+
+  /// No description provided for @common.
+  ///
+  /// In en, this message translates to:
+  /// **'Common'**
+  String get common;
+
+  /// No description provided for @errorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Error log'**
+  String get errorLogDesc;
+
+  /// No description provided for @criticalLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Critical error log'**
+  String get criticalLogDesc;
+
+  /// No description provided for @infoLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Informational message log'**
+  String get infoLogDesc;
+
+  /// No description provided for @debugLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug message log'**
+  String get debugLogDesc;
+
+  /// No description provided for @verboseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Verbose message log'**
+  String get verboseLogDesc;
+
+  /// No description provided for @warningLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning log'**
+  String get warningLogDesc;
+
+  /// No description provided for @exceptionLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Exception log'**
+  String get exceptionLogDesc;
+
+  /// No description provided for @goodLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Successful action log'**
+  String get goodLogDesc;
+
+  /// No description provided for @routeLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen navigation log'**
+  String get routeLogDesc;
+
+  /// No description provided for @httpRequestLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Server request log'**
+  String get httpRequestLogDesc;
+
+  /// No description provided for @httpResponseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Server response log'**
+  String get httpResponseLogDesc;
+
+  /// No description provided for @httpErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Server request error log'**
+  String get httpErrorLogDesc;
+
+  /// No description provided for @blocEventLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc event log'**
+  String get blocEventLogDesc;
+
+  /// No description provided for @blocTransitionLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc state transition log'**
+  String get blocTransitionLogDesc;
+
+  /// No description provided for @blocCloseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc close log'**
+  String get blocCloseLogDesc;
+
+  /// No description provided for @blocCreateLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc creation log'**
+  String get blocCreateLogDesc;
+
+  /// No description provided for @riverpodAddLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider addition log'**
+  String get riverpodAddLogDesc;
+
+  /// No description provided for @riverpodUpdateLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider update log'**
+  String get riverpodUpdateLogDesc;
+
+  /// No description provided for @riverpodDisposeLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider disposal log'**
+  String get riverpodDisposeLogDesc;
+
+  /// No description provided for @riverpodFailLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider error log'**
+  String get riverpodFailLogDesc;
 }
 
 class _ISpectGeneratedLocalizationDelegate

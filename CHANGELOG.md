@@ -1,3 +1,7 @@
+## 1.5.7
+- Added info button for all logs.
+- More darken background for the Draggable button in light theme.
+
 ## 1.5.6
 - Increased padding for the Draggable button.
 
