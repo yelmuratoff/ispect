@@ -204,17 +204,17 @@ class _TalkerViewState extends State<TalkerView> {
       builder: (context) => TalkerActionsBottomSheet(
         actions: [
           TalkerActionItem(
-            onTap: _controller.toggleLogOrder,
+            onTap: (_) => _controller.toggleLogOrder,
             title: context.ispectL10n.reverseLogs,
             icon: Icons.swap_vert,
           ),
           TalkerActionItem(
-            onTap: () => _copyAllLogs(context),
+            onTap: _copyAllLogs,
             title: context.ispectL10n.copyAllLogs,
             icon: Icons.copy,
           ),
           TalkerActionItem(
-            onTap: _toggleLogsExpanded,
+            onTap: (_) => _toggleLogsExpanded,
             title: _controller.expandedLogs
                 ? context.ispectL10n.collapseLogs
                 : context.ispectL10n.expandLogs,
@@ -223,22 +223,22 @@ class _TalkerViewState extends State<TalkerView> {
                 : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
-            onTap: _cleanHistory,
+            onTap: (_) => _cleanHistory,
             title: context.ispectL10n.cleanHistory,
             icon: Icons.delete_outline,
           ),
           TalkerActionItem(
-            onTap: _shareLogsInFile,
+            onTap: (_) => _shareLogsInFile,
             title: context.ispectL10n.shareLogsFile,
             icon: Icons.ios_share_outlined,
           ),
           TalkerActionItem(
-            onTap: _manageAppData,
+            onTap: (_) => _manageAppData,
             title: context.ispectL10n.viewAndManageData,
             icon: Icons.data_usage_sharp,
           ),
           TalkerActionItem(
-            onTap: _checkAppInfo,
+            onTap: (_) => _checkAppInfo,
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),

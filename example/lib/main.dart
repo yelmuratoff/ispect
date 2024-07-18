@@ -81,8 +81,7 @@ class App extends ConsumerWidget {
           TalkerActionItem(
             title: 'Test',
             icon: Icons.account_tree_rounded,
-            onTap: () {},
-            contextOnTap: (ispectContext) {
+            onTap: (ispectContext) {
               Navigator.of(ispectContext).push(
                 MaterialPageRoute(
                   builder: (context) => const Scaffold(
