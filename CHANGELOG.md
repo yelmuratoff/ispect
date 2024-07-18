@@ -1,3 +1,6 @@
+## 1.5.8
+- Added `contextOnTap` additional option for TalkerActionItem for routing to a specific page.
+
 ## 1.5.7
 - Added info button for all logs.
 - More darken background for the Draggable button in light theme.

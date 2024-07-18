@@ -81,8 +81,17 @@ class App extends ConsumerWidget {
           TalkerActionItem(
             title: 'Test',
             icon: Icons.account_tree_rounded,
-            onTap: () {
-              debugPrint('Test');
+            onTap: () {},
+            contextOnTap: (ispectContext) {
+              Navigator.of(ispectContext).push(
+                MaterialPageRoute(
+                  builder: (context) => const Scaffold(
+                    body: Center(
+                      child: Text('Test'),
+                    ),
+                  ),
+                ),
+              );
             },
           ),
         ],

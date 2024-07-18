@@ -95,6 +95,10 @@ class _ActionTile extends StatelessWidget {
 
   void _onTap(BuildContext context) {
     Navigator.pop(context);
-    action.onTap();
+    if (action.contextOnTap != null) {
+      action.contextOnTap?.call(context);
+    } else {
+      action.onTap.call();
+    }
   }
 }
