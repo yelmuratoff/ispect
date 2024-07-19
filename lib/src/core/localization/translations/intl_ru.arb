@@ -103,5 +103,7 @@
    "riverpodAddLogDesc": "Лог добавления провайдера",
    "riverpodUpdateLogDesc": "Лог обновления провайдера",
    "riverpodDisposeLogDesc": "Лог удаления провайдера",
-   "riverpodFailLogDesc": "Лог ошибки при работе с провайдером"
+   "riverpodFailLogDesc": "Лог ошибки при работе с провайдером",
+   "testerLogDesc": "Для тестировщиков будет полезно знать про эти логи",
+   "otherLogsForDevelopers": "Другие логи уже используют разработчики"
 }

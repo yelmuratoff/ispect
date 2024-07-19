@@ -103,5 +103,7 @@
    "riverpodAddLogDesc": "Провайдер қосу журналы",
    "riverpodUpdateLogDesc": "Провайдерді жаңарту журналы",
    "riverpodDisposeLogDesc": "Провайдерді жою журналы",
-   "riverpodFailLogDesc": "Провайдермен жұмыс істеу қатесі журналы"
+   "riverpodFailLogDesc": "Провайдермен жұмыс істеу қатесі журналы",
+   "testerLogDesc": "Тестерлер үшін бұл журналдар туралы білу пайдалы болады",
+   "otherLogsForDevelopers": "Басқа журналдарды әзірлеушілер қолданады"
 }

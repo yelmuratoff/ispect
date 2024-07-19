@@ -722,6 +722,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Provider error log'**
   String get riverpodFailLogDesc;
+
+  /// No description provided for @testerLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be useful for testers to know about these logs'**
+  String get testerLogDesc;
+
+  /// No description provided for @otherLogsForDevelopers.
+  ///
+  /// In en, this message translates to:
+  /// **'Other logs are already being used by developers'**
+  String get otherLogsForDevelopers;
 }
 
 class _ISpectGeneratedLocalizationDelegate

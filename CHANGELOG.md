@@ -1,3 +1,6 @@
+## 1.6.0
+- Updated info text description of logs inside `ISpectPage`.
+
 ## 1.5.9
 - Added context to `onTap` option for TalkerActionItem for routing to a specific page.
 

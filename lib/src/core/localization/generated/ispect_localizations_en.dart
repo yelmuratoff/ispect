@@ -359,4 +359,12 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get riverpodFailLogDesc => 'Provider error log';
+
+  @override
+  String get testerLogDesc =>
+      'It will be useful for testers to know about these logs';
+
+  @override
+  String get otherLogsForDevelopers =>
+      'Other logs are already being used by developers';
 }

@@ -103,5 +103,7 @@
    "riverpodAddLogDesc": "Provider addition log",
    "riverpodUpdateLogDesc": "Provider update log",
    "riverpodDisposeLogDesc": "Provider disposal log",
-   "riverpodFailLogDesc": "Provider error log"
+   "riverpodFailLogDesc": "Provider error log",
+   "testerLogDesc": "It will be useful for testers to know about these logs",
+   "otherLogsForDevelopers": "Other logs are already being used by developers"
 }

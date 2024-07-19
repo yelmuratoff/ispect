@@ -360,4 +360,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get riverpodFailLogDesc => 'Провайдермен жұмыс істеу қатесі журналы';
+
+  @override
+  String get testerLogDesc =>
+      'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
+
+  @override
+  String get otherLogsForDevelopers =>
+      'Басқа журналдарды әзірлеушілер қолданады';
 }

@@ -24,6 +24,77 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '${context.ispectL10n.testerLogDesc}:',
+                              children: [
+                                TextSpan(
+                                  text: ' error,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'error',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' critical,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'critical',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' exception,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'exception',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' info,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'info',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' route,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'route',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text:
+                                      ' ${context.ispectL10n.talkerTypeHttp}.',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'http-request',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TextSpan(
+                              text:
+                                  '\n${context.ispectL10n.otherLogsForDevelopers}.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Gap(16),
                       Text(
                         context.ispectL10n.common,
                         style: TextStyle(

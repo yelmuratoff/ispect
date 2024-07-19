@@ -359,4 +359,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get riverpodFailLogDesc => 'Лог ошибки при работе с провайдером';
+
+  @override
+  String get testerLogDesc =>
+      'Для тестировщиков будет полезно знать про эти логи';
+
+  @override
+  String get otherLogsForDevelopers =>
+      'Другие логи уже используют разработчики';
 }
