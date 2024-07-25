@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
+import 'package:ispect/src/common/services/talker/talker_options.dart';
 import 'package:ispect/src/common/services/talker/talker_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -30,9 +32,43 @@ final class ISpect {
     void Function(Object error, StackTrace stackTrace)? onError,
     bool isPrintLoggingEnabled = true,
     bool isZoneErrorHandlingEnabled = true,
+    void Function(Object error, StackTrace stackTrace)?
+        onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
+        onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
+        onPresentError,
+    void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
+    void Function(
+      Bloc<dynamic, dynamic> bloc,
+      Transition<dynamic, dynamic> transition,
+    )? onBlocTransition,
+    void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
+    void Function(
+      BlocBase<dynamic> bloc,
+      Object error,
+      StackTrace stackTrace,
+    )? onBlocError,
+    void Function(BlocBase<dynamic> bloc)? onBlocCreate,
+    void Function(BlocBase<dynamic> bloc)? onBlocClose,
+    void Function(List<dynamic> pair)? onUncaughtErrors,
+    ISpectTalkerOptions options = const ISpectTalkerOptions(),
+    List<String> filters = const [],
   }) {
     ISpectTalker.initHandling(
       talker: talker,
+      onPlatformDispatcherError: onPlatformDispatcherError,
+      onFlutterError: onFlutterError,
+      onPresentError: onPresentError,
+      onBlocEvent: onBlocEvent,
+      onBlocTransition: onBlocTransition,
+      onBlocChange: onBlocChange,
+      onBlocError: onBlocError,
+      onBlocCreate: onBlocCreate,
+      onBlocClose: onBlocClose,
+      onUncaughtErrors: onUncaughtErrors,
+      options: options,
+      filters: filters,
     );
     onInit?.call();
     runZonedGuarded(
@@ -52,6 +88,7 @@ final class ISpect {
       zoneSpecification: ZoneSpecification(
         print: (_, parent, zone, line) {
           parent.print(zone, line);
+
           if (isPrintLoggingEnabled) {
             ISpectTalker.print(line);
           }
