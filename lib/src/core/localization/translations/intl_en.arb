@@ -5,6 +5,8 @@
    "talkerTypeDebugCount": "Verbose and debug logs count: {text}",
    "talkerTypeGood": "Good",
    "talkerTypeGoodCount": "Good logs count: {text}",
+   "talkerTypePrint": "Print method",
+   "talkerTypePrintCount": "Print method logs count: {text}",
    "talkerTypeProvider": "Providers",
    "talkerTypeProviderCount": "Provider logs count: {text}",
    "talkerTypeInfo": "Info",
@@ -105,5 +107,6 @@
    "riverpodDisposeLogDesc": "Provider disposal log",
    "riverpodFailLogDesc": "Provider error log",
    "testerLogDesc": "It will be useful for testers to know about these logs",
-   "otherLogsForDevelopers": "Other logs are already being used by developers"
+   "otherLogsForDevelopers": "Other logs are already being used by developers",
+   "printLogDesc": "The log of the standard print method in Flutter"
 }

@@ -42,6 +42,7 @@ class _MonitorView extends StatelessWidget {
           final warnings =
               logs.where((e) => e.logLevel == LogLevel.warning).toList();
           final goods = logs.where((e) => e.title == 'good').toList();
+          final prints = logs.where((e) => e.title == 'print').toList();
 
           final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
           final verboseDebug = logs
@@ -408,6 +409,26 @@ class _MonitorView extends StatelessWidget {
                     onTap: () => openTypedLogsPage(
                       goods,
                       context.ispectL10n.talkerTypeGood,
+                    ),
+                  ),
+                ),
+              ],
+              if (prints.isNotEmpty) ...[
+                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                SliverToBoxAdapter(
+                  child: _TalkerMonitorsCard(
+                    logs: prints,
+                    title: context.ispectL10n.talkerTypePrint,
+                    color: getTypeColor(
+                      isDark: isDark,
+                      key: 'print',
+                    ),
+                    icon: Icons.check_circle_outline_rounded,
+                    subtitle:
+                        context.ispectL10n.talkerTypePrintCount(prints.length),
+                    onTap: () => openTypedLogsPage(
+                      prints,
+                      context.ispectL10n.talkerTypePrint,
                     ),
                   ),
                 ),

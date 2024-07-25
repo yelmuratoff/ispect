@@ -24,6 +24,14 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   }
 
   @override
+  String get talkerTypePrint => 'Print методы';
+
+  @override
+  String talkerTypePrintCount(Object text) {
+    return 'Print метод жазбалар саны: $text';
+  }
+
+  @override
   String get talkerTypeProvider => 'Провайдерлер';
 
   @override
@@ -368,4 +376,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   @override
   String get otherLogsForDevelopers =>
       'Басқа журналдарды әзірлеушілер қолданады';
+
+  @override
+  String get printLogDesc => 'Flutter стандартты print методоның журналы';
 }

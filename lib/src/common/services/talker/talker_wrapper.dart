@@ -159,6 +159,14 @@ final class ISpectTalker {
     );
   }
 
+  static void print(String message) {
+    _instance._talker.logTyped(
+      _PrintLog(
+        message,
+      ),
+    );
+  }
+
   static void route(
     String message, {
     Object? exception,
@@ -248,8 +256,8 @@ final class ISpectTalker {
   }
 
   static void handle({
+    required Object? exception,
     String? message,
-    Object? exception,
     StackTrace? stackTrace,
   }) {
     if (exception != null) {
@@ -296,6 +304,16 @@ class _ProviderLog extends TalkerLog {
   /// Your custom log color
   @override
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
+}
+
+class _PrintLog extends TalkerLog {
+  _PrintLog(String super.message);
+
+  @override
+  String get title => 'print';
+
+  @override
+  AnsiPen get pen => AnsiPen()..blue();
 }
 
 AnsiPen getAnsiPenFromColor(Color color) =>

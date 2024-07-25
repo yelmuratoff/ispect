@@ -24,6 +24,14 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   }
 
   @override
+  String get talkerTypePrint => 'Print method';
+
+  @override
+  String talkerTypePrintCount(Object text) {
+    return 'Print method logs count: $text';
+  }
+
+  @override
   String get talkerTypeProvider => 'Providers';
 
   @override
@@ -367,4 +375,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   @override
   String get otherLogsForDevelopers =>
       'Other logs are already being used by developers';
+
+  @override
+  String get printLogDesc => 'The log of the standard print method in Flutter';
 }

@@ -238,7 +238,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
 
   String? get _message {
     if (widget.data is TalkerError || widget.data is TalkerException) {
-      return null;
+      return widget.data.message;
     }
     final isHttpLog = [
       TalkerLogType.httpError.key,

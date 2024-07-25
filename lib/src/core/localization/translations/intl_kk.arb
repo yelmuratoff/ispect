@@ -5,6 +5,8 @@
    "talkerTypeDebugCount": "Толық және жөндеу жазбаларының саны: {text}",
    "talkerTypeGood": "Жақсы",
    "talkerTypeGoodCount": "Жақсы жазбаларының саны: {text}",
+   "talkerTypePrint": "Print методы",
+   "talkerTypePrintCount": "Print метод жазбалар саны: {text}",
    "talkerTypeProvider": "Провайдерлер",
    "talkerTypeProviderCount": "Провайдерлер жазбаларының саны: {text}",
    "talkerTypeInfo": "Ақпарат",
@@ -105,5 +107,6 @@
    "riverpodDisposeLogDesc": "Провайдерді жою журналы",
    "riverpodFailLogDesc": "Провайдермен жұмыс істеу қатесі журналы",
    "testerLogDesc": "Тестерлер үшін бұл журналдар туралы білу пайдалы болады",
-   "otherLogsForDevelopers": "Басқа журналдарды әзірлеушілер қолданады"
+   "otherLogsForDevelopers": "Басқа журналдарды әзірлеушілер қолданады",
+   "printLogDesc": "Flutter стандартты print методоның журналы"
 }

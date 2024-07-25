@@ -67,6 +67,15 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 TextSpan(
+                                  text: ' print,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'print',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
                                   text: ' route,',
                                   style: TextStyle(
                                     color: getTypeColor(
@@ -149,6 +158,11 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                           '9. route',
                           context.ispectL10n.routeLogDesc,
                           'route',
+                        ),
+                        _LogKey(
+                          '10. print',
+                          context.ispectL10n.printLogDesc,
+                          'print',
                         ),
                       ],
                       const Gap(16),

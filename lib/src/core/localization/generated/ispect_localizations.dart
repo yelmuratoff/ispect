@@ -129,6 +129,18 @@ abstract class ISpectGeneratedLocalization {
   /// **'Good logs count: {text}'**
   String talkerTypeGoodCount(Object text);
 
+  /// No description provided for @talkerTypePrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Print method'**
+  String get talkerTypePrint;
+
+  /// No description provided for @talkerTypePrintCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Print method logs count: {text}'**
+  String talkerTypePrintCount(Object text);
+
   /// No description provided for @talkerTypeProvider.
   ///
   /// In en, this message translates to:
@@ -734,6 +746,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Other logs are already being used by developers'**
   String get otherLogsForDevelopers;
+
+  /// No description provided for @printLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The log of the standard print method in Flutter'**
+  String get printLogDesc;
 }
 
 class _ISpectGeneratedLocalizationDelegate
