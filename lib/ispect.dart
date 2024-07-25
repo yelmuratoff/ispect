@@ -16,9 +16,11 @@ export 'package:ispect/src/common/widgets/builder/inspector_builder.dart';
 export 'package:ispect/src/core/localization/localization.dart';
 
 final class ISpect {
-  static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(context, listen: false);
+  static ISpectScopeModel read(BuildContext context) =>
+      Provider.of<ISpectScopeModel>(context, listen: false);
 
-  static ISpectScopeModel watch(BuildContext context) => Provider.of<ISpectScopeModel>(context);
+  static ISpectScopeModel watch(BuildContext context) =>
+      Provider.of<ISpectScopeModel>(context);
 
   static void run<T>(
     T Function() callback, {

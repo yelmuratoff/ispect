@@ -369,10 +369,12 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get riverpodFailLogDesc => 'Provider error log';
 
   @override
-  String get testerLogDesc => 'It will be useful for testers to know about these logs';
+  String get testerLogDesc =>
+      'It will be useful for testers to know about these logs';
 
   @override
-  String get otherLogsForDevelopers => 'Other logs are already being used by developers';
+  String get otherLogsForDevelopers =>
+      'Other logs are already being used by developers';
 
   @override
   String get printLogDesc => 'The log of the standard print method in Flutter';

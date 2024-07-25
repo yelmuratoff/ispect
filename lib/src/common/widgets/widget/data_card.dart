@@ -135,7 +135,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => DetailedHTTPPage(data: widget.data),
+                              builder: (_) =>
+                                  DetailedHTTPPage(data: widget.data),
                             ),
                           );
                         },
@@ -147,14 +148,18 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
               if (_expanded)
                 Container(
                   width: double.infinity,
-                  margin: stackTrace != null ? const EdgeInsets.only(top: 8) : null,
-                  padding: stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
+                  margin:
+                      stackTrace != null ? const EdgeInsets.only(top: 8) : null,
+                  padding: stackTrace != null
+                      ? const EdgeInsets.all(6)
+                      : EdgeInsets.zero,
                   decoration: stackTrace != null
                       ? BoxDecoration(
                           border: Border.fromBorderSide(
                             BorderSide(color: widget.color),
                           ),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
                         )
                       : null,
                   child: Column(
@@ -247,7 +252,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _errorMessage {
-    var txt = widget.data.exception?.toString() ?? widget.data.exception?.toString();
+    var txt =
+        widget.data.exception?.toString() ?? widget.data.exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';

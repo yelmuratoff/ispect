@@ -30,15 +30,20 @@ final class ISpectTalker {
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required Talker talker,
-    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
-    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
+    void Function(Object error, StackTrace stackTrace)?
+        onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
+        onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
+        onPresentError,
+    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)?
+        onBlocEvent,
     final void Function(
       Bloc<dynamic, dynamic> bloc,
       Transition<dynamic, dynamic> transition,
     )? onBlocTransition,
-    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
+    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
+        onBlocChange,
     final void Function(
       BlocBase<dynamic> bloc,
       Object error,
@@ -311,4 +316,5 @@ class _PrintLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..blue();
 }
 
-AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+AnsiPen getAnsiPenFromColor(Color color) =>
+    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);

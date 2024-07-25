@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 Color getTypeColor({required bool isDark, required String? key}) {
   if (key == null) return Colors.grey;
-  return isDark ? _darkTypeColors[key] ?? Colors.grey : _lightTypeColors[key] ?? Colors.grey;
+  return isDark
+      ? _darkTypeColors[key] ?? Colors.grey
+      : _lightTypeColors[key] ?? Colors.grey;
 }
 
 const _lightTypeColors = {
