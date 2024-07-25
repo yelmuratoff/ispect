@@ -5,6 +5,8 @@
    "talkerTypeDebugCount": "Количество подробных и отладочных записей: {text}",
    "talkerTypeGood": "Хорошие",
    "talkerTypeGoodCount": "Количество хороших записей: {text}",
+   "talkerTypePrint": "Print метод",
+   "talkerTypePrintCount": "Количество print записей: {text}",
    "talkerTypeProvider": "Провайдеры",
    "talkerTypeProviderCount": "Количество записей провайдеров: {text}",
    "talkerTypeInfo": "Информация",
@@ -105,5 +107,6 @@
    "riverpodDisposeLogDesc": "Лог удаления провайдера",
    "riverpodFailLogDesc": "Лог ошибки при работе с провайдером",
    "testerLogDesc": "Для тестировщиков будет полезно знать про эти логи",
-   "otherLogsForDevelopers": "Другие логи уже используют разработчики"
+   "otherLogsForDevelopers": "Другие логи уже используют разработчики",
+   "printLogDesc": "Лог стандартного print метода у Flutter"
 }

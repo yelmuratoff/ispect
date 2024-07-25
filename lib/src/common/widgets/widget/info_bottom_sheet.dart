@@ -15,8 +15,7 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
             maxHeight: MediaQuery.sizeOf(context).height * 0.6,
           ),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16)
-                .copyWith(bottom: 16, top: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
             child: CustomScrollView(
               primary: false,
               slivers: [
@@ -67,6 +66,15 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 TextSpan(
+                                  text: ' print,',
+                                  style: TextStyle(
+                                    color: getTypeColor(
+                                      isDark: context.isDarkMode,
+                                      key: 'print',
+                                    ),
+                                  ),
+                                ),
+                                TextSpan(
                                   text: ' route,',
                                   style: TextStyle(
                                     color: getTypeColor(
@@ -76,8 +84,7 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 TextSpan(
-                                  text:
-                                      ' ${context.ispectL10n.talkerTypeHttp}.',
+                                  text: ' ${context.ispectL10n.talkerTypeHttp}.',
                                   style: TextStyle(
                                     color: getTypeColor(
                                       isDark: context.isDarkMode,
@@ -88,8 +95,7 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                               ],
                             ),
                             TextSpan(
-                              text:
-                                  '\n${context.ispectL10n.otherLogsForDevelopers}.',
+                              text: '\n${context.ispectL10n.otherLogsForDevelopers}.',
                             ),
                           ],
                         ),
@@ -149,6 +155,11 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                           '9. route',
                           context.ispectL10n.routeLogDesc,
                           'route',
+                        ),
+                        _LogKey(
+                          '10. print',
+                          context.ispectL10n.printLogDesc,
+                          'print',
                         ),
                       ],
                       const Gap(16),
@@ -272,8 +283,7 @@ class _LogKey extends StatelessWidget {
                 TextSpan(
                   text: title,
                   style: TextStyle(
-                    color:
-                        getTypeColor(isDark: context.isDarkMode, key: logKey),
+                    color: getTypeColor(isDark: context.isDarkMode, key: logKey),
                   ),
                 ),
                 TextSpan(

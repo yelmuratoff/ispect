@@ -61,18 +61,15 @@ import 'ispect_localizations_ru.dart';
 /// be consistent with the languages listed in the ISpectGeneratedLocalization.supportedLocales
 /// property.
 abstract class ISpectGeneratedLocalization {
-  ISpectGeneratedLocalization(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ISpectGeneratedLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectGeneratedLocalization? of(BuildContext context) {
-    return Localizations.of<ISpectGeneratedLocalization>(
-        context, ISpectGeneratedLocalization);
+    return Localizations.of<ISpectGeneratedLocalization>(context, ISpectGeneratedLocalization);
   }
 
-  static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate =
-      _ISpectGeneratedLocalizationDelegate();
+  static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate = _ISpectGeneratedLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,8 +81,7 @@ abstract class ISpectGeneratedLocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -128,6 +124,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Good logs count: {text}'**
   String talkerTypeGoodCount(Object text);
+
+  /// No description provided for @talkerTypePrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Print method'**
+  String get talkerTypePrint;
+
+  /// No description provided for @talkerTypePrintCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Print method logs count: {text}'**
+  String talkerTypePrintCount(Object text);
 
   /// No description provided for @talkerTypeProvider.
   ///
@@ -734,40 +742,43 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Other logs are already being used by developers'**
   String get otherLogsForDevelopers;
+
+  /// No description provided for @printLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The log of the standard print method in Flutter'**
+  String get printLogDesc;
 }
 
-class _ISpectGeneratedLocalizationDelegate
-    extends LocalizationsDelegate<ISpectGeneratedLocalization> {
+class _ISpectGeneratedLocalizationDelegate extends LocalizationsDelegate<ISpectGeneratedLocalization> {
   const _ISpectGeneratedLocalizationDelegate();
 
   @override
   Future<ISpectGeneratedLocalization> load(Locale locale) {
-    return SynchronousFuture<ISpectGeneratedLocalization>(
-        lookupISpectGeneratedLocalization(locale));
+    return SynchronousFuture<ISpectGeneratedLocalization>(lookupISpectGeneratedLocalization(locale));
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'kk', 'ru'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'kk', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectGeneratedLocalizationDelegate old) => false;
 }
 
 ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return ISpectGeneratedLocalizationEn();
-    case 'kk':
-      return ISpectGeneratedLocalizationKk();
-    case 'ru':
-      return ISpectGeneratedLocalizationRu();
+    case 'en': return ISpectGeneratedLocalizationEn();
+    case 'kk': return ISpectGeneratedLocalizationKk();
+    case 'ru': return ISpectGeneratedLocalizationRu();
   }
 
   throw FlutterError(
-      'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
 }

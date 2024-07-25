@@ -55,7 +55,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.6.2
+  ispect: ^1.6.3
 ```
 
 ### Add import package
@@ -82,73 +82,117 @@ Put this code in your project at an screen and learn how it works. 😊
 Note: For handle `Dio`: [see](https://pub.dev/packages/talker_dio_logger#usage)  
 The simplest realization: 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
-import 'package:ispect_example/src/core/localization/generated/l10n.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+final navigatorKey = GlobalKey<NavigatorState>();
 
-GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+
+final dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://jsonplaceholder.typicode.com',
+  ),
+);
+
+class ThemeManager extends StateNotifier<ThemeMode> {
+  ThemeManager() : super(ThemeMode.dark);
+
+  void toggleTheme() {
+    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  void setTheme(ThemeMode themeMode) {
+    state = themeMode;
+  }
+
+  ThemeMode get themeMode => state;
+}
 
 void main() {
   final talker = TalkerFlutter.init();
 
-  /// Use global variable [ISpectTalker] for logging.
-  ISpectTalker.initHandling(talker: talker);
-  ISpectTalker.debug('Hello World!');
-  runApp(App(talker: talker));
+  ISpect.run(
+    () => runApp(
+      ProviderScope(
+        observers: [
+          TalkerRiverpodObserver(
+            talker: talker,
+            settings: const TalkerRiverpodLoggerSettings(),
+          ),
+        ],
+        child: App(talker: talker),
+      ),
+    ),
+    talker: talker,
+    onInitialized: () {
+      dio.interceptors.add(TalkerDioLogger(
+        talker: ISpectTalker.talker,
+      ));
+    },
+  );
 }
 
-class App extends StatefulWidget {
+class App extends ConsumerWidget {
   final Talker talker;
   const App({super.key, required this.talker});
 
   @override
-  State<App> createState() => _AppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    const locale = Locale('ru');
 
-class _AppState extends State<App> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ISpectOptions options = ISpectOptions(
-      talker: widget.talker,
-      themeMode: ThemeMode.dark,
-      lightTheme: ThemeData.light(),
-      darkTheme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-      ),
-      locale: const Locale('en'),
-    );
-
-    /// It is necessary to wrap `MaterialApp` with `ISpectScopeWrapper`.
     return ISpectScopeWrapper(
-      options: options,
+      options: ISpectOptions(
+        locale: locale,
+        actionItems: [
+          TalkerActionItem(
+            title: 'Test',
+            icon: Icons.account_tree_rounded,
+            onTap: (ispectContext) {
+              Navigator.of(ispectContext).push(
+                MaterialPageRoute(
+                  builder: (context) => const Scaffold(
+                    body: Center(
+                      child: Text('Test'),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       isISpectEnabled: true,
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
-          TalkerRouteObserver(widget.talker),
+          TalkerRouteObserver(talker),
         ],
-
-        /// Add this to `MaterialApp`'s localizationsDelegates for add `ISpect` localization. You can also add your own localization delegates.
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([AppGeneratedLocalization.delegate]),
-        theme: options.lightTheme,
-        darkTheme: options.darkTheme,
-        themeMode: options.themeMode,
+        locale: locale,
+        supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
+        localizationsDelegates: ISpectLocalizations.localizationDelegates([
+          AppGeneratedLocalization.delegate,
+        ]),
+        theme: ThemeData.from(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          ),
+        ),
+        darkTheme: ThemeData.from(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
+        ),
+        themeMode: themeMode,
         builder: (context, child) {
-          /// Add this to `MaterialApp`'s builder for add `Draggable ISpect` button.
           child = ISpectBuilder(
-            navigatorKey: navigatorKey, // By default it's null
+            navigatorKey: navigatorKey,
+            initialPosition: (0, 300),
+            onPositionChanged: (x, y) {
+              debugPrint('x: $x, y: $y');
+            },
             child: child,
           );
-
           return child;
         },
         home: const _Home(),
@@ -157,11 +201,13 @@ class _AppState extends State<App> {
   }
 }
 
-class _Home extends StatelessWidget {
+class _Home extends ConsumerWidget {
   const _Home();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(themeProvider.notifier);
+    final iSpect = ISpect.read(context);
     return Scaffold(
       body: Center(
         child: Column(
@@ -170,11 +216,50 @@ class _Home extends StatelessWidget {
             Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
-                /// Use `ISpect` to toggle `ISpect` visibility.
-                ISpect.read(context).toggleISpect();
+                ref.read(themeProvider.notifier).toggleTheme();
+                // iSpect.setThemeMode(themeNotifier.themeMode);
+              },
+              child: const Text('Toggle theme'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                dio.get('/posts/1');
+              },
+              child: const Text('Send HTTP request'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                dio.get('/post3s/1');
+              },
+              child: const Text('Send HTTP request with error'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                dio.options.headers.addAll({
+                  'Authorization': 'Bearer token',
+                });
+                dio.get('/posts/1');
+                dio.options.headers.remove('Authorization');
+              },
+              child: const Text('Send HTTP request with Token'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                throw Exception('Test exception');
+              },
+              child: const Text('Throw exception'),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  debugPrint('Send print message');
+                },
+                child: const Text('Send print message')),
           ],
         ),
       ),

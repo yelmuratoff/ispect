@@ -9,8 +9,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -34,25 +33,25 @@ class ThemeManager extends StateNotifier<ThemeMode> {
 
 void main() {
   final talker = TalkerFlutter.init();
-  ISpectTalker.initHandling(
-    talker: talker,
-  );
-  ISpectTalker.debug('Hello World!');
 
-  dio.interceptors.add(TalkerDioLogger(
-    talker: ISpectTalker.talker,
-  ));
-
-  runApp(
-    ProviderScope(
-      observers: [
-        TalkerRiverpodObserver(
-          talker: talker,
-          settings: const TalkerRiverpodLoggerSettings(),
-        ),
-      ],
-      child: App(talker: talker),
+  ISpect.run(
+    () => runApp(
+      ProviderScope(
+        observers: [
+          TalkerRiverpodObserver(
+            talker: talker,
+            settings: const TalkerRiverpodLoggerSettings(),
+          ),
+        ],
+        child: App(talker: talker),
+      ),
     ),
+    talker: talker,
+    onInitialized: () {
+      dio.interceptors.add(TalkerDioLogger(
+        talker: ISpectTalker.talker,
+      ));
+    },
   );
 }
 
@@ -190,6 +189,11 @@ class _Home extends ConsumerWidget {
               },
               child: const Text('Throw exception'),
             ),
+            ElevatedButton(
+                onPressed: () {
+                  debugPrint('Send print message');
+                },
+                child: const Text('Send print message')),
           ],
         ),
       ),

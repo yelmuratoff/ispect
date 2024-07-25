@@ -1,3 +1,6 @@
+## 1.6.3
+- Implemented print handler and moved ISpectTalker's initialization to the ISpect's run method. Please check example project for better understanding.
+
 ## 1.6.2
 - Handle if data is String inside detailed HTTP page.
 

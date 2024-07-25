@@ -30,20 +30,15 @@ final class ISpectTalker {
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required Talker talker,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
-    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)?
-        onBlocEvent,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
+    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     final void Function(
       Bloc<dynamic, dynamic> bloc,
       Transition<dynamic, dynamic> transition,
     )? onBlocTransition,
-    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-        onBlocChange,
+    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
     final void Function(
       BlocBase<dynamic> bloc,
       Object error,
@@ -159,6 +154,14 @@ final class ISpectTalker {
     );
   }
 
+  static void print(String message) {
+    _instance._talker.logTyped(
+      _PrintLog(
+        message,
+      ),
+    );
+  }
+
   static void route(
     String message, {
     Object? exception,
@@ -248,8 +251,8 @@ final class ISpectTalker {
   }
 
   static void handle({
+    required Object? exception,
     String? message,
-    Object? exception,
     StackTrace? stackTrace,
   }) {
     if (exception != null) {
@@ -298,5 +301,14 @@ class _ProviderLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
 }
 
-AnsiPen getAnsiPenFromColor(Color color) =>
-    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+class _PrintLog extends TalkerLog {
+  _PrintLog(String super.message);
+
+  @override
+  String get title => 'print';
+
+  @override
+  AnsiPen get pen => AnsiPen()..blue();
+}
+
+AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
