@@ -1,3 +1,6 @@
+## 1.6.4
+- Added ISpectTalker's options to the ISpect's params.
+
 ## 1.6.3
 - Implemented print handler and moved ISpectTalker's initialization to the ISpect's run method. Please check example project for better understanding.
 

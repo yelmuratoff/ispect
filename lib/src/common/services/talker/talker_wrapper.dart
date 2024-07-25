@@ -55,8 +55,8 @@ final class ISpectTalker {
     final ISpectTalkerOptions options = const ISpectTalkerOptions(),
     final List<String> filters = const [],
   }) async {
-    _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
+    _instance._talker = talker;
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         onPresentError?.call(details, details.stack);

@@ -152,7 +152,6 @@ class _Home extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 ref.read(themeProvider.notifier).toggleTheme();
-                // iSpect.setThemeMode(themeNotifier.themeMode);
               },
               child: const Text('Toggle theme'),
             ),
@@ -191,10 +190,11 @@ class _Home extends ConsumerWidget {
               child: const Text('Throw exception'),
             ),
             ElevatedButton(
-                onPressed: () {
-                  debugPrint('Send print message');
-                },
-                child: const Text('Send print message')),
+              onPressed: () {
+                debugPrint('Send print message');
+              },
+              child: const Text('Send print message'),
+            ),
           ],
         ),
       ),
