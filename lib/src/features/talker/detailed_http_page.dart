@@ -205,7 +205,7 @@ class _ErrorBodyState extends State<_ErrorBody> {
         statusCode: statusCode,
         statusMessage: statusMessage,
         requestHeaders: request.headers,
-        data: data as Map<String, dynamic>?,
+        data: data,
         headers: headers,
         errorMessage: errorMessage,
         jsonController: widget.jsonController,
@@ -236,7 +236,7 @@ class _HTTPBody extends StatelessWidget {
   final int? statusCode;
   final String? statusMessage;
   final Map<String, dynamic>? _requestHeaders;
-  final Map<String, dynamic>? data;
+  final dynamic data;
   final Headers? headers;
   final String? errorMessage;
   final JsonController jsonController;
@@ -434,7 +434,8 @@ class _HTTPBody extends StatelessWidget {
             ),
           ),
         ],
-        if (data != null && data!.isNotEmpty) ...[
+        // ignore: avoid_dynamic_calls
+        if (data != null && (data.isNotEmpty == true)) ...[
           const Gap(8),
           _DetailedItemContainer(
             child: Column(
@@ -453,14 +454,28 @@ class _HTTPBody extends StatelessWidget {
                   ),
                 ),
                 const Gap(8),
-                JsonWidget(
-                  json: data,
-                  jsonController: jsonController,
-                  keyColor: context.ispectTheme.textColor,
-                  indentLeftEndJsonNode: 0,
-                  indentHeight: 10,
-                  indentWidth: 10,
-                ),
+                if (data is Map) ...[
+                  JsonWidget(
+                    json: data as Map<String, dynamic>?,
+                    jsonController: jsonController,
+                    keyColor: context.ispectTheme.textColor,
+                    indentLeftEndJsonNode: 0,
+                    indentHeight: 10,
+                    indentWidth: 10,
+                  ),
+                ],
+                if (data is String?) ...[
+                  Text(
+                    data.toString(),
+                    style: TextStyle(
+                      color: getTypeColor(
+                        isDark: context.isDarkMode,
+                        key: 'error',
+                      ),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

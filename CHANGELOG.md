@@ -1,3 +1,6 @@
+## 1.6.2
+- Handle if data is String inside detailed HTTP page.
+
 ## 1.6.0
 - Updated info text description of logs inside `ISpectPage`.
 
