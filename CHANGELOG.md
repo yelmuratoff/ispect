@@ -1,3 +1,6 @@
+## 1.6.5
+- Fix issue with late talker initialization.
+
 ## 1.6.4
 - Added ISpectTalker's options to the ISpect's params.
 
