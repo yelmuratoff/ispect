@@ -77,7 +77,25 @@ final class ISpect {
       },
       (error, stackTrace) {
         onError?.call(error, stackTrace);
-        if (isZoneErrorHandlingEnabled) {
+        final exceptionAsString = error.toString();
+        final stackAsString = stackTrace.toString();
+
+        final isFilterNotEmpty =
+            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterContains = filters.any(
+          (filter) =>
+              exceptionAsString.contains(filter) ||
+              stackAsString.contains(filter),
+        );
+
+        if (isZoneErrorHandlingEnabled &&
+            (!isFilterNotEmpty || !isFilterContains)) {
+          ISpectTalker.handle(
+            exception: error,
+            stackTrace: stackTrace,
+            message: 'Error from zoned handler: $error\n$stackTrace',
+          );
+        } else if (!isFilterNotEmpty) {
           ISpectTalker.handle(
             exception: error,
             stackTrace: stackTrace,

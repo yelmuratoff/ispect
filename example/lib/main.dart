@@ -48,10 +48,20 @@ void main() {
       ),
     ),
     talker: talker,
+    filters: [
+      'Handler: "onTap"',
+      'This exception was thrown because',
+    ],
     onInitialized: () {
       dio.interceptors.add(TalkerDioLogger(
-        talker: ISpectTalker.talker,
-      ));
+          talker: ISpectTalker.talker,
+          settings: TalkerDioLoggerSettings(
+            errorFilter: (response) {
+              return (response.message
+                      ?.contains('This exception was thrown because')) ==
+                  false;
+            },
+          )));
     },
   );
 }

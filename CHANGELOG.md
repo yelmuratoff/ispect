@@ -1,3 +1,9 @@
+## 1.6.7
+- Improved log filtering.
+
+## 1.6.6
+- Upgraded feedback_plus to version 0.1.2.
+
 ## 1.6.5
 - Fix issue with late talker initialization.
 

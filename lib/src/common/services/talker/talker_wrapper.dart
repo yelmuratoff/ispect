@@ -57,12 +57,25 @@ final class ISpectTalker {
   }) async {
     _instance._talker = talker;
     info('🚀 ISpectTalker: Initialize started.');
+
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         onPresentError?.call(details, details.stack);
         final exceptionAsString = details.exceptionAsString();
-        final isFilterContains = filters.any(exceptionAsString.contains);
-        if (options.isFlutterPresentHandlingEnabled && !isFilterContains) {
+        final stackAsString = details.stack.toString();
+
+        final isFilterNotEmpty =
+            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterContains = filters.any(
+          (filter) =>
+              exceptionAsString.contains(filter) ||
+              stackAsString.contains(filter),
+        );
+
+        if (options.isFlutterPresentHandlingEnabled &&
+            (!isFilterNotEmpty || !isFilterContains)) {
+          _instance._talker.handle(details, details.stack);
+        } else if (!isFilterNotEmpty) {
           _instance._talker.handle(details, details.stack);
         }
       });
@@ -86,10 +99,20 @@ final class ISpectTalker {
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
       final exceptionAsString = error.toString();
+      final stackAsString = stack.toString();
 
-      final isFilterContains = filters.any(exceptionAsString.contains);
+      final isFilterNotEmpty =
+          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterContains = filters.any(
+        (filter) =>
+            exceptionAsString.contains(filter) ||
+            stackAsString.contains(filter),
+      );
 
-      if (options.isPlatformDispatcherHandlingEnabled && !isFilterContains) {
+      if (options.isPlatformDispatcherHandlingEnabled &&
+          (!isFilterNotEmpty || !isFilterContains)) {
+        _instance._talker.handle(error, stack);
+      } else if (!isFilterNotEmpty) {
         _instance._talker.handle(error, stack);
       }
       return true;
@@ -97,11 +120,27 @@ final class ISpectTalker {
 
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
-      final exceptionAsString = details.exceptionAsString();
 
-      final isFilterContains = filters.any(exceptionAsString.contains);
+      final isFilterNotEmpty =
+          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
 
-      if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
+      if (isFilterNotEmpty) {
+        final exceptionAsString = details.toString();
+        final stackAsString = details.stack.toString();
+        final isFilterContains = filters.any(
+          (filter) =>
+              exceptionAsString.contains(filter) ||
+              stackAsString.contains(filter),
+        );
+
+        if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
+          _instance._talker.error(
+            'FlutterErrorDetails',
+            details,
+            details.stack,
+          );
+        }
+      } else {
         _instance._talker.error(
           'FlutterErrorDetails',
           details,
