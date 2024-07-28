@@ -1,8 +1,9 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
 import 'package:flutter/material.dart';
-import 'package:group_button/group_button.dart';
+import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -94,7 +95,7 @@ class TalkerAppBar extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        const Gap(10),
       ],
       title: title != null
           ? Text(
@@ -109,71 +110,83 @@ class TalkerAppBar extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(
-                  height: 50,
-                  child: ListView(
+                  height: 45,
+                  child: ListView.separated(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                     ),
                     scrollDirection: Axis.horizontal,
-                    children: [
-                      GroupButton(
-                        controller: titlesController,
-                        isRadio: false,
-                        buttonBuilder: (selected, value, context) {
-                          final count = titles.where((e) => e == value).length;
-                          return DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              border: Border.fromBorderSide(
-                                BorderSide(
-                                  color: selected
-                                      ? isDark
-                                          ? context.ispectTheme.colorScheme
-                                              .primaryContainer
-                                          : context
-                                              .ispectTheme.colorScheme.primary
-                                      : iSpect.theme.dividerColor(
-                                            isDark: context.isDarkMode,
-                                          ) ??
-                                          context.ispectTheme.dividerColor,
-                                ),
-                              ),
-                              color: selected
-                                  ? isDark
-                                      ? context.ispectTheme.colorScheme
-                                          .primaryContainer
-                                      : context.ispectTheme.colorScheme.primary
-                                  : iSpect.theme.cardColor(
-                                        isDark: context.isDarkMode,
-                                      ) ??
-                                      context.ispectTheme.cardColor,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Align(
-                                child: Text(
-                                  '$count  $value',
-                                  style: context
-                                      .ispectTheme.textTheme.bodyMedium!
-                                      .copyWith(
-                                    color: selected
-                                        ? Colors.white
-                                        : context.ispectTheme.textColor,
-                                  ),
-                                ),
-                              ),
-                            ),
+                    separatorBuilder: (_, __) => const Gap(8),
+                    itemCount: uniqTitles.length,
+                    itemBuilder: (context, index) {
+                      final title = uniqTitles[index];
+                      final count = titles.where((e) => e == title).length;
+                      return InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                        onTap: () {
+                          if (titlesController.selectedIndexes
+                              .contains(index)) {
+                            titlesController.unselectIndex(index);
+                          } else {
+                            titlesController.selectIndex(index);
+                          }
+                          _onToggle(
+                            title,
+                            titlesController.selectedIndex == index,
                           );
                         },
-                        onSelected: (_, i, selected) =>
-                            _onToggle(uniqTitles[i], selected),
-                        buttons: uniqTitles,
-                      ),
-                    ],
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                            border: Border.fromBorderSide(
+                              BorderSide(
+                                color: titlesController.selectedIndexes
+                                        .contains(index)
+                                    ? isDark
+                                        ? context.ispectTheme.colorScheme
+                                            .primaryContainer
+                                        : context
+                                            .ispectTheme.colorScheme.primary
+                                    : iSpect.theme.dividerColor(
+                                          isDark: context.isDarkMode,
+                                        ) ??
+                                        context.ispectTheme.dividerColor,
+                              ),
+                            ),
+                            color: titlesController.selectedIndexes
+                                    .contains(index)
+                                ? isDark
+                                    ? context.ispectTheme.colorScheme
+                                        .primaryContainer
+                                    : context.ispectTheme.colorScheme.primary
+                                : iSpect.theme.cardColor(
+                                      isDark: context.isDarkMode,
+                                    ) ??
+                                    context.ispectTheme.cardColor,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Align(
+                              child: Text(
+                                '$count  $title',
+                                style: context.ispectTheme.textTheme.bodyMedium!
+                                    .copyWith(
+                                  color: titlesController.selectedIndexes
+                                          .contains(index)
+                                      ? Colors.white
+                                      : context.ispectTheme.textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const SizedBox(height: 4),
+                const Gap(12),
                 _SearchTextField(
                   controller: controller,
                   focusNode: focusNode,
@@ -256,12 +269,12 @@ class _SearchTextField extends StatelessWidget {
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary
                 : iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                    context.ispectTheme.dividerColor,
+                    context.ispectTheme.hintColor,
             size: 20,
           ),
           hintText: context.ispectL10n.search,
           hintStyle: theme.textTheme.bodyLarge!.copyWith(
-            color: context.ispectTheme.textColor,
+            color: context.ispectTheme.hintColor,
             fontSize: 14,
           ),
         ),

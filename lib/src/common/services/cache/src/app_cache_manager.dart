@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/painting.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/services/cache/src/base_cache.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 final class AppCacheManager implements BaseCacheService {
   @override
   Future<void> deleteCacheDir({
-    required DefaultCacheManager cache,
     required bool isAndroid,
   }) async {
     try {

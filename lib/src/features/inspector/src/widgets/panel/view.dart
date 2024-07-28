@@ -48,6 +48,16 @@ class _ButtonView extends StatelessWidget {
 
     return Stack(
       children: [
+        // GestureDetector(
+        //   onTap: () {
+        //     if (!isInspectorEnabled && !isColorPickerEnabled && !isZoomEnabled) {
+        //       onTap.call();
+        //     }
+        //   },
+        //   child: Container(
+        //     color: Colors.transparent,
+        //   ),
+        // ),
         TapRegion(
           onTapOutside: (_) {
             if (!isInspectorEnabled &&
@@ -57,7 +67,6 @@ class _ButtonView extends StatelessWidget {
             }
           },
           child: Stack(
-            clipBehavior: Clip.antiAlias,
             children: [
               Positioned(
                 top: yPos,
@@ -116,33 +125,39 @@ class _ButtonView extends StatelessWidget {
                 left: (xPos < screenWidth / 2) ? xPos + 7 : null,
                 right:
                     (xPos > screenWidth / 2) ? (screenWidth - xPos - 53) : null,
-                child: GestureDetector(
-                  onPanUpdate: onPanUpdate.call,
-                  onPanEnd: onPanEnd.call,
-                  onTap: onButtonTap.call,
-                  child: AnimatedContainer(
-                    width: isCollapsed
-                        ? ISpectConstants.draggableButtonWidth * 0.25
-                        : ISpectConstants.draggableButtonWidth,
-                    height: ISpectConstants.draggableButtonHeight,
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      color: context.isDarkMode
-                          ? context.ispectTheme.colorScheme.primaryContainer
-                          : context.ispectTheme.colorScheme.primary,
+                child: Material(
+                  color: Colors.transparent,
+                  child: GestureDetector(
+                    onPanUpdate: onPanUpdate.call,
+                    onPanEnd: onPanEnd.call,
+                    child: InkWell(
+                      onTap: onButtonTap.call,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      child: Ink(
+                        width: isCollapsed
+                            ? ISpectConstants.draggableButtonWidth * 0.25
+                            : ISpectConstants.draggableButtonWidth,
+                        height: ISpectConstants.draggableButtonHeight,
+                        decoration: BoxDecoration(
+                          color: context.isDarkMode
+                              ? context.ispectTheme.colorScheme.primaryContainer
+                              : context.ispectTheme.colorScheme.primary,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(16)),
+                        ),
+                        child: !isCollapsed
+                            ? inLoggerPage
+                                ? const Icon(
+                                    Icons.undo_rounded,
+                                    color: Colors.white,
+                                  )
+                                : const Icon(
+                                    Icons.reorder_rounded,
+                                    color: Colors.white,
+                                  )
+                            : null,
+                      ),
                     ),
-                    child: !isCollapsed
-                        ? inLoggerPage
-                            ? const Icon(
-                                Icons.undo_rounded,
-                                color: Colors.white,
-                              )
-                            : const Icon(
-                                Icons.reorder_rounded,
-                                color: Colors.white,
-                              )
-                        : null,
                   ),
                 ),
               ),

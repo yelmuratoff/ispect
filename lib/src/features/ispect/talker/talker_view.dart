@@ -1,8 +1,8 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
-import 'package:group_button/group_button.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
@@ -10,10 +10,10 @@ import 'package:ispect/src/common/widgets/widget/data_card.dart';
 import 'package:ispect/src/common/widgets/widget/info_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/view_app_bar.dart';
-import 'package:ispect/src/features/actions/actions_bottom_sheet.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
-import 'package:ispect/src/features/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
+import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 

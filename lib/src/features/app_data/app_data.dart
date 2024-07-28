@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -60,7 +59,6 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
         clearCache: () async {
           cacheManager.clearCache();
           await appCacheManager.deleteCacheDir(
-            cache: defaultCacheManager,
             isAndroid: context.ispectTheme.platform == TargetPlatform.android,
           );
           await updateCacheSize();
@@ -83,7 +81,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
 mixin CacheMixin on State<AppDataPage> {
   late final AppCacheManager appCacheManager;
   late final SimpleAppCacheManager cacheManager;
-  late final DefaultCacheManager defaultCacheManager;
+
   late ValueNotifier<String> cacheSizeNotifier = ValueNotifier<String>('');
 
   @override
@@ -91,7 +89,6 @@ mixin CacheMixin on State<AppDataPage> {
     super.initState();
     appCacheManager = AppCacheManager();
     cacheManager = SimpleAppCacheManager();
-    defaultCacheManager = DefaultCacheManager();
     updateCacheSize();
   }
 
@@ -103,7 +100,6 @@ mixin CacheMixin on State<AppDataPage> {
   @override
   void dispose() {
     cacheSizeNotifier.dispose();
-    defaultCacheManager.dispose();
     super.dispose();
   }
 }

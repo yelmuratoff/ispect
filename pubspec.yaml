@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 1.6.7
+version: 1.6.8
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -28,7 +28,6 @@ dependencies:
 
   # UI
   gap: ^3.0.1
-  group_button: ^5.3.4
   auto_size_text: ^3.0.0
   feedback_plus: ^0.1.3
 
@@ -38,9 +37,7 @@ dependencies:
   # Others
   provider: ^6.1.2
   dio: ^5.5.0
-  performance: ^0.1.1
   flutter_bloc: ^8.1.6
-  flutter_cache_manager: ^3.3.3
   simple_app_cache_manager: ^0.0.4
 
 dev_dependencies:

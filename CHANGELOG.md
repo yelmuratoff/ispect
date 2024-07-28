@@ -1,5 +1,6 @@
-## 1.6.7
+## 1.6.ү
 - Improved log filtering.
+- Some minor improvements.
 
 ## 1.6.6
 - Upgraded feedback_plus to version 0.1.2.

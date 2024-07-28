@@ -55,7 +55,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.6.7
+  ispect: ^1.6.8
 ```
 
 ### Add import package
@@ -284,6 +284,21 @@ Alternatively, you can use a `listener`:
       talkerWrapper.route(location);
     });
 ```
+
+### Referenced packages:
+A list of great packages I've used in ISpect:
+[talker](https://pub.dev/packages/talker), 
+[path_provider](https://pub.dev/packages/path_provider), 
+[device_info_plus](https://pub.dev/packages/device_info_plus), 
+[share_plus](https://pub.dev/packages/share_plus), 
+[package_info_plus](https://pub.dev/packages/package_info_plus), 
+[gap](https://pub.dev/packages/gap), 
+[auto_size_text](https://pub.dev/packages/auto_size_text), 
+[feedback](https://pub.dev/packages/feedback), 
+[simple_app_cache_manager](https://pub.dev/packages/simple_app_cache_manager), 
+[inspector](https://pub.dev/packages/inspector), 
+[performance](https://pub.dev/packages/performance), 
+[cr_json_widget](https://pub.dev/packages/cr_json_widget).
 
 <br>
 <div align="center" >

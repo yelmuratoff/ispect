@@ -53,15 +53,16 @@ void main() {
       'This exception was thrown because',
     ],
     onInitialized: () {
-      dio.interceptors.add(TalkerDioLogger(
+      dio.interceptors.add(
+        TalkerDioLogger(
           talker: ISpectTalker.talker,
-          settings: TalkerDioLoggerSettings(
-            errorFilter: (response) {
-              return (response.message
-                      ?.contains('This exception was thrown because')) ==
-                  false;
-            },
-          )));
+          settings: const TalkerDioLoggerSettings(
+              // errorFilter: (response) {
+              //   return (response.message?.contains('This exception was thrown because')) == false;
+              // },
+              ),
+        ),
+      );
     },
   );
 }

@@ -156,8 +156,6 @@ class InspectorState extends State<Inspector> {
 
     _isPanelVisible = widget.isPanelVisible;
 
-    ISpectTalker.info('Inspector is enabled: $_isPanelVisible');
-
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);

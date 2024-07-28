@@ -63,7 +63,7 @@ final class ISpectToaster {
       SnackBar(
         backgroundColor: color,
         elevation: 0,
-        behavior: SnackBarBehavior.floating,
+        behavior: SnackBarBehavior.fixed,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
@@ -103,7 +103,7 @@ final class ISpectToaster {
       SnackBar(
         backgroundColor: const Color.fromARGB(255, 49, 49, 49),
         elevation: 0,
-        behavior: SnackBarBehavior.floating,
+        behavior: SnackBarBehavior.fixed,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),

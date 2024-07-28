@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:performance/performance.dart';
+import 'package:ispect/src/features/performance/performance.dart';
 
 class PerformanceOverlayBuilder extends StatelessWidget {
   const PerformanceOverlayBuilder({
