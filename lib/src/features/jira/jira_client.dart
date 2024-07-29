@@ -61,16 +61,4 @@ final class JiraClient {
       ),
     );
   }
-
-  // static Future<List<Avatar>> getAvatars(String projectKey) async {
-  //   // Create the API wrapper from the http client
-  //   final jira = JiraPlatformApi(client);
-
-  //   // Communicate with the APIs..
-  //   final issues = await jira.issues.searchIssues(
-  //     jql: 'project = $projectKey',
-  //   );
-
-  //   return issues.values;
-  // }
 }
