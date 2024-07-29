@@ -108,5 +108,9 @@
    "riverpodFailLogDesc": "Провайдермен жұмыс істеу қатесі журналы",
    "testerLogDesc": "Тестерлер үшін бұл журналдар туралы білу пайдалы болады",
    "otherLogsForDevelopers": "Басқа журналдарды әзірлеушілер қолданады",
-   "printLogDesc": "Flutter стандартты print методоның журналы"
+   "printLogDesc": "Flutter стандартты print методоның журналы",
+   "submitButtonText": "Жіберу",
+   "feedbackDescriptionText": "Мәселені сипаттаңыз",
+   "draw": "Сурет салу",
+   "navigate": "Навигация"
 }

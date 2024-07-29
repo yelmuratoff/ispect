@@ -6,6 +6,8 @@ import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/res/constants/ispect_constants.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/features/snapshot/feedback_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 part 'panel_icon_button.dart';
 part 'view.dart';
@@ -62,7 +64,6 @@ class InspectorPanel extends StatefulWidget {
   final bool isZoomLoading;
   final (double x, double y)? initialPosition;
 
-  ///
   final InvokerState state;
   final ISpectOptions options;
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -176,24 +177,23 @@ class _InspectorPanelState extends State<InspectorPanel> {
             onColorPickerToggle: _toggleColorPickerState,
             isZoomEnabled: widget.isZoomEnabled,
             onZoomToggle: _toogleZoomState,
-            isFeedbackEnabled: false,
+            isFeedbackEnabled: BetterFeedback.of(context).isVisible,
             onFeedbackToggle: () {
-              debugPrint('Feedback');
-              // if (!BetterFeedback.of(context).isVisible) {
-              //   BetterFeedback.of(context).show((feedback) async {
-              //     final screenshotFilePath =
-              //         await writeImageToStorage(feedback.screenshot);
+              if (!BetterFeedback.of(context).isVisible) {
+                BetterFeedback.of(context).show((feedback) async {
+                  final screenshotFilePath =
+                      await writeImageToStorage(feedback.screenshot);
 
-              //     await Share.shareXFiles(
-              //       [screenshotFilePath],
-              //       text: feedback.text,
-              //     );
-              //   });
-              // } else {
-              //   BetterFeedback.of(context).hide();
-              // }
-              // // ignore: avoid_empty_blocks
-              // setState(() {});
+                  await Share.shareXFiles(
+                    [screenshotFilePath],
+                    text: feedback.text,
+                  );
+                });
+              } else {
+                BetterFeedback.of(context).hide();
+              }
+              // ignore: avoid_empty_blocks
+              setState(() {});
             },
           ),
         ),

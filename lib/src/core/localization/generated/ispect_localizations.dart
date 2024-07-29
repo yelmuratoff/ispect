@@ -752,6 +752,30 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'The log of the standard print method in Flutter'**
   String get printLogDesc;
+
+  /// No description provided for @submitButtonText.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submitButtonText;
+
+  /// No description provided for @feedbackDescriptionText.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem'**
+  String get feedbackDescriptionText;
+
+  /// No description provided for @draw.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get draw;
+
+  /// No description provided for @navigate.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate'**
+  String get navigate;
 }
 
 class _ISpectGeneratedLocalizationDelegate

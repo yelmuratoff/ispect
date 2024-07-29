@@ -378,4 +378,16 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get printLogDesc => 'Лог стандартного print метода у Flutter';
+
+  @override
+  String get submitButtonText => 'Отправить';
+
+  @override
+  String get feedbackDescriptionText => 'Опишите проблему';
+
+  @override
+  String get draw => 'Рисование';
+
+  @override
+  String get navigate => 'Навигация';
 }

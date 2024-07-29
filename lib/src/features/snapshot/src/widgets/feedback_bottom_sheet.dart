@@ -32,7 +32,8 @@ class FeedbackBottomSheet extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * FeedbackTheme.of(context).feedbackSheetHeight,
+        height: MediaQuery.sizeOf(context).height *
+            FeedbackTheme.of(context).feedbackSheetHeight,
         child: Material(
           color: FeedbackTheme.of(context).feedbackSheetColor,
           // Pass a null scroll controller because the sheet is not drag
@@ -56,7 +57,8 @@ class _DraggableFeedbackSheet extends StatefulWidget {
   final ValueNotifier<double> sheetProgress;
 
   @override
-  State<_DraggableFeedbackSheet> createState() => _DraggableFeedbackSheetState();
+  State<_DraggableFeedbackSheet> createState() =>
+      _DraggableFeedbackSheetState();
 }
 
 class _DraggableFeedbackSheetState extends State<_DraggableFeedbackSheet> {
@@ -92,10 +94,10 @@ class _DraggableFeedbackSheetState extends State<_DraggableFeedbackSheet> {
             color: FeedbackTheme.of(context).feedbackSheetColor,
           ),
           builder: (_, __, child) => Opacity(
-              // Use the curved progress value
-              opacity: widget.sheetProgress.value,
-              child: child,
-            ),
+            // Use the curved progress value
+            opacity: widget.sheetProgress.value,
+            child: child,
+          ),
         ),
         Expanded(
           child: DraggableScrollableSheet(
@@ -103,26 +105,27 @@ class _DraggableFeedbackSheetState extends State<_DraggableFeedbackSheet> {
             snap: true,
             minChildSize: collapsedHeight,
             initialChildSize: collapsedHeight,
-            builder: (context, scrollController) => ValueListenableBuilder<void>(
-                valueListenable: widget.sheetProgress,
-                builder: (_, __, child) => ClipRRect(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20 * (1 - widget.sheetProgress.value)),
-                    ),
-                    child: child,
-                  ),
-                child: Material(
-                  color: FeedbackTheme.of(context).feedbackSheetColor,
-                  // A `ListView` makes the content here disappear.
-                  child: DefaultTextEditingShortcuts(
-                    child: widget.feedbackBuilder(
-                      context,
-                      widget.onSubmit,
-                      scrollController,
-                    ),
+            builder: (context, scrollController) =>
+                ValueListenableBuilder<void>(
+              valueListenable: widget.sheetProgress,
+              builder: (_, __, child) => ClipRRect(
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20 * (1 - widget.sheetProgress.value)),
+                ),
+                child: child,
+              ),
+              child: Material(
+                color: FeedbackTheme.of(context).feedbackSheetColor,
+                // A `ListView` makes the content here disappear.
+                child: DefaultTextEditingShortcuts(
+                  child: widget.feedbackBuilder(
+                    context,
+                    widget.onSubmit,
+                    scrollController,
                   ),
                 ),
               ),
+            ),
           ),
         ),
       ],

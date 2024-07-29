@@ -20,6 +20,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   talker_riverpod_logger: ^1.1.2
   talker_dio_logger: ^4.3.2
+  atlassian_apis: ^0.15.0
 
 dev_dependencies:
   flutter_test:

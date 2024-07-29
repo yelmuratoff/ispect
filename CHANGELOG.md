@@ -1,3 +1,7 @@
+## 1.7.1
+- Updated Feedback builder added. Now you can use it to send feedback to the developer.
+Note: I removed it because after inside Feedback I changed the Navigator to the normal Overlay the localization stopped working. This has been fixed.
+
 ## 1.7.0
 - Improved log filtering.
 - Some minor improvements.

@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/snapshot/src/l18n/localization.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 import 'package:ispect/src/features/snapshot/src/utilities/media_query_from_window.dart';
 
@@ -26,7 +25,8 @@ class FeedbackApp extends StatelessWidget {
   FeedbackThemeData _buildThemeData(BuildContext context) {
     final mode = themeMode ?? ThemeMode.system;
     final brightness = MediaQuery.platformBrightnessOf(context);
-    final useDarkMode = mode == ThemeMode.dark || (mode == ThemeMode.system && brightness == Brightness.dark);
+    final useDarkMode = mode == ThemeMode.dark ||
+        (mode == ThemeMode.system && brightness == Brightness.dark);
     FeedbackThemeData? themeData;
 
     if (useDarkMode && darkTheme != null) {
@@ -57,10 +57,6 @@ class FeedbackApp extends StatelessWidget {
       mediaQueryWrapper = themeWrapper;
     }
 
-    return FeedbackLocalization(
-      delegates: localizationsDelegates,
-      localeOverride: localeOverride,
-      child: mediaQueryWrapper,
-    );
+    return mediaQueryWrapper;
   }
 }

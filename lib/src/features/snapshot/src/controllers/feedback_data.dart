@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/snapshot/src/feedback_controller.dart';
+import 'package:ispect/src/features/snapshot/src/controllers/feedback_controller.dart';
 
 class FeedbackData extends InheritedWidget {
   const FeedbackData({
@@ -13,5 +13,6 @@ class FeedbackData extends InheritedWidget {
   final FeedbackController controller;
 
   @override
-  bool updateShouldNotify(FeedbackData oldWidget) => oldWidget.controller != controller;
+  bool updateShouldNotify(FeedbackData oldWidget) =>
+      oldWidget.controller != controller;
 }

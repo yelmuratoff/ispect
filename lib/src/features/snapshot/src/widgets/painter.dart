@@ -4,7 +4,8 @@ import 'package:flutter/widgets.dart' hide Image;
 
 class Painter extends StatefulWidget {
   // ignore: prefer_const_constructor_declarations
-  Painter(this.painterController) : super(key: ValueKey<PainterController>(painterController));
+  Painter(this.painterController)
+      : super(key: ValueKey<PainterController>(painterController));
 
   final PainterController painterController;
 
@@ -30,13 +31,15 @@ class _PainterState extends State<Painter> {
       );
 
   void _onPanStart(DragStartDetails start) {
-    final pos = (context.findRenderObject()! as RenderBox).globalToLocal(start.globalPosition);
+    final pos = (context.findRenderObject()! as RenderBox)
+        .globalToLocal(start.globalPosition);
     widget.painterController._pathHistory.add(pos);
     widget.painterController._notifyListeners();
   }
 
   void _onPanUpdate(DragUpdateDetails update) {
-    final pos = (context.findRenderObject()! as RenderBox).globalToLocal(update.globalPosition);
+    final pos = (context.findRenderObject()! as RenderBox)
+        .globalToLocal(update.globalPosition);
     widget.painterController._pathHistory.updateCurrent(pos);
     widget.painterController._notifyListeners();
   }

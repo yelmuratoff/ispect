@@ -48,16 +48,6 @@ class _ButtonView extends StatelessWidget {
 
     return Stack(
       children: [
-        // GestureDetector(
-        //   onTap: () {
-        //     if (!isInspectorEnabled && !isColorPickerEnabled && !isZoomEnabled) {
-        //       onTap.call();
-        //     }
-        //   },
-        //   child: Container(
-        //     color: Colors.transparent,
-        //   ),
-        // ),
         TapRegion(
           onTapOutside: (_) {
             if (!isInspectorEnabled &&
@@ -78,7 +68,7 @@ class _ButtonView extends StatelessWidget {
                   height: ISpectConstants.draggableButtonHeight,
                   width: isCollapsed
                       ? ISpectConstants.draggableButtonWidth * 0.25
-                      : ISpectConstants.draggableButtonWidth * 4.5,
+                      : ISpectConstants.draggableButtonWidth * 5.3,
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: adjustColorDarken(
@@ -111,11 +101,11 @@ class _ButtonView extends StatelessWidget {
                         isActive: isZoomEnabled,
                         onPressed: onZoomToggle.call,
                       ),
-                      // _PanelIconButton(
-                      //   icon: Icons.camera_alt_rounded,
-                      //   isActive: isFeedbackEnabled,
-                      //   onPressed: onFeedbackToggle.call,
-                      // ),
+                      _PanelIconButton(
+                        icon: Icons.camera_alt_rounded,
+                        isActive: isFeedbackEnabled,
+                        onPressed: onFeedbackToggle.call,
+                      ),
                     ],
                   ),
                 ),

@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/snapshot/src/feedback_mode.dart';
-import 'package:ispect/src/features/snapshot/src/l18n/translation.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
+import 'package:ispect/src/features/snapshot/src/utilities/feedback_mode.dart';
 
 /// This is the Widget on the right side of the app when the feedback view
 /// is active.
@@ -65,10 +65,13 @@ class ControlsColumn extends StatelessWidget {
             quarterTurns: 1,
             child: MaterialButton(
               key: const ValueKey<String>('navigate_button'),
-              onPressed: isNavigatingActive ? null : () => onControlModeChanged(FeedbackMode.navigate),
-              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive
+                  ? null
+                  : () => onControlModeChanged(FeedbackMode.navigate),
+              disabledTextColor:
+                  FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
-                FeedbackLocalizations.of(context).navigate,
+                context.ispectL10n.navigate,
                 style: TextStyle(
                   color: isNavigatingActive
                       ? FeedbackTheme.of(context).activeFeedbackModeColor
@@ -85,10 +88,13 @@ class ControlsColumn extends StatelessWidget {
             child: MaterialButton(
               key: const ValueKey<String>('draw_button'),
               minWidth: 20,
-              onPressed: isNavigatingActive ? () => onControlModeChanged(FeedbackMode.draw) : null,
-              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive
+                  ? () => onControlModeChanged(FeedbackMode.draw)
+                  : null,
+              disabledTextColor:
+                  FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
-                FeedbackLocalizations.of(context).draw,
+                context.ispectL10n.draw,
                 style: TextStyle(
                   color: isNavigatingActive
                       ? Colors.grey
@@ -103,7 +109,9 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('undo_button'),
             icon: Icon(
               Icons.undo,
-              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive
+                  ? Colors.grey
+                  : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onUndo,
           ),
@@ -111,7 +119,9 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('clear_button'),
             icon: Icon(
               Icons.delete,
-              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive
+                  ? Colors.grey
+                  : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onClearDrawing,
           ),

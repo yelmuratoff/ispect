@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
-import 'package:ispect/src/features/snapshot/src/controls_column.dart';
-import 'package:ispect/src/features/snapshot/src/feedback_bottom_sheet.dart';
-import 'package:ispect/src/features/snapshot/src/paint_on_background.dart';
-import 'package:ispect/src/features/snapshot/src/painter.dart';
-import 'package:ispect/src/features/snapshot/src/scale_and_clip.dart';
-import 'package:ispect/src/features/snapshot/src/scale_and_fade.dart';
-import 'package:ispect/src/features/snapshot/src/screenshot.dart';
+import 'package:ispect/src/features/snapshot/src/controllers/screenshot.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 import 'package:ispect/src/features/snapshot/src/utilities/back_button_interceptor.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/controls_column.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/feedback_bottom_sheet.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/paint_on_background.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/painter.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/scale_and_clip.dart';
+import 'package:ispect/src/features/snapshot/src/widgets/scale_and_fade.dart';
 
 typedef FeedbackButtonPress = void Function(BuildContext context);
 
@@ -47,7 +47,8 @@ class FeedbackWidget extends StatefulWidget {
 }
 
 @visibleForTesting
-class FeedbackWidgetState extends State<FeedbackWidget> with SingleTickerProviderStateMixin {
+class FeedbackWidgetState extends State<FeedbackWidget>
+    with SingleTickerProviderStateMixin {
   // Padding to put around the interactive screenshot preview.
   final double _padding = 8;
 
@@ -109,13 +110,15 @@ class FeedbackWidgetState extends State<FeedbackWidget> with SingleTickerProvide
     super.didUpdateWidget(oldWidget);
     // update feedback mode with the initial value
     _mode = widget.mode;
-    if (oldWidget.isFeedbackVisible != widget.isFeedbackVisible && !oldWidget.isFeedbackVisible) {
+    if (oldWidget.isFeedbackVisible != widget.isFeedbackVisible &&
+        !oldWidget.isFeedbackVisible) {
       // Feedback is now visible,
       // start animation to show it.
       _controller.forward();
     }
 
-    if (oldWidget.isFeedbackVisible != widget.isFeedbackVisible && oldWidget.isFeedbackVisible) {
+    if (oldWidget.isFeedbackVisible != widget.isFeedbackVisible &&
+        oldWidget.isFeedbackVisible) {
       // Feedback is no longer visible,
       // reverse animation to hide it.
       _controller.reverse();
@@ -126,7 +129,9 @@ class FeedbackWidgetState extends State<FeedbackWidget> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
-    final animation = Tween<double>(begin: 0, end: 1).chain(CurveTween(curve: Curves.easeInSine)).animate(_controller);
+    final animation = Tween<double>(begin: 0, end: 1)
+        .chain(CurveTween(curve: Curves.easeInSine))
+        .animate(_controller);
 
     final feedbackThemeData = FeedbackTheme.of(context);
 
@@ -149,7 +154,8 @@ class FeedbackWidgetState extends State<FeedbackWidget> with SingleTickerProvide
                 controller: _screenshotController,
                 child: PaintOnChild(
                   controller: _painterController,
-                  isPaintingActive: _mode == FeedbackMode.draw && widget.isFeedbackVisible,
+                  isPaintingActive:
+                      _mode == FeedbackMode.draw && widget.isFeedbackVisible,
                   child: widget.child,
                 ),
               ),
@@ -241,9 +247,11 @@ class FeedbackWidgetState extends State<FeedbackWidget> with SingleTickerProvide
                   if (!animation.isDismissed)
                     LayoutId(
                       id: _sheetId,
-                      child: NotificationListener<DraggableScrollableNotification>(
+                      child:
+                          NotificationListener<DraggableScrollableNotification>(
                         onNotification: (notification) {
-                          _sheetProgress.value = (notification.extent - notification.minExtent) /
+                          _sheetProgress.value = (notification.extent -
+                                  notification.minExtent) /
                               (notification.maxExtent - notification.minExtent);
                           return false;
                         },
@@ -367,7 +375,8 @@ class _FeedbackLayoutDelegate extends MultiChildLayoutDelegate {
   double get screenHeight => query.size.height;
 
   // Fraction of screen height taken up by the screenshot preview.
-  double get screenshotFraction => 1 - sheetFraction - (safeAreaHeight / screenHeight);
+  double get screenshotFraction =>
+      1 - sheetFraction - (safeAreaHeight / screenHeight);
 
   double get screenshotHeight => screenshotFraction * screenHeight;
 
@@ -404,7 +413,8 @@ class _FeedbackLayoutDelegate extends MultiChildLayoutDelegate {
     );
 
     // Position the screenshot and controls centered together.
-    final remainingWidth = query.size.width - screenShotSize.width - controlsSize.width;
+    final remainingWidth =
+        query.size.width - screenShotSize.width - controlsSize.width;
     positionChild(
       _screenshotId,
       Offset(
@@ -415,7 +425,8 @@ class _FeedbackLayoutDelegate extends MultiChildLayoutDelegate {
     positionChild(
       _controlsColumnId,
       Offset(
-        size.width - animationProgress * (controlsSize.width + remainingWidth / 2),
+        size.width -
+            animationProgress * (controlsSize.width + remainingWidth / 2),
         safeAreaHeight + (screenshotHeight - controlsSize.height) / 2,
       ),
     );
@@ -434,7 +445,8 @@ class _FeedbackLayoutDelegate extends MultiChildLayoutDelegate {
       _sheetId,
       Offset(
         0,
-        size.height - animationProgress * (sheetHeight + query.viewInsets.bottom),
+        size.height -
+            animationProgress * (sheetHeight + query.viewInsets.bottom),
       ),
     );
   }

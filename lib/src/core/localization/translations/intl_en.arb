@@ -108,5 +108,9 @@
    "riverpodFailLogDesc": "Provider error log",
    "testerLogDesc": "It will be useful for testers to know about these logs",
    "otherLogsForDevelopers": "Other logs are already being used by developers",
-   "printLogDesc": "The log of the standard print method in Flutter"
+   "printLogDesc": "The log of the standard print method in Flutter",
+   "submitButtonText": "Submit",
+   "feedbackDescriptionText": "Describe the problem",
+   "draw": "Draw",
+   "navigate": "Navigate"
 }

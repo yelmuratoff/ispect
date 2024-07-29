@@ -108,5 +108,9 @@
    "riverpodFailLogDesc": "Лог ошибки при работе с провайдером",
    "testerLogDesc": "Для тестировщиков будет полезно знать про эти логи",
    "otherLogsForDevelopers": "Другие логи уже используют разработчики",
-   "printLogDesc": "Лог стандартного print метода у Flutter"
+   "printLogDesc": "Лог стандартного print метода у Flutter",
+   "submitButtonText": "Отправить",
+   "feedbackDescriptionText": "Опишите проблему",
+   "draw": "Рисование",
+   "navigate": "Навигация"
 }

@@ -21,7 +21,8 @@ class ScreenshotController {
           throw Exception('Could not take screenshot');
         } else {
           final image = await renderObject.toImage(pixelRatio: pixelRatio);
-          final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+          final byteData =
+              await image.toByteData(format: ui.ImageByteFormat.png);
           return byteData!.buffer.asUint8List();
         }
       });

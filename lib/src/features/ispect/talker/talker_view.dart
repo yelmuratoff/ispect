@@ -14,6 +14,8 @@ import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/jira/jira_client.dart';
+import 'package:ispect/src/features/jira/jira_page.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -242,8 +244,31 @@ class _TalkerViewState extends State<TalkerView> {
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),
+          // TalkerActionItem(
+          //   onTap: (_) => _goToJira(),
+          //   title: 'Jira',
+          //   icon: FontAwesomeIcons.jira,
+          // ),
           ...widget.options.actionItems,
         ],
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  void _goToJira() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<dynamic>(
+        builder: (_) => JiraPage(
+          onAuthorized: (projectDomain, userEmail, apiToken) {
+            JiraClient.initClient(
+              projectDomain: projectDomain,
+              userEmail: userEmail,
+              apiToken: apiToken,
+            );
+          },
+        ),
       ),
     );
   }

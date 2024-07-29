@@ -379,4 +379,16 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get printLogDesc => 'Flutter стандартты print методоның журналы';
+
+  @override
+  String get submitButtonText => 'Жіберу';
+
+  @override
+  String get feedbackDescriptionText => 'Мәселені сипаттаңыз';
+
+  @override
+  String get draw => 'Сурет салу';
+
+  @override
+  String get navigate => 'Навигация';
 }

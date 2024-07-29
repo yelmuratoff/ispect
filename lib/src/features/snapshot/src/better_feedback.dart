@@ -4,9 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
-import 'package:ispect/src/features/snapshot/src/debug.dart';
-import 'package:ispect/src/features/snapshot/src/feedback_builder/string_feedback.dart';
-import 'package:ispect/src/features/snapshot/src/feedback_data.dart';
+import 'package:ispect/src/features/snapshot/src/controllers/feedback_data.dart';
 import 'package:ispect/src/features/snapshot/src/feedback_widget.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 import 'package:ispect/src/features/snapshot/src/utilities/feedback_app.dart';
@@ -103,8 +101,8 @@ class BetterFeedback extends StatefulWidget {
   /// ```
   const BetterFeedback({
     required this.child,
+    required this.feedbackBuilder,
     super.key,
-    this.feedbackBuilder,
     this.themeMode,
     this.theme,
     this.darkTheme,
@@ -125,7 +123,7 @@ class BetterFeedback extends StatefulWidget {
   /// some form fields and a submit button that calls [OnSubmit] when pressed.
   /// Defaults to [StringFeedback] which uses a single editable text field to
   /// prompt for input.
-  final FeedbackBuilder? feedbackBuilder;
+  final FeedbackBuilder feedbackBuilder;
 
   /// Determines which theme will be used by the Feedback UI.
   /// If set to [ThemeMode.system], the choice of which theme to use will be based
@@ -186,7 +184,8 @@ class BetterFeedback extends StatefulWidget {
   /// BetterFeedback.of(context).hide(...);
   /// ```
   static FeedbackController of(BuildContext context) {
-    final feedbackData = context.dependOnInheritedWidgetOfExactType<FeedbackData>();
+    final feedbackData =
+        context.dependOnInheritedWidgetOfExactType<FeedbackData>();
     assert(
       feedbackData != null,
       'You need to add a $BetterFeedback widget above this context!',
@@ -228,21 +227,14 @@ class _BetterFeedbackState extends State<BetterFeedback> {
           builder: (_) => FeedbackData(
             controller: _controller,
             child: Builder(
-              builder: (context) {
-                assert(debugCheckHasFeedbackLocalizations(context));
-                return FeedbackWidget(
-                  isFeedbackVisible: _controller.isVisible,
-                  drawColors: FeedbackTheme.of(context).drawColors,
-                  mode: widget.mode,
-                  pixelRatio: widget.pixelRatio,
-                  feedbackBuilder: widget.feedbackBuilder ??
-                      (_, onSubmit, controller) => StringFeedback(
-                            onSubmit: onSubmit,
-                            scrollController: controller,
-                          ),
-                  child: widget.child,
-                );
-              },
+              builder: (context) => FeedbackWidget(
+                isFeedbackVisible: _controller.isVisible,
+                drawColors: FeedbackTheme.of(context).drawColors,
+                mode: widget.mode,
+                pixelRatio: widget.pixelRatio,
+                feedbackBuilder: widget.feedbackBuilder,
+                child: widget.child,
+              ),
             ),
           ),
         ),
