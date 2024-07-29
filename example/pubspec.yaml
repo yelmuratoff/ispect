@@ -1,10 +1,10 @@
 name: ispect_example
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: '>=3.3.2 <4.0.0'
+  sdk: ">=3.3.2 <4.0.0"
 
 dependencies:
   flutter:
@@ -14,10 +14,9 @@ dependencies:
     sdk: flutter
   ispect:
     path: ../
-  
+
   talker_flutter: ^4.3.2
   dio: ^5.5.0
-  feedback_plus: ^0.1.2
   flutter_riverpod: ^2.5.1
   talker_riverpod_logger: ^1.1.2
   talker_dio_logger: ^4.3.2

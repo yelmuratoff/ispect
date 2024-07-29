@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
+
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
@@ -74,7 +76,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('ru');
+    const locale = Locale('en');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -114,9 +116,13 @@ class App extends ConsumerWidget {
         ],
         locale: locale,
         supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        localizationsDelegates: const [
           AppGeneratedLocalization.delegate,
-        ]),
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          ISpectGeneratedLocalization.delegate,
+        ],
         theme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,

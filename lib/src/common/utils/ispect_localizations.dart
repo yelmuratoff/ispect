@@ -1,4 +1,4 @@
-import 'package:feedback_plus/feedback_plus.dart';
+// import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
@@ -12,7 +12,7 @@ final class ISpectLocalizations {
       GlobalCupertinoLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       ISpectGeneratedLocalization.delegate,
-      GlobalFeedbackLocalizationsDelegate.delegate,
+      // GlobalFeedbackLocalizationsDelegate.delegate,
       ...appDelegates,
     ];
     return localizationList;

@@ -1,13 +1,11 @@
 // ignore_for_file: avoid_positional_fields_in_records
-import 'package:feedback_plus/feedback_plus.dart';
+// import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/res/constants/ispect_constants.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
-import 'package:ispect/src/features/ispect/ispect_page.dart';
-import 'package:share_plus/share_plus.dart';
 
 part 'panel_icon_button.dart';
 part 'view.dart';
@@ -178,23 +176,24 @@ class _InspectorPanelState extends State<InspectorPanel> {
             onColorPickerToggle: _toggleColorPickerState,
             isZoomEnabled: widget.isZoomEnabled,
             onZoomToggle: _toogleZoomState,
-            isFeedbackEnabled: BetterFeedback.of(context).isVisible,
+            isFeedbackEnabled: false,
             onFeedbackToggle: () {
-              if (!BetterFeedback.of(context).isVisible) {
-                BetterFeedback.of(context).show((feedback) async {
-                  final screenshotFilePath =
-                      await writeImageToStorage(feedback.screenshot);
+              debugPrint('Feedback');
+              // if (!BetterFeedback.of(context).isVisible) {
+              //   BetterFeedback.of(context).show((feedback) async {
+              //     final screenshotFilePath =
+              //         await writeImageToStorage(feedback.screenshot);
 
-                  await Share.shareXFiles(
-                    [screenshotFilePath],
-                    text: feedback.text,
-                  );
-                });
-              } else {
-                BetterFeedback.of(context).hide();
-              }
-              // ignore: avoid_empty_blocks
-              setState(() {});
+              //     await Share.shareXFiles(
+              //       [screenshotFilePath],
+              //       text: feedback.text,
+              //     );
+              //   });
+              // } else {
+              //   BetterFeedback.of(context).hide();
+              // }
+              // // ignore: avoid_empty_blocks
+              // setState(() {});
             },
           ),
         ),

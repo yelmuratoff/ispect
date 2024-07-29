@@ -1,6 +1,7 @@
-## 1.6.ү
+## 1.6.9
 - Improved log filtering.
 - Some minor improvements.
+- Temporary removed `Feedback` builder. It will be added in the next release.
 
 ## 1.6.6
 - Upgraded feedback_plus to version 0.1.2.
