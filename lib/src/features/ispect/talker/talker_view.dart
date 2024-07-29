@@ -14,8 +14,6 @@ import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
-import 'package:ispect/src/features/jira/jira_client.dart';
-import 'package:ispect/src/features/jira/jira_page.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -82,8 +80,7 @@ class _TalkerViewState extends State<TalkerView> {
         builder: (_, __) => TalkerBuilder(
           talker: widget.talker,
           builder: (context, data) {
-            final filtredElements =
-                data.where((e) => _controller.filter.filter(e)).toList();
+            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -115,8 +112,7 @@ class _TalkerViewState extends State<TalkerView> {
                   },
                   onToggleTitle: _onToggleTitle,
                   isDark: context.isDarkMode,
-                  backgroundColor:
-                      iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+                  backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 SliverList(
@@ -128,9 +124,8 @@ class _TalkerViewState extends State<TalkerView> {
                       }
                       return TalkerDataCards(
                         data: data,
-                        backgroundColor: iSpect.theme
-                                .cardColor(isDark: context.isDarkMode) ??
-                            context.ispectTheme.cardColor,
+                        backgroundColor:
+                            iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
                         onCopyTap: () => _copyTalkerDataItemText(data),
                         expanded: _controller.expandedLogs,
                         color: getTypeColor(
@@ -163,8 +158,7 @@ class _TalkerViewState extends State<TalkerView> {
     List<TalkerData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[
-        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
@@ -217,12 +211,8 @@ class _TalkerViewState extends State<TalkerView> {
           ),
           TalkerActionItem(
             onTap: (_) => _toggleLogsExpanded(),
-            title: _controller.expandedLogs
-                ? context.ispectL10n.collapseLogs
-                : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: (_) => _cleanHistory(),
@@ -256,22 +246,22 @@ class _TalkerViewState extends State<TalkerView> {
   }
 
   // ignore: unused_element
-  void _goToJira() {
-    Navigator.push(
-      context,
-      MaterialPageRoute<dynamic>(
-        builder: (_) => JiraPage(
-          onAuthorized: (projectDomain, userEmail, apiToken) {
-            JiraClient.initClient(
-              projectDomain: projectDomain,
-              userEmail: userEmail,
-              apiToken: apiToken,
-            );
-          },
-        ),
-      ),
-    );
-  }
+  // void _goToJira() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute<dynamic>(
+  //       builder: (_) => JiraPage(
+  //         onAuthorized: (projectDomain, userEmail, apiToken) {
+  //           JiraClient.initClient(
+  //             projectDomain: projectDomain,
+  //             userEmail: userEmail,
+  //             apiToken: apiToken,
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(
