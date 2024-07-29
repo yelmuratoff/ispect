@@ -40,13 +40,6 @@ final class JiraClient {
     }
   }
 
-  // final client = ApiClient.basicAuthentication(
-  //   Uri.https('anydevkz.atlassian.net'),
-  //   user: 'y.yelmuratov@astanahub.com',
-  //   apiToken:
-  //       'ATATT3xFfGF0GhreJejfCCDui1NPa1wcS7Y2xdk_rj5VuuAGSIIc7RM-TDeMSFLPBfrcJEUHdtgXZVJ5zb6fSgwG19UtqyuT7eaxxTW30WW1rjRIPrNSu4gjm01rMPNZcX4FuWCwV4XJmrGwkaq-lxzF7M3ZHTil4TSuCKlmzy9pHh6P9WrkRh4=38065B90',
-  // );
-
   static Future<List<Project>> getProjects() async {
     // Create the API wrapper from the http client
     final jira = JiraPlatformApi(client);
