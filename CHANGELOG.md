@@ -1,4 +1,4 @@
-## 1.6.9
+## 1.7.0
 - Improved log filtering.
 - Some minor improvements.
 - Temporary removed `Feedback` builder. It will be added in the next release.
