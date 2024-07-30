@@ -1,6 +1,7 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -14,6 +15,9 @@ import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/jira/jira_client.dart';
+import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
+import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -234,11 +238,11 @@ class _TalkerViewState extends State<TalkerView> {
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),
-          // TalkerActionItem(
-          //   onTap: (_) => _goToJira(),
-          //   title: 'Jira',
-          //   icon: FontAwesomeIcons.jira,
-          // ),
+          TalkerActionItem(
+            onTap: (_) => _goToJira(),
+            title: 'Jira',
+            icon: FontAwesomeIcons.jira,
+          ),
           ...widget.options.actionItems,
         ],
       ),
@@ -246,22 +250,33 @@ class _TalkerViewState extends State<TalkerView> {
   }
 
   // ignore: unused_element
-  // void _goToJira() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute<dynamic>(
-  //       builder: (_) => JiraPage(
-  //         onAuthorized: (projectDomain, userEmail, apiToken) {
-  //           JiraClient.initClient(
-  //             projectDomain: projectDomain,
-  //             userEmail: userEmail,
-  //             apiToken: apiToken,
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
+  void _goToJira() {
+    if (JiraClient.isInitialized) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => const JiraSendIssuePage(),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => JiraAuthPage(
+            // ignore: avoid_empty_blocks, prefer_underscore_for_unused_callback_parameters
+            onAuthorized: (projectDomain, userEmail, apiToken, projectId) {
+              // JiraClient.initClient(
+              //   projectDomain: projectDomain,
+              //   userEmail: userEmail,
+              //   apiToken: apiToken,
+              //   projectId: 1,
+              // );
+            },
+          ),
+        ),
+      );
+    }
+  }
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(

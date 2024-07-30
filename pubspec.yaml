@@ -26,6 +26,7 @@ dependencies:
   package_info_plus: ^8.0.0
   device_info_plus: ^10.1.0
   atlassian_apis: ^0.15.0
+  file_picker: ^8.0.6
 
   # UI
   gap: ^3.0.1

@@ -112,5 +112,7 @@
    "submitButtonText": "Жіберу",
    "feedbackDescriptionText": "Мәселені сипаттаңыз",
    "draw": "Сурет салу",
-   "navigate": "Навигация"
+   "navigate": "Навигация",
+   "share": "Бөлісу",
+   "createJiraIssue": "Jira Issue істеу"
 }

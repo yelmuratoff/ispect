@@ -112,5 +112,7 @@
    "submitButtonText": "Отправить",
    "feedbackDescriptionText": "Опишите проблему",
    "draw": "Рисование",
-   "navigate": "Навигация"
+   "navigate": "Навигация",
+   "share": "Поделиться",
+   "createJiraIssue": "Создать Jira Issue"
 }

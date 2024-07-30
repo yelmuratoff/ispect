@@ -1,11 +1,14 @@
 // ignore_for_file: avoid_positional_fields_in_records
 // import 'package:feedback_plus/feedback_plus.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/res/constants/ispect_constants.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -120,7 +123,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (_, constraints) => AnimatedBuilder(
           animation: _controller,
-          builder: (context, _) => _ButtonView(
+          builder: (_, __) => _ButtonView(
             onTap: () {
               if (widget.state != InvokerState.alwaysOpened) {
                 if (!_controller.isCollapsed) {
@@ -146,8 +149,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
                   )
                   ..yPos = _controller.yPos.clamp(
                     0.0,
-                    MediaQuery.sizeOf(context).height -
-                        ISpectConstants.draggableButtonHeight,
+                    MediaQuery.sizeOf(context).height - ISpectConstants.draggableButtonHeight,
                   );
               }
             },
@@ -181,13 +183,27 @@ class _InspectorPanelState extends State<InspectorPanel> {
             onFeedbackToggle: () {
               if (!BetterFeedback.of(context).isVisible) {
                 BetterFeedback.of(context).show((feedback) async {
-                  final screenshotFilePath =
-                      await writeImageToStorage(feedback.screenshot);
-
-                  await Share.shareXFiles(
-                    [screenshotFilePath],
-                    text: feedback.text,
-                  );
+                  final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+                  if (feedback.extra?.isNotEmpty ?? false) {
+                    if (feedback.extra!['jira'] == true && context.mounted) {
+                      unawaited(
+                        Navigator.push(
+                          widget.navigatorKey!.currentContext!,
+                          MaterialPageRoute<dynamic>(
+                            builder: (_) => JiraSendIssuePage(
+                              initialDescription: feedback.text,
+                              initialAttachmentPath: screenshotFilePath.path,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    await Share.shareXFiles(
+                      [screenshotFilePath],
+                      text: feedback.text,
+                    );
+                  }
                 });
               } else {
                 BetterFeedback.of(context).hide();
@@ -204,8 +220,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
     final halfScreenWidth = screenWidth / 2;
     double targetXPos;
 
-    if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
-        halfScreenWidth) {
+    if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 < halfScreenWidth) {
       targetXPos = 0;
     } else {
       targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
@@ -216,8 +231,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
         ..xPos = targetXPos
         ..yPos = _controller.yPos.clamp(
           0.0,
-          MediaQuery.sizeOf(context).height -
-              ISpectConstants.draggableButtonHeight,
+          MediaQuery.sizeOf(context).height - ISpectConstants.draggableButtonHeight,
         );
     });
 

@@ -11,8 +11,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -88,24 +87,24 @@ class App extends ConsumerWidget {
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
 
-      options: ISpectOptions(
+      options: const ISpectOptions(
         locale: locale,
         actionItems: [
-          TalkerActionItem(
-            title: 'Test',
-            icon: Icons.account_tree_rounded,
-            onTap: (ispectContext) {
-              Navigator.of(ispectContext).push(
-                MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                    body: Center(
-                      child: Text('Test'),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          // TalkerActionItem(
+          //   title: 'Test',
+          //   icon: Icons.account_tree_rounded,
+          //   onTap: (ispectContext) {
+          //     Navigator.of(ispectContext).push(
+          //       MaterialPageRoute(
+          //         builder: (context) => const Scaffold(
+          //           body: Center(
+          //             child: Text('Test'),
+          //           ),
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
         ],
       ),
       isISpectEnabled: true,

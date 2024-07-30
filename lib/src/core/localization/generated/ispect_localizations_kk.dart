@@ -339,8 +339,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get httpRequestLogDesc => 'Серверге жіберілген сұраныс журналы';
 
   @override
-  String get httpResponseLogDesc =>
-      'Жіберілген сұранысқа серверден жауап журналы';
+  String get httpResponseLogDesc => 'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
   String get httpErrorLogDesc => 'Серверге сұраныс жіберу қатесі журналы';
@@ -370,12 +369,10 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get riverpodFailLogDesc => 'Провайдермен жұмыс істеу қатесі журналы';
 
   @override
-  String get testerLogDesc =>
-      'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
+  String get testerLogDesc => 'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Басқа журналдарды әзірлеушілер қолданады';
+  String get otherLogsForDevelopers => 'Басқа журналдарды әзірлеушілер қолданады';
 
   @override
   String get printLogDesc => 'Flutter стандартты print методоның журналы';
@@ -391,4 +388,10 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get navigate => 'Навигация';
+
+  @override
+  String get share => 'Бөлісу';
+
+  @override
+  String get createJiraIssue => 'Jira Issue істеу';
 }

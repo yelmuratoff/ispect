@@ -1,8 +1,10 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 
@@ -89,9 +91,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ),
                     const Gap(8),
                     TextField(
-                      style: FeedbackTheme.of(context)
-                          .bottomSheetTextInputStyle
-                          .copyWith(
+                      style: FeedbackTheme.of(context).bottomSheetTextInputStyle.copyWith(
                             color: widget.theme.textTheme.bodyMedium?.color,
                           ),
                       key: const Key('text_input_field'),
@@ -107,8 +107,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                         contentPadding: const EdgeInsets.all(12),
                         hintText: context.ispectL10n.feedbackDescriptionText,
                         hintStyle: TextStyle(
-                          color: widget.theme.textTheme.bodyMedium?.color
-                              ?.withOpacity(0.5),
+                          color: widget.theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                           fontSize: 14,
                         ),
                         border: const OutlineInputBorder(
@@ -118,27 +117,66 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ),
                   ],
                 ),
-                if (widget.scrollController != null)
-                  const FeedbackSheetDragHandle(),
+                if (widget.scrollController != null) const FeedbackSheetDragHandle(),
               ],
             ),
           ),
-          TextButton(
-            key: const Key('submit_feedback_button'),
-            style: TextButton.styleFrom(
-              foregroundColor:
-                  FeedbackTheme.of(context).activeFeedbackModeColor,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                key: const Key('submit_feedback_button'),
+                style: TextButton.styleFrom(
+                  foregroundColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+                  backgroundColor: context.ispectTheme.colorScheme.primaryContainer,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.share_rounded),
+                    const Gap(8),
+                    Text(
+                      context.ispectL10n.share,
+                    ),
+                  ],
+                ),
+                onPressed: () => widget.onSubmit(_controller.text),
               ),
-            ),
-            child: Text(
-              context.ispectL10n.submitButtonText,
-            ),
-            onPressed: () => widget.onSubmit(_controller.text),
+              if (JiraClient.isInitialized)
+                TextButton(
+                  key: const Key('create_issue_button'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+                    backgroundColor: context.ispectTheme.colorScheme.primaryContainer,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.jira),
+                      const Gap(8),
+                      Text(
+                        context.ispectL10n.createJiraIssue,
+                      ),
+                    ],
+                  ),
+                  onPressed: () {
+                    widget.onSubmit(
+                      _controller.text,
+                      extras: {
+                        'jira': true,
+                      },
+                    );
+                  },
+                ),
+            ],
           ),
-          const Gap(20),
+          const Gap(32),
         ],
       );
 }

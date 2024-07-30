@@ -369,12 +369,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get riverpodFailLogDesc => 'Лог ошибки при работе с провайдером';
 
   @override
-  String get testerLogDesc =>
-      'Для тестировщиков будет полезно знать про эти логи';
+  String get testerLogDesc => 'Для тестировщиков будет полезно знать про эти логи';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Другие логи уже используют разработчики';
+  String get otherLogsForDevelopers => 'Другие логи уже используют разработчики';
 
   @override
   String get printLogDesc => 'Лог стандартного print метода у Flutter';
@@ -390,4 +388,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get navigate => 'Навигация';
+
+  @override
+  String get share => 'Поделиться';
+
+  @override
+  String get createJiraIssue => 'Создать Jira Issue';
 }
