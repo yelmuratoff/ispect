@@ -394,4 +394,97 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get createJiraIssue => 'Создать Jira Issue';
+
+  @override
+  String get pleaseAuthToJira => 'Пожалуйста, авторизуйтесь в Jira';
+
+  @override
+  String get jiraInstruction => '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
+
+  @override
+  String get projectDomain => 'Домент проекта';
+
+  @override
+  String get userEmail => 'Электронная почта';
+
+  @override
+  String get apiToken => 'API токен';
+
+  @override
+  String get authorize => 'Авторизация';
+
+  @override
+  String get pleaseSelectYourProject => 'Теперь, пожалуйста выберите проект';
+
+  @override
+  String get createIssue => 'Создать задачу';
+
+  @override
+  String get changeProject => 'Изменить проект';
+
+  @override
+  String get sendIssue => 'Отправить задачу';
+
+  @override
+  String get selectIssueType => 'Выбрать тип задачи';
+
+  @override
+  String get selectStatus => 'Выбрать статус';
+
+  @override
+  String get summary => 'Сводка';
+
+  @override
+  String get description => 'Описание';
+
+  @override
+  String get selectLabel => 'Выбрать метку';
+
+  @override
+  String get selectAssignee => 'Выбрать исполнителя';
+
+  @override
+  String get selectBoard => 'Выбрать доску';
+
+  @override
+  String get selectSprint => 'Выбрать спринт';
+
+  @override
+  String get uploadImages => 'Загрузить изображения';
+
+  @override
+  String get pickedImages => 'Выбранные изображения';
+
+  @override
+  String get fieldIsRequired => 'Поле обязательно для заполнения';
+
+  @override
+  String get selectPriority => 'Выберите приоритетность задачи';
+
+  @override
+  String get pleaseCheckAuthCred => 'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+
+  @override
+  String get successfullyAuthorized => 'Вы успешно авторизовались';
+
+  @override
+  String get projectWasSelected => 'Проект выбран';
+
+  @override
+  String get issueCreated => 'Задача успешно создана';
+
+  @override
+  String get creatingIssue => 'Создание задачи';
+
+  @override
+  String get addingStatusToIssue => 'Добавление статуса к задаче';
+
+  @override
+  String get attachmentsAdded => 'Добавление вложений завершено';
+
+  @override
+  String get addingAttachmentsToIssue => 'Добавление вложений к задаче';
+
+  @override
+  String get finished => 'Закончено';
 }

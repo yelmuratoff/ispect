@@ -21,4 +21,8 @@ class SprintCubit extends Cubit<SprintState> {
       emit(SprintState.error(error: error, stackTrace: stackTrace));
     }
   }
+
+  void toInitial() {
+    emit(const SprintState.initial());
+  }
 }

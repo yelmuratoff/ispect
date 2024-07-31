@@ -19,11 +19,11 @@ export 'package:ispect/src/core/localization/localization.dart';
 export 'src/features/ispect/ispect_page.dart';
 
 final class ISpect {
-  static ISpectScopeModel read(BuildContext context) =>
-      Provider.of<ISpectScopeModel>(context, listen: false);
+  static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(context, listen: false);
 
-  static ISpectScopeModel watch(BuildContext context) =>
-      Provider.of<ISpectScopeModel>(context);
+  static ISpectScopeModel watch(BuildContext context) => Provider.of<ISpectScopeModel>(context);
+
+  late final GlobalKey<NavigatorState> navigatorKey;
 
   static void run<T>(
     T Function() callback, {
@@ -33,12 +33,9 @@ final class ISpect {
     void Function(Object error, StackTrace stackTrace)? onError,
     bool isPrintLoggingEnabled = true,
     bool isZoneErrorHandlingEnabled = true,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
     void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     void Function(
       Bloc<dynamic, dynamic> bloc,
@@ -81,16 +78,12 @@ final class ISpect {
         final exceptionAsString = error.toString();
         final stackAsString = stackTrace.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (isZoneErrorHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (isZoneErrorHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           ISpectTalker.handle(
             exception: error,
             stackTrace: stackTrace,

@@ -31,6 +31,7 @@ class TalkerView extends StatefulWidget {
     this.appBarTitle,
     this.itemsBuilder,
     this.appBarLeading,
+    this.onJiraAuthorized,
   });
 
   /// Talker implementation
@@ -49,7 +50,16 @@ class TalkerView extends StatefulWidget {
   final TalkerViewController? controller;
 
   final ScrollController? scrollController;
+
   final ISpectOptions options;
+
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
 
   @override
   State<TalkerView> createState() => _TalkerViewState();
@@ -255,7 +265,9 @@ class _TalkerViewState extends State<TalkerView> {
       Navigator.push(
         context,
         MaterialPageRoute<dynamic>(
-          builder: (_) => const JiraSendIssuePage(),
+          builder: (_) => JiraSendIssuePage(
+            onJiraAuthorized: widget.onJiraAuthorized,
+          ),
         ),
       );
     } else {
@@ -263,14 +275,11 @@ class _TalkerViewState extends State<TalkerView> {
         context,
         MaterialPageRoute<dynamic>(
           builder: (_) => JiraAuthPage(
-            // ignore: avoid_empty_blocks, prefer_underscore_for_unused_callback_parameters
-            onAuthorized: (projectDomain, userEmail, apiToken, projectId) {
-              // JiraClient.initClient(
-              //   projectDomain: projectDomain,
-              //   userEmail: userEmail,
-              //   apiToken: apiToken,
-              //   projectId: 1,
-              // );
+            onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+              ISpectTalker.good(
+                '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
+              );
+              widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
             },
           ),
         ),

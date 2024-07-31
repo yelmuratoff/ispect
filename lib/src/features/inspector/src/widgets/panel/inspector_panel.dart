@@ -51,6 +51,7 @@ class InspectorPanel extends StatefulWidget {
     this.onInspectorStateChanged,
     this.onColorPickerStateChanged,
     this.onZoomStateChanged,
+    this.onJiraAuthorized,
     this.state = InvokerState.collapsible,
   });
 
@@ -71,6 +72,14 @@ class InspectorPanel extends StatefulWidget {
   final ISpectOptions options;
   final GlobalKey<NavigatorState>? navigatorKey;
   final void Function(double x, double y)? onPositionChanged;
+
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
 
   @override
   State createState() => _InspectorPanelState();
@@ -193,6 +202,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
                             builder: (_) => JiraSendIssuePage(
                               initialDescription: feedback.text,
                               initialAttachmentPath: screenshotFilePath.path,
+                              onJiraAuthorized: widget.onJiraAuthorized,
                             ),
                           ),
                         ),
@@ -250,6 +260,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
           MaterialPageRoute<dynamic>(
             builder: (_) => ISpectPage(
               options: widget.options,
+              onJiraAuthorized: widget.onJiraAuthorized,
             ),
           ),
         ).then((_) {

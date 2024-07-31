@@ -75,7 +75,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('en');
+    const locale = Locale('ru');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -139,8 +139,20 @@ class App extends ConsumerWidget {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
             initialPosition: (0, 300),
+            // initialJiraData: (
+            //   apiToken:
+            //       'ATATT3xFfGF0N50mZgLu8Y5soB3KWORbJNJy74n5YnPHvcCy5534xp9X4yj0vzA-gY-WOwhiSSl3tssTt2IAcrw_gWoW2aED_b-0CRCaG_S5iZnryjmZmnvgmJYSr82UcYDgJmNKWnESLz4B4bzOomWw4-odAGR225VZMx7s-qknsQex-EVdWfs=67D1BA81',
+            //   domain: 'anydevkz',
+            //   email: 'y.yelmuratov@astanahub.com',
+            //   projectId: '10001',
+            //   projectKey: 'MAAH'
+            // ),
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
+            },
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
+              debugPrint(
+                  'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
             },
             child: child,
           );

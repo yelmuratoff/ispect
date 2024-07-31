@@ -394,4 +394,97 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get createJiraIssue => 'Jira Issue істеу';
+
+  @override
+  String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
+
+  @override
+  String get jiraInstruction => '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
+
+  @override
+  String get projectDomain => 'Жоба домені';
+
+  @override
+  String get userEmail => 'Электрондық пошта';
+
+  @override
+  String get apiToken => 'API токен';
+
+  @override
+  String get authorize => 'Авторизация';
+
+  @override
+  String get pleaseSelectYourProject => 'Енді жобаны таңдаңыз';
+
+  @override
+  String get createIssue => 'Мәселені құру';
+
+  @override
+  String get changeProject => 'Жобаны өзгерту';
+
+  @override
+  String get sendIssue => 'Мәселені жіберу';
+
+  @override
+  String get selectIssueType => 'Мәселе түрін таңдау';
+
+  @override
+  String get selectStatus => 'Мәртебені таңдау';
+
+  @override
+  String get summary => 'Қысқаша мазмұн';
+
+  @override
+  String get description => 'Сипаттама';
+
+  @override
+  String get selectLabel => 'Белгіні таңдау';
+
+  @override
+  String get selectAssignee => 'Орындаушыны таңдау';
+
+  @override
+  String get selectBoard => 'Тақтаны таңдау';
+
+  @override
+  String get selectSprint => 'Спринтты таңдау';
+
+  @override
+  String get uploadImages => 'Суреттерді жүктеу';
+
+  @override
+  String get pickedImages => 'Таңдалған суреттер';
+
+  @override
+  String get fieldIsRequired => 'Міндетті түрде толтыру керек';
+
+  @override
+  String get selectPriority => 'Мәселенің басымдығын таңдаңыз';
+
+  @override
+  String get pleaseCheckAuthCred => 'Қате. Авторизация деректерін тексеріп көріңіз.';
+
+  @override
+  String get successfullyAuthorized => 'Сіз сәтті кірдіңіз';
+
+  @override
+  String get projectWasSelected => 'Жоба таңдалды';
+
+  @override
+  String get issueCreated => 'Мәселе құрылды';
+
+  @override
+  String get creatingIssue => 'Мәселе құрылуда';
+
+  @override
+  String get addingStatusToIssue => 'Мәселеге мәртебе қосылуда';
+
+  @override
+  String get attachmentsAdded => 'Тіркемелер қосылды';
+
+  @override
+  String get addingAttachmentsToIssue => 'Тіркемелер мәселеге қосылуда';
+
+  @override
+  String get finished => 'Бітті';
 }

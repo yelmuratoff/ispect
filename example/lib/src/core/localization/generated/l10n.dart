@@ -26,9 +26,7 @@ class AppGeneratedLocalization {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<AppGeneratedLocalization> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -47,8 +45,7 @@ class AppGeneratedLocalization {
   }
 
   static AppGeneratedLocalization? maybeOf(BuildContext context) {
-    return Localizations.of<AppGeneratedLocalization>(
-        context, AppGeneratedLocalization);
+    return Localizations.of<AppGeneratedLocalization>(context, AppGeneratedLocalization);
   }
 
   /// `base_starter`
@@ -62,8 +59,7 @@ class AppGeneratedLocalization {
   }
 }
 
-class AppLocalizationDelegate
-    extends LocalizationsDelegate<AppGeneratedLocalization> {
+class AppLocalizationDelegate extends LocalizationsDelegate<AppGeneratedLocalization> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
@@ -76,8 +72,7 @@ class AppLocalizationDelegate
   @override
   bool isSupported(Locale locale) => _isSupported(locale);
   @override
-  Future<AppGeneratedLocalization> load(Locale locale) =>
-      AppGeneratedLocalization.load(locale);
+  Future<AppGeneratedLocalization> load(Locale locale) => AppGeneratedLocalization.load(locale);
   @override
   bool shouldReload(AppLocalizationDelegate old) => false;
 

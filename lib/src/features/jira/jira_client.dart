@@ -20,18 +20,18 @@ final class JiraClient {
   bool _isInitialized = false;
   bool _isClientInitialized = false;
 
-  late final ApiClient _client;
-  late final String _projectDomain;
-  late final String _userEmail;
-  late final String _apiToken;
-  late final String _projectId;
-  late final String _projectKey;
+  late ApiClient? _client;
+  late String _projectDomain;
+  late String _userEmail;
+  late String _apiToken;
+  late String _projectId;
+  late String _projectKey;
 
   // <-- Getters -->
 
   static JiraClient get instance => _instance;
 
-  static ApiClient get client => _instance._client;
+  static ApiClient get client => _instance._client!;
 
   static bool get isInitialized => _instance._isInitialized;
 
@@ -66,6 +66,17 @@ final class JiraClient {
     }
   }
 
+  static void restart() {
+    _instance._client = null;
+    _instance._projectDomain = '';
+    _instance._userEmail = '';
+    _instance._apiToken = '';
+    _instance._projectId = '';
+    _instance._projectKey = '';
+    _instance._isInitialized = false;
+    _instance._isClientInitialized = false;
+  }
+
   static void initClient({
     required String projectDomain,
     required String userEmail,
@@ -81,21 +92,6 @@ final class JiraClient {
       _instance._projectDomain = projectDomain;
       _instance._userEmail = userEmail;
       _instance._apiToken = apiToken;
-
-      // final authToken = base64Encode(ascii.encode('$userEmail:$apiToken'));
-
-      // _instance._dioClient = Dio(
-      //   BaseOptions(
-      //     baseUrl: 'https://$projectDomain.atlassian.net',
-      //     headers: {
-      //       'Authorization': 'Basic $authToken',
-      //     },
-      //   ),
-      // )..interceptors.add(
-      //     TalkerDioLogger(
-      //       talker: ISpectTalker.talker,
-      //     ),
-      //   );
 
       _instance._isClientInitialized = true;
     } catch (e, st) {
@@ -116,136 +112,131 @@ final class JiraClient {
     return projects.values;
   }
 
-  // static Future<dynamic> getTransitions() async {
-  //   final authToken = base64Encode(ascii.encode('$userEmail:$apiToken'));
+  static Future<User> getCurrentUser() async {
+    final jira = JiraPlatformApi(client);
 
-  //   final dio = Dio(
-  //     BaseOptions(
-  //       baseUrl: 'https://$projectDomain.atlassian.net',
-  //       headers: {
-  //         'Authorization': 'Basic $authToken',
-  //       },
-  //     ),
-  //   )..interceptors.add(
-  //       TalkerDioLogger(
-  //         talker: ISpectTalker.talker,
-  //       ),
-  //     );
+    final user = await jira.myself.getCurrentUser();
 
-  //   final response = await dio.post<dynamic>(
-  //     '/gateway/api/jira/project-configuration/query/999a5f5c-de8f-4c23-ad2c-fcc63811ff46/2/transition/initial',
-  //     data: {
-  //       'projectId': '10005',
-  //       'issueTypeId': '10014',
-  //     },
-  //   );
+    return user;
+  }
 
-  //   print(response.data);
-  // }
-
-  static Future<void> createIssue({
+  static Future<CreatedIssue> createIssue({
     required String assigneeId,
     required String description,
     required String issueTypeId,
-    required String statusId,
     required String label,
-    required String reporterId,
     required String summary,
-    required List<File> attachments,
+    required String priorityId,
   }) async {
-    final jira = JiraPlatformApi(client);
+    try {
+      final jira = JiraPlatformApi(client);
 
-    final response = await jira.issues.createIssue(
-      body: IssueUpdateDetails(
-        fields: {
-          'project': {
-            'id': projectId,
-          },
-          'assignee': {
-            'id': assigneeId,
-          },
-          'summary': summary,
-          'description': {
-            'content': [
-              {
-                'content': [
-                  {'text': description, 'type': 'text'},
-                ],
-                'type': 'paragraph',
-              }
-            ],
-            'type': 'doc',
-            'version': 1,
-          },
-          'issuetype': {
-            'id': issueTypeId,
-          },
-          'labels': [
-            label,
-          ],
-          'reporter': {
-            'id': reporterId,
-          },
-        },
-      ),
-    );
-
-    if (response.id != null) {
-      print('Issue created: need to add transition');
-
-      final transitions = await jira.issues.getTransitions(
-        issueIdOrKey: response.id!,
-      );
-
-      final transition = transitions.transitions.firstWhere(
-        (element) => element.to?.id == statusId,
-        orElse: () => transitions.transitions.first,
-      );
-
-      await jira.issues.doTransition(
-        issueIdOrKey: response.id!,
+      final response = await jira.issues.createIssue(
         body: IssueUpdateDetails(
-          transition: IssueTransition(
-            id: transition.id,
-          ),
+          fields: {
+            'project': {
+              'id': projectId,
+            },
+            'assignee': {
+              'id': assigneeId,
+            },
+            'summary': summary,
+            'description': {
+              'content': [
+                {
+                  'content': [
+                    {'text': description, 'type': 'text'},
+                  ],
+                  'type': 'paragraph',
+                }
+              ],
+              'type': 'doc',
+              'version': 1,
+            },
+            'issuetype': {
+              'id': issueTypeId,
+            },
+            'priority': {
+              'id': priorityId,
+            },
+            'labels': [
+              label,
+            ],
+            // 'reporter': {
+            //   'id': reporterId,
+            // },
+          },
         ),
       );
 
-      print('Issue transitioned. Now need to add attachments');
+      return response;
+    } catch (e, st) {
+      ISpectTalker.handle(
+        exception: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  static Future<void> addStatusToIssue({
+    required CreatedIssue issue,
+    required String statusId,
+  }) async {
+    try {
+      final jira = JiraPlatformApi(client);
+      if (issue.id != null) {
+        final transitions = await jira.issues.getTransitions(
+          issueIdOrKey: issue.id!,
+        );
+
+        final transition = transitions.transitions.firstWhere(
+          (element) => element.to?.id == statusId,
+          orElse: () => transitions.transitions.first,
+        );
+
+        return jira.issues.doTransition(
+          issueIdOrKey: issue.id!,
+          body: IssueUpdateDetails(
+            transition: IssueTransition(
+              id: transition.id,
+            ),
+          ),
+        );
+      }
+    } catch (e, st) {
+      ISpectTalker.handle(
+        exception: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  static Future<dynamic> addAttachmentsToIssue({
+    required CreatedIssue issue,
+    required List<File> attachments,
+  }) async {
+    try {
+      final jira = JiraPlatformApi(client);
 
       for (final attachment in attachments) {
         final multipartFile = await MultipartFile.fromPath(
           'file',
           attachment.path,
         );
-        final attachmentResponse = await jira.issueAttachments.addAttachment(
-          issueIdOrKey: response.id!,
+        await jira.issueAttachments.addAttachment(
+          issueIdOrKey: issue.id!,
           file: multipartFile,
         );
-
-        print('Attachment added: ${attachmentResponse.first.filename}');
       }
+    } catch (e, st) {
+      ISpectTalker.handle(
+        exception: e,
+        stackTrace: st,
+      );
+      rethrow;
     }
-
-    // print(response.toJson());
-    // final authToken = base64Encode(ascii.encode('$userEmail:$apiToken'));
-
-    // final dio = Dio(
-    //   BaseOptions(
-    //     baseUrl: 'https://$projectDomain.atlassian.net',
-    //     headers: {
-    //       'Authorization': 'Basic $authToken',
-    //     },
-    //   ),
-    // )..interceptors.add(
-    //     TalkerDioLogger(
-    //       talker: ISpectTalker.talker,
-    //     ),
-    //   );
-
-    // final response = await dio.post<dynamic>(
-    //   '/rest/api/3/issue',
-    // );
   }
 
   static Future<List<IssueTypeWithStatus>> getStatuses() async {
@@ -255,14 +246,6 @@ final class JiraClient {
 
     return statuses;
   }
-
-  // static Future<List<IssueTypeWithStatus>> getStatuses() async {
-  //   final jira = JiraPlatformApi(client);
-
-  //   final statuses = await jira.projects.
-
-  //   return statuses;
-  // }
 
   static Future<PageBeanString> getLabels() async {
     final jira = JiraPlatformApi(client);
@@ -282,6 +265,18 @@ final class JiraClient {
     );
 
     return users;
+  }
+
+  static Future<List<Priority>> getPriorities() async {
+    final jira = JiraPlatformApi(client);
+
+    final priorities = await jira.issuePriorities.searchPriorities(
+      projectId: [
+        JiraClient.projectId,
+      ],
+    );
+
+    return priorities.values;
   }
 
   static Future<List<JiraBoard>> getBoards() async {

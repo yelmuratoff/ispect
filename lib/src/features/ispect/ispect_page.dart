@@ -16,6 +16,7 @@ class ISpectPage extends StatelessWidget {
     super.key,
     this.appBarTitle = 'ISpect',
     this.itemsBuilder,
+    this.onJiraAuthorized,
   });
 
   /// Screen [AppBar] title
@@ -27,11 +28,20 @@ class ISpectPage extends StatelessWidget {
 
   final ISpectOptions options;
 
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
+
   @override
   Widget build(BuildContext context) => _View(
         talker: ISpectTalker.talker,
         appBarTitle: appBarTitle,
         options: options,
+        onJiraAuthorized: onJiraAuthorized,
       );
 }
 
@@ -40,17 +50,24 @@ class _View extends StatelessWidget {
     required this.talker,
     required this.appBarTitle,
     required this.options,
+    required this.onJiraAuthorized,
   });
 
   final Talker talker;
   final String? appBarTitle;
   final ISpectOptions options;
 
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
+
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: ISpect.read(context)
-            .theme
-            .backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: ISpect.read(context).theme.backgroundColor(isDark: context.isDarkMode),
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,
@@ -63,14 +80,14 @@ class _View extends StatelessWidget {
             ),
           ),
           options: options,
+          onJiraAuthorized: onJiraAuthorized,
         ),
       );
 }
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
   final output = await getTemporaryDirectory();
-  final screenshotFilePath =
-      '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
+  final screenshotFilePath = '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
   final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);

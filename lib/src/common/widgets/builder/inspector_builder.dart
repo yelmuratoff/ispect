@@ -13,11 +13,13 @@ class ISpectBuilder extends StatelessWidget {
   const ISpectBuilder({
     required this.child,
     this.initialPosition,
+    this.initialJiraData,
     this.navigatorKey,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
     this.onPositionChanged,
+    this.onJiraAuthorized,
     super.key,
   });
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -30,7 +32,23 @@ class ISpectBuilder extends StatelessWidget {
     ScrollController? controller,
   )? feedbackBuilder;
   final void Function(double x, double y)? onPositionChanged;
+
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
+
   final (double x, double y)? initialPosition;
+  final ({
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  })? initialJiraData;
 
   @override
   Widget build(BuildContext context) {
@@ -48,20 +66,20 @@ class ISpectBuilder extends StatelessWidget {
           options: ispectModel.options,
           navigatorKey: navigatorKey,
           isPanelVisible: ispectModel.isISpectEnabled,
-          backgroundColor:
-              adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
+          backgroundColor: adjustColorBrightness(theme.colorScheme.primaryContainer, 0.6),
           selectedColor: theme.colorScheme.primaryContainer,
           textColor: theme.colorScheme.onSurface,
           selectedTextColor: theme.colorScheme.onSurface,
           onPositionChanged: onPositionChanged,
           initialPosition: initialPosition,
+          onJiraAuthorized: onJiraAuthorized,
+          initialJiraData: initialJiraData,
           child: child ?? const SizedBox(),
         );
 
         /// Add performance overlay to the widget tree
         child = PerformanceOverlayBuilder(
-          isPerformanceTrackingEnabled:
-              ispectModel.isPerformanceTrackingEnabled,
+          isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
           theme: theme,
           child: child,
         );
@@ -75,11 +93,9 @@ class ISpectBuilder extends StatelessWidget {
               FeedbackThemeData(
                 background: Colors.grey[800]!,
                 feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-                activeFeedbackModeColor:
-                    context.ispectTheme.colorScheme.primary,
+                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
                 cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                bottomSheetDescriptionStyle:
-                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
                   color: Colors.grey[800],
                 ),
                 dragHandleColor: Colors.grey[400],
@@ -90,11 +106,9 @@ class ISpectBuilder extends StatelessWidget {
               FeedbackThemeData(
                 background: Colors.grey[800]!,
                 feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-                activeFeedbackModeColor:
-                    context.ispectTheme.colorScheme.primary,
+                activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
                 cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                bottomSheetDescriptionStyle:
-                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
                   color: Colors.grey[300],
                 ),
                 dragHandleColor: Colors.grey[400],

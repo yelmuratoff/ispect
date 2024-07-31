@@ -18,50 +18,59 @@ class ISpectTextfield extends StatelessWidget {
   final int? maxLines;
 
   @override
-  Widget build(BuildContext context) => TextField(
-        controller: _controller,
-        onTapOutside: (_) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        minLines: minLines ?? 1,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(12),
-          hintText: hintText,
-          alignLabelWithHint: true,
-          labelText: isRequired ? null : hintText,
-          label: isRequired
-              ? Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: hintText,
-                      ),
-                      const TextSpan(
-                        text: ' *',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: TextFormField(
+          controller: _controller,
+          onTapOutside: (_) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          minLines: minLines ?? 1,
+          maxLines: maxLines,
+          validator: (value) {
+            if (isRequired && value!.isEmpty) {
+              return context.ispectL10n.fieldIsRequired;
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(12),
+            hintText: hintText,
+            alignLabelWithHint: true,
+            labelText: isRequired ? null : hintText,
+            label: isRequired
+                ? Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: hintText,
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              : null,
-          hintStyle: TextStyle(
-            color: context.ispectTheme.textTheme.bodyMedium?.color?.withOpacity(0.5),
-            fontSize: 14,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            borderSide: BorderSide(
-              color: context.ispectTheme.dividerColor,
+                        const TextSpan(
+                          text: ' *',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : null,
+            hintStyle: TextStyle(
+              color: context.ispectTheme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+              fontSize: 14,
             ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            borderSide: BorderSide(
-              color: context.ispectTheme.dividerColor,
+            border: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(
+                color: context.ispectTheme.dividerColor,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(
+                color: context.ispectTheme.dividerColor,
+              ),
             ),
           ),
         ),

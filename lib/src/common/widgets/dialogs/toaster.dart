@@ -3,6 +3,31 @@ import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 
 final class ISpectToaster {
+  static Future<void> hideToast(BuildContext context) async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
+  static Future<void> showLoadingToast(
+    BuildContext context, {
+    required String title,
+  }) =>
+      _showToast(
+        context,
+        title: title,
+        icon: const Row(
+          children: [
+            SizedBox.square(
+              dimension: 24,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            Gap(12),
+          ],
+        ),
+        color: const Color.fromARGB(255, 49, 49, 49),
+      );
+
   static Future<void> showErrorToast(
     BuildContext context, {
     required String title,
@@ -31,12 +56,14 @@ final class ISpectToaster {
     BuildContext context, {
     required String title,
     String? message,
+    Widget? trailing,
   }) =>
       _showToast(
         context,
         title: title,
         message: message,
         color: Colors.green,
+        trailing: trailing,
       );
 
   static Future<void> showCopiedToast(
@@ -57,6 +84,8 @@ final class ISpectToaster {
     required String title,
     required Color color,
     String? message,
+    Widget? icon,
+    Widget? trailing,
   }) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -72,12 +101,20 @@ final class ISpectToaster {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Gap(12),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                if (icon != null) icon,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (trailing != null) trailing,
+              ],
             ),
             if (message != null)
               Text(
