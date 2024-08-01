@@ -24,23 +24,24 @@ class InspectorUtils {
   }
 
   static Iterable<RenderBox> onTap(BuildContext context, Offset pointerOffset) {
-    final renderObject = context.findRenderObject() as RenderProxyBox?;
+    if (!context.mounted) {
+      return [];
+    } else {
+      final renderObject = context.findRenderObject() as RenderProxyBox?;
 
-    if (renderObject == null) return [];
+      if (renderObject == null) return [];
 
-    final renderObjectWithoutAbsorbPointer = _bypassAbsorbPointer(renderObject);
+      final renderObjectWithoutAbsorbPointer = _bypassAbsorbPointer(renderObject);
 
-    if (renderObjectWithoutAbsorbPointer == null) return [];
+      if (renderObjectWithoutAbsorbPointer == null) return [];
 
-    final hitTestResult = BoxHitTestResult();
-    renderObjectWithoutAbsorbPointer.hitTest(
-      hitTestResult,
-      position: renderObjectWithoutAbsorbPointer.globalToLocal(pointerOffset),
-    );
+      final hitTestResult = BoxHitTestResult();
+      renderObjectWithoutAbsorbPointer.hitTest(
+        hitTestResult,
+        position: renderObjectWithoutAbsorbPointer.globalToLocal(pointerOffset),
+      );
 
-    return hitTestResult.path
-        .where((v) => v.target is RenderBox)
-        .map((v) => v.target)
-        .cast<RenderBox>();
+      return hitTestResult.path.where((v) => v.target is RenderBox).map((v) => v.target).cast<RenderBox>();
+    }
   }
 }
