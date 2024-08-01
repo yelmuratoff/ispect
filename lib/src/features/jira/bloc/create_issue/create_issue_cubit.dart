@@ -15,7 +15,6 @@ class CreateIssueCubit extends Cubit<CreateIssueState> {
     required String issueTypeId,
     required String statusId,
     required String label,
-    required String reporterId,
     required String priorityId,
     required String summary,
     required List<File> attachments,
@@ -36,18 +35,33 @@ class CreateIssueCubit extends Cubit<CreateIssueState> {
         summary: summary,
         priorityId: priorityId,
       );
-      emit(const CreateIssueState.loading(type: CreateIssueEnum.issue, message: 'Adding status to issue'));
+      emit(
+        const CreateIssueState.loading(
+          type: CreateIssueEnum.issue,
+          message: 'Adding status to issue',
+        ),
+      );
       await JiraClient.addStatusToIssue(
         issue: issue,
         statusId: statusId,
       );
-      emit(const CreateIssueState.loading(type: CreateIssueEnum.transition, message: 'Adding attachments to issue'));
+      emit(
+        const CreateIssueState.loading(
+          type: CreateIssueEnum.transition,
+          message: 'Adding attachments to issue',
+        ),
+      );
       if (attachments.isNotEmpty) {
         await JiraClient.addAttachmentsToIssue(
           issue: issue,
           attachments: attachments,
         );
-        emit(const CreateIssueState.loading(type: CreateIssueEnum.attachment, message: 'Attachments added'));
+        emit(
+          const CreateIssueState.loading(
+            type: CreateIssueEnum.attachment,
+            message: 'Attachments added',
+          ),
+        );
       }
       emit(
         CreateIssueState.loaded(

@@ -24,7 +24,11 @@ class StatusCubit extends Cubit<StatusState> {
       // if (kDebugMode) {
       //   print(project);
       // }
-      emit(StatusState.loaded(status: project.where((element) => !element.subtask).toList()));
+      emit(
+        StatusState.loaded(
+          status: project.where((element) => !element.subtask).toList(),
+        ),
+      );
     } catch (e, stackTrace) {
       ISpectTalker.handle(exception: e, stackTrace: stackTrace);
       emit(StatusState.error(error: e, stackTrace: stackTrace));

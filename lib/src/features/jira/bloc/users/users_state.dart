@@ -27,7 +27,8 @@ sealed class UsersState {
       switch (this) {
         _UsersInitial() => initial?.call() ?? orElse(),
         _UsersLoading() => loading?.call() ?? orElse(),
-        final _UsersError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _UsersError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
         final _UsersLoaded value => loaded?.call(value.users) ?? orElse(),
       };
 }

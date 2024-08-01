@@ -29,6 +29,7 @@ class RowBuilder extends StatelessWidget {
         crossAxisAlignment: crossAxisAlignment,
         textDirection: textDirection,
         verticalDirection: verticalDirection,
-        children: List.generate(itemCount, (index) => itemBuilder(context, index)),
+        children:
+            List.generate(itemCount, (index) => itemBuilder(context, index)),
       );
 }

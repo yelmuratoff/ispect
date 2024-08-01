@@ -94,7 +94,8 @@ class _TalkerViewState extends State<TalkerView> {
         builder: (_, __) => TalkerBuilder(
           talker: widget.talker,
           builder: (context, data) {
-            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
+            final filtredElements =
+                data.where((e) => _controller.filter.filter(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -126,7 +127,8 @@ class _TalkerViewState extends State<TalkerView> {
                   },
                   onToggleTitle: _onToggleTitle,
                   isDark: context.isDarkMode,
-                  backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+                  backgroundColor:
+                      iSpect.theme.backgroundColor(isDark: context.isDarkMode),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 SliverList(
@@ -138,8 +140,9 @@ class _TalkerViewState extends State<TalkerView> {
                       }
                       return TalkerDataCards(
                         data: data,
-                        backgroundColor:
-                            iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+                        backgroundColor: iSpect.theme
+                                .cardColor(isDark: context.isDarkMode) ??
+                            context.ispectTheme.cardColor,
                         onCopyTap: () => _copyTalkerDataItemText(data),
                         expanded: _controller.expandedLogs,
                         color: getTypeColor(
@@ -172,7 +175,8 @@ class _TalkerViewState extends State<TalkerView> {
     List<TalkerData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[
+        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
@@ -225,8 +229,12 @@ class _TalkerViewState extends State<TalkerView> {
           ),
           TalkerActionItem(
             onTap: (_) => _toggleLogsExpanded(),
-            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs
+                ? context.ispectL10n.collapseLogs
+                : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: (_) => _cleanHistory(),
@@ -279,7 +287,8 @@ class _TalkerViewState extends State<TalkerView> {
               ISpectTalker.good(
                 '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
               );
-              widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
+              widget.onJiraAuthorized
+                  ?.call(domain, email, apiToken, projectId, projectKey);
             },
           ),
         ),

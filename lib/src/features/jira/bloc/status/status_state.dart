@@ -24,7 +24,8 @@ sealed class StatusState {
       switch (this) {
         _StatusInitial() => initial?.call() ?? orElse(),
         _StatusLoading() => loading?.call() ?? orElse(),
-        final _StatusError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _StatusError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
         final _StatusLoaded value => loaded?.call(value.status) ?? orElse(),
       };
 }

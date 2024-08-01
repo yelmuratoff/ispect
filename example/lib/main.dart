@@ -11,7 +11,8 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider =
+    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -141,11 +142,11 @@ class App extends ConsumerWidget {
             initialPosition: (0, 300),
             // initialJiraData: (
             //   apiToken:
-            //       'ATATT3xFfGF0N50mZgLu8Y5soB3KWORbJNJy74n5YnPHvcCy5534xp9X4yj0vzA-gY-WOwhiSSl3tssTt2IAcrw_gWoW2aED_b-0CRCaG_S5iZnryjmZmnvgmJYSr82UcYDgJmNKWnESLz4B4bzOomWw4-odAGR225VZMx7s-qknsQex-EVdWfs=67D1BA81',
-            //   domain: 'anydevkz',
-            //   email: 'y.yelmuratov@astanahub.com',
-            //   projectId: '10001',
-            //   projectKey: 'MAAH'
+            //       'Token',
+            //   domain: 'example',
+            //   email: 'name.surname@example.com',
+            //   projectId: '00000',
+            //   projectKey: 'AAAA'
             // ),
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');

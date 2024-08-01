@@ -13,7 +13,13 @@ class UsersCubit extends Cubit<UsersState> {
 
     try {
       final users = await JiraClient.getUsers();
-      emit(UsersState.loaded(users: users.where((user) => user.active && user.accountType?.value != 'app').toList()));
+      emit(
+        UsersState.loaded(
+          users: users
+              .where((user) => user.active && user.accountType?.value != 'app')
+              .toList(),
+        ),
+      );
     } catch (error, stackTrace) {
       emit(UsersState.error(error: error, stackTrace: stackTrace));
     }

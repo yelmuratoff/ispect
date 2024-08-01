@@ -5,12 +5,9 @@ import 'package:atlassian_apis/jira_platform.dart' as jira;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 import 'package:ispect/src/common/widgets/textfields/ispect_textfield.dart';
@@ -150,8 +147,15 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthPage(
-                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
-                        widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
+                      onAuthorized:
+                          (domain, email, apiToken, projectId, projectKey) {
+                        widget.onJiraAuthorized?.call(
+                          domain,
+                          email,
+                          apiToken,
+                          projectId,
+                          projectKey,
+                        );
 
                         // <-- Clear selected data -->
 
@@ -176,9 +180,11 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                         _boardsCubit.getBoards();
                         _sprintCubit.toInitial();
                         _priorityCubit.getPriorities();
-                        _descriptionController.text = widget.initialDescription ?? '';
+                        _descriptionController.text =
+                            widget.initialDescription ?? '';
                         if (widget.initialAttachmentPath != null) {
-                          _attachments.add(File(widget.initialAttachmentPath ?? ''));
+                          _attachments
+                              .add(File(widget.initialAttachmentPath ?? ''));
                         }
                       },
                     ),
@@ -198,7 +204,6 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                 description: _descriptionController.text,
                 issueTypeId: _selectedIssueType?.id ?? '',
                 label: _selectedLabel ?? '',
-                reporterId: _selectedAssignee?.accountId ?? '',
                 summary: _summaryController.text,
                 statusId: _selectedStatus?.id ?? '',
                 attachments: _attachments,
@@ -424,7 +429,9 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                                         children: [
                                           if (e.avatarUrls != null) ...[
                                             CircleAvatar(
-                                              backgroundImage: NetworkImage(e.avatarUrls!.$24X24 ?? ''),
+                                              backgroundImage: NetworkImage(
+                                                e.avatarUrls!.$24X24 ?? '',
+                                              ),
                                               minRadius: 14,
                                             ),
                                             const Gap(12),
@@ -475,7 +482,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                                                 Expanded(
                                                   child: Text(
                                                     e.name,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -485,7 +493,9 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                                         .toList(),
                                     onChanged: (value) {
                                       if (value != null) {
-                                        _sprintCubit.getSprints(boardId: value.id);
+                                        _sprintCubit.getSprints(
+                                          boardId: value.id,
+                                        );
                                       }
                                       setState(() {
                                         _selectedBoard = value;
@@ -549,13 +559,16 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                       height: 60,
                       child: ElevatedButton(
                         onPressed: () async {
-                          final filePicker = await FilePicker.platform.pickFiles(
+                          final filePicker =
+                              await FilePicker.platform.pickFiles(
                             allowMultiple: true,
                             type: FileType.image,
                           );
                           if (filePicker != null) {
                             setState(() {
-                              _attachments.addAll(filePicker.paths.map((e) => File(e!)));
+                              _attachments.addAll(
+                                filePicker.paths.map((e) => File(e!)),
+                              );
                             });
                           }
                         },
@@ -606,7 +619,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                               ),
                               const Gap(8),
                               ClipRRect(
-                                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(16)),
                                 child: Image.file(
                                   file,
                                   width: double.infinity,
@@ -632,7 +646,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
         CreateIssueEnum.initial => context.ispectL10n.creatingIssue,
         CreateIssueEnum.issue => context.ispectL10n.addingStatusToIssue,
         CreateIssueEnum.attachment => context.ispectL10n.attachmentsAdded,
-        CreateIssueEnum.transition => context.ispectL10n.addingAttachmentsToIssue,
+        CreateIssueEnum.transition =>
+          context.ispectL10n.addingAttachmentsToIssue,
         CreateIssueEnum.finished => context.ispectL10n.finished,
       };
 }
@@ -705,8 +720,6 @@ class ISpectDropDown<T> extends StatelessWidget {
                     constraints: const BoxConstraints(
                       maxWidth: 300,
                       minWidth: 100,
-                      // minHeight: 50,
-                      // maxHeight: 60,
                     ),
                     child: e.child,
                   ),

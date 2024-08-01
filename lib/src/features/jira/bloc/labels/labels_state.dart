@@ -24,7 +24,8 @@ sealed class LabelsState {
       switch (this) {
         _LabelsInitial() => initial?.call() ?? orElse(),
         _LabelsLoading() => loading?.call() ?? orElse(),
-        final _LabelsError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _LabelsError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
         final _LabelsLoaded value => loaded?.call(value.labels) ?? orElse(),
       };
 }

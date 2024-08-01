@@ -27,8 +27,10 @@ sealed class PriorityState {
       switch (this) {
         _PriorityInitial() => initial?.call() ?? orElse(),
         _PriorityLoading() => loading?.call() ?? orElse(),
-        final _PriorityError value => error?.call(value.error, value.stackTrace) ?? orElse(),
-        final _PriorityLoaded value => loaded?.call(value.priorities) ?? orElse(),
+        final _PriorityError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _PriorityLoaded value =>
+          loaded?.call(value.priorities) ?? orElse(),
       };
 }
 

@@ -57,7 +57,8 @@ class ISpectTextfield extends StatelessWidget {
                   )
                 : null,
             hintStyle: TextStyle(
-              color: context.ispectTheme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+              color: context.ispectTheme.textTheme.bodyMedium?.color
+                  ?.withOpacity(0.5),
               fontSize: 14,
             ),
             border: OutlineInputBorder(

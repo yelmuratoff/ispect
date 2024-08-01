@@ -46,7 +46,8 @@ sealed class CreateIssueState {
             ) ??
             orElse(),
         final _CreateIssueLoaded value => loaded?.call(value.url) ?? orElse(),
-        final _CreateIssueError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _CreateIssueError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
       };
 }
 

@@ -13,8 +13,12 @@ class JiraSprint {
         id: (json['id'] as num?)?.toInt() ?? 0,
         self: json['self'] as String? ?? '',
         name: json['name'] as String? ?? '',
-        startDate: json['startDate'] == null ? null : DateTime.parse(json['startDate']! as String),
-        endDate: json['endDate'] == null ? null : DateTime.parse(json['endDate']! as String),
+        startDate: json['startDate'] == null
+            ? null
+            : DateTime.parse(json['startDate']! as String),
+        endDate: json['endDate'] == null
+            ? null
+            : DateTime.parse(json['endDate']! as String),
         state: json['state'] as String? ?? '',
         goal: json['goal'] as String? ?? '',
       );

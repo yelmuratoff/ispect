@@ -27,7 +27,8 @@ sealed class BoardsState {
       switch (this) {
         _BoardsInitial() => initial?.call() ?? orElse(),
         _BoardsLoading() => loading?.call() ?? orElse(),
-        final _BoardsError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _BoardsError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
         final _BoardsLoaded value => loaded?.call(value.boards) ?? orElse(),
       };
 }

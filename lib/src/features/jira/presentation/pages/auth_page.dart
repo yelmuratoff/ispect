@@ -27,12 +27,10 @@ class JiraAuthPage extends StatefulWidget {
 }
 
 class _JiraAuthPageState extends State<JiraAuthPage> {
-  final _projectDomainController = TextEditingController(text: 'anydevkz'); //example
-  final _userEmailController = TextEditingController(text: 'y.yelmuratov@astanahub.com'); //name.surname@example.com
-  final _apiTokenController = TextEditingController(
-    text:
-        'ATATT3xFfGF0N50mZgLu8Y5soB3KWORbJNJy74n5YnPHvcCy5534xp9X4yj0vzA-gY-WOwhiSSl3tssTt2IAcrw_gWoW2aED_b-0CRCaG_S5iZnryjmZmnvgmJYSr82UcYDgJmNKWnESLz4B4bzOomWw4-odAGR225VZMx7s-qknsQex-EVdWfs=67D1BA81',
-  );
+  final _projectDomainController = TextEditingController(text: 'example');
+  final _userEmailController =
+      TextEditingController(text: 'name.surname@example.com');
+  final _apiTokenController = TextEditingController();
 
   ProjectsCubit? _bloc;
   final CurrentUserCubit _currentUserCubit = CurrentUserCubit();
@@ -88,9 +86,15 @@ class _JiraAuthPageState extends State<JiraAuthPage> {
               },
               error: (value) {
                 if (value.error.toString().contains('401')) {
-                  ISpectToaster.showErrorToast(context, title: context.ispectL10n.pleaseCheckAuthCred);
+                  ISpectToaster.showErrorToast(
+                    context,
+                    title: context.ispectL10n.pleaseCheckAuthCred,
+                  );
                 } else {
-                  ISpectToaster.showErrorToast(context, title: value.error.toString());
+                  ISpectToaster.showErrorToast(
+                    context,
+                    title: value.error.toString(),
+                  );
                 }
                 JiraClient.restart();
                 setState(() {});
@@ -167,7 +171,10 @@ class _JiraAuthPageState extends State<JiraAuthPage> {
                       bloc: _bloc,
                       listener: (_, state) {
                         if (state is ProjectsError) {
-                          ISpectToaster.showErrorToast(context, title: state.error.toString());
+                          ISpectToaster.showErrorToast(
+                            context,
+                            title: state.error.toString(),
+                          );
                         }
                       },
                       builder: (_, state) => switch (state) {
@@ -181,13 +188,17 @@ class _JiraAuthPageState extends State<JiraAuthPage> {
                               leading: const Icon(Icons.folder_copy_rounded),
                               title: Text(state.projects[index].name ?? ''),
                               subtitle: Text(state.projects[index].key ?? ''),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)),
                               ),
                               onTap: () {
-                                JiraClient.projectKey = state.projects[index].key ?? '';
-                                JiraClient.projectId = state.projects[index].id ?? '';
+                                JiraClient.projectKey =
+                                    state.projects[index].key ?? '';
+                                JiraClient.projectId =
+                                    state.projects[index].id ?? '';
                                 widget.onAuthorized(
                                   JiraClient.projectDomain,
                                   JiraClient.userEmail,
@@ -197,7 +208,8 @@ class _JiraAuthPageState extends State<JiraAuthPage> {
                                 );
                                 ISpectToaster.showSuccessToast(
                                   context,
-                                  title: '${context.ispectL10n.projectWasSelected}: ${state.projects[index].name}',
+                                  title:
+                                      '${context.ispectL10n.projectWasSelected}: ${state.projects[index].name}',
                                 );
                                 Navigator.of(context).pop();
                               },

@@ -27,7 +27,8 @@ sealed class SprintState {
       switch (this) {
         _SprintInitial() => initial?.call() ?? orElse(),
         _SprintLoading() => loading?.call() ?? orElse(),
-        final _SprintError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _SprintError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
         final _SprintLoaded value => loaded?.call(value.sprints) ?? orElse(),
       };
 }

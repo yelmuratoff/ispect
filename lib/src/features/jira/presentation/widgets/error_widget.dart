@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
 class JiraErrorWidget extends StatelessWidget {
-  const JiraErrorWidget({required this.error, required this.stackTrace, super.key});
+  const JiraErrorWidget({
+    required this.error,
+    required this.stackTrace,
+    super.key,
+  });
   final Object error;
   final StackTrace stackTrace;
 

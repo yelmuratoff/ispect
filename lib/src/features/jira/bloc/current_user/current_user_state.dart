@@ -34,7 +34,8 @@ sealed class CurrentUserState {
         _CurrentUserInitial() => initial?.call() ?? orElse(),
         _CurrentUserLoading() => loading?.call() ?? orElse(),
         final _CurrentUserLoaded value => loaded?.call(value.user) ?? orElse(),
-        final _CurrentUserError value => error?.call(value.error, value.stackTrace) ?? orElse(),
+        final _CurrentUserError value =>
+          error?.call(value.error, value.stackTrace) ?? orElse(),
       };
 
   void mapOrNull({
