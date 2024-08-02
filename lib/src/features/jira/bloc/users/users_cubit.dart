@@ -1,5 +1,5 @@
 import 'package:atlassian_apis/jira_platform.dart';
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:meta/meta.dart';
 
@@ -15,9 +15,7 @@ class UsersCubit extends Cubit<UsersState> {
       final users = await JiraClient.getUsers();
       emit(
         UsersState.loaded(
-          users: users
-              .where((user) => user.active && user.accountType?.value != 'app')
-              .toList(),
+          users: users.where((user) => user.active && user.accountType?.value != 'app').toList(),
         ),
       );
     } catch (error, stackTrace) {

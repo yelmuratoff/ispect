@@ -31,7 +31,8 @@ class InspectorUtils {
 
       if (renderObject == null) return [];
 
-      final renderObjectWithoutAbsorbPointer = _bypassAbsorbPointer(renderObject);
+      final renderObjectWithoutAbsorbPointer =
+          _bypassAbsorbPointer(renderObject);
 
       if (renderObjectWithoutAbsorbPointer == null) return [];
 
@@ -41,7 +42,10 @@ class InspectorUtils {
         position: renderObjectWithoutAbsorbPointer.globalToLocal(pointerOffset),
       );
 
-      return hitTestResult.path.where((v) => v.target is RenderBox).map((v) => v.target).cast<RenderBox>();
+      return hitTestResult.path
+          .where((v) => v.target is RenderBox)
+          .map((v) => v.target)
+          .cast<RenderBox>();
     }
   }
 }

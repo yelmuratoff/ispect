@@ -159,7 +159,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
                   )
                   ..yPos = _controller.yPos.clamp(
                     0.0,
-                    MediaQuery.sizeOf(context).height - ISpectConstants.draggableButtonHeight,
+                    MediaQuery.sizeOf(context).height -
+                        ISpectConstants.draggableButtonHeight,
                   );
               }
             },
@@ -193,7 +194,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
             onFeedbackToggle: () {
               if (!BetterFeedback.of(context).isVisible) {
                 BetterFeedback.of(context).show((feedback) async {
-                  final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+                  final screenshotFilePath =
+                      await writeImageToStorage(feedback.screenshot);
                   if (feedback.extra?.isNotEmpty ?? false) {
                     if (feedback.extra!['jira'] == true && context.mounted) {
                       unawaited(
@@ -231,7 +233,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
     final halfScreenWidth = screenWidth / 2;
     double targetXPos;
 
-    if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 < halfScreenWidth) {
+    if (_controller.xPos + ISpectConstants.draggableButtonWidth / 2 <
+        halfScreenWidth) {
       targetXPos = 0;
     } else {
       targetXPos = screenWidth - ISpectConstants.draggableButtonWidth;
@@ -242,7 +245,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
         ..xPos = targetXPos
         ..yPos = _controller.yPos.clamp(
           0.0,
-          MediaQuery.sizeOf(context).height - ISpectConstants.draggableButtonHeight,
+          MediaQuery.sizeOf(context).height -
+              ISpectConstants.draggableButtonHeight,
         );
     });
 

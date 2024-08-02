@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/models/board.dart';
 import 'package:meta/meta.dart';
