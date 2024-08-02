@@ -63,9 +63,10 @@ class CreateIssueCubit extends Cubit<CreateIssueState> {
           ),
         );
       }
+
       emit(
         CreateIssueState.loaded(
-          url: issue.self ?? '',
+          key: issue.key ?? '',
         ),
       );
     } catch (error, stackTrace) {

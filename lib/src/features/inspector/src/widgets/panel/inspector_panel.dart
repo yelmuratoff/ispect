@@ -130,7 +130,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        key: ValueKey('inspector_panel_layout_builder'),
+        key: const ValueKey('inspector_panel_layout_builder'),
         builder: (_, constraints) => AnimatedBuilder(
           animation: _controller,
           builder: (_, __) => _ButtonView(

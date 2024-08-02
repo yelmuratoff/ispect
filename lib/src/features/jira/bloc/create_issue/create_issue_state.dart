@@ -20,7 +20,7 @@ sealed class CreateIssueState {
   }) = _CreateIssueLoading;
 
   const factory CreateIssueState.loaded({
-    required String url,
+    required String key,
   }) = _CreateIssueLoaded;
 
   const factory CreateIssueState.error({
@@ -45,7 +45,7 @@ sealed class CreateIssueState {
               value.message,
             ) ??
             orElse(),
-        final _CreateIssueLoaded value => loaded?.call(value.url) ?? orElse(),
+        final _CreateIssueLoaded value => loaded?.call(value.key) ?? orElse(),
         final _CreateIssueError value =>
           error?.call(value.error, value.stackTrace) ?? orElse(),
       };
@@ -67,10 +67,10 @@ final class _CreateIssueLoading extends CreateIssueState {
 
 final class _CreateIssueLoaded extends CreateIssueState {
   const _CreateIssueLoaded({
-    required this.url,
+    required this.key,
   });
 
-  final String url;
+  final String key;
 }
 
 final class _CreateIssueError extends CreateIssueState {

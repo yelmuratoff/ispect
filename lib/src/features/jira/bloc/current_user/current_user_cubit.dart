@@ -1,6 +1,6 @@
 import 'package:atlassian_apis/jira_platform.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 
 part 'current_user_state.dart';

@@ -141,7 +141,7 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
-            ElevatedButton(
+            MaterialButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -191,39 +191,52 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                   ),
                 );
               },
+              color: context.ispectTheme.colorScheme.primaryContainer,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
               child: Text(context.ispectL10n.changeProject),
             ),
             const Gap(8),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              _createIssueCubit.createIssue(
-                assigneeId: _selectedAssignee?.accountId ?? '',
-                description: _descriptionController.text,
-                issueTypeId: _selectedIssueType?.id ?? '',
-                label: _selectedLabel ?? '',
-                summary: _summaryController.text,
-                statusId: _selectedStatus?.id ?? '',
-                attachments: _attachments,
-                priorityId: _selectedPriority?.id ?? '',
-              );
-            }
-          },
-          label: Row(
-            children: [
-              Text(
-                context.ispectL10n.sendIssue,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            MaterialButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _createIssueCubit.createIssue(
+                    assigneeId: _selectedAssignee?.accountId ?? '',
+                    description: _descriptionController.text,
+                    issueTypeId: _selectedIssueType?.id ?? '',
+                    label: _selectedLabel ?? '',
+                    summary: _summaryController.text,
+                    statusId: _selectedStatus?.id ?? '',
+                    attachments: _attachments,
+                    priorityId: _selectedPriority?.id ?? '',
+                  );
+                }
+              },
+              color: context.ispectTheme.colorScheme.primaryContainer,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
-              const Gap(12),
-              const Icon(Icons.send),
-            ],
-          ),
+              child: Row(
+                children: [
+                  Text(
+                    context.ispectL10n.sendIssue,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Gap(12),
+                  const Icon(Icons.send),
+                ],
+              ),
+            ),
+          ],
         ),
         body: BlocListener<CreateIssueCubit, CreateIssueState>(
           bloc: _createIssueCubit,
@@ -251,7 +264,7 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                     await ISpectToaster.showCopiedToast(
                       context,
                       title: context.ispectL10n.copiedToClipboard,
-                      value: issueUrl,
+                      value: 'Issue key: $issueUrl',
                     );
                   }
                 }
@@ -680,7 +693,7 @@ class ISpectDropDown<T> extends StatelessWidget {
           child: DropdownButtonFormField<T>(
             hint: ConstrainedBox(
               constraints: BoxConstraints(
-                maxWidth: maxWidth - 70,
+                maxWidth: maxWidth - 80,
               ),
               child: Row(
                 children: [
@@ -714,11 +727,12 @@ class ISpectDropDown<T> extends StatelessWidget {
               }
               return null;
             },
+            icon: const Icon(Icons.arrow_drop_down),
             selectedItemBuilder: (_) => items!
                 .map(
                   (e) => ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 300,
+                    constraints: BoxConstraints(
+                      maxWidth: maxWidth - 80,
                       minWidth: 100,
                     ),
                     child: e.child,

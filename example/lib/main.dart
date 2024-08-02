@@ -50,6 +50,7 @@ void main() {
       ),
     ),
     talker: talker,
+    isPrintLoggingEnabled: true,
     filters: [
       'Handler: "onTap"',
       'This exception was thrown because',

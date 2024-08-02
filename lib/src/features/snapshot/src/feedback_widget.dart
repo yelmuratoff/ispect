@@ -197,7 +197,8 @@ class FeedbackWidgetState extends State<FeedbackWidget>
                                 scaleFactor: constraints.maxWidth / size.width,
                                 child: LayoutBuilder(
                                   key: const Key(
-                                      'screenshot_layout_builder_child'),
+                                    'screenshot_layout_builder_child',
+                                  ),
                                   builder: (_, __) => screenshotChild!,
                                 ),
                               ),

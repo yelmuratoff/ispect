@@ -1,4 +1,4 @@
-## 1.7.2-beta.1
+## 1.7.2-beta.5
 - Added Jira to ISpect. Please check the example project for better understanding.
 After some testing, I will release it as a stable version and add it to the documentation.
 
