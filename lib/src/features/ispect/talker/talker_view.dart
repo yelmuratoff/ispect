@@ -1,6 +1,7 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -14,6 +15,9 @@ import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/jira/jira_client.dart';
+import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
+import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -27,6 +31,7 @@ class TalkerView extends StatefulWidget {
     this.appBarTitle,
     this.itemsBuilder,
     this.appBarLeading,
+    this.onJiraAuthorized,
   });
 
   /// Talker implementation
@@ -45,7 +50,16 @@ class TalkerView extends StatefulWidget {
   final TalkerViewController? controller;
 
   final ScrollController? scrollController;
+
   final ISpectOptions options;
+
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
 
   @override
   State<TalkerView> createState() => _TalkerViewState();
@@ -242,10 +256,44 @@ class _TalkerViewState extends State<TalkerView> {
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),
+          TalkerActionItem(
+            onTap: (_) => _goToJira(),
+            title: 'Jira',
+            icon: FontAwesomeIcons.jira,
+          ),
           ...widget.options.actionItems,
         ],
       ),
     );
+  }
+
+  // ignore: unused_element
+  void _goToJira() {
+    if (JiraClient.isInitialized) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => JiraSendIssuePage(
+            onJiraAuthorized: widget.onJiraAuthorized,
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => JiraAuthPage(
+            onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+              ISpectTalker.good(
+                '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
+              );
+              widget.onJiraAuthorized
+                  ?.call(domain, email, apiToken, projectId, projectKey);
+            },
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _shareLogsInFile() async {

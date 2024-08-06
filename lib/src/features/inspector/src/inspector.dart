@@ -19,6 +19,7 @@ import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
+import 'package:ispect/src/features/jira/jira_client.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -77,6 +78,8 @@ class Inspector extends StatefulWidget {
     ],
     this.isEnabled,
     this.initialPosition,
+    this.initialJiraData,
+    this.onJiraAuthorized,
   });
 
   final Widget child;
@@ -98,6 +101,20 @@ class Inspector extends StatefulWidget {
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
   final (double x, double y)? initialPosition;
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
+  final ({
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  })? initialJiraData;
 
   static InspectorState of(BuildContext context) {
     final result = maybeOf(context);
@@ -156,6 +173,17 @@ class InspectorState extends State<Inspector> {
 
     _isPanelVisible = widget.isPanelVisible;
 
+    if (widget.initialJiraData != null) {
+      JiraClient.initClient(
+        projectDomain: widget.initialJiraData!.domain,
+        userEmail: widget.initialJiraData!.email,
+        apiToken: widget.initialJiraData!.apiToken,
+      );
+
+      JiraClient.projectId = widget.initialJiraData!.projectId;
+      JiraClient.projectKey = widget.initialJiraData!.projectKey;
+    }
+
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
@@ -174,6 +202,12 @@ class InspectorState extends State<Inspector> {
     if (_isPanelVisible && widget.areKeyboardShortcutsEnabled) {
       _keyboardHandler.register();
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.navigatorKey != null) {
+        ISpect.read(context).navigatorKey = widget.navigatorKey;
+      }
+    });
   }
 
   // Gestures
@@ -504,6 +538,7 @@ class InspectorState extends State<Inspector> {
               _zoomStateNotifier,
             ],
             builder: (_) => LayoutBuilder(
+              key: const ValueKey('inspector_overlay_layout_builder'),
               builder: (_, constraints) => _inspectorStateNotifier.value
                   ? InspectorOverlay(
                       size: constraints.biggest,
@@ -576,6 +611,7 @@ class InspectorState extends State<Inspector> {
                 navigatorKey: widget.navigatorKey,
                 options: widget.options,
                 initialPosition: widget.initialPosition,
+                onJiraAuthorized: widget.onJiraAuthorized,
                 onPositionChanged: (x, y) {
                   widget.onPositionChanged?.call(x, y);
                 },

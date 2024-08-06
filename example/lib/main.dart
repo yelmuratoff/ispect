@@ -50,6 +50,7 @@ void main() {
       ),
     ),
     talker: talker,
+    isPrintLoggingEnabled: true,
     filters: [
       'Handler: "onTap"',
       'This exception was thrown because',
@@ -76,7 +77,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('en');
+    const locale = Locale('ru');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -88,24 +89,24 @@ class App extends ConsumerWidget {
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
 
-      options: ISpectOptions(
+      options: const ISpectOptions(
         locale: locale,
         actionItems: [
-          TalkerActionItem(
-            title: 'Test',
-            icon: Icons.account_tree_rounded,
-            onTap: (ispectContext) {
-              Navigator.of(ispectContext).push(
-                MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                    body: Center(
-                      child: Text('Test'),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          // TalkerActionItem(
+          //   title: 'Test',
+          //   icon: Icons.account_tree_rounded,
+          //   onTap: (ispectContext) {
+          //     Navigator.of(ispectContext).push(
+          //       MaterialPageRoute(
+          //         builder: (context) => const Scaffold(
+          //           body: Center(
+          //             child: Text('Test'),
+          //           ),
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
         ],
       ),
       isISpectEnabled: true,
@@ -140,8 +141,20 @@ class App extends ConsumerWidget {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
             initialPosition: (0, 300),
+            // initialJiraData: (
+            //   apiToken:
+            //       'Token',
+            //   domain: 'example',
+            //   email: 'name.surname@example.com',
+            //   projectId: '00000',
+            //   projectKey: 'AAAA'
+            // ),
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
+            },
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
+              debugPrint(
+                  'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
             },
             child: child,
           );

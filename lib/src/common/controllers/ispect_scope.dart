@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_setters_without_getters
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +14,8 @@ class ISpectScopeModel with ChangeNotifier {
   );
   ISpectTheme _theme = const ISpectTheme();
 
+  GlobalKey<NavigatorState>? _navigatorKey;
+
   bool get isISpectEnabled => _isISpectEnabled;
 
   bool get isPerformanceTrackingEnabled => _isPerformanceTrackingEnabled;
@@ -20,6 +23,13 @@ class ISpectScopeModel with ChangeNotifier {
   ISpectOptions get options => _options;
 
   ISpectTheme get theme => _theme;
+
+  GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
+
+  set navigatorKey(GlobalKey<NavigatorState>? value) {
+    _navigatorKey = value;
+    notifyListeners();
+  }
 
   void toggleISpect() {
     _isISpectEnabled = !_isISpectEnabled;

@@ -752,6 +752,228 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'The log of the standard print method in Flutter'**
   String get printLogDesc;
+
+  /// No description provided for @submitButtonText.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submitButtonText;
+
+  /// No description provided for @feedbackDescriptionText.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem'**
+  String get feedbackDescriptionText;
+
+  /// No description provided for @draw.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get draw;
+
+  /// No description provided for @navigate.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate'**
+  String get navigate;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @createJiraIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Jira Issue'**
+  String get createJiraIssue;
+
+  /// No description provided for @pleaseAuthToJira.
+  ///
+  /// In en, this message translates to:
+  /// **'Please authorize to Jira'**
+  String get pleaseAuthToJira;
+
+  /// No description provided for @jiraInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Go to your Jira website.\n2. Click on your Profile avatar in the bottom left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to Create and manage API tokens and click on it.\n7. Create a token, then copy and paste it.'**
+  String get jiraInstruction;
+
+  /// No description provided for @projectDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Project domain'**
+  String get projectDomain;
+
+  /// No description provided for @userEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'User email'**
+  String get userEmail;
+
+  /// No description provided for @apiToken.
+  ///
+  /// In en, this message translates to:
+  /// **'API token'**
+  String get apiToken;
+
+  /// No description provided for @authorize.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorize'**
+  String get authorize;
+
+  /// No description provided for @pleaseSelectYourProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Now, please select a project'**
+  String get pleaseSelectYourProject;
+
+  /// No description provided for @createIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Create issue'**
+  String get createIssue;
+
+  /// No description provided for @changeProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Change project'**
+  String get changeProject;
+
+  /// No description provided for @sendIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Send issue'**
+  String get sendIssue;
+
+  /// No description provided for @selectIssueType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select issue type'**
+  String get selectIssueType;
+
+  /// No description provided for @selectStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Select status'**
+  String get selectStatus;
+
+  /// No description provided for @summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summary;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @selectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select label'**
+  String get selectLabel;
+
+  /// No description provided for @selectAssignee.
+  ///
+  /// In en, this message translates to:
+  /// **'Select assignee'**
+  String get selectAssignee;
+
+  /// No description provided for @selectBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Select board'**
+  String get selectBoard;
+
+  /// No description provided for @selectSprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select sprint'**
+  String get selectSprint;
+
+  /// No description provided for @uploadImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload images'**
+  String get uploadImages;
+
+  /// No description provided for @pickedImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked images'**
+  String get pickedImages;
+
+  /// No description provided for @fieldIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Field is required'**
+  String get fieldIsRequired;
+
+  /// No description provided for @selectPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Select priority'**
+  String get selectPriority;
+
+  /// No description provided for @pleaseCheckAuthCred.
+  ///
+  /// In en, this message translates to:
+  /// **'An error has occurred. Please check the authorization data.'**
+  String get pleaseCheckAuthCred;
+
+  /// No description provided for @successfullyAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'You have successfully logged in'**
+  String get successfullyAuthorized;
+
+  /// No description provided for @projectWasSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Project was selected'**
+  String get projectWasSelected;
+
+  /// No description provided for @issueCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue successfully created'**
+  String get issueCreated;
+
+  /// No description provided for @creatingIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating issue'**
+  String get creatingIssue;
+
+  /// No description provided for @addingStatusToIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding status to issue'**
+  String get addingStatusToIssue;
+
+  /// No description provided for @attachmentsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments added'**
+  String get attachmentsAdded;
+
+  /// No description provided for @addingAttachmentsToIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding attachments to issue'**
+  String get addingAttachmentsToIssue;
+
+  /// No description provided for @finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finished;
 }
 
 class _ISpectGeneratedLocalizationDelegate

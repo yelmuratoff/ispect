@@ -54,51 +54,131 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final errorMessage = _errorMessage;
-    final errorType = _type;
-    final message = _message;
-    final stackTrace = _stackTrace;
-    final riverpodFullLog = _riverpodFullLog;
-    return Padding(
-      padding: widget.margin ?? const EdgeInsets.only(bottom: 8),
-      child: GestureDetector(
-        onTap: _onTap,
-        child: TalkerBaseCard(
-          color: widget.color,
-          backgroundColor: widget.backgroundColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
+  Widget build(BuildContext context) => Padding(
+        padding: widget.margin ?? const EdgeInsets.only(bottom: 8),
+        child: GestureDetector(
+          onTap: _onTap,
+          child: TalkerBaseCard(
+            color: widget.color,
+            backgroundColor: widget.backgroundColor,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${widget.data.title} | ${widget.data.displayTime()}',
+                            style: TextStyle(
+                              color: widget.color,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (_message != null)
+                            Text(
+                              _message!,
+                              maxLines: _expanded ? null : 2,
+                              style: TextStyle(
+                                color: widget.color,
+                                fontSize: 12,
+                              ),
+                            ),
+                          if (_message == 'FlutterErrorDetails' && !_expanded)
+                            Text(
+                              _errorMessage.toString(),
+                              maxLines: 2,
+                              style: TextStyle(
+                                color: widget.color,
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 20,
+                        icon: Icon(
+                          Icons.copy,
+                          color: widget.color,
+                        ),
+                        onPressed: widget.onCopyTap,
+                      ),
+                    ),
+                    if (widget.data.key?.contains('http') ?? false) ...[
+                      const Gap(8),
+                      SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          icon: Icon(
+                            Icons.zoom_out_map_rounded,
+                            color: widget.color,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    DetailedHTTPPage(data: widget.data),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (_expanded)
+                  Container(
+                    width: double.infinity,
+                    margin: _stackTrace != null
+                        ? const EdgeInsets.only(top: 8)
+                        : null,
+                    padding: _stackTrace != null
+                        ? const EdgeInsets.all(6)
+                        : EdgeInsets.zero,
+                    decoration: _stackTrace != null
+                        ? BoxDecoration(
+                            border: Border.fromBorderSide(
+                              BorderSide(color: widget.color),
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                          )
+                        : null,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${widget.data.title} | ${widget.data.displayTime()}',
-                          style: TextStyle(
-                            color: widget.color,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                        if (message != null)
+                        if (_expanded && _type != null)
                           Text(
-                            message,
-                            maxLines: _expanded ? null : 2,
+                            _type!,
                             style: TextStyle(
                               color: widget.color,
                               fontSize: 12,
                             ),
                           ),
-                        if (message == 'FlutterErrorDetails' && !_expanded)
+                        if (_expanded && _errorMessage != null)
                           Text(
-                            errorMessage.toString(),
-                            maxLines: 2,
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: widget.color,
+                              fontSize: 12,
+                            ),
+                          ),
+                        if (_expanded && _riverpodFullLog != null)
+                          Text(
+                            _riverpodFullLog!,
                             style: TextStyle(
                               color: widget.color,
                               fontSize: 12,
@@ -107,115 +187,29 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      iconSize: 20,
-                      icon: Icon(
-                        Icons.copy,
+                if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      border: Border.fromBorderSide(
+                        BorderSide(color: widget.color),
+                      ),
+                    ),
+                    child: Text(
+                      _stackTrace!,
+                      style: TextStyle(
                         color: widget.color,
-                      ),
-                      onPressed: widget.onCopyTap,
-                    ),
-                  ),
-                  if (widget.data.key?.contains('http') ?? false) ...[
-                    const Gap(8),
-                    SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        iconSize: 20,
-                        icon: Icon(
-                          Icons.zoom_out_map_rounded,
-                          color: widget.color,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) =>
-                                  DetailedHTTPPage(data: widget.data),
-                            ),
-                          );
-                        },
+                        fontSize: 12,
                       ),
                     ),
-                  ],
-                ],
-              ),
-              if (_expanded)
-                Container(
-                  width: double.infinity,
-                  margin:
-                      stackTrace != null ? const EdgeInsets.only(top: 8) : null,
-                  padding: stackTrace != null
-                      ? const EdgeInsets.all(6)
-                      : EdgeInsets.zero,
-                  decoration: stackTrace != null
-                      ? BoxDecoration(
-                          border: Border.fromBorderSide(
-                            BorderSide(color: widget.color),
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
-                        )
-                      : null,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_expanded && errorType != null)
-                        Text(
-                          errorType,
-                          style: TextStyle(
-                            color: widget.color,
-                            fontSize: 12,
-                          ),
-                        ),
-                      if (_expanded && errorMessage != null)
-                        Text(
-                          errorMessage,
-                          style: TextStyle(
-                            color: widget.color,
-                            fontSize: 12,
-                          ),
-                        ),
-                      if (_expanded && riverpodFullLog != null)
-                        Text(
-                          riverpodFullLog,
-                          style: TextStyle(
-                            color: widget.color,
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
                   ),
-                ),
-              if (_expanded && stackTrace != null && stackTrace.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: Border.fromBorderSide(
-                      BorderSide(color: widget.color),
-                    ),
-                  ),
-                  child: Text(
-                    stackTrace,
-                    style: TextStyle(
-                      color: widget.color,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   void _onTap() {
     if (widget.onTap != null) {

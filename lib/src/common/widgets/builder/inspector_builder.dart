@@ -1,33 +1,54 @@
 // import 'package:feedback_plus/feedback_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/builder/performance_overlay_builder.dart';
+import 'package:ispect/src/common/widgets/feedback_body.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
+import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:provider/provider.dart';
 
 class ISpectBuilder extends StatelessWidget {
   const ISpectBuilder({
     required this.child,
     this.initialPosition,
+    this.initialJiraData,
     this.navigatorKey,
-    // this.feedbackTheme,
-    // this.feedBackDarkTheme,
-    // this.feedbackBuilder,
+    this.feedbackTheme,
+    this.feedBackDarkTheme,
+    this.feedbackBuilder,
     this.onPositionChanged,
+    this.onJiraAuthorized,
     super.key,
   });
   final GlobalKey<NavigatorState>? navigatorKey;
   final Widget? child;
-  // final FeedbackThemeData? feedbackTheme;
-  // final FeedbackThemeData? feedBackDarkTheme;
-  // final Widget Function(
-  //   BuildContext context,
-  //   Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
-  //   ScrollController? controller,
-  // )? feedbackBuilder;
+  final FeedbackThemeData? feedbackTheme;
+  final FeedbackThemeData? feedBackDarkTheme;
+  final Widget Function(
+    BuildContext context,
+    Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
+    ScrollController? controller,
+  )? feedbackBuilder;
   final void Function(double x, double y)? onPositionChanged;
+
+  final void Function(
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  )? onJiraAuthorized;
+
   final (double x, double y)? initialPosition;
+  final ({
+    String domain,
+    String email,
+    String apiToken,
+    String projectId,
+    String projectKey,
+  })? initialJiraData;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +73,8 @@ class ISpectBuilder extends StatelessWidget {
           selectedTextColor: theme.colorScheme.onSurface,
           onPositionChanged: onPositionChanged,
           initialPosition: initialPosition,
+          onJiraAuthorized: onJiraAuthorized,
+          initialJiraData: initialJiraData,
           child: child ?? const SizedBox(),
         );
 
@@ -64,45 +87,49 @@ class ISpectBuilder extends StatelessWidget {
         );
 
         /// Add feedback button to the widget tree
-        // child = BetterFeedback(
-        //   themeMode: context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-        //   localizationsDelegates: ISpectLocalization.localizationDelegates,
-        //   localeOverride: ispectModel.options.locale,
-        //   theme: feedbackTheme ??
-        //       FeedbackThemeData(
-        //         background: Colors.grey[800]!,
-        //         feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-        //         activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
-        //         cardColor: context.ispectTheme.scaffoldBackgroundColor,
-        //         bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
-        //           color: Colors.grey[800],
-        //         ),
-        //         dragHandleColor: Colors.grey[400],
-        //         inactiveColor: Colors.grey[700]!,
-        //         textColor: Colors.grey[800]!,
-        //       ),
-        //   darkTheme: feedBackDarkTheme ??
-        //       FeedbackThemeData(
-        //         background: Colors.grey[800]!,
-        //         feedbackSheetColor: context.ispectTheme.colorScheme.surface,
-        //         activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
-        //         cardColor: context.ispectTheme.scaffoldBackgroundColor,
-        //         bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
-        //           color: Colors.grey[300],
-        //         ),
-        //         dragHandleColor: Colors.grey[400],
-        //         inactiveColor: Colors.grey[600]!,
-        //         textColor: Colors.grey[300]!,
-        //       ),
-        //   mode: FeedbackMode.navigate,
-        //   feedbackBuilder: feedbackBuilder ??
-        //       (_, extras, scrollController) => SimpleFeedbackBuilder(
-        //             onSubmit: extras,
-        //             scrollController: scrollController,
-        //             theme: theme,
-        //           ),
-        //   child: child,
-        // );
+        child = BetterFeedback(
+          themeMode: context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          localizationsDelegates: ISpectLocalization.localizationDelegates,
+          localeOverride: ispectModel.options.locale,
+          theme: feedbackTheme ??
+              FeedbackThemeData(
+                background: Colors.grey[800]!,
+                feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                activeFeedbackModeColor:
+                    context.ispectTheme.colorScheme.primary,
+                cardColor: context.ispectTheme.scaffoldBackgroundColor,
+                bottomSheetDescriptionStyle:
+                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                  color: Colors.grey[800],
+                ),
+                dragHandleColor: Colors.grey[400],
+                inactiveColor: Colors.grey[700]!,
+                textColor: Colors.grey[800]!,
+              ),
+          darkTheme: feedBackDarkTheme ??
+              FeedbackThemeData(
+                background: Colors.grey[800]!,
+                feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                activeFeedbackModeColor:
+                    context.ispectTheme.colorScheme.primary,
+                cardColor: context.ispectTheme.scaffoldBackgroundColor,
+                bottomSheetDescriptionStyle:
+                    context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                  color: Colors.grey[300],
+                ),
+                dragHandleColor: Colors.grey[400],
+                inactiveColor: Colors.grey[600]!,
+                textColor: Colors.grey[300]!,
+              ),
+          mode: FeedbackMode.navigate,
+          feedbackBuilder: feedbackBuilder ??
+              (_, extras, scrollController) => SimpleFeedbackBuilder(
+                    onSubmit: extras,
+                    scrollController: scrollController,
+                    theme: theme,
+                  ),
+          child: child,
+        );
 
         return child;
       },

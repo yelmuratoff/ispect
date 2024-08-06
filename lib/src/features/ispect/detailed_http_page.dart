@@ -46,6 +46,14 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(_title(_data.key ?? '')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy),
+            onPressed: () {
+              copyClipboard(context, value: _data.generateTextMessage());
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

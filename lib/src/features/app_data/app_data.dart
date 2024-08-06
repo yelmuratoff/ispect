@@ -8,7 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/cache/src/app_cache_manager.dart';
 import 'package:ispect/src/common/services/file/file_service.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
-import 'package:simple_app_cache_manager/simple_app_cache_manager.dart';
+// import 'package:simple_app_cache_manager/simple_app_cache_manager.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/view.dart';
@@ -57,7 +57,6 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
         },
         cacheSizeNotifier: cacheSizeNotifier,
         clearCache: () async {
-          cacheManager.clearCache();
           await appCacheManager.deleteCacheDir(
             isAndroid: context.ispectTheme.platform == TargetPlatform.android,
           );
@@ -80,7 +79,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
 
 mixin CacheMixin on State<AppDataPage> {
   late final AppCacheManager appCacheManager;
-  late final SimpleAppCacheManager cacheManager;
+  // late final SimpleAppCacheManager cacheManager;
 
   late ValueNotifier<String> cacheSizeNotifier = ValueNotifier<String>('');
 
@@ -88,13 +87,13 @@ mixin CacheMixin on State<AppDataPage> {
   void initState() {
     super.initState();
     appCacheManager = AppCacheManager();
-    cacheManager = SimpleAppCacheManager();
+    // cacheManager = SimpleAppCacheManager();
     updateCacheSize();
   }
 
   Future<void> updateCacheSize() async {
-    final cacheSize = await cacheManager.getTotalCacheSize();
-    cacheSizeNotifier.value = cacheSize;
+    final cacheSize = await appCacheManager.getCacheSize();
+    cacheSizeNotifier.value = appCacheManager.formatSize(cacheSize);
   }
 
   @override

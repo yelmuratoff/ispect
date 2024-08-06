@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
@@ -25,13 +26,15 @@ final class ISpect {
   static ISpectScopeModel watch(BuildContext context) =>
       Provider.of<ISpectScopeModel>(context);
 
+  late final GlobalKey<NavigatorState> navigatorKey;
+
   static void run<T>(
     T Function() callback, {
     required Talker talker,
     VoidCallback? onInit,
     VoidCallback? onInitialized,
     void Function(Object error, StackTrace stackTrace)? onError,
-    bool isPrintLoggingEnabled = true,
+    bool isPrintLoggingEnabled = kReleaseMode,
     bool isZoneErrorHandlingEnabled = true,
     void Function(Object error, StackTrace stackTrace)?
         onPlatformDispatcherError,
@@ -106,10 +109,10 @@ final class ISpect {
       },
       zoneSpecification: ZoneSpecification(
         print: (_, parent, zone, line) {
-          parent.print(zone, line);
-
-          if (isPrintLoggingEnabled) {
+          if (isPrintLoggingEnabled && !line.contains('\x1b')) {
             ISpectTalker.print(line);
+          } else {
+            parent.print(zone, line);
           }
         },
       ),
