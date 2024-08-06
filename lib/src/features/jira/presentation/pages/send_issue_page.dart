@@ -485,7 +485,7 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                                   ISpectDropDown(
                                     value: _selectedBoard,
                                     hintText: context.ispectL10n.selectBoard,
-                                    maxWidth: 370,
+                                    maxWidth: 360,
                                     items: list
                                         .map(
                                           (e) => DropdownMenuItem(
@@ -534,6 +534,7 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                             ISpectDropDown(
                               value: _selectedSprint,
                               hintText: context.ispectL10n.selectSprint,
+                              maxWidth: 360,
                               isRequired: true,
                               items: list
                                   .map(
