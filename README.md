@@ -55,7 +55,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.7.2-beta.7
+  ispect: ^1.7.2-beta.8
 ```
 
 ### Add import package
@@ -295,7 +295,6 @@ A list of great packages I've used in ISpect:
 [gap](https://pub.dev/packages/gap), 
 [auto_size_text](https://pub.dev/packages/auto_size_text), 
 [feedback](https://pub.dev/packages/feedback), 
-[simple_app_cache_manager](https://pub.dev/packages/simple_app_cache_manager), 
 [inspector](https://pub.dev/packages/inspector), 
 [performance](https://pub.dev/packages/performance), 
 [cr_json_widget](https://pub.dev/packages/cr_json_widget).

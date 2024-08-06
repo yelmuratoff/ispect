@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/painting.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/services/cache/src/base_cache.dart';
@@ -12,6 +13,7 @@ final class AppCacheManager implements BaseCacheService {
     try {
       final cacheDir = await getTemporaryDirectory();
       final appDir = await getApplicationSupportDirectory();
+      final appCacheDir = await getApplicationCacheDirectory();
 
       if (cacheDir.existsSync()) {
         await cacheDir.delete(recursive: true);
@@ -21,6 +23,11 @@ final class AppCacheManager implements BaseCacheService {
       if (appDir.existsSync()) {
         await appDir.delete(recursive: true);
         ISpectTalker.info('Cleared: appDir: ${appDir.path}');
+      }
+
+      if (appCacheDir.existsSync()) {
+        await appCacheDir.delete(recursive: true);
+        ISpectTalker.info('Cleared: appCacheDir: ${appCacheDir.path}');
       }
 
       if (isAndroid) {
@@ -40,8 +47,6 @@ final class AppCacheManager implements BaseCacheService {
       ISpectTalker.info(
         'Cleared: imageCache: ${PaintingBinding.instance.imageCache.currentSize}, clearLiveImages: ${PaintingBinding.instance.imageCache.liveImageCount}',
       );
-
-      // await cache.emptyCache();
     } on Exception catch (e, st) {
       ISpectTalker.handle(
         exception: e,
@@ -52,12 +57,55 @@ final class AppCacheManager implements BaseCacheService {
   }
 
   @override
-  Future<double> getCacheSize() {
-    throw UnimplementedError();
+  Future<double> getCacheSize() async {
+    try {
+      final cacheDir = await getTemporaryDirectory();
+      final appDir = await getApplicationSupportDirectory();
+      final appCacheDir = await getApplicationCacheDirectory();
+
+      var size = 0.0;
+
+      if (cacheDir.existsSync()) {
+        size += await _getDirSize(cacheDir);
+      }
+
+      if (appDir.existsSync()) {
+        size += await _getDirSize(appDir);
+      }
+
+      if (appCacheDir.existsSync()) {
+        size += await _getDirSize(appCacheDir);
+      }
+
+      return size;
+    } on Exception catch (e, st) {
+      ISpectTalker.handle(
+        exception: e,
+        stackTrace: st,
+        message: 'Failed to get cache size',
+      );
+      return 0;
+    }
   }
 
-  @override
-  Future<List<File>> getFiles() {
-    throw UnimplementedError();
+  Future<double> _getDirSize(Directory dir) async {
+    var size = 0.0;
+    await for (final entity in dir.list(recursive: true, followLinks: false)) {
+      if (entity is File) {
+        size += await entity.length();
+      }
+    }
+    return size;
+  }
+
+  String formatSize(double sizeInBytes) {
+    const oneMB = 1024 * 1024;
+    const oneGB = 1024 * oneMB;
+
+    if (sizeInBytes >= oneGB) {
+      return '${(sizeInBytes / oneGB).toStringAsFixed(2)} GB';
+    } else {
+      return '${(sizeInBytes / oneMB).toStringAsFixed(2)} MB';
+    }
   }
 }
