@@ -1,6 +1,7 @@
 ## 1.7.2-beta.7
 - Added Jira to ISpect. Please check the example project for better understanding.
 After some testing, I will release it as a stable version and add it to the documentation.
+- Fixed deactivated widget error.
 
 ## 1.7.1
 - Updated Feedback builder added. Now you can use it to send feedback to the developer.
