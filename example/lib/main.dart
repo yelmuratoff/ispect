@@ -150,11 +150,11 @@ class App extends ConsumerWidget {
             //   projectKey: 'AAAA'
             // ),
             onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
+              // debugPrint('x: $x, y: $y');
             },
             onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              debugPrint(
-                  'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
+              // debugPrint(
+              //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
             },
             child: child,
           );

@@ -1,6 +1,6 @@
-## 1.7.3
+## 1.7.4
 - Minor changes with history of logs: copy all logs and share file.
-- Minor changes with draggable button, now it is possible to open after horizontal drag end.
+<!-- - Minor changes with draggable button, now it is possible to open after horizontal drag end. -->
 
 ## 1.7.2
 - Added Jira to ISpect. Please check the example project for better understanding.
