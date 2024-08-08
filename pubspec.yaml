@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 1.7.2 #1.7.2-beta.8
+version: 1.7.3 #1.7.2-beta.8
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -29,7 +29,7 @@ dependencies:
   package_info_plus: ^8.0.1
   device_info_plus: ^10.1.1
   atlassian_apis: ^0.15.0
-  file_picker: ^8.0.6
+  file_picker: ^8.0.7
 
   # UI
   gap: ^3.0.1

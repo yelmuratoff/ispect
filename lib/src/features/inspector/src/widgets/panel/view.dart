@@ -120,6 +120,9 @@ class _ButtonView extends StatelessWidget {
                   child: GestureDetector(
                     onPanUpdate: onPanUpdate.call,
                     onPanEnd: onPanEnd.call,
+                    onHorizontalDragEnd: (_) {
+                      onButtonTap.call();
+                    },
                     child: InkWell(
                       onTap: onButtonTap.call,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),

@@ -7,6 +7,7 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
+import 'package:ispect/src/common/utils/history.dart';
 import 'package:ispect/src/common/widgets/widget/data_card.dart';
 import 'package:ispect/src/common/widgets/widget/info_bottom_sheet.dart';
 import 'package:ispect/src/common/widgets/widget/settings/settings_bottom_sheet.dart';
@@ -298,7 +299,7 @@ class _TalkerViewState extends State<TalkerView> {
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(
-      widget.talker.history.text(),
+      widget.talker.history.formattedText(),
     );
   }
 
@@ -336,7 +337,7 @@ class _TalkerViewState extends State<TalkerView> {
   void _copyAllLogs(BuildContext context) {
     copyClipboard(
       context,
-      value: widget.talker.history.text(),
+      value: widget.talker.history.formattedText(),
       title: '✅ ${context.ispectL10n.allLogsCopied}',
       showValue: false,
     );

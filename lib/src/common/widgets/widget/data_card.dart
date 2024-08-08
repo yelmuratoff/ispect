@@ -102,8 +102,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       ),
                     ),
                     SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 24,
+                      width: 24,
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         iconSize: 20,
@@ -117,8 +117,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                     if (widget.data.key?.contains('http') ?? false) ...[
                       const Gap(8),
                       SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 24,
+                        width: 24,
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           iconSize: 20,
