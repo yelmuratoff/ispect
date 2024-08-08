@@ -87,7 +87,7 @@ class CircularMenuItemWidget extends StatelessWidget {
             onTap: () {
               item.onTap();
               if (item.onTapClosesMenu) {
-                closeMenu!();
+                closeMenu?.call();
               }
             },
           ),
