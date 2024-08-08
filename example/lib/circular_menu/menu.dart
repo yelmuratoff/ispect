@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -194,7 +195,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
           setState(() {
             _buttonPosition += details.delta;
             _buttonPosition = Offset(
-              _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize / 2),
+              _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
               _buttonPosition.dy.clamp(50, screenSize.height - 100),
             );
           });
@@ -202,7 +203,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
         onPanEnd: (details) {
           setState(() {
             if (_buttonPosition.dx > (screenSize.width / 2 - widget.toggleButtonSize / 2)) {
-              _buttonPosition = Offset(screenSize.width - 80, _buttonPosition.dy);
+              _buttonPosition = Offset(screenSize.width - widget.toggleButtonSize * 2, _buttonPosition.dy);
             } else {
               _buttonPosition = Offset(0, _buttonPosition.dy);
             }
