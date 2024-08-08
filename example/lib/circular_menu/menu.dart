@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:ispect_example/circular_menu/item.dart';
 
@@ -27,12 +27,12 @@ class DraggableCircularMenu extends StatefulWidget {
   /// animation curve in forward
   final Curve curve;
 
-  /// animation curve in rverse
+  /// animation curve in reverse
   final Curve reverseCurve;
 
   /// callback
   final VoidCallback? toggleButtonOnPressed;
-  final Color? toggleButtonColor;
+  final Color toggleButtonColor;
   final double toggleButtonSize;
   final List<BoxShadow>? toggleButtonBoxShadow;
   final double toggleButtonPadding;
@@ -40,10 +40,11 @@ class DraggableCircularMenu extends StatefulWidget {
   final Color? toggleButtonIconColor;
   final AnimatedIconData toggleButtonAnimatedIconData;
 
-  /// staring angle in clockwise radian
+  /// starting angle in clockwise radian
   final double? startingAngleInRadian;
 
   /// ending angle in clockwise radian
+
   final double? endingAngleInRadian;
 
   /// should the menu be draggable
@@ -52,10 +53,6 @@ class DraggableCircularMenu extends StatefulWidget {
   /// step size for dragging
   final ({double x, double y}) stepSize;
 
-  /// creates a circular menu with specific [radius] and [alignment] .
-  /// [toggleButtonElevation] ,[toggleButtonPadding] and [toggleButtonMargin] must be
-  /// equal or greater than zero.
-  /// [items] must not be null and it must contains two elements at least.
   DraggableCircularMenu({
     required this.items,
     this.alignment = Alignment.bottomCenter,
@@ -65,11 +62,11 @@ class DraggableCircularMenu extends StatefulWidget {
     this.curve = Curves.bounceOut,
     this.reverseCurve = Curves.fastOutSlowIn,
     this.toggleButtonOnPressed,
-    this.toggleButtonColor,
+    required this.toggleButtonColor,
     this.toggleButtonBoxShadow,
     this.toggleButtonMargin = 10,
     this.toggleButtonPadding = 10,
-    this.toggleButtonSize = 40,
+    this.toggleButtonSize = 30,
     this.toggleButtonIconColor,
     this.toggleButtonAnimatedIconData = AnimatedIcons.menu_close,
     this.menuKey,
@@ -95,6 +92,10 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
   late int _itemsCount;
   late Animation<double> _animation;
   Offset _buttonPosition = const Offset(0, 100);
+  Timer? _hideTimer;
+  Timer? _fullHideTimer;
+  bool _isFullyHidden = false;
+  bool _isGradding = false;
 
   @override
   void initState() {
@@ -108,12 +109,15 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
       CurvedAnimation(parent: _animationController, curve: widget.curve, reverseCurve: widget.reverseCurve),
     );
     _itemsCount = widget.items.length;
+    _startHideTimers();
     super.initState();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _hideTimer?.cancel();
+    _fullHideTimer?.cancel();
     super.dispose();
   }
 
@@ -124,28 +128,26 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
 
     _configureAlignmentBasedAngles(alignment);
 
-    return Stack(
-      key: widget.menuKey,
-      children: <Widget>[
-        widget.child,
-        ..._buildMenuItems(
-          alignment,
-          screenSize: screenSize,
-        ),
-        _buildMenuButton(
-          context,
-          screenSize: screenSize,
-        ),
-        Positioned(
-          left: screenSize.width / 2 - widget.toggleButtonSize / 2,
-          top: screenSize.height / 2,
-          child: Container(
-            color: Colors.red.withOpacity(0.5),
-            height: widget.toggleButtonSize,
-            width: widget.toggleButtonSize,
+    return GestureDetector(
+      onTap: () {
+        if (_animationController.isCompleted) {
+          _closeMenu();
+        }
+      },
+      child: Stack(
+        key: widget.menuKey,
+        children: <Widget>[
+          widget.child,
+          ..._buildMenuItems(
+            alignment,
+            screenSize: screenSize,
           ),
-        )
-      ],
+          _buildMenuButton(
+            context,
+            screenSize: screenSize,
+          ),
+        ],
+      ),
     );
   }
 
@@ -154,10 +156,14 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     required Size screenSize,
   }) {
     List<Widget> items = [];
+    final bool isInLeftSide = _isInLeftSide(screenSize);
+    final double rightPosition = screenSize.width - _buttonPosition.dx - widget.toggleButtonSize * 2;
+
     widget.items.asMap().forEach((index, item) {
       items.add(
         Positioned(
-          left: _buttonPosition.dx,
+          left: isInLeftSide ? _buttonPosition.dx : null,
+          right: !isInLeftSide ? rightPosition : null,
           top: _buttonPosition.dy,
           child: Transform.translate(
             offset: Offset.fromDirection(
@@ -187,55 +193,132 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     BuildContext context, {
     required Size screenSize,
   }) {
+    final bool isInLeftSide = _isInLeftSide(screenSize);
+    final bool isInRightSide = _isInRightSide(screenSize);
+
+    final double rightPosition = screenSize.width - _buttonPosition.dx - widget.toggleButtonSize * 2;
+
     return Positioned(
-      left: _buttonPosition.dx,
+      left: isInLeftSide ? _buttonPosition.dx : null,
+      right: !isInLeftSide ? rightPosition : null,
       top: _buttonPosition.dy,
-      child: GestureDetector(
-        onPanUpdate: (details) {
-          setState(() {
-            _buttonPosition += details.delta;
-            _buttonPosition = Offset(
-              _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
-              _buttonPosition.dy.clamp(50, screenSize.height - 100),
-            );
-          });
+      child: TapRegion(
+        onTapOutside: (_) {
+          if (_animationController.isCompleted) {
+            _closeMenu();
+          }
         },
-        onPanEnd: (details) {
-          setState(() {
-            if (_buttonPosition.dx > (screenSize.width / 2 - widget.toggleButtonSize / 2)) {
-              _buttonPosition = Offset(screenSize.width - widget.toggleButtonSize * 2, _buttonPosition.dy);
-            } else {
-              _buttonPosition = Offset(0, _buttonPosition.dy);
-            }
-          });
-        },
-        child: CircularMenuItemWidget(
-          item: CircularMenuItem(
-            margin: widget.toggleButtonMargin,
-            onTap: () {
-              _closeMenu();
-              if (widget.toggleButtonOnPressed != null) {
-                widget.toggleButtonOnPressed!();
+        child: GestureDetector(
+          onPanUpdate: (details) {
+            setState(() {
+              _buttonPosition += details.delta;
+              _isGradding = true;
+              _buttonPosition = Offset(
+                _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
+                _buttonPosition.dy.clamp(50, screenSize.height - 100),
+              );
+            });
+          },
+          onPanEnd: (details) {
+            setState(() {
+              if (_buttonPosition.dx > _halfScreenWidth(screenSize)) {
+                _buttonPosition = Offset(screenSize.width - widget.toggleButtonSize * 2, _buttonPosition.dy);
+              } else {
+                _buttonPosition = Offset(0, _buttonPosition.dy);
               }
-            },
-            boxShadow: widget.toggleButtonBoxShadow,
-            animatedIcon: AnimatedIcon(
-              icon: widget.toggleButtonAnimatedIconData,
-              size: widget.toggleButtonSize,
-              color: widget.toggleButtonIconColor ?? Colors.white,
-              progress: _animation,
+              _isGradding = false;
+            });
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.all(0),
+              width: _isFullyHidden ? 20 : widget.toggleButtonSize * 1.5,
+              height: 70,
+              decoration: BoxDecoration(
+                color: _isFullyHidden ? widget.toggleButtonColor.withOpacity(0.3) : widget.toggleButtonColor,
+                borderRadius: BorderRadius.only(
+                  topRight: isInLeftSide || _isGradding ? const Radius.circular(16) : Radius.zero,
+                  bottomRight: isInLeftSide || _isGradding ? const Radius.circular(16) : Radius.zero,
+                  topLeft: isInRightSide || _isGradding ? const Radius.circular(16) : Radius.zero,
+                  bottomLeft: isInRightSide || _isGradding ? const Radius.circular(16) : Radius.zero,
+                ),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  _closeMenu();
+                  if (widget.toggleButtonOnPressed != null) {
+                    widget.toggleButtonOnPressed!();
+                  }
+                },
+                child: _isFullyHidden
+                    ? _isGradding
+                        ? const SizedBox()
+                        : Center(
+                            child: CustomPaint(
+                              willChange: true,
+                              size: const Size(20, 70),
+                              painter: LineWithCurvePainter(
+                                isInRightSide: isInRightSide,
+                              ),
+                            ),
+                          )
+                    : Center(
+                        child: AnimatedIcon(
+                          icon: widget.toggleButtonAnimatedIconData,
+                          size: widget.toggleButtonSize,
+                          color: widget.toggleButtonIconColor ?? Colors.white,
+                          progress: _animation,
+                        ),
+                      ),
+              ),
             ),
-            onTapClosesMenu: false,
           ),
         ),
       ),
     );
   }
 
+  double _halfScreenWidth(Size screenSize) => (screenSize.width / 2 - widget.toggleButtonSize / 2);
+
+  bool _isInLeftSide(Size screenSize) => _buttonPosition.dx < _halfScreenWidth(screenSize);
+
+  bool _isInRightSide(Size screenSize) => _buttonPosition.dx > _halfScreenWidth(screenSize);
+
   void _closeMenu() {
-    _animationController.status == AnimationStatus.dismissed
-        ? (_animationController).forward()
-        : (_animationController).reverse();
+    if (_animationController.status == AnimationStatus.dismissed) {
+      (_animationController).forward();
+      _resetHideTimers();
+    } else {
+      (_animationController).reverse();
+    }
+  }
+
+  void _startHideTimers() {
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      log('Status: ${_animationController.status}');
+      if (_animationController.status == AnimationStatus.completed) {
+        _closeMenu();
+      }
+    });
+    _fullHideTimer = Timer(const Duration(seconds: 4), () {
+      if (_animationController.status == AnimationStatus.dismissed) {
+        setState(() {
+          _isFullyHidden = true;
+        });
+      }
+    });
+  }
+
+  void _resetHideTimers() {
+    _hideTimer?.cancel();
+    _fullHideTimer?.cancel();
+    setState(() {
+      _isFullyHidden = false;
+    });
+    _startHideTimers();
   }
 
   Alignment _getAlignmentFromOffset(Offset offset, Size containerSize) {
@@ -304,5 +387,40 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
       default:
         throw 'Alignment not supported';
     }
+  }
+}
+
+class LineWithCurvePainter extends CustomPainter {
+  final bool isInRightSide;
+
+  LineWithCurvePainter({required this.isInRightSide});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Colors.white.withOpacity(0.4)
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    double startX = isInRightSide ? size.width - 8 : 8;
+    double controlPointX = size.width / 2;
+    double endX = size.width / 2 + (isInRightSide ? 2 : -2);
+
+    Path path = Path()
+      ..moveTo(startX, 14)
+      ..quadraticBezierTo(
+        controlPointX,
+        size.height / 2,
+        endX,
+        size.height - 14,
+      );
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
