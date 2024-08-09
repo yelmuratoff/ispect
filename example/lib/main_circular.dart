@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ispect_example/circular_menu/item.dart';
-import 'package:ispect_example/circular_menu/menu.dart';
+import 'package:ispect/ispect.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +18,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
     return MaterialApp(
       builder: (context, child) => DraggableCircularMenu(
         toggleButtonColor: Colors.pink,
@@ -28,6 +26,7 @@ class _MyAppState extends State<MyApp> {
         items: [
           CircularMenuItem(
               icon: Icons.home,
+              boxShadow: [],
               color: Colors.green,
               onTap: () {
                 setState(() {
@@ -37,6 +36,7 @@ class _MyAppState extends State<MyApp> {
               }),
           CircularMenuItem(
               icon: Icons.search,
+              boxShadow: [],
               color: Colors.blue,
               onTap: () {
                 setState(() {
@@ -46,6 +46,7 @@ class _MyAppState extends State<MyApp> {
               }),
           CircularMenuItem(
               icon: Icons.settings,
+              boxShadow: [],
               color: Colors.orange,
               onTap: () {
                 setState(() {
@@ -55,6 +56,7 @@ class _MyAppState extends State<MyApp> {
               }),
           CircularMenuItem(
               icon: Icons.chat,
+              boxShadow: [],
               color: Colors.purple,
               onTap: () {
                 setState(() {
@@ -64,6 +66,7 @@ class _MyAppState extends State<MyApp> {
               }),
           CircularMenuItem(
               icon: Icons.notifications,
+              boxShadow: [],
               color: Colors.brown,
               onTap: () {
                 setState(() {

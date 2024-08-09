@@ -11,8 +11,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -138,25 +137,64 @@ class App extends ConsumerWidget {
         ),
         themeMode: themeMode,
         builder: (context, child) {
-          child = ISpectBuilder(
-            navigatorKey: navigatorKey,
-            initialPosition: (0, 300),
-            // initialJiraData: (
-            //   apiToken:
-            //       'Token',
-            //   domain: 'example',
-            //   email: 'name.surname@example.com',
-            //   projectId: '00000',
-            //   projectKey: 'AAAA'
-            // ),
-            onPositionChanged: (x, y) {
-              // debugPrint('x: $x, y: $y');
-            },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              // debugPrint(
-              //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
-            },
-            child: child,
+          // child = ISpectBuilder(
+          //   navigatorKey: navigatorKey,
+          //   initialPosition: (0, 300),
+          //   // initialJiraData: (
+          //   //   apiToken:
+          //   //       'Token',
+          //   //   domain: 'example',
+          //   //   email: 'name.surname@example.com',
+          //   //   projectId: '00000',
+          //   //   projectKey: 'AAAA'
+          //   // ),
+          //   onPositionChanged: (x, y) {
+          //     // debugPrint('x: $x, y: $y');
+          //   },
+          //   onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
+          //     // debugPrint(
+          //     //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
+          //   },
+          //   child: child,
+          // );
+          child = DraggableCircularMenu(
+            toggleButtonColor: Colors.blue,
+            toggleButtonBoxShadow: const [],
+            curve: Curves.fastEaseInToSlowEaseOut,
+            reverseCurve: Curves.fastEaseInToSlowEaseOut,
+            items: [
+              CircularMenuItem(
+                icon: Icons.home,
+                color: Colors.green,
+                onTap: () {},
+                boxShadow: [],
+              ),
+              CircularMenuItem(
+                icon: Icons.search,
+                color: Colors.blue,
+                onTap: () {},
+                boxShadow: [],
+              ),
+              CircularMenuItem(
+                icon: Icons.settings,
+                color: Colors.orange,
+                onTap: () {},
+                boxShadow: [],
+              ),
+              CircularMenuItem(
+                icon: Icons.chat,
+                color: Colors.purple,
+                onTap: () {},
+                boxShadow: [],
+              ),
+              CircularMenuItem(
+                icon: Icons.notifications,
+                color: Colors.brown,
+                onTap: () {},
+                boxShadow: [],
+              )
+            ],
+            child: child!,
           );
           return child;
         },

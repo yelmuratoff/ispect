@@ -37,12 +37,10 @@ class DraggableButtonPanelState extends State<DraggableButtonPanel> with SingleT
   late double _panelWidth;
 
   double _top = 50;
-  double _left = 10;
 
   void _updatePosition(Offset newPosition) {
     if (newPosition != Offset(widget.left, widget.top)) {
       setState(() {
-        _left = newPosition.dx;
         _top = newPosition.dy;
       });
     }
