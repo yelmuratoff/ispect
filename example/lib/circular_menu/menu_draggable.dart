@@ -204,31 +204,30 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
       top: _buttonPosition.dy,
       child: TapRegion(
         onTapOutside: (_) {
-          _startHideTimers();
+          if (_animationController.isCompleted) {
+            _closeMenu();
+          }
         },
         child: GestureDetector(
           onPanUpdate: (details) {
-            if (!_isFullyHidden) {
-              setState(() {
-                _buttonPosition += details.delta;
-                _isGradding = true;
-                _buttonPosition = Offset(
-                  _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
-                  _buttonPosition.dy.clamp(50, screenSize.height - 100),
-                );
-              });
-            }
-          },
-          onPanStart: (details) {
             setState(() {
-              _isFullyHidden = false;
+              _buttonPosition += details.delta;
+              _isGradding = true;
+              _buttonPosition = Offset(
+                _buttonPosition.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
+                _buttonPosition.dy.clamp(50, screenSize.height - 100),
+              );
             });
           },
           onPanEnd: (details) {
-            if (!_isFullyHidden) {
-              _snapButton(screenSize);
-              _startHideTimers();
-            }
+            setState(() {
+              if (_buttonPosition.dx > _halfScreenWidth(screenSize)) {
+                _buttonPosition = Offset(screenSize.width - widget.toggleButtonSize * 2, _buttonPosition.dy);
+              } else {
+                _buttonPosition = Offset(0, _buttonPosition.dy);
+              }
+              _isGradding = false;
+            });
           },
           child: Material(
             color: Colors.transparent,
@@ -282,17 +281,6 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     );
   }
 
-  void _snapButton(Size screenSize) {
-    setState(() {
-      if (_buttonPosition.dx > _halfScreenWidth(screenSize)) {
-        _buttonPosition = Offset(screenSize.width - widget.toggleButtonSize * 2, _buttonPosition.dy);
-      } else {
-        _buttonPosition = Offset(0, _buttonPosition.dy);
-      }
-      _isGradding = false;
-    });
-  }
-
   double _halfScreenWidth(Size screenSize) => (screenSize.width / 2 - widget.toggleButtonSize / 2);
 
   bool _isInLeftSide(Size screenSize) => _buttonPosition.dx < _halfScreenWidth(screenSize);
@@ -320,9 +308,6 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
         setState(() {
           _isFullyHidden = true;
         });
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _snapButton(MediaQuery.sizeOf(context));
-        });
       }
     });
   }
@@ -333,7 +318,6 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     setState(() {
       _isFullyHidden = false;
     });
-
     _startHideTimers();
   }
 

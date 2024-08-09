@@ -76,19 +76,10 @@ class _MyAppState extends State<MyApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Flutter Circular Menu'),
+          title: const Text('Circular Draggable button'),
         ),
         body: Stack(
           children: [
-            Positioned(
-              left: (screenSize.width / 2) - 40,
-              top: screenSize.height / 2,
-              child: Container(
-                color: Colors.red.withOpacity(0.5),
-                height: 80,
-                width: 80,
-              ),
-            ),
             Center(
               child: RichText(
                 text: TextSpan(
