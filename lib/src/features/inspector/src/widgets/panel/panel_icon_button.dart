@@ -37,27 +37,4 @@ class _PanelIconButton extends StatelessWidget {
           ),
         ),
       );
-  // Material(
-  //       color: Colors.transparent,
-  //       child: IconButton.filled(
-  //         icon: Icon(icon),
-  //         style: ButtonStyle(
-  //           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-  //           backgroundColor: WidgetStateProperty.all<Color>(
-  //             isActive
-  //                 ? context.ispectTheme.colorScheme.primaryContainer
-  //                 : adjustColorDarken(
-  //                     context.ispectTheme.colorScheme.primaryContainer,
-  //                     0.3,
-  //                   ),
-  //           ),
-  //           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-  //             const RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.all(Radius.circular(16)),
-  //             ),
-  //           ),
-  //         ),
-  //         onPressed: onPressed.call,
-  //       ),
-  //     );
 }

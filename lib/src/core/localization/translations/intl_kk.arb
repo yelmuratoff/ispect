@@ -145,5 +145,6 @@
    "addingStatusToIssue": "Мәселеге мәртебе қосылуда",
    "attachmentsAdded": "Тіркемелер қосылды",
    "addingAttachmentsToIssue": "Тіркемелер мәселеге қосылуда",
-   "finished": "Бітті"
+   "finished": "Бітті",
+   "hidePanel": "Панельді жасыру"
 }

@@ -1,5 +1,6 @@
 // ignore_for_file: comment_references, avoid_public_members_in_states
 
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/common/widgets/panel/draggable_panel.dart';
 
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
@@ -17,9 +21,11 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
-import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
+import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
+import 'package:ispect/src/features/snapshot/feedback_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -129,8 +135,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) =>
-      context?.findAncestorStateOfType<InspectorState>();
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -140,8 +145,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() => setState(() => _isPanelVisible = !_isPanelVisible);
 
   final _stackKey = GlobalKey();
   final _repaintBoundaryKey = GlobalKey();
@@ -240,9 +244,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -356,8 +358,7 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -368,9 +369,8 @@ class InspectorState extends State<Inspector> {
   Offset _extractShiftedOffset(Offset offset) {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 =
+        (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -392,9 +392,7 @@ class InspectorState extends State<Inspector> {
       y: y,
     );
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _selectedColorOffsetNotifier.value = offset - overlayOffset;
   }
@@ -404,9 +402,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -414,8 +410,7 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
     if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+      final newValue = _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
 
       if (newValue < 1.0) {
         return;
@@ -466,6 +461,9 @@ class InspectorState extends State<Inspector> {
       return widget.child;
     }
 
+    final iSpect = ISpect.read(context);
+    final feedback = BetterFeedback.of(context);
+
     return Stack(
       key: _stackKey,
       children: [
@@ -480,9 +478,8 @@ class InspectorState extends State<Inspector> {
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer = _colorPickerStateNotifier.value ||
-                  _inspectorStateNotifier.value ||
-                  _zoomStateNotifier.value;
+              final isAbsorbingPointer =
+                  _colorPickerStateNotifier.value || _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -597,28 +594,127 @@ class InspectorState extends State<Inspector> {
                 _zoomStateNotifier,
                 _byteDataStateNotifier,
               ],
-              builder: (_) => InspectorPanel(
-                isInspectorEnabled: _inspectorStateNotifier.value,
-                isColorPickerEnabled: _colorPickerStateNotifier.value,
-                isZoomEnabled: _zoomStateNotifier.value,
-                onInspectorStateChanged: _onInspectorStateChanged,
-                onColorPickerStateChanged: _onColorPickerStateChanged,
-                onZoomStateChanged: _onZoomStateChanged,
-                isColorPickerLoading: _byteDataStateNotifier.value == null &&
-                    _colorPickerStateNotifier.value,
-                isZoomLoading: _byteDataStateNotifier.value == null &&
-                    _zoomStateNotifier.value,
-                navigatorKey: widget.navigatorKey,
-                options: widget.options,
-                initialPosition: widget.initialPosition,
-                onJiraAuthorized: widget.onJiraAuthorized,
-                onPositionChanged: (x, y) {
-                  widget.onPositionChanged?.call(x, y);
-                },
+              builder: (_) => RepaintBoundary(
+                child: DraggableMenuPanel(
+                  toggleButtonColor: context.isDarkMode
+                      ? context.ispectTheme.colorScheme.primaryContainer
+                      : context.ispectTheme.colorScheme.primary,
+                  toggleButtonBoxShadow: const [],
+                  curve: Curves.fastEaseInToSlowEaseOut,
+                  reverseCurve: Curves.fastEaseInToSlowEaseOut,
+                  items: [
+                    CircularMenuItem(
+                      icon: Icons.monitor_heart_outlined,
+                      color: _itemColor,
+                      onTap: iSpect.togglePerformanceTracking,
+                      boxShadow: const [],
+                      onTapClosesMenu: false,
+                      enableBadge: iSpect.isPerformanceTrackingEnabled,
+                    ),
+                    CircularMenuItem(
+                      icon: Icons.format_shapes_rounded,
+                      color: _itemColor,
+                      onTap: () {
+                        _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                      },
+                      boxShadow: const [],
+                      onTapClosesMenu: false,
+                      enableBadge: _inspectorStateNotifier.value,
+                    ),
+                    CircularMenuItem(
+                      icon: Icons.colorize_rounded,
+                      color: _itemColor,
+                      onTap: () {
+                        _onColorPickerStateChanged.call(!_colorPickerStateNotifier.value);
+                      },
+                      boxShadow: const [],
+                      onTapClosesMenu: false,
+                      enableBadge: _colorPickerStateNotifier.value,
+                    ),
+                    CircularMenuItem(
+                      icon: Icons.zoom_in_rounded,
+                      color: _itemColor,
+                      onTap: () {
+                        _onZoomStateChanged.call(!_zoomStateNotifier.value);
+                      },
+                      boxShadow: const [],
+                      onTapClosesMenu: false,
+                      enableBadge: _zoomStateNotifier.value,
+                    ),
+                    CircularMenuItem(
+                      icon: Icons.camera_alt_rounded,
+                      color: _itemColor,
+                      onTap: () {
+                        if (!feedback.isVisible) {
+                          feedback.show((feedback) async {
+                            final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+                            if (feedback.extra?.isNotEmpty ?? false) {
+                              if (feedback.extra!['jira'] == true && context.mounted) {
+                                unawaited(
+                                  Navigator.push(
+                                    widget.navigatorKey!.currentContext!,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (_) => JiraSendIssuePage(
+                                        initialDescription: feedback.text,
+                                        initialAttachmentPath: screenshotFilePath.path,
+                                        onJiraAuthorized: widget.onJiraAuthorized,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            } else {
+                              await Share.shareXFiles(
+                                [screenshotFilePath],
+                                text: feedback.text,
+                              );
+                            }
+                          });
+                        } else {
+                          feedback.hide();
+                        }
+                        // ignore: avoid_empty_blocks
+                        setState(() {});
+                      },
+                      boxShadow: const [],
+                      onTapClosesMenu: false,
+                      enableBadge: feedback.isVisible,
+                    ),
+                  ],
+                ),
               ),
+              // builder: (_) => InspectorPanel(
+              //   isInspectorEnabled: _inspectorStateNotifier.value,
+              //   isColorPickerEnabled: _colorPickerStateNotifier.value,
+              //   isZoomEnabled: _zoomStateNotifier.value,
+              //   onInspectorStateChanged: _onInspectorStateChanged,
+              //   onColorPickerStateChanged: _onColorPickerStateChanged,
+              //   onZoomStateChanged: _onZoomStateChanged,
+              //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
+              //       _colorPickerStateNotifier.value,
+              //   isZoomLoading: _byteDataStateNotifier.value == null &&
+              //       _zoomStateNotifier.value,
+              //   navigatorKey: widget.navigatorKey,
+              //   options: widget.options,
+              //   initialPosition: widget.initialPosition,
+              //   onJiraAuthorized: widget.onJiraAuthorized,
+              //   onPositionChanged: (x, y) {
+              //     widget.onPositionChanged?.call(x, y);
+              //   },
+              // ),
             ),
           ),
       ],
     );
   }
+
+  Color get _itemColor => !context.isDarkMode
+      ? adjustColorBrightness(
+          context.ispectTheme.colorScheme.primary,
+          0.8,
+        )
+      : adjustColorBrightness(
+          context.ispectTheme.colorScheme.primaryContainer,
+          0.9,
+        );
 }

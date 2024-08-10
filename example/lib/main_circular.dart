@@ -75,7 +75,6 @@ class _MyAppState extends State<MyApp> {
                 });
               })
         ],
-        child: child!,
       ),
       home: Scaffold(
         appBar: AppBar(

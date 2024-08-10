@@ -369,12 +369,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get riverpodFailLogDesc => 'Лог ошибки при работе с провайдером';
 
   @override
-  String get testerLogDesc =>
-      'Для тестировщиков будет полезно знать про эти логи';
+  String get testerLogDesc => 'Для тестировщиков будет полезно знать про эти логи';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Другие логи уже используют разработчики';
+  String get otherLogsForDevelopers => 'Другие логи уже используют разработчики';
 
   @override
   String get printLogDesc => 'Лог стандартного print метода у Flutter';
@@ -401,8 +399,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Пожалуйста, авторизуйтесь в Jira';
 
   @override
-  String get jiraInstruction =>
-      '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
+  String get jiraInstruction => '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
   String get projectDomain => 'Домент проекта';
@@ -465,8 +462,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get selectPriority => 'Выберите приоритетность задачи';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+  String get pleaseCheckAuthCred => 'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
 
   @override
   String get successfullyAuthorized => 'Вы успешно авторизовались';
@@ -491,4 +487,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get finished => 'Закончено';
+
+  @override
+  String get hidePanel => 'Скрыть панель';
 }

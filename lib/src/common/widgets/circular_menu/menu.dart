@@ -1,15 +1,22 @@
 // ignore_for_file: avoid_empty_blocks, prefer_int_literals
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/widgets/circular_menu/drag_handle_painter.dart';
 import 'package:ispect/src/common/widgets/circular_menu/item.dart';
+import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
+
+enum VisibleState {
+  active,
+  inactive,
+  hidden,
+}
 
 class DraggableCircularMenu extends StatefulWidget {
   const DraggableCircularMenu({
     required this.items,
-    required this.child,
     required this.toggleButtonColor,
     this.alignment = Alignment.bottomCenter,
     this.radius = 100,
@@ -42,9 +49,6 @@ class DraggableCircularMenu extends StatefulWidget {
 
   /// menu radius
   final double radius;
-
-  /// widget holds actual page content
-  final Widget child;
 
   /// animation duration
   final Duration animationDuration;
@@ -92,11 +96,12 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
   Timer? _hideTimer;
   Timer? _fullHideTimer;
 
-  final ValueNotifier<bool> _isFullyHidden = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
   final ValueNotifier<Offset> _buttonPosition = ValueNotifier<Offset>(const Offset(0, 100));
   final ValueNotifier<double> _completeAngle = ValueNotifier<double>(2 * math.pi);
   final ValueNotifier<double> _initialAngle = ValueNotifier<double>(0);
+  final ValueNotifier<bool> _startDragFromLeft = ValueNotifier<bool>(false);
+  final ValueNotifier<VisibleState> _visibleState = ValueNotifier<VisibleState>(VisibleState.hidden);
 
   @override
   void initState() {
@@ -110,11 +115,12 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
 
   @override
   void dispose() {
-    _isFullyHidden.dispose();
     _isDragging.dispose();
     _buttonPosition.dispose();
     _completeAngle.dispose();
     _initialAngle.dispose();
+    _startDragFromLeft.dispose();
+    _visibleState.dispose();
 
     _animationController.dispose();
     _hideTimer?.cancel();
@@ -125,6 +131,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
+
     return GestureDetector(
       onTap: () {
         if (_animationController.isCompleted) {
@@ -134,121 +141,158 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
       child: Stack(
         key: widget.menuKey,
         children: <Widget>[
-          widget.child,
-          ..._buildMenuItems(
-            screenSize: screenSize,
-          ),
-          AnimatedBuilder(
-            animation: Listenable.merge([
+          MultiValueListenableBuilder(
+            valueListenables: [
               _animationController,
               _animation,
               _initialAngle,
               _completeAngle,
               _buttonPosition,
-              _isFullyHidden,
+              _visibleState,
               _isDragging,
-            ]),
-            builder: (_, __) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                final alignment = _getAlignmentFromOffset(_buttonPosition.value, screenSize);
-                _configureAlignmentBasedAngles(alignment);
-              });
-              return Positioned(
-                left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
-                right: !_isInLeftSide(screenSize)
-                    ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
-                    : null,
-                top: _buttonPosition.value.dy,
-                child: TapRegion(
-                  onTapOutside: (_) {
-                    if (_animationController.status == AnimationStatus.dismissed) {
-                      _isFullyHidden.value = true;
-                    }
-                    _startHideTimers();
-                  },
-                  child: GestureDetector(
-                    onPanUpdate: (details) {
-                      if (!_isFullyHidden.value) {
-                        _buttonPosition.value += details.delta;
-                        _isDragging.value = true;
-                        _buttonPosition.value = Offset(
-                          _buttonPosition.value.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
-                          _buttonPosition.value.dy.clamp(50, screenSize.height - 100),
-                        );
-                      }
-                    },
-                    onPanEnd: (_) {
-                      if (!_isFullyHidden.value) {
-                        _snapButton(screenSize);
-                        _startHideTimers();
-                      } else {
-                        _isFullyHidden.value = false;
-                      }
-                    },
-                    child: Material(
-                      color: Colors.transparent,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: EdgeInsets.zero,
-                        width: _isFullyHidden.value ? 20 : widget.toggleButtonSize * 1.5,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: _isFullyHidden.value
-                              ? widget.toggleButtonColor.withOpacity(0.3)
-                              : widget.toggleButtonColor,
-                          borderRadius: BorderRadius.only(
-                            topRight: _isInLeftSide(screenSize) || _isDragging.value
-                                ? const Radius.circular(16)
-                                : Radius.zero,
-                            bottomRight: _isInLeftSide(screenSize) || _isDragging.value
-                                ? const Radius.circular(16)
-                                : Radius.zero,
-                            topLeft: _isInRightSide(screenSize) || _isDragging.value
-                                ? const Radius.circular(16)
-                                : Radius.zero,
-                            bottomLeft: _isInRightSide(screenSize) || _isDragging.value
-                                ? const Radius.circular(16)
-                                : Radius.zero,
-                          ),
-                        ),
-                        child: InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(16)),
-                          onTap: () {
-                            _closeMenu();
-                            if (widget.toggleButtonOnPressed != null) {
-                              widget.toggleButtonOnPressed?.call();
+              _startDragFromLeft,
+            ],
+            builder: (_) => TapRegion(
+              onTapOutside: (_) {
+                developer.log('ISpect: onTapOutside');
+                if (_animationController.status == AnimationStatus.dismissed) {
+                  _visibleState.value = VisibleState.hidden;
+                } else if (_animationController.status == AnimationStatus.completed) {
+                  _closeMenu();
+                }
+                _startHideTimers();
+              },
+              child: Stack(
+                children: [
+                  ..._buildMenuItems(
+                    screenSize: screenSize,
+                  ),
+                  MultiValueListenableBuilder(
+                    valueListenables: [
+                      _animationController,
+                      _animation,
+                      _buttonPosition,
+                      _visibleState,
+                      _isDragging,
+                      _startDragFromLeft,
+                    ],
+                    builder: (_) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        final alignment = _getAlignmentFromOffset(_buttonPosition.value, screenSize);
+                        _configureAlignmentBasedAngles(alignment);
+                      });
+                      return Positioned(
+                        left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
+                        right: !_isInLeftSide(screenSize)
+                            ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
+                            : null,
+                        top: _buttonPosition.value.dy,
+                        child: GestureDetector(
+                          onPanStart: (details) {
+                            if (details.globalPosition.dx < 80) {
+                              _startDragFromLeft.value = true;
+                            } else if (details.globalPosition.dx > screenSize.width - 80) {
+                              _startDragFromLeft.value = false;
                             }
                           },
-                          child: _isFullyHidden.value
-                              ? _isDragging.value
-                                  ? const SizedBox()
-                                  : Center(
-                                      child: CustomPaint(
-                                        willChange: true,
-                                        size: const Size(20, 70),
-                                        painter: LineWithCurvePainter(
-                                          isInRightSide: _isInRightSide(screenSize),
-                                        ),
-                                      ),
-                                    )
-                              : Center(
-                                  child: AnimatedIcon(
-                                    icon: widget.toggleButtonAnimatedIconData,
-                                    size: widget.toggleButtonSize,
-                                    color: widget.toggleButtonIconColor ?? Colors.white,
-                                    progress: _animation,
+                          onPanUpdate: (details) {
+                            if (_visibleState.value == VisibleState.active ||
+                                _visibleState.value == VisibleState.inactive) {
+                              _dragButton(details, screenSize);
+                              // developer.log(
+                              //   'Dragged: ${details.globalPosition.dx}\nIsInLeftSide: ${_isInLeftSide(screenSize)}\nStartDragFromLeft: ${_startDragFromLeft.value}',
+                              // );
+                            } else {
+                              _visibleState.value = VisibleState.active;
+                            }
+                          },
+                          onPanEnd: (_) {
+                            if (_visibleState.value == VisibleState.active ||
+                                _visibleState.value == VisibleState.inactive) {
+                              _snapButton(screenSize);
+                              _startHideTimers();
+                            }
+                            setState(() {
+                              developer.log('ISpect: button rebuilded');
+                            });
+                          },
+                          child: Material(
+                            color: Colors.transparent,
+                            child: GestureDetector(
+                              onTap: () {
+                                _closeMenu(
+                                  shouldReset: false,
+                                );
+                                if (widget.toggleButtonOnPressed != null) {
+                                  widget.toggleButtonOnPressed?.call();
+                                }
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: EdgeInsets.zero,
+                                width: _visibleState.value == VisibleState.hidden ? 30 : widget.toggleButtonSize * 1.5,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: _visibleState.value == VisibleState.hidden
+                                      ? widget.toggleButtonColor.withOpacity(0.3)
+                                      : widget.toggleButtonColor,
+                                  borderRadius: BorderRadius.only(
+                                    topRight: _isInLeftSide(screenSize) || _isDragging.value
+                                        ? const Radius.circular(16)
+                                        : Radius.zero,
+                                    bottomRight: _isInLeftSide(screenSize) || _isDragging.value
+                                        ? const Radius.circular(16)
+                                        : Radius.zero,
+                                    topLeft: _isInRightSide(screenSize) || _isDragging.value
+                                        ? const Radius.circular(16)
+                                        : Radius.zero,
+                                    bottomLeft: _isInRightSide(screenSize) || _isDragging.value
+                                        ? const Radius.circular(16)
+                                        : Radius.zero,
                                   ),
                                 ),
+                                child: _visibleState.value == VisibleState.hidden
+                                    ? _isDragging.value
+                                        ? const SizedBox()
+                                        : Center(
+                                            child: CustomPaint(
+                                              willChange: true,
+                                              size: const Size(20, 70),
+                                              painter: LineWithCurvePainter(
+                                                isInRightSide: _isInRightSide(screenSize),
+                                              ),
+                                            ),
+                                          )
+                                    : Center(
+                                        child: AnimatedIcon(
+                                          icon: widget.toggleButtonAnimatedIconData,
+                                          size: widget.toggleButtonSize,
+                                          color: widget.toggleButtonIconColor ?? Colors.white,
+                                          progress: _animation,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  void _dragButton(DragUpdateDetails details, Size screenSize) {
+    _buttonPosition.value += details.delta;
+    _isDragging.value = true;
+    _buttonPosition.value = Offset(
+      _buttonPosition.value.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
+      _buttonPosition.value.dy.clamp(50, screenSize.height - 100),
     );
   }
 
@@ -256,8 +300,6 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     required Size screenSize,
   }) {
     final items = <Widget>[];
-    final isInLeftSide = _isInLeftSide(screenSize);
-    final rightPosition = screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2;
 
     widget.items.asMap().forEach((index, item) {
       items.add(
@@ -268,12 +310,15 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
             _initialAngle,
             _completeAngle,
             _buttonPosition,
-            _isFullyHidden,
+            _visibleState,
             _isDragging,
+            _startDragFromLeft,
           ]),
           builder: (_, __) => Positioned(
-            left: isInLeftSide ? _buttonPosition.value.dx : null,
-            right: !isInLeftSide ? rightPosition : null,
+            left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
+            right: !_isInLeftSide(screenSize)
+                ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
+                : null,
             top: _buttonPosition.value.dy,
             child: Transform.translate(
               offset: Offset.fromDirection(
@@ -315,10 +360,15 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
 
   bool _isInRightSide(Size screenSize) => _buttonPosition.value.dx > _halfScreenWidth(screenSize);
 
-  void _closeMenu() {
+  void _closeMenu({
+    bool shouldReset = true,
+  }) {
     if (_animationController.status == AnimationStatus.dismissed) {
       _animationController.forward();
-      _resetHideTimers();
+      _visibleState.value = VisibleState.inactive;
+      if (shouldReset) {
+        _resetHideTimers();
+      }
     } else {
       _animationController.reverse();
     }
@@ -330,9 +380,9 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
         _closeMenu();
       }
     });
-    _fullHideTimer = Timer(const Duration(seconds: 4), () {
+    _fullHideTimer = Timer(const Duration(seconds: 6), () {
       if (_animationController.status == AnimationStatus.dismissed && !_isDragging.value) {
-        _isFullyHidden.value = true;
+        _visibleState.value = VisibleState.hidden;
 
         Future.delayed(const Duration(milliseconds: 300), () {
           _snapButton(MediaQuery.sizeOf(context));
@@ -344,7 +394,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
   void _resetHideTimers() {
     _hideTimer?.cancel();
     _fullHideTimer?.cancel();
-    _isFullyHidden.value = false;
+    _visibleState.value = VisibleState.inactive;
 
     _startHideTimers();
   }
