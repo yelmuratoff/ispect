@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_empty_blocks, prefer_int_literals
 import 'dart:async';
-import 'dart:developer' as developer;
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -182,7 +180,6 @@ class DraggableMenuPanelState extends State<DraggableMenuPanel> with SingleTicke
             ],
             builder: (_) => TapRegion(
               onTapOutside: (_) {
-                developer.log('ISpect: onTapOutside');
                 if (_visibleState.value == VisibleState.inactive) {
                   _visibleState.value = VisibleState.hidden;
                 } else if (_visibleState.value == VisibleState.active) {
@@ -199,7 +196,9 @@ class DraggableMenuPanelState extends State<DraggableMenuPanel> with SingleTicke
                       _isDragging,
                       _startDragFromLeft,
                     ],
-                    builder: (_) => Positioned(
+                    builder: (_) => AnimatedPositioned(
+                      duration: const Duration(milliseconds: 100),
+                      // left: _buttonPosition.value.dx,
                       left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
                       right: !_isInLeftSide(screenSize)
                           ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
@@ -227,9 +226,6 @@ class DraggableMenuPanelState extends State<DraggableMenuPanel> with SingleTicke
                             _snapButton(screenSize);
                             _resetHideTimers();
                           }
-                          setState(() {
-                            developer.log('ISpect: button rebuilded');
-                          });
                         },
                         child: Material(
                           color: Colors.transparent,
@@ -420,7 +416,6 @@ class DraggableMenuPanelState extends State<DraggableMenuPanel> with SingleTicke
 
   int _calculateRowCount(int itemCount) {
     final result = (itemCount / 4).ceil();
-    developer.log('ISpect: calculateRowCount: $result');
     return result;
   }
 }

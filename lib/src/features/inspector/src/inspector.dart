@@ -12,6 +12,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/panel/draggable_panel.dart';
+import 'package:ispect/src/common/widgets/panel/ispect_panel.dart';
 
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
@@ -704,6 +705,19 @@ class InspectorState extends State<Inspector> {
               // ),
             ),
           ),
+        FloatingMenuPanel(
+          onPressed: (_) {
+            debugPrint('Pressed');
+          },
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          panelShape: PanelShape.rectangle,
+          positionTop: 200,
+          buttons: const [
+            Icons.abc,
+            Icons.abc,
+            Icons.abc,
+          ],
+        ),
       ],
     );
   }
