@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/circular_menu/drag_handle_painter.dart';
 
 enum PanelShape {
   rectangle,
@@ -28,7 +29,8 @@ class FloatingMenuPanel extends StatefulWidget {
     this.borderWidth,
     this.iconSize,
     this.panelIcon,
-    this.size = 70.0,
+    this.buttonWidth = 35,
+    this.buttonHeight = 70.0,
     this.borderRadius,
     this.panelState,
     this.panelOpenOffset,
@@ -38,7 +40,7 @@ class FloatingMenuPanel extends StatefulWidget {
     this.contentColor,
     this.panelShape,
     this.dockType,
-    this.dockOffset = 45.0,
+    this.dockOffset = 10.0,
     this.dockAnimCurve,
     this.dockAnimDuration,
   });
@@ -47,7 +49,8 @@ class FloatingMenuPanel extends StatefulWidget {
   final double? positionLeft;
   final Color? borderColor;
   final double? borderWidth;
-  final double size;
+  final double buttonWidth;
+  final double buttonHeight;
   final double? iconSize;
   final IconData? panelIcon;
   final BorderRadius? borderRadius;
@@ -88,11 +91,16 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
   // speed than when the panel is being dragged;
   int _movementSpeed = 0;
 
+  bool _isDragging = false;
+
+  late double _buttonWidth;
+
   @override
   void initState() {
     super.initState();
     _positionTop = widget.positionTop ?? 0;
     _positionLeft = widget.positionLeft ?? 0;
+    _buttonWidth = widget.buttonWidth;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _forceDock(MediaQuery.sizeOf(context).width);
@@ -104,8 +112,6 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
     // Width and height of page is required for the dragging the panel;
     final pageWidth = MediaQuery.sizeOf(context).width;
     final pageHeight = MediaQuery.sizeOf(context).height;
-
-    // TODO implement close panel from screen without touch panel
 
     // Animated positioned widget can be moved to any part of the screen with
     // animation;
@@ -124,13 +130,15 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
           setState(() {
             _panelState = PanelState.closed;
 
+            _buttonWidth = widget.buttonWidth;
+
             // Reset panel position, dock it to nearest edge;
             _forceDock(pageWidth);
           });
         },
         child: AnimatedContainer(
-          duration: Duration(milliseconds: widget.panelAnimDuration ?? 600),
-          width: widget.size,
+          duration: Duration(milliseconds: widget.panelAnimDuration ?? 300),
+          width: _buttonWidth,
           height: _panelHeight,
           decoration: BoxDecoration(
             color: widget.backgroundColor ?? context.ispectTheme.colorScheme.primaryContainer.withOpacity(0.5),
@@ -145,6 +153,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                 onPanEnd: (event) {
                   setState(
                     () {
+                      _isDragging = false;
                       _forceDock(pageWidth);
                     },
                   );
@@ -163,6 +172,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
 
                       // Reset Movement Speed;
                       _movementSpeed = 0;
+                      _isDragging = true;
 
                       // Calculate the top position of the panel according to pan;
                       _positionTop = event.globalPosition.dy - _panOffsetTop;
@@ -182,8 +192,8 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                       if (_positionLeft < 0 + _dockBoundary) {
                         _positionLeft = 0 + _dockBoundary;
                       }
-                      if (_positionLeft > (pageWidth - widget.size) - _dockBoundary) {
-                        _positionLeft = (pageWidth - widget.size) - _dockBoundary;
+                      if (_positionLeft > (pageWidth - _buttonWidth) - _dockBoundary) {
+                        _positionLeft = (pageWidth - _buttonWidth) - _dockBoundary;
                       }
                     },
                   );
@@ -197,28 +207,47 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                 },
                 child: _panelState == PanelState.open
                     ? Container(
-                        width: widget.size,
-                        height: widget.size,
+                        width: _buttonWidth,
+                        height: widget.buttonHeight,
                         color: Colors.white.withOpacity(0.0),
                         child: _FloatButton(
-                          size: widget.size,
+                          size: widget.buttonHeight,
                           icon: widget.panelIcon ?? Icons.settings,
                           color: widget.contentColor ?? Colors.white,
                           iconSize: widget.iconSize ?? 36.0,
                         ),
                       )
-                    : Container(
-                        width: widget.size,
-                        height: widget.size,
-                        color: Colors.white.withOpacity(0.0),
+                    : AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: _isDragging
+                            ? Center(
+                                child: SizedBox(
+                                  width: _buttonWidth,
+                                  height: widget.buttonHeight,
+                                  child: const Icon(
+                                    Icons.drag_indicator_rounded,
+                                  ),
+                                ),
+                              )
+                            : SizedBox(
+                                key: const ValueKey('drag_handle'),
+                                width: _buttonWidth,
+                                height: widget.buttonHeight,
+                                child: Align(
+                                  alignment:
+                                      _positionLeft > pageWidth / 2 ? Alignment.centerLeft : Alignment.centerRight,
+                                  child: CustomPaint(
+                                    willChange: true,
+                                    size: const Size(20, 65),
+                                    painter: LineWithCurvePainter(
+                                      isInRightSide: _positionLeft > pageWidth / 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
-                // child: _FloatButton(
-                //   size: widget.size ?? 70.0,
-                //   icon: widget.panelIcon ?? Icons.settings,
-                //   color: widget.contentColor ?? Colors.white,
-                //   iconSize: widget.iconSize ?? 36.0,
-                // ),
               ),
+
               AnimatedOpacity(
                 opacity: _panelState == PanelState.open ? 1.0 : 0.0,
                 duration: _panelState == PanelState.open
@@ -231,7 +260,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                       onTap: () {
                         widget.onPressed(index);
                         setState(() {
-                          _movementSpeed = widget.panelAnimDuration ?? 200;
+                          _movementSpeed = widget.panelAnimDuration ?? 100;
 
                           if (_panelState == PanelState.open) {
                             // If panel state is "open", set it to "closed";
@@ -254,7 +283,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                         });
                       },
                       child: _FloatButton(
-                        size: widget.size,
+                        size: widget.buttonHeight,
                         icon: widget.buttons[index],
                         color: widget.contentColor ?? Colors.white,
                         iconSize: widget.iconSize ?? 24.0,
@@ -278,6 +307,8 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       // If panel state is "open", set it to "closed";
       _panelState = PanelState.closed;
 
+      _buttonWidth = widget.buttonWidth;
+
       // Reset panel position, dock it to nearest edge;
       _forceDock(pageWidth);
       //widget.isOpen(false);
@@ -285,6 +316,8 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
     } else {
       // If panel state is "closed", set it to "open";
       _panelState = PanelState.open;
+
+      _buttonWidth = 75;
 
       // Set the left side position;
       _positionLeft = _openDockLeft(pageWidth);
@@ -315,7 +348,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
     } else {
       // If panel shape is 'rounded', border radius will be the size of widget
       // to make it rounded;
-      return BorderRadius.all(Radius.circular(widget.size));
+      return BorderRadius.all(Radius.circular(widget.buttonHeight));
     }
   }
 
@@ -325,9 +358,9 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       // Panel height will be in multiple of total buttons, I have added "1"
       // digit height for each button to fix the overflow issue. Don't know
       // what's causing this, but adding "1" fixed the problem for now.
-      return (widget.size + (widget.size + 1) * widget.buttons.length) + (widget.borderWidth ?? 0);
+      return (widget.buttonHeight + (widget.buttonHeight + 1) * widget.buttons.length) + (widget.borderWidth ?? 0);
     } else {
-      return widget.size + (widget.borderWidth ?? 0) * 2;
+      return widget.buttonHeight + (widget.borderWidth ?? 0) * 2;
     }
   }
 
@@ -346,7 +379,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       return widget.panelOpenOffset ?? 30.0;
     } else {
       // If panel is docked to the right;
-      return ((pageWidth - widget.size)) - (widget.panelOpenOffset ?? 30.0);
+      return ((pageWidth - _buttonWidth)) - (widget.panelOpenOffset ?? 30.0);
     }
   }
 
@@ -367,7 +400,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
   // Force dock will dock the panel to it's nearest edge of the screen;
   void _forceDock(double pageWidth) {
     // Calculate the center of the panel;
-    final center = _positionLeft + (widget.size / 2);
+    final center = _positionLeft + (_buttonWidth / 2);
 
     // Set movement speed to the custom duration property or '300' default;
     _movementSpeed = widget.dockAnimDuration ?? 300;
@@ -379,7 +412,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       _positionLeft = 0.0 + _dockBoundary;
     } else {
       // Dock to the right edge;
-      _positionLeft = (pageWidth - widget.size) - _dockBoundary;
+      _positionLeft = (pageWidth - _buttonWidth) - _dockBoundary;
     }
   }
 }

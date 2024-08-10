@@ -7,14 +7,14 @@ class LineWithCurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
+      ..color = Colors.white.withOpacity(0.2)
       ..strokeWidth = 5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final startX = isInRightSide ? size.width - 8.0 : 8.0;
+    final startX = isInRightSide ? size.width - 7.0 : 7.0;
     final controlPointX = size.width / 2;
-    final endX = size.width / 2 + (isInRightSide ? 2 : -2);
+    final endX = size.width / 2 + (isInRightSide ? 3 : -3);
 
     final path = Path()
       ..moveTo(startX, 14)

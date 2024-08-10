@@ -203,8 +203,6 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       }
     }
 
-    // TODO implement close panel from screen without touch panel
-
     // Animated positioned widget can be moved to any part of the screen with
     // animation;
     return AnimatedPositioned(
@@ -236,9 +234,6 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                     forceDock();
                   },
                 );
-              },
-              onTapCancel: () {
-                print('TAP_CANCEL');
               },
               onPanStart: (event) {
                 // Detect the offset between the top and left side of the panel and
