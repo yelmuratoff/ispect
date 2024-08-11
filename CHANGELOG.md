@@ -1,4 +1,4 @@
-## 1.7.5-beta.2
+## 1.7.6
 - New draggable button with a new design and flow.
 - Added some documentation about Jira.
 

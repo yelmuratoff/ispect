@@ -116,7 +116,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
   @override
   void initState() {
     super.initState();
-    _positionTop.value = widget.initialPosition?.y ?? 0;
+    _positionTop.value = widget.initialPosition?.y ?? 200;
     _positionLeft.value = widget.initialPosition?.x ?? 0;
     _buttonWidth.value = widget.buttonWidth;
 
