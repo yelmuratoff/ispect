@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 class KeyboardHandler {
   KeyboardHandler({
     required this.onInspectorStateChanged,
-    required this.onColorPickerStateChanged,
     required this.onZoomStateChanged,
     this.inspectorStateKeys = const [
       LogicalKeyboardKey.alt,
@@ -21,7 +20,6 @@ class KeyboardHandler {
   });
 
   final void Function({required bool value}) onInspectorStateChanged;
-  final void Function({required bool value}) onColorPickerStateChanged;
   final void Function({required bool value}) onZoomStateChanged;
   final List<LogicalKeyboardKey> inspectorStateKeys;
   final List<LogicalKeyboardKey> colorPickerStateKeys;
@@ -48,8 +46,6 @@ class KeyboardHandler {
 
     if (inspectorStateKeys.contains(event.logicalKey)) {
       onInspectorStateChanged(value: event is! KeyUpEvent);
-    } else if (colorPickerStateKeys.contains(event.logicalKey)) {
-      onColorPickerStateChanged(value: event is! KeyUpEvent);
     } else if (zoomStateKeys.contains(event.logicalKey)) {
       onZoomStateChanged(value: event is! KeyUpEvent);
     }

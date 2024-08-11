@@ -34,7 +34,8 @@ class CombinedOverlayWidget extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.fromBorderSide(
             BorderSide(
-              color: context.ispectTheme.colorScheme.inverseSurface.withOpacity(0.2),
+              color: context.ispectTheme.colorScheme.inverseSurface
+                  .withOpacity(0.2),
               width: 20,
               strokeAlign: BorderSide.strokeAlignOutside,
             ),
@@ -58,7 +59,8 @@ class CombinedOverlayWidget extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.fromBorderSide(
                 BorderSide(
-                  color: context.ispectTheme.colorScheme.inverseSurface.withOpacity(0.2),
+                  color: context.ispectTheme.colorScheme.inverseSurface
+                      .withOpacity(0.2),
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignOutside,
                 ),
@@ -89,7 +91,7 @@ class CombinedOverlayWidget extends StatelessWidget {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.bottomCenter,
+                  alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: _ZoomLevelDisplay(zoomScale: zoomScale),
@@ -102,9 +104,11 @@ class CombinedOverlayWidget extends StatelessWidget {
                     child: Material(
                       color: color,
                       shape: RoundedRectangleBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(4)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
                         side: BorderSide(
-                          color: getTextColorOnBackground(color).withOpacity(0.2),
+                          color:
+                              getTextColorOnBackground(color).withOpacity(0.2),
                         ),
                       ),
                       child: Padding(
@@ -112,7 +116,8 @@ class CombinedOverlayWidget extends StatelessWidget {
                         child: Text(
                           '#${colorToHexString(color)}',
                           style: TextStyle(
-                            color: getTextColorOnBackground(color).withOpacity(0.5),
+                            color: getTextColorOnBackground(color)
+                                .withOpacity(0.5),
                             fontSize: 12,
                           ),
                         ),
@@ -126,10 +131,12 @@ class CombinedOverlayWidget extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: color,
-                        borderRadius: const BorderRadius.all(Radius.circular(4)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
                         border: Border.fromBorderSide(
                           BorderSide(
-                            color: getTextColorOnBackground(color).withOpacity(0.2),
+                            color: getTextColorOnBackground(color)
+                                .withOpacity(0.2),
                             width: 2,
                           ),
                         ),

@@ -1,3 +1,6 @@
+## 1.7.8
+- Zoom and color picker was combined.
+
 ## 1.7.7
 - New draggable button with a new design and flow.
 - Added some documentation about Jira.
