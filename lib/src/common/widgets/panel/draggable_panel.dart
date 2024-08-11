@@ -328,7 +328,7 @@ class DraggableMenuPanelState extends State<DraggableMenuPanel> with SingleTicke
                                     size: const Size(20, 70),
                                     painter: LineWithCurvePainter(
                                       isInRightSide: _isInRightSide(screenSize),
-                                      color: widget.toggleButtonIconColor ?? Colors.white,
+                                      color: widget.toggleButtonIconColor ?? Colors.white.withOpacity(0.5),
                                     ),
                                   ),
                                 ),

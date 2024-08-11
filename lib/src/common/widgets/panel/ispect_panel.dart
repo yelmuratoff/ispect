@@ -7,6 +7,16 @@ import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/circular_menu/drag_handle_painter.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 
+class ISpectPanelItem {
+  const ISpectPanelItem({
+    required this.icon,
+    this.enableBadge = false,
+  });
+
+  final IconData icon;
+  final bool enableBadge;
+}
+
 enum PanelShape {
   rectangle,
   rounded,
@@ -26,7 +36,7 @@ class FloatingMenuPanel extends StatefulWidget {
   const FloatingMenuPanel({
     required this.onPressed,
     required this.backgroundColor,
-    this.buttons = const [],
+    this.items = const [],
     this.positionTop,
     this.positionLeft,
     this.borderColor,
@@ -68,7 +78,7 @@ class FloatingMenuPanel extends StatefulWidget {
   final double dockOffset;
   final int? dockAnimDuration;
   final Curve? dockAnimCurve;
-  final List<IconData> buttons;
+  final List<ISpectPanelItem> items;
   final Function(int index) onPressed;
 
   @override
@@ -163,9 +173,10 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
               _forceDock(pageWidth);
             },
             child: AnimatedContainer(
-              duration: Duration(milliseconds: widget.panelAnimDuration ?? 600),
+              duration: Duration(milliseconds: widget.panelAnimDuration ?? 1000),
               width: _buttonWidth.value,
               height: _panelHeight,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: _panelState.value == PanelState.open
                     ? widget.backgroundColor
@@ -175,207 +186,219 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
               ),
               curve: widget.panelAnimCurve ?? Curves.fastLinearToSlowEaseIn,
               child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Gesture detector is required to detect the tap and drag on the panel;
-                      GestureDetector(
-                        onPanEnd: (event) {
-                          _isDragging.value = false;
-                          _forceDock(pageWidth);
-                        },
-                        onPanStart: (event) {
-                          // Detect the offset between the top and left side of the panel and
-                          // x and y position of the touch(click) event;
-                          _panOffsetTop.value = event.globalPosition.dy - _positionTop.value;
-                          _panOffsetLeft.value = event.globalPosition.dx - _positionLeft.value;
-                        },
-                        onPanUpdate: (event) {
-                          // Close Panel if opened;
-                          _panelState.value = PanelState.closed;
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Gesture detector is required to detect the tap and drag on the panel;
+                    if (_panelState.value == PanelState.closed)
+                      Flexible(
+                        child: GestureDetector(
+                          onPanEnd: (event) {
+                            _isDragging.value = false;
+                            _forceDock(pageWidth);
+                          },
+                          onPanStart: (event) {
+                            // Detect the offset between the top and left side of the panel and
+                            // x and y position of the touch(click) event;
+                            _panOffsetTop.value = event.globalPosition.dy - _positionTop.value;
+                            _panOffsetLeft.value = event.globalPosition.dx - _positionLeft.value;
+                          },
+                          onPanUpdate: (event) {
+                            // Close Panel if opened;
+                            _panelState.value = PanelState.closed;
 
-                          _buttonWidth.value = widget.buttonWidth;
+                            _buttonWidth.value = widget.buttonWidth;
 
-                          // Reset Movement Speed;
-                          _movementSpeed.value = 0;
-                          _isDragging.value = true;
+                            // Reset Movement Speed;
+                            _movementSpeed.value = 0;
+                            _isDragging.value = true;
 
-                          // Calculate the top position of the panel according to pan;
-                          _positionTop.value = event.globalPosition.dy - _panOffsetTop.value;
+                            // Calculate the top position of the panel according to pan;
+                            _positionTop.value = event.globalPosition.dy - _panOffsetTop.value;
 
-                          // Check if the top position is exceeding the dock boundaries;
-                          if (_positionTop.value < 0 + _dockBoundary) {
-                            _positionTop.value = 0 + _dockBoundary;
-                          }
-                          if (_positionTop.value > (pageHeight - _panelHeight) - _dockBoundary) {
-                            _positionTop.value = (pageHeight - _panelHeight) - _dockBoundary;
-                          }
+                            // Check if the top position is exceeding the dock boundaries;
+                            if (_positionTop.value < 0 + _dockBoundary) {
+                              _positionTop.value = 0 + _dockBoundary;
+                            }
+                            if (_positionTop.value > (pageHeight - _panelHeight) - _dockBoundary) {
+                              _positionTop.value = (pageHeight - _panelHeight) - _dockBoundary;
+                            }
 
-                          // Calculate the Left position of the panel according to pan;
-                          _positionLeft.value = event.globalPosition.dx - _panOffsetLeft.value;
+                            // Calculate the Left position of the panel according to pan;
+                            _positionLeft.value = event.globalPosition.dx - _panOffsetLeft.value;
 
-                          // Check if the left position is exceeding the dock boundaries;
-                          if (_positionLeft.value < 0 + _dockBoundary) {
-                            _positionLeft.value = 0 + _dockBoundary;
-                          }
-                          if (_positionLeft.value > (pageWidth - _buttonWidth.value) - _dockBoundary) {
-                            _positionLeft.value = (pageWidth - _buttonWidth.value) - _dockBoundary;
-                          }
-                        },
-                        onTap: () {
-                          _toggleButton(pageWidth, pageHeight);
-                        },
-                        child: _panelState.value == PanelState.open
-                            ? const SizedBox()
-                            : AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
-                                transitionBuilder: (child, animation) => ScaleTransition(
-                                  scale: animation,
-                                  child: child,
-                                ),
-                                child: _isDragging.value
-                                    ? Center(
-                                        child: SizedBox(
+                            // Check if the left position is exceeding the dock boundaries;
+                            if (_positionLeft.value < 0 + _dockBoundary) {
+                              _positionLeft.value = 0 + _dockBoundary;
+                            }
+                            if (_positionLeft.value > (pageWidth - _buttonWidth.value) - _dockBoundary) {
+                              _positionLeft.value = (pageWidth - _buttonWidth.value) - _dockBoundary;
+                            }
+                          },
+                          onTap: () {
+                            _toggleButton(pageWidth, pageHeight);
+                          },
+                          child: _panelState.value == PanelState.open
+                              ? const SizedBox()
+                              : AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  transitionBuilder: (child, animation) => ScaleTransition(
+                                    scale: animation,
+                                    child: child,
+                                  ),
+                                  child: _isDragging.value
+                                      ? Center(
+                                          child: SizedBox(
+                                            width: _buttonWidth.value,
+                                            height: widget.buttonHeight,
+                                            child: Icon(
+                                              Icons.drag_indicator_rounded,
+                                              color: context.ispectTheme.textColor.withOpacity(0.5),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(
+                                          key: const ValueKey('drag_handle'),
                                           width: _buttonWidth.value,
                                           height: widget.buttonHeight,
-                                          child: Icon(
-                                            Icons.drag_indicator_rounded,
-                                            color: context.ispectTheme.textColor.withOpacity(0.5),
-                                          ),
-                                        ),
-                                      )
-                                    : SizedBox(
-                                        key: const ValueKey('drag_handle'),
-                                        width: _buttonWidth.value,
-                                        height: widget.buttonHeight,
-                                        child: Align(
-                                          alignment: isInRightSide ? Alignment.centerLeft : Alignment.centerRight,
-                                          child: CustomPaint(
-                                            willChange: true,
-                                            size: const Size(20, 65),
-                                            painter: LineWithCurvePainter(
-                                              isInRightSide: isInRightSide,
-                                              color: Colors.white.withOpacity(0.5),
+                                          child: Align(
+                                            alignment: isInRightSide ? Alignment.centerLeft : Alignment.centerRight,
+                                            child: CustomPaint(
+                                              willChange: true,
+                                              size: const Size(20, 65),
+                                              painter: LineWithCurvePainter(
+                                                isInRightSide: isInRightSide,
+                                                color: Colors.white.withOpacity(0.5),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                              ),
+                                ),
+                        ),
                       ),
 
-                      AnimatedOpacity(
-                        opacity: _panelState.value == PanelState.open ? 1.0 : 0.0,
-                        duration: _panelState.value == PanelState.open
-                            ? const Duration(milliseconds: 250)
-                            : const Duration(milliseconds: 10),
+                    if (_panelState.value == PanelState.open) ...[
+                      Flexible(
+                        flex: 3,
                         child: Wrap(
                           runAlignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
+                          // clipBehavior: Clip.antiAlias,
                           children: List.generate(
-                            widget.buttons.length,
-                            (index) => IconButton.filled(
-                              icon: Icon(
-                                widget.buttons[index],
-                                color: Colors.white,
-                              ),
-                              padding: EdgeInsets.zero,
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all<Color>(_itemColor),
-                                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                  const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                            widget.items.length,
+                            (index) => Badge(
+                              isLabelVisible: widget.items[index].enableBadge,
+                              smallSize: 12,
+                              child: IconButton.filled(
+                                icon: Icon(
+                                  widget.items[index].icon,
+                                  color: Colors.white,
+                                ),
+                                padding: EdgeInsets.zero,
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all<Color>(_itemColor),
+                                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                    const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                                    ),
                                   ),
                                 ),
+                                onPressed: () {
+                                  widget.onPressed(index);
+
+                                  _movementSpeed.value = widget.panelAnimDuration ?? 100;
+
+                                  if (_panelState.value == PanelState.open) {
+                                    // If panel state is "open", set it to "closed";
+                                    _panelState.value = PanelState.closed;
+
+                                    // Reset panel position, dock it to nearest edge;
+                                    _forceDock(pageWidth);
+                                    //widget.isOpen(false);
+                                    ////print("Float panel closed.");
+                                  } else {
+                                    // If panel state is "closed", set it to "open";
+                                    _panelState.value = PanelState.open;
+
+                                    // Set the left side position;
+                                    _positionLeft.value = _openDockLeft(pageWidth);
+                                    // widget.isOpen(true);
+
+                                    _calcPanelTop(pageHeight);
+                                  }
+                                },
                               ),
-                              onPressed: () {
-                                widget.onPressed(index);
-
-                                _movementSpeed.value = widget.panelAnimDuration ?? 100;
-
-                                if (_panelState.value == PanelState.open) {
-                                  // If panel state is "open", set it to "closed";
-                                  _panelState.value = PanelState.closed;
-
-                                  // Reset panel position, dock it to nearest edge;
-                                  _forceDock(pageWidth);
-                                  //widget.isOpen(false);
-                                  ////print("Float panel closed.");
-                                } else {
-                                  // If panel state is "closed", set it to "open";
-                                  _panelState.value = PanelState.open;
-
-                                  // Set the left side position;
-                                  _positionLeft.value = _openDockLeft(pageWidth);
-                                  // widget.isOpen(true);
-
-                                  _calcPanelTop(pageHeight);
-                                }
-                              },
                             ),
                           ),
                         ),
                       ),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-                          child: MaterialButton(
-                            onPressed: () {
-                              _toggleButton(pageWidth, pageHeight);
-                            },
-                            color: _itemColor,
-                            highlightElevation: 0,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                      Flexible(
+                        flex: 2,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 4,
+                              left: 8,
+                              right: 8,
                             ),
-                            elevation: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if ((_positionLeft.value + _panOffsetLeft.value) < pageWidth / 2) ...[
-                                    const Flexible(
+                            child: MaterialButton(
+                              onPressed: () {
+                                _toggleButton(pageWidth, pageHeight);
+                              },
+                              color: _itemColor,
+                              highlightElevation: 0,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(16)),
+                              ),
+                              elevation: 0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if ((_positionLeft.value + _panOffsetLeft.value) < pageWidth / 2) ...[
+                                      const Flexible(
+                                        flex: 2,
+                                        child: Icon(
+                                          Icons.undo_rounded,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const Flexible(child: Gap(12)),
+                                    ],
+                                    Flexible(
                                       flex: 2,
-                                      child: Icon(
-                                        Icons.undo_rounded,
-                                        color: Colors.white,
+                                      child: Text(
+                                        context.ispectL10n.hidePanel,
+                                        maxLines: 1,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
-                                    const Flexible(child: Gap(12)),
+                                    if ((_positionLeft.value + _panOffsetLeft.value) > pageWidth / 2) ...[
+                                      const Flexible(child: Gap(12)),
+                                      const Flexible(
+                                        flex: 2,
+                                        child: Icon(
+                                          Icons.redo_rounded,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ],
-                                  Flexible(
-                                    flex: 2,
-                                    child: Text(
-                                      context.ispectL10n.hidePanel,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  if ((_positionLeft.value + _panOffsetLeft.value) > pageWidth / 2) ...[
-                                    const Flexible(child: Gap(12)),
-                                    const Flexible(
-                                      flex: 2,
-                                      child: Icon(
-                                        Icons.redo_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -442,7 +465,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       // digit height for each button to fix the overflow issue. Don't know
       // what's causing this, but adding "1" fixed the problem for now.
       // return (widget.buttonHeight + (widget.buttonHeight + 1) * widget.buttons.length) + (widget.borderWidth ?? 0);
-      return _calculateRowCount(widget.buttons.length) * 49 + 65;
+      return _calculateRowCount(widget.items.length) * 49 + 65;
     } else {
       return widget.buttonHeight + (widget.borderWidth ?? 0) * 2;
     }

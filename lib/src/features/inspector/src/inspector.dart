@@ -646,36 +646,7 @@ class InspectorState extends State<Inspector> {
                       icon: Icons.camera_alt_rounded,
                       color: _itemColor,
                       onTap: () {
-                        if (!feedback.isVisible) {
-                          feedback.show((feedback) async {
-                            final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
-                            if (feedback.extra?.isNotEmpty ?? false) {
-                              if (feedback.extra!['jira'] == true && context.mounted) {
-                                unawaited(
-                                  Navigator.push(
-                                    widget.navigatorKey!.currentContext!,
-                                    MaterialPageRoute<dynamic>(
-                                      builder: (_) => JiraSendIssuePage(
-                                        initialDescription: feedback.text,
-                                        initialAttachmentPath: screenshotFilePath.path,
-                                        onJiraAuthorized: widget.onJiraAuthorized,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                            } else {
-                              await Share.shareXFiles(
-                                [screenshotFilePath],
-                                text: feedback.text,
-                              );
-                            }
-                          });
-                        } else {
-                          feedback.hide();
-                        }
-                        // ignore: avoid_empty_blocks
-                        setState(() {});
+                        _toggleFeedback(feedback, context);
                       },
                       boxShadow: const [],
                       onTapClosesMenu: false,
@@ -707,7 +678,21 @@ class InspectorState extends State<Inspector> {
           ),
         FloatingMenuPanel(
           onPressed: (index) {
-            debugPrint('Pressed: $index');
+            switch (index) {
+              case 0:
+                iSpect.togglePerformanceTracking();
+              case 1:
+                _onInspectorStateChanged(!_inspectorStateNotifier.value);
+              case 2:
+                _onColorPickerStateChanged(!_colorPickerStateNotifier.value);
+              case 3:
+                _onZoomStateChanged(!_zoomStateNotifier.value);
+              case 4:
+                _toggleFeedback(feedback, context);
+            }
+            setState(() {
+              ISpectTalker.info('ISpect panel pressed: $index');
+            });
           },
           borderRadius: const BorderRadius.all(Radius.circular(16)),
           panelShape: PanelShape.rectangle,
@@ -715,16 +700,69 @@ class InspectorState extends State<Inspector> {
               ? context.ispectTheme.colorScheme.primaryContainer
               : context.ispectTheme.colorScheme.primary,
           positionTop: 200,
-          buttons: const [
-            Icons.monitor_heart_outlined,
-            Icons.format_shapes_rounded,
-            Icons.colorize_rounded,
-            Icons.zoom_in_rounded,
-            Icons.camera_alt_rounded,
+          items: [
+            ISpectPanelItem(
+              icon: Icons.monitor_heart_outlined,
+              enableBadge: iSpect.isPerformanceTrackingEnabled,
+            ),
+            ISpectPanelItem(
+              icon: Icons.format_shapes_rounded,
+              enableBadge: _inspectorStateNotifier.value,
+            ),
+            ISpectPanelItem(
+              icon: Icons.colorize_rounded,
+              enableBadge: _colorPickerStateNotifier.value,
+            ),
+            ISpectPanelItem(
+              icon: Icons.zoom_in_rounded,
+              enableBadge: _zoomStateNotifier.value,
+            ),
+            ISpectPanelItem(
+              icon: Icons.camera_alt_rounded,
+              enableBadge: feedback.isVisible,
+            ),
+            // Icons.monitor_heart_outlined,
+            // Icons.format_shapes_rounded,
+            // Icons.colorize_rounded,
+            // Icons.zoom_in_rounded,
+            // Icons.camera_alt_rounded,
           ],
         ),
       ],
     );
+  }
+
+  void _toggleFeedback(FeedbackController feedback, BuildContext context) {
+    if (!feedback.isVisible) {
+      feedback.show((feedback) async {
+        final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
+        if (feedback.extra?.isNotEmpty ?? false) {
+          if (feedback.extra!['jira'] == true && context.mounted) {
+            unawaited(
+              Navigator.push(
+                widget.navigatorKey!.currentContext!,
+                MaterialPageRoute<dynamic>(
+                  builder: (_) => JiraSendIssuePage(
+                    initialDescription: feedback.text,
+                    initialAttachmentPath: screenshotFilePath.path,
+                    onJiraAuthorized: widget.onJiraAuthorized,
+                  ),
+                ),
+              ),
+            );
+          }
+        } else {
+          await Share.shareXFiles(
+            [screenshotFilePath],
+            text: feedback.text,
+          );
+        }
+      });
+    } else {
+      feedback.hide();
+    }
+    // ignore: avoid_empty_blocks
+    setState(() {});
   }
 
   Color get _itemColor => !context.isDarkMode
