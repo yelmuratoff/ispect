@@ -1,5 +1,6 @@
 // ignore_for_file: comment_references, avoid_public_members_in_states
 
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -8,7 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
-
+import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
@@ -17,9 +19,12 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
-import 'package:ispect/src/features/inspector/src/widgets/panel/inspector_panel.dart';
+import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
+import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
+import 'package:ispect/src/features/snapshot/feedback_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// [Inspector] can wrap any [child], and will display its control panel and
 /// information overlay on top of that [child].
@@ -100,7 +105,10 @@ class Inspector extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
-  final (double x, double y)? initialPosition;
+  final ({
+    double x,
+    double y,
+  })? initialPosition;
   final void Function(
     String domain,
     String email,
@@ -166,6 +174,8 @@ class InspectorState extends State<Inspector> {
   late final KeyboardHandler _keyboardHandler;
 
   Offset? _pointerHoverPosition;
+
+  final DraggableButtonController _controller = DraggableButtonController();
 
   @override
   void initState() {
@@ -457,6 +467,7 @@ class InspectorState extends State<Inspector> {
     _image?.dispose();
     _byteDataStateNotifier.value = null;
     _keyboardHandler.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -465,6 +476,9 @@ class InspectorState extends State<Inspector> {
     if (!_isPanelVisible) {
       return widget.child;
     }
+
+    final iSpect = ISpect.read(context);
+    final feedback = BetterFeedback.of(context);
 
     return Stack(
       key: _stackKey,
@@ -588,37 +602,152 @@ class InspectorState extends State<Inspector> {
             },
           ),
         if (_isPanelVisible)
-          Align(
-            alignment: Alignment.centerRight,
-            child: MultiValueListenableBuilder(
+          AnimatedBuilder(
+            animation: Listenable.merge([
+              _controller,
+              feedback,
+            ]),
+            builder: (_, __) => MultiValueListenableBuilder(
               valueListenables: [
                 _inspectorStateNotifier,
                 _colorPickerStateNotifier,
                 _zoomStateNotifier,
                 _byteDataStateNotifier,
               ],
-              builder: (_) => InspectorPanel(
-                isInspectorEnabled: _inspectorStateNotifier.value,
-                isColorPickerEnabled: _colorPickerStateNotifier.value,
-                isZoomEnabled: _zoomStateNotifier.value,
-                onInspectorStateChanged: _onInspectorStateChanged,
-                onColorPickerStateChanged: _onColorPickerStateChanged,
-                onZoomStateChanged: _onZoomStateChanged,
-                isColorPickerLoading: _byteDataStateNotifier.value == null &&
-                    _colorPickerStateNotifier.value,
-                isZoomLoading: _byteDataStateNotifier.value == null &&
-                    _zoomStateNotifier.value,
-                navigatorKey: widget.navigatorKey,
-                options: widget.options,
-                initialPosition: widget.initialPosition,
-                onJiraAuthorized: widget.onJiraAuthorized,
-                onPositionChanged: (x, y) {
-                  widget.onPositionChanged?.call(x, y);
+              builder: (context) => FloatingMenuPanel(
+                onPressed: (index) {
+                  switch (index) {
+                    case 0:
+                      _launchInfospect(context);
+                    case 1:
+                      iSpect.togglePerformanceTracking();
+                    case 2:
+                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                    case 3:
+                      _onColorPickerStateChanged(
+                        !_colorPickerStateNotifier.value,
+                      );
+                    case 4:
+                      _onZoomStateChanged(!_zoomStateNotifier.value);
+                    case 5:
+                      _toggleFeedback(feedback, context);
+                  }
                 },
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                panelShape: PanelShape.rectangle,
+                backgroundColor: context.isDarkMode
+                    ? context.ispectTheme.colorScheme.primaryContainer
+                    : context.ispectTheme.colorScheme.primary,
+                initialPosition: widget.initialPosition,
+                onPositionChanged: (x, y) =>
+                    widget.onPositionChanged?.call(x, y),
+                items: [
+                  ISpectPanelItem(
+                    icon: _controller.inLoggerPage
+                        ? Icons.undo_rounded
+                        : Icons.reorder_rounded,
+                    enableBadge: _controller.inLoggerPage,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.monitor_heart_outlined,
+                    enableBadge: iSpect.isPerformanceTrackingEnabled,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.format_shapes_rounded,
+                    enableBadge: _inspectorStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.colorize_rounded,
+                    enableBadge: _colorPickerStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.zoom_in_rounded,
+                    enableBadge: _zoomStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.camera_alt_rounded,
+                    enableBadge: feedback.isVisible,
+                  ),
+                ],
               ),
+              // builder: (_) => InspectorPanel(
+              //   isInspectorEnabled: _inspectorStateNotifier.value,
+              //   isColorPickerEnabled: _colorPickerStateNotifier.value,
+              //   isZoomEnabled: _zoomStateNotifier.value,
+              //   onInspectorStateChanged: _onInspectorStateChanged,
+              //   onColorPickerStateChanged: _onColorPickerStateChanged,
+              //   onZoomStateChanged: _onZoomStateChanged,
+              //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
+              //       _colorPickerStateNotifier.value,
+              //   isZoomLoading: _byteDataStateNotifier.value == null &&
+              //       _zoomStateNotifier.value,
+              //   navigatorKey: widget.navigatorKey,
+              //   options: widget.options,
+              //   initialPosition: widget.initialPosition,
+              //   onJiraAuthorized: widget.onJiraAuthorized,
+              //   onPositionChanged: (x, y) {
+              //     widget.onPositionChanged?.call(x, y);
+              //   },
+              // ),
             ),
           ),
       ],
     );
+  }
+
+  void _toggleFeedback(FeedbackController feedback, BuildContext context) {
+    if (!feedback.isVisible) {
+      feedback.show((feedback) async {
+        final screenshotFilePath =
+            await writeImageToStorage(feedback.screenshot);
+        if (feedback.extra?.isNotEmpty ?? false) {
+          if (feedback.extra!['jira'] == true && context.mounted) {
+            unawaited(
+              Navigator.push(
+                widget.navigatorKey!.currentContext!,
+                MaterialPageRoute<dynamic>(
+                  builder: (_) => JiraSendIssuePage(
+                    initialDescription: feedback.text,
+                    initialAttachmentPath: screenshotFilePath.path,
+                    onJiraAuthorized: widget.onJiraAuthorized,
+                  ),
+                ),
+              ),
+            );
+          }
+        } else {
+          await Share.shareXFiles(
+            [screenshotFilePath],
+            text: feedback.text,
+          );
+        }
+      });
+    } else {
+      feedback.hide();
+    }
+    // ignore: avoid_empty_blocks
+    setState(() {});
+  }
+
+  void _launchInfospect(BuildContext context) {
+    final context0 = widget.navigatorKey?.currentContext ?? context;
+
+    if (_controller.inLoggerPage) {
+      Navigator.pop(context0);
+    } else {
+      // ignore: prefer_async_await
+      Navigator.push(
+        context0,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => ISpectPage(
+            options: widget.options,
+            onJiraAuthorized: widget.onJiraAuthorized,
+          ),
+        ),
+      ).then((_) {
+        _controller.setInLoggerPage(false);
+      });
+      _controller.setInLoggerPage(true);
+    }
   }
 }

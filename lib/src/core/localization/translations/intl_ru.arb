@@ -145,5 +145,6 @@
    "addingStatusToIssue": "Добавление статуса к задаче",
    "attachmentsAdded": "Добавление вложений завершено",
    "addingAttachmentsToIssue": "Добавление вложений к задаче",
-   "finished": "Закончено"
+   "finished": "Закончено",
+   "hidePanel": "Скрыть панель"
 }

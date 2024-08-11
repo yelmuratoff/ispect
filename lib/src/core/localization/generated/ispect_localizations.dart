@@ -974,6 +974,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Finished'**
   String get finished;
+
+  /// No description provided for @hidePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide panel'**
+  String get hidePanel;
 }
 
 class _ISpectGeneratedLocalizationDelegate

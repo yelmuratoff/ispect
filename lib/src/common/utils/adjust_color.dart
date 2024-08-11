@@ -23,3 +23,15 @@ Color adjustColorDarken(Color color, double darken) {
 
   return Color.fromARGB(color.alpha, red, green, blue);
 }
+
+Color adjustColor({
+  required Color color,
+  required double value,
+  required bool isDark,
+}) {
+  if (isDark) {
+    return adjustColorDarken(color, value);
+  } else {
+    return adjustColorBrightness(color, value);
+  }
+}

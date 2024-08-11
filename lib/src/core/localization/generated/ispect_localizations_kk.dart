@@ -492,4 +492,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get finished => 'Бітті';
+
+  @override
+  String get hidePanel => 'Панельді жасыру';
 }

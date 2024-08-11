@@ -491,4 +491,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get finished => 'Закончено';
+
+  @override
+  String get hidePanel => 'Скрыть панель';
 }

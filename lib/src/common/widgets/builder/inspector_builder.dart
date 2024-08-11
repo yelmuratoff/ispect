@@ -41,7 +41,7 @@ class ISpectBuilder extends StatelessWidget {
     String projectKey,
   )? onJiraAuthorized;
 
-  final (double x, double y)? initialPosition;
+  final ({double x, double y})? initialPosition;
   final ({
     String domain,
     String email,

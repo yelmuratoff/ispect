@@ -491,4 +491,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get finished => 'Finished';
+
+  @override
+  String get hidePanel => 'Hide panel';
 }

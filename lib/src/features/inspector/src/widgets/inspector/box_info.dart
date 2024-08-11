@@ -144,7 +144,7 @@ double calculateBoxPosition({
   final isInsideContainer = rect.height > minHeightToBeInsideContainer;
 
   if (isInsideContainer) {
-    return (insideTopEdge > padding) ? insideTopEdge : insideBottomEdge;
+    return (insideTopEdge >= padding) ? insideTopEdge : insideBottomEdge;
   } else {
     return (aboveTopEdge > padding) ? aboveTopEdge : belowTopEdge;
   }

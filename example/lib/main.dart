@@ -77,7 +77,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('ru');
+    const locale = Locale('en');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -140,7 +140,7 @@ class App extends ConsumerWidget {
         builder: (context, child) {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
-            initialPosition: (0, 300),
+            initialPosition: (x: 0, y: 200),
             // initialJiraData: (
             //   apiToken:
             //       'Token',
@@ -150,7 +150,7 @@ class App extends ConsumerWidget {
             //   projectKey: 'AAAA'
             // ),
             onPositionChanged: (x, y) {
-              // debugPrint('x: $x, y: $y');
+              debugPrint('x: $x, y: $y');
             },
             onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
               // debugPrint(
@@ -158,6 +158,45 @@ class App extends ConsumerWidget {
             },
             child: child,
           );
+          // child = DraggableCircularMenu(
+          // toggleButtonColor: Colors.blue,
+          // toggleButtonBoxShadow: const [],
+          // curve: Curves.fastEaseInToSlowEaseOut,
+          // reverseCurve: Curves.fastEaseInToSlowEaseOut,
+          // items: [
+          //   CircularMenuItem(
+          //     icon: Icons.home,
+          //     color: Colors.green,
+          //     onTap: () {},
+          //     boxShadow: [],
+          //   ),
+          //   CircularMenuItem(
+          //     icon: Icons.search,
+          //     color: Colors.blue,
+          //     onTap: () {},
+          //     boxShadow: [],
+          //   ),
+          //   CircularMenuItem(
+          //     icon: Icons.settings,
+          //     color: Colors.orange,
+          //     onTap: () {},
+          //     boxShadow: [],
+          //   ),
+          //   CircularMenuItem(
+          //     icon: Icons.chat,
+          //     color: Colors.purple,
+          //     onTap: () {},
+          //     boxShadow: [],
+          //   ),
+          //   CircularMenuItem(
+          //     icon: Icons.notifications,
+          //     color: Colors.brown,
+          //     onTap: () {},
+          //     boxShadow: [],
+          //   )
+          // ],
+          //   child: child!,
+          // );
           return child;
         },
         home: const _Home(),

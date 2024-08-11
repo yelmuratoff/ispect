@@ -145,5 +145,6 @@
    "addingStatusToIssue": "Adding status to issue",
    "attachmentsAdded": "Attachments added",
    "addingAttachmentsToIssue": "Adding attachments to issue",
-   "finished": "Finished"
+   "finished": "Finished",
+   "hidePanel": "Hide panel"
 }
