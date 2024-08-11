@@ -10,9 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/adjust_color.dart';
-import 'package:ispect/src/common/widgets/panel/draggable_panel.dart';
-import 'package:ispect/src/common/widgets/panel/ispect_panel.dart';
+
+import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
 
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
@@ -586,148 +585,82 @@ class InspectorState extends State<Inspector> {
             },
           ),
         if (_isPanelVisible)
-          Align(
-            alignment: Alignment.centerRight,
-            child: MultiValueListenableBuilder(
-              valueListenables: [
-                _inspectorStateNotifier,
-                _colorPickerStateNotifier,
-                _zoomStateNotifier,
-                _byteDataStateNotifier,
-              ],
-              builder: (_) => RepaintBoundary(
-                child: DraggableMenuPanel(
-                  toggleButtonColor: context.isDarkMode
-                      ? context.ispectTheme.colorScheme.primaryContainer
-                      : context.ispectTheme.colorScheme.primary,
-                  toggleButtonBoxShadow: const [],
-                  curve: Curves.fastEaseInToSlowEaseOut,
-                  reverseCurve: Curves.fastEaseInToSlowEaseOut,
-                  items: [
-                    CircularMenuItem(
-                      icon: Icons.monitor_heart_outlined,
-                      color: _itemColor,
-                      onTap: iSpect.togglePerformanceTracking,
-                      boxShadow: const [],
-                      onTapClosesMenu: false,
-                      enableBadge: iSpect.isPerformanceTrackingEnabled,
-                    ),
-                    CircularMenuItem(
-                      icon: Icons.format_shapes_rounded,
-                      color: _itemColor,
-                      onTap: () {
-                        _onInspectorStateChanged(!_inspectorStateNotifier.value);
-                      },
-                      boxShadow: const [],
-                      onTapClosesMenu: false,
-                      enableBadge: _inspectorStateNotifier.value,
-                    ),
-                    CircularMenuItem(
-                      icon: Icons.colorize_rounded,
-                      color: _itemColor,
-                      onTap: () {
-                        _onColorPickerStateChanged.call(!_colorPickerStateNotifier.value);
-                      },
-                      boxShadow: const [],
-                      onTapClosesMenu: false,
-                      enableBadge: _colorPickerStateNotifier.value,
-                    ),
-                    CircularMenuItem(
-                      icon: Icons.zoom_in_rounded,
-                      color: _itemColor,
-                      onTap: () {
-                        _onZoomStateChanged.call(!_zoomStateNotifier.value);
-                      },
-                      boxShadow: const [],
-                      onTapClosesMenu: false,
-                      enableBadge: _zoomStateNotifier.value,
-                    ),
-                    CircularMenuItem(
-                      icon: Icons.camera_alt_rounded,
-                      color: _itemColor,
-                      onTap: () {
-                        _toggleFeedback(feedback, context);
-                      },
-                      boxShadow: const [],
-                      onTapClosesMenu: false,
-                      enableBadge: feedback.isVisible,
-                    ),
-                  ],
+          MultiValueListenableBuilder(
+            valueListenables: [
+              _inspectorStateNotifier,
+              _colorPickerStateNotifier,
+              _zoomStateNotifier,
+              _byteDataStateNotifier,
+            ],
+            builder: (context) => FloatingMenuPanel(
+              onPressed: (index) {
+                switch (index) {
+                  case 0:
+                    iSpect.togglePerformanceTracking();
+                  case 1:
+                    _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                  case 2:
+                    _onColorPickerStateChanged(!_colorPickerStateNotifier.value);
+                  case 3:
+                    _onZoomStateChanged(!_zoomStateNotifier.value);
+                  case 4:
+                    _toggleFeedback(feedback, context);
+                }
+              },
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
+              panelShape: PanelShape.rectangle,
+              backgroundColor: context.isDarkMode
+                  ? context.ispectTheme.colorScheme.primaryContainer
+                  : context.ispectTheme.colorScheme.primary,
+              positionTop: 200,
+              items: [
+                ISpectPanelItem(
+                  icon: Icons.monitor_heart_outlined,
+                  enableBadge: iSpect.isPerformanceTrackingEnabled,
                 ),
-              ),
-              // builder: (_) => InspectorPanel(
-              //   isInspectorEnabled: _inspectorStateNotifier.value,
-              //   isColorPickerEnabled: _colorPickerStateNotifier.value,
-              //   isZoomEnabled: _zoomStateNotifier.value,
-              //   onInspectorStateChanged: _onInspectorStateChanged,
-              //   onColorPickerStateChanged: _onColorPickerStateChanged,
-              //   onZoomStateChanged: _onZoomStateChanged,
-              //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
-              //       _colorPickerStateNotifier.value,
-              //   isZoomLoading: _byteDataStateNotifier.value == null &&
-              //       _zoomStateNotifier.value,
-              //   navigatorKey: widget.navigatorKey,
-              //   options: widget.options,
-              //   initialPosition: widget.initialPosition,
-              //   onJiraAuthorized: widget.onJiraAuthorized,
-              //   onPositionChanged: (x, y) {
-              //     widget.onPositionChanged?.call(x, y);
-              //   },
-              // ),
+                ISpectPanelItem(
+                  icon: Icons.format_shapes_rounded,
+                  enableBadge: _inspectorStateNotifier.value,
+                ),
+                ISpectPanelItem(
+                  icon: Icons.colorize_rounded,
+                  enableBadge: _colorPickerStateNotifier.value,
+                ),
+                ISpectPanelItem(
+                  icon: Icons.zoom_in_rounded,
+                  enableBadge: _zoomStateNotifier.value,
+                ),
+                ISpectPanelItem(
+                  icon: Icons.camera_alt_rounded,
+                  enableBadge: feedback.isVisible,
+                ),
+                // Icons.monitor_heart_outlined,
+                // Icons.format_shapes_rounded,
+                // Icons.colorize_rounded,
+                // Icons.zoom_in_rounded,
+                // Icons.camera_alt_rounded,
+              ],
             ),
+            // builder: (_) => InspectorPanel(
+            //   isInspectorEnabled: _inspectorStateNotifier.value,
+            //   isColorPickerEnabled: _colorPickerStateNotifier.value,
+            //   isZoomEnabled: _zoomStateNotifier.value,
+            //   onInspectorStateChanged: _onInspectorStateChanged,
+            //   onColorPickerStateChanged: _onColorPickerStateChanged,
+            //   onZoomStateChanged: _onZoomStateChanged,
+            //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
+            //       _colorPickerStateNotifier.value,
+            //   isZoomLoading: _byteDataStateNotifier.value == null &&
+            //       _zoomStateNotifier.value,
+            //   navigatorKey: widget.navigatorKey,
+            //   options: widget.options,
+            //   initialPosition: widget.initialPosition,
+            //   onJiraAuthorized: widget.onJiraAuthorized,
+            //   onPositionChanged: (x, y) {
+            //     widget.onPositionChanged?.call(x, y);
+            //   },
+            // ),
           ),
-        FloatingMenuPanel(
-          onPressed: (index) {
-            switch (index) {
-              case 0:
-                iSpect.togglePerformanceTracking();
-              case 1:
-                _onInspectorStateChanged(!_inspectorStateNotifier.value);
-              case 2:
-                _onColorPickerStateChanged(!_colorPickerStateNotifier.value);
-              case 3:
-                _onZoomStateChanged(!_zoomStateNotifier.value);
-              case 4:
-                _toggleFeedback(feedback, context);
-            }
-            setState(() {
-              ISpectTalker.info('ISpect panel pressed: $index');
-            });
-          },
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-          panelShape: PanelShape.rectangle,
-          backgroundColor: context.isDarkMode
-              ? context.ispectTheme.colorScheme.primaryContainer
-              : context.ispectTheme.colorScheme.primary,
-          positionTop: 200,
-          items: [
-            ISpectPanelItem(
-              icon: Icons.monitor_heart_outlined,
-              enableBadge: iSpect.isPerformanceTrackingEnabled,
-            ),
-            ISpectPanelItem(
-              icon: Icons.format_shapes_rounded,
-              enableBadge: _inspectorStateNotifier.value,
-            ),
-            ISpectPanelItem(
-              icon: Icons.colorize_rounded,
-              enableBadge: _colorPickerStateNotifier.value,
-            ),
-            ISpectPanelItem(
-              icon: Icons.zoom_in_rounded,
-              enableBadge: _zoomStateNotifier.value,
-            ),
-            ISpectPanelItem(
-              icon: Icons.camera_alt_rounded,
-              enableBadge: feedback.isVisible,
-            ),
-            // Icons.monitor_heart_outlined,
-            // Icons.format_shapes_rounded,
-            // Icons.colorize_rounded,
-            // Icons.zoom_in_rounded,
-            // Icons.camera_alt_rounded,
-          ],
-        ),
       ],
     );
   }
@@ -764,14 +697,4 @@ class InspectorState extends State<Inspector> {
     // ignore: avoid_empty_blocks
     setState(() {});
   }
-
-  Color get _itemColor => !context.isDarkMode
-      ? adjustColorBrightness(
-          context.ispectTheme.colorScheme.primary,
-          0.8,
-        )
-      : adjustColorBrightness(
-          context.ispectTheme.colorScheme.primaryContainer,
-          0.9,
-        );
 }
