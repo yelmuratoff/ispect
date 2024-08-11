@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class LineWithCurvePainter extends CustomPainter {
-  const LineWithCurvePainter({required this.isInRightSide});
+  const LineWithCurvePainter({
+    required this.isInRightSide,
+    required this.color,
+  });
   final bool isInRightSide;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = color
       ..strokeWidth = 5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

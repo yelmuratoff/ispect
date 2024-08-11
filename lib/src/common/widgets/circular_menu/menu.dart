@@ -260,6 +260,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                                               size: const Size(20, 70),
                                               painter: LineWithCurvePainter(
                                                 isInRightSide: _isInRightSide(screenSize),
+                                                color: widget.toggleButtonIconColor ?? Colors.white,
                                               ),
                                             ),
                                           )

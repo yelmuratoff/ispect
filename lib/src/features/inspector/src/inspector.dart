@@ -706,16 +706,21 @@ class InspectorState extends State<Inspector> {
             ),
           ),
         FloatingMenuPanel(
-          onPressed: (_) {
-            debugPrint('Pressed');
+          onPressed: (index) {
+            debugPrint('Pressed: $index');
           },
           borderRadius: const BorderRadius.all(Radius.circular(16)),
           panelShape: PanelShape.rectangle,
+          backgroundColor: context.isDarkMode
+              ? context.ispectTheme.colorScheme.primaryContainer
+              : context.ispectTheme.colorScheme.primary,
           positionTop: 200,
           buttons: const [
-            Icons.abc,
-            Icons.abc,
-            Icons.abc,
+            Icons.monitor_heart_outlined,
+            Icons.format_shapes_rounded,
+            Icons.colorize_rounded,
+            Icons.zoom_in_rounded,
+            Icons.camera_alt_rounded,
           ],
         ),
       ],
