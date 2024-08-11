@@ -68,7 +68,7 @@ class CombinedOverlayWidget extends StatelessWidget {
               boxShadow: const [
                 BoxShadow(
                   blurRadius: 12,
-                  color: Colors.black45,
+                  color: Colors.black12,
                   spreadRadius: 1,
                 ),
               ],
@@ -91,7 +91,7 @@ class CombinedOverlayWidget extends StatelessWidget {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.topCenter,
+                  alignment: const Alignment(0, -0.8),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: _ZoomLevelDisplay(zoomScale: zoomScale),
@@ -241,6 +241,7 @@ class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
         opacity: _isZoomScaleVisible ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
         child: InformationBoxWidget(
+          color: context.ispectTheme.colorScheme.primary,
           child: Text('x${widget.zoomScale}'),
         ),
       );

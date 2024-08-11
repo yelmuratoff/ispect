@@ -1,4 +1,4 @@
-## 1.7.8
+## 1.7.9
 - Zoom and color picker was combined.
 
 ## 1.7.7
