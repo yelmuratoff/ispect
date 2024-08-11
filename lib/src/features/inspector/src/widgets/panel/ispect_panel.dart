@@ -37,8 +37,6 @@ class FloatingMenuPanel extends StatefulWidget {
     required this.onPressed,
     required this.backgroundColor,
     this.items = const [],
-    this.positionTop,
-    this.positionLeft,
     this.borderColor,
     this.borderWidth,
     this.iconSize,
@@ -56,10 +54,10 @@ class FloatingMenuPanel extends StatefulWidget {
     this.dockOffset = 10.0,
     this.dockAnimCurve,
     this.dockAnimDuration,
+    this.initialPosition,
+    this.onPositionChanged,
   });
 
-  final double? positionTop;
-  final double? positionLeft;
   final Color? borderColor;
   final double? borderWidth;
   final double buttonWidth;
@@ -80,6 +78,8 @@ class FloatingMenuPanel extends StatefulWidget {
   final Curve? dockAnimCurve;
   final List<ISpectPanelItem> items;
   final Function(int index) onPressed;
+  final ({double x, double y})? initialPosition;
+  final void Function(double x, double y)? onPositionChanged;
 
   @override
   _FloatBoxState createState() => _FloatBoxState();
@@ -115,8 +115,8 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
   @override
   void initState() {
     super.initState();
-    _positionTop.value = widget.positionTop ?? 0;
-    _positionLeft.value = widget.positionLeft ?? 0;
+    _positionTop.value = widget.initialPosition?.y ?? 0;
+    _positionLeft.value = widget.initialPosition?.x ?? 0;
     _buttonWidth.value = widget.buttonWidth;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -197,6 +197,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                           onPanEnd: (event) {
                             _isDragging.value = false;
                             _forceDock(pageWidth);
+                            widget.onPositionChanged?.call(_positionLeft.value, _positionTop.value);
                           },
                           onPanStart: (event) {
                             // Detect the offset between the top and left side of the panel and

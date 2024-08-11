@@ -9,10 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-
-import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
-
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
@@ -21,6 +19,7 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
+import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
@@ -106,7 +105,10 @@ class Inspector extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
-  final (double x, double y)? initialPosition;
+  final ({
+    double x,
+    double y,
+  })? initialPosition;
   final void Function(
     String domain,
     String email,
@@ -170,6 +172,8 @@ class InspectorState extends State<Inspector> {
   late final KeyboardHandler _keyboardHandler;
 
   Offset? _pointerHoverPosition;
+
+  final DraggableButtonController _controller = DraggableButtonController();
 
   @override
   void initState() {
@@ -452,6 +456,7 @@ class InspectorState extends State<Inspector> {
     _image?.dispose();
     _byteDataStateNotifier.value = null;
     _keyboardHandler.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -585,81 +590,86 @@ class InspectorState extends State<Inspector> {
             },
           ),
         if (_isPanelVisible)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _inspectorStateNotifier,
-              _colorPickerStateNotifier,
-              _zoomStateNotifier,
-              _byteDataStateNotifier,
-            ],
-            builder: (context) => FloatingMenuPanel(
-              onPressed: (index) {
-                switch (index) {
-                  case 0:
-                    iSpect.togglePerformanceTracking();
-                  case 1:
-                    _onInspectorStateChanged(!_inspectorStateNotifier.value);
-                  case 2:
-                    _onColorPickerStateChanged(!_colorPickerStateNotifier.value);
-                  case 3:
-                    _onZoomStateChanged(!_zoomStateNotifier.value);
-                  case 4:
-                    _toggleFeedback(feedback, context);
-                }
-              },
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-              panelShape: PanelShape.rectangle,
-              backgroundColor: context.isDarkMode
-                  ? context.ispectTheme.colorScheme.primaryContainer
-                  : context.ispectTheme.colorScheme.primary,
-              positionTop: 200,
-              items: [
-                ISpectPanelItem(
-                  icon: Icons.monitor_heart_outlined,
-                  enableBadge: iSpect.isPerformanceTrackingEnabled,
-                ),
-                ISpectPanelItem(
-                  icon: Icons.format_shapes_rounded,
-                  enableBadge: _inspectorStateNotifier.value,
-                ),
-                ISpectPanelItem(
-                  icon: Icons.colorize_rounded,
-                  enableBadge: _colorPickerStateNotifier.value,
-                ),
-                ISpectPanelItem(
-                  icon: Icons.zoom_in_rounded,
-                  enableBadge: _zoomStateNotifier.value,
-                ),
-                ISpectPanelItem(
-                  icon: Icons.camera_alt_rounded,
-                  enableBadge: feedback.isVisible,
-                ),
-                // Icons.monitor_heart_outlined,
-                // Icons.format_shapes_rounded,
-                // Icons.colorize_rounded,
-                // Icons.zoom_in_rounded,
-                // Icons.camera_alt_rounded,
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (_, __) => MultiValueListenableBuilder(
+              valueListenables: [
+                _inspectorStateNotifier,
+                _colorPickerStateNotifier,
+                _zoomStateNotifier,
+                _byteDataStateNotifier,
               ],
+              builder: (context) => FloatingMenuPanel(
+                onPressed: (index) {
+                  switch (index) {
+                    case 0:
+                      _launchInfospect(context);
+                    case 1:
+                      iSpect.togglePerformanceTracking();
+                    case 2:
+                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                    case 3:
+                      _onColorPickerStateChanged(!_colorPickerStateNotifier.value);
+                    case 4:
+                      _onZoomStateChanged(!_zoomStateNotifier.value);
+                    case 5:
+                      _toggleFeedback(feedback, context);
+                  }
+                },
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                panelShape: PanelShape.rectangle,
+                backgroundColor: context.isDarkMode
+                    ? context.ispectTheme.colorScheme.primaryContainer
+                    : context.ispectTheme.colorScheme.primary,
+                initialPosition: widget.initialPosition,
+                onPositionChanged: (x, y) => widget.onPositionChanged?.call(x, y),
+                items: [
+                  ISpectPanelItem(
+                    icon: _controller.inLoggerPage ? Icons.undo : Icons.reorder_rounded,
+                    enableBadge: _controller.inLoggerPage,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.monitor_heart_outlined,
+                    enableBadge: iSpect.isPerformanceTrackingEnabled,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.format_shapes_rounded,
+                    enableBadge: _inspectorStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.colorize_rounded,
+                    enableBadge: _colorPickerStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.zoom_in_rounded,
+                    enableBadge: _zoomStateNotifier.value,
+                  ),
+                  ISpectPanelItem(
+                    icon: Icons.camera_alt_rounded,
+                    enableBadge: feedback.isVisible,
+                  ),
+                ],
+              ),
+              // builder: (_) => InspectorPanel(
+              //   isInspectorEnabled: _inspectorStateNotifier.value,
+              //   isColorPickerEnabled: _colorPickerStateNotifier.value,
+              //   isZoomEnabled: _zoomStateNotifier.value,
+              //   onInspectorStateChanged: _onInspectorStateChanged,
+              //   onColorPickerStateChanged: _onColorPickerStateChanged,
+              //   onZoomStateChanged: _onZoomStateChanged,
+              //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
+              //       _colorPickerStateNotifier.value,
+              //   isZoomLoading: _byteDataStateNotifier.value == null &&
+              //       _zoomStateNotifier.value,
+              //   navigatorKey: widget.navigatorKey,
+              //   options: widget.options,
+              //   initialPosition: widget.initialPosition,
+              //   onJiraAuthorized: widget.onJiraAuthorized,
+              //   onPositionChanged: (x, y) {
+              //     widget.onPositionChanged?.call(x, y);
+              //   },
+              // ),
             ),
-            // builder: (_) => InspectorPanel(
-            //   isInspectorEnabled: _inspectorStateNotifier.value,
-            //   isColorPickerEnabled: _colorPickerStateNotifier.value,
-            //   isZoomEnabled: _zoomStateNotifier.value,
-            //   onInspectorStateChanged: _onInspectorStateChanged,
-            //   onColorPickerStateChanged: _onColorPickerStateChanged,
-            //   onZoomStateChanged: _onZoomStateChanged,
-            //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
-            //       _colorPickerStateNotifier.value,
-            //   isZoomLoading: _byteDataStateNotifier.value == null &&
-            //       _zoomStateNotifier.value,
-            //   navigatorKey: widget.navigatorKey,
-            //   options: widget.options,
-            //   initialPosition: widget.initialPosition,
-            //   onJiraAuthorized: widget.onJiraAuthorized,
-            //   onPositionChanged: (x, y) {
-            //     widget.onPositionChanged?.call(x, y);
-            //   },
-            // ),
           ),
       ],
     );
@@ -696,5 +706,27 @@ class InspectorState extends State<Inspector> {
     }
     // ignore: avoid_empty_blocks
     setState(() {});
+  }
+
+  void _launchInfospect(BuildContext context) {
+    final context0 = widget.navigatorKey?.currentContext ?? context;
+
+    if (_controller.inLoggerPage) {
+      Navigator.pop(context0);
+    } else {
+      // ignore: prefer_async_await
+      Navigator.push(
+        context0,
+        MaterialPageRoute<dynamic>(
+          builder: (_) => ISpectPage(
+            options: widget.options,
+            onJiraAuthorized: widget.onJiraAuthorized,
+          ),
+        ),
+      ).then((_) {
+        _controller.setInLoggerPage(false);
+      });
+      _controller.setInLoggerPage(true);
+    }
   }
 }

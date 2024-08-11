@@ -139,7 +139,7 @@ class App extends ConsumerWidget {
         builder: (context, child) {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
-            initialPosition: (0, 300),
+            initialPosition: (x: 0, y: 200),
             // initialJiraData: (
             //   apiToken:
             //       'Token',
@@ -149,7 +149,7 @@ class App extends ConsumerWidget {
             //   projectKey: 'AAAA'
             // ),
             onPositionChanged: (x, y) {
-              // debugPrint('x: $x, y: $y');
+              debugPrint('x: $x, y: $y');
             },
             onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
               // debugPrint(
