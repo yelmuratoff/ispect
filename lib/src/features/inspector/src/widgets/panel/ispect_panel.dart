@@ -221,12 +221,16 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                             _isDragging.value = true;
 
                             // Calculate the top position of the panel according to pan;
+                            final statusBarHeight =
+                                MediaQuery.paddingOf(context).top;
                             _positionTop.value =
                                 event.globalPosition.dy - _panOffsetTop.value;
 
-                            // Check if the top position is exceeding the dock boundaries;
-                            if (_positionTop.value < 0 + _dockBoundary) {
-                              _positionTop.value = 0 + _dockBoundary;
+                            // Check if the top position is exceeding the status bar or dock boundaries;
+                            if (_positionTop.value <
+                                statusBarHeight + _dockBoundary) {
+                              _positionTop.value =
+                                  statusBarHeight + _dockBoundary;
                             }
                             if (_positionTop.value >
                                 (pageHeight - _panelHeight) - _dockBoundary) {
