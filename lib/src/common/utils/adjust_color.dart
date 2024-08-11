@@ -7,7 +7,8 @@ Color adjustColorBrightness(Color color, double brightness) {
   );
 
   final red = ((color.red * brightness) + (255 * (1.0 - brightness))).round();
-  final green = ((color.green * brightness) + (255 * (1.0 - brightness))).round();
+  final green =
+      ((color.green * brightness) + (255 * (1.0 - brightness))).round();
   final blue = ((color.blue * brightness) + (255 * (1.0 - brightness))).round();
 
   return Color.fromARGB(color.alpha, red, green, blue);

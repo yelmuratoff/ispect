@@ -2,9 +2,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
@@ -57,10 +57,10 @@ class BoxInfoPanelWidget extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Clipboard.setData(
-                      ClipboardData(
-                        text: boxInfo.targetRenderBox.toStringDeep(),
-                      ),
+                    copyClipboard(
+                      context,
+                      value: boxInfo.targetRenderBox.toStringDeep(),
+                      showValue: false,
                     );
                   },
                 ),

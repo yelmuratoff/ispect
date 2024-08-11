@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 
@@ -16,7 +17,8 @@ void showColorPickerResultSnackbar({
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: Theme.of(context).cardColor,
+      backgroundColor: context.ispectTheme.cardColor,
+      elevation: 0,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
@@ -27,35 +29,42 @@ void showColorPickerResultSnackbar({
       ),
       content: Row(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: const BorderRadius.all(Radius.circular(4)),
-              border: Border.fromBorderSide(
-                BorderSide(
-                  color:
-                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                          context.ispectTheme.dividerColor,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: const BorderRadius.all(Radius.circular(4)),
+                    border: Border.fromBorderSide(
+                      BorderSide(
+                        color: getTextColorOnBackground(color),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const Gap(8),
+              Text(
+                'Color: $colorString',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            'Color: $colorString',
-            style: Theme.of(context).textTheme.bodyMedium,
+          const Gap(8),
+          ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              copyClipboard(context, value: colorString);
+            },
+            child: Text(context.ispectL10n.copy),
           ),
         ],
-      ),
-      action: SnackBarAction(
-        label: context.ispectL10n.copy,
-        onPressed: () {
-          Clipboard.setData(ClipboardData(text: colorString));
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        },
       ),
     ),
   );

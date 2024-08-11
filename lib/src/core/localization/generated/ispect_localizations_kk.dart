@@ -339,7 +339,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get httpRequestLogDesc => 'Серверге жіберілген сұраныс журналы';
 
   @override
-  String get httpResponseLogDesc => 'Жіберілген сұранысқа серверден жауап журналы';
+  String get httpResponseLogDesc =>
+      'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
   String get httpErrorLogDesc => 'Серверге сұраныс жіберу қатесі журналы';
@@ -369,10 +370,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get riverpodFailLogDesc => 'Провайдермен жұмыс істеу қатесі журналы';
 
   @override
-  String get testerLogDesc => 'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
+  String get testerLogDesc =>
+      'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
 
   @override
-  String get otherLogsForDevelopers => 'Басқа журналдарды әзірлеушілер қолданады';
+  String get otherLogsForDevelopers =>
+      'Басқа журналдарды әзірлеушілер қолданады';
 
   @override
   String get printLogDesc => 'Flutter стандартты print методоның журналы';
@@ -399,7 +402,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
 
   @override
-  String get jiraInstruction => '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
+  String get jiraInstruction =>
+      '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
 
   @override
   String get projectDomain => 'Жоба домені';
@@ -462,7 +466,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get selectPriority => 'Мәселенің басымдығын таңдаңыз';
 
   @override
-  String get pleaseCheckAuthCred => 'Қате. Авторизация деректерін тексеріп көріңіз.';
+  String get pleaseCheckAuthCred =>
+      'Қате. Авторизация деректерін тексеріп көріңіз.';
 
   @override
   String get successfullyAuthorized => 'Сіз сәтті кірдіңіз';

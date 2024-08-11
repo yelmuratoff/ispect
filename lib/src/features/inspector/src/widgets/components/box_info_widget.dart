@@ -32,7 +32,6 @@ class BoxInfoWidget extends StatelessWidget {
               ),
             ),
           ),
-          // ..._buildPaddingWidgets(context),
           _TargetBoxSizeWidget(
             boxInfo: boxInfo,
             targetColor: _targetColor,

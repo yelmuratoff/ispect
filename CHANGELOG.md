@@ -1,3 +1,7 @@
+## 1.7.5-beta.2
+- New draggable button with a new design and flow.
+- Added some documentation about Jira.
+
 ## 1.7.4
 - Minor changes with history of logs: copy all logs and share file.
 <!-- - Minor changes with draggable button, now it is possible to open after horizontal drag end. -->
