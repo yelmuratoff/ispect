@@ -286,7 +286,7 @@ class InspectorState extends State<Inspector> {
 
     if (isEnabled) {
       _onInspectorStateChanged(false);
-      _zoomScaleNotifier.value = 2.0;
+      _zoomScaleNotifier.value = 3.0;
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await _extractByteData();
@@ -314,7 +314,7 @@ class InspectorState extends State<Inspector> {
 
       _zoomImageOffsetNotifier.value = null;
       _zoomOverlayOffsetNotifier.value = null;
-      _zoomScaleNotifier.value = 2.0;
+      _zoomScaleNotifier.value = 3.0;
     }
   }
 
@@ -485,8 +485,8 @@ class InspectorState extends State<Inspector> {
               }
 
               final overlaySize = ui.lerpDouble(
-                128.0,
-                256.0,
+                168.0,
+                296.0,
                 ((zoomScale - 2.0) / 10.0).clamp(0, 1),
               )!;
 

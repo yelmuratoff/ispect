@@ -94,13 +94,6 @@ class CombinedOverlayWidget extends StatelessWidget {
                   alignment: const Alignment(0, -0.8),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: _ZoomLevelDisplay(zoomScale: zoomScale),
-                  ),
-                ),
-                Align(
-                  alignment: const Alignment(0, 0.8),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
                     child: Material(
                       color: color,
                       shape: RoundedRectangleBorder(
@@ -123,6 +116,13 @@ class CombinedOverlayWidget extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ),
+                ),
+                Align(
+                  alignment: const Alignment(0, -0.8),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _ZoomLevelDisplay(zoomScale: zoomScale),
                   ),
                 ),
                 Center(
