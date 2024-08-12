@@ -1,4 +1,4 @@
-## 1.8.0
+## 1.8.1
 - Raised the color label in the color picker.
 - Increased the zoom scale factor to 3.
 

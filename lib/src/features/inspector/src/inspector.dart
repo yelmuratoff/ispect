@@ -296,17 +296,19 @@ class InspectorState extends State<Inspector> {
         }
       });
     } else {
-      final color = getPixelFromByteData(
-        _byteDataStateNotifier.value!,
-        width: _image!.width,
-        x: _zoomImageOffsetNotifier.value!.dx.round(),
-        y: _zoomImageOffsetNotifier.value!.dy.round(),
-      );
+      if (_byteDataStateNotifier.value != null) {
+        final color = getPixelFromByteData(
+          _byteDataStateNotifier.value!,
+          width: _image!.width,
+          x: _zoomImageOffsetNotifier.value!.dx.round(),
+          y: _zoomImageOffsetNotifier.value!.dy.round(),
+        );
 
-      showColorPickerResultSnackbar(
-        context: context,
-        color: color,
-      );
+        showColorPickerResultSnackbar(
+          context: context,
+          color: color,
+        );
+      }
 
       _image?.dispose();
       _image = null;
