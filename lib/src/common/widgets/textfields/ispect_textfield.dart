@@ -73,6 +73,12 @@ class ISpectTextfield extends StatelessWidget {
                 color: context.ispectTheme.dividerColor,
               ),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(
+                color: context.ispectTheme.dividerColor,
+              ),
+            ),
           ),
         ),
       );
