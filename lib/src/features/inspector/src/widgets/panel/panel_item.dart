@@ -9,5 +9,5 @@ class ISpectPanelItem {
 
   final IconData icon;
   final bool enableBadge;
-  final VoidCallback? onTap;
+  final void Function(BuildContext context)? onTap;
 }

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:ispect/src/common/widgets/widget/base_card.dart';
 import 'package:ispect/src/features/ispect/detailed_http_page.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/src/ui/widgets/base_card.dart';
@@ -55,10 +56,10 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: widget.margin ?? const EdgeInsets.only(bottom: 8),
+        padding: widget.margin ?? EdgeInsets.zero,
         child: GestureDetector(
           onTap: _onTap,
-          child: TalkerBaseCard(
+          child: ISpectBaseCard(
             color: widget.color,
             backgroundColor: widget.backgroundColor,
             child: Column(
@@ -129,8 +130,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
-                                builder: (_) =>
-                                    DetailedHTTPPage(data: widget.data),
+                                builder: (_) => DetailedHTTPPage(data: widget.data),
                               ),
                             );
                           },
@@ -142,19 +142,14 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                 if (_expanded)
                   Container(
                     width: double.infinity,
-                    margin: _stackTrace != null
-                        ? const EdgeInsets.only(top: 8)
-                        : null,
-                    padding: _stackTrace != null
-                        ? const EdgeInsets.all(6)
-                        : EdgeInsets.zero,
+                    margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
+                    padding: _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
                     decoration: _stackTrace != null
                         ? BoxDecoration(
                             border: Border.fromBorderSide(
                               BorderSide(color: widget.color),
                             ),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
+                            borderRadius: const BorderRadius.all(Radius.circular(10)),
                           )
                         : null,
                     child: Column(
@@ -246,11 +241,16 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _errorMessage {
-    var txt =
-        widget.data.exception?.toString() ?? widget.data.exception?.toString();
+    var txt = widget.data.exception?.toString() ?? widget.data.exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';
+    }
+    final isHttpLog = [
+      TalkerLogType.httpError.key,
+    ].contains(widget.data.title);
+    if (isHttpLog) {
+      return widget.data.generateTextMessage();
     }
     return txt;
   }

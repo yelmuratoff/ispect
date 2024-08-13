@@ -135,8 +135,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) =>
-      context?.findAncestorStateOfType<InspectorState>();
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -146,8 +145,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() => setState(() => _isPanelVisible = !_isPanelVisible);
 
   final _stackKey = GlobalKey();
   final _repaintBoundaryKey = GlobalKey();
@@ -232,9 +230,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -322,8 +318,7 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -334,9 +329,8 @@ class InspectorState extends State<Inspector> {
   Offset _extractShiftedOffset(Offset offset) {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 =
+        (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -349,9 +343,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -359,8 +351,7 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
     if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+      final newValue = _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
 
       if (newValue < 1.0) {
         return;
@@ -411,6 +402,7 @@ class InspectorState extends State<Inspector> {
 
     final iSpect = ISpect.read(context);
     final feedback = BetterFeedback.of(context);
+    final screenSize = MediaQuery.sizeOf(context);
 
     return Stack(
       key: _stackKey,
@@ -425,8 +417,7 @@ class InspectorState extends State<Inspector> {
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer =
-                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
+              final isAbsorbingPointer = _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -487,14 +478,14 @@ class InspectorState extends State<Inspector> {
               }
 
               final overlaySize = ui.lerpDouble(
-                168.0,
-                296.0,
+                128.0,
+                246.0,
                 ((zoomScale - 2.0) / 10.0).clamp(0, 1),
               )!;
 
               return Positioned(
-                left: offset.dx - overlaySize / 2,
-                top: offset.dy - overlaySize / 2,
+                left: offset.dx.clamp(0, screenSize.width - overlaySize),
+                top: (offset.dy - overlaySize - 16).clamp(0, screenSize.height),
                 child: IgnorePointer(
                   child: CombinedOverlayWidget(
                     image: _image!,
@@ -529,45 +520,45 @@ class InspectorState extends State<Inspector> {
               builder: (context) => FloatingMenuPanel(
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 panelShape: PanelShape.rectangle,
+                navigatorKey: widget.navigatorKey,
                 backgroundColor: context.isDarkMode
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
                 initialPosition: widget.initialPosition,
-                onPositionChanged: (x, y) =>
-                    widget.onPositionChanged?.call(x, y),
+                onPositionChanged: (x, y) => widget.onPositionChanged?.call(x, y),
                 items: [
                   ISpectPanelItem(
-                    icon: _controller.inLoggerPage
-                        ? Icons.undo_rounded
-                        : Icons.reorder_rounded,
+                    icon: _controller.inLoggerPage ? Icons.undo_rounded : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
-                    onTap: () {
+                    onTap: (_) {
                       _launchInfospect(context);
                     },
                   ),
                   ISpectPanelItem(
                     icon: Icons.monitor_heart_outlined,
                     enableBadge: iSpect.isPerformanceTrackingEnabled,
-                    onTap: iSpect.togglePerformanceTracking,
+                    onTap: (_) {
+                      iSpect.togglePerformanceTracking();
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.format_shapes_rounded,
                     enableBadge: _inspectorStateNotifier.value,
-                    onTap: () {
+                    onTap: (_) {
                       _onInspectorStateChanged(!_inspectorStateNotifier.value);
                     },
                   ),
                   ISpectPanelItem(
                     icon: Icons.colorize_rounded,
                     enableBadge: _zoomStateNotifier.value,
-                    onTap: () {
+                    onTap: (_) {
                       _onZoomStateChanged(!_zoomStateNotifier.value);
                     },
                   ),
                   ISpectPanelItem(
                     icon: Icons.camera_alt_rounded,
                     enableBadge: feedback.isVisible,
-                    onTap: () {
+                    onTap: (_) {
                       _toggleFeedback(feedback, context);
                     },
                   ),
@@ -583,8 +574,7 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
-        final screenshotFilePath =
-            await writeImageToStorage(feedback.screenshot);
+        final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
         if (feedback.extra?.isNotEmpty ?? false) {
           if (feedback.extra!['jira'] == true && context.mounted) {
             unawaited(

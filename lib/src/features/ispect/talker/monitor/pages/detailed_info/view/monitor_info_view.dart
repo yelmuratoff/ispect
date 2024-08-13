@@ -25,8 +25,7 @@ class _MonitorView extends StatelessWidget {
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
@@ -42,9 +41,7 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),
@@ -53,25 +50,25 @@ class _MonitorView extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           const SliverToBoxAdapter(child: SizedBox(height: 10)),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final data = logs[index];
-                return TalkerDataCards(
-                  data: data,
-                  onCopyTap: () => onCopyTap?.call(context, data),
-                  color: getTypeColor(
-                    isDark: context.isDarkMode,
-                    key: data.title,
-                  ),
-                  expanded: isLogsExpanded,
-                  backgroundColor:
-                      iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                          context.ispectTheme.cardColor,
-                );
-              },
-              childCount: logs.length,
+          SliverList.separated(
+            itemCount: logs.length,
+            separatorBuilder: (_, __) => Divider(
+              color: iSpect.theme.dividerColor(isDark: context.isDarkMode),
+              thickness: 1,
             ),
+            itemBuilder: (context, index) {
+              final data = logs[index];
+              return TalkerDataCards(
+                data: data,
+                onCopyTap: () => onCopyTap?.call(context, data),
+                color: getTypeColor(
+                  isDark: context.isDarkMode,
+                  key: data.title,
+                ),
+                expanded: isLogsExpanded,
+                backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ?? context.ispectTheme.cardColor,
+              );
+            },
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 10)),
         ],

@@ -11,8 +11,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -51,10 +50,10 @@ void main() {
     ),
     talker: talker,
     isPrintLoggingEnabled: true,
-    filters: [
-      'Handler: "onTap"',
-      'This exception was thrown because',
-    ],
+    // filters: [
+    //   'Handler: "onTap"',
+    //   'This exception was thrown because',
+    // ],
     onInitialized: () {
       dio.interceptors.add(
         TalkerDioLogger(
@@ -95,7 +94,7 @@ class App extends ConsumerWidget {
           ISpectPanelItem(
             icon: Icons.home,
             enableBadge: false,
-            onTap: () {
+            onTap: (context) {
               debugPrint('Home');
             },
           ),

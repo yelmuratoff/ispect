@@ -24,7 +24,7 @@ class _TalkerMonitorsCard extends StatelessWidget {
     final iSpect = ISpect.read(context);
     return GestureDetector(
       onTap: onTap,
-      child: TalkerBaseCard(
+      child: ISpectBaseCard(
         color: color,
         backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
             context.ispectTheme.cardColor,

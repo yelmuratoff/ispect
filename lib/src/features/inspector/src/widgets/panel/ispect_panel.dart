@@ -45,6 +45,7 @@ class FloatingMenuPanel extends StatefulWidget {
     this.dockAnimCurve,
     this.dockAnimDuration,
     this.initialPosition,
+    this.navigatorKey,
     this.onPositionChanged,
   });
 
@@ -69,6 +70,7 @@ class FloatingMenuPanel extends StatefulWidget {
   final List<ISpectPanelItem> items;
   final ({double x, double y})? initialPosition;
   final void Function(double x, double y)? onPositionChanged;
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   @override
   _FloatBoxState createState() => _FloatBoxState();
@@ -321,7 +323,9 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  widget.items[index].onTap?.call();
+                                  widget.items[index].onTap?.call(
+                                      widget.navigatorKey?.currentContext ??
+                                          context);
 
                                   _movementSpeed.value =
                                       widget.panelAnimDuration ?? 100;
