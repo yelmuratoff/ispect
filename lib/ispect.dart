@@ -20,6 +20,7 @@ export 'package:ispect/src/core/localization/localization.dart';
 
 export 'src/common/widgets/circular_menu/item.dart';
 export 'src/common/widgets/circular_menu/menu.dart';
+export 'src/features/inspector/src/widgets/panel/panel_item.dart';
 export 'src/features/ispect/ispect_page.dart';
 
 final class ISpect {

@@ -6,16 +6,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/circular_menu/drag_handle_painter.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
-
-class ISpectPanelItem {
-  const ISpectPanelItem({
-    required this.icon,
-    this.enableBadge = false,
-  });
-
-  final IconData icon;
-  final bool enableBadge;
-}
+import 'package:ispect/src/features/inspector/src/widgets/panel/panel_item.dart';
 
 enum PanelShape {
   rectangle,
@@ -34,7 +25,6 @@ enum PanelState {
 
 class FloatingMenuPanel extends StatefulWidget {
   const FloatingMenuPanel({
-    required this.onPressed,
     required this.backgroundColor,
     this.items = const [],
     this.borderColor,
@@ -77,7 +67,6 @@ class FloatingMenuPanel extends StatefulWidget {
   final int? dockAnimDuration;
   final Curve? dockAnimCurve;
   final List<ISpectPanelItem> items;
-  final Function(int index) onPressed;
   final ({double x, double y})? initialPosition;
   final void Function(double x, double y)? onPositionChanged;
 
@@ -332,7 +321,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  widget.onPressed(index);
+                                  widget.items[index].onTap?.call();
 
                                   _movementSpeed.value =
                                       widget.panelAnimDuration ?? 100;

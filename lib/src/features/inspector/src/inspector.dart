@@ -527,20 +527,6 @@ class InspectorState extends State<Inspector> {
                 _byteDataStateNotifier,
               ],
               builder: (context) => FloatingMenuPanel(
-                onPressed: (index) {
-                  switch (index) {
-                    case 0:
-                      _launchInfospect(context);
-                    case 1:
-                      iSpect.togglePerformanceTracking();
-                    case 2:
-                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
-                    case 3:
-                      _onZoomStateChanged(!_zoomStateNotifier.value);
-                    case 4:
-                      _toggleFeedback(feedback, context);
-                  }
-                },
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 panelShape: PanelShape.rectangle,
                 backgroundColor: context.isDarkMode
@@ -555,23 +541,37 @@ class InspectorState extends State<Inspector> {
                         ? Icons.undo_rounded
                         : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
+                    onTap: () {
+                      _launchInfospect(context);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.monitor_heart_outlined,
                     enableBadge: iSpect.isPerformanceTrackingEnabled,
+                    onTap: iSpect.togglePerformanceTracking,
                   ),
                   ISpectPanelItem(
                     icon: Icons.format_shapes_rounded,
                     enableBadge: _inspectorStateNotifier.value,
+                    onTap: () {
+                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.colorize_rounded,
                     enableBadge: _zoomStateNotifier.value,
+                    onTap: () {
+                      _onZoomStateChanged(!_zoomStateNotifier.value);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.camera_alt_rounded,
                     enableBadge: feedback.isVisible,
+                    onTap: () {
+                      _toggleFeedback(feedback, context);
+                    },
                   ),
+                  ...widget.options.panelItems,
                 ],
               ),
             ),

@@ -89,24 +89,44 @@ class App extends ConsumerWidget {
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
 
-      options: const ISpectOptions(
+      options: ISpectOptions(
         locale: locale,
+        panelItems: [
+          ISpectPanelItem(
+            icon: Icons.home,
+            enableBadge: false,
+            onTap: () {
+              debugPrint('Home');
+            },
+          ),
+        ],
         actionItems: [
-          // TalkerActionItem(
-          //   title: 'Test',
-          //   icon: Icons.account_tree_rounded,
-          //   onTap: (ispectContext) {
-          //     Navigator.of(ispectContext).push(
-          //       MaterialPageRoute(
-          //         builder: (context) => const Scaffold(
-          //           body: Center(
-          //             child: Text('Test'),
-          //           ),
-          //         ),
-          //       ),
-          //     );
-          //   },
-          // ),
+          TalkerActionItem(
+            title: 'Test',
+            icon: Icons.account_tree_rounded,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const Scaffold(
+                    body: Center(
+                      child: Text('Test'),
+                    ),
+                  ),
+                ),
+              );
+            },
+            // onTap: (ispectContext) {
+            //   Navigator.of(ispectContext).push(
+            //     MaterialPageRoute(
+            //       builder: (context) => const Scaffold(
+            //         body: Center(
+            //           child: Text('Test'),
+            //         ),
+            //       ),
+            //     ),
+            //   );
+            // },
+          ),
         ],
       ),
       isISpectEnabled: true,

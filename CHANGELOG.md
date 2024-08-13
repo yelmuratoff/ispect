@@ -1,3 +1,6 @@
+## 1.8.3
+- Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new buttons to the panel.
+
 ## 1.8.2
 - Raised the color label in the color picker.
 - Increased the zoom scale factor to 3.
