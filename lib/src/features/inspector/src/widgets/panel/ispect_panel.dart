@@ -324,8 +324,9 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                 ),
                                 onPressed: () {
                                   widget.items[index].onTap?.call(
-                                      widget.navigatorKey?.currentContext ??
-                                          context);
+                                    widget.navigatorKey?.currentContext ??
+                                        context,
+                                  );
 
                                   _movementSpeed.value =
                                       widget.panelAnimDuration ?? 100;

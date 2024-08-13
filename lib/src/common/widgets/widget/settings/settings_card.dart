@@ -5,7 +5,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/widget/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
-import 'package:talker_flutter/src/ui/widgets/base_card.dart';
 
 class TalkerSettingsCardItem extends StatelessWidget {
   const TalkerSettingsCardItem({
