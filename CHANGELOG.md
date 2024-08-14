@@ -1,5 +1,10 @@
-## 1.8.7
-- Minor UI updates.
+## 1.8.8
+- UI updates:
+   - Updated the color picker.
+   - Updated light colors of logs.
+   - Updated layout of the ISpect page.
+   - Actions and settings now combined.
+   - Other minor updates.
 
 ## 1.8.6
 - Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new buttons to the panel.

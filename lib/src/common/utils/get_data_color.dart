@@ -9,8 +9,8 @@ Color getTypeColor({required bool isDark, required String? key}) {
 
 const _lightTypeColors = {
   /// Base logs section
-  'error': Color.fromARGB(255, 211, 47, 47),
-  'critical': Color.fromARGB(255, 183, 28, 28),
+  'error': Color.fromARGB(255, 192, 38, 38),
+  'critical': Color.fromARGB(255, 142, 22, 22),
   'info': Color.fromARGB(255, 25, 118, 210),
   'debug': Color.fromARGB(255, 97, 97, 97),
   'verbose': Color.fromARGB(255, 117, 117, 117),
@@ -20,20 +20,20 @@ const _lightTypeColors = {
   'print': Color.fromARGB(255, 25, 118, 210),
 
   /// Http section
-  'http-error': Color.fromARGB(255, 211, 47, 47),
-  'http-request': Color(0xFFD500F9),
-  'http-response': Color(0xFF00C853),
+  'http-error': Color.fromARGB(255, 192, 38, 38),
+  'http-request': Color.fromARGB(255, 162, 0, 190),
+  'http-response': Color.fromARGB(255, 0, 158, 66),
 
   /// Bloc section
   'bloc-event': Color.fromARGB(255, 25, 118, 210),
   'bloc-transition': Color.fromARGB(255, 85, 139, 47),
-  'bloc-close': Color(0xFFD50000),
+  'bloc-close': Color.fromARGB(255, 192, 38, 38),
   'bloc-create': Color.fromARGB(255, 56, 142, 60),
 
   'riverpod-add': Color.fromARGB(255, 56, 142, 60),
   'riverpod-update': Color.fromARGB(255, 0, 105, 135),
   'riverpod-dispose': Color(0xFFD50000),
-  'riverpod-fail': Color.fromARGB(255, 211, 47, 47),
+  'riverpod-fail': Color.fromARGB(255, 192, 38, 38),
 
   /// Flutter section
   'route': Color(0xFF8E24AA),
