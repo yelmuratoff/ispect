@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:ispect/src/common/widgets/widget/base_card.dart';
+import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/ispect/detailed_http_page.dart';
+import 'package:ispect/src/features/ispect/widgets/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
@@ -72,13 +73,23 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${widget.data.title} | ${widget.data.displayTime()}',
-                            style: TextStyle(
-                              color: widget.color,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                _iconBasedType,
+                                color: widget.color,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${widget.data.title} | ${widget.data.displayTime()}',
+                                style: TextStyle(
+                                  color: widget.color,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                           if (_message != null)
                             Text(
@@ -108,7 +119,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                         padding: EdgeInsets.zero,
                         iconSize: 20,
                         icon: Icon(
-                          Icons.copy,
+                          Icons.copy_rounded,
                           color: widget.color,
                         ),
                         onPressed: widget.onCopyTap,
@@ -283,4 +294,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
 
     return null;
   }
+
+  IconData get _iconBasedType =>
+      typeColors[widget.data.title] ?? Icons.bug_report_outlined;
 }

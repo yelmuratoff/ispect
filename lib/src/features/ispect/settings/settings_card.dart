@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/widgets/widget/base_card.dart';
+import 'package:ispect/src/features/ispect/widgets/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 
 class TalkerSettingsCardItem extends StatelessWidget {
@@ -29,10 +29,9 @@ class TalkerSettingsCardItem extends StatelessWidget {
       duration: const Duration(milliseconds: 150),
       opacity: canEdit ? 1 : 0.7,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: ISpectBaseCard(
-          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8)
-              .copyWith(right: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(right: 4),
           color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
               context.ispectTheme.dividerColor,
           backgroundColor: backgroundColor,
@@ -48,7 +47,7 @@ class TalkerSettingsCardItem extends StatelessWidget {
                 title,
                 style: TextStyle(
                   color: context.ispectTheme.textColor,
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),

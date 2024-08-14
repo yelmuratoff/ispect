@@ -19,7 +19,6 @@ class TalkerAppBar extends StatelessWidget {
     required this.uniqTitles,
     required this.onMonitorTap,
     required this.onSettingsTap,
-    required this.onActionsTap,
     required this.onInfoTap,
     required this.onToggleTitle,
     required this.focusNode,
@@ -41,7 +40,6 @@ class TalkerAppBar extends StatelessWidget {
 
   final VoidCallback onMonitorTap;
   final VoidCallback onSettingsTap;
-  final VoidCallback onActionsTap;
   final VoidCallback onInfoTap;
 
   final FocusNode focusNode;
@@ -57,7 +55,7 @@ class TalkerAppBar extends StatelessWidget {
       elevation: 0,
       pinned: true,
       floating: true,
-      expandedHeight: 174,
+      expandedHeight: 165,
       collapsedHeight: 60,
       toolbarHeight: 60,
       leading: leading,
@@ -69,7 +67,7 @@ class TalkerAppBar extends StatelessWidget {
           child: IconButton(
             onPressed: onInfoTap,
             icon: const Icon(
-              Icons.info_rounded,
+              Icons.info_outline_rounded,
             ),
           ),
         ),
@@ -83,26 +81,25 @@ class TalkerAppBar extends StatelessWidget {
           child: IconButton(
             onPressed: onSettingsTap,
             icon: const Icon(
-              Icons.settings_rounded,
-            ),
-          ),
-        ),
-        UnconstrainedBox(
-          child: IconButton(
-            onPressed: onActionsTap,
-            icon: const Icon(
               Icons.menu_rounded,
             ),
           ),
         ),
         const Gap(10),
       ],
-      title: title != null
-          ? Text(
-              title!,
-              style: context.ispectTheme.textTheme.headlineSmall,
-            )
-          : null,
+      title: ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          context.isDarkMode
+              ? context.ispectTheme.colorScheme.primaryContainer
+              : context.ispectTheme.colorScheme.primary,
+          BlendMode.srcIn,
+        ),
+        child: Image.network(
+          'https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect.png?raw=true',
+          height: 40,
+          fit: BoxFit.fitHeight,
+        ),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: SafeArea(
           child: Padding(
@@ -110,7 +107,7 @@ class TalkerAppBar extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(
-                  height: 45,
+                  height: 40,
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

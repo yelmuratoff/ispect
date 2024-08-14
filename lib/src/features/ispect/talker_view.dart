@@ -8,14 +8,13 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
 import 'package:ispect/src/common/utils/history.dart';
-import 'package:ispect/src/common/widgets/widget/data_card.dart';
-import 'package:ispect/src/common/widgets/widget/info_bottom_sheet.dart';
-import 'package:ispect/src/common/widgets/widget/settings/settings_bottom_sheet.dart';
-import 'package:ispect/src/common/widgets/widget/view_app_bar.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
-import 'package:ispect/src/features/ispect/talker/actions/actions_bottom_sheet.dart';
-import 'package:ispect/src/features/ispect/talker/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/ispect/monitor/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/ispect/settings/settings_bottom_sheet.dart';
+import 'package:ispect/src/features/ispect/widgets/data_card.dart';
+import 'package:ispect/src/features/ispect/widgets/info_bottom_sheet.dart';
+import 'package:ispect/src/features/ispect/widgets/view_app_bar.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
@@ -113,7 +112,6 @@ class _TalkerViewState extends State<TalkerView> {
                   uniqTitles: uniqTitles,
                   controller: _controller,
                   onMonitorTap: () => _openTalkerMonitor(context),
-                  onActionsTap: () => _showActionsBottomSheet(context),
                   onSettingsTap: () {
                     _openTalkerSettings(context);
                   },
@@ -144,6 +142,7 @@ class _TalkerViewState extends State<TalkerView> {
                       return widget.itemsBuilder!.call(context, data);
                     }
                     return TalkerDataCards(
+                      key: ValueKey(data.time.microsecondsSinceEpoch),
                       data: data,
                       backgroundColor:
                           iSpect.theme.cardColor(isDark: context.isDarkMode) ??
@@ -190,35 +189,11 @@ class _TalkerViewState extends State<TalkerView> {
 
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => TalkerSettingsBottomSheets(
         options: widget.options,
         talker: talker,
-      ),
-    );
-  }
-
-  void _openTalkerMonitor(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<Widget>(
-        builder: (_) => TalkerMonitorPage(
-          options: widget.options,
-        ),
-      ),
-    );
-  }
-
-  void _copyTalkerDataItemText(TalkerData data) {
-    final text = data.generateTextMessage();
-    copyClipboard(context, value: text);
-  }
-
-  Future<void> _showActionsBottomSheet(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TalkerActionsBottomSheet(
         actions: [
           TalkerActionItem(
             onTap: (_) => _controller.toggleLogOrder(),
@@ -268,6 +243,21 @@ class _TalkerViewState extends State<TalkerView> {
         ],
       ),
     );
+  }
+
+  void _openTalkerMonitor(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<Widget>(
+        builder: (_) => TalkerMonitorPage(
+          options: widget.options,
+        ),
+      ),
+    );
+  }
+
+  void _copyTalkerDataItemText(TalkerData data) {
+    final text = data.generateTextMessage();
+    copyClipboard(context, value: text);
   }
 
   // ignore: unused_element

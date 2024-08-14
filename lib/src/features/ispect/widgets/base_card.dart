@@ -17,14 +17,15 @@ class ISpectBaseCard extends StatelessWidget {
   final Color backgroundColor;
 
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: double.infinity,
-        padding: padding,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: backgroundColor,
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Ink(
+          width: double.infinity,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+          ),
+          child: child,
         ),
-        child: child,
       );
 }

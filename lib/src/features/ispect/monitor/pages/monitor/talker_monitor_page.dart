@@ -1,13 +1,29 @@
-part of '../talker_monitor_page.dart';
+// ignore_for_file: implementation_imports
 
-class _MonitorView extends StatelessWidget {
-  const _MonitorView({
+import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/get_data_color.dart';
+import 'package:ispect/src/features/ispect/monitor/pages/detailed_info/monitor_info_page.dart';
+import 'package:ispect/src/features/ispect/widgets/base_card.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
+part '../../widgets/monitor_card.dart';
+
+class TalkerMonitorPage extends StatefulWidget {
+  const TalkerMonitorPage({
     required this.options,
-    required this.openTypedLogsPage,
+    super.key,
   });
-  final ISpectOptions options;
-  final void Function(List<TalkerData> data, String type) openTypedLogsPage;
 
+  final ISpectOptions options;
+
+  @override
+  State<TalkerMonitorPage> createState() => _TalkerMonitorPageState();
+}
+
+class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
@@ -34,6 +50,8 @@ class _MonitorView extends StatelessWidget {
       body: TalkerBuilder(
         talker: ISpectTalker.talker,
         builder: (context, data) {
+          // <-- Common logs -->
+
           final logs = data.whereType<TalkerLog>().toList();
           final errors = data.whereType<TalkerError>().toList();
           final exceptions = data.whereType<TalkerException>().toList();
@@ -53,6 +71,8 @@ class _MonitorView extends StatelessWidget {
               )
               .toList();
 
+          // <-- HTTP logs -->
+
           final httpRequests = data
               .where((e) => e.key == TalkerLogType.httpRequest.key)
               .toList();
@@ -69,6 +89,9 @@ class _MonitorView extends StatelessWidget {
                     e.key == TalkerLogType.httpResponse.key,
               )
               .toList();
+
+          // <-- BLoC logs -->
+
           final blocEvents =
               data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
           final blocTransitions = data
@@ -87,6 +110,8 @@ class _MonitorView extends StatelessWidget {
                     e.key == TalkerLogType.blocClose.key,
               )
               .toList();
+
+          // <-- Riverpod logs -->
 
           final allRiverpod = data
               .where(
@@ -113,14 +138,15 @@ class _MonitorView extends StatelessWidget {
           return CustomScrollView(
             slivers: [
               if (httpRequests.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: httpRequests,
                     title: context.ispectL10n.talkerTypeHttp,
                     color: Colors.green,
                     icon: Icons.http_rounded,
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       allHttps,
                       context.ispectL10n.talkerTypeHttp,
                     ),
@@ -166,14 +192,15 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (allBlocs.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: allBlocs,
                     title: context.ispectL10n.talkerTypeBloc,
                     color: Colors.grey,
                     icon: Icons.code_rounded,
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       allBlocs,
                       context.ispectL10n.talkerTypeBloc,
                     ),
@@ -230,14 +257,15 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (allRiverpod.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: allRiverpod,
                     title: context.ispectL10n.talkerTypeRiverpod,
                     color: Colors.grey,
                     icon: Icons.code_rounded,
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       allRiverpod,
                       context.ispectL10n.talkerTypeRiverpod,
                     ),
@@ -294,7 +322,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (errors.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: errors,
@@ -306,7 +334,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.error_outline_rounded,
                     subtitle:
                         context.ispectL10n.talkerTypeErrorsCount(errors.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       errors,
                       context.ispectL10n.talkerTypeErrors,
                     ),
@@ -314,7 +343,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (flutterErrors.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: flutterErrors,
@@ -326,7 +355,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.error_outline_rounded,
                     subtitle: context.ispectL10n
                         .talkerTypeErrorsCount(flutterErrors.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       flutterErrors,
                       '${context.ispectL10n.talkerTypeErrors} (flutter)',
                     ),
@@ -334,7 +364,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (exceptions.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: exceptions,
@@ -346,7 +376,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.error_outline_rounded,
                     subtitle: context.ispectL10n
                         .talkerTypeExceptionsCount(exceptions.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       exceptions,
                       context.ispectL10n.talkerTypeExceptions,
                     ),
@@ -354,7 +385,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (warnings.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: warnings,
@@ -366,7 +397,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.warning_amber_rounded,
                     subtitle: context.ispectL10n
                         .talkerTypeWarningsCount(warnings.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       warnings,
                       context.ispectL10n.talkerTypeWarnings,
                     ),
@@ -374,7 +406,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (infos.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: infos,
@@ -386,7 +418,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.info_outline_rounded,
                     subtitle:
                         context.ispectL10n.talkerTypeInfoCount(infos.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       infos,
                       context.ispectL10n.talkerTypeInfo,
                     ),
@@ -394,7 +427,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (goods.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: goods,
@@ -406,7 +439,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.check_circle_outline_rounded,
                     subtitle:
                         context.ispectL10n.talkerTypeGoodCount(goods.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       goods,
                       context.ispectL10n.talkerTypeGood,
                     ),
@@ -414,7 +448,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (prints.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: prints,
@@ -426,7 +460,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.check_circle_outline_rounded,
                     subtitle:
                         context.ispectL10n.talkerTypePrintCount(prints.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       prints,
                       context.ispectL10n.talkerTypePrint,
                     ),
@@ -434,7 +469,7 @@ class _MonitorView extends StatelessWidget {
                 ),
               ],
               if (verboseDebug.isNotEmpty) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                const SliverToBoxAdapter(child: Gap(10)),
                 SliverToBoxAdapter(
                   child: _TalkerMonitorsCard(
                     logs: verboseDebug,
@@ -446,7 +481,8 @@ class _MonitorView extends StatelessWidget {
                     icon: Icons.remove_red_eye_outlined,
                     subtitle: context.ispectL10n
                         .talkerTypeDebugCount(verboseDebug.length),
-                    onTap: () => openTypedLogsPage(
+                    onTap: () => _openTypedLogsScreen(
+                      context,
                       verboseDebug,
                       context.ispectL10n.talkerTypeDebug,
                     ),
@@ -456,6 +492,22 @@ class _MonitorView extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _openTypedLogsScreen(
+    BuildContext context,
+    List<TalkerData> logs,
+    String typeName,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute<Widget>(
+        builder: (_) => MonitorPage(
+          data: logs,
+          typeName: typeName,
+          options: widget.options,
+        ),
       ),
     );
   }

@@ -1,4 +1,7 @@
-## 1.8.5
+## 1.8.7
+- Minor UI updates.
+
+## 1.8.6
 - Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new buttons to the panel.
 
 ## 1.8.2
