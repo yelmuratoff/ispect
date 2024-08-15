@@ -1,4 +1,4 @@
-## 1.9.1
+## 1.9.2
 - Added `ISpectNavigatorObserver` for navigation monitoring.
 
 ## 1.8.9

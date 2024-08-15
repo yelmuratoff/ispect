@@ -15,9 +15,26 @@ extension StringBufferExtension on StringBuffer {
 class ISpectNavigatorObserver extends NavigatorObserver {
   ISpectNavigatorObserver({
     this.isLogGestures = false,
+    this.onPush,
+    this.onReplace,
+    this.onPop,
+    this.onRemove,
+    this.onStartUserGesture,
+    this.onStopUserGesture,
   });
 
   final bool isLogGestures;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPush;
+  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
+      onReplace;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPop;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onRemove;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onStartUserGesture;
+  final VoidCallback? onStopUserGesture;
 
   String _getRouteType(Route<dynamic>? route) {
     if (route is PageRoute) {
@@ -48,6 +65,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
+
+    onPush?.call(route, previousRoute);
   }
 
   @override
@@ -73,6 +92,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
+
+    onReplace?.call(newRoute: newRoute, oldRoute: oldRoute);
   }
 
   @override
@@ -98,6 +119,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
+
+    onPop?.call(route, previousRoute);
   }
 
   @override
@@ -123,6 +146,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
+
+    onRemove?.call(route, previousRoute);
   }
 
   @override
@@ -153,6 +178,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         ISpectTalker.route(logMessage.toString().trim());
       }
     }
+
+    onStartUserGesture?.call(route, previousRoute);
   }
 
   @override
@@ -160,5 +187,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (isLogGestures) {
       ISpectTalker.route('User gesture stopped');
     }
+
+    onStopUserGesture?.call();
   }
 }

@@ -284,7 +284,49 @@ class _Home extends ConsumerWidget {
               },
               child: const Text('Send print message'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const _SecondPage(),
+                  ),
+                );
+              },
+              child: const Text('Go to second page'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const _SecondPage(),
+                  ),
+                );
+              },
+              child: const Text('Replace with second page'),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondPage extends StatelessWidget {
+  const _SecondPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const _Home(),
+              ),
+            );
+          },
+          child: const Text('Go to Home'),
         ),
       ),
     );
