@@ -40,8 +40,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         previousRouteName.isNotEmpty,
         'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
       )
-      ..writelnIf(route.settings.arguments != null,
-          'Arguments: ${route.settings.arguments}');
+      ..writelnIf(
+        route.settings.arguments != null,
+        'Arguments: ${route.settings.arguments}',
+      );
 
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
@@ -57,11 +59,16 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     logMessage
       ..writeln(
-          'Replace: New route after replaced: $newRouteName (Type: ${_getRouteType(newRoute)})')
-      ..writelnIf(oldRouteName.isNotEmpty,
-          'Old route: $oldRouteName (Type: ${_getRouteType(oldRoute)})')
-      ..writelnIf(newRoute?.settings.arguments != null,
-          'Arguments: ${newRoute?.settings.arguments}');
+        'Replace: New route after replaced: $newRouteName (Type: ${_getRouteType(newRoute)})',
+      )
+      ..writelnIf(
+        oldRouteName.isNotEmpty,
+        'Old route: $oldRouteName (Type: ${_getRouteType(oldRoute)})',
+      )
+      ..writelnIf(
+        newRoute?.settings.arguments != null,
+        'Arguments: ${newRoute?.settings.arguments}',
+      );
 
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
@@ -72,18 +79,21 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     final logMessage = StringBuffer();
 
-    final routeName = route.settings.name ?? 'Unknown';
-    final previousRouteName = previousRoute?.settings.name ?? 'None';
+    final routeName = previousRoute?.settings.name ?? 'Unknown';
+    final previousRouteName = route.settings.name ?? 'None';
 
     logMessage
       ..writeln(
-          'Pop: New route after popped: $routeName (Type: ${_getRouteType(route)})')
+        'Pop: New route after popped: $routeName (Type: ${_getRouteType(previousRoute)})',
+      )
       ..writelnIf(
         previousRouteName.isNotEmpty,
-        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
+        'Previous route: $previousRouteName (Type: ${_getRouteType(route)})',
       )
-      ..writelnIf(route.settings.arguments != null,
-          'Arguments: ${route.settings.arguments}');
+      ..writelnIf(
+        route.settings.arguments != null,
+        'Arguments: ${route.settings.arguments}',
+      );
 
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
@@ -99,13 +109,16 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     logMessage
       ..writeln(
-          'Remove: New route after removed: $routeName (Type: ${_getRouteType(route)})')
+        'Remove: New route after removed: $routeName (Type: ${_getRouteType(route)})',
+      )
       ..writelnIf(
         previousRouteName.isNotEmpty,
         'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
       )
-      ..writelnIf(route.settings.arguments != null,
-          'Arguments: ${route.settings.arguments}');
+      ..writelnIf(
+        route.settings.arguments != null,
+        'Arguments: ${route.settings.arguments}',
+      );
 
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
@@ -125,13 +138,16 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
       logMessage
         ..writeln(
-            'Gesture: User gesture started on route: $routeName (Type: ${_getRouteType(route)})')
+          'Gesture: User gesture started on route: $routeName (Type: ${_getRouteType(route)})',
+        )
         ..writelnIf(
           previousRouteName.isNotEmpty,
           'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
         )
-        ..writelnIf(route.settings.arguments != null,
-            'Arguments: ${route.settings.arguments}');
+        ..writelnIf(
+          route.settings.arguments != null,
+          'Arguments: ${route.settings.arguments}',
+        );
 
       if (logMessage.isNotEmpty) {
         ISpectTalker.route(logMessage.toString().trim());
