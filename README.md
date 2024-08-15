@@ -55,7 +55,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.8.9
+  ispect: ^1.9.0
 ```
 
 ### Add import package
@@ -274,7 +274,7 @@ ISpect.read(context).setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
 ```
 
 ### For handle routing (GoRouter)
-You can use `NavigatorObserver`, but in practice it does not always work correctly.  
+You can use `ISpectNavigatorObserver`, but in practice it does not always work correctly with the `GoRouter` package. You need add observer in each GoRoute.
 Alternatively, you can use a `listener`:
 
 ```dart

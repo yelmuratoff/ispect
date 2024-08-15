@@ -1,3 +1,6 @@
+## 1.9.0
+- Added `ISpectNavigatorObserver` for navigation monitoring.
+
 ## 1.8.9
 - UI updates:
    - Updated the color picker.

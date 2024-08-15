@@ -1,96 +1,114 @@
-// ignore_for_file: prefer_const_constructor_declarations
+// ignore_for_file: prefer_const_constructor_declarations, cascade_invocations
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 
+extension StringBufferExtension on StringBuffer {
+  // ignore: avoid_positional_boolean_parameters
+  void writelnIf(bool condition, String value) {
+    if (condition) {
+      writeln(value);
+    }
+  }
+}
+
 class ISpectNavigatorObserver extends NavigatorObserver {
   ISpectNavigatorObserver({
-    this.isLogGustures = false,
+    this.isLogGestures = false,
   });
 
-  final bool isLogGustures;
+  final bool isLogGestures;
+
+  String _getRouteType(Route<dynamic>? route) {
+    if (route is PageRoute) {
+      return 'Page';
+    } else if (route is ModalRoute) {
+      return 'Modal';
+    } else {
+      return route.runtimeType.toString();
+    }
+  }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    final logMessages = <String>[];
+    final routeName = route.settings.name ?? 'Unknown';
+    final previousRouteName = previousRoute?.settings.name ?? 'None';
 
-    if (route.settings.name != null) {
-      logMessages.add('New route pushed: ${route.settings.name}');
-    }
+    final logMessage = StringBuffer()
+      ..writeln('Push: $routeName (Type: ${_getRouteType(route)})')
+      ..writelnIf(
+        previousRouteName.isNotEmpty,
+        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
+      )
+      ..writelnIf(route.settings.arguments != null,
+          'Arguments: ${route.settings.arguments}');
 
-    if (previousRoute?.settings.name?.isNotEmpty ?? false) {
-      logMessages.add('Previous route: ${previousRoute!.settings.name}');
-    }
-
-    if (route.settings.arguments != null) {
-      logMessages.add('Arguments: ${route.settings.arguments}');
-    }
-
-    if (logMessages.isNotEmpty) {
-      ISpectTalker.route(logMessages.join('\n'));
+    if (logMessage.isNotEmpty) {
+      ISpectTalker.route(logMessage.toString().trim());
     }
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    final logMessages = <String>[];
+    final logMessage = StringBuffer();
 
-    if (newRoute?.settings.name != null) {
-      logMessages.add('New route after replaced: ${newRoute!.settings.name}');
-    }
+    final newRouteName = newRoute?.settings.name ?? 'Unknown';
+    final oldRouteName = oldRoute?.settings.name ?? 'None';
 
-    if (oldRoute?.settings.name?.isNotEmpty ?? false) {
-      logMessages.add('Old route: ${oldRoute!.settings.name}');
-    }
+    logMessage
+      ..writeln(
+          'Replace: New route after replaced: $newRouteName (Type: ${_getRouteType(newRoute)})')
+      ..writelnIf(oldRouteName.isNotEmpty,
+          'Old route: $oldRouteName (Type: ${_getRouteType(oldRoute)})')
+      ..writelnIf(newRoute?.settings.arguments != null,
+          'Arguments: ${newRoute?.settings.arguments}');
 
-    if (newRoute?.settings.arguments != null) {
-      logMessages.add('Arguments: ${newRoute!.settings.arguments}');
-    }
-
-    if (logMessages.isNotEmpty) {
-      ISpectTalker.route(logMessages.join('\n'));
+    if (logMessage.isNotEmpty) {
+      ISpectTalker.route(logMessage.toString().trim());
     }
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    final logMessages = <String>[];
+    final logMessage = StringBuffer();
 
-    if (route.settings.name != null) {
-      logMessages.add('New route after popped: ${route.settings.name}');
-    }
+    final routeName = route.settings.name ?? 'Unknown';
+    final previousRouteName = previousRoute?.settings.name ?? 'None';
 
-    if (previousRoute?.settings.name?.isNotEmpty ?? false) {
-      logMessages.add('Previous route: ${previousRoute!.settings.name}');
-    }
+    logMessage
+      ..writeln(
+          'Pop: New route after popped: $routeName (Type: ${_getRouteType(route)})')
+      ..writelnIf(
+        previousRouteName.isNotEmpty,
+        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
+      )
+      ..writelnIf(route.settings.arguments != null,
+          'Arguments: ${route.settings.arguments}');
 
-    if (route.settings.arguments != null) {
-      logMessages.add('Arguments: ${route.settings.arguments}');
-    }
-
-    if (logMessages.isNotEmpty) {
-      ISpectTalker.route(logMessages.join('\n'));
+    if (logMessage.isNotEmpty) {
+      ISpectTalker.route(logMessage.toString().trim());
     }
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    final logMessages = <String>[];
+    final logMessage = StringBuffer();
 
-    if (route.settings.name != null) {
-      logMessages.add('New route after removed: ${route.settings.name}');
-    }
+    final routeName = route.settings.name ?? 'Unknown';
+    final previousRouteName = previousRoute?.settings.name ?? 'None';
 
-    if (previousRoute?.settings.name?.isNotEmpty ?? false) {
-      logMessages.add('Previous route: ${previousRoute!.settings.name}');
-    }
+    logMessage
+      ..writeln(
+          'Remove: New route after removed: $routeName (Type: ${_getRouteType(route)})')
+      ..writelnIf(
+        previousRouteName.isNotEmpty,
+        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
+      )
+      ..writelnIf(route.settings.arguments != null,
+          'Arguments: ${route.settings.arguments}');
 
-    if (route.settings.arguments != null) {
-      logMessages.add('Arguments: ${route.settings.arguments}');
-    }
-
-    if (logMessages.isNotEmpty) {
-      ISpectTalker.route(logMessages.join('\n'));
+    if (logMessage.isNotEmpty) {
+      ISpectTalker.route(logMessage.toString().trim());
     }
   }
 
@@ -99,31 +117,31 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic> route,
     Route<dynamic>? previousRoute,
   ) {
-    if (isLogGustures) {
-      final logMessages = <String>[];
+    if (isLogGestures) {
+      final logMessage = StringBuffer();
 
-      if (route.settings.name != null) {
-        logMessages
-            .add('User gesture started on route: ${route.settings.name}');
-      }
+      final routeName = route.settings.name ?? 'Unknown';
+      final previousRouteName = previousRoute?.settings.name ?? 'None';
 
-      if (previousRoute?.settings.name?.isNotEmpty ?? false) {
-        logMessages.add('Previous route: ${previousRoute!.settings.name}');
-      }
+      logMessage
+        ..writeln(
+            'Gesture: User gesture started on route: $routeName (Type: ${_getRouteType(route)})')
+        ..writelnIf(
+          previousRouteName.isNotEmpty,
+          'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
+        )
+        ..writelnIf(route.settings.arguments != null,
+            'Arguments: ${route.settings.arguments}');
 
-      if (route.settings.arguments != null) {
-        logMessages.add('Arguments: ${route.settings.arguments}');
-      }
-
-      if (logMessages.isNotEmpty) {
-        ISpectTalker.route(logMessages.join('\n'));
+      if (logMessage.isNotEmpty) {
+        ISpectTalker.route(logMessage.toString().trim());
       }
     }
   }
 
   @override
   void didStopUserGesture() {
-    if (isLogGustures) {
+    if (isLogGestures) {
       ISpectTalker.route('User gesture stopped');
     }
   }
