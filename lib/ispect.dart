@@ -18,6 +18,7 @@ export 'package:ispect/src/common/utils/ispect_options.dart';
 export 'package:ispect/src/common/widgets/builder/inspector_builder.dart';
 export 'package:ispect/src/core/localization/localization.dart';
 
+export 'src/common/services/talker/ispect_route_observer.dart';
 export 'src/common/widgets/circular_menu/item.dart';
 export 'src/common/widgets/circular_menu/menu.dart';
 export 'src/features/inspector/src/widgets/panel/panel_item.dart';

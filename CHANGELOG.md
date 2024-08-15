@@ -1,4 +1,4 @@
-## 1.8.8
+## 1.8.9
 - UI updates:
    - Updated the color picker.
    - Updated light colors of logs.

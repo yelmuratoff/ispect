@@ -133,7 +133,7 @@ class App extends ConsumerWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
-          TalkerRouteObserver(talker),
+          ISpectNavigatorObserver(),
         ],
         locale: locale,
         supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,

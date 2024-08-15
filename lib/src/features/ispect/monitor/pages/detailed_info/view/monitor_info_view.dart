@@ -69,9 +69,7 @@ class _MonitorView extends StatelessWidget {
                   key: data.title,
                 ),
                 expanded: isLogsExpanded,
-                backgroundColor:
-                    iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                        context.ispectTheme.cardColor,
+                backgroundColor: context.ispectTheme.cardColor,
               );
             },
           ),

@@ -142,6 +142,10 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                               MaterialPageRoute<void>(
                                 builder: (_) =>
                                     DetailedHTTPPage(data: widget.data),
+                                settings: RouteSettings(
+                                  name: 'DetailedHTTPPage',
+                                  arguments: widget.data,
+                                ),
                               ),
                             );
                           },

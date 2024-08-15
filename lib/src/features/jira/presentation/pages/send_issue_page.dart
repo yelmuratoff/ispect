@@ -188,6 +188,9 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                         }
                       },
                     ),
+                    settings: const RouteSettings(
+                      name: 'JiraAuthPage',
+                    ),
                   ),
                 );
               },

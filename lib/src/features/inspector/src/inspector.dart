@@ -600,6 +600,14 @@ class InspectorState extends State<Inspector> {
                     initialAttachmentPath: screenshotFilePath.path,
                     onJiraAuthorized: widget.onJiraAuthorized,
                   ),
+                  settings: RouteSettings(
+                    name: 'JiraSendIssuePage',
+                    arguments: {
+                      'initialDescription': feedback.text,
+                      'initialAttachmentPath': screenshotFilePath.path,
+                      'onJiraAuthorized': widget.onJiraAuthorized,
+                    },
+                  ),
                 ),
               ),
             );
@@ -631,6 +639,13 @@ class InspectorState extends State<Inspector> {
           builder: (_) => ISpectPage(
             options: widget.options,
             onJiraAuthorized: widget.onJiraAuthorized,
+          ),
+          settings: RouteSettings(
+            name: 'ISpectPage',
+            arguments: {
+              'options': widget.options,
+              'onJiraAuthorized': widget.onJiraAuthorized,
+            },
           ),
         ),
       ).then((_) {

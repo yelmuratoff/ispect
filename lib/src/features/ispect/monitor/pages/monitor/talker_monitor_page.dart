@@ -508,6 +508,10 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
           typeName: typeName,
           options: widget.options,
         ),
+        settings: RouteSettings(
+          name: 'MonitorPage',
+          arguments: typeName,
+        ),
       ),
     );
   }

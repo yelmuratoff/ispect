@@ -87,17 +87,15 @@ class TalkerAppBar extends StatelessWidget {
         ),
         const Gap(10),
       ],
-      title: ColorFiltered(
-        colorFilter: ColorFilter.mode(
-          context.isDarkMode
+      title: Text(
+        title ?? '',
+        style: TextStyle(
+          color: context.isDarkMode
               ? context.ispectTheme.colorScheme.primaryContainer
               : context.ispectTheme.colorScheme.primary,
-          BlendMode.srcIn,
-        ),
-        child: Image.network(
-          'https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect.png?raw=true',
-          height: 40,
-          fit: BoxFit.fitHeight,
+          fontSize: 26,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -158,10 +156,7 @@ class TalkerAppBar extends StatelessWidget {
                                     ? context.ispectTheme.colorScheme
                                         .primaryContainer
                                     : context.ispectTheme.colorScheme.primary
-                                : iSpect.theme.cardColor(
-                                      isDark: context.isDarkMode,
-                                    ) ??
-                                    context.ispectTheme.cardColor,
+                                : context.ispectTheme.cardColor,
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(8),

@@ -144,9 +144,7 @@ class _TalkerViewState extends State<TalkerView> {
                     return TalkerDataCards(
                       key: ValueKey(data.time.microsecondsSinceEpoch),
                       data: data,
-                      backgroundColor:
-                          iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                              context.ispectTheme.cardColor,
+                      backgroundColor: context.ispectTheme.cardColor,
                       onCopyTap: () => _copyTalkerDataItemText(data),
                       expanded: _controller.expandedLogs,
                       color: getTypeColor(
@@ -251,6 +249,12 @@ class _TalkerViewState extends State<TalkerView> {
         builder: (_) => TalkerMonitorPage(
           options: widget.options,
         ),
+        settings: RouteSettings(
+          name: 'TalkerMonitorPage',
+          arguments: {
+            'options': widget.options,
+          },
+        ),
       ),
     );
   }
@@ -269,6 +273,12 @@ class _TalkerViewState extends State<TalkerView> {
           builder: (_) => JiraSendIssuePage(
             onJiraAuthorized: widget.onJiraAuthorized,
           ),
+          settings: RouteSettings(
+            name: 'JiraSendIssuePage',
+            arguments: {
+              'onJiraAuthorized': widget.onJiraAuthorized,
+            },
+          ),
         ),
       );
     } else {
@@ -282,6 +292,12 @@ class _TalkerViewState extends State<TalkerView> {
               );
               widget.onJiraAuthorized
                   ?.call(domain, email, apiToken, projectId, projectKey);
+            },
+          ),
+          settings: RouteSettings(
+            name: 'JiraAuthPage',
+            arguments: {
+              'onAuthorized': widget.onJiraAuthorized,
             },
           ),
         ),
@@ -302,6 +318,12 @@ class _TalkerViewState extends State<TalkerView> {
         builder: (_) => AppDataPage(
           talker: widget.talker,
         ),
+        settings: RouteSettings(
+          name: 'AppDataPage',
+          arguments: {
+            'talker': widget.talker,
+          },
+        ),
       ),
     );
   }
@@ -312,6 +334,12 @@ class _TalkerViewState extends State<TalkerView> {
       MaterialPageRoute<dynamic>(
         builder: (_) => AppInfoPage(
           talker: widget.talker,
+        ),
+        settings: RouteSettings(
+          name: 'AppInfoPage',
+          arguments: {
+            'talker': widget.talker,
+          },
         ),
       ),
     );

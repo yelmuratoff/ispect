@@ -47,8 +47,7 @@ class _TalkerSettingsBottomSheetState
       TalkerSettingsCardItem(
         title: context.ispectL10n.enabled,
         enabled: widget.talker.value.settings.enabled,
-        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-            context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
           (enabled ? widget.talker.value.enable : widget.talker.value.disable)
               .call();
@@ -58,8 +57,7 @@ class _TalkerSettingsBottomSheetState
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         title: context.ispectL10n.useConsoleLogs,
-        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-            context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useConsoleLogs,
         onChanged: (enabled) {
           widget.talker.value.configure(
@@ -73,8 +71,7 @@ class _TalkerSettingsBottomSheetState
       TalkerSettingsCardItem(
         canEdit: widget.talker.value.settings.enabled,
         title: context.ispectL10n.useHistory,
-        backgroundColor: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-            context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.cardColor,
         enabled: widget.talker.value.settings.useHistory,
         onChanged: (enabled) {
           widget.talker.value.configure(
@@ -102,9 +99,7 @@ class _TalkerSettingsBottomSheetState
                       .copyWith(bottom: 16, top: 8),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color:
-                          iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                              context.ispectTheme.cardColor,
+                      color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
@@ -139,9 +134,7 @@ class _TalkerSettingsBottomSheetState
                       .copyWith(bottom: 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color:
-                          iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                              context.ispectTheme.cardColor,
+                      color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
