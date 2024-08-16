@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/pretty_json.dart';
 
 extension StringBufferExtension on StringBuffer {
   // ignore: avoid_positional_boolean_parameters
@@ -59,7 +60,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route.settings.arguments != null,
-        'Arguments: ${route.settings.arguments}',
+        'Arguments: ${prettyJson(route.settings.arguments)}',
       );
 
     if (logMessage.isNotEmpty) {
@@ -113,7 +114,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route.settings.arguments != null,
-        'Arguments: ${route.settings.arguments}',
+        'Arguments: ${prettyJson(route.settings.arguments)}',
       );
 
     if (logMessage.isNotEmpty) {
@@ -140,7 +141,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route.settings.arguments != null,
-        'Arguments: ${route.settings.arguments}',
+        'Arguments: ${prettyJson(route.settings.arguments)}',
       );
 
     if (logMessage.isNotEmpty) {
@@ -171,7 +172,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         )
         ..writelnIf(
           route.settings.arguments != null,
-          'Arguments: ${route.settings.arguments}',
+          'Arguments: ${prettyJson(route.settings.arguments)}',
         );
 
       if (logMessage.isNotEmpty) {
