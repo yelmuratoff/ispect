@@ -1,4 +1,4 @@
-## 1.9.3-beta.2
+## 1.9.3-beta.3
 - Added a new option to the `ISpectOptions` class: `panelButtons`. This option allows you to add new buttons to the panel.
 
 ## 1.9.2

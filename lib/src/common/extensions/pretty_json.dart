@@ -1,30 +1,32 @@
 import 'dart:convert';
 
-const decoder = JsonDecoder();
 const encoder = JsonEncoder.withIndent('  ');
 
 String prettyJson(Object? input) {
-  const encoder = JsonEncoder.withIndent('  ');
+  Object? toEncodable(Object? value) {
+    if (value is Map) {
+      return value.map((key, value) => MapEntry(key, toEncodable(value)));
+    } else if (value is List) {
+      return value.map(toEncodable).toList();
+    } else if (value != null) {
+      try {
+        // Check if the object has a toJson method
 
-  String customToString(Object? value) {
-    if (value is Function) {
-      return 'Function: ${value.runtimeType}';
-    } else if (value.toString().contains('Instance of')) {
-      return 'Instance of ${value.runtimeType}';
+        // ignore: avoid_dynamic_calls
+        final json = (value as dynamic).toJson();
+        return toEncodable(json);
+      } catch (e) {
+        // Fallback if toJson is not present or fails
+        return value.toString();
+      }
     } else {
-      return value.toString();
+      return value;
     }
   }
 
-  if (input is Map) {
-    return encoder.convert(
-      input.map((key, value) => MapEntry(key, customToString(value))),
-    );
-  } else if (input is List) {
-    return encoder.convert(input.map(customToString).toList());
-  } else if (input.toString().contains('Instance of')) {
-    return 'Instance of ${input.runtimeType}';
-  } else {
-    return encoder.convert(input);
+  try {
+    return encoder.convert(toEncodable(input));
+  } catch (e) {
+    return 'Error encoding JSON: $e';
   }
 }
