@@ -1,3 +1,6 @@
+## 1.9.3-beta.1
+- Added a new option to the `ISpectOptions` class: `panelButtons`. This option allows you to add new buttons to the panel.
+
 ## 1.9.2
 - Added `ISpectNavigatorObserver` for navigation monitoring.
 
@@ -10,7 +13,7 @@
    - Other minor updates.
 
 ## 1.8.6
-- Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new buttons to the panel.
+- Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new icon buttons to the panel.
 
 ## 1.8.2
 - Raised the color label in the color picker.

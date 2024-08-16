@@ -577,6 +577,7 @@ class InspectorState extends State<Inspector> {
                   ),
                   ...widget.options.panelItems,
                 ],
+                buttons: widget.options.panelButtons,
               ),
             ),
           ),

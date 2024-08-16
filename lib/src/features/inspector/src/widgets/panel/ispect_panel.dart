@@ -27,6 +27,7 @@ class FloatingMenuPanel extends StatefulWidget {
   const FloatingMenuPanel({
     required this.backgroundColor,
     this.items = const [],
+    this.buttons = const [],
     this.borderColor,
     this.borderWidth,
     this.iconSize,
@@ -68,6 +69,7 @@ class FloatingMenuPanel extends StatefulWidget {
   final int? dockAnimDuration;
   final Curve? dockAnimCurve;
   final List<ISpectPanelItem> items;
+  final List<ISpectPanelButton> buttons;
   final ({double x, double y})? initialPosition;
   final void Function(double x, double y)? onPositionChanged;
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -181,7 +183,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     // Gesture detector is required to detect the tap and drag on the panel;
                     if (_panelState.value == PanelState.closed)
@@ -294,7 +296,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
 
                     if (_panelState.value == PanelState.open) ...[
                       Flexible(
-                        flex: 3,
+                        flex: 2,
                         child: Wrap(
                           runAlignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
@@ -323,7 +325,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  widget.items[index].onTap?.call(
+                                  widget.items[index].onTap.call(
                                     widget.navigatorKey?.currentContext ??
                                         context,
                                   );
@@ -357,72 +359,42 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                         ),
                       ),
                       Flexible(
-                        flex: 2,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 55,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 4,
-                              left: 8,
-                              right: 8,
-                            ),
-                            child: MaterialButton(
-                              onPressed: () {
-                                _toggleButton(pageWidth, pageHeight);
-                              },
-                              color: _itemColor,
-                              highlightElevation: 0,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(16)),
-                              ),
-                              elevation: 0,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if ((_positionLeft.value +
-                                            _panOffsetLeft.value) <
-                                        pageWidth / 2) ...[
-                                      const Flexible(
-                                        flex: 2,
-                                        child: Icon(
-                                          Icons.undo_rounded,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Flexible(child: Gap(12)),
-                                    ],
-                                    Flexible(
-                                      flex: 2,
-                                      child: Text(
-                                        context.ispectL10n.hidePanel,
-                                        maxLines: 1,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    if ((_positionLeft.value +
-                                            _panOffsetLeft.value) >
-                                        pageWidth / 2) ...[
-                                      const Flexible(child: Gap(12)),
-                                      const Flexible(
-                                        flex: 2,
-                                        child: Icon(
-                                          Icons.redo_rounded,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                        flex: 3,
+                        child: ColoredBox(
+                          color: Colors.transparent,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ...widget.buttons.map(
+                                (button) => Flexible(
+                                  flex: 2,
+                                  child: _PanelButton(
+                                    itemColor: _itemColor,
+                                    icon: button.icon,
+                                    label: button.label,
+                                    pageWidth: pageWidth,
+                                    onTap: () {
+                                      button.onTap.call(
+                                        widget.navigatorKey?.currentContext ??
+                                            context,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
+                              Flexible(
+                                flex: 3,
+                                child: _HidePanel(
+                                  itemColor: _itemColor,
+                                  positionLeft: _positionLeft,
+                                  panOffsetLeft: _panOffsetLeft,
+                                  pageWidth: pageWidth,
+                                  onTap: () {
+                                    _toggleButton(pageWidth, pageHeight);
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -495,7 +467,11 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
       // digit height for each button to fix the overflow issue. Don't know
       // what's causing this, but adding "1" fixed the problem for now.
       // return (widget.buttonHeight + (widget.buttonHeight + 1) * widget.buttons.length) + (widget.borderWidth ?? 0);
-      return _calculateRowCount(widget.items.length) * 49 + 65;
+      return (_calculateRowCount(widget.items.length) * 49) +
+          45 +
+          ((widget.buttons.isNotEmpty)
+              ? (25 * (widget.buttons.length + 1))
+              : 0);
     } else {
       return widget.buttonHeight + (widget.borderWidth ?? 0) * 2;
     }
@@ -570,4 +546,147 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
     final result = (itemCount / 4).ceil();
     return result;
   }
+}
+
+class _HidePanel extends StatelessWidget {
+  const _HidePanel({
+    required Color itemColor,
+    required ValueNotifier<double> positionLeft,
+    required ValueNotifier<double> panOffsetLeft,
+    required this.pageWidth,
+    required this.onTap,
+  })  : _itemColor = itemColor,
+        _positionLeft = positionLeft,
+        _panOffsetLeft = panOffsetLeft;
+
+  final Color _itemColor;
+  final ValueNotifier<double> _positionLeft;
+  final ValueNotifier<double> _panOffsetLeft;
+  final double pageWidth;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 45,
+        ),
+        child: SizedBox(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+            child: MaterialButton(
+              onPressed: onTap,
+              color: _itemColor,
+              highlightElevation: 0,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+              elevation: 0,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if ((_positionLeft.value + _panOffsetLeft.value) <
+                        pageWidth / 2) ...[
+                      const Flexible(
+                        flex: 2,
+                        child: Icon(
+                          Icons.undo_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Flexible(child: Gap(12)),
+                    ],
+                    Flexible(
+                      flex: 2,
+                      child: Text(
+                        context.ispectL10n.hidePanel,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    if ((_positionLeft.value + _panOffsetLeft.value) >
+                        pageWidth / 2) ...[
+                      const Flexible(child: Gap(12)),
+                      const Flexible(
+                        flex: 2,
+                        child: Icon(
+                          Icons.redo_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class _PanelButton extends StatelessWidget {
+  const _PanelButton({
+    required Color itemColor,
+    required this.pageWidth,
+    required this.onTap,
+    required this.icon,
+    required this.label,
+  }) : _itemColor = itemColor;
+
+  final Color _itemColor;
+  final double pageWidth;
+  final VoidCallback onTap;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 45,
+          minWidth: double.infinity,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 4,
+            left: 8,
+            right: 8,
+          ),
+          child: MaterialButton(
+            onPressed: onTap,
+            color: _itemColor,
+            highlightElevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            elevation: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                const Flexible(child: Gap(12)),
+                Flexible(
+                  flex: 6,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 }

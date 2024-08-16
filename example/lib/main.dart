@@ -91,6 +91,50 @@ class App extends ConsumerWidget {
 
       options: ISpectOptions(
         locale: locale,
+        panelButtons: [
+          ISpectPanelButton(
+            icon: Icons.copy_rounded,
+            label: 'Token',
+            onTap: (context) {
+              debugPrint('Token copied');
+            },
+          ),
+          ISpectPanelButton(
+            icon: Icons.copy_rounded,
+            label: 'FCM token',
+            onTap: (context) {
+              debugPrint('FCM token copied');
+            },
+          ),
+          // ISpectPanelButton(
+          //   icon: Icons.token_rounded,
+          //   label: 'Copy OneSignal',
+          //   onTap: (context) {
+          //     debugPrint('Token copied');
+          //   },
+          // ),
+          // ISpectPanelButton(
+          //   icon: Icons.token_rounded,
+          //   label: 'Copy token',
+          //   onTap: (context) {
+          //     debugPrint('Token copied');
+          //   },
+          // ),
+          // ISpectPanelButton(
+          //   icon: Icons.token_rounded,
+          //   label: 'Copy token',
+          //   onTap: (context) {
+          //     debugPrint('Token copied');
+          //   },
+          // ),
+          // ISpectPanelButton(
+          //   icon: Icons.token_rounded,
+          //   label: 'Copy token',
+          //   onTap: (context) {
+          //     debugPrint('Token copied');
+          //   },
+          // ),
+        ],
         panelItems: [
           ISpectPanelItem(
             icon: Icons.home,
