@@ -11,28 +11,13 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
     baseUrl: 'https://jsonplaceholder.typicode.com',
   ),
 );
-
-class ThemeManager extends StateNotifier<ThemeMode> {
-  ThemeManager() : super(ThemeMode.dark);
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  ThemeMode get themeMode => state;
-}
 
 void main() {
   final talker = TalkerFlutter.init();
@@ -375,4 +360,18 @@ class _SecondPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class ThemeManager extends StateNotifier<ThemeMode> {
+  ThemeManager() : super(ThemeMode.dark);
+
+  void toggleTheme() {
+    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  void setTheme(ThemeMode themeMode) {
+    state = themeMode;
+  }
+
+  ThemeMode get themeMode => state;
 }
