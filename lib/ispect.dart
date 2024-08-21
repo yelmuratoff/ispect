@@ -102,13 +102,13 @@ final class ISpect {
           ISpectTalker.handle(
             exception: error,
             stackTrace: stackTrace,
-            message: 'Error from zoned handler: $error\n$stackTrace',
+            message: 'Error from zoned handler',
           );
         } else if (!isFilterNotEmpty) {
           ISpectTalker.handle(
             exception: error,
             stackTrace: stackTrace,
-            message: 'Error from zoned handler: $error\n$stackTrace',
+            message: 'Error from zoned handler',
           );
         }
       },
