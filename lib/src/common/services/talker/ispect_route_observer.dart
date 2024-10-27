@@ -16,6 +16,9 @@ extension StringBufferExtension on StringBuffer {
 class ISpectNavigatorObserver extends NavigatorObserver {
   ISpectNavigatorObserver({
     this.isLogGestures = false,
+    this.isLogPages = true,
+    this.isLogModals = true,
+    this.isLogOtherTypes = true,
     this.onPush,
     this.onReplace,
     this.onPop,
@@ -25,6 +28,9 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   });
 
   final bool isLogGestures;
+  final bool isLogPages;
+  final bool isLogModals;
+  final bool isLogOtherTypes;
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onPush;
   final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
@@ -49,6 +55,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    onPush?.call(route, previousRoute);
+
+    if (!_validate(route)) return;
+
     final routeName = route.settings.name ?? 'Unknown';
     final previousRouteName = previousRoute?.settings.name ?? 'None';
 
@@ -66,12 +76,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
-
-    onPush?.call(route, previousRoute);
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    onReplace?.call(newRoute: newRoute, oldRoute: oldRoute);
+
+    if (!_validate(newRoute)) return;
+
     final logMessage = StringBuffer();
 
     final newRouteName = newRoute?.settings.name ?? 'Unknown';
@@ -93,12 +105,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
-
-    onReplace?.call(newRoute: newRoute, oldRoute: oldRoute);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    onPop?.call(route, previousRoute);
+
+    if (!_validate(route)) return;
+
     final logMessage = StringBuffer();
 
     final routeName = previousRoute?.settings.name ?? 'Unknown';
@@ -120,12 +134,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
-
-    onPop?.call(route, previousRoute);
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    onRemove?.call(route, previousRoute);
+
+    if (!_validate(route)) return;
+
     final logMessage = StringBuffer();
 
     final routeName = route.settings.name ?? 'Unknown';
@@ -147,8 +163,6 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (logMessage.isNotEmpty) {
       ISpectTalker.route(logMessage.toString().trim());
     }
-
-    onRemove?.call(route, previousRoute);
   }
 
   @override
@@ -190,5 +204,15 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     }
 
     onStopUserGesture?.call();
+  }
+
+  bool _validate(Route<dynamic>? route) {
+    if (route is PageRoute) {
+      return isLogPages;
+    } else if (route is ModalRoute) {
+      return isLogModals;
+    } else {
+      return isLogOtherTypes;
+    }
   }
 }

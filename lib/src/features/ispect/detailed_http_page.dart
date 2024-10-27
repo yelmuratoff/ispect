@@ -167,7 +167,7 @@ class _RequestBodyState extends State<_RequestBody> {
         statusCode: null,
         statusMessage: null,
         requestHeaders: _requestHeaders,
-        data: data as Map<String, dynamic>?,
+        data: data,
         headers: null,
         jsonController: widget.jsonController,
       ),
@@ -443,7 +443,7 @@ class _HTTPBody extends StatelessWidget {
           ),
         ],
         // ignore: avoid_dynamic_calls
-        if (data != null && (data.isNotEmpty == true)) ...[
+        if (data != null && data is Map) ...[
           const Gap(8),
           _DetailedItemContainer(
             child: Column(
@@ -484,6 +484,51 @@ class _HTTPBody extends StatelessWidget {
                     ),
                   ),
                 ],
+              ],
+            ),
+          ),
+        ],
+        if (data is FormData) ...[
+          const Gap(8),
+          _DetailedItemContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'FormData: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(8),
+                JsonWidget(
+                  json: {
+                    'files': (data as FormData)
+                        .files
+                        .map(
+                          (e) =>
+                              '${e.value.filename}: Length: ${e.value.length}',
+                        )
+                        .toList(),
+                    'fields': (data as FormData)
+                        .fields
+                        .map(
+                          (e) => '${e.key}: ${e.value}',
+                        )
+                        .toList(),
+                  },
+                  jsonController: jsonController,
+                  keyColor: context.ispectTheme.textColor,
+                  indentLeftEndJsonNode: 0,
+                  indentHeight: 10,
+                  indentWidth: 10,
+                ),
               ],
             ),
           ),

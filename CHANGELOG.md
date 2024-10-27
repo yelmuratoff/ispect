@@ -1,5 +1,10 @@
-## 1.9.3-beta.5
+## 1.9.3
 - Added a new option to the `ISpectOptions` class: `panelButtons`. This option allows you to add new buttons to the panel.
+- Added new options to the NavigatorObserver:
+   - `isLogPages` - whether to log page changes.
+   - `isLogModals` - whether to log modal changes.
+   - `isLogOtherTypes` - whether to log other types of changes.
+- Added `isFlutterPrintEnabled` option to the ISpect.run method. This option allows you to enable or disable the Flutter print handler.
 
 ## 1.9.2
 - Added `ISpectNavigatorObserver` for navigation monitoring.

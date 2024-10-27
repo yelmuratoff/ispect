@@ -228,10 +228,10 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                   statusBarHeight + _dockBoundary;
                             }
                             if (_draggablePositionTop.value >
-                                (pageHeight - _panelHeight - 10) -
+                                (pageHeight - widget.buttonHeight - 10) -
                                     _dockBoundary) {
                               _draggablePositionTop.value =
-                                  (pageHeight - _panelHeight - 10) -
+                                  (pageHeight - widget.buttonHeight - 10) -
                                       _dockBoundary;
                             }
 
@@ -309,7 +309,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
               duration: const Duration(
                 milliseconds: 600,
               ),
-              top: _draggablePositionTop.value,
+              top: _panelTopPosition(pageHeight),
               left: _panelPositionLeft.value,
               curve: Curves.linearToEaseOut,
               child: TapRegion(
@@ -461,6 +461,16 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
   }
 
   // <-- Functions -->
+
+  double _panelTopPosition(double pageHeight) {
+    if (_draggablePositionTop.value < 0) {
+      return 0;
+    } else if (_draggablePositionTop.value > pageHeight - _panelHeight) {
+      return _draggablePositionTop.value - _panelHeight;
+    } else {
+      return _draggablePositionTop.value + widget.buttonHeight;
+    }
+  }
 
   void _hidePanel(double pageWidth) {
     if (_draggablePositionLeft.value > pageWidth / 2) {

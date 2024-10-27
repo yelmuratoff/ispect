@@ -20,6 +20,12 @@ final dio = Dio(
   ),
 );
 
+final dummyDio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.escuelajs.co',
+  ),
+);
+
 void main() {
   final talker = TalkerFlutter.init();
 
@@ -37,6 +43,7 @@ void main() {
     ),
     talker: talker,
     isPrintLoggingEnabled: true,
+    // isFlutterPrintEnabled: false,
     // filters: [
     //   'Handler: "onTap"',
     //   'This exception was thrown because',
@@ -50,6 +57,11 @@ void main() {
               //   return (response.message?.contains('This exception was thrown because')) == false;
               // },
               ),
+        ),
+      );
+      dummyDio.interceptors.add(
+        TalkerDioLogger(
+          talker: ISpectTalker.talker,
         ),
       );
     },
@@ -92,34 +104,6 @@ class App extends ConsumerWidget {
               debugPrint('FCM token copied');
             },
           ),
-          // ISpectPanelButton(
-          //   icon: Icons.token_rounded,
-          //   label: 'Copy OneSignal',
-          //   onTap: (context) {
-          //     debugPrint('Token copied');
-          //   },
-          // ),
-          // ISpectPanelButton(
-          //   icon: Icons.token_rounded,
-          //   label: 'Copy token',
-          //   onTap: (context) {
-          //     debugPrint('Token copied');
-          //   },
-          // ),
-          // ISpectPanelButton(
-          //   icon: Icons.token_rounded,
-          //   label: 'Copy token',
-          //   onTap: (context) {
-          //     debugPrint('Token copied');
-          //   },
-          // ),
-          // ISpectPanelButton(
-          //   icon: Icons.token_rounded,
-          //   label: 'Copy token',
-          //   onTap: (context) {
-          //     debugPrint('Token copied');
-          //   },
-          // ),
         ],
         panelItems: [
           ISpectPanelItem(
@@ -163,7 +147,9 @@ class App extends ConsumerWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
-          ISpectNavigatorObserver(),
+          ISpectNavigatorObserver(
+            isLogModals: false,
+          ),
         ],
         locale: locale,
         supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
@@ -208,45 +194,6 @@ class App extends ConsumerWidget {
             },
             child: child,
           );
-          // child = DraggableCircularMenu(
-          // toggleButtonColor: Colors.blue,
-          // toggleButtonBoxShadow: const [],
-          // curve: Curves.fastEaseInToSlowEaseOut,
-          // reverseCurve: Curves.fastEaseInToSlowEaseOut,
-          // items: [
-          //   CircularMenuItem(
-          //     icon: Icons.home,
-          //     color: Colors.green,
-          //     onTap: () {},
-          //     boxShadow: [],
-          //   ),
-          //   CircularMenuItem(
-          //     icon: Icons.search,
-          //     color: Colors.blue,
-          //     onTap: () {},
-          //     boxShadow: [],
-          //   ),
-          //   CircularMenuItem(
-          //     icon: Icons.settings,
-          //     color: Colors.orange,
-          //     onTap: () {},
-          //     boxShadow: [],
-          //   ),
-          //   CircularMenuItem(
-          //     icon: Icons.chat,
-          //     color: Colors.purple,
-          //     onTap: () {},
-          //     boxShadow: [],
-          //   ),
-          //   CircularMenuItem(
-          //     icon: Icons.notifications,
-          //     color: Colors.brown,
-          //     onTap: () {},
-          //     boxShadow: [],
-          //   )
-          // ],
-          //   child: child!,
-          // );
           return child;
         },
         home: const _Home(),
@@ -301,6 +248,24 @@ class _Home extends ConsumerWidget {
                 dio.options.headers.remove('Authorization');
               },
               child: const Text('Send HTTP request with Token'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final formData = FormData();
+                formData.files.add(MapEntry(
+                  'file',
+                  MultipartFile.fromBytes(
+                    [1, 2, 3],
+                    filename: 'file.txt',
+                  ),
+                ));
+
+                dummyDio.post(
+                  '/api/v1/files/upload',
+                  data: formData,
+                );
+              },
+              child: const Text('Upload file to dummy server'),
             ),
             ElevatedButton(
               onPressed: () {

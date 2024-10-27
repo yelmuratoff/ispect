@@ -38,8 +38,13 @@ final class ISpect {
     required Talker talker,
     VoidCallback? onInit,
     VoidCallback? onInitialized,
-    void Function(Object error, StackTrace stackTrace)? onError,
+    void Function(Object error, StackTrace stackTrace)? onZonedError,
+
+    /// Print logging in ISpect.
     bool isPrintLoggingEnabled = kReleaseMode,
+
+    /// Flutter print logs.
+    bool isFlutterPrintEnabled = true,
     bool isZoneErrorHandlingEnabled = true,
     void Function(Object error, StackTrace stackTrace)?
         onPlatformDispatcherError,
@@ -85,7 +90,7 @@ final class ISpect {
         callback();
       },
       (error, stackTrace) {
-        onError?.call(error, stackTrace);
+        onZonedError?.call(error, stackTrace);
         final exceptionAsString = error.toString();
         final stackAsString = stackTrace.toString();
 
@@ -117,7 +122,9 @@ final class ISpect {
           if (isPrintLoggingEnabled && !line.contains('\x1b')) {
             ISpectTalker.print(line);
           } else {
-            parent.print(zone, line);
+            if (isFlutterPrintEnabled) {
+              parent.print(zone, line);
+            }
           }
         },
       ),

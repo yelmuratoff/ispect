@@ -133,7 +133,8 @@ class _TalkerViewState extends State<TalkerView> {
                   itemCount: filtredElements.length,
                   separatorBuilder: (_, __) => Divider(
                     color:
-                        iSpect.theme.dividerColor(isDark: context.isDarkMode),
+                        iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+                            context.ispectTheme.dividerColor,
                     thickness: 1,
                   ),
                   itemBuilder: (context, index) {
