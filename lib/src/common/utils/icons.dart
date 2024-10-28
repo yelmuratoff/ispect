@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const typeColors = {
+const typeIcons = {
   /// Base logs section
   'error': Icons.error_outline_rounded,
   'critical': Icons.error_outline_rounded,
@@ -11,6 +11,7 @@ const typeColors = {
   'exception': Icons.error_outline_rounded,
   'good': Icons.check_circle_outline_rounded,
   'print': Icons.print_outlined,
+  'analytics': Icons.track_changes_rounded,
 
   /// Http section
   'http-error': Icons.http_rounded,

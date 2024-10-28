@@ -31,16 +31,11 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogPages;
   final bool isLogModals;
   final bool isLogOtherTypes;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onPush;
-  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
-      onReplace;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onPop;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onRemove;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onStartUserGesture;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onPush;
+  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})? onReplace;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onPop;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onRemove;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onStartUserGesture;
   final VoidCallback? onStopUserGesture;
 
   String _getRouteType(Route<dynamic>? route) {
@@ -128,7 +123,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route.settings.arguments != null,
-        'Arguments: ${prettyJson(route.settings.arguments)}',
+        'Arguments: ${prettyJson(previousRoute?.settings.arguments)}',
       );
 
     if (logMessage.isNotEmpty) {
@@ -157,7 +152,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route.settings.arguments != null,
-        'Arguments: ${prettyJson(route.settings.arguments)}',
+        'Arguments: ${prettyJson(previousRoute?.settings.arguments)}',
       );
 
     if (logMessage.isNotEmpty) {

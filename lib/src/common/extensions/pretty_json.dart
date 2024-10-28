@@ -15,7 +15,7 @@ String prettyJson(Object? input) {
         // ignore: avoid_dynamic_calls
         final json = (value as dynamic).toJson();
         return toEncodable(json);
-      } catch (e) {
+      } catch (_) {
         // Fallback if toJson is not present or fails
         return value.toString();
       }

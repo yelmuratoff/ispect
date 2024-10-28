@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispect/src/common/extensions/pretty_json.dart';
 import 'package:ispect/src/common/services/talker/bloc/observer.dart';
 import 'package:ispect/src/common/services/talker/talker_options.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
@@ -30,20 +31,15 @@ final class ISpectTalker {
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required Talker talker,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
-    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)?
-        onBlocEvent,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
+    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     final void Function(
       Bloc<dynamic, dynamic> bloc,
       Transition<dynamic, dynamic> transition,
     )? onBlocTransition,
-    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-        onBlocChange,
+    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
     final void Function(
       BlocBase<dynamic> bloc,
       Object error,
@@ -64,16 +60,12 @@ final class ISpectTalker {
         final exceptionAsString = details.exceptionAsString();
         final stackAsString = details.stack.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (options.isFlutterPresentHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (options.isFlutterPresentHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           _instance._talker.handle(details, details.stack);
         } else if (!isFilterNotEmpty) {
           _instance._talker.handle(details, details.stack);
@@ -101,16 +93,12 @@ final class ISpectTalker {
       final exceptionAsString = error.toString();
       final stackAsString = stack.toString();
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
       final isFilterContains = filters.any(
-        (filter) =>
-            exceptionAsString.contains(filter) ||
-            stackAsString.contains(filter),
+        (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
       );
 
-      if (options.isPlatformDispatcherHandlingEnabled &&
-          (!isFilterNotEmpty || !isFilterContains)) {
+      if (options.isPlatformDispatcherHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
         _instance._talker.handle(error, stack);
       } else if (!isFilterNotEmpty) {
         _instance._talker.handle(error, stack);
@@ -121,16 +109,13 @@ final class ISpectTalker {
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
 
       if (isFilterNotEmpty) {
         final exceptionAsString = details.toString();
         final stackAsString = details.stack.toString();
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
         if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
@@ -184,39 +169,35 @@ final class ISpectTalker {
     );
   }
 
-  static void good(
+  static void good(String message) {
+    _instance._talker.logTyped(
+      GoodLog(message),
+    );
+  }
+
+  static void track(
+    String analyticsName,
     String message, {
-    Object? exception,
-    StackTrace? stackTrace,
+    Map<String, dynamic>? parameters,
   }) {
     _instance._talker.logTyped(
-      _GoodLog(
-        message,
-        exception: exception,
-        stackTrace: stackTrace,
+      AnalyticsLog(
+        '$analyticsName: $message\nParameters: ${prettyJson(parameters)}',
       ),
     );
   }
 
   static void print(String message) {
     _instance._talker.logTyped(
-      _PrintLog(
+      PrintLog(
         message,
       ),
     );
   }
 
-  static void route(
-    String message, {
-    Object? exception,
-    StackTrace? stackTrace,
-  }) {
+  static void route(String message) {
     _instance._talker.logTyped(
-      _RouteLog(
-        message,
-        exception: exception,
-        stackTrace: stackTrace,
-      ),
+      RouteLog(message),
     );
   }
 
@@ -226,7 +207,7 @@ final class ISpectTalker {
     StackTrace? stackTrace,
   }) {
     _instance._talker.logTyped(
-      _ProviderLog(
+      ProviderLog(
         message,
         exception: exception,
         stackTrace: stackTrace,
@@ -306,8 +287,8 @@ final class ISpectTalker {
 }
 
 /// `GoodLog` - This class contains the basic structure of the log.
-class _GoodLog extends TalkerLog {
-  _GoodLog(String super.message, {super.exception, super.stackTrace});
+class GoodLog extends TalkerLog {
+  GoodLog(String super.message);
 
   /// Your custom log title
   @override
@@ -318,9 +299,22 @@ class _GoodLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(121);
 }
 
+/// `AnalyticsLog` - This class contains the analytics log.
+class AnalyticsLog extends TalkerLog {
+  AnalyticsLog(String super.message);
+
+  /// Your custom log title
+  @override
+  String get title => 'analytics';
+
+  /// Your custom log color
+  @override
+  AnsiPen get pen => AnsiPen()..rgb(r: 1, g: 1, b: 0);
+}
+
 /// `RouteLog` - This class contains the route log.
-class _RouteLog extends TalkerLog {
-  _RouteLog(String super.message, {super.exception, super.stackTrace});
+class RouteLog extends TalkerLog {
+  RouteLog(String super.message);
 
   /// Your custom log title
   @override
@@ -333,8 +327,8 @@ class _RouteLog extends TalkerLog {
 
 /// `ProviderLog` - This class contains the provider log.
 
-class _ProviderLog extends TalkerLog {
-  _ProviderLog(String super.message, {super.exception, super.stackTrace});
+class ProviderLog extends TalkerLog {
+  ProviderLog(String super.message, {super.exception, super.stackTrace});
 
   /// Your custom log title
   @override
@@ -345,8 +339,8 @@ class _ProviderLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
 }
 
-class _PrintLog extends TalkerLog {
-  _PrintLog(String super.message);
+class PrintLog extends TalkerLog {
+  PrintLog(String super.message);
 
   @override
   String get title => 'print';
@@ -355,5 +349,4 @@ class _PrintLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..blue();
 }
 
-AnsiPen getAnsiPenFromColor(Color color) =>
-    AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
+AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);

@@ -18,18 +18,18 @@ dependencies:
     any
 
     # Logging
-  talker_flutter: ^4.4.0
-  talker_dio_logger: ^4.4.0
-  talker_bloc_logger: ^4.4.0
-  talker_riverpod_logger: ^4.4.0
+  talker_flutter: ^4.4.1
+  talker_dio_logger: ^4.4.1
+  talker_bloc_logger: ^4.4.1
+  talker_riverpod_logger: ^4.4.1
 
   # Utils
   path_provider: ^2.1.4
-  share_plus: ^9.0.0
-  package_info_plus: ^8.0.2
-  device_info_plus: ^10.1.2
+  share_plus: ^10.1.1
+  package_info_plus: ^8.1.0
+  device_info_plus: ^11.1.0
   atlassian_apis: ^0.15.0
-  file_picker: ^8.0.7
+  file_picker: ^8.1.3
 
   # UI
   gap: ^3.0.1
@@ -37,17 +37,17 @@ dependencies:
   font_awesome_flutter: ^10.7.0
 
   # Lints
-  custom_lint: ^0.6.4
+  custom_lint: ^0.6.8
 
   # Others
   provider: ^6.1.2
-  dio: ^5.5.0
+  dio: ^5.7.0
   flutter_bloc: ^8.1.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pyramid_lint: ^2.0.0
+  pyramid_lint: ^2.0.1
 
 flutter:
   generate: true
