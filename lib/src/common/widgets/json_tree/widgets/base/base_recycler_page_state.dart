@@ -6,7 +6,7 @@ import 'package:ispect/src/common/models/elements/json_element.dart';
 import 'package:ispect/src/common/models/elements/json_parent_element.dart';
 import 'package:ispect/src/common/models/params/preparing_param.dart';
 import 'package:ispect/src/common/models/value_type.dart';
-import 'package:ispect/src/common/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 abstract class IRecycler {
   late final JsonRecyclerController jsonController;

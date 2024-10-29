@@ -6,8 +6,8 @@ import 'package:ispect/src/common/controllers/json_recycler_controller.dart';
 import 'package:ispect/src/common/models/elements/json_element.dart';
 import 'package:ispect/src/common/models/params/seach_object_param.dart';
 import 'package:ispect/src/common/models/value_type.dart';
-import 'package:ispect/src/common/res/constants/ispect_constants.dart';
-import 'package:ispect/src/common/res/json_color.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 
 class ItemRecyclerWidget extends StatelessWidget {
   const ItemRecyclerWidget({

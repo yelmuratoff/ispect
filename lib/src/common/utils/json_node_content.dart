@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/res/json_color.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/json_utils.dart';
 
