@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 Color getTypeColor({required bool isDark, required String? key}) {
   if (key == null) return Colors.grey;
   return isDark ? _darkTypeColors[key] ?? Colors.grey : _lightTypeColors[key] ?? Colors.grey;
 }
+
+AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);
 
 const _lightTypeColors = {
   /// Base logs section

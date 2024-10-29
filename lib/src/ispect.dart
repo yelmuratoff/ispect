@@ -1,29 +1,139 @@
 // ignore_for_file: avoid_final_parameters, lines_longer_than_80_chars, inference_failure_on_untyped_parameter
 
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/extensions/pretty_json.dart';
-import 'package:ispect/src/common/services/talker/bloc/observer.dart';
-import 'package:ispect/src/common/services/talker/talker_options.dart';
+import 'package:ispect/src/features/talker/logs.dart';
+import 'package:ispect/src/features/talker/observers/bloc_observer.dart';
+import 'package:ispect/src/features/talker/talker_options.dart';
+import 'package:provider/provider.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-final class ISpectTalker {
-  factory ISpectTalker() => _instance;
+/// `ISpect` - This class contains the main functionality of the library.
+final class ISpect {
+  factory ISpect() => _instance;
   // ignore: prefer_const_constructor_declarations
-  ISpectTalker._();
+  ISpect._();
 
   late final Talker _talker;
 
-  static final ISpectTalker _instance = ISpectTalker._();
+  static final ISpect _instance = ISpect._();
 
-  static ISpectTalker get instance => _instance;
+  static ISpect get instance => _instance;
 
   static Talker get talker => _instance._talker;
   static set talker(Talker talker) => _instance._talker = talker;
+
+  static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(
+        context,
+        listen: false,
+      );
+
+  static ISpectScopeModel watch(BuildContext context) => Provider.of<ISpectScopeModel>(
+        context,
+      );
+
+  late final GlobalKey<NavigatorState> navigatorKey;
+
+  /// `run` - This function runs the callback function with the specified parameters.
+  /// It initializes the handling of the app.
+  static void run<T>(
+    T Function() callback, {
+    required Talker talker,
+    VoidCallback? onInit,
+    VoidCallback? onInitialized,
+    void Function(Object error, StackTrace stackTrace)? onZonedError,
+
+    /// Print logging in ISpect.
+    bool isPrintLoggingEnabled = kReleaseMode,
+
+    /// Flutter print logs.
+    bool isFlutterPrintEnabled = true,
+    bool isZoneErrorHandlingEnabled = true,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
+    void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
+    void Function(
+      Bloc<dynamic, dynamic> bloc,
+      Transition<dynamic, dynamic> transition,
+    )? onBlocTransition,
+    void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
+    void Function(
+      BlocBase<dynamic> bloc,
+      Object error,
+      StackTrace stackTrace,
+    )? onBlocError,
+    void Function(BlocBase<dynamic> bloc)? onBlocCreate,
+    void Function(BlocBase<dynamic> bloc)? onBlocClose,
+    void Function(List<dynamic> pair)? onUncaughtErrors,
+    ISpectTalkerOptions options = const ISpectTalkerOptions(),
+    List<String> filters = const [],
+  }) {
+    ISpect.initHandling(
+      talker: talker,
+      onPlatformDispatcherError: onPlatformDispatcherError,
+      onFlutterError: onFlutterError,
+      onPresentError: onPresentError,
+      onBlocEvent: onBlocEvent,
+      onBlocTransition: onBlocTransition,
+      onBlocChange: onBlocChange,
+      onBlocError: onBlocError,
+      onBlocCreate: onBlocCreate,
+      onBlocClose: onBlocClose,
+      onUncaughtErrors: onUncaughtErrors,
+      options: options,
+      filters: filters,
+    );
+    onInit?.call();
+    runZonedGuarded(
+      () {
+        callback();
+      },
+      (error, stackTrace) {
+        onZonedError?.call(error, stackTrace);
+        final exceptionAsString = error.toString();
+        final stackAsString = stackTrace.toString();
+
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterContains = filters.any(
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
+        );
+
+        if (isZoneErrorHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
+          ISpect.handle(
+            exception: error,
+            stackTrace: stackTrace,
+            message: 'Error from zoned handler',
+          );
+        } else if (!isFilterNotEmpty) {
+          ISpect.handle(
+            exception: error,
+            stackTrace: stackTrace,
+            message: 'Error from zoned handler',
+          );
+        }
+      },
+      zoneSpecification: ZoneSpecification(
+        print: (_, parent, zone, line) {
+          if (isPrintLoggingEnabled && !line.contains('\x1b')) {
+            ISpect.print(line);
+          } else {
+            if (isFlutterPrintEnabled) {
+              parent.print(zone, line);
+            }
+          }
+        },
+      ),
+    );
+    onInitialized?.call();
+  }
 
   /// `initHandling` - This function initializes handling of the app.
   ///
@@ -52,7 +162,7 @@ final class ISpectTalker {
     final List<String> filters = const [],
   }) async {
     _instance._talker = talker;
-    info('🚀 ISpectTalker: Initialize started.');
+    info('🚀 ISpect: Initialize started.');
 
     FlutterError.presentError = (details) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -150,8 +260,10 @@ final class ISpectTalker {
         ).sendPort,
       );
 
-    good('✅ ISpectTalker: Success initialized.');
+    good('✅ ISpect: Success initialized.');
   }
+
+  // <--- Logging functions --->
 
   static void log(
     String message, {
@@ -176,13 +288,13 @@ final class ISpectTalker {
   }
 
   static void track(
-    String analyticsName,
     String message, {
+    String? analytics,
     Map<String, dynamic>? parameters,
   }) {
     _instance._talker.logTyped(
       AnalyticsLog(
-        '$analyticsName: $message\nParameters: ${prettyJson(parameters)}',
+        '${analytics ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
       ),
     );
   }
@@ -285,68 +397,3 @@ final class ISpectTalker {
     }
   }
 }
-
-/// `GoodLog` - This class contains the basic structure of the log.
-class GoodLog extends TalkerLog {
-  GoodLog(String super.message);
-
-  /// Your custom log title
-  @override
-  String get title => 'good';
-
-  /// Your custom log color
-  @override
-  AnsiPen get pen => AnsiPen()..xterm(121);
-}
-
-/// `AnalyticsLog` - This class contains the analytics log.
-class AnalyticsLog extends TalkerLog {
-  AnalyticsLog(String super.message);
-
-  /// Your custom log title
-  @override
-  String get title => 'analytics';
-
-  /// Your custom log color
-  @override
-  AnsiPen get pen => AnsiPen()..rgb(r: 1, g: 1, b: 0);
-}
-
-/// `RouteLog` - This class contains the route log.
-class RouteLog extends TalkerLog {
-  RouteLog(String super.message);
-
-  /// Your custom log title
-  @override
-  String get title => 'route';
-
-  /// Your custom log color
-  @override
-  AnsiPen get pen => AnsiPen()..rgb(r: 0.5, g: 0.5);
-}
-
-/// `ProviderLog` - This class contains the provider log.
-
-class ProviderLog extends TalkerLog {
-  ProviderLog(String super.message, {super.exception, super.stackTrace});
-
-  /// Your custom log title
-  @override
-  String get title => 'provider';
-
-  /// Your custom log color
-  @override
-  AnsiPen get pen => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9);
-}
-
-class PrintLog extends TalkerLog {
-  PrintLog(String super.message);
-
-  @override
-  String get title => 'print';
-
-  @override
-  AnsiPen get pen => AnsiPen()..blue();
-}
-
-AnsiPen getAnsiPenFromColor(Color color) => AnsiPen()..rgb(r: color.red, g: color.green, b: color.blue);

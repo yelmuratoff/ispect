@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/features/ispect/widgets/base_card.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 
 class TalkerSettingsCardItem extends StatelessWidget {

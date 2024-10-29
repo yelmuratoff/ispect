@@ -6,7 +6,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
-import 'package:ispect/src/features/ispect/settings/settings_card.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_card.dart';
 
 import 'package:talker_flutter/talker_flutter.dart';
 

@@ -69,7 +69,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       );
 
     if (logMessage.isNotEmpty) {
-      ISpectTalker.route(logMessage.toString().trim());
+      ISpect.route(logMessage.toString().trim());
     }
   }
 
@@ -98,7 +98,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       );
 
     if (logMessage.isNotEmpty) {
-      ISpectTalker.route(logMessage.toString().trim());
+      ISpect.route(logMessage.toString().trim());
     }
   }
 
@@ -127,7 +127,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       );
 
     if (logMessage.isNotEmpty) {
-      ISpectTalker.route(logMessage.toString().trim());
+      ISpect.route(logMessage.toString().trim());
     }
   }
 
@@ -156,7 +156,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       );
 
     if (logMessage.isNotEmpty) {
-      ISpectTalker.route(logMessage.toString().trim());
+      ISpect.route(logMessage.toString().trim());
     }
   }
 
@@ -185,7 +185,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         );
 
       if (logMessage.isNotEmpty) {
-        ISpectTalker.route(logMessage.toString().trim());
+        ISpect.route(logMessage.toString().trim());
       }
     }
 
@@ -195,7 +195,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   @override
   void didStopUserGesture() {
     if (isLogGestures) {
-      ISpectTalker.route('User gesture stopped');
+      ISpect.route('User gesture stopped');
     }
 
     onStopUserGesture?.call();

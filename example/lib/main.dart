@@ -50,7 +50,7 @@ void main() {
     onInitialized: () {
       dio.interceptors.add(
         TalkerDioLogger(
-          talker: ISpectTalker.talker,
+          talker: ISpect.talker,
           settings: const TalkerDioLoggerSettings(
               // errorFilter: (response) {
               //   return (response.message?.contains('This exception was thrown because')) == false;
@@ -60,7 +60,7 @@ void main() {
       );
       dummyDio.interceptors.add(
         TalkerDioLogger(
-          talker: ISpectTalker.talker,
+          talker: ISpect.talker,
         ),
       );
     },
@@ -222,7 +222,7 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                ISpectTalker.track('Amplitude', 'Toggle ISpect', parameters: {
+                ISpect.track('Toggle ISpect', parameters: {
                   'isISpectEnabled': iSpect.isISpectEnabled,
                 });
                 iSpect.toggleISpect();

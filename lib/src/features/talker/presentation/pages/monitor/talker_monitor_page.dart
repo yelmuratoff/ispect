@@ -5,8 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
-import 'package:ispect/src/features/ispect/monitor/pages/detailed_info/monitor_info_page.dart';
-import 'package:ispect/src/features/ispect/widgets/base_card.dart';
+import 'package:ispect/src/features/talker/presentation/pages/detailed_info/monitor_info_page.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 part '../../widgets/monitor_card.dart';
@@ -31,8 +31,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_rounded,
@@ -48,39 +47,30 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
         ),
       ),
       body: TalkerBuilder(
-        talker: ISpectTalker.talker,
+        talker: ISpect.talker,
         builder: (context, data) {
           // <-- Common logs -->
 
           final logs = data.whereType<TalkerLog>().toList();
           final errors = data.whereType<TalkerError>().toList();
           final exceptions = data.whereType<TalkerException>().toList();
-          final flutterErrors =
-              data.where((e) => e.message == 'FlutterErrorDetails').toList();
-          final warnings =
-              logs.where((e) => e.logLevel == LogLevel.warning).toList();
+          final flutterErrors = data.where((e) => e.message == 'FlutterErrorDetails').toList();
+          final warnings = logs.where((e) => e.logLevel == LogLevel.warning).toList();
           final goods = logs.where((e) => e.title == 'good').toList();
           final prints = logs.where((e) => e.title == 'print').toList();
 
           final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
           final verboseDebug = logs
               .where(
-                (e) =>
-                    e.logLevel == LogLevel.verbose ||
-                    e.logLevel == LogLevel.debug,
+                (e) => e.logLevel == LogLevel.verbose || e.logLevel == LogLevel.debug,
               )
               .toList();
 
           // <-- HTTP logs -->
 
-          final httpRequests = data
-              .where((e) => e.key == TalkerLogType.httpRequest.key)
-              .toList();
-          final httpErrors =
-              data.where((e) => e.key == TalkerLogType.httpError.key).toList();
-          final httpResponses = data
-              .where((e) => e.key == TalkerLogType.httpResponse.key)
-              .toList();
+          final httpRequests = data.where((e) => e.key == TalkerLogType.httpRequest.key).toList();
+          final httpErrors = data.where((e) => e.key == TalkerLogType.httpError.key).toList();
+          final httpResponses = data.where((e) => e.key == TalkerLogType.httpResponse.key).toList();
           final allHttps = data
               .where(
                 (e) =>
@@ -92,15 +82,10 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
 
           // <-- BLoC logs -->
 
-          final blocEvents =
-              data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
-          final blocTransitions = data
-              .where((e) => e.key == TalkerLogType.blocTransition.key)
-              .toList();
-          final blocCreates =
-              data.where((e) => e.key == TalkerLogType.blocCreate.key).toList();
-          final blocCloses =
-              data.where((e) => e.key == TalkerLogType.blocClose.key).toList();
+          final blocEvents = data.where((e) => e.key == TalkerLogType.blocEvent.key).toList();
+          final blocTransitions = data.where((e) => e.key == TalkerLogType.blocTransition.key).toList();
+          final blocCreates = data.where((e) => e.key == TalkerLogType.blocCreate.key).toList();
+          final blocCloses = data.where((e) => e.key == TalkerLogType.blocClose.key).toList();
           final allBlocs = data
               .where(
                 (e) =>
@@ -122,18 +107,10 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                     e.key == TalkerLogType.riverpodFail.key,
               )
               .toList();
-          final riverpodAdds = data
-              .where((e) => e.key == TalkerLogType.riverpodAdd.key)
-              .toList();
-          final riverpodUpdates = data
-              .where((e) => e.key == TalkerLogType.riverpodUpdate.key)
-              .toList();
-          final riverpodDisposes = data
-              .where((e) => e.key == TalkerLogType.riverpodDispose.key)
-              .toList();
-          final riverpodFails = data
-              .where((e) => e.key == TalkerLogType.riverpodFail.key)
-              .toList();
+          final riverpodAdds = data.where((e) => e.key == TalkerLogType.riverpodAdd.key).toList();
+          final riverpodUpdates = data.where((e) => e.key == TalkerLogType.riverpodUpdate.key).toList();
+          final riverpodDisposes = data.where((e) => e.key == TalkerLogType.riverpodDispose.key).toList();
+          final riverpodFails = data.where((e) => e.key == TalkerLogType.riverpodFail.key).toList();
 
           return CustomScrollView(
             slivers: [
@@ -332,8 +309,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'error',
                     ),
                     icon: Icons.error_outline_rounded,
-                    subtitle:
-                        context.ispectL10n.talkerTypeErrorsCount(errors.length),
+                    subtitle: context.ispectL10n.talkerTypeErrorsCount(errors.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       errors,
@@ -353,8 +329,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'error',
                     ),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n
-                        .talkerTypeErrorsCount(flutterErrors.length),
+                    subtitle: context.ispectL10n.talkerTypeErrorsCount(flutterErrors.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       flutterErrors,
@@ -374,8 +349,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'exception',
                     ),
                     icon: Icons.error_outline_rounded,
-                    subtitle: context.ispectL10n
-                        .talkerTypeExceptionsCount(exceptions.length),
+                    subtitle: context.ispectL10n.talkerTypeExceptionsCount(exceptions.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       exceptions,
@@ -395,8 +369,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'warning',
                     ),
                     icon: Icons.warning_amber_rounded,
-                    subtitle: context.ispectL10n
-                        .talkerTypeWarningsCount(warnings.length),
+                    subtitle: context.ispectL10n.talkerTypeWarningsCount(warnings.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       warnings,
@@ -416,8 +389,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'info',
                     ),
                     icon: Icons.info_outline_rounded,
-                    subtitle:
-                        context.ispectL10n.talkerTypeInfoCount(infos.length),
+                    subtitle: context.ispectL10n.talkerTypeInfoCount(infos.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       infos,
@@ -437,8 +409,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'good',
                     ),
                     icon: Icons.check_circle_outline_rounded,
-                    subtitle:
-                        context.ispectL10n.talkerTypeGoodCount(goods.length),
+                    subtitle: context.ispectL10n.talkerTypeGoodCount(goods.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       goods,
@@ -458,8 +429,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'print',
                     ),
                     icon: Icons.check_circle_outline_rounded,
-                    subtitle:
-                        context.ispectL10n.talkerTypePrintCount(prints.length),
+                    subtitle: context.ispectL10n.talkerTypePrintCount(prints.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       prints,
@@ -479,8 +449,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: 'verbose',
                     ),
                     icon: Icons.remove_red_eye_outlined,
-                    subtitle: context.ispectL10n
-                        .talkerTypeDebugCount(verboseDebug.length),
+                    subtitle: context.ispectL10n.talkerTypeDebugCount(verboseDebug.length),
                     onTap: () => _openTypedLogsScreen(
                       context,
                       verboseDebug,

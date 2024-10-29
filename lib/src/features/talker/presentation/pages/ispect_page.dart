@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/features/ispect/talker_view.dart' as view;
+import 'package:ispect/src/features/talker/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -38,7 +38,7 @@ class ISpectPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _View(
-        talker: ISpectTalker.talker,
+        talker: ISpect.talker,
         appBarTitle: appBarTitle,
         options: options,
         onJiraAuthorized: onJiraAuthorized,
@@ -67,9 +67,7 @@ class _View extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: ISpect.read(context)
-            .theme
-            .backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: ISpect.read(context).theme.backgroundColor(isDark: context.isDarkMode),
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,
@@ -89,8 +87,7 @@ class _View extends StatelessWidget {
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
   final output = await getTemporaryDirectory();
-  final screenshotFilePath =
-      '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
+  final screenshotFilePath = '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
   final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);

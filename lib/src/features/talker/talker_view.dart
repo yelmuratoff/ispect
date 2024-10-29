@@ -10,14 +10,14 @@ import 'package:ispect/src/common/utils/get_data_color.dart';
 import 'package:ispect/src/common/utils/history.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
-import 'package:ispect/src/features/ispect/monitor/pages/monitor/talker_monitor_page.dart';
-import 'package:ispect/src/features/ispect/settings/settings_bottom_sheet.dart';
-import 'package:ispect/src/features/ispect/widgets/data_card.dart';
-import 'package:ispect/src/features/ispect/widgets/info_bottom_sheet.dart';
-import 'package:ispect/src/features/ispect/widgets/view_app_bar.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
+import 'package:ispect/src/features/talker/presentation/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_bottom_sheet.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/view_app_bar.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -280,7 +280,7 @@ class _TalkerViewState extends State<TalkerView> {
         MaterialPageRoute<dynamic>(
           builder: (_) => JiraAuthPage(
             onAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              ISpectTalker.good(
+              ISpect.good(
                 '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
               );
               widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
