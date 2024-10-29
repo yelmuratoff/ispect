@@ -4,10 +4,10 @@ import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/json_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/get_data_color.dart';
 import 'package:ispect/src/common/widgets/json_tree/json_widget.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:talker_dio_logger/dio_logs.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
