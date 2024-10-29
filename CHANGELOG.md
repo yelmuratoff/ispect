@@ -1,3 +1,9 @@
+## 1.9.4
+- Added new method for logging: `ISpect.track`. This method allows you to log custom events for analytics *(Amplitude, Firebase, etc.)*.
+- `ISpectTalker` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  
+Example: `ISpectTalker.debug('Hello, ISpect!')` -> `ISpect.debug('Hello, ISpect!')`.
+- Some other minor updates.
+
 ## 1.9.3
 - Added a new option to the `ISpectOptions` class: `panelButtons`. This option allows you to add new buttons to the panel.
 - Added new options to the NavigatorObserver:
