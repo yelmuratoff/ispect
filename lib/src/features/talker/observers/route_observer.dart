@@ -31,11 +31,16 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogPages;
   final bool isLogModals;
   final bool isLogOtherTypes;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onPush;
-  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})? onReplace;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onPop;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onRemove;
-  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)? onStartUserGesture;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPush;
+  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
+      onReplace;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPop;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onRemove;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onStartUserGesture;
   final VoidCallback? onStopUserGesture;
 
   String _getRouteType(Route<dynamic>? route) {

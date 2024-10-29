@@ -87,7 +87,8 @@ class DraggableCircularMenu extends StatefulWidget {
   DraggableCircularMenuState createState() => DraggableCircularMenuState();
 }
 
-class DraggableCircularMenuState extends State<DraggableCircularMenu> with SingleTickerProviderStateMixin {
+class DraggableCircularMenuState extends State<DraggableCircularMenu>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   late int _itemsCount;
@@ -97,16 +98,20 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
   Timer? _fullHideTimer;
 
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
-  final ValueNotifier<Offset> _buttonPosition = ValueNotifier<Offset>(const Offset(0, 100));
-  final ValueNotifier<double> _completeAngle = ValueNotifier<double>(2 * math.pi);
+  final ValueNotifier<Offset> _buttonPosition =
+      ValueNotifier<Offset>(const Offset(0, 100));
+  final ValueNotifier<double> _completeAngle =
+      ValueNotifier<double>(2 * math.pi);
   final ValueNotifier<double> _initialAngle = ValueNotifier<double>(0);
   final ValueNotifier<bool> _startDragFromLeft = ValueNotifier<bool>(false);
-  final ValueNotifier<VisibleState> _visibleState = ValueNotifier<VisibleState>(VisibleState.hidden);
+  final ValueNotifier<VisibleState> _visibleState =
+      ValueNotifier<VisibleState>(VisibleState.hidden);
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: widget.animationDuration);
+    _animationController =
+        AnimationController(vsync: this, duration: widget.animationDuration);
     _animation = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -162,7 +167,8 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                 developer.log('ISpect: onTapOutside');
                 if (_animationController.status == AnimationStatus.dismissed) {
                   _visibleState.value = VisibleState.hidden;
-                } else if (_animationController.status == AnimationStatus.completed) {
+                } else if (_animationController.status ==
+                    AnimationStatus.completed) {
                   _closeMenu(context);
                 }
                 _startHideTimers(context);
@@ -190,16 +196,21 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                         _configureAlignmentBasedAngles(alignment);
                       });
                       return Positioned(
-                        left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
+                        left: _isInLeftSide(screenSize)
+                            ? _buttonPosition.value.dx
+                            : null,
                         right: !_isInLeftSide(screenSize)
-                            ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
+                            ? screenSize.width -
+                                _buttonPosition.value.dx -
+                                widget.toggleButtonSize * 2
                             : null,
                         top: _buttonPosition.value.dy,
                         child: GestureDetector(
                           onPanStart: (details) {
                             if (details.globalPosition.dx < 80) {
                               _startDragFromLeft.value = true;
-                            } else if (details.globalPosition.dx > screenSize.width - 80) {
+                            } else if (details.globalPosition.dx >
+                                screenSize.width - 80) {
                               _startDragFromLeft.value = false;
                             }
                           },
@@ -239,28 +250,38 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
                                 margin: EdgeInsets.zero,
-                                width: _visibleState.value == VisibleState.hidden ? 30 : widget.toggleButtonSize * 1.5,
+                                width:
+                                    _visibleState.value == VisibleState.hidden
+                                        ? 30
+                                        : widget.toggleButtonSize * 1.5,
                                 height: 70,
                                 decoration: BoxDecoration(
-                                  color: _visibleState.value == VisibleState.hidden
-                                      ? widget.toggleButtonColor.withOpacity(0.3)
-                                      : widget.toggleButtonColor,
+                                  color:
+                                      _visibleState.value == VisibleState.hidden
+                                          ? widget.toggleButtonColor
+                                              .withOpacity(0.3)
+                                          : widget.toggleButtonColor,
                                   borderRadius: BorderRadius.only(
-                                    topRight: _isInLeftSide(screenSize) || _isDragging.value
+                                    topRight: _isInLeftSide(screenSize) ||
+                                            _isDragging.value
                                         ? const Radius.circular(16)
                                         : Radius.zero,
-                                    bottomRight: _isInLeftSide(screenSize) || _isDragging.value
+                                    bottomRight: _isInLeftSide(screenSize) ||
+                                            _isDragging.value
                                         ? const Radius.circular(16)
                                         : Radius.zero,
-                                    topLeft: _isInRightSide(screenSize) || _isDragging.value
+                                    topLeft: _isInRightSide(screenSize) ||
+                                            _isDragging.value
                                         ? const Radius.circular(16)
                                         : Radius.zero,
-                                    bottomLeft: _isInRightSide(screenSize) || _isDragging.value
+                                    bottomLeft: _isInRightSide(screenSize) ||
+                                            _isDragging.value
                                         ? const Radius.circular(16)
                                         : Radius.zero,
                                   ),
                                 ),
-                                child: _visibleState.value == VisibleState.hidden
+                                child: _visibleState.value ==
+                                        VisibleState.hidden
                                     ? _isDragging.value
                                         ? const SizedBox()
                                         : Center(
@@ -268,16 +289,21 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                                               willChange: true,
                                               size: const Size(20, 70),
                                               painter: LineWithCurvePainter(
-                                                isInRightSide: _isInRightSide(screenSize),
-                                                color: widget.toggleButtonIconColor ?? Colors.white,
+                                                isInRightSide:
+                                                    _isInRightSide(screenSize),
+                                                color: widget
+                                                        .toggleButtonIconColor ??
+                                                    Colors.white,
                                               ),
                                             ),
                                           )
                                     : Center(
                                         child: AnimatedIcon(
-                                          icon: widget.toggleButtonAnimatedIconData,
+                                          icon: widget
+                                              .toggleButtonAnimatedIconData,
                                           size: widget.toggleButtonSize,
-                                          color: widget.toggleButtonIconColor ?? Colors.white,
+                                          color: widget.toggleButtonIconColor ??
+                                              Colors.white,
                                           progress: _animation,
                                         ),
                                       ),
@@ -301,7 +327,8 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     _buttonPosition.value += details.delta;
     _isDragging.value = true;
     _buttonPosition.value = Offset(
-      _buttonPosition.value.dx.clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
+      _buttonPosition.value.dx
+          .clamp(0.0, screenSize.width - widget.toggleButtonSize * 2),
       _buttonPosition.value.dy.clamp(50, screenSize.height - 100),
     );
   }
@@ -327,14 +354,18 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
           builder: (_, __) => Positioned(
             left: _isInLeftSide(screenSize) ? _buttonPosition.value.dx : null,
             right: !_isInLeftSide(screenSize)
-                ? screenSize.width - _buttonPosition.value.dx - widget.toggleButtonSize * 2
+                ? screenSize.width -
+                    _buttonPosition.value.dx -
+                    widget.toggleButtonSize * 2
                 : null,
             top: _buttonPosition.value.dy,
             child: Transform.translate(
               offset: Offset.fromDirection(
                 _completeAngle.value == (2 * math.pi)
-                    ? (_initialAngle.value + (_completeAngle.value / _itemsCount) * index)
-                    : (_initialAngle.value + (_completeAngle.value / (_itemsCount - 1)) * index),
+                    ? (_initialAngle.value +
+                        (_completeAngle.value / _itemsCount) * index)
+                    : (_initialAngle.value +
+                        (_completeAngle.value / (_itemsCount - 1)) * index),
                 _animation.value * widget.radius,
               ),
               child: Transform.scale(
@@ -369,11 +400,14 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
     _isDragging.value = false;
   }
 
-  double _halfScreenWidth(Size screenSize) => screenSize.width / 2 - widget.toggleButtonSize / 2;
+  double _halfScreenWidth(Size screenSize) =>
+      screenSize.width / 2 - widget.toggleButtonSize / 2;
 
-  bool _isInLeftSide(Size screenSize) => _buttonPosition.value.dx < _halfScreenWidth(screenSize);
+  bool _isInLeftSide(Size screenSize) =>
+      _buttonPosition.value.dx < _halfScreenWidth(screenSize);
 
-  bool _isInRightSide(Size screenSize) => _buttonPosition.value.dx > _halfScreenWidth(screenSize);
+  bool _isInRightSide(Size screenSize) =>
+      _buttonPosition.value.dx > _halfScreenWidth(screenSize);
 
   void _closeMenu(
     BuildContext context, {
@@ -392,12 +426,14 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
 
   void _startHideTimers(BuildContext context) {
     _hideTimer = Timer(const Duration(seconds: 3), () {
-      if (_animationController.status == AnimationStatus.completed && !_isDragging.value) {
+      if (_animationController.status == AnimationStatus.completed &&
+          !_isDragging.value) {
         _closeMenu(context);
       }
     });
     _fullHideTimer = Timer(const Duration(seconds: 6), () {
-      if (_animationController.status == AnimationStatus.dismissed && !_isDragging.value) {
+      if (_animationController.status == AnimationStatus.dismissed &&
+          !_isDragging.value) {
         _visibleState.value = VisibleState.hidden;
 
         Future.delayed(const Duration(milliseconds: 300), () {

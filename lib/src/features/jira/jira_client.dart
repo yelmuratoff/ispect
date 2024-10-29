@@ -288,7 +288,9 @@ final class JiraClient {
 
     final list = response['values'] as List<Object?>;
 
-    final boards = list.map((e) => JiraBoard.fromJson(e! as Map<String, Object?>)).toList();
+    final boards = list
+        .map((e) => JiraBoard.fromJson(e! as Map<String, Object?>))
+        .toList();
 
     return boards;
   }
@@ -306,7 +308,9 @@ final class JiraClient {
     // ignore: avoid_dynamic_calls
     final list = response['values'] as List<Object?>;
 
-    final sprints = list.map((e) => JiraSprint.fromJson(e! as Map<String, Object?>)).toList();
+    final sprints = list
+        .map((e) => JiraSprint.fromJson(e! as Map<String, Object?>))
+        .toList();
 
     return sprints.where((sprint) => sprint.state == 'active').toList();
   }
