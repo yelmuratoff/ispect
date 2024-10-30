@@ -25,11 +25,11 @@ dependencies:
 
   # Utils
   path_provider: ^2.1.4
-  share_plus: ^10.1.1
-  package_info_plus: ^8.1.0
+  share_plus: ^10.0.1
+  package_info_plus: ^8.0.2
   device_info_plus: ^10.1.2
   atlassian_apis: ^0.15.0
-  file_picker: ^8.1.3
+  file_picker: ^8.0.7
 
   # UI
   gap: ^3.0.1
@@ -37,17 +37,17 @@ dependencies:
   font_awesome_flutter: ^10.7.0
 
   # Lints
-  custom_lint: ^0.6.8
+  custom_lint: ^0.6.4
 
   # Others
   provider: ^6.1.2
-  dio: ^5.7.0
+  dio: ^5.5.0
   flutter_bloc: ^8.1.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pyramid_lint: ^2.0.1
+  pyramid_lint: ^2.0.0
 
 flutter:
   generate: true
