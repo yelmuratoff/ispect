@@ -5,7 +5,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/json_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/common/utils/get_data_color.dart';
 import 'package:ispect/src/common/widgets/json_tree/json_widget.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:talker_dio_logger/dio_logs.dart';
@@ -37,10 +36,9 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+      backgroundColor: iSpect.theme.backgroundColor(context),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(context),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -251,8 +249,9 @@ class _HTTPBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeColor = getTypeColor(
-      isDark: context.isDarkMode,
+    final iSpect = ISpect.read(context);
+    final typeColor = iSpect.theme.getTypeColor(
+      context,
       key: dataKey,
     );
     return Column(
@@ -476,8 +475,8 @@ class _HTTPBody extends StatelessWidget {
                   Text(
                     data.toString(),
                     style: TextStyle(
-                      color: getTypeColor(
-                        isDark: context.isDarkMode,
+                      color: iSpect.theme.getTypeColor(
+                        context,
                         key: 'error',
                       ),
                       fontWeight: FontWeight.bold,
@@ -512,8 +511,7 @@ class _HTTPBody extends StatelessWidget {
                     'files': (data as FormData)
                         .files
                         .map(
-                          (e) =>
-                              '${e.value.filename}: Length: ${e.value.length}',
+                          (e) => '${e.value.filename}: Length: ${e.value.length}',
                         )
                         .toList(),
                     'fields': (data as FormData)
@@ -578,8 +576,7 @@ class _DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color:
-              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
+          color: context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(

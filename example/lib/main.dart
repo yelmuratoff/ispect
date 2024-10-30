@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
+import 'package:ispect_example/src/logs/success.dart';
 
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -11,8 +12,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -86,7 +86,15 @@ class App extends ConsumerWidget {
       //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
-
+      theme: ISpectTheme(
+        logColors: {
+          SuccessLog.logKey: const Color(0xFF880E4F),
+        },
+        logIcons: {
+          TalkerLogType.route.key: Icons.router_rounded,
+          SuccessLog.logKey: Icons.check_circle_rounded,
+        },
+      ),
       options: ISpectOptions(
         locale: locale,
         panelButtons: [
@@ -210,11 +218,13 @@ class _Home extends ConsumerWidget {
     ref.watch(themeProvider.notifier);
     final iSpect = ISpect.read(context);
     return Scaffold(
+      appBar: AppBar(
+        title: Text(AppGeneratedLocalization.of(context).app_title),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
                 ref.read(themeProvider.notifier).toggleTheme();
@@ -301,6 +311,12 @@ class _Home extends ConsumerWidget {
                 );
               },
               child: const Text('Replace with second page'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                ISpect.logTyped(SuccessLog('Success log'));
+              },
+              child: const Text('Success log'),
             ),
           ],
         ),

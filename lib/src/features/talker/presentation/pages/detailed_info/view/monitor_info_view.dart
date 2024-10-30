@@ -23,10 +23,9 @@ class _MonitorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+      backgroundColor: iSpect.theme.backgroundColor(context),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(context),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
@@ -42,9 +41,7 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),
@@ -56,7 +53,7 @@ class _MonitorView extends StatelessWidget {
           SliverList.separated(
             itemCount: logs.length,
             separatorBuilder: (_, __) => Divider(
-              color: iSpect.theme.dividerColor(isDark: context.isDarkMode),
+              color: iSpect.theme.dividerColor(context),
               thickness: 1,
             ),
             itemBuilder: (context, index) {
@@ -64,8 +61,8 @@ class _MonitorView extends StatelessWidget {
               return TalkerDataCards(
                 data: data,
                 onCopyTap: () => onCopyTap?.call(context, data),
-                color: getTypeColor(
-                  isDark: context.isDarkMode,
+                color: iSpect.theme.getTypeColor(
+                  context,
                   key: data.title,
                 ),
                 expanded: isLogsExpanded,

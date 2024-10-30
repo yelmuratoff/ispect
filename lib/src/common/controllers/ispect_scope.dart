@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/icons.dart';
 import 'package:provider/provider.dart';
 
 /// `ISpectScopeModel` is a model class that holds the state of the ISpect scope.
@@ -56,9 +58,18 @@ class ISpectScopeModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void setTheme(ISpectTheme? theme) {
+  void setTheme(BuildContext context, ISpectTheme? theme) {
     if (theme != null) {
-      _theme = theme;
+      _theme = theme.copyWith(
+        logColors: {
+          ...context.isDarkMode ? ISpectTheme.lightTypeColors : ISpectTheme.darkTypeColors,
+          ...theme.logColors,
+        },
+        logIcons: {
+          ...typeIcons,
+          ...theme.logIcons,
+        },
+      );
     }
     notifyListeners();
   }
@@ -79,12 +90,11 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) =>
-      ChangeNotifierProvider<ISpectScopeModel>(
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
         create: (_) => ISpectScopeModel()
           ..setISpect = isISpectEnabled
           ..setOptions(options)
-          ..setTheme(theme),
+          ..setTheme(context, theme),
         child: child,
       );
 }

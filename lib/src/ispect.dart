@@ -281,6 +281,10 @@ final class ISpect {
     );
   }
 
+  static void logTyped(TalkerLog log) {
+    _instance._talker.logTyped(log);
+  }
+
   static void good(String message) {
     _instance._talker.logTyped(
       GoodLog(message),

@@ -18,10 +18,9 @@ class _AppDataView extends StatelessWidget {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+      backgroundColor: iSpect.theme.backgroundColor(context),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(context),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
@@ -50,8 +49,7 @@ class _AppDataView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (cacheSizeNotifier.value != '0.00 B' &&
-                      controller.files.isNotEmpty)
+                  if (cacheSizeNotifier.value != '0.00 B' && controller.files.isNotEmpty)
                     ElevatedButton(
                       onPressed: clearCache,
                       child: Text(context.ispectL10n.clearCache),
@@ -67,8 +65,7 @@ class _AppDataView extends StatelessWidget {
                 children: [
                   Text(
                     context.ispectL10n.appData,
-                    style: context.ispectTheme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: context.ispectTheme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
                     context.ispectL10n.totalFilesCount(controller.files.length),

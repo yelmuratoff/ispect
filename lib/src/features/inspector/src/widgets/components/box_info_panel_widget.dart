@@ -80,18 +80,14 @@ class BoxInfoPanelWidget extends StatelessWidget {
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                          theme.dividerColor,
+                  color: iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                          theme.dividerColor,
+                  color: iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],
@@ -226,9 +222,7 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
           backgroundColor: theme.chipTheme.backgroundColor,
           iconColor: decoration.color,
           child: Text(
-            decoration.color != null
-                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
-                : 'n/a',
+            decoration.color != null ? '#${colorToHexString(decoration.color!, withAlpha: true)}' : 'n/a',
             style: TextStyle(color: decoration.color),
           ),
         ),
@@ -277,9 +271,7 @@ class _RenderParagraphInfo extends StatelessWidget {
           iconColor: style.color,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
-            renderParagraph.text.style?.color != null
-                ? '#${colorToHexString(style.color!, withAlpha: true)}'
-                : 'n/a',
+            renderParagraph.text.style?.color != null ? '#${colorToHexString(style.color!, withAlpha: true)}' : 'n/a',
             style: TextStyle(
               color: style.color,
             ),
