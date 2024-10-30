@@ -211,6 +211,9 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get logout => 'Log Out';
 
   @override
+  String get logsCount => 'Logs count';
+
+  @override
   String get method => 'Method';
 
   @override

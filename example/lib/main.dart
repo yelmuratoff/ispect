@@ -75,7 +75,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('en');
+    const locale = Locale('ru');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -91,7 +91,7 @@ class App extends ConsumerWidget {
           SuccessLog.logKey: const Color(0xFF880E4F),
         },
         logIcons: {
-          TalkerLogType.route.key: Icons.router_rounded,
+          // TalkerLogType.route.key: Icons.router_rounded,
           SuccessLog.logKey: Icons.check_circle_rounded,
         },
       ),

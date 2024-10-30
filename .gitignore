@@ -29,3 +29,12 @@ migrate_working_dir/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+
+.env
+
+# Code generation
+**/*.g.dart
+**/*.gr.dart
+**/*.gen.dart
+**/*.freezed.dart
+**/*.select.dart

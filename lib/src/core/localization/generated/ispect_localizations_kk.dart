@@ -211,6 +211,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get logout => 'Шығу';
 
   @override
+  String get logsCount => 'Жазбалар саны';
+
+  @override
   String get method => 'Әдіс';
 
   @override

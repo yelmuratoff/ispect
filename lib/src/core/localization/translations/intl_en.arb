@@ -66,6 +66,7 @@
   "logItemCopied": "Log item is copied in clipboard",
   "login": "Login",
   "logout": "Log Out",
+  "logsCount": "Logs count",
   "method": "Method",
   "navigate": "Navigate",
   "notFound": "not found",

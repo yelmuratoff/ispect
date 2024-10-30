@@ -2,9 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/icons.dart';
+import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
+import 'package:ispect/src/features/talker/core/data/datasource/ai_remote_ds.dart';
+import 'package:ispect/src/features/talker/core/data/repositories/ai_repository.dart';
 import 'package:provider/provider.dart';
 
 /// `ISpectScopeModel` is a model class that holds the state of the ISpect scope.
@@ -90,11 +94,22 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
-        create: (_) => ISpectScopeModel()
-          ..setISpect = isISpectEnabled
-          ..setOptions(options)
-          ..setTheme(context, theme),
-        child: child,
+  Widget build(BuildContext context) => MultiBlocProvider(
+        providers: [
+          BlocProvider<LogDescriptionsCubit>(
+            create: (_) => LogDescriptionsCubit(
+              aiRepository: const AiRepository(
+                remoteDataSource: AiRemoteDataSource(),
+              ),
+            ),
+          ),
+        ],
+        child: ChangeNotifierProvider<ISpectScopeModel>(
+          create: (_) => ISpectScopeModel()
+            ..setISpect = isISpectEnabled
+            ..setOptions(options)
+            ..setTheme(context, theme),
+          child: child,
+        ),
       );
 }

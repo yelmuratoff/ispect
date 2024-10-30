@@ -493,6 +493,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Log Out'**
   String get logout;
 
+  /// No description provided for @logsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs count'**
+  String get logsCount;
+
   /// No description provided for @method.
   ///
   /// In en, this message translates to:

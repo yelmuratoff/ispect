@@ -2,14 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/talker/talker_view.dart' as view;
+import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
+import 'package:ispect/src/features/talker/presentation/pages/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// UI view for output of all Talker logs and errors
-class ISpectPage extends StatelessWidget {
+class ISpectPage extends StatefulWidget {
   const ISpectPage({
     required this.options,
     super.key,
@@ -36,11 +38,21 @@ class ISpectPage extends StatelessWidget {
   )? onJiraAuthorized;
 
   @override
+  State<ISpectPage> createState() => _ISpectPageState();
+}
+
+class _ISpectPageState extends State<ISpectPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) => _View(
         talker: ISpect.talker,
-        appBarTitle: appBarTitle,
-        options: options,
-        onJiraAuthorized: onJiraAuthorized,
+        appBarTitle: widget.appBarTitle,
+        options: widget.options,
+        onJiraAuthorized: widget.onJiraAuthorized,
       );
 }
 

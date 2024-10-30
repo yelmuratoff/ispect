@@ -36,7 +36,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
         title: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
-            'ISpect monitoring',
+            'ISpect Monitoring',
             style: context.ispectTheme.textTheme.titleMedium,
           ),
         ),
@@ -61,7 +61,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       key: title,
                     ),
                     icon: iSpect.theme.logIcons[title] ?? Icons.bug_report_rounded,
-                    subtitle: 'Logs count: ${logs.length}',
+                    subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,
                       logs,
