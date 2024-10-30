@@ -1,7 +1,11 @@
-part of '../pages/monitor/talker_monitor_page.dart';
+import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
-class _TalkerMonitorsCard extends StatelessWidget {
-  const _TalkerMonitorsCard({
+class TalkerMonitorsCard extends StatelessWidget {
+  const TalkerMonitorsCard({
     required this.logs,
     required this.title,
     required this.color,
@@ -37,7 +41,7 @@ class _TalkerMonitorsCard extends StatelessWidget {
                       Icon(
                         icon,
                         color: color,
-                        size: 20,
+                        size: 24,
                       ),
                       const Gap(10),
                       Flexible(
@@ -48,7 +52,7 @@ class _TalkerMonitorsCard extends StatelessWidget {
                               title,
                               style: TextStyle(
                                 color: color,
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

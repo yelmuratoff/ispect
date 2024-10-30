@@ -12,7 +12,7 @@ import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
-import 'package:ispect/src/features/talker/presentation/pages/monitor/talker_monitor_page.dart';
+import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_bottom_sheet.dart';
