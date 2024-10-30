@@ -55,7 +55,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.9.3
+  ispect: ^1.9.4-beta.1
 ```
 
 ### Add import package
@@ -92,19 +92,11 @@ final dio = Dio(
   ),
 );
 
-class ThemeManager extends StateNotifier<ThemeMode> {
-  ThemeManager() : super(ThemeMode.dark);
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  ThemeMode get themeMode => state;
-}
+final dummyDio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.escuelajs.co',
+  ),
+);
 
 void main() {
   final talker = TalkerFlutter.init();
@@ -122,10 +114,28 @@ void main() {
       ),
     ),
     talker: talker,
+    isPrintLoggingEnabled: true,
+    // isFlutterPrintEnabled: false,
+    // filters: [
+    //   'Handler: "onTap"',
+    //   'This exception was thrown because',
+    // ],
     onInitialized: () {
-      dio.interceptors.add(TalkerDioLogger(
-        talker: ISpectTalker.talker,
-      ));
+      dio.interceptors.add(
+        TalkerDioLogger(
+          talker: ISpect.talker,
+          settings: const TalkerDioLoggerSettings(
+              // errorFilter: (response) {
+              //   return (response.message?.contains('This exception was thrown because')) == false;
+              // },
+              ),
+        ),
+      );
+      dummyDio.interceptors.add(
+        TalkerDioLogger(
+          talker: ISpect.talker,
+        ),
+      );
     },
   );
 }
@@ -137,17 +147,59 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('ru');
+    const locale = Locale('en');
 
     return ISpectScopeWrapper(
+      // theme: const ISpectTheme(
+      //   lightBackgroundColor: Colors.white,
+      //   darkBackgroundColor: Colors.black,
+      //   lightCardColor: Color.fromARGB(255, 241, 240, 240),
+      //   darkCardColor: Color.fromARGB(255, 23, 23, 23),
+      //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
+      //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
+      // ),
+      theme: ISpectTheme(
+        logColors: {
+          SuccessLog.logKey: const Color(0xFF880E4F),
+        },
+        logIcons: {
+          TalkerLogType.route.key: Icons.router_rounded,
+          SuccessLog.logKey: Icons.check_circle_rounded,
+        },
+      ),
       options: ISpectOptions(
         locale: locale,
+        panelButtons: [
+          ISpectPanelButton(
+            icon: Icons.copy_rounded,
+            label: 'Token',
+            onTap: (context) {
+              debugPrint('Token copied');
+            },
+          ),
+          ISpectPanelButton(
+            icon: Icons.copy_rounded,
+            label: 'FCM token',
+            onTap: (context) {
+              debugPrint('FCM token copied');
+            },
+          ),
+        ],
+        panelItems: [
+          ISpectPanelItem(
+            icon: Icons.home,
+            enableBadge: false,
+            onTap: (context) {
+              debugPrint('Home');
+            },
+          ),
+        ],
         actionItems: [
           TalkerActionItem(
             title: 'Test',
             icon: Icons.account_tree_rounded,
-            onTap: (ispectContext) {
-              Navigator.of(ispectContext).push(
+            onTap: (context) {
+              Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const Scaffold(
                     body: Center(
@@ -164,13 +216,19 @@ class App extends ConsumerWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [
-          TalkerRouteObserver(talker),
+          ISpectNavigatorObserver(
+            isLogModals: false,
+          ),
         ],
         locale: locale,
         supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        localizationsDelegates: const [
           AppGeneratedLocalization.delegate,
-        ]),
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          ISpectGeneratedLocalization.delegate,
+        ],
         theme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
@@ -187,9 +245,21 @@ class App extends ConsumerWidget {
         builder: (context, child) {
           child = ISpectBuilder(
             navigatorKey: navigatorKey,
-            initialPosition: (0, 300),
+            initialPosition: (x: 0, y: 200),
+            // initialJiraData: (
+            //   apiToken:
+            //       'Token',
+            //   domain: 'example',
+            //   email: 'name.surname@example.com',
+            //   projectId: '00000',
+            //   projectKey: 'AAAA'
+            // ),
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
+            },
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
+              // debugPrint(
+              //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
             },
             child: child,
           );
@@ -209,20 +279,24 @@ class _Home extends ConsumerWidget {
     ref.watch(themeProvider.notifier);
     final iSpect = ISpect.read(context);
     return Scaffold(
+      appBar: AppBar(
+        title: Text(AppGeneratedLocalization.of(context).app_title),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(AppGeneratedLocalization.of(context).app_title),
             ElevatedButton(
               onPressed: () {
                 ref.read(themeProvider.notifier).toggleTheme();
-                // iSpect.setThemeMode(themeNotifier.themeMode);
               },
               child: const Text('Toggle theme'),
             ),
             ElevatedButton(
               onPressed: () {
+                ISpect.track('Toggle ISpect', parameters: {
+                  'isISpectEnabled': iSpect.isISpectEnabled,
+                });
                 iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),
@@ -251,21 +325,103 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
+                final formData = FormData();
+                formData.files.add(MapEntry(
+                  'file',
+                  MultipartFile.fromBytes(
+                    [1, 2, 3],
+                    filename: 'file.txt',
+                  ),
+                ));
+
+                dummyDio.post(
+                  '/api/v1/files/upload',
+                  data: formData,
+                );
+              },
+              child: const Text('Upload file to dummy server'),
+            ),
+            ElevatedButton(
+              onPressed: () {
                 throw Exception('Test exception');
               },
               child: const Text('Throw exception'),
             ),
             ElevatedButton(
-                onPressed: () {
-                  debugPrint('Send print message');
-                },
-                child: const Text('Send print message')),
+              onPressed: () {
+                debugPrint('Send print message');
+              },
+              child: const Text('Send print message'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const _SecondPage(),
+                  ),
+                );
+              },
+              child: const Text('Go to second page'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const _SecondPage(),
+                  ),
+                );
+              },
+              child: const Text('Replace with second page'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                ISpect.logTyped(SuccessLog('Success log'));
+              },
+              child: const Text('Success log'),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+class _SecondPage extends StatelessWidget {
+  const _SecondPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const _Home(),
+              ),
+            );
+          },
+          child: const Text('Go to Home'),
+        ),
+      ),
+    );
+  }
+}
+
+class ThemeManager extends StateNotifier<ThemeMode> {
+  ThemeManager() : super(ThemeMode.dark);
+
+  void toggleTheme() {
+    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  void setTheme(ThemeMode themeMode) {
+    state = themeMode;
+  }
+
+  ThemeMode get themeMode => state;
+}
+
 ```
 
 ### For change `ISpect` theme:
