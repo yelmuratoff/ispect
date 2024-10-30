@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/talker/presentation/pages/detailed_http_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
