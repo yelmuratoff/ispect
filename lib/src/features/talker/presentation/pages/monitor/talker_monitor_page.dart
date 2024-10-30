@@ -56,6 +56,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
           final warnings = logs.where((e) => e.logLevel == LogLevel.warning).toList();
           final goods = logs.where((e) => e.title == 'good').toList();
           final prints = logs.where((e) => e.title == 'print').toList();
+          final analytics = logs.where((e) => e.title == 'analytics').toList();
 
           final infos = logs.where((e) => e.logLevel == LogLevel.info).toList();
           final verboseDebug = logs
@@ -432,6 +433,26 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       context,
                       prints,
                       context.ispectL10n.talkerTypePrint,
+                    ),
+                  ),
+                ),
+              ],
+              if (analytics.isNotEmpty) ...[
+                const SliverToBoxAdapter(child: Gap(10)),
+                SliverToBoxAdapter(
+                  child: _TalkerMonitorsCard(
+                    logs: analytics,
+                    title: context.ispectL10n.talkerTypeAnalytics,
+                    color: iSpect.theme.getTypeColor(
+                      context,
+                      key: 'analytics',
+                    ),
+                    icon: iSpect.theme.logIcons['analytics'] ?? Icons.analytics_outlined,
+                    subtitle: context.ispectL10n.talkerTypeAnalyticsCount(prints.length),
+                    onTap: () => _openTypedLogsScreen(
+                      context,
+                      analytics,
+                      context.ispectL10n.talkerTypeAnalytics,
                     ),
                   ),
                 ),

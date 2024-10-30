@@ -165,7 +165,7 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                       ),
                       _LogKey(
                         '11. analytics',
-                        context.ispectL10n.printLogDesc,
+                        context.ispectL10n.analyticsLogDesc,
                         'analytics',
                       ),
                     ],
