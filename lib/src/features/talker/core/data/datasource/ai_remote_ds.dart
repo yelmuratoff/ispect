@@ -19,7 +19,9 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
         For example:
         "info" - An informative log.
         "route" - The navigation log between the screens. etc.
+        Use only this keys:
         Logs: ${payload.logKeys.join(', ')}.
+        Do not add another logs types.
 
         The response must be in JSON schema. Wihtout anything else. It is important.
         In the format:

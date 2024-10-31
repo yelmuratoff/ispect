@@ -16,9 +16,8 @@ class LogDescriptionsCubit extends Cubit<LogDescriptionsState> {
     required LogDescriptionPayload payload,
   }) async {
     try {
-      // if (state is! LogDescriptionsLoaded) {
       emit(const LogDescriptionsLoading());
-      // }
+
       final logDescriptions = await aiRepository.generateLogDescription(
         payload: payload,
       );

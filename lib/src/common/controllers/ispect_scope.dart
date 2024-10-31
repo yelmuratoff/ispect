@@ -5,10 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/talker/core/data/datasource/ai_remote_ds.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/core/data/repositories/ai_repository.dart';
 import 'package:provider/provider.dart';
 
@@ -60,6 +60,7 @@ class ISpectScopeModel with ChangeNotifier {
 
   void setOptions(ISpectOptions options) {
     _options = options;
+    ISpectGoogleAi.init(options.googleAiToken ?? '');
     notifyListeners();
   }
 
@@ -95,26 +96,21 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) => MultiBlocProvider(
-        providers: [
-          BlocProvider<LogDescriptionsCubit>(
-            create: (_) => LogDescriptionsCubit(
-              aiRepository: const AiRepository(
-                remoteDataSource: AiRemoteDataSource(),
-              ),
-            )..generateLogDescriptions(
-                payload: LogDescriptionPayload(
-                  logKeys: theme?.logColors.keys.toList() ?? [],
-                  locale: options.locale.languageCode,
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
+        create: (_) => ISpectScopeModel()
+          ..setISpect = isISpectEnabled
+          ..setOptions(options)
+          ..setTheme(context, theme),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<LogDescriptionsCubit>(
+              create: (_) => LogDescriptionsCubit(
+                aiRepository: const AiRepository(
+                  remoteDataSource: AiRemoteDataSource(),
                 ),
               ),
-          ),
-        ],
-        child: ChangeNotifierProvider<ISpectScopeModel>(
-          create: (_) => ISpectScopeModel()
-            ..setISpect = isISpectEnabled
-            ..setOptions(options)
-            ..setTheme(context, theme),
+            ),
+          ],
           child: child,
         ),
       );

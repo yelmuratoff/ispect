@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
+import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/presentation/pages/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -43,6 +46,13 @@ class _ISpectPageState extends State<ISpectPage> {
   @override
   void initState() {
     super.initState();
+
+    BlocProvider.of<LogDescriptionsCubit>(context).generateLogDescriptions(
+      payload: LogDescriptionPayload(
+        logKeys: ISpect.read(context).theme.logColors.keys.toList(),
+        locale: ISpect.read(context).options.locale.languageCode,
+      ),
+    );
   }
 
   @override

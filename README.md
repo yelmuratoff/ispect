@@ -47,6 +47,7 @@ Your feedback is highly valued as it will help shape future updates and ensure t
    - Device and app info
 - ✅ Feedback
 - ✅ Performance tracker
+- ✅ AI helper
 
 ## 📌 Getting Started
 Follow these steps to use this package
@@ -55,7 +56,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.9.4-beta.5
+  ispect: ^1.9.4-beta.6
 ```
 
 ### Add import package

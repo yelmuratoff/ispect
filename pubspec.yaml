@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 1.9.4-beta.5
+version: 1.9.4-beta.6
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -44,14 +44,11 @@ dependencies:
   dio: ^5.5.0
   flutter_bloc: ^8.1.6
   google_generative_ai: ^0.4.6
-  envied: ^0.5.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   pyramid_lint: ^2.0.0
-  envied_generator: ^0.5.4
-  build_runner: ^2.4.11
 
 flutter:
   generate: true
