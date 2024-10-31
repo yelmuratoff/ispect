@@ -60,17 +60,21 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
     try {
       final prompt = '''Generate a detailed report on the monitoring logs, keep order.
         The report should be more detailed specifically for the developer.
+        Design everything beautifully and clearly, using bullet points where it is needed. You can use emojis, MD format.
         Take the latest logs where there are errors as a basis and describe exactly how the failure occurred.
-        Also, give some statistics on logs, for example, how many times a particular type of log occurs.
+        Also, give some statistics on logs, for example, how many times a particular type of log occurs, etc.
         Which is the most popular one. Which failure occurs most often. etc.
+        If the logs are repeated, then they need to be combined into one item.
+        It is not necessary to give a list of all logs, generalize. You are a reporter and a sammariser, so you need to generalize more and give valuable information.
+        If these are different actions of the same log, then they need to be logically explained.
+        If it is an 'http error', then add the url and the error code. Try to describe what the problem was.
+        If there is an 'analytics' log type, then do an analysis based on them. For example, how many users visited the page.
+        The report should be useful for both the developer and the analyst.
+        It is not necessary to show incomprehensible symbols and words in errors, or something that does not give a clear picture. Only facts and useful information.
         Language of report - ${payload.locale}.
-        Response example in JSON schema:
-        {
-        "report": "Sample report."
-        }
         ''';
 
-      final file = await generateFile(payload.logs);
+      final file = await generateFile(payload.logsText);
 
       final bytes = file.readAsBytesSync();
 
@@ -82,11 +86,12 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
         ),
       ];
 
-      final response = await ISpectGoogleAi.instance.model.generateContent(content);
+      final response = await ISpectGoogleAi.instance.model.generateContent(
+        content,
+        generationConfig: GenerationConfig(responseMimeType: 'text/plain'),
+      );
 
-      final result = jsonDecode(response.text?.trim() ?? '{}') as Map<String, dynamic>;
-
-      final report = result['report'] as String?;
+      final report = response.text;
 
       return report;
     } catch (e) {

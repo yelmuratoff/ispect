@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/talker_data.dart';
 import 'package:ispect/src/common/widgets/ai_loader/ai_loader.dart';
+import 'package:ispect/src/common/widgets/ai_loader/star_painter.dart';
 import 'package:ispect/src/features/talker/bloc/ai_reporter/ai_reporter_cubit.dart';
 import 'package:ispect/src/features/talker/core/data/models/log_report.dart';
 import 'package:share_plus/share_plus.dart';
@@ -23,7 +26,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
     super.initState();
     BlocProvider.of<AiReporterCubit>(context).generateReport(
       payload: AiLogsPayload(
-        logs: ISpect.talker.history.map((e) => e.generateText()).toList().toString(),
+        logsText: ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
         locale: ISpect.read(context).options.locale.languageCode,
       ),
     );
@@ -36,7 +39,19 @@ class _AiReporterPageState extends State<AiReporterPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text('AI Reporter'),
+          title: Row(
+            children: [
+              CustomPaint(
+                painter: AiLoaderPainter(),
+                child: const SizedBox(width: 32, height: 32),
+              ),
+              const Gap(12),
+              const Text(
+                'AI Reporter',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
           actions: [
             if (_report != null)
               IconButton(
@@ -61,18 +76,6 @@ class _AiReporterPageState extends State<AiReporterPage> {
                       });
                     }
                   },
-                  // builder: (_, __) => ColumnBuilder(
-                  //   itemCount: ISpect.talker.history.length,
-                  //   itemBuilder: (_, index) {
-                  //     final item = ISpect.talker.history[index];
-                  //     return Card(
-                  //       child: ListTile(
-                  //         title: Text(item.title ?? ''),
-                  //         subtitle: Text(item.generateText()),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
                   builder: (_, state) {
                     if (state is AiReporterLoading) {
                       return const Padding(
@@ -80,9 +83,56 @@ class _AiReporterPageState extends State<AiReporterPage> {
                         child: AiLoaderWidget(),
                       );
                     } else if (state is AiReporterLoaded) {
-                      return MarkdownBody(data: state.report);
+                      return Column(
+                        children: [
+                          MarkdownBody(data: state.report),
+                          const Gap(16),
+                          ElevatedButton(
+                            onPressed: () {
+                              BlocProvider.of<AiReporterCubit>(context).generateReport(
+                                payload: AiLogsPayload(
+                                  logsText:
+                                      ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
+                                  locale: ISpect.read(context).options.locale.languageCode,
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.refresh),
+                                const Gap(8),
+                                Text(context.ispectL10n.retry),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
                     } else if (state is AiReporterError) {
-                      return Text(state.message);
+                      return Column(
+                        children: [
+                          Text(state.message),
+                          ElevatedButton(
+                            onPressed: () {
+                              BlocProvider.of<AiReporterCubit>(context).generateReport(
+                                payload: AiLogsPayload(
+                                  logsText:
+                                      ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
+                                  locale: ISpect.read(context).options.locale.languageCode,
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.refresh),
+                                const Gap(8),
+                                Text(context.ispectL10n.retry),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
                     } else {
                       return const SizedBox.shrink();
                     }

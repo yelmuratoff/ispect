@@ -99,7 +99,7 @@ class App extends ConsumerWidget {
         locale: locale,
         // Use it if you need to use Google AI helper for generating logs description,
         // and logs report.
-
+        googleAiToken: 'AIzaSyA9ogrpJkv5ddCfYTiKtlKQWJ6p-BCWW0k',
         panelButtons: [
           ISpectPanelButton(
             icon: Icons.copy_rounded,

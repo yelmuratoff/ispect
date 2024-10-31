@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/ai_loader/ai_loader.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 
@@ -27,13 +28,9 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                 builder: (context, state) {
                   if (state is LogDescriptionsLoading) {
                     return const SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 32),
-                          child: CircularProgressIndicator(
-                            strokeCap: StrokeCap.round,
-                          ),
-                        ),
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 64),
+                        child: AiLoaderWidget(),
                       ),
                     );
                   } else if (state is LogDescriptionsLoaded) {
