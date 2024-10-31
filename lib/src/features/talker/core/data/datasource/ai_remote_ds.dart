@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
+import 'package:ispect/src/common/utils/date_utils.dart';
 import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/core/data/models/log_report.dart';
-import 'package:path_provider/path_provider.dart';
 
 part 'interface.dart';
 
@@ -98,13 +97,4 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
       rethrow;
     }
   }
-}
-
-Future<File> generateFile(String logs) async {
-  final dir = await getTemporaryDirectory();
-  final dirPath = dir.path;
-  final fmtDate = DateTime.now().toString().replaceAll(':', ' ');
-  final file = await File('$dirPath/talker_logs_$fmtDate.txt').create(recursive: true);
-  await file.writeAsString(logs);
-  return file;
 }

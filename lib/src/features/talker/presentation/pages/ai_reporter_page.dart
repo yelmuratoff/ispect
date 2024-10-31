@@ -5,6 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/talker_data.dart';
+import 'package:ispect/src/common/utils/date_utils.dart';
+import 'package:ispect/src/common/utils/history.dart';
 import 'package:ispect/src/common/widgets/ai_loader/ai_loader.dart';
 import 'package:ispect/src/common/widgets/ai_loader/star_painter.dart';
 import 'package:ispect/src/features/talker/bloc/ai_reporter/ai_reporter_cubit.dart';
@@ -43,7 +45,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
             children: [
               CustomPaint(
                 painter: AiLoaderPainter(),
-                child: const SizedBox(width: 32, height: 32),
+                child: const SizedBox(width: 24, height: 24),
               ),
               const Gap(12),
               const Text(
@@ -53,12 +55,14 @@ class _AiReporterPageState extends State<AiReporterPage> {
             ],
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.downloading_rounded),
+              onPressed: _downloadLogs,
+            ),
             if (_report != null)
               IconButton(
                 icon: const Icon(Icons.share_outlined),
-                onPressed: () {
-                  Share.share(_report!);
-                },
+                onPressed: _downloadReport,
               ),
           ],
         ),
@@ -143,4 +147,22 @@ class _AiReporterPageState extends State<AiReporterPage> {
           ),
         ),
       );
+
+  Future<void> _downloadLogs() async {
+    final logs = '''AI Reporter\nLogs:\n${ISpect.talker.history.formattedText()}}''';
+    final file = await generateFile(logs, name: 'ai-reporter-logs');
+
+    final xFile = XFile(file.path, name: file.path.split('/').last);
+
+    await Share.shareXFiles([xFile]);
+  }
+
+  Future<void> _downloadReport() async {
+    final report = '''AI Reporter\nReport:\n$_report''';
+    final file = await generateFile(report, name: 'ai-reporter-report');
+
+    final xFile = XFile(file.path, name: file.path.split('/').last);
+
+    await Share.shareXFiles([xFile]);
+  }
 }
