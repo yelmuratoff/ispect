@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/core/domain/ai_repository.dart';
 import 'package:meta/meta.dart';
