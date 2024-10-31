@@ -4,4 +4,8 @@ abstract interface class IAiRemoteDataSource {
   Future<List<LogDescriptionItem>> generateLogDescription({
     required LogDescriptionPayload payload,
   });
+
+  Future<String?> generateReport({
+    required AiLogsPayload payload,
+  });
 }

@@ -169,6 +169,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get fullURL => 'Полная ссылка';
 
   @override
+  String get generateReport => 'Сгенерировать отчет';
+
+  @override
   String get goToLogger => 'Перейти к журналу';
 
   @override

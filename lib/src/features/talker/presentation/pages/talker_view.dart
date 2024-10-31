@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/history.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
@@ -14,6 +15,7 @@ import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
+import 'package:ispect/src/features/talker/presentation/pages/ai_reporter_page.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
@@ -231,6 +233,12 @@ class _TalkerViewState extends State<TalkerView> {
             title: 'Jira',
             icon: FontAwesomeIcons.jira,
           ),
+          if (ISpectGoogleAi.instance.isAvailable)
+            TalkerActionItem(
+              onTap: (_) => _generateReport(),
+              title: context.ispectL10n.generateReport,
+              icon: FontAwesomeIcons.microchip,
+            ),
           ...widget.options.actionItems,
         ],
       ),
@@ -256,6 +264,17 @@ class _TalkerViewState extends State<TalkerView> {
   void _copyTalkerDataItemText(TalkerData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
+  }
+
+  void _generateReport() {
+    Navigator.of(context).push(
+      MaterialPageRoute<Widget>(
+        builder: (_) => const AiReporterPage(),
+        settings: const RouteSettings(
+          name: 'AiReporterPage',
+        ),
+      ),
+    );
   }
 
   // ignore: unused_element

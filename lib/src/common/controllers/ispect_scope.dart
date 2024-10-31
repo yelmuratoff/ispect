@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/icons.dart';
+import 'package:ispect/src/features/talker/bloc/ai_reporter/ai_reporter_cubit.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/talker/core/data/datasource/ai_remote_ds.dart';
 import 'package:ispect/src/features/talker/core/data/repositories/ai_repository.dart';
@@ -100,6 +101,13 @@ class ISpectScopeWrapper extends StatelessWidget {
           providers: [
             BlocProvider<LogDescriptionsCubit>(
               create: (_) => LogDescriptionsCubit(
+                aiRepository: const AiRepository(
+                  remoteDataSource: AiRemoteDataSource(),
+                ),
+              ),
+            ),
+            BlocProvider<AiReporterCubit>(
+              create: (_) => AiReporterCubit(
                 aiRepository: const AiRepository(
                   remoteDataSource: AiRemoteDataSource(),
                 ),

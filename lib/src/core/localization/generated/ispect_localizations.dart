@@ -409,6 +409,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Full URL'**
   String get fullURL;
 
+  /// No description provided for @generateReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a report'**
+  String get generateReport;
+
   /// No description provided for @goToLogger.
   ///
   /// In en, this message translates to:

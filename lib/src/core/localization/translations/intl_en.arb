@@ -52,6 +52,7 @@
   "finished": "Finished",
   "fix": "Report",
   "fullURL": "Full URL",
+  "generateReport": "Generate a report",
   "goToLogger": "Go to logger",
   "goodLogDesc": "Successful action log",
   "headers": "Headers",

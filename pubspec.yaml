@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 1.9.4-beta.8
+version: 1.9.4-beta.9
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -35,6 +35,7 @@ dependencies:
   gap: ^3.0.1
   auto_size_text: ^3.0.0
   font_awesome_flutter: ^10.7.0
+  flutter_markdown: ^0.7.4+1
 
   # Lints
   custom_lint: ^0.6.4
@@ -52,3 +53,6 @@ dev_dependencies:
 
 flutter:
   generate: true
+  assets:
+    - assets/icons/
+    - assets/lottie/

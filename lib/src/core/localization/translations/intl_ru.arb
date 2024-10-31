@@ -52,6 +52,7 @@
   "finished": "Закончено",
   "fix": "Сообщить",
   "fullURL": "Полная ссылка",
+  "generateReport": "Сгенерировать отчет",
   "goToLogger": "Перейти к журналу",
   "goodLogDesc": "Лог успешного действия",
   "headers": "Headers",

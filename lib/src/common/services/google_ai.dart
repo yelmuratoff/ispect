@@ -2,21 +2,30 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 
 class ISpectGoogleAi {
   // Private constructor
-  // ignore: prefer_const_constructor_declarations
   ISpectGoogleAi._internal({required this.apiKey});
 
+  static ISpectGoogleAi? _instance;
   final String apiKey;
 
-  static late final ISpectGoogleAi instance;
-
-  // Initialization method
-  static void init(String apiKey) {
-    instance = ISpectGoogleAi._internal(apiKey: apiKey);
+  // Singleton instance getter
+  static ISpectGoogleAi get instance {
+    if (_instance == null) {
+      throw StateError('ISpectGoogleAi is not initialized. Call init() first.');
+    }
+    return _instance!;
   }
 
-  bool get isAvailable => instance.apiKey.isNotEmpty;
+  // Initialization method with check to prevent reinitialization
+  static void init(String key) {
+    if (_instance != null) {
+      return;
+    }
+    _instance = ISpectGoogleAi._internal(apiKey: key);
+  }
 
-  // Lazy initialization of model to ensure instance is initialized first
+  bool get isAvailable => apiKey.isNotEmpty;
+
+  // Lazy initialization of model
   late final GenerativeModel model = GenerativeModel(
     model: 'gemini-1.5-flash-latest',
     apiKey: apiKey,

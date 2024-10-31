@@ -169,6 +169,9 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get fullURL => 'Full URL';
 
   @override
+  String get generateReport => 'Generate a report';
+
+  @override
   String get goToLogger => 'Go to logger';
 
   @override

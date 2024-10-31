@@ -169,6 +169,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get fullURL => 'Толық сілтеме';
 
   @override
+  String get generateReport => 'AI eсеп жасау';
+
+  @override
   String get goToLogger => 'Журналға өту';
 
   @override

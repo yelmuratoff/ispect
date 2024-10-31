@@ -1,4 +1,4 @@
-## 1.9.4-beta.8
+## 1.9.4-beta.9
 - Added new method for logging: `ISpect.track`. This method allows you to log custom events for analytics *(Amplitude, Firebase, etc.)*.
 - `ISpectTalker` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  
 Example: `ISpectTalker.debug('Hello, ISpect!')` -> `ISpect.debug('Hello, ISpect!')`.
