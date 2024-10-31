@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/talker/presentation/pages/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';

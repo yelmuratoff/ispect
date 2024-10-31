@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
@@ -15,8 +14,6 @@ import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
-import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
@@ -78,14 +75,6 @@ class _TalkerViewState extends State<TalkerView> {
   void initState() {
     super.initState();
     _controller.toggleExpandedLogs();
-    unawaited(
-      BlocProvider.of<LogDescriptionsCubit>(context).generateLogDescriptions(
-        payload: LogDescriptionPayload(
-          logKeys: ISpect.read(context).theme.logIcons.keys.toList(),
-          locale: ISpect.read(context).options.locale.languageCode,
-        ),
-      ),
-    );
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/talker/core/data/datasource/ai_remote_ds.dart';
+import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/core/data/repositories/ai_repository.dart';
 import 'package:provider/provider.dart';
 
@@ -101,7 +102,12 @@ class ISpectScopeWrapper extends StatelessWidget {
               aiRepository: const AiRepository(
                 remoteDataSource: AiRemoteDataSource(),
               ),
-            ),
+            )..generateLogDescriptions(
+                payload: LogDescriptionPayload(
+                  logKeys: theme?.logColors.keys.toList() ?? [],
+                  locale: options.locale.languageCode,
+                ),
+              ),
           ),
         ],
         child: ChangeNotifierProvider<ISpectScopeModel>(
