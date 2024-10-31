@@ -43,7 +43,16 @@ class ISpectTheme {
 
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
-    return context.isDarkMode ? logColors[key] ?? Colors.grey : logColors[key] ?? Colors.grey;
+    return colors(context)[key] ?? Colors.grey;
+  }
+
+  Map<String, Color> colors(BuildContext context) {
+    final mergedColors = {
+      ...logColors,
+      ...context.isDarkMode ? darkTypeColors : lightTypeColors,
+    };
+
+    return mergedColors;
   }
 
   static const lightTypeColors = {
@@ -57,7 +66,7 @@ class ISpectTheme {
     'exception': Color.fromARGB(255, 211, 47, 47),
     'good': Color.fromARGB(255, 56, 142, 60),
     'print': Color.fromARGB(255, 25, 118, 210),
-    'analytics': Color.fromARGB(255, 255, 255, 0),
+    'analytics': Color.fromARGB(255, 182, 177, 25),
 
     /// Http section
     'http-error': Color.fromARGB(255, 192, 38, 38),
@@ -90,7 +99,7 @@ class ISpectTheme {
     'exception': Color.fromARGB(255, 239, 83, 80),
     'good': Color.fromARGB(255, 120, 230, 129),
     'print': Color.fromARGB(255, 66, 165, 245),
-    'analytics': Color.fromARGB(255, 182, 177, 25),
+    'analytics': Color.fromARGB(255, 255, 255, 0),
 
     /// Http section
     'http-error': Color.fromARGB(255, 239, 83, 80),

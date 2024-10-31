@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
@@ -64,13 +63,9 @@ class ISpectScopeModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void setTheme(BuildContext context, ISpectTheme? theme) {
+  void setTheme(ISpectTheme? theme) {
     if (theme != null) {
       _theme = theme.copyWith(
-        logColors: {
-          ...context.isDarkMode ? ISpectTheme.lightTypeColors : ISpectTheme.darkTypeColors,
-          ...theme.logColors,
-        },
         logIcons: {
           ...typeIcons,
           ...theme.logIcons,
@@ -100,7 +95,7 @@ class ISpectScopeWrapper extends StatelessWidget {
         create: (_) => ISpectScopeModel()
           ..setISpect = isISpectEnabled
           ..setOptions(options)
-          ..setTheme(context, theme),
+          ..setTheme(theme),
         child: MultiBlocProvider(
           providers: [
             BlocProvider<LogDescriptionsCubit>(

@@ -47,12 +47,14 @@ class _ISpectPageState extends State<ISpectPage> {
   void initState() {
     super.initState();
 
-    BlocProvider.of<LogDescriptionsCubit>(context).generateLogDescriptions(
-      payload: LogDescriptionPayload(
-        logKeys: ISpect.read(context).theme.logColors.keys.toList(),
-        locale: ISpect.read(context).options.locale.languageCode,
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      BlocProvider.of<LogDescriptionsCubit>(context).generateLogDescriptions(
+        payload: LogDescriptionPayload(
+          logKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+          locale: ISpect.read(context).options.locale.languageCode,
+        ),
+      );
+    });
   }
 
   @override
