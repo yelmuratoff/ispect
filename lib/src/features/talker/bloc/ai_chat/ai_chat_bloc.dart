@@ -1,0 +1,67 @@
+import 'package:bloc/bloc.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:ispect/src/common/services/google_ai.dart';
+import 'package:ispect/src/common/utils/date_utils.dart';
+import 'package:ispect/src/common/utils/history.dart';
+import 'package:ispect/src/features/talker/core/data/models/chat_message.dart';
+import 'package:ispect/src/features/talker/core/domain/ai_repository.dart';
+import 'package:meta/meta.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
+part 'ai_chat_event.dart';
+part 'ai_chat_state.dart';
+
+class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
+  AiChatBloc({
+    required this.aiRepository,
+  }) : super(const AiChatInitial()) {
+    on<AiChatEvent>(
+      (event, emit) => switch (event) {
+        SendMessage() => _sendMessage(event, emit),
+        InitChat() => _onInitChat(event, emit),
+      },
+    );
+  }
+
+  late ChatSession chatSession;
+
+  final IAiRepository aiRepository;
+
+  Future<void> _sendMessage(SendMessage event, Emitter<AiChatState> emit) async {
+    try {
+      emit(const AiChatLoading());
+      final response = await chatSession.sendMessage(Content.text(event.message.message));
+      emit(
+        AiChatReceived(
+          message: AIMessage.fromResponse(
+            response.hashCode ^ DateTime.now().hashCode,
+            response.text ?? '',
+            DateTime.now(),
+          ),
+        ),
+      );
+    } catch (e) {
+      emit(AiChatError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onInitChat(InitChat event, Emitter<AiChatState> emit) async {
+    emit(const AiChatLoading());
+    final file = await generateFile(event.logs.formattedText());
+
+    final bytes = file.readAsBytesSync();
+    chatSession = ISpectGoogleAi.instance.model.startChat(
+      generationConfig: GenerationConfig(),
+      history: [
+        Content.text(
+          'Hi. I will send you requests that relate to logs, which I will send below. You are my assistant for log monitoring. You can answer thematically, like a regular AI.',
+        ),
+        Content.data(
+          'text/plain',
+          bytes,
+        ),
+      ],
+    );
+    emit(AiChatReceived(message: AIMessage.initial()));
+  }
+}

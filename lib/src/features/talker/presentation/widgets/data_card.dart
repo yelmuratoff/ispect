@@ -258,7 +258,7 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
   }
 
   String? get _errorMessage {
-    var txt = widget.data.exception?.toString() ?? widget.data.exception?.toString();
+    var txt = widget.data.exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';

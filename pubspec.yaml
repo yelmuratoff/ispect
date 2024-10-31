@@ -38,7 +38,7 @@ dependencies:
   flutter_markdown: ^0.7.4+1
 
   # Lints
-  custom_lint: ^0.6.4
+  # custom_lint: ^0.6.4
 
   # Others
   provider: ^6.1.2
@@ -49,7 +49,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pyramid_lint: ^2.0.0
+  # pyramid_lint: ^2.0.0
 
 flutter:
   generate: true
