@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -11,7 +10,6 @@ import 'package:ispect/src/common/widgets/ai_loader/star_painter.dart';
 import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
 import 'package:ispect/src/features/talker/presentation/pages/ai_chat_page.dart';
-import 'package:ispect/src/features/talker/presentation/pages/ai_reporter_page.dart';
 import 'package:ispect/src/features/talker/presentation/pages/talker_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -95,33 +93,35 @@ class _View extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: ISpect.read(context).theme.backgroundColor(context),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: context.ispectTheme.cardColor,
-          shape: RoundedRectangleBorder(
-            side: BorderSide(color: context.ispectTheme.dividerColor),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-          ),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const AiChatPage(),
-              ),
-            );
-          },
-          label: Row(
-            children: [
-              CustomPaint(
-                painter: AiLoaderPainter(),
-                child: const SizedBox(width: 24, height: 24),
-              ),
-              const Gap(12),
-              const Text(
-                'AI Chat',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
+        floatingActionButton: (options.googleAiToken != null)
+            ? FloatingActionButton.extended(
+                backgroundColor: context.ispectTheme.cardColor,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: context.ispectTheme.dividerColor),
+                  borderRadius: const BorderRadius.all(Radius.circular(24)),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AiChatPage(),
+                    ),
+                  );
+                },
+                label: Row(
+                  children: [
+                    CustomPaint(
+                      painter: AiLoaderPainter(),
+                      child: const SizedBox(width: 24, height: 24),
+                    ),
+                    const Gap(12),
+                    const Text(
+                      'AI Chat',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              )
+            : null,
         body: view.TalkerView(
           talker: talker,
           appBarTitle: appBarTitle,

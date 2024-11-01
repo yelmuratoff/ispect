@@ -27,7 +27,7 @@ class ISpectGoogleAi {
 
   // Lazy initialization of model
   late final GenerativeModel model = GenerativeModel(
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-1.5-flash-8b',
     apiKey: apiKey,
     systemInstruction: Content.system('Your name is ISpect. You are a monitoring system.'),
     generationConfig: GenerationConfig(responseMimeType: 'application/json'),
