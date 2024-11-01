@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/date_utils.dart';
