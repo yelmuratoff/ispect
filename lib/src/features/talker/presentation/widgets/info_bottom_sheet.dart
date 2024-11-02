@@ -5,7 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/ai_loader/ai_loader.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
-import 'package:ispect/src/features/talker/bloc/log_descriptions/log_descriptions_cubit.dart';
+import 'package:ispect/src/features/ai/bloc/log_descriptions/log_descriptions_cubit.dart';
 
 class ISpectLogsInfoBottomSheet extends StatelessWidget {
   const ISpectLogsInfoBottomSheet({super.key});
@@ -20,7 +20,8 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.6,
         ),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16)
+              .copyWith(bottom: 16, top: 8),
           child: CustomScrollView(
             primary: false,
             slivers: [
@@ -99,7 +100,8 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: ' ${context.ispectL10n.talkerTypeHttp}.',
+                                      text:
+                                          ' ${context.ispectL10n.talkerTypeHttp}.',
                                       style: TextStyle(
                                         color: iSpect.theme.getTypeColor(
                                           context,
@@ -110,7 +112,8 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                                 TextSpan(
-                                  text: '\n${context.ispectL10n.otherLogsForDevelopers}.',
+                                  text:
+                                      '\n${context.ispectL10n.otherLogsForDevelopers}.',
                                 ),
                               ],
                             ),

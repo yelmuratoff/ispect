@@ -1,5 +1,5 @@
-import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_report.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_description.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_report.dart';
 
 abstract interface class IAiRepository {
   Future<List<LogDescriptionItem>> generateLogDescription({

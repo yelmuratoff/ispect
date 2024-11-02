@@ -3,8 +3,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/date_utils.dart';
 import 'package:ispect/src/common/utils/history.dart';
-import 'package:ispect/src/features/talker/core/data/models/chat_message.dart';
-import 'package:ispect/src/features/talker/core/domain/ai_repository.dart';
+import 'package:ispect/src/features/ai/core/data/models/chat_message.dart';
+import 'package:ispect/src/features/ai/core/domain/ai_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
@@ -27,7 +27,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   final IAiRepository aiRepository;
 
-  Future<void> _sendMessage(SendMessage event, Emitter<AiChatState> emit) async {
+  Future<void> _sendMessage(
+    SendMessage event,
+    Emitter<AiChatState> emit,
+  ) async {
     try {
       emit(const AiChatLoading());
       final response = await chatSession.sendMessage(Content.text(event.message.message));

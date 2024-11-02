@@ -9,7 +9,8 @@ Future<File> generateFile(
   final dir = await getTemporaryDirectory();
   final dirPath = dir.path;
   final fmtDate = DateTime.now().toString().replaceAll(':', '-');
-  final file = await File('$dirPath/$name-$fmtDate.txt').create(recursive: true);
+  final file =
+      await File('$dirPath/$name-$fmtDate.txt').create(recursive: true);
   await file.writeAsString(logs);
   return file;
 }

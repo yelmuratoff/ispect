@@ -208,7 +208,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get issueCreated => 'Задача успешно создана';
 
   @override
-  String get jiraInstruction => '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
+  String get jiraInstruction =>
+      '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
   String get logItemCopied => 'Запись скопирована в буфер обмена';
@@ -232,7 +233,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get notFound => 'не найдена';
 
   @override
-  String get otherLogsForDevelopers => 'Другие логи уже используют разработчики';
+  String get otherLogsForDevelopers =>
+      'Другие логи уже используют разработчики';
 
   @override
   String get pageNotFound => 'Ой, страница по этому пути';
@@ -250,7 +252,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Пожалуйста, авторизуйтесь в Jira';
 
   @override
-  String get pleaseCheckAuthCred => 'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+  String get pleaseCheckAuthCred =>
+      'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
 
   @override
   String get pleaseSelectYourProject => 'Теперь, пожалуйста выберите проект';
@@ -479,7 +482,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'Для тестировщиков будет полезно знать про эти логи';
+  String get testerLogDesc =>
+      'Для тестировщиков будет полезно знать про эти логи';
 
   @override
   String totalFilesCount(Object number) {

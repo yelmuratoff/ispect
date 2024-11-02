@@ -10,12 +10,12 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/history.dart';
+import 'package:ispect/src/features/ai/presentation/pages/ai_reporter_page.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
-import 'package:ispect/src/features/talker/presentation/pages/ai_reporter_page.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
@@ -97,7 +97,8 @@ class _TalkerViewState extends State<TalkerView> {
         builder: (_, __) => TalkerBuilder(
           talker: widget.talker,
           builder: (context, data) {
-            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
+            final filtredElements =
+                data.where((e) => _controller.filter.filter(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -133,7 +134,8 @@ class _TalkerViewState extends State<TalkerView> {
                 SliverList.separated(
                   itemCount: filtredElements.length,
                   separatorBuilder: (_, __) => Divider(
-                    color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                    color: iSpect.theme.dividerColor(context) ??
+                        context.ispectTheme.dividerColor,
                     thickness: 1,
                   ),
                   itemBuilder: (context, index) {
@@ -176,7 +178,8 @@ class _TalkerViewState extends State<TalkerView> {
     List<TalkerData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[
+        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
@@ -205,8 +208,12 @@ class _TalkerViewState extends State<TalkerView> {
           ),
           TalkerActionItem(
             onTap: (_) => _toggleLogsExpanded(),
-            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs
+                ? context.ispectL10n.collapseLogs
+                : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: (_) => _cleanHistory(),
@@ -303,7 +310,8 @@ class _TalkerViewState extends State<TalkerView> {
               ISpect.good(
                 '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
               );
-              widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
+              widget.onJiraAuthorized
+                  ?.call(domain, email, apiToken, projectId, projectKey);
             },
           ),
           settings: RouteSettings(

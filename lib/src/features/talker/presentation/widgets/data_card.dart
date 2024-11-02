@@ -78,7 +78,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                         Row(
                           children: [
                             Icon(
-                              iSpect.theme.logIcons[widget.data.title] ?? Icons.bug_report_outlined,
+                              iSpect.theme.logIcons[widget.data.title] ??
+                                  Icons.bug_report_outlined,
                               color: widget.color,
                               size: 20,
                             ),
@@ -142,7 +143,8 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => DetailedHTTPPage(data: widget.data),
+                              builder: (_) =>
+                                  DetailedHTTPPage(data: widget.data),
                               settings: RouteSettings(
                                 name: 'DetailedHTTPPage',
                                 arguments: widget.data,
@@ -158,14 +160,19 @@ class _TalkerDataCardState extends State<TalkerDataCards> {
               if (_expanded)
                 Container(
                   width: double.infinity,
-                  margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
-                  padding: _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
+                  margin: _stackTrace != null
+                      ? const EdgeInsets.only(top: 8)
+                      : null,
+                  padding: _stackTrace != null
+                      ? const EdgeInsets.all(6)
+                      : EdgeInsets.zero,
                   decoration: _stackTrace != null
                       ? BoxDecoration(
                           border: Border.fromBorderSide(
                             BorderSide(color: widget.color),
                           ),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
                         )
                       : null,
                   child: Column(

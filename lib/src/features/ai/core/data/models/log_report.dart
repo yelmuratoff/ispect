@@ -11,7 +11,8 @@ class AiLogsPayload {
   final List<String> possibleKeys;
   final DateTime now;
 
-  String text() => (logsText.length > 5000) ? '${logsText.substring(0, 5000)}...' : logsText;
+  String text() =>
+      (logsText.length > 5000) ? '${logsText.substring(0, 5000)}...' : logsText;
 
   Map<String, dynamic> toJson() => {
         'logs': logsText,

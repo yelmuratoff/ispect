@@ -1,7 +1,7 @@
-import 'package:ispect/src/features/talker/core/data/datasource/ai_remote_ds.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_report.dart';
-import 'package:ispect/src/features/talker/core/domain/ai_repository.dart';
+import 'package:ispect/src/features/ai/core/data/datasource/ai_remote_ds.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_description.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_report.dart';
+import 'package:ispect/src/features/ai/core/domain/ai_repository.dart';
 
 final class AiRepository implements IAiRepository {
   const AiRepository({

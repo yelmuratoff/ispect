@@ -41,7 +41,9 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              isLogsExpanded
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),

@@ -25,7 +25,8 @@ final class AIMessage extends ChatMessage {
     required super.createdAt,
   });
 
-  factory AIMessage.fromResponse(int id, String message, DateTime createdAt) => AIMessage(
+  factory AIMessage.fromResponse(int id, String message, DateTime createdAt) =>
+      AIMessage(
         id: id,
         message: message,
         createdAt: createdAt,

@@ -6,8 +6,8 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/ai_loader/ai_loader.dart';
 import 'package:ispect/src/common/widgets/ai_loader/star_painter.dart';
-import 'package:ispect/src/features/talker/bloc/ai_chat/ai_chat_bloc.dart';
-import 'package:ispect/src/features/talker/core/data/models/chat_message.dart';
+import 'package:ispect/src/features/ai/bloc/ai_chat/ai_chat_bloc.dart';
+import 'package:ispect/src/features/ai/core/data/models/chat_message.dart';
 
 class AiChatPage extends StatefulWidget {
   const AiChatPage({super.key});
@@ -28,7 +28,8 @@ class _AiChatPageState extends State<AiChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       BlocProvider.of<AiChatBloc>(context).add(
         InitChat(
-          possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+          possibleKeys:
+              ISpect.read(context).theme.colors(context).keys.toList(),
           welcomeMessage: context.ispectL10n.aiWelcomeMessage,
           logs: ISpect.talker.history,
         ),
@@ -196,7 +197,8 @@ class _AIMessageWidget extends StatelessWidget {
                             maxRadius: 14,
                             child: Text(
                               'AI',
-                              style: context.ispectTheme.textTheme.bodySmall?.copyWith(
+                              style: context.ispectTheme.textTheme.bodySmall
+                                  ?.copyWith(
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -205,7 +207,8 @@ class _AIMessageWidget extends StatelessWidget {
                         const Gap(8),
                         Text(
                           'ISpect AI',
-                          style: context.ispectTheme.textTheme.bodyMedium?.copyWith(
+                          style: context.ispectTheme.textTheme.bodyMedium
+                              ?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -262,7 +265,8 @@ class _UserMessageWidget extends StatelessWidget {
                       children: [
                         Text(
                           context.ispectL10n.you,
-                          style: context.ispectTheme.textTheme.bodyMedium?.copyWith(
+                          style: context.ispectTheme.textTheme.bodyMedium
+                              ?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -274,7 +278,8 @@ class _UserMessageWidget extends StatelessWidget {
                             maxRadius: 14,
                             child: Text(
                               ':)',
-                              style: context.ispectTheme.textTheme.bodySmall?.copyWith(
+                              style: context.ispectTheme.textTheme.bodySmall
+                                  ?.copyWith(
                                 fontWeight: FontWeight.w900,
                               ),
                             ),

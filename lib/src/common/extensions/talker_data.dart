@@ -39,7 +39,9 @@ extension ISpectTalkerDataX on TalkerData {
 
   String generateText() {
     final time = displayTime();
-    final title = (this.title ?? '').length > 100 ? '${this.title?.substring(0, 100)}...' : (this.title ?? '');
+    final title = (this.title ?? '').length > 100
+        ? '${this.title?.substring(0, 100)}...'
+        : (this.title ?? '');
     final message = (this.message != null)
         ? this.message!.length > 100
             ? '${this.message?.substring(0, 100)}...'
@@ -51,7 +53,9 @@ extension ISpectTalkerDataX on TalkerData {
     } else if (exception is Exception) {
       exceptionTitle = exception.toString();
     }
-    exceptionTitle = exceptionTitle.length > 500 ? '${exceptionTitle.substring(0, 500)}...' : exceptionTitle;
+    exceptionTitle = exceptionTitle.length > 500
+        ? '${exceptionTitle.substring(0, 500)}...'
+        : exceptionTitle;
     final error = (this.error?.toString() ?? '').length > 500
         ? '${this.error.toString().substring(0, 500)}...'
         : (this.error?.toString() ?? '');

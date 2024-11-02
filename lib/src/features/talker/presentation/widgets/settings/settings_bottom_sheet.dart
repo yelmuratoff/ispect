@@ -27,10 +27,12 @@ class TalkerSettingsBottomSheets extends StatefulWidget {
   final List<TalkerActionItem> actions;
 
   @override
-  State<TalkerSettingsBottomSheets> createState() => _TalkerSettingsBottomSheetState();
+  State<TalkerSettingsBottomSheets> createState() =>
+      _TalkerSettingsBottomSheetState();
 }
 
-class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> {
+class _TalkerSettingsBottomSheetState
+    extends State<TalkerSettingsBottomSheets> {
   @override
   void initState() {
     super.initState();
@@ -47,7 +49,8 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
         enabled: widget.talker.value.settings.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.talker.value.enable : widget.talker.value.disable).call();
+          (enabled ? widget.talker.value.enable : widget.talker.value.disable)
+              .call();
           widget.talker.notifyListeners();
         },
       ),
@@ -92,14 +95,16 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16)
+                      .copyWith(bottom: 16, top: 8),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ??
+                              context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -124,14 +129,16 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16)
+                      .copyWith(bottom: 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ??
+                              context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -188,7 +195,8 @@ class _ActionTile extends StatelessWidget {
         ),
         if (showDivider)
           Divider(
-            color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+            color: iSpect.theme.dividerColor(context) ??
+                context.ispectTheme.dividerColor,
             height: 1,
           ),
       ],

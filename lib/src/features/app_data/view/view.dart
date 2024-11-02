@@ -49,7 +49,8 @@ class _AppDataView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (cacheSizeNotifier.value != '0.00 B' && controller.files.isNotEmpty)
+                  if (cacheSizeNotifier.value != '0.00 B' &&
+                      controller.files.isNotEmpty)
                     ElevatedButton(
                       onPressed: clearCache,
                       child: Text(context.ispectL10n.clearCache),
@@ -65,7 +66,8 @@ class _AppDataView extends StatelessWidget {
                 children: [
                   Text(
                     context.ispectL10n.appData,
-                    style: context.ispectTheme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: context.ispectTheme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
                     context.ispectL10n.totalFilesCount(controller.files.length),

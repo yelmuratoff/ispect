@@ -147,7 +147,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthPage(
-                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                      onAuthorized:
+                          (domain, email, apiToken, projectId, projectKey) {
                         widget.onJiraAuthorized?.call(
                           domain,
                           email,
@@ -179,9 +180,11 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                         _boardsCubit.getBoards();
                         _sprintCubit.toInitial();
                         _priorityCubit.getPriorities();
-                        _descriptionController.text = widget.initialDescription ?? '';
+                        _descriptionController.text =
+                            widget.initialDescription ?? '';
                         if (widget.initialAttachmentPath != null) {
-                          _attachments.add(File(widget.initialAttachmentPath ?? ''));
+                          _attachments
+                              .add(File(widget.initialAttachmentPath ?? ''));
                         }
                       },
                     ),
@@ -495,7 +498,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                                                 Expanded(
                                                   child: Text(
                                                     e.name,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -572,7 +576,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                       height: 60,
                       child: ElevatedButton(
                         onPressed: () async {
-                          final filePicker = await FilePicker.platform.pickFiles(
+                          final filePicker =
+                              await FilePicker.platform.pickFiles(
                             allowMultiple: true,
                             type: FileType.image,
                           );
@@ -631,7 +636,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                               ),
                               const Gap(8),
                               ClipRRect(
-                                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(16)),
                                 child: Image.file(
                                   file,
                                   width: double.infinity,
@@ -657,7 +663,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
         CreateIssueEnum.initial => context.ispectL10n.creatingIssue,
         CreateIssueEnum.issue => context.ispectL10n.addingStatusToIssue,
         CreateIssueEnum.attachment => context.ispectL10n.attachmentsAdded,
-        CreateIssueEnum.transition => context.ispectL10n.addingAttachmentsToIssue,
+        CreateIssueEnum.transition =>
+          context.ispectL10n.addingAttachmentsToIssue,
         CreateIssueEnum.finished => context.ispectL10n.finished,
       };
 }

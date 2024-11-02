@@ -25,7 +25,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'All logs copied in buffer';
 
   @override
-  String get analyticsLogDesc => 'The log of sending events to the analytics service';
+  String get analyticsLogDesc =>
+      'The log of sending events to the analytics service';
 
   @override
   String get apiToken => 'API token';
@@ -208,7 +209,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get issueCreated => 'Issue successfully created';
 
   @override
-  String get jiraInstruction => '1. Go to your Jira website.\n2. Click on your Profile avatar in the bottom left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to Create and manage API tokens and click on it.\n7. Create a token, then copy and paste it.';
+  String get jiraInstruction =>
+      '1. Go to your Jira website.\n2. Click on your Profile avatar in the bottom left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to Create and manage API tokens and click on it.\n7. Create a token, then copy and paste it.';
 
   @override
   String get logItemCopied => 'Log item is copied in clipboard';
@@ -232,7 +234,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get notFound => 'not found';
 
   @override
-  String get otherLogsForDevelopers => 'Other logs are already being used by developers';
+  String get otherLogsForDevelopers =>
+      'Other logs are already being used by developers';
 
   @override
   String get pageNotFound => 'Oops, the page on this path';
@@ -250,7 +253,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Please authorize to Jira';
 
   @override
-  String get pleaseCheckAuthCred => 'An error has occurred. Please check the authorization data.';
+  String get pleaseCheckAuthCred =>
+      'An error has occurred. Please check the authorization data.';
 
   @override
   String get pleaseSelectYourProject => 'Now, please select a project';
@@ -479,7 +483,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'It will be useful for testers to know about these logs';
+  String get testerLogDesc =>
+      'It will be useful for testers to know about these logs';
 
   @override
   String totalFilesCount(Object number) {

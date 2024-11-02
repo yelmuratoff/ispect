@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/date_utils.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_description.dart';
-import 'package:ispect/src/features/talker/core/data/models/log_report.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_description.dart';
+import 'package:ispect/src/features/ai/core/data/models/log_report.dart';
 
 part 'interface.dart';
 
@@ -16,7 +16,8 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
     required LogDescriptionPayload payload,
   }) async {
     try {
-      final prompt = '''Generate descriptions of logs for monitoring inside the application for me.
+      final prompt =
+          '''Generate descriptions of logs for monitoring inside the application for me.
         Language of descriptions - ${payload.locale}.
         For example:
         "info" - An informative log.
@@ -40,7 +41,8 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
         ]}
         ''';
       final content = [Content.text(prompt)];
-      final response = await ISpectGoogleAi.instance.model.generateContent(content);
+      final response =
+          await ISpectGoogleAi.instance.model.generateContent(content);
 
       final result = jsonDecode(response.text ?? '{}') as Map<String, dynamic>;
 
