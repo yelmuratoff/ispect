@@ -115,6 +115,18 @@ abstract class ISpectGeneratedLocalization {
   /// **'Adding status to issue'**
   String get addingStatusToIssue;
 
+  /// No description provided for @aiChat.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat'**
+  String get aiChat;
+
+  /// No description provided for @aiWelcomeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello! How can I help you?'**
+  String get aiWelcomeMessage;
+
   /// No description provided for @allLogsCopied.
   ///
   /// In en, this message translates to:
@@ -961,6 +973,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Turn on inspector'**
   String get turnOnInspector;
 
+  /// No description provided for @typeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message'**
+  String get typeMessage;
+
   /// No description provided for @uploadImages.
   ///
   /// In en, this message translates to:
@@ -1002,6 +1020,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Warning log'**
   String get warningLogDesc;
+
+  /// No description provided for @you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
 
   /// No description provided for @youAlreadyInLogger.
   ///

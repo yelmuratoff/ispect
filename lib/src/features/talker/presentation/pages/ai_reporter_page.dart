@@ -26,12 +26,16 @@ class _AiReporterPageState extends State<AiReporterPage> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AiReporterCubit>(context).generateReport(
-      payload: AiLogsPayload(
-        logsText: ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
-        locale: ISpect.read(context).options.locale.languageCode,
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      BlocProvider.of<AiReporterCubit>(context).generateReport(
+        payload: AiLogsPayload(
+          possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+          now: DateTime.now(),
+          logsText: ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
+          locale: ISpect.read(context).options.locale.languageCode,
+        ),
+      );
+    });
   }
 
   @override
@@ -95,6 +99,8 @@ class _AiReporterPageState extends State<AiReporterPage> {
                             onPressed: () {
                               BlocProvider.of<AiReporterCubit>(context).generateReport(
                                 payload: AiLogsPayload(
+                                  possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+                                  now: DateTime.now(),
                                   logsText:
                                       ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
                                   locale: ISpect.read(context).options.locale.languageCode,
@@ -120,6 +126,8 @@ class _AiReporterPageState extends State<AiReporterPage> {
                             onPressed: () {
                               BlocProvider.of<AiReporterCubit>(context).generateReport(
                                 payload: AiLogsPayload(
+                                  possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+                                  now: DateTime.now(),
                                   logsText:
                                       ISpect.talker.history.reversed.map((e) => e.generateText()).toList().toString(),
                                   locale: ISpect.read(context).options.locale.languageCode,

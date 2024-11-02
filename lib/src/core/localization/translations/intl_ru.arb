@@ -3,6 +3,8 @@
   "actions": "Действия",
   "addingAttachmentsToIssue": "Добавление вложений к задаче",
   "addingStatusToIssue": "Добавление статуса к задаче",
+  "aiChat": "AI чат",
+  "aiWelcomeMessage": "Привет! Чем я могу вам помочь?",
   "allLogsCopied": "Все записи скопированы в буфер обмена",
   "analyticsLogDesc": "Лог отправки событий в сервис аналитики",
   "apiToken": "API токен",
@@ -144,6 +146,7 @@
   "totalFilesCount": "Общее количество файлов: {number}",
   "turnOffInspector": "Выключить инспектор",
   "turnOnInspector": "Включить инспектор",
+  "typeMessage": "Введите запрос",
   "uploadImages": "Загрузить изображения",
   "useConsoleLogs": "Использовать запись в консоль",
   "useHistory": "Использовать историю",
@@ -151,5 +154,6 @@
   "verboseLogDesc": "Лог подробного сообщения",
   "viewAndManageData": "Просмотр и управление данными приложения",
   "warningLogDesc": "Лог предупреждения",
+  "you": "Вы",
   "youAlreadyInLogger": "Вы уже на странице ISpect"
 }

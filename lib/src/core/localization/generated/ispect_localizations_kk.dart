@@ -16,6 +16,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get addingStatusToIssue => 'Мәселеге мәртебе қосылуда';
 
   @override
+  String get aiChat => 'ЖИ (AI) чат';
+
+  @override
+  String get aiWelcomeMessage => 'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
+
+  @override
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
@@ -487,6 +493,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get turnOnInspector => 'Инспекторды қосу';
 
   @override
+  String get typeMessage => 'Сұрауды теріңіз';
+
+  @override
   String get uploadImages => 'Суреттерді жүктеу';
 
   @override
@@ -506,6 +515,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc => 'Ескерту журналы';
+
+  @override
+  String get you => 'Сіз';
 
   @override
   String get youAlreadyInLogger => 'Сіз ISpect бетінде тұрсыз';

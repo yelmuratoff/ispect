@@ -12,8 +12,12 @@ class SendMessage extends AiChatEvent {
 
 class InitChat extends AiChatEvent {
   const InitChat({
+    required this.possibleKeys,
+    required this.welcomeMessage,
     required this.logs,
   });
 
+  final List<String> possibleKeys;
   final List<TalkerData> logs;
+  final String welcomeMessage;
 }

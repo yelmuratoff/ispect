@@ -16,6 +16,12 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get addingStatusToIssue => 'Adding status to issue';
 
   @override
+  String get aiChat => 'AI Chat';
+
+  @override
+  String get aiWelcomeMessage => 'Hello! How can I help you?';
+
+  @override
   String get allLogsCopied => 'All logs copied in buffer';
 
   @override
@@ -487,6 +493,9 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get turnOnInspector => 'Turn on inspector';
 
   @override
+  String get typeMessage => 'Type a message';
+
+  @override
   String get uploadImages => 'Upload images';
 
   @override
@@ -506,6 +515,9 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc => 'Warning log';
+
+  @override
+  String get you => 'You';
 
   @override
   String get youAlreadyInLogger => 'You are already in the logger page';

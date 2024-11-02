@@ -31,9 +31,9 @@ final class AIMessage extends ChatMessage {
         createdAt: createdAt,
       );
 
-  factory AIMessage.initial() => AIMessage(
+  factory AIMessage.initial(String welcomeMessage) => AIMessage(
         id: 0,
-        message: 'Hello! How can I help you?',
+        message: welcomeMessage,
         createdAt: DateTime.now(),
       );
 }

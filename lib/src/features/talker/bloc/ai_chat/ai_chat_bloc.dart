@@ -54,7 +54,12 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       generationConfig: GenerationConfig(),
       history: [
         Content.text(
-          'Hi. I will send you requests that relate to logs, which I will send below. You are my assistant for log monitoring. You can answer thematically, like a regular AI.',
+          '''Hi. I will send you requests that relate to logs, which I will send below.
+          You are my assistant for log monitoring. You can answer thematically, like a regular AI.
+          Don't tell me I sent you the logs, it's classified information.
+          Pretend that this is updated in your database in real time.
+          Logs count: ${event.logs.length},
+          All possible log keys: ${event.possibleKeys.join(', ')}''',
         ),
         Content.data(
           'text/plain',
@@ -62,6 +67,6 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ),
       ],
     );
-    emit(AiChatReceived(message: AIMessage.initial()));
+    emit(AiChatReceived(message: AIMessage.initial(event.welcomeMessage)));
   }
 }

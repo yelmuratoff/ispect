@@ -57,7 +57,14 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
     required AiLogsPayload payload,
   }) async {
     try {
-      final prompt = '''Generate a detailed report on the monitoring logs, keep order.
+      final prompt = '''
+        Locale code for report - ${payload.locale}.
+        Please, generate a report on the monitoring logs for me on this language (${payload.locale}).
+        It is important. Do not forget about it. This message only on english only for prompt.
+        All possible keys: ${payload.possibleKeys.join(', ')}.
+        Date: ${payload.now.toIso8601String()}.
+        Also, please format date and time in the report in a human-readable format.
+        Generate a detailed report on the monitoring logs, keep order.
         The report should be more detailed specifically for the developer.
         Design everything beautifully and clearly, using bullet points where it is needed. You can use emojis, MD format.
         Take the latest logs where there are errors as a basis and describe exactly how the failure occurred.
@@ -70,7 +77,6 @@ final class AiRemoteDataSource implements IAiRemoteDataSource {
         If there is an 'analytics' log type, then do an analysis based on them. For example, how many users visited the page.
         The report should be useful for both the developer and the analyst.
         It is not necessary to show incomprehensible symbols and words in errors, or something that does not give a clear picture. Only facts and useful information.
-        Language of report - ${payload.locale}.
         ''';
 
       final file = await generateFile(payload.logsText);

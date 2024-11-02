@@ -3,6 +3,8 @@
   "actions": "Әрекеттер",
   "addingAttachmentsToIssue": "Тіркемелер мәселеге қосылуда",
   "addingStatusToIssue": "Мәселеге мәртебе қосылуда",
+  "aiChat": "ЖИ (AI) чат",
+  "aiWelcomeMessage": "Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?",
   "allLogsCopied": "Барлық жазбалар алмасу буферіне көшірілді",
   "analyticsLogDesc": "Журнал оқиғаларды талдау қызметіне жіберу логы",
   "apiToken": "API токен",
@@ -144,6 +146,7 @@
   "totalFilesCount": "Барлық файлдар саны: {number}",
   "turnOffInspector": "Инспекторды өшіру",
   "turnOnInspector": "Инспекторды қосу",
+  "typeMessage": "Сұрауды теріңіз",
   "uploadImages": "Суреттерді жүктеу",
   "useConsoleLogs": "Консоль жазбаларын пайдалану",
   "useHistory": "Тарихты пайдалану",
@@ -151,5 +154,6 @@
   "verboseLogDesc": "Толық хабарлама журналы",
   "viewAndManageData": "Қолданба мәліметтерін қарау және басқару",
   "warningLogDesc": "Ескерту журналы",
+  "you": "Сіз",
   "youAlreadyInLogger": "Сіз ISpect бетінде тұрсыз"
 }

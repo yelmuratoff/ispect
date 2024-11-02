@@ -3,6 +3,8 @@
   "actions": "Actions",
   "addingAttachmentsToIssue": "Adding attachments to issue",
   "addingStatusToIssue": "Adding status to issue",
+  "aiChat": "AI Chat",
+  "aiWelcomeMessage": "Hello! How can I help you?",
   "allLogsCopied": "All logs copied in buffer",
   "analyticsLogDesc": "The log of sending events to the analytics service",
   "apiToken": "API token",
@@ -144,6 +146,7 @@
   "totalFilesCount": "Total files count: {number}",
   "turnOffInspector": "Turn off inspector",
   "turnOnInspector": "Turn on inspector",
+  "typeMessage": "Type a message",
   "uploadImages": "Upload images",
   "useConsoleLogs": "Use console logs",
   "useHistory": "Use history",
@@ -151,5 +154,6 @@
   "verboseLogDesc": "Verbose message log",
   "viewAndManageData": "Viewing and managing application data",
   "warningLogDesc": "Warning log",
+  "you": "You",
   "youAlreadyInLogger": "You are already in the logger page"
 }
