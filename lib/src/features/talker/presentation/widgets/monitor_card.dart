@@ -4,8 +4,8 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-class TalkerMonitorsCard extends StatelessWidget {
-  const TalkerMonitorsCard({
+class ISpectMonitorCard extends StatelessWidget {
+  const ISpectMonitorCard({
     required this.logs,
     required this.title,
     required this.color,

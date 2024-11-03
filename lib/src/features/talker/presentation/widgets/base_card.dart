@@ -1,5 +1,6 @@
+// ignore_for_file: implementation_imports
+
 import 'package:flutter/material.dart';
-// ignore: implementation_imports
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 
 class ISpectBaseCard extends StatelessWidget {
@@ -19,7 +20,7 @@ class ISpectBaseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Ink(
+        child: Container(
           width: double.infinity,
           padding: padding,
           decoration: BoxDecoration(

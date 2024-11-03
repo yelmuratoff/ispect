@@ -511,8 +511,7 @@ class _HTTPBody extends StatelessWidget {
                     'files': (data as FormData)
                         .files
                         .map(
-                          (e) =>
-                              '${e.value.filename}: Length: ${e.value.length}',
+                          (e) => '${e.value.filename}: Length: ${e.value.length}',
                         )
                         .toList(),
                     'fields': (data as FormData)
@@ -577,8 +576,7 @@ class _DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color:
-              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
+          color: context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(

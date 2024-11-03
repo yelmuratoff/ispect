@@ -53,15 +53,14 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
               ...uniqTitles.map((title) {
                 final logs = data.where((e) => e.title == title).toList();
                 return SliverToBoxAdapter(
-                  child: TalkerMonitorsCard(
+                  child: ISpectMonitorCard(
                     logs: logs,
                     title: title ?? '',
                     color: iSpect.theme.getTypeColor(
                       context,
                       key: title,
                     ),
-                    icon: iSpect.theme.logIcons[title] ??
-                        Icons.bug_report_rounded,
+                    icon: iSpect.theme.logIcons[title] ?? Icons.bug_report_rounded,
                     subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,

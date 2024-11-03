@@ -17,15 +17,15 @@ import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
-import 'package:ispect/src/features/talker/presentation/widgets/data_card/data_card.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_bottom_sheet.dart';
-import 'package:ispect/src/features/talker/presentation/widgets/view_app_bar.dart';
 import 'package:talker_flutter/src/controller/controller.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-class TalkerView extends StatefulWidget {
-  const TalkerView({
+class ISpectPageView extends StatefulWidget {
+  const ISpectPageView({
     required this.talker,
     required this.options,
     super.key,
@@ -65,10 +65,10 @@ class TalkerView extends StatefulWidget {
   )? onJiraAuthorized;
 
   @override
-  State<TalkerView> createState() => _TalkerViewState();
+  State<ISpectPageView> createState() => _ISpectPageViewState();
 }
 
-class _TalkerViewState extends State<TalkerView> {
+class _ISpectPageViewState extends State<ISpectPageView> {
   final _titlesController = GroupButtonController();
   final _focusNode = FocusNode();
   late final _controller = widget.controller ?? TalkerViewController();
@@ -104,7 +104,7 @@ class _TalkerViewState extends State<TalkerView> {
             return CustomScrollView(
               controller: widget.scrollController,
               slivers: [
-                TalkerAppBar(
+                ISpectAppBar(
                   focusNode: _focusNode,
                   title: widget.appBarTitle,
                   leading: widget.appBarLeading,

@@ -1,4 +1,4 @@
-part of 'data_card.dart';
+part of 'log_card.dart';
 
 class _ExpandedBody extends StatelessWidget {
   const _ExpandedBody({
