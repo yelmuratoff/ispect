@@ -12,7 +12,6 @@ final class ISpectLocalizations {
       GlobalCupertinoLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       ISpectGeneratedLocalization.delegate,
-      // GlobalFeedbackLocalizationsDelegate.delegate,
       ...appDelegates,
     ];
     return localizationList;

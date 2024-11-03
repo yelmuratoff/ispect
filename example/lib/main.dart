@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/l10n.dart';
@@ -12,8 +11,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -165,13 +163,9 @@ class App extends ConsumerWidget {
         ],
         locale: locale,
         supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
-        localizationsDelegates: const [
+        localizationsDelegates: ISpectLocalizations.localizationDelegates([
           AppGeneratedLocalization.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          ISpectGeneratedLocalization.delegate,
-        ],
+        ]),
         theme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
@@ -200,10 +194,7 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              // debugPrint(
-              //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
-            },
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;

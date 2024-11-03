@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/features/talker/presentation/widgets/data_card.dart';
+import 'package:ispect/src/features/talker/presentation/widgets/data_card/data_card.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/monitor_info_view.dart';

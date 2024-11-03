@@ -41,9 +41,7 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),
@@ -60,7 +58,7 @@ class _MonitorView extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               final data = logs[index];
-              return TalkerDataCards(
+              return ISpectLogCard(
                 data: data,
                 onCopyTap: () => onCopyTap?.call(context, data),
                 color: iSpect.theme.getTypeColor(
