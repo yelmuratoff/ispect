@@ -56,7 +56,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.9.4
+  ispect: ^1.9.5
 ```
 
 ### Add import package
@@ -77,22 +77,22 @@ Put this code in your project at an screen and learn how it works. 😊
 </div> -->
 
 <div align="center">
-  <img src="assets/preview/panel.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/draggable.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/color_picker.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/feedback.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/logs.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/detailed_http_request.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/detailed_http_error.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/detailed_http_response.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/jira_auth.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/ai_chat.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/reporter.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/monitoring.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/cache.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/device_info.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/info.png" width="200" style="margin: 5px;" />
-  <img src="assets/preview/inspector.png" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/panel.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/draggable.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/color_picker.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/feedback.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/logs.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/reporter.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/monitoring.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/cache.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/device_info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
 </div>
 
 
