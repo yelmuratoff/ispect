@@ -117,8 +117,8 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                 const Gap(16),
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.ispectTheme.colorScheme.onSurface,
                     fontSize: 16,
                   ),
                 ),
@@ -187,6 +187,9 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
                               .add(File(widget.initialAttachmentPath ?? ''));
                         }
                       },
+                    ),
+                    settings: const RouteSettings(
+                      name: 'JiraAuthPage',
                     ),
                   ),
                 );

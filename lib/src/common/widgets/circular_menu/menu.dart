@@ -120,7 +120,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
       ),
     );
     _itemsCount = widget.items.length;
-    _startHideTimers();
+    _startHideTimers(context);
   }
 
   @override
@@ -145,7 +145,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
     return GestureDetector(
       onTap: () {
         if (_animationController.isCompleted) {
-          _closeMenu();
+          _closeMenu(context);
         }
       },
       child: Stack(
@@ -169,9 +169,9 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
                   _visibleState.value = VisibleState.hidden;
                 } else if (_animationController.status ==
                     AnimationStatus.completed) {
-                  _closeMenu();
+                  _closeMenu(context);
                 }
-                _startHideTimers();
+                _startHideTimers(context);
               },
               child: Stack(
                 children: [
@@ -229,7 +229,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
                             if (_visibleState.value == VisibleState.active ||
                                 _visibleState.value == VisibleState.inactive) {
                               _snapButton(screenSize);
-                              _startHideTimers();
+                              _startHideTimers(context);
                             }
                             setState(() {
                               developer.log('ISpect: button rebuilded');
@@ -240,6 +240,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
                             child: GestureDetector(
                               onTap: () {
                                 _closeMenu(
+                                  context,
                                   shouldReset: false,
                                 );
                                 if (widget.toggleButtonOnPressed != null) {
@@ -373,7 +374,9 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
                   angle: _animation.value * (math.pi * 2),
                   child: CircularMenuItemWidget(
                     item: item,
-                    closeMenu: _closeMenu,
+                    closeMenu: () {
+                      _closeMenu(context);
+                    },
                   ),
                 ),
               ),
@@ -406,25 +409,26 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
   bool _isInRightSide(Size screenSize) =>
       _buttonPosition.value.dx > _halfScreenWidth(screenSize);
 
-  void _closeMenu({
+  void _closeMenu(
+    BuildContext context, {
     bool shouldReset = true,
   }) {
     if (_animationController.status == AnimationStatus.dismissed) {
       _animationController.forward();
       _visibleState.value = VisibleState.inactive;
       if (shouldReset) {
-        _resetHideTimers();
+        _resetHideTimers(context);
       }
     } else {
       _animationController.reverse();
     }
   }
 
-  void _startHideTimers() {
+  void _startHideTimers(BuildContext context) {
     _hideTimer = Timer(const Duration(seconds: 3), () {
       if (_animationController.status == AnimationStatus.completed &&
           !_isDragging.value) {
-        _closeMenu();
+        _closeMenu(context);
       }
     });
     _fullHideTimer = Timer(const Duration(seconds: 6), () {
@@ -433,18 +437,19 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu>
         _visibleState.value = VisibleState.hidden;
 
         Future.delayed(const Duration(milliseconds: 300), () {
+          if (!context.mounted) return;
           _snapButton(MediaQuery.sizeOf(context));
         });
       }
     });
   }
 
-  void _resetHideTimers() {
+  void _resetHideTimers(BuildContext context) {
     _hideTimer?.cancel();
     _fullHideTimer?.cancel();
     _visibleState.value = VisibleState.inactive;
 
-    _startHideTimers();
+    _startHideTimers(context);
   }
 
   Alignment _getAlignmentFromOffset(Offset offset, Size containerSize) {

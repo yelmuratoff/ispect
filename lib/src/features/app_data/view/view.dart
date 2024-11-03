@@ -18,10 +18,9 @@ class _AppDataView extends StatelessWidget {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+      backgroundColor: iSpect.theme.backgroundColor(context),
       appBar: AppBar(
-        backgroundColor:
-            iSpect.theme.backgroundColor(isDark: context.isDarkMode),
+        backgroundColor: iSpect.theme.backgroundColor(context),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),

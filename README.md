@@ -37,16 +37,17 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 ## 📌 Features
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
-- ✅ Localizations: ru, en, kk. (I will add more translations in the future.)
-- ✅ Talker logger implementation: BLoC, Dio, Routing, Provider
+- ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
+- ✅ Talker logger implementation: **BLoC**, **Dio**, **Routing**, **Provider**
 - ✅ You can customize more options during initialization of ISpectTalker like BLoC, Dispatcher error and etc.
 - ✅ Updated ISpectTalker page: added more options.
-   - Detailed HTTP logs: request, response, error
+   - Detailed `HTTP` logs: `request`, `response`, `error`
    - Debug tools
    - Cache manager
    - Device and app info
 - ✅ Feedback
 - ✅ Performance tracker
+- ✅ AI helper
 
 ## 📌 Getting Started
 Follow these steps to use this package
@@ -55,7 +56,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.7.7
+  ispect: ^1.9.4
 ```
 
 ### Add import package
@@ -70,211 +71,56 @@ Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
-<div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
+<!-- <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
   <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_upd_preview.gif?raw=true"
   alt="ISpect's example" width="250" style="margin-right: 10px;"/>
+</div> -->
+
+<div align="center">
+  <img src="assets/preview/panel.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/draggable.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/color_picker.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/feedback.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/logs.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_request.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_error.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_response.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/jira_auth.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/ai_chat.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/reporter.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/monitoring.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/cache.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/device_info.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/info.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/inspector.png" width="200" style="margin: 5px;" />
 </div>
+
 
 &nbsp;
 
-### Code:
+### Instructions for use:
 
-Note: For handle `Dio`: [see](https://pub.dev/packages/talker_dio_logger#usage)  
-The simplest realization: 
+1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
+2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
+3. Add `ISpectBuilder` widget to your material app's builder and put `navigatorKey`.
+
+Please, check the example for more details.
+
+Note:
+
+- For enabling `ISpect AI helper`, you need to pass Google AI Api token to inside `ISpectOptions`.
+See: [Google AI Studio](https://aistudio.google.com) for more details.
+- For enabling `ISpect Jira`, you need to pass Jira Api data to inside `initialJiraData` from `ISpectBuilder`.
+You must save the Jira data in the `onJiraAuthorized` callback. And you can use it in `initialJiraData`.
+
 ```dart
-final navigatorKey = GlobalKey<NavigatorState>();
-
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
-
-final dio = Dio(
-  BaseOptions(
-    baseUrl: 'https://jsonplaceholder.typicode.com',
-  ),
-);
-
-class ThemeManager extends StateNotifier<ThemeMode> {
-  ThemeManager() : super(ThemeMode.dark);
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  ThemeMode get themeMode => state;
-}
-
-void main() {
-  final talker = TalkerFlutter.init();
-
-  ISpect.run(
-    () => runApp(
-      ProviderScope(
-        observers: [
-          TalkerRiverpodObserver(
-            talker: talker,
-            settings: const TalkerRiverpodLoggerSettings(),
-          ),
-        ],
-        child: App(talker: talker),
-      ),
-    ),
-    talker: talker,
-    onInitialized: () {
-      dio.interceptors.add(TalkerDioLogger(
-        talker: ISpectTalker.talker,
-      ));
-    },
-  );
-}
-
-class App extends ConsumerWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    const locale = Locale('ru');
-
-    return ISpectScopeWrapper(
-      options: ISpectOptions(
-        locale: locale,
-        actionItems: [
-          TalkerActionItem(
-            title: 'Test',
-            icon: Icons.account_tree_rounded,
-            onTap: (ispectContext) {
-              Navigator.of(ispectContext).push(
-                MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                    body: Center(
-                      child: Text('Test'),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      isISpectEnabled: true,
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        navigatorObservers: [
-          TalkerRouteObserver(talker),
-        ],
-        locale: locale,
-        supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
-          AppGeneratedLocalization.delegate,
-        ]),
-        theme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
-        ),
-        darkTheme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-        ),
-        themeMode: themeMode,
-        builder: (context, child) {
-          child = ISpectBuilder(
-            navigatorKey: navigatorKey,
-            initialPosition: (0, 300),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-            child: child,
-          );
-          return child;
-        },
-        home: const _Home(),
-      ),
-    );
-  }
-}
-
-class _Home extends ConsumerWidget {
-  const _Home();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(themeProvider.notifier);
-    final iSpect = ISpect.read(context);
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(AppGeneratedLocalization.of(context).app_title),
-            ElevatedButton(
-              onPressed: () {
-                ref.read(themeProvider.notifier).toggleTheme();
-                // iSpect.setThemeMode(themeNotifier.themeMode);
-              },
-              child: const Text('Toggle theme'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                iSpect.toggleISpect();
-              },
-              child: const Text('Toggle ISpect'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/posts/1');
-              },
-              child: const Text('Send HTTP request'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/post3s/1');
-              },
-              child: const Text('Send HTTP request with error'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.options.headers.addAll({
-                  'Authorization': 'Bearer token',
-                });
-                dio.get('/posts/1');
-                dio.options.headers.remove('Authorization');
-              },
-              child: const Text('Send HTTP request with Token'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                throw Exception('Test exception');
-              },
-              child: const Text('Throw exception'),
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  debugPrint('Send print message');
-                },
-                child: const Text('Send print message')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
 ### For change `ISpect` theme:
 ```dart
 ISpect.read(context).setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
 ```
 
 ### For handle routing (GoRouter)
-You can use `NavigatorObserver`, but in practice it does not always work correctly.  
+You can use `ISpectNavigatorObserver`, but in practice it does not always work correctly with the `GoRouter` package. You need add observer in each GoRoute.
 Alternatively, you can use a `listener`:
 
 ```dart

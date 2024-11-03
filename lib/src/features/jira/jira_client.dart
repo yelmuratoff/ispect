@@ -95,7 +95,7 @@ final class JiraClient {
 
       _instance._isClientInitialized = true;
     } catch (e, st) {
-      ISpectTalker.handle(
+      ISpect.handle(
         exception: e,
         stackTrace: st,
       );
@@ -171,7 +171,7 @@ final class JiraClient {
 
       return response;
     } catch (e, st) {
-      ISpectTalker.handle(
+      ISpect.handle(
         exception: e,
         stackTrace: st,
       );
@@ -205,7 +205,7 @@ final class JiraClient {
         );
       }
     } catch (e, st) {
-      ISpectTalker.handle(
+      ISpect.handle(
         exception: e,
         stackTrace: st,
       );
@@ -231,7 +231,7 @@ final class JiraClient {
         );
       }
     } catch (e, st) {
-      ISpectTalker.handle(
+      ISpect.handle(
         exception: e,
         stackTrace: st,
       );

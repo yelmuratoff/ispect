@@ -22,8 +22,7 @@ class KeyValueLine extends StatelessWidget {
             flex: 3,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
-                    context.ispectTheme.colorScheme.primary.withOpacity(0.1),
+                color: context.ispectTheme.colorScheme.primary.withOpacity(0.1),
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
               ),
               child: Padding(
@@ -38,7 +37,7 @@ class KeyValueLine extends StatelessWidget {
           Flexible(
             flex: 5,
             child: Divider(
-              color: iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
+              color: iSpect.theme.dividerColor(context) ??
                   context.ispectTheme.dividerColor,
             ),
           ),
@@ -51,7 +50,7 @@ class KeyValueLine extends StatelessWidget {
               },
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: iSpect.theme.cardColor(isDark: context.isDarkMode) ??
+                  color:
                       context.ispectTheme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),

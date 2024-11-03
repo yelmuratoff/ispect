@@ -10,6 +10,10 @@ Color getPixelFromByteData(
 }) {
   final index = (y * width + x) * 4;
 
+  if (index >= byteData.lengthInBytes) {
+    return Colors.transparent;
+  }
+
   final r = byteData.getUint8(index);
   final g = byteData.getUint8(index + 1);
   final b = byteData.getUint8(index + 2);

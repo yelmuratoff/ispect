@@ -25,7 +25,7 @@ class BaseBottomSheet extends StatelessWidget {
           bottom: mqPadding.bottom,
         ),
         decoration: BoxDecoration(
-          color: iSpect.theme.backgroundColor(isDark: context.isDarkMode) ??
+          color: iSpect.theme.backgroundColor(context) ??
               context.ispectTheme.scaffoldBackgroundColor,
           borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),

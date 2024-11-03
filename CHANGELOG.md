@@ -1,3 +1,53 @@
+## 1.9.4
+- Added new method for logging: `ISpect.track`. This method allows you to log custom events for analytics *(Amplitude, Firebase, etc.)*.
+- `ISpectTalker` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  
+Example: `ISpectTalker.debug('Hello, ISpect!')` -> `ISpect.debug('Hello, ISpect!')`.
+- The ability to change the color of logs and custom log icons.  
+Example: *(SuccessLog is your custom log)*  
+```dart
+    theme: ISpectTheme(
+        logColors: {
+          SuccessLog.logKey: const Color(0xFF880E4F),
+        },
+        logIcons: {
+          TalkerLogType.route.key: Icons.router_rounded,
+          SuccessLog.logKey: Icons.check_circle_rounded,
+        },
+      ),
+```
+- Added Google AI to ISpect.
+Use it if you need to use Google AI helper for generating logs description, and logs report.
+- Some other minor updates.
+
+## 1.9.3
+- Added a new option to the `ISpectOptions` class: `panelButtons`. This option allows you to add new buttons to the panel.
+- Added new options to the NavigatorObserver:
+   - `isLogPages` - whether to log page changes.
+   - `isLogModals` - whether to log modal changes.
+   - `isLogOtherTypes` - whether to log other types of changes.
+- Added `isFlutterPrintEnabled` option to the ISpect.run method. This option allows you to enable or disable the Flutter print handler.
+
+## 1.9.2
+- Added `ISpectNavigatorObserver` for navigation monitoring.
+
+## 1.8.9
+- UI updates:
+   - Updated the color picker.
+   - Updated light colors of logs.
+   - Updated layout of the ISpect page.
+   - Actions and settings now combined.
+   - Other minor updates.
+
+## 1.8.6
+- Added a new option to the `ISpectOptions` class: `panelItems`. This option allows you to add new icon buttons to the panel.
+
+## 1.8.2
+- Raised the color label in the color picker.
+- Increased the zoom scale factor to 3.
+
+## 1.7.9
+- Zoom and color picker was combined.
+
 ## 1.7.7
 - New draggable button with a new design and flow.
 - Added some documentation about Jira.

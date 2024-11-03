@@ -81,8 +81,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
                 Divider(
                   height: 16,
                   color:
-                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                          theme.dividerColor,
+                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo),
               ],
@@ -90,8 +89,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
                 Divider(
                   height: 16,
                   color:
-                      iSpect.theme.dividerColor(isDark: context.isDarkMode) ??
-                          theme.dividerColor,
+                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],

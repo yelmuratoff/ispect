@@ -13,14 +13,14 @@ import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
-import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
-import 'package:ispect/src/features/inspector/src/widgets/zoom/zoom_overlay.dart';
+
+import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
@@ -64,7 +64,6 @@ class Inspector extends StatefulWidget {
     this.isPanelVisible = true,
     this.isWidgetInspectorEnabled = true,
     this.isColorPickerEnabled = true,
-    this.isZoomEnabled = true,
     this.widgetInspectorShortcuts = const [
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
@@ -92,7 +91,7 @@ class Inspector extends StatefulWidget {
   final bool isPanelVisible;
   final bool isWidgetInspectorEnabled;
   final bool isColorPickerEnabled;
-  final bool isZoomEnabled;
+
   final Alignment alignment;
   final List<LogicalKeyboardKey> widgetInspectorShortcuts;
   final List<LogicalKeyboardKey> colorPickerShortcuts;
@@ -161,14 +160,10 @@ class InspectorState extends State<Inspector> {
   final _currentRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
 
   final _inspectorStateNotifier = ValueNotifier<bool>(false);
-  final _colorPickerStateNotifier = ValueNotifier<bool>(false);
   final _zoomStateNotifier = ValueNotifier<bool>(false);
 
-  final _selectedColorOffsetNotifier = ValueNotifier<Offset?>(null);
-  final _selectedColorStateNotifier = ValueNotifier<Color?>(null);
-
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
-  final _zoomScaleNotifier = ValueNotifier<double>(2);
+  final _zoomScaleNotifier = ValueNotifier<double>(3);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
 
   late final KeyboardHandler _keyboardHandler;
@@ -198,9 +193,6 @@ class InspectorState extends State<Inspector> {
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
       },
-      onColorPickerStateChanged: ({required value}) {
-        _onColorPickerStateChanged(value);
-      },
       onZoomStateChanged: ({required value}) {
         _onZoomStateChanged(value);
       },
@@ -223,15 +215,6 @@ class InspectorState extends State<Inspector> {
   // Gestures
 
   void _onTap(Offset? pointerOffset) {
-    if (_colorPickerStateNotifier.value) {
-      if (pointerOffset != null) {
-        _onColorPickerHover(pointerOffset);
-      }
-
-      _onColorPickerStateChanged(false);
-      return;
-    }
-
     if (_zoomStateNotifier.value) {
       _onZoomStateChanged(false);
       return;
@@ -263,10 +246,6 @@ class InspectorState extends State<Inspector> {
   void _onPointerMove(Offset pointerOffset) {
     _pointerHoverPosition = pointerOffset;
 
-    if (_colorPickerStateNotifier.value) {
-      _onColorPickerHover(pointerOffset);
-    }
-
     if (_zoomStateNotifier.value) {
       _onZoomHover(pointerOffset);
     }
@@ -290,51 +269,16 @@ class InspectorState extends State<Inspector> {
     _inspectorStateNotifier.value = isEnabled;
 
     if (isEnabled) {
-      _onColorPickerStateChanged(false);
       _onZoomStateChanged(false);
     } else {
       _currentRenderBoxNotifier.value = null;
     }
   }
 
-  // Color picker
-
-  void _onColorPickerStateChanged(bool isEnabled) {
-    if (!widget.isColorPickerEnabled) {
-      _colorPickerStateNotifier.value = false;
-      return;
-    }
-
-    _colorPickerStateNotifier.value = isEnabled;
-
-    if (isEnabled) {
-      _onInspectorStateChanged(false);
-      _onZoomStateChanged(false);
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _extractByteData();
-      });
-    } else {
-      if (_selectedColorStateNotifier.value != null) {
-        showColorPickerResultSnackbar(
-          context: context,
-          color: _selectedColorStateNotifier.value!,
-        );
-      }
-
-      _image?.dispose();
-      _image = null;
-      _byteDataStateNotifier.value = null;
-
-      _selectedColorOffsetNotifier.value = null;
-      _selectedColorStateNotifier.value = null;
-    }
-  }
-
   // Zoom
 
   void _onZoomStateChanged(bool isEnabled) {
-    if (!widget.isZoomEnabled) {
+    if (!widget.isColorPickerEnabled) {
       _zoomStateNotifier.value = false;
       return;
     }
@@ -343,8 +287,7 @@ class InspectorState extends State<Inspector> {
 
     if (isEnabled) {
       _onInspectorStateChanged(false);
-      _onColorPickerStateChanged(false);
-      _zoomScaleNotifier.value = 2.0;
+      _zoomScaleNotifier.value = 3.0;
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await _extractByteData();
@@ -354,13 +297,27 @@ class InspectorState extends State<Inspector> {
         }
       });
     } else {
+      if (_byteDataStateNotifier.value != null) {
+        final color = getPixelFromByteData(
+          _byteDataStateNotifier.value!,
+          width: _image!.width,
+          x: _zoomImageOffsetNotifier.value!.dx.round(),
+          y: _zoomImageOffsetNotifier.value!.dy.round(),
+        );
+
+        showColorPickerResultSnackbar(
+          context: context,
+          color: color,
+        );
+      }
+
       _image?.dispose();
       _image = null;
       _byteDataStateNotifier.value = null;
 
       _zoomImageOffsetNotifier.value = null;
       _zoomOverlayOffsetNotifier.value = null;
-      _zoomScaleNotifier.value = 2.0;
+      _zoomScaleNotifier.value = 3.0;
     }
   }
 
@@ -386,27 +343,6 @@ class InspectorState extends State<Inspector> {
     offset0 *= pixelRatio;
 
     return offset0;
-  }
-
-  void _onColorPickerHover(Offset offset) {
-    if (_image == null || _byteDataStateNotifier.value == null) return;
-
-    final shiftedOffset = _extractShiftedOffset(offset);
-    final x = shiftedOffset.dx.round();
-    final y = shiftedOffset.dy.round();
-
-    _selectedColorStateNotifier.value = getPixelFromByteData(
-      _byteDataStateNotifier.value!,
-      width: _image!.width,
-      x: x,
-      y: y,
-    );
-
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
-
-    _selectedColorOffsetNotifier.value = offset - overlayOffset;
   }
 
   void _onZoomHover(Offset offset) {
@@ -457,10 +393,7 @@ class InspectorState extends State<Inspector> {
     _zoomOverlayOffsetNotifier.dispose();
     _zoomScaleNotifier.dispose();
     _zoomImageOffsetNotifier.dispose();
-    _selectedColorStateNotifier.dispose();
-    _selectedColorOffsetNotifier.dispose();
     _zoomStateNotifier.dispose();
-    _colorPickerStateNotifier.dispose();
     _inspectorStateNotifier.dispose();
     _currentRenderBoxNotifier.dispose();
     _byteDataStateNotifier.dispose();
@@ -479,6 +412,7 @@ class InspectorState extends State<Inspector> {
 
     final iSpect = ISpect.read(context);
     final feedback = BetterFeedback.of(context);
+    final screenSize = MediaQuery.sizeOf(context);
 
     return Stack(
       key: _stackKey,
@@ -487,16 +421,14 @@ class InspectorState extends State<Inspector> {
           alignment: widget.alignment,
           child: MultiValueListenableBuilder(
             valueListenables: [
-              _colorPickerStateNotifier,
               _inspectorStateNotifier,
               _zoomStateNotifier,
             ],
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer = _colorPickerStateNotifier.value ||
-                  _inspectorStateNotifier.value ||
-                  _zoomStateNotifier.value;
+              final isAbsorbingPointer =
+                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -521,29 +453,6 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
-        if (widget.isColorPickerEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _selectedColorOffsetNotifier,
-              _selectedColorStateNotifier,
-            ],
-            builder: (_) {
-              final offset = _selectedColorOffsetNotifier.value;
-              final color = _selectedColorStateNotifier.value;
-
-              if (offset == null || color == null) {
-                return const SizedBox.shrink();
-              }
-
-              return Positioned(
-                left: offset.dx + 8.0,
-                top: offset.dy - 64.0,
-                child: ColorPickerOverlay(
-                  color: color,
-                ),
-              );
-            },
-          ),
         if (widget.isWidgetInspectorEnabled)
           MultiValueListenableBuilder(
             valueListenables: [
@@ -561,7 +470,7 @@ class InspectorState extends State<Inspector> {
                   : const SizedBox.shrink(),
             ),
           ),
-        if (widget.isZoomEnabled)
+        if (widget.isColorPickerEnabled)
           MultiValueListenableBuilder(
             valueListenables: [
               _zoomImageOffsetNotifier,
@@ -581,26 +490,33 @@ class InspectorState extends State<Inspector> {
 
               final overlaySize = ui.lerpDouble(
                 128.0,
-                256.0,
+                246.0,
                 ((zoomScale - 2.0) / 10.0).clamp(0, 1),
               )!;
 
               return Positioned(
-                left: offset.dx - overlaySize / 2,
-                top: offset.dy - overlaySize / 2,
+                left: offset.dx.clamp(0, screenSize.width - overlaySize),
+                top: (offset.dy - overlaySize - 16).clamp(0, screenSize.height),
                 child: IgnorePointer(
-                  child: ZoomOverlayWidget(
+                  child: CombinedOverlayWidget(
                     image: _image!,
                     overlayOffset: offset,
                     imageOffset: imageOffset,
                     overlaySize: overlaySize,
                     zoomScale: zoomScale,
                     pixelRatio: MediaQuery.devicePixelRatioOf(context),
+                    color: getPixelFromByteData(
+                      byteData,
+                      width: _image!.width,
+                      x: imageOffset.dx.round(),
+                      y: imageOffset.dy.round(),
+                    ),
                   ),
                 ),
               );
             },
           ),
+        // AssistiveTouch(),
         if (_isPanelVisible)
           AnimatedBuilder(
             animation: Listenable.merge([
@@ -610,31 +526,13 @@ class InspectorState extends State<Inspector> {
             builder: (_, __) => MultiValueListenableBuilder(
               valueListenables: [
                 _inspectorStateNotifier,
-                _colorPickerStateNotifier,
                 _zoomStateNotifier,
                 _byteDataStateNotifier,
               ],
-              builder: (context) => FloatingMenuPanel(
-                onPressed: (index) {
-                  switch (index) {
-                    case 0:
-                      _launchInfospect(context);
-                    case 1:
-                      iSpect.togglePerformanceTracking();
-                    case 2:
-                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
-                    case 3:
-                      _onColorPickerStateChanged(
-                        !_colorPickerStateNotifier.value,
-                      );
-                    case 4:
-                      _onZoomStateChanged(!_zoomStateNotifier.value);
-                    case 5:
-                      _toggleFeedback(feedback, context);
-                  }
-                },
+              builder: (context) => ISpectMenuPanel(
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 panelShape: PanelShape.rectangle,
+                navigatorKey: widget.navigatorKey,
                 backgroundColor: context.isDarkMode
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
@@ -647,48 +545,42 @@ class InspectorState extends State<Inspector> {
                         ? Icons.undo_rounded
                         : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
+                    onTap: (_) {
+                      _launchInfospect(context);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.monitor_heart_outlined,
                     enableBadge: iSpect.isPerformanceTrackingEnabled,
+                    onTap: (_) {
+                      iSpect.togglePerformanceTracking();
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.format_shapes_rounded,
                     enableBadge: _inspectorStateNotifier.value,
+                    onTap: (_) {
+                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.colorize_rounded,
-                    enableBadge: _colorPickerStateNotifier.value,
-                  ),
-                  ISpectPanelItem(
-                    icon: Icons.zoom_in_rounded,
                     enableBadge: _zoomStateNotifier.value,
+                    onTap: (_) {
+                      _onZoomStateChanged(!_zoomStateNotifier.value);
+                    },
                   ),
                   ISpectPanelItem(
                     icon: Icons.camera_alt_rounded,
                     enableBadge: feedback.isVisible,
+                    onTap: (_) {
+                      _toggleFeedback(feedback, context);
+                    },
                   ),
+                  ...widget.options.panelItems,
                 ],
+                buttons: widget.options.panelButtons,
               ),
-              // builder: (_) => InspectorPanel(
-              //   isInspectorEnabled: _inspectorStateNotifier.value,
-              //   isColorPickerEnabled: _colorPickerStateNotifier.value,
-              //   isZoomEnabled: _zoomStateNotifier.value,
-              //   onInspectorStateChanged: _onInspectorStateChanged,
-              //   onColorPickerStateChanged: _onColorPickerStateChanged,
-              //   onZoomStateChanged: _onZoomStateChanged,
-              //   isColorPickerLoading: _byteDataStateNotifier.value == null &&
-              //       _colorPickerStateNotifier.value,
-              //   isZoomLoading: _byteDataStateNotifier.value == null &&
-              //       _zoomStateNotifier.value,
-              //   navigatorKey: widget.navigatorKey,
-              //   options: widget.options,
-              //   initialPosition: widget.initialPosition,
-              //   onJiraAuthorized: widget.onJiraAuthorized,
-              //   onPositionChanged: (x, y) {
-              //     widget.onPositionChanged?.call(x, y);
-              //   },
-              // ),
             ),
           ),
       ],
@@ -710,6 +602,14 @@ class InspectorState extends State<Inspector> {
                     initialDescription: feedback.text,
                     initialAttachmentPath: screenshotFilePath.path,
                     onJiraAuthorized: widget.onJiraAuthorized,
+                  ),
+                  settings: RouteSettings(
+                    name: 'JiraSendIssuePage',
+                    arguments: {
+                      'initialDescription': feedback.text,
+                      'initialAttachmentPath': screenshotFilePath.path,
+                      'onJiraAuthorized': widget.onJiraAuthorized,
+                    },
                   ),
                 ),
               ),
@@ -742,6 +642,13 @@ class InspectorState extends State<Inspector> {
           builder: (_) => ISpectPage(
             options: widget.options,
             onJiraAuthorized: widget.onJiraAuthorized,
+          ),
+          settings: RouteSettings(
+            name: 'ISpectPage',
+            arguments: {
+              'options': widget.options,
+              'onJiraAuthorized': widget.onJiraAuthorized,
+            },
           ),
         ),
       ).then((_) {
