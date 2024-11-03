@@ -37,11 +37,11 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 ## 📌 Features
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
-- ✅ Localizations: ru, en, kk. (I will add more translations in the future.)
-- ✅ Talker logger implementation: BLoC, Dio, Routing, Provider
+- ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
+- ✅ Talker logger implementation: **BLoC**, **Dio**, **Routing**, **Provider**
 - ✅ You can customize more options during initialization of ISpectTalker like BLoC, Dispatcher error and etc.
 - ✅ Updated ISpectTalker page: added more options.
-   - Detailed HTTP logs: request, response, error
+   - Detailed `HTTP` logs: `request`, `response`, `error`
    - Debug tools
    - Cache manager
    - Device and app info
@@ -71,360 +71,49 @@ Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
-<div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
+<!-- <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
   <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_upd_preview.gif?raw=true"
   alt="ISpect's example" width="250" style="margin-right: 10px;"/>
+</div> -->
+
+<div align="center">
+  <img src="assets/preview/panel.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/draggable.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/color_picker.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/feedback.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/logs.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_request.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_error.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/detailed_http_response.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/jira_auth.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/ai_chat.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/reporter.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/monitoring.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/cache.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/device_info.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/info.png" width="200" style="margin: 5px;" />
+  <img src="assets/preview/inspector.png" width="200" style="margin: 5px;" />
 </div>
+
 
 &nbsp;
 
-### Code:
+### Instructions for use:
 
-Note: For handle `Dio`: [see](https://pub.dev/packages/talker_dio_logger#usage)  
-The simplest realization: 
+1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
+2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
+3. Add `ISpectBuilder` widget to your material app's builder and put `navigatorKey`.
+
+Please, check the example for more details.
+
+Note:
+
+- For enabling `ISpect AI helper`, you need to pass Google AI Api token to inside `ISpectOptions`.
+See: [Google AI Studio](https://aistudio.google.com) for more details.
+- For enabling `ISpect Jira`, you need to pass Jira Api data to inside `initialJiraData` from `ISpectBuilder`.
+You must save the Jira data in the `onJiraAuthorized` callback. And you can use it in `initialJiraData`.
+
 ```dart
-final navigatorKey = GlobalKey<NavigatorState>();
-
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
-
-final dio = Dio(
-  BaseOptions(
-    baseUrl: 'https://jsonplaceholder.typicode.com',
-  ),
-);
-
-final dummyDio = Dio(
-  BaseOptions(
-    baseUrl: 'https://api.escuelajs.co',
-  ),
-);
-
-void main() {
-  final talker = TalkerFlutter.init();
-
-  ISpect.run(
-    () => runApp(
-      ProviderScope(
-        observers: [
-          TalkerRiverpodObserver(
-            talker: talker,
-            settings: const TalkerRiverpodLoggerSettings(),
-          ),
-        ],
-        child: App(talker: talker),
-      ),
-    ),
-    talker: talker,
-    isPrintLoggingEnabled: true,
-    // isFlutterPrintEnabled: false,
-    // filters: [
-    //   'Handler: "onTap"',
-    //   'This exception was thrown because',
-    // ],
-    onInitialized: () {
-      dio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-          settings: const TalkerDioLoggerSettings(
-              // errorFilter: (response) {
-              //   return (response.message?.contains('This exception was thrown because')) == false;
-              // },
-              ),
-        ),
-      );
-      dummyDio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-        ),
-      );
-    },
-  );
-}
-
-class App extends ConsumerWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    const locale = Locale('en');
-
-    return ISpectScopeWrapper(
-      // theme: const ISpectTheme(
-      //   lightBackgroundColor: Colors.white,
-      //   darkBackgroundColor: Colors.black,
-      //   lightCardColor: Color.fromARGB(255, 241, 240, 240),
-      //   darkCardColor: Color.fromARGB(255, 23, 23, 23),
-      //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
-      //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
-      // ),
-      theme: ISpectTheme(
-        logColors: {
-          SuccessLog.logKey: const Color(0xFF880E4F),
-        },
-        logIcons: {
-          TalkerLogType.route.key: Icons.router_rounded,
-          SuccessLog.logKey: Icons.check_circle_rounded,
-        },
-      ),
-      options: ISpectOptions(
-        locale: locale,
-        panelButtons: [
-          ISpectPanelButton(
-            icon: Icons.copy_rounded,
-            label: 'Token',
-            onTap: (context) {
-              debugPrint('Token copied');
-            },
-          ),
-          ISpectPanelButton(
-            icon: Icons.copy_rounded,
-            label: 'FCM token',
-            onTap: (context) {
-              debugPrint('FCM token copied');
-            },
-          ),
-        ],
-        panelItems: [
-          ISpectPanelItem(
-            icon: Icons.home,
-            enableBadge: false,
-            onTap: (context) {
-              debugPrint('Home');
-            },
-          ),
-        ],
-        actionItems: [
-          TalkerActionItem(
-            title: 'Test',
-            icon: Icons.account_tree_rounded,
-            onTap: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                    body: Center(
-                      child: Text('Test'),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      isISpectEnabled: true,
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        navigatorObservers: [
-          ISpectNavigatorObserver(
-            isLogModals: false,
-          ),
-        ],
-        locale: locale,
-        supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
-        localizationsDelegates: const [
-          AppGeneratedLocalization.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          ISpectGeneratedLocalization.delegate,
-        ],
-        theme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
-        ),
-        darkTheme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-        ),
-        themeMode: themeMode,
-        builder: (context, child) {
-          child = ISpectBuilder(
-            navigatorKey: navigatorKey,
-            initialPosition: (x: 0, y: 200),
-            // initialJiraData: (
-            //   apiToken:
-            //       'Token',
-            //   domain: 'example',
-            //   email: 'name.surname@example.com',
-            //   projectId: '00000',
-            //   projectKey: 'AAAA'
-            // ),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              // debugPrint(
-              //     'From main.dart | domain: $domain, email: $email, apiToken: $apiToken, projectId: $projectId, projectKey: $projectKey');
-            },
-            child: child,
-          );
-          return child;
-        },
-        home: const _Home(),
-      ),
-    );
-  }
-}
-
-class _Home extends ConsumerWidget {
-  const _Home();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(themeProvider.notifier);
-    final iSpect = ISpect.read(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppGeneratedLocalization.of(context).app_title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                ref.read(themeProvider.notifier).toggleTheme();
-              },
-              child: const Text('Toggle theme'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ISpect.track('Toggle ISpect', parameters: {
-                  'isISpectEnabled': iSpect.isISpectEnabled,
-                });
-                iSpect.toggleISpect();
-              },
-              child: const Text('Toggle ISpect'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/posts/1');
-              },
-              child: const Text('Send HTTP request'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/post3s/1');
-              },
-              child: const Text('Send HTTP request with error'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.options.headers.addAll({
-                  'Authorization': 'Bearer token',
-                });
-                dio.get('/posts/1');
-                dio.options.headers.remove('Authorization');
-              },
-              child: const Text('Send HTTP request with Token'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final formData = FormData();
-                formData.files.add(MapEntry(
-                  'file',
-                  MultipartFile.fromBytes(
-                    [1, 2, 3],
-                    filename: 'file.txt',
-                  ),
-                ));
-
-                dummyDio.post(
-                  '/api/v1/files/upload',
-                  data: formData,
-                );
-              },
-              child: const Text('Upload file to dummy server'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                throw Exception('Test exception');
-              },
-              child: const Text('Throw exception'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                debugPrint('Send print message');
-              },
-              child: const Text('Send print message'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const _SecondPage(),
-                  ),
-                );
-              },
-              child: const Text('Go to second page'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const _SecondPage(),
-                  ),
-                );
-              },
-              child: const Text('Replace with second page'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ISpect.logTyped(SuccessLog('Success log'));
-              },
-              child: const Text('Success log'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SecondPage extends StatelessWidget {
-  const _SecondPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const _Home(),
-              ),
-            );
-          },
-          child: const Text('Go to Home'),
-        ),
-      ),
-    );
-  }
-}
-
-class ThemeManager extends StateNotifier<ThemeMode> {
-  ThemeManager() : super(ThemeMode.dark);
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  ThemeMode get themeMode => state;
-}
-
-```
-
 ### For change `ISpect` theme:
 ```dart
 ISpect.read(context).setThemeMode(value ? ThemeMode.dark : ThemeMode.light);

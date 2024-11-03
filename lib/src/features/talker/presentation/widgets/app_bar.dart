@@ -88,10 +88,7 @@ class ISpectAppBar extends StatelessWidget {
       ],
       title: Text(
         title ?? '',
-        style: TextStyle(
-          color: context.isDarkMode
-              ? context.ispectTheme.colorScheme.primaryContainer
-              : context.ispectTheme.colorScheme.primary,
+        style: const TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.w900,
           letterSpacing: 0.5,

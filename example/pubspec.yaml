@@ -34,10 +34,9 @@ flutter:
 flutter_gen:
   output: lib/src/core/assets/generated
   line_length: 120
-
-flutter_intl:
-  enabled: true
-  class_name: AppGeneratedLocalization
-  main_locale: en
-  arb_dir: lib/src/core/localization/translations
-  output_dir: lib/src/core/localization/generated
+# flutter_intl:
+#   enabled: true
+#   class_name: AppGeneratedLocalization
+#   main_locale: en
+#   arb_dir: lib/src/core/localization/translations
+#   output_dir: lib/src/core/localization/generated

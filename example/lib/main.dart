@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_example/src/core/localization/generated/l10n.dart';
+import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/logs/success.dart';
 
 import 'package:talker_dio_logger/talker_dio_logger.dart';
@@ -74,7 +74,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    const locale = Locale('ru');
+    const locale = Locale('en');
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -105,13 +105,6 @@ class App extends ConsumerWidget {
             label: 'Token',
             onTap: (context) {
               debugPrint('Token copied');
-            },
-          ),
-          ISpectPanelButton(
-            icon: Icons.copy_rounded,
-            label: 'FCM token',
-            onTap: (context) {
-              debugPrint('FCM token copied');
             },
           ),
         ],
@@ -162,9 +155,9 @@ class App extends ConsumerWidget {
           ),
         ],
         locale: locale,
-        supportedLocales: AppGeneratedLocalization.delegate.supportedLocales,
+        supportedLocales: ExampleGeneratedLocalization.supportedLocales,
         localizationsDelegates: ISpectLocalizations.localizationDelegates([
-          AppGeneratedLocalization.delegate,
+          ExampleGeneratedLocalization.delegate,
         ]),
         theme: ThemeData.from(
           colorScheme: ColorScheme.fromSeed(
@@ -214,7 +207,7 @@ class _Home extends ConsumerWidget {
     final iSpect = ISpect.read(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppGeneratedLocalization.of(context).app_title),
+        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
       ),
       body: Center(
         child: Column(

@@ -55,4 +55,3 @@ flutter:
   generate: true
   assets:
     - assets/icons/
-    - assets/lottie/

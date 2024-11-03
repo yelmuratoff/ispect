@@ -111,12 +111,12 @@ class _View extends StatelessWidget {
                   children: [
                     CustomPaint(
                       painter: AiLoaderPainter(),
-                      child: const SizedBox(width: 24, height: 24),
+                      child: const SizedBox.square(dimension: 24),
                     ),
                     const Gap(12),
-                    const Text(
-                      'AI Chat',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      context.ispectL10n.aiChat,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
