@@ -11,7 +11,8 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider =
+    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -187,7 +188,8 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized:
+                (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;

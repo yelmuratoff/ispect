@@ -55,11 +55,13 @@ class FeedbackThemeData {
         ),
         brightness = ThemeData.estimateBrightnessForColor(feedbackSheetColor) {
     final isDark = brightness == Brightness.dark;
-    this.dragHandleColor = dragHandleColor ?? (isDark ? Colors.black26 : Colors.white38);
+    this.dragHandleColor =
+        dragHandleColor ?? (isDark ? Colors.black26 : Colors.white38);
   }
 
   /// Create a dark version of the [FeedbackThemeData]
-  factory FeedbackThemeData.dark({bool sheetIsDraggable = true}) => FeedbackThemeData(
+  factory FeedbackThemeData.dark({bool sheetIsDraggable = true}) =>
+      FeedbackThemeData(
         background: Colors.grey.shade700,
         dragHandleColor: Colors.white38,
         feedbackSheetColor: _darkGrey,
@@ -70,7 +72,8 @@ class FeedbackThemeData {
       );
 
   /// Create a light version of the [FeedbackThemeData]
-  factory FeedbackThemeData.light({bool sheetIsDraggable = true}) => FeedbackThemeData(
+  factory FeedbackThemeData.light({bool sheetIsDraggable = true}) =>
+      FeedbackThemeData(
         dragHandleColor: Colors.black26,
         sheetIsDraggable: sheetIsDraggable,
       );
@@ -150,7 +153,8 @@ class FeedbackTheme extends InheritedTheme {
   /// FeedbackThemeData theme = FeedbackTheme.of(context);
   /// ```
   static FeedbackThemeData of(BuildContext context) {
-    final feedbackThemeData = context.dependOnInheritedWidgetOfExactType<FeedbackTheme>();
+    final feedbackThemeData =
+        context.dependOnInheritedWidgetOfExactType<FeedbackTheme>();
     return feedbackThemeData?.data ?? FeedbackThemeData();
   }
 
@@ -160,6 +164,8 @@ class FeedbackTheme extends InheritedTheme {
   @override
   Widget wrap(BuildContext context, Widget child) {
     final theme = context.findAncestorWidgetOfExactType<FeedbackTheme>();
-    return identical(this, theme) ? child : FeedbackTheme(data: data, child: child);
+    return identical(this, theme)
+        ? child
+        : FeedbackTheme(data: data, child: child);
   }
 }

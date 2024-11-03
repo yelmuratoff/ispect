@@ -10,7 +10,8 @@ import 'package:ispect/src/common/widgets/ai_loader/star_painter.dart';
 import 'package:ispect/src/features/ai/bloc/log_descriptions/log_descriptions_cubit.dart';
 import 'package:ispect/src/features/ai/core/data/models/log_description.dart';
 import 'package:ispect/src/features/ai/presentation/pages/ai_chat_page.dart';
-import 'package:ispect/src/features/talker/presentation/pages/body_view.dart' as view;
+import 'package:ispect/src/features/talker/presentation/pages/body_view.dart'
+    as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -141,7 +142,8 @@ class _View extends StatelessWidget {
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
   final output = await getTemporaryDirectory();
-  final screenshotFilePath = '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
+  final screenshotFilePath =
+      '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
   final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);

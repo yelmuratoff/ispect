@@ -28,7 +28,8 @@ class _ExpandedBody extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
-        padding: _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
+        padding:
+            _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
         decoration: _stackTrace != null
             ? BoxDecoration(
                 border: Border.fromBorderSide(

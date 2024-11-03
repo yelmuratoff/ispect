@@ -60,7 +60,8 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       context,
                       key: title,
                     ),
-                    icon: iSpect.theme.logIcons[title] ?? Icons.bug_report_rounded,
+                    icon: iSpect.theme.logIcons[title] ??
+                        Icons.bug_report_rounded,
                     subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,
