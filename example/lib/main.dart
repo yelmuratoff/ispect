@@ -11,8 +11,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -99,7 +98,7 @@ class App extends ConsumerWidget {
         locale: locale,
         // Use it if you need to use Google AI helper for generating logs description,
         // and logs report.
-        googleAiToken: 'AIzaSyA9ogrpJkv5ddCfYTiKtlKQWJ6p-BCWW0k',
+        googleAiToken: null,
         panelButtons: [
           ISpectPanelButton(
             icon: Icons.copy_rounded,
@@ -188,8 +187,7 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized:
-                (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;
