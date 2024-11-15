@@ -6,7 +6,7 @@ import 'package:ispect/src/features/inspector/src/widgets/panel/panel_item.dart'
 
 final class ISpectOptions {
   const ISpectOptions({
-    required this.locale,
+    this.locale = const Locale('en'),
     this.googleAiToken,
     this.actionItems = const [],
     this.panelItems = const [],

@@ -46,6 +46,7 @@ class _AiChatPageState extends State<AiChatPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -65,79 +66,89 @@ class _AiChatPageState extends State<AiChatPage> {
             ],
           ),
         ),
-        bottomNavigationBar: SizedBox(
-          height: 74,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: '${context.ispectL10n.typeMessage}...',
-                    ),
-                    onSubmitted: (message) {
-                      _sendMessage(context);
-                    },
+        body: Stack(
+          children: [
+            BlocConsumer<AiChatBloc, AiChatState>(
+              listener: (context, state) {
+                if (state is AiChatReceived) {
+                  _messages.add(state.message);
+                  Future<void>.delayed(const Duration(milliseconds: 200), () {
+                    _scrollController.animateTo(
+                      _scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                    );
+                  });
+                }
+              },
+              builder: (context, state) => ListView.builder(
+                controller: _scrollController,
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  if (message is UserMessage) {
+                    return _UserMessageWidget(
+                      message: message.message,
+                      id: message.id,
+                    );
+                  } else if (message is AIMessage) {
+                    return _AIMessageWidget(
+                      selectionFocusNode: _selectionFocusNode,
+                      message: message.message,
+                      id: message.id,
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
+                },
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 74,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _textController,
+                          onTapOutside: (event) {
+                            FocusScope.of(context).unfocus();
+                          },
+                          decoration: InputDecoration(
+                            hintText: '${context.ispectL10n.typeMessage}...',
+                          ),
+                          onSubmitted: (message) {
+                            _sendMessage(context);
+                          },
+                        ),
+                      ),
+                      const Gap(8),
+                      BlocBuilder<AiChatBloc, AiChatState>(
+                        builder: (context, state) {
+                          if (state is AiChatLoading) {
+                            return const SizedBox.square(
+                              dimension: 40,
+                              child: AiLoaderWidget(),
+                            );
+                          }
+                          return IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () {
+                              _sendMessage(context);
+                            },
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                const Gap(8),
-                BlocBuilder<AiChatBloc, AiChatState>(
-                  builder: (context, state) {
-                    if (state is AiChatLoading) {
-                      return const SizedBox.square(
-                        dimension: 40,
-                        child: AiLoaderWidget(),
-                      );
-                    }
-                    return IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: () {
-                        _sendMessage(context);
-                      },
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        body: BlocConsumer<AiChatBloc, AiChatState>(
-          listener: (context, state) {
-            if (state is AiChatReceived) {
-              _messages.add(state.message);
-              Future<void>.delayed(const Duration(milliseconds: 200), () {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                );
-              });
-            }
-          },
-          builder: (context, state) => ListView.builder(
-            controller: _scrollController,
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final message = _messages[index];
-              if (message is UserMessage) {
-                return _UserMessageWidget(
-                  message: message.message,
-                  id: message.id,
-                );
-              } else if (message is AIMessage) {
-                return _AIMessageWidget(
-                  selectionFocusNode: _selectionFocusNode,
-                  message: message.message,
-                  id: message.id,
-                );
-              } else {
-                return const SizedBox();
-              }
-            },
-          ),
+          ],
         ),
       );
 

@@ -1,3 +1,7 @@
+## 1.9.6
+- Fix: hided keyboard when the user taps on the textfield in the AI chat.
+- Changes: `locale` and `ISpectOptions` now optional fields.
+
 ## 1.9.5
 - Added new method for logging: `ISpect.track`. This method allows you to log custom events for analytics *(Amplitude, Firebase, etc.)*.
 - `ISpectTalker` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  

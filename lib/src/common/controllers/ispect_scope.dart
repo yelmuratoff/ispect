@@ -17,9 +17,7 @@ import 'package:provider/provider.dart';
 class ISpectScopeModel with ChangeNotifier {
   bool _isISpectEnabled = false;
   bool _isPerformanceTrackingEnabled = false;
-  ISpectOptions _options = const ISpectOptions(
-    locale: Locale('en'),
-  );
+  ISpectOptions _options = const ISpectOptions();
   ISpectTheme _theme = const ISpectTheme();
 
   GlobalKey<NavigatorState>? _navigatorKey;
@@ -59,7 +57,9 @@ class ISpectScopeModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void setOptions(ISpectOptions options) {
+  void setOptions(ISpectOptions? options) {
+    if (options == null) return;
+
     _options = options;
     ISpectGoogleAi.init(options.googleAiToken ?? '');
     notifyListeners();
@@ -82,13 +82,13 @@ class ISpectScopeModel with ChangeNotifier {
 class ISpectScopeWrapper extends StatelessWidget {
   const ISpectScopeWrapper({
     required this.child,
-    required this.options,
     required this.isISpectEnabled,
+    this.options,
     this.theme,
     super.key,
   });
   final Widget child;
-  final ISpectOptions options;
+  final ISpectOptions? options;
   final ISpectTheme? theme;
   final bool isISpectEnabled;
 
