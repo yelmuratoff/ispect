@@ -73,6 +73,10 @@ class ISpectScopeModel with ChangeNotifier {
           ...theme.logIcons,
         },
       );
+    } else {
+      _theme = const ISpectTheme(
+        logIcons: typeIcons,
+      );
     }
     notifyListeners();
   }

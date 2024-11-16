@@ -11,7 +11,8 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider =
+    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -85,15 +86,15 @@ class App extends ConsumerWidget {
       //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
       //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
       // ),
-      theme: ISpectTheme(
-        logColors: {
-          SuccessLog.logKey: const Color(0xFF880E4F),
-        },
-        logIcons: {
-          // TalkerLogType.route.key: Icons.router_rounded,
-          SuccessLog.logKey: Icons.check_circle_rounded,
-        },
-      ),
+      // theme: ISpectTheme(
+      //   logColors: {
+      //     SuccessLog.logKey: const Color(0xFF880E4F),
+      //   },
+      //   logIcons: {
+      //     // TalkerLogType.route.key: Icons.router_rounded,
+      //     SuccessLog.logKey: Icons.check_circle_rounded,
+      //   },
+      // ),
       options: ISpectOptions(
         locale: locale,
         // Use it if you need to use Google AI helper for generating logs description,
@@ -187,7 +188,8 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized:
+                (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;

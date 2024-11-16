@@ -1,3 +1,6 @@
+## 1.9.7
+- Fix: default icons not showed if theme is null.
+
 ## 1.9.6
 - Fix: hided keyboard when the user taps on the textfield in the AI chat.
 - Changes: `locale` and `ISpectOptions` now optional fields.
