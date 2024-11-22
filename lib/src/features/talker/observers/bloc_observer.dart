@@ -29,8 +29,7 @@ class TalkerBlocObserver extends BlocObserver {
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
   )? onBlocTransition;
-  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-      onBlocChange;
+  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange;
   final void Function(
     BlocBase<dynamic> bloc,
     Object error,
@@ -55,7 +54,7 @@ class TalkerBlocObserver extends BlocObserver {
       return;
     }
     onBlocEvent?.call(bloc, event);
-    _talker.logTyped(
+    _talker.logCustom(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -81,7 +80,7 @@ class TalkerBlocObserver extends BlocObserver {
       return;
     }
     onBlocTransition?.call(bloc, transition);
-    _talker.logTyped(
+    _talker.logCustom(
       BlocStateLog(
         bloc: bloc,
         transition: transition,
@@ -99,7 +98,7 @@ class TalkerBlocObserver extends BlocObserver {
       return;
     }
     onBlocChange?.call(bloc, change);
-    _talker.logTyped(
+    _talker.logCustom(
       BlocChangeLog(
         bloc: bloc,
         change: change,
@@ -130,7 +129,7 @@ class TalkerBlocObserver extends BlocObserver {
       return;
     }
     onBlocCreate?.call(bloc);
-    _talker.logTyped(BlocCreateLog(bloc: bloc));
+    _talker.logCustom(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -142,6 +141,6 @@ class TalkerBlocObserver extends BlocObserver {
       return;
     }
     onBlocClose?.call(bloc);
-    _talker.logTyped(BlocCloseLog(bloc: bloc));
+    _talker.logCustom(BlocCloseLog(bloc: bloc));
   }
 }
