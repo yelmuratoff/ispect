@@ -41,9 +41,7 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),
@@ -65,7 +63,7 @@ class _MonitorView extends StatelessWidget {
                 onCopyTap: () => onCopyTap?.call(context, data),
                 color: iSpect.theme.getTypeColor(
                   context,
-                  key: data.title,
+                  key: data.key,
                 ),
                 expanded: isLogsExpanded,
                 backgroundColor: context.ispectTheme.cardColor,

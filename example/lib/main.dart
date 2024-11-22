@@ -221,9 +221,14 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                ISpect.track('Toggle ISpect', parameters: {
-                  'isISpectEnabled': iSpect.isISpectEnabled,
-                });
+                ISpect.track(
+                  'Toggle',
+                  analytics: 'amplitude',
+                  event: 'ISpect',
+                  parameters: {
+                    'isISpectEnabled': iSpect.isISpectEnabled,
+                  },
+                );
                 iSpect.toggleISpect();
               },
               child: const Text('Toggle ISpect'),

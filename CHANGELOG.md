@@ -1,3 +1,10 @@
+## 1.9.8
+- `Talker` was upgraded to v4.5.0.
+- Now you can customize `track` method.
+   - You can add analytic's service name.
+   - You can add event's name.
+
+
 ## 1.9.7
 - Fix: default icons not showed if theme is null.
 

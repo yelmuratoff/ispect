@@ -45,28 +45,27 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
         talker: ISpect.talker,
         builder: (context, data) {
           // TODO(Yelaman): Change to uniqKeys when it will be implemented.
-          final titles = data.map((e) => e.title).toList();
-          final uniqTitles = titles.toSet().toList()..sort();
+          final keys = data.map((e) => e.key).toList();
+          final uniqKeys = keys.toSet().toList()..sort();
 
           return CustomScrollView(
             slivers: [
-              ...uniqTitles.map((title) {
-                final logs = data.where((e) => e.title == title).toList();
+              ...uniqKeys.map((key) {
+                final logs = data.where((e) => e.key == key).toList();
                 return SliverToBoxAdapter(
                   child: ISpectMonitorCard(
                     logs: logs,
-                    title: title ?? '',
+                    title: key ?? '',
                     color: iSpect.theme.getTypeColor(
                       context,
-                      key: title,
+                      key: key,
                     ),
-                    icon: iSpect.theme.logIcons[title] ??
-                        Icons.bug_report_rounded,
+                    icon: iSpect.theme.logIcons[key] ?? Icons.bug_report_rounded,
                     subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,
                       logs,
-                      title ?? '',
+                      key ?? '',
                     ),
                   ),
                 );

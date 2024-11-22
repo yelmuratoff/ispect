@@ -20,10 +20,12 @@ class GoodLog extends TalkerLog {
 
 /// `AnalyticsLog` - This class contains the analytics log.
 class AnalyticsLog extends TalkerLog {
-  AnalyticsLog(String super.message);
+  AnalyticsLog(super.message, {this.analytics});
+
+  final String? analytics;
 
   @override
-  String get title => logKey;
+  String get title => analytics ?? logKey;
 
   @override
   String get key => logKey;

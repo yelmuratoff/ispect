@@ -293,12 +293,14 @@ final class ISpect {
 
   static void track(
     String message, {
+    String? event,
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
     _instance._talker.logCustom(
       AnalyticsLog(
-        '${analytics ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
+        analytics: analytics,
+        '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
       ),
     );
   }
