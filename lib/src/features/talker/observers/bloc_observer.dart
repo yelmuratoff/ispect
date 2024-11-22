@@ -29,7 +29,8 @@ class TalkerBlocObserver extends BlocObserver {
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
   )? onBlocTransition;
-  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange;
+  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
+      onBlocChange;
   final void Function(
     BlocBase<dynamic> bloc,
     Object error,
