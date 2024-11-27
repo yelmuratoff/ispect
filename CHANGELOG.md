@@ -1,3 +1,6 @@
+## 1.9.9
+- Fix: no Navigator in the context when navigatorKey is not provided.
+
 ## 1.9.8
 - `Talker` was upgraded to v4.5.0.
 - Now you can customize `track` method.
