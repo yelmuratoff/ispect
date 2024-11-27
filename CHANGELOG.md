@@ -1,5 +1,6 @@
-## 1.9.9
+## 2.0.0
 - Fix: no Navigator in the context when navigatorKey is not provided.
+- Fix: panel height factor fixed
 
 ## 1.9.8
 - `Talker` was upgraded to v4.5.0.

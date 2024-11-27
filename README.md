@@ -56,7 +56,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^1.9.9
+  ispect: ^2.0.0
 ```
 
 ### Add import package
