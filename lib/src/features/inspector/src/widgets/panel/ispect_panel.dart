@@ -46,7 +46,7 @@ class ISpectMenuPanel extends StatefulWidget {
     this.dockAnimCurve,
     this.dockAnimDuration,
     this.initialPosition,
-    this.navigatorKey,
+    this.observer,
     this.onPositionChanged,
   });
 
@@ -72,7 +72,7 @@ class ISpectMenuPanel extends StatefulWidget {
   final List<ISpectPanelButton> buttons;
   final ({double x, double y})? initialPosition;
   final void Function(double x, double y)? onPositionChanged;
-  final GlobalKey<NavigatorState>? navigatorKey;
+  final NavigatorObserver? observer;
 
   @override
   _FloatBoxState createState() => _FloatBoxState();
@@ -82,8 +82,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
   // <-- Notifiers -->
 
 // Required to set the default state to closed when the widget gets initialized;
-  final ValueNotifier<PanelState> _panelState =
-      ValueNotifier(PanelState.closed);
+  final ValueNotifier<PanelState> _panelState = ValueNotifier(PanelState.closed);
 
 // Default positions for the panel;
   final ValueNotifier<double> _draggablePositionTop = ValueNotifier(0.0);
@@ -200,10 +199,8 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                           onPanStart: (event) {
                             // Detect the offset between the top and left side of the panel and
                             // x and y position of the touch(click) event;
-                            _panOffsetTop.value = event.globalPosition.dy -
-                                _draggablePositionTop.value;
-                            _panOffsetLeft.value = event.globalPosition.dx -
-                                _draggablePositionLeft.value;
+                            _panOffsetTop.value = event.globalPosition.dy - _draggablePositionTop.value;
+                            _panOffsetLeft.value = event.globalPosition.dx - _draggablePositionLeft.value;
                           },
                           onPanUpdate: (event) {
                             // Close Panel if opened;
@@ -216,40 +213,26 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                             _isDragging.value = true;
 
                             // Calculate the top position of the panel according to pan;
-                            final statusBarHeight =
-                                MediaQuery.paddingOf(context).top;
-                            _draggablePositionTop.value =
-                                event.globalPosition.dy - _panOffsetTop.value;
+                            final statusBarHeight = MediaQuery.paddingOf(context).top;
+                            _draggablePositionTop.value = event.globalPosition.dy - _panOffsetTop.value;
 
                             // Check if the top position is exceeding the status bar or dock boundaries;
-                            if (_draggablePositionTop.value <
-                                statusBarHeight + _dockBoundary) {
-                              _draggablePositionTop.value =
-                                  statusBarHeight + _dockBoundary;
+                            if (_draggablePositionTop.value < statusBarHeight + _dockBoundary) {
+                              _draggablePositionTop.value = statusBarHeight + _dockBoundary;
                             }
-                            if (_draggablePositionTop.value >
-                                (pageHeight - widget.buttonHeight - 10) -
-                                    _dockBoundary) {
-                              _draggablePositionTop.value =
-                                  (pageHeight - widget.buttonHeight - 10) -
-                                      _dockBoundary;
+                            if (_draggablePositionTop.value > (pageHeight - widget.buttonHeight - 10) - _dockBoundary) {
+                              _draggablePositionTop.value = (pageHeight - widget.buttonHeight - 10) - _dockBoundary;
                             }
 
                             // Calculate the Left position of the panel according to pan;
-                            _draggablePositionLeft.value =
-                                event.globalPosition.dx - _panOffsetLeft.value;
+                            _draggablePositionLeft.value = event.globalPosition.dx - _panOffsetLeft.value;
 
                             // Check if the left position is exceeding the dock boundaries;
-                            if (_draggablePositionLeft.value <
-                                0 + _dockBoundary) {
+                            if (_draggablePositionLeft.value < 0 + _dockBoundary) {
                               _draggablePositionLeft.value = 0 + _dockBoundary;
                             }
-                            if (_draggablePositionLeft.value >
-                                (pageWidth - _buttonWidth.value) -
-                                    _dockBoundary) {
-                              _draggablePositionLeft.value =
-                                  (pageWidth - _buttonWidth.value) -
-                                      _dockBoundary;
+                            if (_draggablePositionLeft.value > (pageWidth - _buttonWidth.value) - _dockBoundary) {
+                              _draggablePositionLeft.value = (pageWidth - _buttonWidth.value) - _dockBoundary;
                             }
                           },
                           onTap: () async {
@@ -260,8 +243,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                               ? const SizedBox()
                               : AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 200),
-                                  transitionBuilder: (child, animation) =>
-                                      ScaleTransition(
+                                  transitionBuilder: (child, animation) => ScaleTransition(
                                     scale: animation,
                                     child: child,
                                   ),
@@ -272,8 +254,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                             height: widget.buttonHeight,
                                             child: Icon(
                                               Icons.drag_indicator_rounded,
-                                              color:
-                                                  Colors.white.withOpacity(0.5),
+                                              color: Colors.white.withOpacity(0.5),
                                             ),
                                           ),
                                         )
@@ -282,16 +263,13 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                           width: _buttonWidth.value,
                                           height: widget.buttonHeight,
                                           child: Align(
-                                            alignment: isInRightSide
-                                                ? Alignment.centerLeft
-                                                : Alignment.centerRight,
+                                            alignment: isInRightSide ? Alignment.centerLeft : Alignment.centerRight,
                                             child: CustomPaint(
                                               willChange: true,
                                               size: const Size(20, 65),
                                               painter: LineWithCurvePainter(
                                                 isInRightSide: isInRightSide,
-                                                color: Colors.white
-                                                    .withOpacity(0.5),
+                                                color: Colors.white.withOpacity(0.5),
                                               ),
                                             ),
                                           ),
@@ -348,13 +326,11 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                 if (true) ...[
                                   Wrap(
                                     runAlignment: WrapAlignment.center,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
                                     children: List.generate(
                                       widget.items.length,
                                       (index) => Badge(
-                                        isLabelVisible:
-                                            widget.items[index].enableBadge,
+                                        isLabelVisible: widget.items[index].enableBadge,
                                         smallSize: 12,
                                         child: Material(
                                           color: Colors.transparent,
@@ -365,30 +341,21 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                             ),
                                             padding: EdgeInsets.zero,
                                             style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStateProperty.all<
-                                                      Color>(
+                                              backgroundColor: WidgetStateProperty.all<Color>(
                                                 _itemColor,
                                               ),
-                                              shape: WidgetStateProperty.all<
-                                                  RoundedRectangleBorder>(
+                                              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                                                 const RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.all(
+                                                  borderRadius: BorderRadius.all(
                                                     Radius.circular(16),
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             onPressed: () {
-                                              widget.items[index].onTap.call(
-                                                widget.navigatorKey
-                                                        ?.currentContext ??
-                                                    context,
-                                              );
+                                              widget.items[index].onTap.call(context);
 
-                                              _panelState.value =
-                                                  PanelState.closed;
+                                              _panelState.value = PanelState.closed;
                                               _forceDock(pageWidth);
                                               _hidePanel(pageWidth);
                                             },
@@ -409,11 +376,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                             label: button.label,
                                             pageWidth: pageWidth,
                                             onTap: () {
-                                              button.onTap.call(
-                                                widget.navigatorKey
-                                                        ?.currentContext ??
-                                                    context,
-                                              );
+                                              button.onTap.call(context);
                                             },
                                           ),
                                         ),
@@ -423,8 +386,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                           panOffsetLeft: _panOffsetLeft,
                                           pageWidth: pageWidth,
                                           onTap: () {
-                                            _panelState.value =
-                                                PanelState.closed;
+                                            _panelState.value = PanelState.closed;
 
                                             // Reset panel position, dock it to nearest edge;
                                             _forceDock(pageWidth);
@@ -519,8 +481,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
   // border radius property of the WIDGET, else it will be set to the size of
   // widget to make all corners rounded.
   BorderRadius get _borderRadius {
-    if (widget.panelShape != null &&
-        widget.panelShape == PanelShape.rectangle) {
+    if (widget.panelShape != null && widget.panelShape == PanelShape.rectangle) {
       // If panel shape is 'rectangle', border radius can be set to custom or 0;
       return widget.borderRadius ?? BorderRadius.zero;
     } else {
@@ -567,8 +528,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
       _panelPositionLeft.value = -_buttonWidth.value;
     } else {
       // Dock to the right edge;
-      _draggablePositionLeft.value =
-          (pageWidth - _buttonWidth.value) - _dockBoundary;
+      _draggablePositionLeft.value = (pageWidth - _buttonWidth.value) - _dockBoundary;
       _panelPositionLeft.value = pageWidth + _buttonWidth.value;
     }
   }
@@ -627,8 +587,7 @@ class _HidePanel extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if ((_positionLeft.value + _panOffsetLeft.value) <
-                        pageWidth / 2) ...[
+                    if ((_positionLeft.value + _panOffsetLeft.value) < pageWidth / 2) ...[
                       const Flexible(
                         flex: 2,
                         child: Icon(
@@ -648,8 +607,7 @@ class _HidePanel extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if ((_positionLeft.value + _panOffsetLeft.value) >
-                        pageWidth / 2) ...[
+                    if ((_positionLeft.value + _panOffsetLeft.value) > pageWidth / 2) ...[
                       const Flexible(child: Gap(12)),
                       const Flexible(
                         flex: 2,

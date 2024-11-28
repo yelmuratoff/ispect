@@ -20,7 +20,7 @@ class ISpectScopeModel with ChangeNotifier {
   ISpectOptions _options = const ISpectOptions();
   ISpectTheme _theme = const ISpectTheme();
 
-  GlobalKey<NavigatorState>? _navigatorKey;
+  NavigatorObserver? _observer;
 
   bool get isISpectEnabled => _isISpectEnabled;
 
@@ -30,10 +30,10 @@ class ISpectScopeModel with ChangeNotifier {
 
   ISpectTheme get theme => _theme;
 
-  GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
+  NavigatorObserver? get observer => _observer;
 
-  set navigatorKey(GlobalKey<NavigatorState>? value) {
-    _navigatorKey = value;
+  set setObserver(NavigatorObserver? observer) {
+    _observer = observer;
     notifyListeners();
   }
 
@@ -97,8 +97,7 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) =>
-      ChangeNotifierProvider<ISpectScopeModel>(
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
         create: (_) => ISpectScopeModel()
           ..setISpect = isISpectEnabled
           ..setOptions(options)

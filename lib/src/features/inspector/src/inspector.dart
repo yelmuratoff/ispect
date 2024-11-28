@@ -53,7 +53,7 @@ class Inspector extends StatefulWidget {
     required this.child,
     required this.options,
     this.onPositionChanged,
-    this.navigatorKey,
+    this.observer,
     super.key,
     this.backgroundColor,
     this.textColor,
@@ -101,7 +101,7 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
-  final GlobalKey<NavigatorState>? navigatorKey;
+  final NavigatorObserver? observer;
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
   final ({
@@ -136,8 +136,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) =>
-      context?.findAncestorStateOfType<InspectorState>();
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -147,8 +146,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() => setState(() => _isPanelVisible = !_isPanelVisible);
 
   final _stackKey = GlobalKey();
   final _repaintBoundaryKey = GlobalKey();
@@ -206,8 +204,8 @@ class InspectorState extends State<Inspector> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.navigatorKey != null) {
-        ISpect.read(context).navigatorKey = widget.navigatorKey;
+      if (widget.observer != null) {
+        ISpect.read(context).setObserver = widget.observer;
       }
     });
   }
@@ -233,9 +231,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -323,8 +319,7 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -335,9 +330,8 @@ class InspectorState extends State<Inspector> {
   Offset _extractShiftedOffset(Offset offset) {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 =
+        (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -350,9 +344,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -360,8 +352,7 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
     if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+      final newValue = _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
 
       if (newValue < 1.0) {
         return;
@@ -427,8 +418,7 @@ class InspectorState extends State<Inspector> {
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer =
-                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
+              final isAbsorbingPointer = _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -532,18 +522,15 @@ class InspectorState extends State<Inspector> {
               builder: (context) => ISpectMenuPanel(
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 panelShape: PanelShape.rectangle,
-                navigatorKey: widget.navigatorKey,
+                observer: widget.observer,
                 backgroundColor: context.isDarkMode
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
                 initialPosition: widget.initialPosition,
-                onPositionChanged: (x, y) =>
-                    widget.onPositionChanged?.call(x, y),
+                onPositionChanged: (x, y) => widget.onPositionChanged?.call(x, y),
                 items: [
                   ISpectPanelItem(
-                    icon: _controller.inLoggerPage
-                        ? Icons.undo_rounded
-                        : Icons.reorder_rounded,
+                    icon: _controller.inLoggerPage ? Icons.undo_rounded : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
                     onTap: (_) {
                       _launchInfospect(context);
@@ -590,30 +577,30 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
-        final screenshotFilePath =
-            await writeImageToStorage(feedback.screenshot);
+        final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
         if (feedback.extra?.isNotEmpty ?? false) {
           if (feedback.extra!['jira'] == true && context.mounted) {
-            unawaited(
-              Navigator.push(
-                widget.navigatorKey!.currentContext!,
-                MaterialPageRoute<dynamic>(
-                  builder: (_) => JiraSendIssuePage(
-                    initialDescription: feedback.text,
-                    initialAttachmentPath: screenshotFilePath.path,
-                    onJiraAuthorized: widget.onJiraAuthorized,
-                  ),
-                  settings: RouteSettings(
-                    name: 'JiraSendIssuePage',
-                    arguments: {
-                      'initialDescription': feedback.text,
-                      'initialAttachmentPath': screenshotFilePath.path,
-                      'onJiraAuthorized': widget.onJiraAuthorized,
-                    },
-                  ),
-                ),
+            final jiraPage = MaterialPageRoute<dynamic>(
+              builder: (_) => JiraSendIssuePage(
+                initialDescription: feedback.text,
+                initialAttachmentPath: screenshotFilePath.path,
+                onJiraAuthorized: widget.onJiraAuthorized,
+              ),
+              settings: RouteSettings(
+                name: 'JiraSendIssuePage',
+                arguments: {
+                  'initialDescription': feedback.text,
+                  'initialAttachmentPath': screenshotFilePath.path,
+                  'onJiraAuthorized': widget.onJiraAuthorized,
+                },
               ),
             );
+
+            if (widget.observer?.navigator == null) {
+              unawaited(Navigator.of(context).push(jiraPage));
+            } else {
+              unawaited(widget.observer?.navigator?.push(jiraPage));
+            }
           }
         } else {
           await Share.shareXFiles(
@@ -629,32 +616,38 @@ class InspectorState extends State<Inspector> {
     setState(() {});
   }
 
-  void _launchInfospect(BuildContext context) {
-    final context0 = widget.navigatorKey?.currentContext ?? context;
-
+  Future<void> _launchInfospect(BuildContext context) async {
+    final iSpectPage = MaterialPageRoute<dynamic>(
+      builder: (_) => ISpectPage(
+        options: widget.options,
+        onJiraAuthorized: widget.onJiraAuthorized,
+      ),
+      settings: RouteSettings(
+        name: 'ISpectPage',
+        arguments: {
+          'options': widget.options,
+          'onJiraAuthorized': widget.onJiraAuthorized,
+        },
+      ),
+    );
     if (_controller.inLoggerPage) {
-      Navigator.pop(context0);
+      if (widget.observer?.navigator == null) {
+        Navigator.of(context).pop();
+      } else {
+        widget.observer?.navigator?.pop();
+      }
     } else {
-      // ignore: prefer_async_await
-      Navigator.push(
-        context0,
-        MaterialPageRoute<dynamic>(
-          builder: (_) => ISpectPage(
-            options: widget.options,
-            onJiraAuthorized: widget.onJiraAuthorized,
-          ),
-          settings: RouteSettings(
-            name: 'ISpectPage',
-            arguments: {
-              'options': widget.options,
-              'onJiraAuthorized': widget.onJiraAuthorized,
-            },
-          ),
-        ),
-      ).then((_) {
-        _controller.setInLoggerPage(false);
-      });
-      _controller.setInLoggerPage(true);
+      if (widget.observer?.navigator == null) {
+        _controller.setInLoggerPage(true);
+        await Navigator.of(context).push(iSpectPage).then((_) {
+          _controller.setInLoggerPage(false);
+        });
+      } else {
+        _controller.setInLoggerPage(true);
+        await widget.observer?.navigator?.push(iSpectPage).then((_) {
+          _controller.setInLoggerPage(false);
+        });
+      }
     }
   }
 }

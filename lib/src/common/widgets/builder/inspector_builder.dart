@@ -14,7 +14,7 @@ class ISpectBuilder extends StatelessWidget {
     required this.child,
     this.initialPosition,
     this.initialJiraData,
-    this.navigatorKey,
+    this.observer,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
@@ -22,7 +22,8 @@ class ISpectBuilder extends StatelessWidget {
     this.onJiraAuthorized,
     super.key,
   });
-  final GlobalKey<NavigatorState>? navigatorKey;
+
+  final NavigatorObserver? observer;
   final Widget? child;
   final FeedbackThemeData? feedbackTheme;
   final FeedbackThemeData? feedBackDarkTheme;
@@ -70,7 +71,7 @@ class ISpectBuilder extends StatelessWidget {
               /// Add inspector to the widget tree
               child = Inspector(
                 options: ispectModel.options,
-                navigatorKey: navigatorKey,
+                observer: observer,
                 isPanelVisible: ispectModel.isISpectEnabled,
                 backgroundColor: adjustColorBrightness(
                   theme.colorScheme.primaryContainer,
@@ -88,29 +89,23 @@ class ISpectBuilder extends StatelessWidget {
 
               /// Add performance overlay to the widget tree
               child = PerformanceOverlayBuilder(
-                isPerformanceTrackingEnabled:
-                    ispectModel.isPerformanceTrackingEnabled,
+                isPerformanceTrackingEnabled: ispectModel.isPerformanceTrackingEnabled,
                 theme: theme,
                 child: child,
               );
 
               /// Add feedback button to the widget tree
               child = BetterFeedback(
-                themeMode:
-                    context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                localizationsDelegates:
-                    ISpectLocalization.localizationDelegates,
+                themeMode: context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                localizationsDelegates: ISpectLocalization.localizationDelegates,
                 localeOverride: ispectModel.options.locale,
                 theme: feedbackTheme ??
                     FeedbackThemeData(
                       background: Colors.grey[800]!,
-                      feedbackSheetColor:
-                          context.ispectTheme.colorScheme.surface,
-                      activeFeedbackModeColor:
-                          context.ispectTheme.colorScheme.primary,
+                      feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                      activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
                       cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                      bottomSheetDescriptionStyle:
-                          context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                      bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
                         color: Colors.grey[800],
                       ),
                       dragHandleColor: Colors.grey[400],
@@ -120,13 +115,10 @@ class ISpectBuilder extends StatelessWidget {
                 darkTheme: feedBackDarkTheme ??
                     FeedbackThemeData(
                       background: Colors.grey[800]!,
-                      feedbackSheetColor:
-                          context.ispectTheme.colorScheme.surface,
-                      activeFeedbackModeColor:
-                          context.ispectTheme.colorScheme.primary,
+                      feedbackSheetColor: context.ispectTheme.colorScheme.surface,
+                      activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
                       cardColor: context.ispectTheme.scaffoldBackgroundColor,
-                      bottomSheetDescriptionStyle:
-                          context.ispectTheme.textTheme.bodyMedium!.copyWith(
+                      bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
                         color: Colors.grey[300],
                       ),
                       dragHandleColor: Colors.grey[400],

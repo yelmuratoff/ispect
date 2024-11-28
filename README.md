@@ -102,7 +102,7 @@ Put this code in your project at an screen and learn how it works. 😊
 
 1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
 2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `navigatorKey`.
+3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
 
 Please, check the example for more details.
 

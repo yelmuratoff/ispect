@@ -1,3 +1,6 @@
+## 2.0.1
+- Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
+
 ## 2.0.0
 - Fix: no Navigator in the context when navigatorKey is not provided.
 - Fix: panel height factor fixed

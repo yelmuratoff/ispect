@@ -9,10 +9,7 @@ import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
-final navigatorKey = GlobalKey<NavigatorState>();
-
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -76,6 +73,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
     const locale = Locale('en');
+    final observer = ISpectNavigatorObserver();
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -149,12 +147,7 @@ class App extends ConsumerWidget {
       ),
       isISpectEnabled: true,
       child: MaterialApp(
-        navigatorKey: navigatorKey,
-        navigatorObservers: [
-          ISpectNavigatorObserver(
-            isLogModals: false,
-          ),
-        ],
+        navigatorObservers: [observer],
         locale: locale,
         supportedLocales: ExampleGeneratedLocalization.supportedLocales,
         localizationsDelegates: ISpectLocalizations.localizationDelegates([
@@ -175,7 +168,7 @@ class App extends ConsumerWidget {
         themeMode: themeMode,
         builder: (context, child) {
           child = ISpectBuilder(
-            navigatorKey: navigatorKey,
+            observer: observer,
             initialPosition: (x: 0, y: 200),
             // initialJiraData: (
             //   apiToken:
@@ -188,8 +181,7 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized:
-                (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;
