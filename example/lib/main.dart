@@ -9,7 +9,8 @@ import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider =
+    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -181,7 +182,8 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized:
+                (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;
@@ -284,6 +286,7 @@ class _Home extends ConsumerWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const _SecondPage(),
+                    settings: const RouteSettings(name: 'SecondPage'),
                   ),
                 );
               },
