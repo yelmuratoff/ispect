@@ -60,7 +60,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.title] ??
+                icon: iSpect.theme.logIcons[widget.data.key] ??
                     Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.title,

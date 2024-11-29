@@ -60,7 +60,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (!_validate(route)) return;
 
     final routeName = route.settings.name ?? 'Unknown';
-    final previousRouteName = previousRoute?.settings.name ?? 'None';
+    final previousRouteName = previousRoute?.settings.name ?? 'Unknown';
 
     final logMessage = StringBuffer()
       ..writeln('Push: $routeName (Type: ${_getRouteType(route)})')

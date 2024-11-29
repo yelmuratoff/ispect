@@ -46,7 +46,7 @@ class ISpectMenuPanel extends StatefulWidget {
     this.dockAnimCurve,
     this.dockAnimDuration,
     this.initialPosition,
-    this.navigatorKey,
+    this.observer,
     this.onPositionChanged,
   });
 
@@ -72,7 +72,7 @@ class ISpectMenuPanel extends StatefulWidget {
   final List<ISpectPanelButton> buttons;
   final ({double x, double y})? initialPosition;
   final void Function(double x, double y)? onPositionChanged;
-  final GlobalKey<NavigatorState>? navigatorKey;
+  final NavigatorObserver? observer;
 
   @override
   _FloatBoxState createState() => _FloatBoxState();
@@ -343,21 +343,21 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                           child: Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 if (true) ...[
-                                  Flexible(
-                                    flex: 2,
-                                    child: Wrap(
-                                      runAlignment: WrapAlignment.center,
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      children: List.generate(
-                                        widget.items.length,
-                                        (index) => Badge(
-                                          isLabelVisible:
-                                              widget.items[index].enableBadge,
-                                          smallSize: 12,
+                                  Wrap(
+                                    runAlignment: WrapAlignment.center,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: List.generate(
+                                      widget.items.length,
+                                      (index) => Badge(
+                                        isLabelVisible:
+                                            widget.items[index].enableBadge,
+                                        smallSize: 12,
+                                        child: Material(
+                                          color: Colors.transparent,
                                           child: IconButton.filled(
                                             icon: Icon(
                                               widget.items[index].icon,
@@ -381,11 +381,8 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                               ),
                                             ),
                                             onPressed: () {
-                                              widget.items[index].onTap.call(
-                                                widget.navigatorKey
-                                                        ?.currentContext ??
-                                                    context,
-                                              );
+                                              widget.items[index].onTap
+                                                  .call(context);
 
                                               _panelState.value =
                                                   PanelState.closed;
@@ -397,52 +394,37 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                       ),
                                     ),
                                   ),
-                                  Flexible(
-                                    flex: 3,
-                                    child: ColoredBox(
-                                      color: Colors.transparent,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          ...widget.buttons.map(
-                                            (button) => Flexible(
-                                              flex: 2,
-                                              child: _PanelButton(
-                                                itemColor: _itemColor,
-                                                icon: button.icon,
-                                                label: button.label,
-                                                pageWidth: pageWidth,
-                                                onTap: () {
-                                                  button.onTap.call(
-                                                    widget.navigatorKey
-                                                            ?.currentContext ??
-                                                        context,
-                                                  );
-                                                },
-                                              ),
-                                            ),
+                                  ColoredBox(
+                                    color: Colors.transparent,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ...widget.buttons.map(
+                                          (button) => _PanelButton(
+                                            itemColor: _itemColor,
+                                            icon: button.icon,
+                                            label: button.label,
+                                            pageWidth: pageWidth,
+                                            onTap: () {
+                                              button.onTap.call(context);
+                                            },
                                           ),
-                                          Flexible(
-                                            flex: 3,
-                                            child: _HidePanel(
-                                              itemColor: _itemColor,
-                                              positionLeft:
-                                                  _draggablePositionLeft,
-                                              panOffsetLeft: _panOffsetLeft,
-                                              pageWidth: pageWidth,
-                                              onTap: () {
-                                                _panelState.value =
-                                                    PanelState.closed;
+                                        ),
+                                        _HidePanel(
+                                          itemColor: _itemColor,
+                                          positionLeft: _draggablePositionLeft,
+                                          panOffsetLeft: _panOffsetLeft,
+                                          pageWidth: pageWidth,
+                                          onTap: () {
+                                            _panelState.value =
+                                                PanelState.closed;
 
-                                                // Reset panel position, dock it to nearest edge;
-                                                _forceDock(pageWidth);
-                                                _togglePanel(pageWidth);
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                            // Reset panel position, dock it to nearest edge;
+                                            _forceDock(pageWidth);
+                                            _togglePanel(pageWidth);
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -543,9 +525,8 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
 
   // Height of the panel according to the panel state;
   double get _panelHeight =>
-      (_calculateRowCount(widget.items.length) * 49) +
-      45 +
-      ((widget.buttons.isNotEmpty) ? (25 * (widget.buttons.length + 1)) : 0);
+      (_calculateRowCount(widget.items.length) * 45) +
+      ((widget.buttons.isNotEmpty) ? (50 * (widget.buttons.length + 1)) : 60);
 
   // Panel border is only enabled if the border width is greater than 0;
   Border? get _panelBorder {

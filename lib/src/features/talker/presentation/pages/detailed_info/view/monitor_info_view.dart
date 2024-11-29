@@ -65,7 +65,7 @@ class _MonitorView extends StatelessWidget {
                 onCopyTap: () => onCopyTap?.call(context, data),
                 color: iSpect.theme.getTypeColor(
                   context,
-                  key: data.title,
+                  key: data.key,
                 ),
                 expanded: isLogsExpanded,
                 backgroundColor: context.ispectTheme.cardColor,

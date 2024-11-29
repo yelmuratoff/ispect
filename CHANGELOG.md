@@ -1,3 +1,17 @@
+## 2.0.1
+- Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
+
+## 2.0.0
+- Fix: no Navigator in the context when navigatorKey is not provided.
+- Fix: panel height factor fixed
+
+## 1.9.8
+- `Talker` was upgraded to v4.5.0.
+- Now you can customize `track` method.
+   - You can add analytic's service name.
+   - You can add event's name.
+
+
 ## 1.9.7
 - Fix: default icons not showed if theme is null.
 

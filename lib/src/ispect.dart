@@ -41,8 +41,6 @@ final class ISpect {
         context,
       );
 
-  late final GlobalKey<NavigatorState> navigatorKey;
-
   /// `run` - This function runs the callback function with the specified parameters.
   /// It initializes the handling of the app.
   static void run<T>(
@@ -307,29 +305,31 @@ final class ISpect {
   }
 
   static void logTyped(TalkerLog log) {
-    _instance._talker.logTyped(log);
+    _instance._talker.logCustom(log);
   }
 
   static void good(String message) {
-    _instance._talker.logTyped(
+    _instance._talker.logCustom(
       GoodLog(message),
     );
   }
 
   static void track(
     String message, {
+    String? event,
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
-    _instance._talker.logTyped(
+    _instance._talker.logCustom(
       AnalyticsLog(
-        '${analytics ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
+        analytics: analytics,
+        '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
       ),
     );
   }
 
   static void print(String message) {
-    _instance._talker.logTyped(
+    _instance._talker.logCustom(
       PrintLog(
         message,
       ),
@@ -337,7 +337,7 @@ final class ISpect {
   }
 
   static void route(String message) {
-    _instance._talker.logTyped(
+    _instance._talker.logCustom(
       RouteLog(message),
     );
   }
@@ -347,7 +347,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.logTyped(
+    _instance._talker.logCustom(
       ProviderLog(
         message,
         exception: exception,

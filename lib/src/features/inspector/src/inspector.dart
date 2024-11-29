@@ -53,7 +53,7 @@ class Inspector extends StatefulWidget {
     required this.child,
     required this.options,
     this.onPositionChanged,
-    this.navigatorKey,
+    this.observer,
     super.key,
     this.backgroundColor,
     this.textColor,
@@ -101,7 +101,7 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
-  final GlobalKey<NavigatorState>? navigatorKey;
+  final NavigatorObserver? observer;
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
   final ({
@@ -206,8 +206,8 @@ class InspectorState extends State<Inspector> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.navigatorKey != null) {
-        ISpect.read(context).navigatorKey = widget.navigatorKey;
+      if (widget.observer != null) {
+        ISpect.read(context).setObserver = widget.observer;
       }
     });
   }
@@ -532,7 +532,7 @@ class InspectorState extends State<Inspector> {
               builder: (context) => ISpectMenuPanel(
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 panelShape: PanelShape.rectangle,
-                navigatorKey: widget.navigatorKey,
+                observer: widget.observer,
                 backgroundColor: context.isDarkMode
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
@@ -594,26 +594,27 @@ class InspectorState extends State<Inspector> {
             await writeImageToStorage(feedback.screenshot);
         if (feedback.extra?.isNotEmpty ?? false) {
           if (feedback.extra!['jira'] == true && context.mounted) {
-            unawaited(
-              Navigator.push(
-                widget.navigatorKey!.currentContext!,
-                MaterialPageRoute<dynamic>(
-                  builder: (_) => JiraSendIssuePage(
-                    initialDescription: feedback.text,
-                    initialAttachmentPath: screenshotFilePath.path,
-                    onJiraAuthorized: widget.onJiraAuthorized,
-                  ),
-                  settings: RouteSettings(
-                    name: 'JiraSendIssuePage',
-                    arguments: {
-                      'initialDescription': feedback.text,
-                      'initialAttachmentPath': screenshotFilePath.path,
-                      'onJiraAuthorized': widget.onJiraAuthorized,
-                    },
-                  ),
-                ),
+            final jiraPage = MaterialPageRoute<dynamic>(
+              builder: (_) => JiraSendIssuePage(
+                initialDescription: feedback.text,
+                initialAttachmentPath: screenshotFilePath.path,
+                onJiraAuthorized: widget.onJiraAuthorized,
+              ),
+              settings: RouteSettings(
+                name: 'JiraSendIssuePage',
+                arguments: {
+                  'initialDescription': feedback.text,
+                  'initialAttachmentPath': screenshotFilePath.path,
+                  'onJiraAuthorized': widget.onJiraAuthorized,
+                },
               ),
             );
+
+            if (widget.observer?.navigator == null) {
+              unawaited(Navigator.of(context).push(jiraPage));
+            } else {
+              unawaited(widget.observer?.navigator?.push(jiraPage));
+            }
           }
         } else {
           await Share.shareXFiles(
@@ -629,32 +630,38 @@ class InspectorState extends State<Inspector> {
     setState(() {});
   }
 
-  void _launchInfospect(BuildContext context) {
-    final context0 = widget.navigatorKey?.currentContext ?? context;
-
+  Future<void> _launchInfospect(BuildContext context) async {
+    final iSpectPage = MaterialPageRoute<dynamic>(
+      builder: (_) => ISpectPage(
+        options: widget.options,
+        onJiraAuthorized: widget.onJiraAuthorized,
+      ),
+      settings: RouteSettings(
+        name: 'ISpectPage',
+        arguments: {
+          'options': widget.options,
+          'onJiraAuthorized': widget.onJiraAuthorized,
+        },
+      ),
+    );
     if (_controller.inLoggerPage) {
-      Navigator.pop(context0);
+      if (widget.observer?.navigator == null) {
+        Navigator.of(context).pop();
+      } else {
+        widget.observer?.navigator?.pop();
+      }
     } else {
-      // ignore: prefer_async_await
-      Navigator.push(
-        context0,
-        MaterialPageRoute<dynamic>(
-          builder: (_) => ISpectPage(
-            options: widget.options,
-            onJiraAuthorized: widget.onJiraAuthorized,
-          ),
-          settings: RouteSettings(
-            name: 'ISpectPage',
-            arguments: {
-              'options': widget.options,
-              'onJiraAuthorized': widget.onJiraAuthorized,
-            },
-          ),
-        ),
-      ).then((_) {
-        _controller.setInLoggerPage(false);
-      });
-      _controller.setInLoggerPage(true);
+      if (widget.observer?.navigator == null) {
+        _controller.setInLoggerPage(true);
+        await Navigator.of(context).push(iSpectPage).then((_) {
+          _controller.setInLoggerPage(false);
+        });
+      } else {
+        _controller.setInLoggerPage(true);
+        await widget.observer?.navigator?.push(iSpectPage).then((_) {
+          _controller.setInLoggerPage(false);
+        });
+      }
     }
   }
 }

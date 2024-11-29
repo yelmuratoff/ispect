@@ -152,7 +152,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                       expanded: _controller.expandedLogs,
                       color: iSpect.theme.getTypeColor(
                         context,
-                        key: data.title,
+                        key: data.key,
                       ),
                     );
                   },

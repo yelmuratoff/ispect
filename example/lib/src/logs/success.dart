@@ -7,10 +7,8 @@ class SuccessLog extends TalkerLog {
   @override
   String get title => logKey;
 
-  // TODO(Yelaman): Implement key getter when it will be possible.
-  // Not it is not possible.
-  // @override
-  // String get key => logKey;
+  @override
+  String get key => logKey;
 
   @override
   AnsiPen get pen => logPen;
