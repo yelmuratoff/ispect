@@ -1,4 +1,4 @@
-## 2.0.2
+## 2.0.3
 - Fix: `setState` during build inside `ISpectPage` (Talker).
 
 ## 2.0.1

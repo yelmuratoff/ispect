@@ -50,13 +50,15 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _expanded = widget.expanded;
-        _stackTrace = _getStackTrace;
-        _message = _getMessage;
-        _errorMessage = _getErrorMessage;
-        _type = _getType;
-      });
+      if (mounted) {
+        setState(() {
+          _expanded = widget.expanded;
+          _stackTrace = _getStackTrace;
+          _message = _getMessage;
+          _errorMessage = _getErrorMessage;
+          _type = _getType;
+        });
+      }
     });
   }
 
