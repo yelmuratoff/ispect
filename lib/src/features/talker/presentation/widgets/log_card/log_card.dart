@@ -40,10 +40,24 @@ class ISpectLogCard extends StatefulWidget {
 class _TalkerDataCardState extends State<ISpectLogCard> {
   var _expanded = false;
 
+  String? _stackTrace;
+  String? _message;
+  String? _errorMessage;
+  String? _type;
+
   @override
   void initState() {
     super.initState();
-    _expanded = widget.expanded;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _expanded = widget.expanded;
+        _stackTrace = _getStackTrace;
+        _message = _getMessage;
+        _errorMessage = _getErrorMessage;
+        _type = _getType;
+      });
+    });
   }
 
   @override
@@ -109,10 +123,12 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
       widget.onTap?.call();
       return;
     }
-    setState(() => _expanded = !_expanded);
+    setState(() {
+      _expanded = !_expanded;
+    });
   }
 
-  String? get _stackTrace {
+  String? get _getStackTrace {
     if ((widget.data is TalkerError ||
             widget.data is TalkerException ||
             widget.data.message == 'FlutterErrorDetails') &&
@@ -123,7 +139,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
     return null;
   }
 
-  String? get _message {
+  String? get _getMessage {
     if (widget.data is TalkerError || widget.data is TalkerException) {
       return widget.data.message;
     }
@@ -138,7 +154,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
     return widget.data.displayMessage;
   }
 
-  String? get _errorMessage {
+  String? get _getErrorMessage {
     var txt = widget.data.exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
@@ -153,7 +169,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
     return txt;
   }
 
-  String? get _type {
+  String? get _getType {
     if (widget.data is! TalkerError && widget.data is! TalkerException) {
       return null;
     }

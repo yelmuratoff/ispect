@@ -1,3 +1,6 @@
+## 2.0.2
+- Fix: `setState` during build inside `ISpectPage` (Talker).
+
 ## 2.0.1
 - Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
 
