@@ -38,28 +38,24 @@ class ISpectLogCard extends StatefulWidget {
 }
 
 class _TalkerDataCardState extends State<ISpectLogCard> {
-  var _expanded = false;
-
-  String? _stackTrace;
-  String? _message;
-  String? _errorMessage;
-  String? _type;
+  late bool _expanded;
+  late String? _stackTrace;
+  late String? _message;
+  late String? _errorMessage;
+  late String? _type;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeValues();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _expanded = widget.expanded;
-          _stackTrace = _getStackTrace;
-          _message = _getMessage;
-          _errorMessage = _getErrorMessage;
-          _type = _getType;
-        });
-      }
-    });
+  void _initializeValues() {
+    _expanded = widget.expanded;
+    _stackTrace = _getStackTrace;
+    _message = _getMessage;
+    _errorMessage = _getErrorMessage;
+    _type = _getType;
   }
 
   @override
@@ -76,8 +72,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ??
-                    Icons.bug_report_outlined,
+                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.title,
                 dateTime: widget.data.displayTime(),
@@ -93,7 +88,8 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
                     ),
                   );
                 },
-                isHttpLog: widget.data.key?.contains('http') ?? false,
+                isHttpLog:
+                    (widget.data.key?.contains('http') ?? false) || (widget.data.title?.contains('http') ?? false),
                 message: _message,
                 errorMessage: _errorMessage,
                 expanded: _expanded,
