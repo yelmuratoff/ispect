@@ -38,7 +38,7 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
 - ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
-- ✅ Talker logger implementation: **BLoC**, **Dio**, **Routing**, **Provider**
+- ✅ Talker logger implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
 - ✅ You can customize more options during initialization of ISpectTalker like BLoC, Dispatcher error and etc.
 - ✅ Updated ISpectTalker page: added more options.
    - Detailed `HTTP` logs: `request`, `response`, `error`
@@ -56,7 +56,7 @@ Follow these steps to use this package
 
 ```yaml
 dependencies:
-  ispect: ^2.0.3
+  ispect: ^2.0.4
 ```
 
 ### Add import package

@@ -97,7 +97,8 @@ class _ISpectPageViewState extends State<ISpectPageView> {
         builder: (_, __) => TalkerBuilder(
           talker: widget.talker,
           builder: (context, data) {
-            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
+            final filtredElements =
+                data.where((e) => _controller.filter.filter(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -133,7 +134,8 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                 SliverList.separated(
                   itemCount: filtredElements.length,
                   separatorBuilder: (_, __) => Divider(
-                    color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                    color: iSpect.theme.dividerColor(context) ??
+                        context.ispectTheme.dividerColor,
                     thickness: 1,
                   ),
                   itemBuilder: (context, index) {
@@ -176,7 +178,8 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     List<TalkerData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[
+        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
@@ -205,8 +208,12 @@ class _ISpectPageViewState extends State<ISpectPageView> {
           ),
           TalkerActionItem(
             onTap: (_) => _toggleLogsExpanded(),
-            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs
+                ? context.ispectL10n.collapseLogs
+                : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: (_) => _cleanHistory(),
@@ -303,7 +310,8 @@ class _ISpectPageViewState extends State<ISpectPageView> {
               ISpect.good(
                 '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
               );
-              widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
+              widget.onJiraAuthorized
+                  ?.call(domain, email, apiToken, projectId, projectKey);
             },
           ),
           settings: RouteSettings(

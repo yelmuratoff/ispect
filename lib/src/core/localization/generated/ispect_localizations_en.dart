@@ -526,4 +526,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get youAlreadyInLogger => 'You are already in the logger page';
+
+  @override
+  String get noData => 'No data';
 }

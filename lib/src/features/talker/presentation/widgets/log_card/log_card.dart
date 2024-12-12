@@ -72,7 +72,8 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
+                icon: iSpect.theme.logIcons[widget.data.key] ??
+                    Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.title,
                 dateTime: widget.data.displayTime(),
@@ -88,8 +89,8 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
                     ),
                   );
                 },
-                isHttpLog:
-                    (widget.data.key?.contains('http') ?? false) || (widget.data.title?.contains('http') ?? false),
+                isHttpLog: (widget.data.key?.contains('http') ?? false) ||
+                    (widget.data.title?.contains('http') ?? false),
                 message: _message,
                 errorMessage: _errorMessage,
                 expanded: _expanded,

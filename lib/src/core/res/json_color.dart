@@ -14,4 +14,18 @@ class JsonColors {
   static const jsonBackgroundColor = Color(0xFFE8E8E8);
   static const jsonKeyColor = Color(0xFF2D45C3);
   static const hiddenContainerColor = Color(0xFFBB5BC3);
+
+  static Color getStatusColor(int? statusCode) {
+    if (statusCode == null) {
+      return Colors.grey;
+    } else if (statusCode >= 200 && statusCode < 300) {
+      return Colors.green;
+    } else if (statusCode >= 400 && statusCode < 500) {
+      return Colors.orange;
+    } else if (statusCode >= 500) {
+      return Colors.red;
+    } else {
+      return Colors.grey;
+    }
+  }
 }

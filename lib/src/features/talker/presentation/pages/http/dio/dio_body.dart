@@ -305,7 +305,8 @@ class DioHTTPBody extends StatelessWidget {
                     'files': (data as FormData)
                         .files
                         .map(
-                          (e) => '${e.value.filename}: Length: ${e.value.length}',
+                          (e) =>
+                              '${e.value.filename}: Length: ${e.value.length}',
                         )
                         .toList(),
                     'fields': (data as FormData)

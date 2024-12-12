@@ -1036,6 +1036,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'You are already in the logger page'**
   String get youAlreadyInLogger;
+
+  /// No description provided for @noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get noData;
 }
 
 class _ISpectGeneratedLocalizationDelegate

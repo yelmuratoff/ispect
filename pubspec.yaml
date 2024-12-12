@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 2.0.3
+version: 2.0.4
 homepage: https://github.com/K1yoshiSho/ispect.git
 issue_tracker: https://github.com/K1yoshiSho/ispect/issues
 
@@ -18,14 +18,14 @@ dependencies:
     any
 
     # Logging
-  talker_flutter: ^4.5.1
-  talker_dio_logger: ^4.5.1
+  talker_flutter: ^4.5.2
+  talker_dio_logger: ^4.5.2
   talker_http_logger: ^0.1.0-dev.21
-  talker_bloc_logger: ^4.5.1
-  talker_riverpod_logger: ^4.5.1
+  talker_bloc_logger: ^4.5.2
+  talker_riverpod_logger: ^4.5.2
 
   # Utils
-  path_provider: ^2.1.4
+  path_provider: ^2.1.5
   share_plus: ^10.0.1
   package_info_plus: ^8.0.2
   device_info_plus: ^10.1.2
@@ -36,7 +36,7 @@ dependencies:
   gap: ^3.0.1
   auto_size_text: ^3.0.0
   font_awesome_flutter: ^10.8.0
-  flutter_markdown: ^0.7.4+1
+  flutter_markdown: ^0.7.4
 
   # Lints
   # custom_lint: ^0.6.4

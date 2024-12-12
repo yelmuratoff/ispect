@@ -1,3 +1,6 @@
+## 2.0.4
+- Feature: Added support for `http` package. See the example project for more details.
+
 ## 2.0.3
 - Fix: `setState` during build inside `ISpectPage` (Talker).
 

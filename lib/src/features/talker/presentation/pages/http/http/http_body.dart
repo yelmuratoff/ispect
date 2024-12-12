@@ -45,10 +45,7 @@ class HTTPBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    final typeColor = iSpect.theme.getTypeColor(
-      context,
-      key: dataKey,
-    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -149,7 +146,7 @@ class HTTPBody extends StatelessWidget {
                     text: '$statusCode',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: typeColor,
+                      color: JsonColors.getStatusColor(statusCode),
                     ),
                   ),
                 ],
@@ -173,7 +170,7 @@ class HTTPBody extends StatelessWidget {
                     text: '$statusMessage',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: typeColor,
+                      color: JsonColors.getStatusColor(statusCode),
                     ),
                   ),
                 ],
@@ -197,7 +194,7 @@ class HTTPBody extends StatelessWidget {
                     text: errorMessage,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: typeColor,
+                      color: JsonColors.getStatusColor(statusCode),
                     ),
                   ),
                 ],
@@ -236,7 +233,6 @@ class HTTPBody extends StatelessWidget {
             ),
           ),
         ],
-        // ignore: avoid_dynamic_calls
         if (data != null && data is Map) ...[
           const Gap(8),
           DetailedItemContainer(
@@ -257,6 +253,14 @@ class HTTPBody extends StatelessWidget {
                 ),
                 const Gap(8),
                 if (data is Map) ...[
+                  if ((data as Map).isEmpty) ...[
+                    Text(
+                      context.ispectL10n.noData,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                   JsonWidget(
                     json: data as Map<String, dynamic>?,
                     jsonController: jsonController,
@@ -267,6 +271,14 @@ class HTTPBody extends StatelessWidget {
                   ),
                 ],
                 if (data is String?) ...[
+                  if (data == null) ...[
+                    Text(
+                      context.ispectL10n.noData,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                   Text(
                     data.toString(),
                     style: TextStyle(

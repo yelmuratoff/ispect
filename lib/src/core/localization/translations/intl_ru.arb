@@ -155,5 +155,6 @@
   "viewAndManageData": "Просмотр и управление данными приложения",
   "warningLogDesc": "Лог предупреждения",
   "you": "Вы",
-  "youAlreadyInLogger": "Вы уже на странице ISpect"
+  "youAlreadyInLogger": "Вы уже на странице ISpect",
+  "noData": "Нет данных"
 }

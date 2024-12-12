@@ -11,7 +11,8 @@ class DetailedItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
+          color:
+              context.adjustColor(context.ispectTheme.scaffoldBackgroundColor),
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(

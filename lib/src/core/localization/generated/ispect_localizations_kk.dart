@@ -528,4 +528,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get youAlreadyInLogger => 'Сіз ISpect бетінде тұрсыз';
+
+  @override
+  String get noData => 'Деректер жоқ';
 }

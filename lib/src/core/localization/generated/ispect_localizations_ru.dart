@@ -525,4 +525,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get youAlreadyInLogger => 'Вы уже на странице ISpect';
+
+  @override
+  String get noData => 'Нет данных';
 }

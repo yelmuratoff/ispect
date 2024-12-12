@@ -155,5 +155,6 @@
   "viewAndManageData": "Қолданба мәліметтерін қарау және басқару",
   "warningLogDesc": "Ескерту журналы",
   "you": "Сіз",
-  "youAlreadyInLogger": "Сіз ISpect бетінде тұрсыз"
+  "youAlreadyInLogger": "Сіз ISpect бетінде тұрсыз",
+  "noData": "Деректер жоқ"
 }
