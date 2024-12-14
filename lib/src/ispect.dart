@@ -254,14 +254,14 @@ final class ISpect {
         if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
           _instance._talker.error(
             'FlutterErrorDetails',
-            details,
+            details.toString(),
             details.stack,
           );
         }
       } else {
         _instance._talker.error(
           'FlutterErrorDetails',
-          details,
+          details.toString(),
           details.stack,
         );
       }

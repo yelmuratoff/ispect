@@ -293,6 +293,45 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
+                // final formData = FormData();
+                // formData.files.add(MapEntry(
+                //   'file',
+                //   MultipartFile.fromBytes(
+                //     [1, 2, 3],
+                //     filename: 'file.txt',
+                //   ),
+                // ));
+
+                // dummyDio.post(
+                //   '/api/v1/files/upload',
+                //   data: formData,
+                // );
+
+                // Prepare the file data
+                final bytes = [1, 2, 3]; // File data as bytes
+                const filename = 'file.txt';
+
+                // Create the multipart request
+                var request = http_interceptor.MultipartRequest(
+                  'POST',
+                  Uri.parse(
+                      'https://jsonplaceholder.typicode.com/api/v1/files/upload'),
+                );
+
+                // Add the file to the request
+                request.files.add(http_interceptor.MultipartFile.fromBytes(
+                  'file', // Field name
+                  bytes,
+                  filename: filename,
+                ));
+
+                // Send the request
+                client.send(request);
+              },
+              child: const Text('Upload file to dummy server (http)'),
+            ),
+            ElevatedButton(
+              onPressed: () {
                 throw Exception('Test exception');
               },
               child: const Text('Throw exception'),

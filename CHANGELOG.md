@@ -1,3 +1,6 @@
+## 2.0.5
+- Feature: Support to view MultiPart request and response in the Detailed HTTP Logs page. (http package)
+
 ## 2.0.4
 - Feature: Added support for `http` package. See the example project for more details.
 

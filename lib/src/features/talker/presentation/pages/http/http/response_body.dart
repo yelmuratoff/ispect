@@ -20,8 +20,7 @@ class HttpResponseBodyState extends State<HttpResponseBody> {
 
   @override
   Widget build(BuildContext context) {
-    final response = widget.log.response as Response;
-    final data = jsonDecode(response.body);
+    final response = widget.log.response;
     final headers = response.headers;
     final statusCode = response.statusCode;
     final statusMessage = response.reasonPhrase;
@@ -38,10 +37,31 @@ class HttpResponseBodyState extends State<HttpResponseBody> {
         statusCode: statusCode,
         statusMessage: statusMessage,
         requestHeaders: requestHeaders,
-        data: data,
+        data: getData(),
         headers: headers,
         jsonController: widget.jsonController,
       ),
     );
+  }
+
+  dynamic getData() {
+    if (widget.log.response is Response) {
+      return jsonDecode((widget.log.response as Response).body);
+    } else if (widget.log.response.request is MultipartRequest) {
+      final request = widget.log.response.request! as MultipartRequest;
+      return {
+        'fields': request.fields,
+        'files': request.files
+            .map(
+              (file) => {
+                'filename': file.filename,
+                'length': file.length,
+                'contentType': file.contentType,
+                'field': file.field,
+              },
+            )
+            .toList(),
+      };
+    }
   }
 }

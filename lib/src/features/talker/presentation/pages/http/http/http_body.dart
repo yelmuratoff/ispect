@@ -294,50 +294,6 @@ class HTTPBody extends StatelessWidget {
             ),
           ),
         ],
-        // if (data is FormData) ...[
-        //   const Gap(8),
-        //   DetailedItemContainer(
-        //     child: Column(
-        //       crossAxisAlignment: CrossAxisAlignment.start,
-        //       children: [
-        //         const Text.rich(
-        //           TextSpan(
-        //             children: [
-        //               TextSpan(
-        //                 text: 'FormData: ',
-        //                 style: TextStyle(
-        //                   fontWeight: FontWeight.bold,
-        //                 ),
-        //               ),
-        //             ],
-        //           ),
-        //         ),
-        //         const Gap(8),
-        //         JsonWidget(
-        //           json: {
-        //             'files': (data as FormData)
-        //                 .files
-        //                 .map(
-        //                   (e) => '${e.value.filename}: Length: ${e.value.length}',
-        //                 )
-        //                 .toList(),
-        //             'fields': (data as FormData)
-        //                 .fields
-        //                 .map(
-        //                   (e) => '${e.key}: ${e.value}',
-        //                 )
-        //                 .toList(),
-        //           },
-        //           jsonController: jsonController,
-        //           keyColor: context.ispectTheme.textColor,
-        //           indentLeftEndJsonNode: 0,
-        //           indentHeight: 10,
-        //           indentWidth: 10,
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
         if (headers != null) ...[
           const Gap(8),
           DetailedItemContainer(
