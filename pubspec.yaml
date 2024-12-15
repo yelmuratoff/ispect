@@ -30,12 +30,10 @@ dependencies:
   share_plus: ^10.0.1
   package_info_plus: ^8.0.2
   device_info_plus: ^10.1.2
-  atlassian_apis: ^0.15.0
   file_picker: ^8.1.4
 
   # UI
   gap: ^3.0.1
-  auto_size_text: ^3.0.0
 
   # Lints
   # custom_lint: ^0.6.4

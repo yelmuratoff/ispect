@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/features/jira/jira_client.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 
@@ -144,38 +143,6 @@ class _StringFeedbackState extends State<StringFeedback> {
                 ),
                 onPressed: () => widget.onSubmit(_controller.text),
               ),
-              if (JiraClient.isInitialized)
-                TextButton(
-                  key: const Key('create_issue_button'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: FeedbackTheme.of(context).activeFeedbackModeColor,
-                    backgroundColor: context.ispectTheme.colorScheme.primaryContainer,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.bug_report_rounded),
-                      const Gap(8),
-                      Text(
-                        context.ispectL10n.createJiraIssue,
-                      ),
-                    ],
-                  ),
-                  onPressed: () {
-                    widget.onSubmit(
-                      _controller.text,
-                      extras: {
-                        'jira': true,
-                      },
-                    );
-                  },
-                ),
             ],
           ),
           const Gap(32),

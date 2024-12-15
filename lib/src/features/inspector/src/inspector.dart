@@ -19,10 +19,7 @@ import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/ispect_panel.dart';
-
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
-import 'package:ispect/src/features/jira/jira_client.dart';
-import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -82,8 +79,6 @@ class Inspector extends StatefulWidget {
     ],
     this.isEnabled,
     this.initialPosition,
-    this.initialJiraData,
-    this.onJiraAuthorized,
   });
 
   final Widget child;
@@ -108,20 +103,6 @@ class Inspector extends StatefulWidget {
     double x,
     double y,
   })? initialPosition;
-  final void Function(
-    String domain,
-    String email,
-    String apiToken,
-    String projectId,
-    String projectKey,
-  )? onJiraAuthorized;
-  final ({
-    String domain,
-    String email,
-    String apiToken,
-    String projectId,
-    String projectKey,
-  })? initialJiraData;
 
   static InspectorState of(BuildContext context) {
     final result = maybeOf(context);
@@ -136,8 +117,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) =>
-      context?.findAncestorStateOfType<InspectorState>();
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -147,8 +127,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() => setState(() => _isPanelVisible = !_isPanelVisible);
 
   final _stackKey = GlobalKey();
   final _repaintBoundaryKey = GlobalKey();
@@ -177,17 +156,6 @@ class InspectorState extends State<Inspector> {
     super.initState();
 
     _isPanelVisible = widget.isPanelVisible;
-
-    if (widget.initialJiraData != null) {
-      JiraClient.initClient(
-        projectDomain: widget.initialJiraData!.domain,
-        userEmail: widget.initialJiraData!.email,
-        apiToken: widget.initialJiraData!.apiToken,
-      );
-
-      JiraClient.projectId = widget.initialJiraData!.projectId;
-      JiraClient.projectKey = widget.initialJiraData!.projectKey;
-    }
 
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
@@ -233,9 +201,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -323,8 +289,7 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -335,9 +300,8 @@ class InspectorState extends State<Inspector> {
   Offset _extractShiftedOffset(Offset offset) {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 =
+        (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -350,9 +314,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -360,8 +322,7 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
     if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+      final newValue = _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
 
       if (newValue < 1.0) {
         return;
@@ -427,8 +388,7 @@ class InspectorState extends State<Inspector> {
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer =
-                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
+              final isAbsorbingPointer = _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -537,13 +497,10 @@ class InspectorState extends State<Inspector> {
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
                 initialPosition: widget.initialPosition,
-                onPositionChanged: (x, y) =>
-                    widget.onPositionChanged?.call(x, y),
+                onPositionChanged: (x, y) => widget.onPositionChanged?.call(x, y),
                 items: [
                   ISpectPanelItem(
-                    icon: _controller.inLoggerPage
-                        ? Icons.undo_rounded
-                        : Icons.reorder_rounded,
+                    icon: _controller.inLoggerPage ? Icons.undo_rounded : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
                     onTap: (_) {
                       _launchInfospect(context);
@@ -590,38 +547,12 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
-        final screenshotFilePath =
-            await writeImageToStorage(feedback.screenshot);
-        if (feedback.extra?.isNotEmpty ?? false) {
-          if (feedback.extra!['jira'] == true && context.mounted) {
-            final jiraPage = MaterialPageRoute<dynamic>(
-              builder: (_) => JiraSendIssuePage(
-                initialDescription: feedback.text,
-                initialAttachmentPath: screenshotFilePath.path,
-                onJiraAuthorized: widget.onJiraAuthorized,
-              ),
-              settings: RouteSettings(
-                name: 'JiraSendIssuePage',
-                arguments: {
-                  'initialDescription': feedback.text,
-                  'initialAttachmentPath': screenshotFilePath.path,
-                  'onJiraAuthorized': widget.onJiraAuthorized,
-                },
-              ),
-            );
+        final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
 
-            if (widget.observer?.navigator == null) {
-              unawaited(Navigator.of(context).push(jiraPage));
-            } else {
-              unawaited(widget.observer?.navigator?.push(jiraPage));
-            }
-          }
-        } else {
-          await Share.shareXFiles(
-            [screenshotFilePath],
-            text: feedback.text,
-          );
-        }
+        await Share.shareXFiles(
+          [screenshotFilePath],
+          text: feedback.text,
+        );
       });
     } else {
       feedback.hide();
@@ -634,13 +565,11 @@ class InspectorState extends State<Inspector> {
     final iSpectPage = MaterialPageRoute<dynamic>(
       builder: (_) => ISpectPage(
         options: widget.options,
-        onJiraAuthorized: widget.onJiraAuthorized,
       ),
       settings: RouteSettings(
         name: 'ISpectPage',
         arguments: {
           'options': widget.options,
-          'onJiraAuthorized': widget.onJiraAuthorized,
         },
       ),
     );

@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -47,13 +46,11 @@ class BoxInfoPanelWidget extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  child: Center(
-                    child: AutoSizeText(
-                      context.ispectL10n.copy,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      minFontSize: 10,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    backgroundColor: theme.colorScheme.primary.withValues(alpha: .1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: () {
@@ -63,6 +60,18 @@ class BoxInfoPanelWidget extends StatelessWidget {
                       showValue: false,
                     );
                   },
+                  child: Center(
+                    child: Text(
+                      context.ispectL10n.copy,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -80,16 +89,14 @@ class BoxInfoPanelWidget extends StatelessWidget {
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
                 _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],
@@ -224,9 +231,7 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
           backgroundColor: theme.chipTheme.backgroundColor,
           iconColor: decoration.color,
           child: Text(
-            decoration.color != null
-                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
-                : 'n/a',
+            decoration.color != null ? '#${colorToHexString(decoration.color!, withAlpha: true)}' : 'n/a',
             style: TextStyle(color: decoration.color),
           ),
         ),
@@ -275,9 +280,7 @@ class _RenderParagraphInfo extends StatelessWidget {
           iconColor: style.color,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
-            renderParagraph.text.style?.color != null
-                ? '#${colorToHexString(style.color!, withAlpha: true)}'
-                : 'n/a',
+            renderParagraph.text.style?.color != null ? '#${colorToHexString(style.color!, withAlpha: true)}' : 'n/a',
             style: TextStyle(
               color: style.color,
             ),

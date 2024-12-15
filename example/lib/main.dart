@@ -186,7 +186,7 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
+
             child: child,
           );
           return child;

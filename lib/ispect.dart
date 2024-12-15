@@ -11,6 +11,7 @@ export 'src/common/extensions/talker_data.dart';
 export 'src/common/utils/history.dart';
 export 'src/common/widgets/circular_menu/item.dart';
 export 'src/common/widgets/circular_menu/menu.dart';
+export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/features/inspector/src/widgets/panel/panel_item.dart';
 export 'src/features/talker/observers/route_observer.dart';
 export 'src/features/talker/presentation/pages/ispect_page.dart';

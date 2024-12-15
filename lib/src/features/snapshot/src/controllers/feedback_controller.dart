@@ -32,6 +32,5 @@ class FeedbackController extends ChangeNotifier {
   ///
   /// The controller is only attached if [FeedbackThemeData.sheetIsDraggable] is
   /// true and feedback is currently displayed.
-  final DraggableScrollableController sheetController =
-      DraggableScrollableController();
+  final DraggableScrollableController sheetController = DraggableScrollableController();
 }

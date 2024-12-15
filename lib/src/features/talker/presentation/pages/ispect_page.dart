@@ -15,7 +15,6 @@ class ISpectPage extends StatefulWidget {
     super.key,
     this.appBarTitle = 'ISpect',
     this.itemsBuilder,
-    this.onJiraAuthorized,
   });
 
   /// Screen [AppBar] title
@@ -26,14 +25,6 @@ class ISpectPage extends StatefulWidget {
   final TalkerDataBuilder? itemsBuilder;
 
   final ISpectOptions options;
-
-  final void Function(
-    String domain,
-    String email,
-    String apiToken,
-    String projectId,
-    String projectKey,
-  )? onJiraAuthorized;
 
   @override
   State<ISpectPage> createState() => _ISpectPageState();
@@ -50,7 +41,6 @@ class _ISpectPageState extends State<ISpectPage> {
         talker: ISpect.talker,
         appBarTitle: widget.appBarTitle,
         options: widget.options,
-        onJiraAuthorized: widget.onJiraAuthorized,
       );
 }
 
@@ -59,20 +49,11 @@ class _View extends StatelessWidget {
     required this.talker,
     required this.appBarTitle,
     required this.options,
-    required this.onJiraAuthorized,
   });
 
   final Talker talker;
   final String? appBarTitle;
   final ISpectOptions options;
-
-  final void Function(
-    String domain,
-    String email,
-    String apiToken,
-    String projectId,
-    String projectKey,
-  )? onJiraAuthorized;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -89,7 +70,6 @@ class _View extends StatelessWidget {
             ),
           ),
           options: options,
-          onJiraAuthorized: onJiraAuthorized,
         ),
       );
 }

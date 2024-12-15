@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:ispect/src/features/snapshot/src/controllers/feedback_data.dart';
+import 'package:ispect/src/features/snapshot/src/controllers/screenshot.dart';
+import 'package:ispect/src/features/snapshot/src/controllers/screenshot_data.dart';
 import 'package:ispect/src/features/snapshot/src/feedback_widget.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 import 'package:ispect/src/features/snapshot/src/utilities/feedback_app.dart';
@@ -184,13 +186,21 @@ class BetterFeedback extends StatefulWidget {
   /// BetterFeedback.of(context).hide(...);
   /// ```
   static FeedbackController of(BuildContext context) {
-    final feedbackData =
-        context.dependOnInheritedWidgetOfExactType<FeedbackData>();
+    final feedbackData = context.dependOnInheritedWidgetOfExactType<FeedbackData>();
     assert(
       feedbackData != null,
       'You need to add a $BetterFeedback widget above this context!',
     );
     return feedbackData!.controller;
+  }
+
+  static ScreenshotController ofScreenshot(BuildContext context) {
+    final screenshotData = context.dependOnInheritedWidgetOfExactType<ScreenShotData>();
+    assert(
+      screenshotData != null,
+      'You need to add a $BetterFeedback widget above this context!',
+    );
+    return screenshotData!.controller;
   }
 
   @override
@@ -199,6 +209,7 @@ class BetterFeedback extends StatefulWidget {
 
 class _BetterFeedbackState extends State<BetterFeedback> {
   final FeedbackController _controller = FeedbackController();
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   void initState() {
@@ -224,16 +235,20 @@ class _BetterFeedbackState extends State<BetterFeedback> {
         localizationsDelegates: widget.localizationsDelegates,
         localeOverride: widget.localeOverride,
         child: Builder(
-          builder: (_) => FeedbackData(
-            controller: _controller,
-            child: Builder(
-              builder: (context) => FeedbackWidget(
-                isFeedbackVisible: _controller.isVisible,
-                drawColors: FeedbackTheme.of(context).drawColors,
-                mode: widget.mode,
-                pixelRatio: widget.pixelRatio,
-                feedbackBuilder: widget.feedbackBuilder,
-                child: widget.child,
+          builder: (_) => ScreenShotData(
+            controller: _screenshotController,
+            child: FeedbackData(
+              controller: _controller,
+              child: Builder(
+                builder: (context) => FeedbackWidget(
+                  screenshotController: _screenshotController,
+                  isFeedbackVisible: _controller.isVisible,
+                  drawColors: FeedbackTheme.of(context).drawColors,
+                  mode: widget.mode,
+                  pixelRatio: widget.pixelRatio,
+                  feedbackBuilder: widget.feedbackBuilder,
+                  child: widget.child,
+                ),
               ),
             ),
           ),

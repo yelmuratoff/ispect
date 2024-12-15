@@ -9,9 +9,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
-import 'package:ispect/src/features/jira/jira_client.dart';
-import 'package:ispect/src/features/jira/presentation/pages/auth_page.dart';
-import 'package:ispect/src/features/jira/presentation/pages/send_issue_page.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
@@ -30,7 +27,6 @@ class ISpectPageView extends StatefulWidget {
     this.appBarTitle,
     this.itemsBuilder,
     this.appBarLeading,
-    this.onJiraAuthorized,
   });
 
   /// Talker implementation
@@ -51,14 +47,6 @@ class ISpectPageView extends StatefulWidget {
   final ScrollController? scrollController;
 
   final ISpectOptions options;
-
-  final void Function(
-    String domain,
-    String email,
-    String apiToken,
-    String projectId,
-    String projectKey,
-  )? onJiraAuthorized;
 
   @override
   State<ISpectPageView> createState() => _ISpectPageViewState();
@@ -224,11 +212,6 @@ class _ISpectPageViewState extends State<ISpectPageView> {
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
           ),
-          TalkerActionItem(
-            onTap: (_) => _goToJira(),
-            title: 'Jira',
-            icon: Icons.bug_report_outlined,
-          ),
           ...widget.options.actionItems,
         ],
       ),
@@ -254,46 +237,6 @@ class _ISpectPageViewState extends State<ISpectPageView> {
   void _copyTalkerDataItemText(TalkerData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
-  }
-
-  // ignore: unused_element
-  void _goToJira() {
-    if (JiraClient.isInitialized) {
-      Navigator.push(
-        context,
-        MaterialPageRoute<dynamic>(
-          builder: (_) => JiraSendIssuePage(
-            onJiraAuthorized: widget.onJiraAuthorized,
-          ),
-          settings: RouteSettings(
-            name: 'Jira Send Issue Page',
-            arguments: {
-              'onJiraAuthorized': widget.onJiraAuthorized,
-            },
-          ),
-        ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute<dynamic>(
-          builder: (_) => JiraAuthPage(
-            onAuthorized: (domain, email, apiToken, projectId, projectKey) {
-              ISpect.good(
-                '''✅ Jira authorized:\nProject domain: $domain\nUser email: $email\nProject id: $projectId\nAPI token: $apiToken''',
-              );
-              widget.onJiraAuthorized?.call(domain, email, apiToken, projectId, projectKey);
-            },
-          ),
-          settings: RouteSettings(
-            name: 'Jira Auth Page',
-            arguments: {
-              'onAuthorized': widget.onJiraAuthorized,
-            },
-          ),
-        ),
-      );
-    }
   }
 
   Future<void> _shareLogsInFile() async {
