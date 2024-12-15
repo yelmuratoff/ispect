@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:ispect_ai_reporter/src/common/services/google_ai.dart';
-import 'package:ispect_ai_reporter/src/common/utils/date_util.dart';
+import 'package:ispect_ai/src/common/services/google_ai.dart';
+import 'package:ispect_ai/src/common/utils/date_util.dart';
 import '../models/log_description.dart';
 import '../models/log_report.dart';
 

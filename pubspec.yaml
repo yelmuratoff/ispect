@@ -1,9 +1,9 @@
 name: ispect_workspace
 publish_to: none
 environment:
-  sdk: ^3.6.0
+   sdk: ^3.6.0
 
 workspace:
-  - packages/ispect
-  - packages/ispect_ai_reporter
-  - packages/ispect_jira
+   - packages/ispect
+   - packages/ispect_ai
+   - packages/ispect_jira

@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   ispect:
     path: ../../ispect
-  ispect_ai_reporter:
+  ispect_ai:
     path: ../
 
   dio: ^5.7.0

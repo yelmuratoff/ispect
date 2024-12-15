@@ -542,8 +542,8 @@
       "languageVersion": "3.6"
     },
     {
-      "name": "ispect_ai_reporter",
-      "rootUri": "../packages/ispect_ai_reporter",
+      "name": "ispect_ai",
+      "rootUri": "../packages/ispect_ai",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
@@ -554,7 +554,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2024-12-15T20:21:21.095591Z",
+  "generated": "2024-12-15T21:43:09.377391Z",
   "generator": "pub",
   "generatorVersion": "3.6.0",
   "flutterRoot": "file:///Users/yelamanyelmuratov/flutter",

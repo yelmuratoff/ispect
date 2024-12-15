@@ -40,7 +40,7 @@ ISpect can be extended using other parts of this package <br>
 | Package | Version | Description | 
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
+| [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
 | [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
 
 
@@ -123,8 +123,8 @@ import 'package:ispect_jira/ispect_jira.dart';
 ### Instructions for use:
 
 1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
-2. Инициализируйте `ISpectJiraClient` до `MaterialApp` и передайте необходимые параметры.
-Например, с локального хранилища.
+2. Initialize `ISpectJiraClient` to `MaterialApp` and pass the necessary parameters.
+For example, from local storage.
 ```dart
 ISpectJiraClient.initialize(
       projectDomain: 'domain',
@@ -134,7 +134,7 @@ ISpectJiraClient.initialize(
       projectKey: 'GTMS4',
     );
 ```
-3. В `actionItems` внутри `ISpectOptions` добавье Action кнопку Jira.
+3. In `actionItems` inside `ISpectOptions` add the Jira Action button.
 ```dart
 actionItems: [
           TalkerActionItem(
@@ -170,7 +170,7 @@ actionItems: [
           ),
         ],
 ```
-4. Добавьте `ISpectJiraLocalization` в ваш `localizationsDelegates` в `MaterialApp`.
+4. Add `ISpectJiraLocalization` to your `localizationsDelegates` in `MaterialApp`.
 ```dart
 localizationsDelegates: ISpectLocalizations.localizationDelegates([
           ExampleGeneratedLocalization.delegate,
@@ -195,13 +195,13 @@ child = ISpectBuilder(
           );
 ```
 
-Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
+Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example) for more details.
 
 >[!NOTE]
 >
-> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter).
+> - To add `ISpect AI`, follow the instructions provided here [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai).
 >
-> You can also check out an example of usage directly in [ispect_ai_reporter/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter/example).
+> You can also check out an example of usage directly in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example).
 
 ```dart
 ### For change `ISpect` theme:
@@ -234,6 +234,8 @@ A list of great packages I've used in ISpect:
 [inspector](https://pub.dev/packages/inspector), 
 [performance](https://pub.dev/packages/performance), 
 [cr_json_widget](https://pub.dev/packages/cr_json_widget).
+[atlassian_apis](https://pub.dev/packages/atlassian_apis).
+[file_picker](https://pub.dev/packages/file_picker).
 
 <br>
 <div align="center" >

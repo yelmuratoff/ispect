@@ -40,7 +40,7 @@ ISpect can be extended using other parts of this package <br>
 | Package | Version | Description | 
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
+| [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
 | [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
 
 
@@ -113,9 +113,9 @@ Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/pack
 
 >[!NOTE]
 >
-> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter).
+> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai).
 >
-> You can also check out an example of usage directly in [ispect_ai_reporter/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter/example).
+> You can also check out an example of usage directly in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example).
 >
 > - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
 >

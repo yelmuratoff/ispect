@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_ai_reporter/ispect_ai_reporter.dart';
+import 'package:ispect_ai/ispect_ai.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/theme_manager.dart';
 
@@ -12,12 +12,6 @@ import 'package:talker_flutter/talker_flutter.dart';
 final dio = Dio(
   BaseOptions(
     baseUrl: 'https://jsonplaceholder.typicode.com',
-  ),
-);
-
-final dummyDio = Dio(
-  BaseOptions(
-    baseUrl: 'https://api.escuelajs.co',
   ),
 );
 
@@ -34,12 +28,6 @@ void main() {
     isPrintLoggingEnabled: true,
     onInitialized: () {
       dio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-          settings: const TalkerDioLoggerSettings(),
-        ),
-      );
-      dummyDio.interceptors.add(
         TalkerDioLogger(
           talker: ISpect.talker,
         ),
@@ -73,24 +61,6 @@ class _AppState extends State<App> {
     return ISpectScopeWrapper(
       options: ISpectOptions(
         locale: locale,
-        panelButtons: [
-          ISpectPanelButton(
-            icon: Icons.copy_rounded,
-            label: 'Token',
-            onTap: (context) {
-              debugPrint('Token copied');
-            },
-          ),
-        ],
-        panelItems: [
-          ISpectPanelItem(
-            icon: Icons.home,
-            enableBadge: false,
-            onTap: (context) {
-              debugPrint('Home');
-            },
-          ),
-        ],
         actionItems: [
           TalkerActionItem(
             title: 'AI Chat',

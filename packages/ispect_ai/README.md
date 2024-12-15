@@ -40,7 +40,7 @@ ISpect can be extended using other parts of this package <br>
 | Package | Version | Description | 
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
+| [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
 | [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
 
 
@@ -88,6 +88,7 @@ Follow these steps to use this package
 ```yaml
 dependencies:
   ispect: ^2.0.5
+  ispect_ai: ^2.0.5
 ```
 
 ### Add import package
@@ -95,27 +96,60 @@ dependencies:
 ```dart
 import 'package:ispect/ispect.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispect_ai/ispect_ai.dart';
 ```
 
 ## Easy to use
-Simple example of use `ISpect`<br>
-You can manage ISpect using `ISpect.read(context)`.
-Put this code in your project at an screen and learn how it works. 😊
-
 
 ### Instructions for use:
 
 1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
-2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+2. Initialize `ISpectGoogleAi` to `MaterialApp` and pass the Google Ai token.
+For example, from an `.env` file or an environment variable.
+```dart
+ISpectGoogleAi.init('token');
+```
+3. In `actionItems` inside `ISpectOptions` add the corresponding Action buttons.
+For example:
+```dart
+actionItems: [
+          TalkerActionItem(
+            title: 'AI Chat',
+            icon: Icons.bubble_chart,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AiChatPage(),
+                ),
+              );
+            },
+          ),
+          TalkerActionItem(
+            title: 'AI Reporter',
+            icon: Icons.report_rounded,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AiReporterPage(),
+                ),
+              );
+            },
+          ),
+        ],
+```
+4. Add `ISpectAILocalization` to your `localizationsDelegates` in `MaterialApp`.
+```dart
+localizationsDelegates: ISpectLocalizations.localizationDelegates([
+          ExampleGeneratedLocalization.delegate,
+          ISpectAILocalization.delegate,
+        ]),
+```
+5. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
+6. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
 
-Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
+Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example) for more details.
 
 >[!NOTE]
->
-> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter).
->
-> You can also check out an example of usage directly in [ispect_ai_reporter/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter/example).
 >
 > - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
 >
@@ -159,7 +193,7 @@ Also, after authorization in Jira, you will have a **"Create Jira Issue"** butto
 It will immediately take you to the issue creation page with a description of the issue you described and a screenshot attachment with all your drawings.
 
 ### Referenced packages:
-A list of great packages I've used in ISpect:
+A list of great packages I've used in ISpect AI:
 [talker](https://pub.dev/packages/talker), 
 [path_provider](https://pub.dev/packages/path_provider), 
 [device_info_plus](https://pub.dev/packages/device_info_plus), 
@@ -171,6 +205,9 @@ A list of great packages I've used in ISpect:
 [inspector](https://pub.dev/packages/inspector), 
 [performance](https://pub.dev/packages/performance), 
 [cr_json_widget](https://pub.dev/packages/cr_json_widget).
+[google_generative_ai](https://pub.dev/packages/google_generative_ai).
+[flutter_markdown](https://pub.dev/packages/flutter_markdown).
+
 
 <br>
 <div align="center" >

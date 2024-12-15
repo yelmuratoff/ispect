@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_ai_reporter/src/common/services/google_ai.dart';
-import 'package:ispect_ai_reporter/src/common/utils/date_util.dart';
+import 'package:ispect_ai/src/common/services/google_ai.dart';
+import 'package:ispect_ai/src/common/utils/date_util.dart';
 import '../../core/data/models/chat_message.dart';
 import '../../core/domain/ai_repository.dart';
 import 'package:meta/meta.dart';

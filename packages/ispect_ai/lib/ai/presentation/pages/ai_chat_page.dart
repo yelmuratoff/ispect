@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_ai_reporter/ai/core/data/datasource/ai_remote_ds.dart';
-import 'package:ispect_ai_reporter/ai/core/data/repositories/ai_repository.dart';
-import 'package:ispect_ai_reporter/ai/presentation/widgets/ai_painter.dart';
-import 'package:ispect_ai_reporter/ai/presentation/widgets/gemini_logo.dart';
-import 'package:ispect_ai_reporter/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect_ai/ai/core/data/datasource/ai_remote_ds.dart';
+import 'package:ispect_ai/ai/core/data/repositories/ai_repository.dart';
+import 'package:ispect_ai/ai/presentation/widgets/ai_painter.dart';
+import 'package:ispect_ai/ai/presentation/widgets/gemini_logo.dart';
+import 'package:ispect_ai/src/core/localization/generated/ispect_localizations.dart';
 import '../../bloc/ai_chat/ai_chat_bloc.dart';
 import '../../core/data/models/chat_message.dart';
 
