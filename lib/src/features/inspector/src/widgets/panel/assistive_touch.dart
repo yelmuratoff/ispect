@@ -354,7 +354,7 @@ class _DefaultChild extends StatelessWidget {
           width: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.grey[400]!.withValues(alpha: 255.0 * 0.6),
+            color: Colors.grey[400]!.withValues(alpha: 0.6),
             borderRadius: const BorderRadius.all(Radius.circular(28)),
           ),
           child: Container(
@@ -362,7 +362,7 @@ class _DefaultChild extends StatelessWidget {
             width: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.grey[300]!.withValues(alpha: 255.0 * 0.6),
+              color: Colors.grey[300]!.withValues(alpha: 0.6),
               borderRadius: const BorderRadius.all(Radius.circular(28)),
             ),
             child: Container(

@@ -174,7 +174,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                 height: widget.buttonHeight,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: widget.backgroundColor.withValues(alpha: 255.0 * 0.4),
+                  color: widget.backgroundColor.withValues(alpha: 0.4),
                   borderRadius: _borderRadius,
                   border: _panelBorder,
                 ),
@@ -254,7 +254,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                             height: widget.buttonHeight,
                                             child: Icon(
                                               Icons.drag_indicator_rounded,
-                                              color: Colors.white.withValues(alpha: 255.0 * 0.5),
+                                              color: Colors.white.withValues(alpha: 0.5),
                                             ),
                                           ),
                                         )
@@ -269,7 +269,7 @@ class _FloatBoxState extends State<ISpectMenuPanel> {
                                               size: const Size(20, 65),
                                               painter: LineWithCurvePainter(
                                                 isInRightSide: isInRightSide,
-                                                color: Colors.white.withValues(alpha: 255.0 * 0.5),
+                                                color: Colors.white.withValues(alpha: 0.5),
                                               ),
                                             ),
                                           ),

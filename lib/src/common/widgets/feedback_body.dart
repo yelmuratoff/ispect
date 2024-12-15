@@ -107,7 +107,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                         contentPadding: const EdgeInsets.all(12),
                         hintText: context.ispectL10n.feedbackDescriptionText,
                         hintStyle: TextStyle(
-                          color: widget.theme.textTheme.bodyMedium?.color?.withValues(alpha: 255.0 * 0.5),
+                          color: widget.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                           fontSize: 14,
                         ),
                         border: const OutlineInputBorder(

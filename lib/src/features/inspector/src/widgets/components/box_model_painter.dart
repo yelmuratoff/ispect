@@ -19,7 +19,7 @@ final class BoxModelPainter extends CustomPainter {
 
   Paint get _containerPaint => Paint()..color = containerColor;
 
-  Paint get _containerDashPaint => Paint()..color = containerColor.withValues(alpha: 255.0 * 0.35);
+  Paint get _containerDashPaint => Paint()..color = containerColor.withValues(alpha: 0.35);
 
   static const double _dashWidth = 4;
   static const double _dashSkip = 0;

@@ -171,7 +171,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
               decoration: BoxDecoration(
                 color: _panelState.value == PanelState.open
                     ? widget.backgroundColor
-                    : widget.backgroundColor.withValues(alpha: 255.0 * 0.4),
+                    : widget.backgroundColor.withValues(alpha: 0.4),
                 borderRadius: _borderRadius,
                 border: _panelBorder,
               ),
@@ -247,7 +247,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                             height: widget.buttonHeight,
                                             child: Icon(
                                               Icons.drag_indicator_rounded,
-                                              color: Colors.white.withValues(alpha: 255.0 * 0.5),
+                                              color: Colors.white.withValues(alpha: 0.5),
                                             ),
                                           ),
                                         )
@@ -262,7 +262,7 @@ class _FloatBoxState extends State<FloatingMenuPanel> {
                                               size: const Size(20, 65),
                                               painter: LineWithCurvePainter(
                                                 isInRightSide: isInRightSide,
-                                                color: Colors.white.withValues(alpha: 255.0 * 0.5),
+                                                color: Colors.white.withValues(alpha: 0.5),
                                               ),
                                             ),
                                           ),

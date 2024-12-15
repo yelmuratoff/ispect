@@ -25,8 +25,7 @@ class ItemRecyclerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isParent = jsonElement.parentRef != null;
-    var depthOffset =
-        jsonController.horizontalSpaceMultiplier * jsonElement.depth;
+    var depthOffset = jsonController.horizontalSpaceMultiplier * jsonElement.depth;
 
     if (!isParent && !jsonController.showStandardJson) {
       depthOffset += jsonController.additionalIndentChildElements;
@@ -45,26 +44,21 @@ class ItemRecyclerWidget extends StatelessWidget {
                 ? LinearGradient(
                     colors: <Color>[
                       jsonController.standardJsonBackgroundColor,
-                      jsonController.standardJsonBackgroundColor
-                          .withValues(alpha: 255.0 * 0.1),
-                      jsonController.standardJsonBackgroundColor
-                          .withValues(alpha: 255.0 * 0.1),
+                      jsonController.standardJsonBackgroundColor.withValues(alpha: 0.1),
+                      jsonController.standardJsonBackgroundColor.withValues(alpha: 0.1),
                     ],
                   )
                 : null,
           ),
           child: Padding(
-            padding:
-                EdgeInsets.symmetric(vertical: jsonController.verticalOffset),
+            padding: EdgeInsets.symmetric(vertical: jsonController.verticalOffset),
             child: Row(
               children: [
                 /// Show icon only if not standard mode
                 /// display json
                 if (!jsonController.showStandardJson && isParent)
                   // ignore: use_if_null_to_convert_nulls_to_bools
-                  jsonElement.parentRef?.isClosed == true
-                      ? jsonController.iconClosed
-                      : jsonController.iconOpened,
+                  jsonElement.parentRef?.isClosed == true ? jsonController.iconClosed : jsonController.iconOpened,
                 Expanded(
                   child: GestureDetector(
                     onLongPress: () => _onLongPress(context),
@@ -107,8 +101,7 @@ class ItemRecyclerWidget extends StatelessWidget {
                               Container(
                                 decoration: const BoxDecoration(
                                   color: JsonColors.hiddenContainerColor,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(4)),
+                                  borderRadius: BorderRadius.all(Radius.circular(4)),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,

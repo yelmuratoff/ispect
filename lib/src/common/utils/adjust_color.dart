@@ -6,11 +6,11 @@ Color adjustColorBrightness(Color color, double brightness) {
     'Brightness must be between 0.0 and 1.0',
   );
 
-  final red = ((color.r * brightness) + (255 * (1.0 - brightness))).round();
-  final green = ((color.g * brightness) + (255 * (1.0 - brightness))).round();
-  final blue = ((color.b * brightness) + (255 * (1.0 - brightness))).round();
+  final red = (color.r * brightness) + (1.0 - brightness);
+  final green = (color.g * brightness) + (1.0 - brightness);
+  final blue = (color.b * brightness) + (1.0 - brightness);
 
-  return Color.fromARGB(color.a.toInt(), red, green, blue);
+  return color.withValues(alpha: color.a, red: red, green: green, blue: blue);
 }
 
 Color adjustColorDarken(Color color, double darken) {

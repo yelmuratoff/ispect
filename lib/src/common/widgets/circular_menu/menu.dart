@@ -243,7 +243,7 @@ class DraggableCircularMenuState extends State<DraggableCircularMenu> with Singl
                                 height: 70,
                                 decoration: BoxDecoration(
                                   color: _visibleState.value == VisibleState.hidden
-                                      ? widget.toggleButtonColor.withValues(alpha: 255.0 * 0.3)
+                                      ? widget.toggleButtonColor.withValues(alpha: 0.3)
                                       : widget.toggleButtonColor,
                                   borderRadius: BorderRadius.only(
                                     topRight: _isInLeftSide(screenSize) || _isDragging.value

@@ -144,7 +144,7 @@ class _ColorSelectionIconButton extends StatelessWidget {
   Widget build(BuildContext context) => IconButton(
         icon: Icon(isActive ? Icons.lens : Icons.panorama_fish_eye),
         color: color,
-        disabledColor: color.withValues(alpha: 255.0 * 0.5),
+        disabledColor: color.withValues(alpha: 0.5),
         onPressed: onPressed == null ? null : () => onPressed!(color),
       );
 }

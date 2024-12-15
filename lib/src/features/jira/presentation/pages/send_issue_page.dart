@@ -108,7 +108,7 @@ class _JiraSendIssuePageState extends State<JiraSendIssuePage> {
         },
         behavior: HitTestBehavior.translucent,
         child: ColoredBox(
-          color: context.ispectTheme.colorScheme.surface.withValues(alpha: 255.0 * 0.8),
+          color: context.ispectTheme.colorScheme.surface.withValues(alpha: 0.8),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
