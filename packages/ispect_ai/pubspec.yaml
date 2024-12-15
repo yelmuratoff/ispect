@@ -1,6 +1,6 @@
 name: ispect_ai
 description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
