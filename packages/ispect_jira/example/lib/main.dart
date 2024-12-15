@@ -61,10 +61,9 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     ISpectJiraClient.initialize(
-      projectDomain: 'anydevkz',
-      userEmail: 'y.yelmuratov@astanahub.com',
-      apiToken:
-          'ATATT3xFfGF0Wy-xun0l77fXjhVtYyEUAMtQSggL8sojVAGiAW-DdR8NP9H0YoRJEho1w2C6b5hPAjW_VA34uqUc0cleVuxL4j2DsbLwzftp7wMTZg_rlZ2UF8vDlMR-TtZcADvPojxR1aR0F0zeo0iM_hDKAAaukpa0PFMonpqucykRL7KMCkY=1D5984A6',
+      projectDomain: 'domain',
+      userEmail: 'example@example.com',
+      apiToken: 'token',
       projectId: '10007',
       projectKey: 'GTMS4',
     );
@@ -118,8 +117,7 @@ class _AppState extends State<App> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthScreen(
-                      onAuthorized:
-                          (domain, email, apiToken, projectId, projectKey) {
+                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
                         ISpect.good(
                           '''✅ Jira authorized:
   Project domain: $domain
@@ -165,8 +163,7 @@ class _AppState extends State<App> {
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
-            feedbackBuilder: (context, onSubmit, controller) =>
-                JiraFeedbackBuilder(
+            feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
               onSubmit: onSubmit,
               theme: Theme.of(context),
               scrollController: controller,

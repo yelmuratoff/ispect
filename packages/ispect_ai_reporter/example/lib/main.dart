@@ -60,7 +60,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    ISpectGoogleAi.init('AIzaSyA9ogrpJkv5ddCfYTiKtlKQWJ6p-BCWW0k');
+    ISpectGoogleAi.init('token');
   }
 
   @override
