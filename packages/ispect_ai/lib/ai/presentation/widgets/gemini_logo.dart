@@ -17,7 +17,8 @@ class _AiLoader extends StatefulWidget {
   State<_AiLoader> createState() => _AiLoaderState();
 }
 
-class _AiLoaderState extends State<_AiLoader> with SingleTickerProviderStateMixin {
+class _AiLoaderState extends State<_AiLoader>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override

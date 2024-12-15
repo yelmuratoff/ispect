@@ -13,5 +13,6 @@ class ScreenShotData extends InheritedWidget {
   final ScreenshotController controller;
 
   @override
-  bool updateShouldNotify(ScreenShotData oldWidget) => oldWidget.controller != controller;
+  bool updateShouldNotify(ScreenShotData oldWidget) =>
+      oldWidget.controller != controller;
 }

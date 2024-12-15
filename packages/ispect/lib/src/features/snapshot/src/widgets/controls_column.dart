@@ -65,8 +65,11 @@ class ControlsColumn extends StatelessWidget {
             quarterTurns: 1,
             child: MaterialButton(
               key: const ValueKey<String>('navigate_button'),
-              onPressed: isNavigatingActive ? null : () => onControlModeChanged(FeedbackMode.navigate),
-              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive
+                  ? null
+                  : () => onControlModeChanged(FeedbackMode.navigate),
+              disabledTextColor:
+                  FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
                 context.ispectL10n.navigate,
                 style: TextStyle(
@@ -85,8 +88,11 @@ class ControlsColumn extends StatelessWidget {
             child: MaterialButton(
               key: const ValueKey<String>('draw_button'),
               minWidth: 20,
-              onPressed: isNavigatingActive ? () => onControlModeChanged(FeedbackMode.draw) : null,
-              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive
+                  ? () => onControlModeChanged(FeedbackMode.draw)
+                  : null,
+              disabledTextColor:
+                  FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
                 context.ispectL10n.draw,
                 style: TextStyle(
@@ -103,7 +109,9 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('undo_button'),
             icon: Icon(
               Icons.undo,
-              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive
+                  ? Colors.grey
+                  : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onUndo,
           ),
@@ -111,7 +119,9 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('clear_button'),
             icon: Icon(
               Icons.delete,
-              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive
+                  ? Colors.grey
+                  : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onClearDrawing,
           ),

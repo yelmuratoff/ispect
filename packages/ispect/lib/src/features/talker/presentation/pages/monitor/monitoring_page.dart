@@ -51,7 +51,8 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
           return CustomScrollView(
             slivers: [
               ...uniqKeys.map((key) {
-                final logs = data.where((e) => (e.key ?? e.title) == key).toList();
+                final logs =
+                    data.where((e) => (e.key ?? e.title) == key).toList();
                 return SliverToBoxAdapter(
                   child: ISpectMonitorCard(
                     logs: logs,
@@ -60,7 +61,8 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       context,
                       key: key,
                     ),
-                    icon: iSpect.theme.logIcons[key] ?? Icons.bug_report_rounded,
+                    icon:
+                        iSpect.theme.logIcons[key] ?? Icons.bug_report_rounded,
                     subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,

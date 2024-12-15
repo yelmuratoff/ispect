@@ -186,7 +186,8 @@ class BetterFeedback extends StatefulWidget {
   /// BetterFeedback.of(context).hide(...);
   /// ```
   static FeedbackController of(BuildContext context) {
-    final feedbackData = context.dependOnInheritedWidgetOfExactType<FeedbackData>();
+    final feedbackData =
+        context.dependOnInheritedWidgetOfExactType<FeedbackData>();
     assert(
       feedbackData != null,
       'You need to add a $BetterFeedback widget above this context!',
@@ -195,7 +196,8 @@ class BetterFeedback extends StatefulWidget {
   }
 
   static ScreenshotController ofScreenshot(BuildContext context) {
-    final screenshotData = context.dependOnInheritedWidgetOfExactType<ScreenShotData>();
+    final screenshotData =
+        context.dependOnInheritedWidgetOfExactType<ScreenShotData>();
     assert(
       screenshotData != null,
       'You need to add a $BetterFeedback widget above this context!',

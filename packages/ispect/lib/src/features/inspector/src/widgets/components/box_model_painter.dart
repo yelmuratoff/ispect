@@ -19,7 +19,8 @@ final class BoxModelPainter extends CustomPainter {
 
   Paint get _containerPaint => Paint()..color = containerColor;
 
-  Paint get _containerDashPaint => Paint()..color = containerColor.withValues(alpha: 0.35);
+  Paint get _containerDashPaint =>
+      Paint()..color = containerColor.withValues(alpha: 0.35);
 
   static const double _dashWidth = 4;
   static const double _dashSkip = 0;
@@ -68,7 +69,8 @@ final class BoxModelPainter extends CustomPainter {
   }
 
   void _paintBoxSize(Canvas canvas, Size size) {
-    final painter = _getTextPainter('144 x 50')..layout(maxWidth: size.width / 2.0);
+    final painter = _getTextPainter('144 x 50')
+      ..layout(maxWidth: size.width / 2.0);
 
     painter.paint(
       canvas,
@@ -82,7 +84,8 @@ final class BoxModelPainter extends CustomPainter {
     required double padding,
     required Offset offset,
   }) {
-    final painter = _getTextPainter(padding.toStringAsFixed(1))..layout(maxWidth: size.width / 4.0);
+    final painter = _getTextPainter(padding.toStringAsFixed(1))
+      ..layout(maxWidth: size.width / 4.0);
 
     final topLeft = Offset(
       offset.dx - painter.width / 2.0,

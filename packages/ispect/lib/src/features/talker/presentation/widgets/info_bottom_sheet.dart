@@ -17,7 +17,8 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.6,
         ),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16)
+              .copyWith(bottom: 16, top: 8),
           child: CustomScrollView(
             primary: false,
             slivers: [

@@ -29,7 +29,8 @@ class ISpectGoogleAi {
   late final GenerativeModel model = GenerativeModel(
     model: 'gemini-1.5-flash-8b',
     apiKey: apiKey,
-    systemInstruction: Content.system('Your name is ISpect. You are a monitoring system.'),
+    systemInstruction:
+        Content.system('Your name is ISpect. You are a monitoring system.'),
     generationConfig: GenerationConfig(responseMimeType: 'application/json'),
   );
 }

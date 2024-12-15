@@ -36,7 +36,8 @@ class _AiChatPageState extends State<AiChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _aiChatBloc.add(
         InitChat(
-          possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
+          possibleKeys:
+              ISpect.read(context).theme.colors(context).keys.toList(),
           welcomeMessage: ISpectAILocalization.of(context)!.aiWelcomeMessage,
           logs: ISpect.talker.history,
         ),
@@ -127,7 +128,8 @@ class _AiChatPageState extends State<AiChatPage> {
                             FocusScope.of(context).unfocus();
                           },
                           decoration: InputDecoration(
-                            hintText: '${ISpectAILocalization.of(context)!.typeMessage}...',
+                            hintText:
+                                '${ISpectAILocalization.of(context)!.typeMessage}...',
                           ),
                           onSubmitted: (message) {
                             _sendMessage(context);
@@ -217,7 +219,10 @@ class _AIMessageWidget extends StatelessWidget {
                             maxRadius: 14,
                             child: Text(
                               'AI',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w900,
                                   ),
                             ),
@@ -226,9 +231,10 @@ class _AIMessageWidget extends StatelessWidget {
                         const Gap(8),
                         Text(
                           'ISpect AI',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ],
                     ),
@@ -283,9 +289,10 @@ class _UserMessageWidget extends StatelessWidget {
                       children: [
                         Text(
                           ISpectAILocalization.of(context)!.you,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const Gap(8),
                         SizedBox(
@@ -295,7 +302,10 @@ class _UserMessageWidget extends StatelessWidget {
                             maxRadius: 14,
                             child: Text(
                               ':)',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w900,
                                   ),
                             ),
