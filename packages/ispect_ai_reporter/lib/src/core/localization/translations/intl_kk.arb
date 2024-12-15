@@ -1,0 +1,17 @@
+{
+   "@@locale": "kk",
+   "aiChat": "AI чат",
+   "aiWelcomeMessage": "Сәлем! Сізге қалай көмектесе аламын?",
+   "allLogsCopied": "Барлық жазбалар алмасу буферіне көшірілді",
+   "analyticsLogDesc": "Аналитика қызметіне оқиғаларды жіберу журналы",
+   "apiToken": "API токені",
+   "copy": "Көшіріп алу",
+   "data": "Деректер",
+   "statusMessage": "Статус",
+   "submitButtonText": "Жіберу",
+   "summary": "Қысқаша мәлімет",
+   "typeMessage": "Сұрауды енгізіңіз",
+   "you": "Сіз",
+   "noData": "Деректер жоқ",
+   "retry": "Қайталау"
+}

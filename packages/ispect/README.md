@@ -20,15 +20,19 @@ Your feedback is highly valued as it will help shape future updates and ensure t
    <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/K1yoshiSho/ispect.git">star the repo</a> to support the project! </span>
 </p>
 
-## Packages
-ISpect can be extended using other parts of this package <br>
+<p align="center">
+  <a href="https://pub.dev/packages/ispect"><img src="https://img.shields.io/pub/v/ispect.svg" alt="Pub"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/K1yoshiSho/ispect"><img src="https://hits.dwyl.com/K1yoshiSho/ispect.svg?style=flat" alt="Repository views"></a>
+  <a href="https://github.com/K1yoshiSho/ispect"><img src="https://img.shields.io/github/stars/K1yoshiSho/ispect?style=social" alt="Pub"></a>
+</p>
+<p align="center">
+  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes"></a>
+  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/popularity/ispect?logo=flutter" alt="Pub popularity"></a>
+  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points"></a>
+</p>
 
-| Package | Version | Description | 
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [ispect](link) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_ai_reporter](link) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
-| [ispect_jira](link) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
-
+<br>
 
 ## 📌 Features
 
@@ -163,8 +167,8 @@ A list of great packages I've used in ISpect:
 <br>
 <div align="center" >
   <p>Thanks to all contributors of this package</p>
-  <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
+  <a href="https://github.com/K1yoshiSho/ispect/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
   </a>
 </div>
 <br>
