@@ -1,4 +1,4 @@
-## 2.0.6
+## 2.0.7
 - Breaking change: Jira and AI tools are now separated into separate packages.
    - Jira: [ispect_jira](https://pub.dev/packages/ispect_jira)  
    You can also check out an example of usage directly in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example).
