@@ -45,24 +45,7 @@ ISpect can be extended using other parts of this package <br>
 - ✅ Performance tracker
 - ✅ AI helper
 
-## 📌 Getting Started
-Follow these steps to use this package
-
-### Add dependency
-
-```yaml
-dependencies:
-  ispect: ^2.0.5
-```
-
-### Add import package
-
-```dart
-import 'package:ispect/ispect.dart';
-import 'package:talker_flutter/talker_flutter.dart';
-```
-
-## Showcase
+## 📜 Showcase
 
 <div align="center">
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/panel.png?raw=true" width="200" style="margin: 5px;" />
@@ -83,8 +66,22 @@ import 'package:talker_flutter/talker_flutter.dart';
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
 </div>
 
+## 📌 Getting Started
+Follow these steps to use this package
 
-&nbsp;
+### Add dependency
+
+```yaml
+dependencies:
+  ispect: ^2.0.5
+```
+
+### Add import package
+
+```dart
+import 'package:ispect/ispect.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+```
 
 ### Instructions for use:
 
