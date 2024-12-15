@@ -1,3 +1,10 @@
+## 2.0.6
+- Breaking change: Jira and AI tools are now separated into separate packages.
+   - Jira: [ispect_jira](https://pub.dev/packages/ispect_jira)  
+   You can also check out an example of usage directly in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example).
+   - ISpect AI: [ispect_ai](https://pub.dev/packages/ispect_ai)  
+   You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
+
 ## 2.0.5
 - Feature: Support to view MultiPart request and response in the Detailed HTTP Logs page. (http package)
 

@@ -1,7 +1,8 @@
 name: ispect_ai
-description: "A new Flutter package project."
+description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
 version: 0.0.1
-publish_to: none
+homepage: https://github.com/yelmuratoff/ispect.git
+issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:
   sdk: ^3.6.0
@@ -10,13 +11,15 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   flutter_bloc: ^8.1.6
   google_generative_ai: ^0.4.6
   path_provider: ^2.1.5
   talker_flutter: ^4.5.2
-  ispect: #^2.0.5
-    path: ../ispect
+  ispect: ^2.0.6
   meta: ^1.15.0
   flutter_markdown: ^0.7.4+3
   gap: ^3.0.1
