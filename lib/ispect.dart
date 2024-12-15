@@ -7,6 +7,8 @@ export 'package:ispect/src/core/localization/localization.dart';
 export 'package:ispect/src/core/res/ispect_theme.dart';
 export 'package:ispect/src/ispect.dart';
 
+export 'src/common/extensions/talker_data.dart';
+export 'src/common/utils/history.dart';
 export 'src/common/widgets/circular_menu/item.dart';
 export 'src/common/widgets/circular_menu/menu.dart';
 export 'src/features/inspector/src/widgets/panel/panel_item.dart';

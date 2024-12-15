@@ -12,8 +12,7 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:talker_http_logger/talker_http_logger.dart';
 
-final themeProvider =
-    StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
+final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -104,9 +103,6 @@ class App extends ConsumerWidget {
       // ),
       options: ISpectOptions(
         locale: locale,
-        // Use it if you need to use Google AI helper for generating logs description,
-        // and logs report.
-        googleAiToken: null,
         panelButtons: [
           ISpectPanelButton(
             icon: Icons.copy_rounded,
@@ -190,8 +186,7 @@ class App extends ConsumerWidget {
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-            onJiraAuthorized:
-                (domain, email, apiToken, projectId, projectKey) {},
+            onJiraAuthorized: (domain, email, apiToken, projectId, projectKey) {},
             child: child,
           );
           return child;
@@ -219,15 +214,13 @@ class _Home extends ConsumerWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                await client.get(
-                    Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+                await client.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
               },
               child: const Text('Send HTTP request (http package)'),
             ),
             ElevatedButton(
               onPressed: () async {
-                await client.get(Uri.parse(
-                    'https://jsonplaceholder.typicode.com/po2323sts/1'));
+                await client.get(Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'));
               },
               child: const Text('Send error HTTP request (http package)'),
             ),
@@ -314,8 +307,7 @@ class _Home extends ConsumerWidget {
                 // Create the multipart request
                 var request = http_interceptor.MultipartRequest(
                   'POST',
-                  Uri.parse(
-                      'https://jsonplaceholder.typicode.com/api/v1/files/upload'),
+                  Uri.parse('https://jsonplaceholder.typicode.com/api/v1/files/upload'),
                 );
 
                 // Add the file to the request

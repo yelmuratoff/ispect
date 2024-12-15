@@ -7,14 +7,12 @@ import 'package:ispect/src/features/inspector/src/widgets/panel/panel_item.dart'
 final class ISpectOptions {
   const ISpectOptions({
     this.locale = const Locale('en'),
-    this.googleAiToken,
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
   });
 
   final Locale locale;
-  final String? googleAiToken;
   final List<TalkerActionItem> actionItems;
   final List<ISpectPanelItem> panelItems;
   final List<ISpectPanelButton> panelButtons;
@@ -28,7 +26,6 @@ final class ISpectOptions {
   }) =>
       ISpectOptions(
         locale: locale ?? this.locale,
-        googleAiToken: googleAiToken ?? this.googleAiToken,
         actionItems: actionItems ?? this.actionItems,
         panelItems: panelItems ?? this.panelItems,
         panelButtons: panelButtons ?? this.panelButtons,

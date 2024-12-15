@@ -2,15 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/services/google_ai.dart';
 import 'package:ispect/src/common/utils/icons.dart';
-import 'package:ispect/src/features/ai/bloc/ai_chat/ai_chat_bloc.dart';
-import 'package:ispect/src/features/ai/bloc/ai_reporter/ai_reporter_cubit.dart';
-import 'package:ispect/src/features/ai/bloc/log_descriptions/log_descriptions_cubit.dart';
-import 'package:ispect/src/features/ai/core/data/datasource/ai_remote_ds.dart';
-import 'package:ispect/src/features/ai/core/data/repositories/ai_repository.dart';
+
 import 'package:provider/provider.dart';
 
 /// `ISpectScopeModel` is a model class that holds the state of the ISpect scope.
@@ -61,7 +55,6 @@ class ISpectScopeModel with ChangeNotifier {
     if (options == null) return;
 
     _options = options;
-    ISpectGoogleAi.init(options.googleAiToken ?? '');
     notifyListeners();
   }
 
@@ -97,37 +90,11 @@ class ISpectScopeWrapper extends StatelessWidget {
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) =>
-      ChangeNotifierProvider<ISpectScopeModel>(
+  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
         create: (_) => ISpectScopeModel()
           ..setISpect = isISpectEnabled
           ..setOptions(options)
           ..setTheme(theme),
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<LogDescriptionsCubit>(
-              create: (_) => LogDescriptionsCubit(
-                aiRepository: const AiRepository(
-                  remoteDataSource: AiRemoteDataSource(),
-                ),
-              ),
-            ),
-            BlocProvider<AiReporterCubit>(
-              create: (_) => AiReporterCubit(
-                aiRepository: const AiRepository(
-                  remoteDataSource: AiRemoteDataSource(),
-                ),
-              ),
-            ),
-            BlocProvider<AiChatBloc>(
-              create: (_) => AiChatBloc(
-                aiRepository: const AiRepository(
-                  remoteDataSource: AiRemoteDataSource(),
-                ),
-              ),
-            ),
-          ],
-          child: child,
-        ),
+        child: child,
       );
 }

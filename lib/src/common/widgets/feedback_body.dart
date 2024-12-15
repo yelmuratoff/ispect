@@ -1,7 +1,6 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/jira/jira_client.dart';
@@ -161,7 +160,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.jira),
+                      const Icon(Icons.bug_report_rounded),
                       const Gap(8),
                       Text(
                         context.ispectL10n.createJiraIssue,

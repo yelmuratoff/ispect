@@ -36,8 +36,6 @@ dependencies:
   # UI
   gap: ^3.0.1
   auto_size_text: ^3.0.0
-  font_awesome_flutter: ^10.8.0
-  flutter_markdown: ^0.7.4
 
   # Lints
   # custom_lint: ^0.6.4
@@ -47,7 +45,6 @@ dependencies:
   dio: ^5.7.0
   http: ^1.2.2
   flutter_bloc: ^8.1.6
-  google_generative_ai: ^0.4.6
 
 dev_dependencies:
   flutter_test:
