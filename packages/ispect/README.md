@@ -34,6 +34,16 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 
 <br>
 
+## Packages
+ISpect can be extended using other parts of this package <br>
+
+| Package | Version | Description | 
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
+| [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
+| [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
+
+
 ## 📌 Features
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
@@ -48,6 +58,27 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 - ✅ Feedback
 - ✅ Performance tracker
 - ✅ AI helper
+
+## 📜 Showcase
+
+<div align="center">
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/panel.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/draggable.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/color_picker.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/feedback.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/logs.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/reporter.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/monitoring.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/cache.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/device_info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
+</div>
 
 ## 📌 Getting Started
 Follow these steps to use this package
@@ -71,32 +102,6 @@ Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
 Put this code in your project at an screen and learn how it works. 😊
 
-<!-- <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
-  <img src="https://github.com/K1yoshiSho/packages_assets/blob/main/assets/ispect/ispect_upd_preview.gif?raw=true"
-  alt="ISpect's example" width="250" style="margin-right: 10px;"/>
-</div> -->
-
-<div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/panel.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/draggable.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/color_picker.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/feedback.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/logs.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/reporter.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/monitoring.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/cache.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/device_info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
-</div>
-
-
-&nbsp;
 
 ### Instructions for use:
 
@@ -104,14 +109,17 @@ Put this code in your project at an screen and learn how it works. 😊
 2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
 3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
 
-Please, check the example for more details.
+Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 
-Note:
-
-- For enabling `ISpect AI helper`, you need to pass Google AI Api token to inside `ISpectOptions`.
-See: [Google AI Studio](https://aistudio.google.com) for more details.
-- For enabling `ISpect Jira`, you need to pass Jira Api data to inside `initialJiraData` from `ISpectBuilder`.
-You must save the Jira data in the `onJiraAuthorized` callback. And you can use it in `initialJiraData`.
+>[!NOTE]
+>
+> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter).
+>
+> You can also check out an example of usage directly in [ispect_ai_reporter/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter/example).
+>
+> - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
+>
+> You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
 
 ```dart
 ### For change `ISpect` theme:
@@ -130,25 +138,6 @@ Alternatively, you can use a `listener`:
       talkerWrapper.route(location);
     });
 ```
-
-### How to use Jira:
-In order to go to the authorization page of Jira, you need to open ISpect, click on the **"burger menu"** *(Actions)* and open **"Jira"**. The first time you will be taken to the authorization page, the next time you will be taken to the Jira card creation page.  
-
-- Next we will be greeted by the authorization page. As indicated, you will need to log in to Jira, click on your avatar and go to **"Manage account"**.
-- Go to **"Settings"**.
-- Scroll down to **"API tokens"** and click on **"Create and manage API tokens"**.
-- And click on **"Create API token"**, copy and paste the token into the application.  
-
-You should end up with something like this.
-In the **"Project domain"** field enter domain like *"anydevkz"*, then the mail you use to log in to Jira. It can be found in the settings.
-When you click on "Authorization" I will validate your data, if everything fits, you will have to select your active project. This can always be changed.  
-
-Then you go back and when you go to the Jira page again, you will be taken to the task creation page.
-
-This is where you select a project, as I mentioned above, this is an intermediate mandatory step. You choose a project and move on. But you can move on to another project if needed.  
-
-Also, after authorization in Jira, you will have a **"Create Jira Issue"** button when describing an issue in the Feedback builder.
-It will immediately take you to the issue creation page with a description of the issue you described and a screenshot attachment with all your drawings.
 
 ### Referenced packages:
 A list of great packages I've used in ISpect:
