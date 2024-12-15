@@ -17,10 +17,7 @@ dependencies:
   ispect_jira:
     path: ../
 
-  dio: ^5.7.0
-
   talker_flutter: ^4.5.0
-  talker_dio_logger: ^4.5.0
 
 dev_dependencies:
   flutter_test:

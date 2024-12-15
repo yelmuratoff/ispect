@@ -80,6 +80,25 @@ ISpect can be extended using other parts of this package <br>
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
 </div>
 
+## 📌 Before you start using Inspect Jira
+In order to go to the authorization page of Jira, you need to open ISpect, click on the **"burger menu"** *(Actions)* and open **"Jira"**. The first time you will be taken to the authorization page, the next time you will be taken to the Jira card creation page.  
+
+- Next we will be greeted by the authorization page. As indicated, you will need to log in to Jira, click on your avatar and go to **"Manage account"**.
+- Go to **"Settings"**.
+- Scroll down to **"API tokens"** and click on **"Create and manage API tokens"**.
+- And click on **"Create API token"**, copy and paste the token into the application.  
+
+You should end up with something like this.
+In the **"Project domain"** field enter domain like *"anydevkz"*, then the mail you use to log in to Jira. It can be found in the settings.
+When you click on "Authorization" I will validate your data, if everything fits, you will have to select your active project. This can always be changed.  
+
+Then you go back and when you go to the Jira page again, you will be taken to the task creation page.
+
+This is where you select a project, as I mentioned above, this is an intermediate mandatory step. You choose a project and move on. But you can move on to another project if needed.  
+
+Also, after authorization in Jira, you will have a **"Create Jira Issue"** button when describing an issue in the Feedback builder.
+It will immediately take you to the issue creation page with a description of the issue you described and a screenshot attachment with all your drawings.
+
 ## 📌 Getting Started
 Follow these steps to use this package
 
@@ -88,6 +107,7 @@ Follow these steps to use this package
 ```yaml
 dependencies:
   ispect: ^2.0.5
+  ispect_jira: ^0.0.1
 ```
 
 ### Add import package
@@ -95,19 +115,85 @@ dependencies:
 ```dart
 import 'package:ispect/ispect.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispect_jira/ispect_jira.dart';
 ```
 
 ## Easy to use
-Simple example of use `ISpect`<br>
-You can manage ISpect using `ISpect.read(context)`.
-Put this code in your project at an screen and learn how it works. 😊
-
 
 ### Instructions for use:
 
 1. Wrap `runApp` with `ISpect.run` method and pass `Talker` instance to it.
-2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+2. Инициализируйте `ISpectJiraClient` до `MaterialApp` и передайте необходимые параметры.
+Например, с локального хранилища.
+```dart
+ISpectJiraClient.initialize(
+      projectDomain: 'domain',
+      userEmail: 'example@example.com',
+      apiToken: 'token',
+      projectId: '10007',
+      projectKey: 'GTMS4',
+    );
+```
+3. В `actionItems` внутри `ISpectOptions` добавье Action кнопку Jira.
+```dart
+actionItems: [
+          TalkerActionItem(
+            title: 'ISpect',
+            icon: Icons.bug_report_outlined,
+            onTap: (context) {
+              if (ISpectJiraClient.isInitialized) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                    builder: (_) => const JiraSendIssueScreen(),
+                    settings: const RouteSettings(
+                      name: 'Jira Send Issue Page',
+                    ),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                    builder: (_) => JiraAuthScreen(
+                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                        /// Save to local storage, for example `shared_preferences`
+                      },
+                    ),
+                    settings: const RouteSettings(
+                      name: 'Jira Auth Page',
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+```
+4. Добавьте `ISpectJiraLocalization` в ваш `localizationsDelegates` в `MaterialApp`.
+```dart
+localizationsDelegates: ISpectLocalizations.localizationDelegates([
+          ExampleGeneratedLocalization.delegate,
+          ISpectJiraLocalization.delegate,
+        ]),
+```
+5. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
+6. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`, `JiraFeedbackBuilder`.
+```dart
+child = ISpectBuilder(
+            observer: observer,
+            feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
+              onSubmit: onSubmit,
+              theme: theme,
+              scrollController: controller,
+            ),
+            initialPosition: (x: 0, y: 200),
+            onPositionChanged: (x, y) {
+              /// Save to local storage, for example `shared_preferences`
+            },
+            child: child,
+          );
+```
 
 Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 
@@ -116,10 +202,6 @@ Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/pack
 > - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai_reporter](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter).
 >
 > You can also check out an example of usage directly in [ispect_ai_reporter/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai_reporter/example).
->
-> - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
->
-> You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
 
 ```dart
 ### For change `ISpect` theme:
@@ -138,25 +220,6 @@ Alternatively, you can use a `listener`:
       talkerWrapper.route(location);
     });
 ```
-
-### How to use Jira:
-In order to go to the authorization page of Jira, you need to open ISpect, click on the **"burger menu"** *(Actions)* and open **"Jira"**. The first time you will be taken to the authorization page, the next time you will be taken to the Jira card creation page.  
-
-- Next we will be greeted by the authorization page. As indicated, you will need to log in to Jira, click on your avatar and go to **"Manage account"**.
-- Go to **"Settings"**.
-- Scroll down to **"API tokens"** and click on **"Create and manage API tokens"**.
-- And click on **"Create API token"**, copy and paste the token into the application.  
-
-You should end up with something like this.
-In the **"Project domain"** field enter domain like *"anydevkz"*, then the mail you use to log in to Jira. It can be found in the settings.
-When you click on "Authorization" I will validate your data, if everything fits, you will have to select your active project. This can always be changed.  
-
-Then you go back and when you go to the Jira page again, you will be taken to the task creation page.
-
-This is where you select a project, as I mentioned above, this is an intermediate mandatory step. You choose a project and move on. But you can move on to another project if needed.  
-
-Also, after authorization in Jira, you will have a **"Create Jira Issue"** button when describing an issue in the Feedback builder.
-It will immediately take you to the issue creation page with a description of the issue you described and a screenshot attachment with all your drawings.
 
 ### Referenced packages:
 A list of great packages I've used in ISpect:

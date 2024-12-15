@@ -1,25 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/ispect_jira.dart';
 import 'package:ispect_jira_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_jira_example/theme_manager.dart';
-
-import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-
-// Dio instances
-final dio = Dio(
-  BaseOptions(
-    baseUrl: 'https://jsonplaceholder.typicode.com',
-  ),
-);
-
-final dummyDio = Dio(
-  BaseOptions(
-    baseUrl: 'https://api.escuelajs.co',
-  ),
-);
 
 void main() {
   final talker = TalkerFlutter.init();
@@ -32,19 +16,6 @@ void main() {
     ),
     talker: talker,
     isPrintLoggingEnabled: true,
-    onInitialized: () {
-      dio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-          settings: const TalkerDioLoggerSettings(),
-        ),
-      );
-      dummyDio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-        ),
-      );
-    },
   );
 }
 
@@ -209,25 +180,11 @@ class _Home extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                dio.get('/posts/1');
+                ISpect.good('Good log');
+                ISpect.info('Info log');
+                ISpect.warning('Warning log');
               },
-              child: const Text('Send HTTP request'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/post3s/1');
-              },
-              child: const Text('Send HTTP request with error'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.options.headers.addAll({
-                  'Authorization': 'Bearer token',
-                });
-                dio.get('/posts/1');
-                dio.options.headers.remove('Authorization');
-              },
-              child: const Text('Send HTTP request with Token'),
+              child: const Text('Print some logs'),
             ),
           ],
         ),
