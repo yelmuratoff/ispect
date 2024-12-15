@@ -26,6 +26,15 @@ migrate_working_dir/
 /pubspec.lock
 **/doc/api/
 .dart_tool/
+build/
 .flutter-plugins
 .flutter-plugins-dependencies
-build/
+
+.env
+
+# Code generation
+**/*.g.dart
+**/*.gr.dart
+**/*.gen.dart
+**/*.freezed.dart
+**/*.select.dart
