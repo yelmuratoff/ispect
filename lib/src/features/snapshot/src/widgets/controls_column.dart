@@ -65,11 +65,8 @@ class ControlsColumn extends StatelessWidget {
             quarterTurns: 1,
             child: MaterialButton(
               key: const ValueKey<String>('navigate_button'),
-              onPressed: isNavigatingActive
-                  ? null
-                  : () => onControlModeChanged(FeedbackMode.navigate),
-              disabledTextColor:
-                  FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive ? null : () => onControlModeChanged(FeedbackMode.navigate),
+              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
                 context.ispectL10n.navigate,
                 style: TextStyle(
@@ -88,11 +85,8 @@ class ControlsColumn extends StatelessWidget {
             child: MaterialButton(
               key: const ValueKey<String>('draw_button'),
               minWidth: 20,
-              onPressed: isNavigatingActive
-                  ? () => onControlModeChanged(FeedbackMode.draw)
-                  : null,
-              disabledTextColor:
-                  FeedbackTheme.of(context).activeFeedbackModeColor,
+              onPressed: isNavigatingActive ? () => onControlModeChanged(FeedbackMode.draw) : null,
+              disabledTextColor: FeedbackTheme.of(context).activeFeedbackModeColor,
               child: Text(
                 context.ispectL10n.draw,
                 style: TextStyle(
@@ -109,9 +103,7 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('undo_button'),
             icon: Icon(
               Icons.undo,
-              color: isNavigatingActive
-                  ? Colors.grey
-                  : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onUndo,
           ),
@@ -119,9 +111,7 @@ class ControlsColumn extends StatelessWidget {
             key: const ValueKey<String>('clear_button'),
             icon: Icon(
               Icons.delete,
-              color: isNavigatingActive
-                  ? Colors.grey
-                  : FeedbackTheme.of(context).textColor,
+              color: isNavigatingActive ? Colors.grey : FeedbackTheme.of(context).textColor,
             ),
             onPressed: isNavigatingActive ? null : onClearDrawing,
           ),
@@ -154,7 +144,7 @@ class _ColorSelectionIconButton extends StatelessWidget {
   Widget build(BuildContext context) => IconButton(
         icon: Icon(isActive ? Icons.lens : Icons.panorama_fish_eye),
         color: color,
-        disabledColor: color.withOpacity(0.5),
+        disabledColor: color.withValues(alpha: 255.0 * 0.5),
         onPressed: onPressed == null ? null : () => onPressed!(color),
       );
 }

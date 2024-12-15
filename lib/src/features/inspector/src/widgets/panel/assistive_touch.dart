@@ -61,8 +61,7 @@ class AssistiveTouch extends StatefulWidget {
   _AssistiveTouchState createState() => _AssistiveTouchState();
 }
 
-class _AssistiveTouchState extends State<AssistiveTouch>
-    with TickerProviderStateMixin {
+class _AssistiveTouchState extends State<AssistiveTouch> with TickerProviderStateMixin {
   bool _isInitialized = false;
   late Offset _offset = widget.initialOffset;
   late Offset _largerOffset = _offset;
@@ -70,13 +69,12 @@ class _AssistiveTouchState extends State<AssistiveTouch>
   bool _isDragging = false;
   bool _isIdle = true;
   Timer? _timer;
-  late final AnimationController _scaleAnimationController =
-      AnimationController(
+  late final AnimationController _scaleAnimationController = AnimationController(
     duration: const Duration(milliseconds: 200),
     vsync: this,
   )..addListener(() {
-          setState(() {});
-        });
+      setState(() {});
+    });
   late final Animation<double> _scaleAnimation = CurvedAnimation(
     parent: _scaleAnimationController,
     curve: Curves.easeInOut,
@@ -249,16 +247,8 @@ class _AssistiveTouchState extends State<AssistiveTouch>
     final viewInsets = MediaQuery.viewInsetsOf(context);
     final left = screenPadding.left + viewInsets.left + widget.margin.left;
     final top = screenPadding.top + viewInsets.top + widget.margin.top;
-    final right = screenSize.width -
-        screenPadding.right -
-        viewInsets.right -
-        widget.margin.right -
-        _size.width;
-    final bottom = screenSize.height -
-        screenPadding.bottom -
-        viewInsets.bottom -
-        widget.margin.bottom -
-        _size.height;
+    final right = screenSize.width - screenPadding.right - viewInsets.right - widget.margin.right - _size.width;
+    final bottom = screenSize.height - screenPadding.bottom - viewInsets.bottom - widget.margin.bottom - _size.height;
 
     final halfWidth = (right - left) / 2;
 
@@ -364,7 +354,7 @@ class _DefaultChild extends StatelessWidget {
           width: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.grey[400]!.withOpacity(.6),
+            color: Colors.grey[400]!.withValues(alpha: 255.0 * 0.6),
             borderRadius: const BorderRadius.all(Radius.circular(28)),
           ),
           child: Container(
@@ -372,7 +362,7 @@ class _DefaultChild extends StatelessWidget {
             width: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.grey[300]!.withOpacity(.6),
+              color: Colors.grey[300]!.withValues(alpha: 255.0 * 0.6),
               borderRadius: const BorderRadius.all(Radius.circular(28)),
             ),
             child: Container(

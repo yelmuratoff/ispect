@@ -211,13 +211,12 @@ class AiLoaderPainter extends CustomPainter {
     path_0.close();
 
     final paint0Fill = Paint()..style = PaintingStyle.fill;
-    paint0Fill.shader = ui.Gradient.linear(
-        Offset(size.width * 0.3140294, size.height * 0.6434849),
+    paint0Fill.shader = ui.Gradient.linear(Offset(size.width * 0.3140294, size.height * 0.6434849),
         Offset(size.width * 0.7643630, size.height * 0.2638034), [
-      const Color(0xff217BFE).withOpacity(1),
-      const Color(0xff078EFB).withOpacity(1),
-      const Color(0xffA190FF).withOpacity(1),
-      const Color(0xffBD99FE).withOpacity(1),
+      const Color(0xff217BFE),
+      const Color(0xff078EFB),
+      const Color(0xffA190FF),
+      const Color(0xffBD99FE),
     ], [
       0,
       0.27,

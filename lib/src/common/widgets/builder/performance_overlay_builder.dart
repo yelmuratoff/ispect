@@ -20,7 +20,7 @@ class PerformanceOverlayBuilder extends StatelessWidget {
           alignment: Alignment.topCenter,
           backgroundColor: theme.colorScheme.surface,
           textColor: theme.colorScheme.onSurface,
-          textBackgroundColor: theme.colorScheme.surface.withOpacity(0.5),
+          textBackgroundColor: theme.colorScheme.surface.withValues(alpha: 255.0 * 0.5),
           child: child,
         ),
       );

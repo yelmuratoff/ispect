@@ -46,9 +46,9 @@ class ItemRecyclerWidget extends StatelessWidget {
                     colors: <Color>[
                       jsonController.standardJsonBackgroundColor,
                       jsonController.standardJsonBackgroundColor
-                          .withOpacity(0.1),
+                          .withValues(alpha: 255.0 * 0.1),
                       jsonController.standardJsonBackgroundColor
-                          .withOpacity(0.1),
+                          .withValues(alpha: 255.0 * 0.1),
                     ],
                   )
                 : null,
