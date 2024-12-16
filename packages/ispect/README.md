@@ -157,7 +157,7 @@ A list of great packages I've used in ISpect:
 <div align="center" >
   <p>Thanks to all contributors of this package</p>
   <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
+    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
   </a>
 </div>
 <br>
