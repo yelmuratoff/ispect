@@ -8,13 +8,13 @@ class _ExpandedBody extends StatelessWidget {
     required String? type,
     required String? message,
     required String? errorMessage,
-    required String? riverpodFullLog,
+    // required String? riverpodFullLog,
   })  : _stackTrace = stackTrace,
         _expanded = expanded,
         _type = type,
         _message = message,
-        _errorMessage = errorMessage,
-        _riverpodFullLog = riverpodFullLog;
+        _errorMessage = errorMessage;
+  // _riverpodFullLog = riverpodFullLog;
 
   final String? _stackTrace;
   final ISpectLogCard widget;
@@ -22,7 +22,7 @@ class _ExpandedBody extends StatelessWidget {
   final String? _message;
   final String? _type;
   final String? _errorMessage;
-  final String? _riverpodFullLog;
+  // final String? _riverpodFullLog;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -65,14 +65,14 @@ class _ExpandedBody extends StatelessWidget {
                   fontSize: 12,
                 ),
               ),
-            if (_expanded && _riverpodFullLog != null)
-              Text(
-                _riverpodFullLog!,
-                style: TextStyle(
-                  color: widget.color,
-                  fontSize: 12,
-                ),
-              ),
+            // if (_expanded && _riverpodFullLog != null)
+            //   Text(
+            //     _riverpodFullLog!,
+            //     style: TextStyle(
+            //       color: widget.color,
+            //       fontSize: 12,
+            //     ),
+            //   ),
           ],
         ),
       );

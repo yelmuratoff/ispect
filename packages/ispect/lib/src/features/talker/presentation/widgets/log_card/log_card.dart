@@ -7,7 +7,6 @@ import 'package:ispect/src/features/talker/presentation/pages/http/detailed_http
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
 part 'collapsed_body.dart';
 part 'expanded_body.dart';
@@ -103,7 +102,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
                   type: _type,
                   message: _message,
                   errorMessage: _errorMessage,
-                  riverpodFullLog: _riverpodFullLog,
+                  // riverpodFullLog: _riverpodFullLog,
                 ),
               if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
                 _StrackTraceBody(
@@ -175,19 +174,19 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
     return 'Type: ${widget.data.exception?.runtimeType.toString() ?? widget.data.error?.runtimeType.toString() ?? ''}';
   }
 
-  String? get _riverpodFullLog {
-    final data = widget.data;
+  // String? get _riverpodFullLog {
+  //   final data = widget.data;
 
-    if (data is RiverpodUpdateLog) {
-      return 'Detailed: \nPREVIOUS state: ${data.previousValue} \nNEW state: ${data.newValue}';
-    } else if (data is RiverpodAddLog) {
-      return 'Detailed: \nINITIAL state: ${data.value}';
-    } else if (data is RiverpodDisposeLog) {
-      return 'Detailed: \nDISPOSED';
-    } else if (data is RiverpodFailLog) {
-      return 'Detailed: \nError: ${data.error} \nStackTrace: ${data.exception}';
-    }
+  //   if (data is RiverpodUpdateLog) {
+  //     return 'Detailed: \nPREVIOUS state: ${data.previousValue} \nNEW state: ${data.newValue}';
+  //   } else if (data is RiverpodAddLog) {
+  //     return 'Detailed: \nINITIAL state: ${data.value}';
+  //   } else if (data is RiverpodDisposeLog) {
+  //     return 'Detailed: \nDISPOSED';
+  //   } else if (data is RiverpodFailLog) {
+  //     return 'Detailed: \nError: ${data.error} \nStackTrace: ${data.exception}';
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 }
