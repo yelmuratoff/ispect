@@ -51,7 +51,7 @@ class _AppState extends State<App> {
       options: ISpectOptions(
         locale: locale,
         panelButtons: [
-          ISpectPanelButton(
+          (
             icon: Icons.copy_rounded,
             label: 'Token',
             onTap: (context) {
@@ -60,7 +60,7 @@ class _AppState extends State<App> {
           ),
         ],
         panelItems: [
-          ISpectPanelItem(
+          (
             icon: Icons.home,
             enableBadge: false,
             onTap: (context) {
@@ -88,8 +88,7 @@ class _AppState extends State<App> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthScreen(
-                      onAuthorized:
-                          (domain, email, apiToken, projectId, projectKey) {
+                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
                         ISpect.good(
                           '''✅ Jira authorized:
   Project domain: $domain
@@ -135,8 +134,7 @@ class _AppState extends State<App> {
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
-            feedbackBuilder: (context, onSubmit, controller) =>
-                JiraFeedbackBuilder(
+            feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
               onSubmit: onSubmit,
               theme: Theme.of(context),
               scrollController: controller,

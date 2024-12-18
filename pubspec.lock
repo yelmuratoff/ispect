@@ -121,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  draggable_panel:
+    dependency: transitive
+    description:
+      name: draggable_panel
+      sha256: "47eef387d303cbde292b44cfa3602caf4144cbfa4f20a6bbc152ac855dd079da"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
   fake_async:
     dependency: transitive
     description:

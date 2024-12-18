@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/talker_action_item.dart';
-import 'package:ispect/src/features/inspector/src/widgets/panel/panel_item.dart';
 
 final class ISpectOptions {
   const ISpectOptions({
@@ -14,15 +13,39 @@ final class ISpectOptions {
 
   final Locale locale;
   final List<TalkerActionItem> actionItems;
-  final List<ISpectPanelItem> panelItems;
-  final List<ISpectPanelButton> panelButtons;
+
+  final List<
+      ({
+        IconData icon,
+        bool enableBadge,
+        void Function(BuildContext context) onTap,
+      })> panelItems;
+
+  final List<
+      ({
+        IconData icon,
+        String label,
+        void Function(BuildContext context) onTap,
+      })> panelButtons;
 
   ISpectOptions copyWith({
     Locale? locale,
     String? googleAiToken,
     List<TalkerActionItem>? actionItems,
-    List<ISpectPanelItem>? panelItems,
-    List<ISpectPanelButton>? panelButtons,
+    List<
+            ({
+              IconData icon,
+              bool enableBadge,
+              void Function(BuildContext context) onTap,
+            })>?
+        panelItems,
+    List<
+            ({
+              IconData icon,
+              String label,
+              void Function(BuildContext context) onTap,
+            })>?
+        panelButtons,
   }) =>
       ISpectOptions(
         locale: locale ?? this.locale,

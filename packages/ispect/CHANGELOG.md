@@ -1,3 +1,7 @@
+## 2.0.8
+- Now, `ISpectPanelButton` and `ISpectPanelItem` have been removed and replaced with Records.
+Additionally, `DraggablePanel` has been separated into its own package and moved to [draggable_panel](https://pub.dev/packages/draggable_panel).
+
 ## 2.0.7
 - Breaking change: Jira and AI tools are now separated into separate packages.
    - Jira: [ispect_jira](https://pub.dev/packages/ispect_jira)  
