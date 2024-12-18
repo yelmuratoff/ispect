@@ -88,7 +88,8 @@ class _AppState extends State<App> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthScreen(
-                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                      onAuthorized:
+                          (domain, email, apiToken, projectId, projectKey) {
                         ISpect.good(
                           '''✅ Jira authorized:
   Project domain: $domain
@@ -134,7 +135,8 @@ class _AppState extends State<App> {
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
-            feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
+            feedbackBuilder: (context, onSubmit, controller) =>
+                JiraFeedbackBuilder(
               onSubmit: onSubmit,
               theme: Theme.of(context),
               scrollController: controller,
