@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/cache/src/app_cache_manager.dart';
 import 'package:ispect/src/common/services/file/file_service.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/view.dart';

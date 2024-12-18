@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LineWithCurvePainter extends CustomPainter {
-  const LineWithCurvePainter({
+class CurveLinePainter extends CustomPainter {
+  const CurveLinePainter({
     required this.isInRightSide,
     required this.color,
   });

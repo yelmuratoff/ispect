@@ -8,8 +8,8 @@ import 'package:talker_flutter/talker_flutter.dart';
 /// `talker` field is the current `Talker` instance.
 /// Provide your instance if your application uses `Talker` as the default logger
 /// Common Talker instance will be used by default
-class TalkerBlocObserver extends BlocObserver {
-  TalkerBlocObserver({
+class ISpectBlocObserver extends BlocObserver {
+  ISpectBlocObserver({
     Talker? talker,
     this.settings = const TalkerBlocLoggerSettings(),
     this.onBlocEvent,
@@ -29,8 +29,7 @@ class TalkerBlocObserver extends BlocObserver {
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
   )? onBlocTransition;
-  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-      onBlocChange;
+  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange;
   final void Function(
     BlocBase<dynamic> bloc,
     Object error,

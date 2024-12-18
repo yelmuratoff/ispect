@@ -117,8 +117,7 @@ class Inspector extends StatefulWidget {
     ]);
   }
 
-  static InspectorState? maybeOf(BuildContext? context) =>
-      context?.findAncestorStateOfType<InspectorState>();
+  static InspectorState? maybeOf(BuildContext? context) => context?.findAncestorStateOfType<InspectorState>();
 
   @override
   InspectorState createState() => InspectorState();
@@ -128,8 +127,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() => setState(() => _isPanelVisible = !_isPanelVisible);
 
   final _stackKey = GlobalKey();
   final _repaintBoundaryKey = GlobalKey();
@@ -203,9 +201,7 @@ class InspectorState extends State<Inspector> {
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -293,8 +289,7 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -305,9 +300,8 @@ class InspectorState extends State<Inspector> {
   Offset _extractShiftedOffset(Offset offset) {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 =
+        (_repaintBoundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary).globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -320,9 +314,7 @@ class InspectorState extends State<Inspector> {
 
     final shiftedOffset = _extractShiftedOffset(offset);
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final overlayOffset = (_stackKey.currentContext!.findRenderObject()! as RenderStack).localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
@@ -330,8 +322,7 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
     if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+      final newValue = _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
 
       if (newValue < 1.0) {
         return;
@@ -397,8 +388,7 @@ class InspectorState extends State<Inspector> {
             builder: (_) {
               final child = widget.child;
 
-              final isAbsorbingPointer =
-                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
+              final isAbsorbingPointer = _inspectorStateNotifier.value || _zoomStateNotifier.value;
 
               return Listener(
                 behavior: HitTestBehavior.translucent,
@@ -505,13 +495,10 @@ class InspectorState extends State<Inspector> {
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
                 initialPosition: widget.initialPosition,
-                onPositionChanged: (x, y) =>
-                    widget.onPositionChanged?.call(x, y),
+                onPositionChanged: (x, y) => widget.onPositionChanged?.call(x, y),
                 items: [
                   (
-                    icon: _controller.inLoggerPage
-                        ? Icons.undo_rounded
-                        : Icons.reorder_rounded,
+                    icon: _controller.inLoggerPage ? Icons.undo_rounded : Icons.reorder_rounded,
                     enableBadge: _controller.inLoggerPage,
                     onTap: (_) {
                       _launchInfospect(context);
@@ -559,8 +546,7 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
-        final screenshotFilePath =
-            await writeImageToStorage(feedback.screenshot);
+        final screenshotFilePath = await writeImageToStorage(feedback.screenshot);
 
         await Share.shareXFiles(
           [screenshotFilePath],

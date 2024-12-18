@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/extensions/pretty_json.dart';
+import 'package:ispect/src/common/observers/bloc_observer.dart';
 import 'package:ispect/src/features/talker/logs.dart';
-import 'package:ispect/src/features/talker/observers/bloc_observer.dart';
 import 'package:ispect/src/features/talker/talker_options.dart';
 import 'package:provider/provider.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
@@ -30,14 +30,12 @@ final class ISpect {
   static Talker get talker => _instance._talker;
   static set talker(Talker talker) => _instance._talker = talker;
 
-  static ISpectScopeModel read(BuildContext context) =>
-      Provider.of<ISpectScopeModel>(
+  static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(
         context,
         listen: false,
       );
 
-  static ISpectScopeModel watch(BuildContext context) =>
-      Provider.of<ISpectScopeModel>(
+  static ISpectScopeModel watch(BuildContext context) => Provider.of<ISpectScopeModel>(
         context,
       );
 
@@ -56,12 +54,9 @@ final class ISpect {
     /// Flutter print logs.
     bool isFlutterPrintEnabled = true,
     bool isZoneErrorHandlingEnabled = true,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
     void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     void Function(
       Bloc<dynamic, dynamic> bloc,
@@ -104,16 +99,12 @@ final class ISpect {
         final exceptionAsString = error.toString();
         final stackAsString = stackTrace.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (isZoneErrorHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (isZoneErrorHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           ISpect.handle(
             exception: error,
             stackTrace: stackTrace,
@@ -148,20 +139,15 @@ final class ISpect {
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required Talker talker,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
-    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)?
-        onBlocEvent,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
+    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     final void Function(
       Bloc<dynamic, dynamic> bloc,
       Transition<dynamic, dynamic> transition,
     )? onBlocTransition,
-    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-        onBlocChange,
+    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
     final void Function(
       BlocBase<dynamic> bloc,
       Object error,
@@ -182,16 +168,12 @@ final class ISpect {
         final exceptionAsString = details.exceptionAsString();
         final stackAsString = details.stack.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (options.isFlutterPresentHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (options.isFlutterPresentHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           _instance._talker.handle(details, details.stack);
         } else if (!isFilterNotEmpty) {
           _instance._talker.handle(details, details.stack);
@@ -199,7 +181,7 @@ final class ISpect {
       });
     };
 
-    Bloc.observer = TalkerBlocObserver(
+    Bloc.observer = ISpectBlocObserver(
       talker: talker,
       settings: TalkerBlocLoggerSettings(
         enabled: options.isBlocHandlingEnabled,
@@ -219,16 +201,12 @@ final class ISpect {
       final exceptionAsString = error.toString();
       final stackAsString = stack.toString();
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
       final isFilterContains = filters.any(
-        (filter) =>
-            exceptionAsString.contains(filter) ||
-            stackAsString.contains(filter),
+        (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
       );
 
-      if (options.isPlatformDispatcherHandlingEnabled &&
-          (!isFilterNotEmpty || !isFilterContains)) {
+      if (options.isPlatformDispatcherHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
         _instance._talker.handle(error, stack);
       } else if (!isFilterNotEmpty) {
         _instance._talker.handle(error, stack);
@@ -239,16 +217,13 @@ final class ISpect {
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
 
       if (isFilterNotEmpty) {
         final exceptionAsString = details.toString();
         final stackAsString = details.stack.toString();
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
         if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
