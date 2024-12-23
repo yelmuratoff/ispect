@@ -12,4 +12,5 @@ export 'src/common/observers/route_observer.dart';
 export 'src/common/utils/history.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/features/inspector/src/widgets/panel/panel_item.dart';
+export 'src/features/logger/logger.dart';
 export 'src/features/talker/presentation/pages/ispect_page.dart';

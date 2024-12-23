@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
-import 'package:ispect_example/src/logs/success.dart';
 
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -331,6 +330,10 @@ class _Home extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 debugPrint('Send print message');
+                //  final logger = CustomLogger('MyApp');
+                //  logger.info('Application started');
+                //  logger.warning('Low disk space');
+                //  logger.error('Unhandled exception occurred');
               },
               child: const Text('Send print message'),
             ),
@@ -357,7 +360,7 @@ class _Home extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                ISpect.logTyped(SuccessLog('Success log'));
+                //  ISpect.logTyped(SuccessLog('Success log'));
               },
               child: const Text('Success log'),
             ),
