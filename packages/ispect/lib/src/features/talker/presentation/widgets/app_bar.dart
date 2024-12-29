@@ -33,7 +33,7 @@ class ISpectAppBar extends StatelessWidget {
   final ISpectiy iSpectify;
 
   final GroupButtonController titlesController;
-  final TalkerViewController controller;
+  final ISpectifyViewController controller;
 
   final List<String?> titles;
   final List<String?> uniqTitles;
@@ -191,7 +191,7 @@ class _SearchTextField extends StatelessWidget {
     required this.isDark,
   });
 
-  final TalkerViewController controller;
+  final ISpectifyViewController controller;
   final FocusNode focusNode;
   final bool isDark;
 
@@ -267,10 +267,10 @@ class _MonitorButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => TalkerBuilder(
+  Widget build(BuildContext context) => ISpectifyBuilder(
         iSpectify: iSpectify,
         builder: (_, data) {
-          final haveErrors = data.any((e) => e is TalkerError || e is TalkerException);
+          final haveErrors = data.any((e) => e is ISpectifyError || e is ISpectifyException);
           return Stack(
             children: [
               Center(

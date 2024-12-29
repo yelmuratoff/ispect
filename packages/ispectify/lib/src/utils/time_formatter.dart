@@ -1,9 +1,9 @@
 import 'package:ispectify/src/utils/time_format.dart';
 
 /// Utility class for [DateTime] formatting.
-class TalkerDateTimeFormatter {
-  /// Constructs a [TalkerDateTimeFormatter] with the given [date].
-  const TalkerDateTimeFormatter(this.date, {this.timeFormat = TimeFormat.timeAndSeconds});
+class ISpectifyDateTimeFormatter {
+  /// Constructs a [ISpectifyDateTimeFormatter] with the given [date].
+  const ISpectifyDateTimeFormatter(this.date, {this.timeFormat = TimeFormat.timeAndSeconds});
 
   /// The [DateTime] object to be formatted.
   final DateTime date;

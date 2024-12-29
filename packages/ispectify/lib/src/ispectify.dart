@@ -22,12 +22,12 @@ class ISpectiy {
     ISpectifyErrorHandler? errorHandler,
     LogHistory? history,
   ) {
-    _filter = filter ?? _DefaultTalkerFilter();
+    _filter = filter ?? _DefaultISpectifyFilter();
     this.settings = settings ?? ISpectifyOptions();
     _initLogger(logger);
-    _observer = observer ?? const _DefaultTalkerObserver();
+    _observer = observer ?? const _DefaultISpectifyObserver();
     _errorHandler = errorHandler ?? ISpectifyErrorHandler(this.settings);
-    _history = history ?? DefaultTalkerHistory(this.settings);
+    _history = history ?? DefaultISpectifyHistory(this.settings);
   }
 
   void _initLogger(ISpectifyLogger? logger) {
@@ -70,7 +70,7 @@ class ISpectiy {
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
     _errorHandler = errorHandler ?? ISpectifyErrorHandler(this.settings);
-    _history = DefaultTalkerHistory(this.settings, history: _history.history);
+    _history = DefaultISpectifyHistory(this.settings, history: _history.history);
   }
 
   final _talkerStreamController = StreamController<ISpectiyData>.broadcast();
@@ -85,12 +85,12 @@ class ISpectiy {
     dynamic msg,
   ]) {
     final data = _errorHandler.handle(exception, stackTrace, msg?.toString());
-    if (data is TalkerError) {
+    if (data is ISpectifyError) {
       _observer.onError(data);
       _handleErrorData(data);
       return;
     }
-    if (data is TalkerException) {
+    if (data is ISpectifyException) {
       _observer.onException(data);
       _handleErrorData(data);
       return;
@@ -247,11 +247,11 @@ class ISpectiy {
   }
 }
 
-class _DefaultTalkerObserver extends ISpectifyObserver {
-  const _DefaultTalkerObserver();
+class _DefaultISpectifyObserver extends ISpectifyObserver {
+  const _DefaultISpectifyObserver();
 }
 
-class _DefaultTalkerFilter extends ISpectifyFilter {
+class _DefaultISpectifyFilter extends ISpectifyFilter {
   @override
   bool filter(ISpectiyData item) => true;
 }

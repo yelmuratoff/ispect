@@ -8,5 +8,5 @@ import 'package:ispectify/src/logger/src/settings.dart';
 /// or use [ColoredLoggerFormatter].
 abstract class LoggerFormatter {
   /// Formats the message in the appropriate way
-  String fmt(LogDetails details, TalkerLoggerSettings settings);
+  String fmt(LogDetails details, ISpectifyLoggerSettings settings);
 }

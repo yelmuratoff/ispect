@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Signature for build custom [TalkerError]
+/// Signature for build custom [ISpectifyError]
 /// messages in showing [Snackbar] or another widgets
-typedef TalkerErrorBuilder = Widget Function(
+typedef ISpectifyErrorBuilder = Widget Function(
   BuildContext context,
-  TalkerError data,
+  ISpectifyError data,
 );
 
-/// Signature for build custom [TalkerException]
+/// Signature for build custom [ISpectifyException]
 /// messages in showing [Snackbar] or another widgets
-typedef TalkerExceptionBuilder = Widget Function(
+typedef ISpectifyExceptionBuilder = Widget Function(
   BuildContext context,
-  TalkerException data,
+  ISpectifyException data,
 );
 
 /// Signature for build custom [ISpectiyData] widgets
-typedef TalkerDataBuilder = Widget Function(
+typedef ISpectifyDataBuilder = Widget Function(
   BuildContext context,
   ISpectiyData data,
 );

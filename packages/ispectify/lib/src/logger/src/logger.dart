@@ -9,12 +9,12 @@ import 'package:ispectify/src/logger/src/settings.dart';
 
 class ISpectifyLogger {
   ISpectifyLogger({
-    TalkerLoggerSettings? settings,
+    ISpectifyLoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
     LoggerFilter? filter,
     void Function(String message)? output,
   }) {
-    this.settings = settings ?? TalkerLoggerSettings();
+    this.settings = settings ?? ISpectifyLoggerSettings();
     // ignore: avoid_print
     _output = output ?? log_output.outputLog;
     _filter = filter ?? LogLevelFilter(this.settings.level);
@@ -22,7 +22,7 @@ class ISpectifyLogger {
   }
 
   /// Logger settings
-  late final TalkerLoggerSettings settings;
+  late final ISpectifyLoggerSettings settings;
 
   /// You can setup different formatter [ExtendedLoggerFormatter, ColoredLoggerFormatter]
   /// Or your own fully customized formatter with extends [LoggerFormatter]
@@ -138,7 +138,7 @@ class ISpectifyLogger {
   /// {@endtemplate}
 
   ISpectifyLogger copyWith({
-    TalkerLoggerSettings? settings,
+    ISpectifyLoggerSettings? settings,
     LoggerFormatter? formatter,
     LoggerFilter? filter,
     Function(String message)? output,

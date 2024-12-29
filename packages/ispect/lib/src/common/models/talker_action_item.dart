@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class TalkerActionItem {
-  const TalkerActionItem({
+class ISpectifyActionItem {
+  const ISpectifyActionItem({
     required this.onTap,
     required this.title,
     required this.icon,

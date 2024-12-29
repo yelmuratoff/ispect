@@ -5,13 +5,13 @@ import '../lib/ispectify_dio.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerDioLogger tests', () {
-    late TalkerDioLogger logger;
+  group('ISpectifyDioLogger tests', () {
+    late ISpectifyDioLogger logger;
     late ISpectiy iSpectify;
 
     setUp(() {
       iSpectify = ISpectiy(settings: ISpectifyOptions(useConsoleLogs: false));
-      logger = TalkerDioLogger(iSpectify: iSpectify);
+      logger = ISpectifyDioLogger(iSpectify: iSpectify);
     });
 
     test('configure method should update logger settings', () {
@@ -36,7 +36,7 @@ void main() {
 
     test('onError should log DioErrorLog', () async {
       final iSpectify = ISpectiy();
-      final logger = TalkerDioLogger(iSpectify: iSpectify);
+      final logger = ISpectifyDioLogger(iSpectify: iSpectify);
       final dio = Dio();
       dio.interceptors.add(logger);
 
@@ -49,7 +49,7 @@ void main() {
 
     test('onResponse method should log http response headers', () {
       final logger =
-          TalkerDioLogger(iSpectify: iSpectify, settings: TalkerDioLoggerSettings(printResponseHeaders: true));
+          ISpectifyDioLogger(iSpectify: iSpectify, settings: ISpectifyDioLoggerSettings(printResponseHeaders: true));
 
       final options = RequestOptions(path: '/test');
       final response = Response(requestOptions: options, statusCode: 200, headers: Headers()..add("HEADER", "VALUE"));

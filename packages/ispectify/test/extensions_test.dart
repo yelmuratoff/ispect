@@ -2,10 +2,10 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerExtensions', () {
+  group('ISpectifyExtensions', () {
     test('HistoryListText', () async {
-      final error = TalkerError(ArgumentError());
-      final exception = TalkerException(Exception());
+      final error = ISpectifyError(ArgumentError());
+      final exception = ISpectifyException(Exception());
       final log = ISpectifyLog('message');
 
       final data = <ISpectiyData>[error, exception, log];

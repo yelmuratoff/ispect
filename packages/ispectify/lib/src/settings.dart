@@ -123,16 +123,16 @@ class ISpectifyOptions {
   /// Custom Logger Titles.
   ///
   /// The `titles` field is intended for storing custom titles for the logger, associated with various log types.
-  /// Each title is associated with a specific log type represented as an enum called `TalkerTitle`. This allows you to
+  /// Each title is associated with a specific log type represented as an enum called `ISpectifyTitle`. This allows you to
   /// provide informative and unique titles for each log type, making logging more readable and informative.
   ///
   /// Example usage:
   ///
   /// ```dart
   /// final customTitles = {
-  ///   TalkerTitle.info.key: "Information",
-  ///   TalkerTitle.error.key: "Error",
-  ///   TalkerTitle.warning.key: "Warning",
+  ///   ISpectifyTitle.info.key: "Information",
+  ///   ISpectifyTitle.error.key: "Error",
+  ///   ISpectifyTitle.warning.key: "Warning",
   /// };
   ///
   /// final logger = ISpectiy(
@@ -146,16 +146,16 @@ class ISpectifyOptions {
   /// Custom Logger Colors.
   ///
   /// The `colors` field is designed for setting custom text colors for the logger, associated with specific log keys.
-  /// Each color is associated with a specific log key represented as an enum called `TalkerKey`. This allows you to
+  /// Each color is associated with a specific log key represented as an enum called `ISpectifyKey`. This allows you to
   /// define custom text colors for each log key, enhancing the visual representation of logs in the console.
   ///
   /// Example usage:
   ///
   /// ```dart
   /// final customColors = {
-  ///   TalkerKey.info.key: AnsiPen()..white(bold: true),
-  ///   TalkerKey.error.key: AnsiPen()..red(bold: true),
-  ///   TalkerKey.warning.key: AnsiPen()..yellow(bold: true),
+  ///   ISpectifyKey.info.key: AnsiPen()..white(bold: true),
+  ///   ISpectifyKey.error.key: AnsiPen()..red(bold: true),
+  ///   ISpectifyKey.warning.key: AnsiPen()..yellow(bold: true),
   /// };
   ///
   /// final logger = ISpectiy(

@@ -4,12 +4,12 @@ import 'package:ispectify/src/logger/src/settings.dart';
 import 'package:ispectify/src/logger/src/utils/utils.dart';
 
 /// This formatter makes messages colorful
-/// if this setting is enabled in the settings [TalkerLoggerSettings]
+/// if this setting is enabled in the settings [ISpectifyLoggerSettings]
 class ColoredLoggerFormatter implements LoggerFormatter {
   const ColoredLoggerFormatter();
 
   @override
-  String fmt(LogDetails details, TalkerLoggerSettings settings) {
+  String fmt(LogDetails details, ISpectifyLoggerSettings settings) {
     final underline = ConsoleUtils.getUnderline(
       settings.maxLineWidth,
       lineSymbol: settings.lineSymbol,

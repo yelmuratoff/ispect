@@ -1,5 +1,5 @@
-final class ISpectTalkerOptions {
-  const ISpectTalkerOptions({
+final class ISpectISpectifyOptions {
+  const ISpectISpectifyOptions({
     this.isFlutterPresentHandlingEnabled = true,
     this.isPlatformDispatcherHandlingEnabled = true,
     this.isFlutterErrorHandlingEnabled = true,

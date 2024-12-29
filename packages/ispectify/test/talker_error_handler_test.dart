@@ -8,7 +8,7 @@ class TestException implements Exception {}
 class FakeTestException {}
 
 void main() {
-  group('Talker_ErrorHandler', () {
+  group('ISpectify_ErrorHandler', () {
     group('handle Error', () {
       _testHandleError(ArgumentError());
       _testHandleError(RangeError('a'));
@@ -34,7 +34,7 @@ void _testHandleError(Object err) {
     final data = _errHandler.handle(err);
 
     expect(data, isNotNull);
-    expect(data, isA<TalkerError>());
+    expect(data, isA<ISpectifyError>());
   });
 }
 
@@ -43,7 +43,7 @@ void _testHandleException(Object exception) {
     final data = _errHandler.handle(exception);
 
     expect(data, isNotNull);
-    expect(data, isA<TalkerException>());
+    expect(data, isA<ISpectifyException>());
   });
 }
 

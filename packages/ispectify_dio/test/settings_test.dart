@@ -4,9 +4,9 @@ import '../lib/ispectify_dio.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerDioLoggerSettings', () {
+  group('ISpectifyDioLoggerSettings', () {
     test('copyWith should create a new instance with the provided values', () {
-      final originalSettings = TalkerDioLoggerSettings();
+      final originalSettings = ISpectifyDioLoggerSettings();
       final updatedSettings = originalSettings.copyWith(
         printResponseData: false,
         printRequestHeaders: true,
@@ -23,8 +23,8 @@ void main() {
     });
 
     test('requestFilter should return true for allowed paths', () {
-      final settings =
-          TalkerDioLoggerSettings(requestFilter: (RequestOptions requestOptions) => requestOptions.path == '/allowed');
+      final settings = ISpectifyDioLoggerSettings(
+          requestFilter: (RequestOptions requestOptions) => requestOptions.path == '/allowed');
       final allowedRequestOptions = RequestOptions(path: '/allowed', method: 'GET');
       final disallowedRequestOptions = RequestOptions(path: '/disallowed', method: 'GET');
 
@@ -33,7 +33,7 @@ void main() {
     });
 
     test('responseFilter should return true for successful responses', () {
-      final settings = TalkerDioLoggerSettings(responseFilter: (Response response) => response.statusCode == 200);
+      final settings = ISpectifyDioLoggerSettings(responseFilter: (Response response) => response.statusCode == 200);
       final successfulResponse = Response(requestOptions: RequestOptions(path: '/test'), statusCode: 200);
       final unsuccessfulResponse = Response(requestOptions: RequestOptions(path: '/test'), statusCode: 404);
 
@@ -42,7 +42,8 @@ void main() {
     });
 
     test('errorFilter should return true for cancelled responses', () {
-      final settings = TalkerDioLoggerSettings(errorFilter: (DioException err) => err.type == DioExceptionType.cancel);
+      final settings =
+          ISpectifyDioLoggerSettings(errorFilter: (DioException err) => err.type == DioExceptionType.cancel);
       final cancelledResponse =
           DioException(requestOptions: RequestOptions(path: '/test'), type: DioExceptionType.cancel);
       final timeoutResponse =
@@ -53,7 +54,7 @@ void main() {
     });
 
     test('copyWith should create a new instance with updated values for all fields', () {
-      final originalSettings = TalkerDioLoggerSettings(
+      final originalSettings = ISpectifyDioLoggerSettings(
         printResponseData: true,
         printResponseHeaders: false,
         printResponseMessage: true,

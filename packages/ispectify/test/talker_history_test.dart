@@ -2,7 +2,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Talker_History', () {
+  group('ISpectify_History', () {
     late ISpectiy iSpectify;
 
     setUp(() {
@@ -11,7 +11,7 @@ void main() {
     });
 
     test('ON', () {
-      _configureTalker(useHistory: true, iSpectify: iSpectify);
+      _configureISpectify(useHistory: true, iSpectify: iSpectify);
       _makeLogs(iSpectify);
 
       final history = iSpectify.history;
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('OFF', () {
-      _configureTalker(useHistory: false, iSpectify: iSpectify);
+      _configureISpectify(useHistory: false, iSpectify: iSpectify);
       _makeLogs(iSpectify);
 
       final history = iSpectify.history;
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('HostoryOverflow', () {
-      _configureTalker(useHistory: true, iSpectify: iSpectify, maxHistoryItems: 4);
+      _configureISpectify(useHistory: true, iSpectify: iSpectify, maxHistoryItems: 4);
       _makeLogs(iSpectify);
       final history = iSpectify.history;
       expect(history, isNotEmpty);
@@ -48,7 +48,7 @@ void _makeLogs(ISpectiy iSpectify) {
   iSpectify.debug('log');
 }
 
-void _configureTalker({
+void _configureISpectify({
   required bool useHistory,
   required ISpectiy iSpectify,
   int maxHistoryItems = 1000,

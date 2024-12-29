@@ -8,8 +8,8 @@ import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_card.dart';
 
-class TalkerSettingsBottomSheets extends StatefulWidget {
-  const TalkerSettingsBottomSheets({
+class ISpectifySettingsBottomSheets extends StatefulWidget {
+  const ISpectifySettingsBottomSheets({
     required this.iSpectify,
     required this.options,
     required this.actions,
@@ -22,13 +22,13 @@ class TalkerSettingsBottomSheets extends StatefulWidget {
   /// Options for `ISpect`
   final ISpectOptions options;
 
-  final List<TalkerActionItem> actions;
+  final List<ISpectifyActionItem> actions;
 
   @override
-  State<TalkerSettingsBottomSheets> createState() => _TalkerSettingsBottomSheetState();
+  State<ISpectifySettingsBottomSheets> createState() => _ISpectifySettingsBottomSheetState();
 }
 
-class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> {
+class _ISpectifySettingsBottomSheetState extends State<ISpectifySettingsBottomSheets> {
   @override
   void initState() {
     super.initState();
@@ -40,7 +40,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     final settings = <Widget>[
-      TalkerSettingsCardItem(
+      ISpectifySettingsCardItem(
         title: context.ispectL10n.enabled,
         enabled: widget.iSpectify.value.settings.enabled,
         backgroundColor: context.ispectTheme.cardColor,
@@ -49,7 +49,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
           widget.iSpectify.notifyListeners();
         },
       ),
-      TalkerSettingsCardItem(
+      ISpectifySettingsCardItem(
         canEdit: widget.iSpectify.value.settings.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
@@ -63,7 +63,7 @@ class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> 
           widget.iSpectify.notifyListeners();
         },
       ),
-      TalkerSettingsCardItem(
+      ISpectifySettingsCardItem(
         canEdit: widget.iSpectify.value.settings.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,
@@ -160,7 +160,7 @@ class _ActionTile extends StatelessWidget {
     this.showDivider = true,
   });
 
-  final TalkerActionItem action;
+  final ISpectifyActionItem action;
   final bool showDivider;
 
   @override

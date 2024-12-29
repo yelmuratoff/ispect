@@ -5,8 +5,8 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
 
-class TalkerSettingsCardItem extends StatelessWidget {
-  const TalkerSettingsCardItem({
+class ISpectifySettingsCardItem extends StatelessWidget {
+  const ISpectifySettingsCardItem({
     required this.title,
     required this.enabled,
     required this.onChanged,

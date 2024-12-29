@@ -2,8 +2,8 @@ import 'package:ispectify/ispectify.dart';
 
 /// Base implementation of [ISpectiyData]
 /// to handle ONLY [Error]s
-class TalkerError extends ISpectiyData {
-  TalkerError(
+class ISpectifyError extends ISpectiyData {
+  ISpectifyError(
     Error error, {
     String? message,
     super.stackTrace,

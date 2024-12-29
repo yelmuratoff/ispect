@@ -59,7 +59,7 @@ void main() {
       );
 
       final displayTitleWithTime = talkerData.displayTitleWithTime();
-      expect(displayTitleWithTime, equals('[log] | ${TalkerDateTimeFormatter(dateTime).timeAndSeconds} | '));
+      expect(displayTitleWithTime, equals('[log] | ${ISpectifyDateTimeFormatter(dateTime).timeAndSeconds} | '));
     });
 
     test('displayStackTrace returns correct format', () {
@@ -99,7 +99,7 @@ void main() {
       );
 
       final displayTime = talkerData.displayTime();
-      expect(displayTime, equals(TalkerDateTimeFormatter(dateTime).timeAndSeconds));
+      expect(displayTime, equals(ISpectifyDateTimeFormatter(dateTime).timeAndSeconds));
     });
   });
 }

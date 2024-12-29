@@ -2,10 +2,10 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerException', () {
+  group('ISpectifyException', () {
     test('constructor sets correct values', () {
       final exception = Exception('Test Exception');
-      final talkerException = TalkerException(
+      final talkerException = ISpectifyException(
         exception,
         message: 'Test Message',
         key: 'custom-key',
@@ -20,7 +20,7 @@ void main() {
 
     test('generateTextMessage returns correct message format', () {
       final exception = Exception('Test Exception');
-      final talkerException = TalkerException(
+      final talkerException = ISpectifyException(
         exception,
         message: 'Test Message',
         key: 'custom-key',

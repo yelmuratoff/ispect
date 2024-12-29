@@ -22,7 +22,7 @@ class ISpectPage extends StatefulWidget {
 
   /// Optional Builder to customize
   /// log items cards in list
-  final TalkerDataBuilder? itemsBuilder;
+  final ISpectifyDataBuilder? itemsBuilder;
 
   final ISpectOptions options;
 

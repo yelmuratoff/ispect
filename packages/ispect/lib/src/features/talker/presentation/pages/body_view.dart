@@ -42,9 +42,9 @@ class ISpectPageView extends StatefulWidget {
 
   /// Optional Builder to customize
   /// log items cards in list
-  final TalkerDataBuilder? itemsBuilder;
+  final ISpectifyDataBuilder? itemsBuilder;
 
-  final TalkerViewController? controller;
+  final ISpectifyViewController? controller;
 
   final ScrollController? scrollController;
 
@@ -57,7 +57,7 @@ class ISpectPageView extends StatefulWidget {
 class _ISpectPageViewState extends State<ISpectPageView> {
   final _titlesController = GroupButtonController();
   final _focusNode = FocusNode();
-  late final _controller = widget.controller ?? TalkerViewController();
+  late final _controller = widget.controller ?? ISpectifyViewController();
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (_, __) => TalkerBuilder(
+        builder: (_, __) => ISpectifyBuilder(
           iSpectify: widget.iSpectify,
           builder: (context, data) {
             final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
@@ -99,9 +99,9 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                   titles: titles,
                   uniqTitles: uniqTitles,
                   controller: _controller,
-                  onMonitorTap: () => _openTalkerMonitor(context),
+                  onMonitorTap: () => _openISpectifyMonitor(context),
                   onSettingsTap: () {
-                    _openTalkerSettings(context);
+                    _openISpectifySettings(context);
                   },
                   onInfoTap: () async {
                     await showModalBottomSheet<void>(
@@ -132,7 +132,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                       key: ValueKey(data.time.microsecondsSinceEpoch),
                       data: data,
                       backgroundColor: context.ispectTheme.cardColor,
-                      onCopyTap: () => _copyTalkerDataItemText(data),
+                      onCopyTap: () => _copyISpectifyDataItemText(data),
                       expanded: _controller.expandedLogs,
                       color: iSpect.theme.getTypeColor(
                         context,
@@ -166,7 +166,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     return data;
   }
 
-  void _openTalkerSettings(
+  void _openISpectifySettings(
     BuildContext context,
   ) {
     final iSpectify = ValueNotifier(widget.iSpectify);
@@ -175,41 +175,41 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => TalkerSettingsBottomSheets(
+      builder: (_) => ISpectifySettingsBottomSheets(
         options: widget.options,
         iSpectify: iSpectify,
         actions: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _controller.toggleLogOrder(),
             title: context.ispectL10n.reverseLogs,
             icon: Icons.swap_vert,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: _copyAllLogs,
             title: context.ispectL10n.copyAllLogs,
             icon: Icons.copy,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _toggleLogsExpanded(),
             title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
             icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _cleanHistory(),
             title: context.ispectL10n.clearHistory,
             icon: Icons.delete_outline,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _shareLogsInFile(),
             title: context.ispectL10n.shareLogsFile,
             icon: Icons.ios_share_outlined,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _manageAppData(),
             title: context.ispectL10n.viewAndManageData,
             icon: Icons.data_usage_sharp,
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             onTap: (_) => _checkAppInfo(),
             title: context.ispectL10n.appInfo,
             icon: Icons.info_outline_rounded,
@@ -220,10 +220,10 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     );
   }
 
-  void _openTalkerMonitor(BuildContext context) {
+  void _openISpectifyMonitor(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<Widget>(
-        builder: (_) => TalkerMonitorPage(
+        builder: (_) => ISpectifyMonitorPage(
           options: widget.options,
         ),
         settings: RouteSettings(
@@ -236,7 +236,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     );
   }
 
-  void _copyTalkerDataItemText(ISpectiyData data) {
+  void _copyISpectifyDataItemText(ISpectiyData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
   }

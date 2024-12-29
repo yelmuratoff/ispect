@@ -2,8 +2,8 @@ import 'package:ispectify/ispectify.dart';
 
 typedef ISpectifyFilter = _Filter<ISpectiyData>;
 
-class BaseTalkerFilter implements ISpectifyFilter {
-  BaseTalkerFilter({
+class BaseISpectifyFilter implements ISpectifyFilter {
+  BaseISpectifyFilter({
     this.titles = const [],
     this.types = const [],
     this.searchQuery,
@@ -13,7 +13,7 @@ class BaseTalkerFilter implements ISpectifyFilter {
   final List<String> titles;
 
   /// List of enabled for filter types - subclasses of [ISpectiyData]
-  /// Like [TalkerError], [TalkerException], [ISpectifyLog], etc.
+  /// Like [ISpectifyError], [ISpectifyException], [ISpectifyLog], etc.
   final List<Type> types;
 
   /// String query for filtering logs
@@ -56,12 +56,12 @@ class BaseTalkerFilter implements ISpectifyFilter {
     return match;
   }
 
-  BaseTalkerFilter copyWith({
+  BaseISpectifyFilter copyWith({
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
   }) {
-    return BaseTalkerFilter(
+    return BaseISpectifyFilter(
       titles: titles ?? this.titles,
       types: types ?? this.types,
       searchQuery: searchQuery ?? this.searchQuery,

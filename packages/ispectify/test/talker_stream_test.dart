@@ -2,7 +2,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerStream', () {
+  group('ISpectifyStream', () {
     final iSpectify = ISpectiy();
 
     test('handle', () async {

@@ -7,7 +7,7 @@ void main() {
     iSpectify.clearHistory();
   });
 
-  group('Talker_toggle_enabled', () {
+  group('ISpectify_toggle_enabled', () {
     group(
       'history',
       () {

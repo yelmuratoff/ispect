@@ -23,7 +23,7 @@ final dummyDio = Dio(
 );
 
 void main() {
-  final iSpectify = TalkerFlutter.init();
+  final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(
@@ -38,12 +38,12 @@ void main() {
     // ],
     onInitialized: () {
       client.interceptors.add(
-        TalkerHttpLogger(iSpectify: ISpect.iSpectify),
+        ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
       );
       dio.interceptors.add(
-        TalkerDioLogger(
+        ISpectifyDioLogger(
           iSpectify: ISpect.iSpectify,
-          settings: const TalkerDioLoggerSettings(
+          settings: const ISpectifyDioLoggerSettings(
               // errorFilter: (response) {
               //   return (response.message?.contains('This exception was thrown because')) == false;
               // },
@@ -51,7 +51,7 @@ void main() {
         ),
       );
       dummyDio.interceptors.add(
-        TalkerDioLogger(
+        ISpectifyDioLogger(
           iSpectify: ISpect.iSpectify,
         ),
       );
@@ -107,7 +107,7 @@ class App extends StatelessWidget {
           ),
         ],
         actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'Test',
             icon: Icons.account_tree_rounded,
             onTap: (context) {

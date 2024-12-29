@@ -3,16 +3,16 @@ import 'package:ispect/src/common/utils/download_logs/download_nonweb_logs.dart'
     if (dart.library.html) 'package:ispect/src/common/utils/download_logs/download_web_logs.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Controller to work with [TalkerScreen]
-class TalkerViewController extends ChangeNotifier {
-  BaseTalkerFilter _filter = BaseTalkerFilter();
+/// Controller to work with [ISpectifyScreen]
+class ISpectifyViewController extends ChangeNotifier {
+  BaseISpectifyFilter _filter = BaseISpectifyFilter();
 
   var _expandedLogs = true;
   bool _isLogOrderReversed = true;
 
   /// Filter for selecting specific logs and errors
-  BaseTalkerFilter get filter => _filter;
-  set filter(BaseTalkerFilter val) {
+  BaseISpectifyFilter get filter => _filter;
+  set filter(BaseISpectifyFilter val) {
     _filter = val;
     notifyListeners();
   }

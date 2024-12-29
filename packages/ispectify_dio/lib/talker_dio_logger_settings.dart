@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// [TalkerDioLogger] settings and customization
-class TalkerDioLoggerSettings {
-  const TalkerDioLoggerSettings({
+/// [ISpectifyDioLogger] settings and customization
+class ISpectifyDioLoggerSettings {
+  const ISpectifyDioLoggerSettings({
     this.enabled = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
@@ -93,7 +93,7 @@ class TalkerDioLoggerSettings {
   /// You can add your custom logic to log only specific Dio error [DioException].
   final bool Function(DioException response)? errorFilter;
 
-  TalkerDioLoggerSettings copyWith({
+  ISpectifyDioLoggerSettings copyWith({
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -109,7 +109,7 @@ class TalkerDioLoggerSettings {
     bool Function(Response response)? responseFilter,
     bool Function(DioException response)? errorFilter,
   }) {
-    return TalkerDioLoggerSettings(
+    return ISpectifyDioLoggerSettings(
       printResponseData: printResponseData ?? this.printResponseData,
       printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
       printResponseMessage: printResponseMessage ?? this.printResponseMessage,

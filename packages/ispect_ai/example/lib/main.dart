@@ -14,7 +14,7 @@ final dio = Dio(
 );
 
 void main() {
-  final iSpectify = TalkerFlutter.init();
+  final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(
@@ -26,7 +26,7 @@ void main() {
     isPrintLoggingEnabled: true,
     onInitialized: () {
       dio.interceptors.add(
-        TalkerDioLogger(
+        ISpectifyDioLogger(
           iSpectify: ISpect.iSpectify,
         ),
       );
@@ -60,7 +60,7 @@ class _AppState extends State<App> {
       options: ISpectOptions(
         locale: locale,
         actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'AI Chat',
             icon: Icons.bubble_chart,
             onTap: (context) {
@@ -71,7 +71,7 @@ class _AppState extends State<App> {
               );
             },
           ),
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'AI Reporter',
             icon: Icons.report_rounded,
             onTap: (context) {

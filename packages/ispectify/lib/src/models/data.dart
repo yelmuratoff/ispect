@@ -74,5 +74,5 @@ extension FieldsToDisplay on ISpectiyData {
 
   /// Displayed tile of [ISpectiyData]
   String displayTime({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) =>
-      TalkerDateTimeFormatter(time, timeFormat: timeFormat).format;
+      ISpectifyDateTimeFormatter(time, timeFormat: timeFormat).format;
 }

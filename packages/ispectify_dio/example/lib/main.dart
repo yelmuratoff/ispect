@@ -25,9 +25,9 @@ class _MyAppState extends State<MyApp> {
 
     _dio = Dio();
     _dio.interceptors.add(
-      TalkerDioLogger(
+      ISpectifyDioLogger(
         iSpectify: iSpectify,
-        settings: const TalkerDioLoggerSettings(
+        settings: const ISpectifyDioLoggerSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
         ),

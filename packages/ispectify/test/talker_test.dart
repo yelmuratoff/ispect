@@ -18,8 +18,8 @@ void main() {
       iSpectify.handle(ArgumentError(), StackTrace.current, 'Some error');
       expect(iSpectify.history, isNotEmpty);
       expect(iSpectify.history.length, 2);
-      expect(iSpectify.history.first is TalkerError, true);
-      expect(iSpectify.history.last is TalkerError, true);
+      expect(iSpectify.history.first is ISpectifyError, true);
+      expect(iSpectify.history.last is ISpectifyError, true);
     });
 
     test('Handle exception', () {
@@ -27,8 +27,8 @@ void main() {
       iSpectify.handle(Exception(), StackTrace.current, 'Some error');
       expect(iSpectify.history, isNotEmpty);
       expect(iSpectify.history.length, 2);
-      expect(iSpectify.history.first is TalkerException, true);
-      expect(iSpectify.history.last is TalkerException, true);
+      expect(iSpectify.history.first is ISpectifyException, true);
+      expect(iSpectify.history.last is ISpectifyException, true);
     });
 
     test('Handle exception with logs enabled', () {
@@ -42,8 +42,8 @@ void main() {
       iSpectify.handle(Exception(), StackTrace.current, 'Some error');
       expect(iSpectify.history, isNotEmpty);
       expect(iSpectify.history.length, 2);
-      expect(iSpectify.history.first is TalkerException, true);
-      expect(iSpectify.history.last is TalkerException, true);
+      expect(iSpectify.history.first is ISpectifyException, true);
+      expect(iSpectify.history.last is ISpectifyException, true);
     });
 
     test('Handle not exception or error', () {
@@ -92,7 +92,7 @@ void main() {
           output: (message) {},
         ),
       );
-      final httpLog = HttpTalkerLog('Http good');
+      final httpLog = HttpISpectifyLog('Http good');
       iSpectify.logCustom(httpLog);
 
       expect(iSpectify.history.length, 1);
@@ -101,7 +101,7 @@ void main() {
         1,
       );
       expect(
-        iSpectify.history.whereType<HttpTalkerLog>().length,
+        iSpectify.history.whereType<HttpISpectifyLog>().length,
         1,
       );
       expect(iSpectify.history.first.message, httpLog.message);

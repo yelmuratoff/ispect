@@ -11,8 +11,8 @@ final _defaultColors = {
 };
 
 /// Logger customization settings
-class TalkerLoggerSettings {
-  TalkerLoggerSettings({
+class ISpectifyLoggerSettings {
+  ISpectifyLoggerSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enable = true,
     this.defaultTitle = 'LOG',
@@ -30,7 +30,7 @@ class TalkerLoggerSettings {
   /// Field to setup custom log colors
   ///```dart
   /// final logger = ISpectifyLogger(
-  ///   settings: TalkerLoggerSettings(
+  ///   settings: ISpectifyLoggerSettings(
   ///     colors: {
   ///       LogLevel.critical: AnsiPen()..red(),
   ///       LogLevel.error: AnsiPen()..magenta(),
@@ -61,7 +61,7 @@ class TalkerLoggerSettings {
   /// Field for enable and disable colored logs
   final bool enableColors;
 
-  TalkerLoggerSettings copyWith({
+  ISpectifyLoggerSettings copyWith({
     Map<LogLevel, AnsiPen>? colors,
     String? defaultTitle,
     LogLevel? level,
@@ -69,7 +69,7 @@ class TalkerLoggerSettings {
     int? maxLineWidth,
     bool? enableColors,
   }) {
-    return TalkerLoggerSettings(
+    return ISpectifyLoggerSettings(
       colors: colors ?? this.colors,
       defaultTitle: defaultTitle ?? this.defaultTitle,
       level: level ?? this.level,

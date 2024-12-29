@@ -10,15 +10,15 @@ class ISpectifyErrorHandler {
     StackTrace? stackTrace,
     String? msg,
   ]) {
-    if (exception is TalkerError) {
+    if (exception is ISpectifyError) {
       return exception;
     }
-    if (exception is TalkerException) {
+    if (exception is ISpectifyException) {
       return exception;
     }
     if (exception is Error) {
       final errType = ISpectifyLogType.error;
-      return TalkerError(
+      return ISpectifyError(
         exception,
         key: errType.key,
         title: settings.getTitleByLogKey(errType.key),
@@ -28,7 +28,7 @@ class ISpectifyErrorHandler {
     }
     if (exception is Exception) {
       final exceptionType = ISpectifyLogType.exception;
-      return TalkerException(
+      return ISpectifyException(
         exception,
         key: exceptionType.key,
         title: settings.getTitleByLogKey(exceptionType.key),

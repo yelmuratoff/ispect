@@ -14,7 +14,7 @@ class DioRequestLog extends ISpectifyLog {
   });
 
   final RequestOptions requestOptions;
-  final TalkerDioLoggerSettings settings;
+  final ISpectifyDioLoggerSettings settings;
 
   @override
   AnsiPen get pen => settings.requestPen ?? (AnsiPen()..xterm(219));
@@ -55,7 +55,7 @@ class DioResponseLog extends ISpectifyLog {
   });
 
   final Response<dynamic> response;
-  final TalkerDioLoggerSettings settings;
+  final ISpectifyDioLoggerSettings settings;
 
   @override
   AnsiPen get pen => settings.responsePen ?? (AnsiPen()..xterm(46));
@@ -103,7 +103,7 @@ class DioErrorLog extends ISpectifyLog {
   });
 
   final DioException dioException;
-  final TalkerDioLoggerSettings settings;
+  final ISpectifyDioLoggerSettings settings;
 
   @override
   AnsiPen get pen => settings.errorPen ?? (AnsiPen()..red());

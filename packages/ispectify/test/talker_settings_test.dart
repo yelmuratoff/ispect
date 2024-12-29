@@ -18,11 +18,11 @@ void main() {
         settings: settings,
         logger: ISpectifyLogger(),
       );
-      final httpLog = HttpTalkerLog('Http good');
+      final httpLog = HttpISpectifyLog('Http good');
       iSpectify.logCustom(httpLog);
 
       expect(
-        iSpectify.history.whereType<HttpTalkerLog>().isNotEmpty,
+        iSpectify.history.whereType<HttpISpectifyLog>().isNotEmpty,
         true,
       );
     });
@@ -94,8 +94,8 @@ void main() {
   });
 }
 
-class HttpTalkerLog extends ISpectifyLog {
-  HttpTalkerLog(super.message);
+class HttpISpectifyLog extends ISpectifyLog {
+  HttpISpectifyLog(super.message);
 
   @override
   AnsiPen get pen => AnsiPen()..blue();

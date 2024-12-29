@@ -2,7 +2,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerKey', () {
+  group('ISpectifyKey', () {
     test('returns correct key for each enum value', () {
       expect(ISpectifyLogType.error.key, equals('error'));
       expect(ISpectifyLogType.critical.key, equals('critical'));

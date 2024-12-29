@@ -7,8 +7,8 @@ import 'package:ispect/src/common/widgets/builder/talker_builder.dart';
 import 'package:ispect/src/features/talker/presentation/pages/detailed_info/monitor_info_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/monitor_card.dart';
 
-class TalkerMonitorPage extends StatefulWidget {
-  const TalkerMonitorPage({
+class ISpectifyMonitorPage extends StatefulWidget {
+  const ISpectifyMonitorPage({
     required this.options,
     super.key,
   });
@@ -16,10 +16,10 @@ class TalkerMonitorPage extends StatefulWidget {
   final ISpectOptions options;
 
   @override
-  State<TalkerMonitorPage> createState() => _TalkerMonitorPageState();
+  State<ISpectifyMonitorPage> createState() => _ISpectifyMonitorPageState();
 }
 
-class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
+class _ISpectifyMonitorPageState extends State<ISpectifyMonitorPage> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
@@ -41,7 +41,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
           ),
         ),
       ),
-      body: TalkerBuilder(
+      body: ISpectifyBuilder(
         iSpectify: ISpect.iSpectify,
         builder: (context, data) {
           // TODO(Yelaman): Change to uniqKeys when it will be implemented.

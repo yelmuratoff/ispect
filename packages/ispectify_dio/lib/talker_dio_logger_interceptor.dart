@@ -8,10 +8,10 @@ import 'ispectify_dio.dart';
 /// [iSpectify] filed is current [ISpectiy] instance.
 /// Provide your instance if your application used [ISpectiy] as default logger
 /// Common ISpectiy instance will be used by default
-class TalkerDioLogger extends Interceptor {
-  TalkerDioLogger({
+class ISpectifyDioLogger extends Interceptor {
+  ISpectifyDioLogger({
     ISpectiy? iSpectify,
-    this.settings = const TalkerDioLoggerSettings(),
+    this.settings = const ISpectifyDioLoggerSettings(),
     this.addonId,
   }) {
     _talker = iSpectify ?? ISpectiy();
@@ -19,14 +19,14 @@ class TalkerDioLogger extends Interceptor {
 
   late ISpectiy _talker;
 
-  /// [TalkerDioLogger] settings and customization
-  TalkerDioLoggerSettings settings;
+  /// [ISpectifyDioLogger] settings and customization
+  ISpectifyDioLoggerSettings settings;
 
   /// ISpectiy addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
 
-  /// Method to update [settings] of [TalkerDioLogger]
+  /// Method to update [settings] of [ISpectifyDioLogger]
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,

@@ -27,7 +27,7 @@ dependencies:
 ```
 
 ### Usage
-Just add **TalkerHttpLogger** to your **InterceptedClient** instance and it will work
+Just add **ISpectifyHttpLogger** to your **InterceptedClient** instance and it will work
 
 ```dart
 import 'package:http_interceptor/http_interceptor.dart';
@@ -35,7 +35,7 @@ import 'lib/talker_http_logger.dart';
 
 void main() async {
   final client = InterceptedClient.build(interceptors: [
-    TalkerHttpLogger(),
+    ISpectifyHttpLogger(),
   ]);
 
   await client.get("https://google.com".toUri());
@@ -43,7 +43,7 @@ void main() async {
 ```
 
 ## Using with ISpectiy
-You can add your iSpectify instance for TalkerHttpLogger if your app already uses ISpectiy.
+You can add your iSpectify instance for ISpectifyHttpLogger if your app already uses ISpectiy.
 
 In this case, all logs and errors will fall into your unified tracking system
 
@@ -54,7 +54,7 @@ import 'lib/talker_http_logger.dart';
 void main() async {
   final iSpectify = ISpectiy();
   final client = InterceptedClient.build(interceptors: [
-    TalkerHttpLogger(iSpectify: iSpectify),
+    ISpectifyHttpLogger(iSpectify: iSpectify),
   ]);
 
   await client.get("https://google.com".toUri());

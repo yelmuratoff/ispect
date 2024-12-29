@@ -31,10 +31,10 @@ class ISpectLogCard extends StatefulWidget {
   final Color backgroundColor;
 
   @override
-  State<ISpectLogCard> createState() => _TalkerDataCardState();
+  State<ISpectLogCard> createState() => _ISpectifyDataCardState();
 }
 
-class _TalkerDataCardState extends State<ISpectLogCard> {
+class _ISpectifyDataCardState extends State<ISpectLogCard> {
   late bool _expanded;
   late String? _stackTrace;
   late String? _message;
@@ -124,8 +124,8 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
   }
 
   String? get _getStackTrace {
-    if ((widget.data is TalkerError ||
-            widget.data is TalkerException ||
+    if ((widget.data is ISpectifyError ||
+            widget.data is ISpectifyException ||
             widget.data.message == 'FlutterErrorDetails') &&
         widget.data.stackTrace != null &&
         widget.data.stackTrace.toString().isNotEmpty) {
@@ -135,7 +135,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
   }
 
   String? get _getMessage {
-    if (widget.data is TalkerError || widget.data is TalkerException) {
+    if (widget.data is ISpectifyError || widget.data is ISpectifyException) {
       return widget.data.message;
     }
     final isHttpLog = [
@@ -165,7 +165,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
   }
 
   String? get _getType {
-    if (widget.data is! TalkerError && widget.data is! TalkerException) {
+    if (widget.data is! ISpectifyError && widget.data is! ISpectifyException) {
       return null;
     }
     return 'Type: ${widget.data.exception?.runtimeType.toString() ?? widget.data.error?.runtimeType.toString() ?? ''}';

@@ -70,7 +70,7 @@ final class ISpect {
     void Function(BlocBase<dynamic> bloc)? onBlocCreate,
     void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
-    ISpectTalkerOptions options = const ISpectTalkerOptions(),
+    ISpectISpectifyOptions options = const ISpectISpectifyOptions(),
     List<String> filters = const [],
   }) {
     ISpect.initHandling(
@@ -155,7 +155,7 @@ final class ISpect {
     final void Function(BlocBase<dynamic> bloc)? onBlocCreate,
     final void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
-    final ISpectTalkerOptions options = const ISpectTalkerOptions(),
+    final ISpectISpectifyOptions options = const ISpectISpectifyOptions(),
     final List<String> filters = const [],
   }) async {
     _instance._talker = iSpectify;

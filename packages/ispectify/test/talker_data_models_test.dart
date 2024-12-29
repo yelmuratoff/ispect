@@ -8,8 +8,8 @@ const _testTitle = 'test title';
 
 void main() {
   group('ISpectiyData models', () {
-    test('TalkerError', () async {
-      final error = TalkerError(
+    test('ISpectifyError', () async {
+      final error = ISpectifyError(
         ArgumentError(),
         message: _testMessage,
         stackTrace: StackTrace.empty,
@@ -17,7 +17,7 @@ void main() {
       );
 
       expect(error is ISpectiyData, true);
-      expect(error is TalkerError, true);
+      expect(error is ISpectifyError, true);
       expect(error.message, _testMessage);
       expect(error.title, _testTitle);
       expect(error.time is DateTime, true);
@@ -27,13 +27,13 @@ void main() {
       final message = error.generateTextMessage();
       expect(
         message,
-        '''[test title] | ${TalkerDateTimeFormatter(error.time).timeAndSeconds} | test message
+        '''[test title] | ${ISpectifyDateTimeFormatter(error.time).timeAndSeconds} | test message
 Invalid argument(s)''',
       );
     });
 
-    test('TalkerException', () async {
-      final exception = TalkerException(
+    test('ISpectifyException', () async {
+      final exception = ISpectifyException(
         Exception(),
         message: _testMessage,
         stackTrace: StackTrace.empty,
@@ -41,7 +41,7 @@ Invalid argument(s)''',
       );
 
       expect(exception is ISpectiyData, true);
-      expect(exception is TalkerException, true);
+      expect(exception is ISpectifyException, true);
       expect(exception.message, _testMessage);
       expect(exception.title, _testTitle);
       expect(exception.time is DateTime, true);
@@ -51,11 +51,11 @@ Invalid argument(s)''',
       final message = exception.generateTextMessage();
       expect(
         message,
-        '''[test title] | ${TalkerDateTimeFormatter(exception.time).timeAndSeconds} | test message
+        '''[test title] | ${ISpectifyDateTimeFormatter(exception.time).timeAndSeconds} | test message
 Exception''',
       );
 
-      final exceptionWithStackTrace = TalkerException(
+      final exceptionWithStackTrace = ISpectifyException(
         Exception(),
         stackTrace: StackTrace.current,
       );
@@ -80,7 +80,7 @@ Exception''',
       final message = log.generateTextMessage();
       expect(
         message,
-        '''[test title] | ${TalkerDateTimeFormatter(log.time).timeAndSeconds} | test message''',
+        '''[test title] | ${ISpectifyDateTimeFormatter(log.time).timeAndSeconds} | test message''',
       );
     });
   });

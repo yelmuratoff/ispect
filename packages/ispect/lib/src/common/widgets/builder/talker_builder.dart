@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
 
-typedef TalkerWidgetBuilder = Widget Function(
+typedef ISpectifyWidgetBuilder = Widget Function(
   BuildContext context,
   List<ISpectiyData> data,
 );
 
-class TalkerBuilder extends StatelessWidget {
-  const TalkerBuilder({
+class ISpectifyBuilder extends StatelessWidget {
+  const ISpectifyBuilder({
     required this.iSpectify,
     required this.builder,
     super.key,
   });
 
   final ISpectiy iSpectify;
-  final TalkerWidgetBuilder builder;
+  final ISpectifyWidgetBuilder builder;
 
   @override
   Widget build(BuildContext context) => StreamBuilder(

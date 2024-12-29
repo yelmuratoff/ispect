@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:ispectify/ispectify.dart';
 
-extension TalkerFlutter on ISpectiy {
+extension ISpectifyFlutter on ISpectiy {
   static ISpectiy init({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,

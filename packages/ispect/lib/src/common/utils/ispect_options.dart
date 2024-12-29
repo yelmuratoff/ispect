@@ -12,7 +12,7 @@ final class ISpectOptions {
   });
 
   final Locale locale;
-  final List<TalkerActionItem> actionItems;
+  final List<ISpectifyActionItem> actionItems;
 
   final List<
       ({
@@ -31,7 +31,7 @@ final class ISpectOptions {
   ISpectOptions copyWith({
     Locale? locale,
     String? googleAiToken,
-    List<TalkerActionItem>? actionItems,
+    List<ISpectifyActionItem>? actionItems,
     List<
             ({
               IconData icon,

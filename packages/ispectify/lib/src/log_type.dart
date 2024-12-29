@@ -37,7 +37,7 @@ enum ISpectifyLogType {
   }
 }
 
-extension TalkerLogTypeExt on ISpectifyLogType {
+extension ISpectifyLogTypeExt on ISpectifyLogType {
   LogLevel get level {
     return switch (this) {
       ISpectifyLogType.error => LogLevel.error,

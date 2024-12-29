@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
-class TalkerHttpLogger extends InterceptorContract {
-  TalkerHttpLogger({ISpectiy? iSpectify}) {
+class ISpectifyHttpLogger extends InterceptorContract {
+  ISpectifyHttpLogger({ISpectiy? iSpectify}) {
     _talker = iSpectify ?? ISpectiy();
   }
 

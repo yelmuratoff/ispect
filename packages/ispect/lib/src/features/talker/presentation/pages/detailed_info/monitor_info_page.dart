@@ -37,7 +37,7 @@ class _MonitorPageState extends State<MonitorPage> {
         typeName: widget.typeName,
         logs: _logs,
         options: widget.options,
-        onCopyTap: _copyTalkerDataItemText,
+        onCopyTap: _copyISpectifyDataItemText,
         onReverseLogsOrder: _reverseLogsOrder,
         isLogsExpanded: _isLogsExpanded,
         toggleLogsExpansion: _toggleLogsExpansion,
@@ -55,7 +55,7 @@ class _MonitorPageState extends State<MonitorPage> {
     });
   }
 
-  void _copyTalkerDataItemText(BuildContext context, ISpectiyData data) {
+  void _copyISpectifyDataItemText(BuildContext context, ISpectiyData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
   }

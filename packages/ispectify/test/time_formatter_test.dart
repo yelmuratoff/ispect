@@ -2,9 +2,9 @@ import 'package:ispectify/src/utils/time_formatter.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('TalkerDateTimeFormatter', () {
+  group('ISpectifyDateTimeFormatter', () {
     test('Pads small minutes and seconds', () {
-      final formatter = TalkerDateTimeFormatter(
+      final formatter = ISpectifyDateTimeFormatter(
         DateTime(2023, 10, 17, 1, 1, 1),
       );
 
@@ -12,7 +12,7 @@ void main() {
     });
 
     test("Large minutes and seconds aren't padded", () {
-      final formatter = TalkerDateTimeFormatter(
+      final formatter = ISpectifyDateTimeFormatter(
         DateTime(2023, 10, 17, 1, 59, 35),
       );
 

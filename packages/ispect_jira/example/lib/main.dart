@@ -5,7 +5,7 @@ import 'package:ispect_jira_example/src/core/localization/generated/app_localiza
 import 'package:ispect_jira_example/theme_manager.dart';
 
 void main() {
-  final iSpectify = TalkerFlutter.init();
+  final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(
@@ -68,7 +68,7 @@ class _AppState extends State<App> {
           ),
         ],
         actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'ISpect',
             icon: Icons.bug_report_outlined,
             onTap: (context) {

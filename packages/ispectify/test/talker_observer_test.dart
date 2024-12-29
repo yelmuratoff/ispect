@@ -2,15 +2,15 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 final _logsStore = <ISpectiyData>[];
-final _errorsStore = <TalkerError>[];
-final _exceptionsStore = <TalkerException>[];
+final _errorsStore = <ISpectifyError>[];
+final _exceptionsStore = <ISpectifyException>[];
 
-class MockTalkerObserver extends ISpectifyObserver {
+class MockISpectifyObserver extends ISpectifyObserver {
   @override
-  void onError(TalkerError err) => _errorsStore.add(err);
+  void onError(ISpectifyError err) => _errorsStore.add(err);
 
   @override
-  void onException(TalkerException e) => _exceptionsStore.add(e);
+  void onException(ISpectifyException e) => _exceptionsStore.add(e);
 
   @override
   void onLog(ISpectiyData log) => _logsStore.add(log);
@@ -18,7 +18,7 @@ class MockTalkerObserver extends ISpectifyObserver {
 
 void main() {
   group('ISpectifyObserver', () {
-    final mockObserver = MockTalkerObserver();
+    final mockObserver = MockISpectifyObserver();
 
     setUp(() {
       _logsStore.clear();
@@ -26,14 +26,14 @@ void main() {
       _exceptionsStore.clear();
     });
     test('onError', () {
-      mockObserver.onError.call(TalkerError(ArgumentError()));
+      mockObserver.onError.call(ISpectifyError(ArgumentError()));
       expect(_errorsStore, isNotEmpty);
       expect(_logsStore, isEmpty);
       expect(_exceptionsStore, isEmpty);
     });
 
     test('onException', () {
-      mockObserver.onException.call(TalkerException(Exception()));
+      mockObserver.onException.call(ISpectifyException(Exception()));
       expect(_errorsStore, isEmpty);
       expect(_logsStore, isEmpty);
       expect(_exceptionsStore, isNotEmpty);
@@ -49,7 +49,7 @@ void main() {
 
   group('Test observer\'s log method invoked with the correct log', () {
     late ISpectiy iSpectify;
-    final mockObserver = MockTalkerObserver();
+    final mockObserver = MockISpectifyObserver();
 
     setUp(() {
       iSpectify = ISpectiy(observer: mockObserver);

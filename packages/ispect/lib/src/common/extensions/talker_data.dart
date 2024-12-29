@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-extension ISpectTalkerDataX on ISpectiyData {
+extension ISpectISpectifyDataX on ISpectiyData {
   ISpectiyData copyWith({
     String? message,
     LogLevel? logLevel,

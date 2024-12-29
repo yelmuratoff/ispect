@@ -49,8 +49,8 @@ ISpect can be extended using other parts of this package <br>
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
 - ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
 - ✅ ISpectiy logger implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
-- ✅ You can customize more options during initialization of ISpectTalker like BLoC, Dispatcher error and etc.
-- ✅ Updated ISpectTalker page: added more options.
+- ✅ You can customize more options during initialization of ISpectISpectify like BLoC, Dispatcher error and etc.
+- ✅ Updated ISpectISpectify page: added more options.
    - Detailed `HTTP` logs: `request`, `response`, `error`
    - Debug tools
    - Cache manager
@@ -137,7 +137,7 @@ ISpectJiraClient.initialize(
 3. In `actionItems` inside `ISpectOptions` add the Jira Action button.
 ```dart
 actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'ISpect',
             icon: Icons.bug_report_outlined,
             onTap: (context) {

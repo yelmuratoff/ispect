@@ -3,17 +3,17 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectifyFilter', () {
-    _testFilterByTitles(useTalkerFilter: false);
-    _testFilterByTitles(useTalkerFilter: true);
+    _testFilterByTitles(useISpectifyFilter: false);
+    _testFilterByTitles(useISpectifyFilter: true);
 
-    _testFilterByTypes(useTalkerFilter: false);
-    _testFilterByTypes(useTalkerFilter: true);
+    _testFilterByTypes(useISpectifyFilter: false);
+    _testFilterByTypes(useISpectifyFilter: true);
 
-    _testFilterBySearchText(useTalkerFilter: false);
-    _testFilterBySearchText(useTalkerFilter: true);
+    _testFilterBySearchText(useISpectifyFilter: false);
+    _testFilterBySearchText(useISpectifyFilter: true);
 
     test('copyWith', () {
-      final filter = BaseTalkerFilter(
+      final filter = BaseISpectifyFilter(
         titles: ['Error'],
         types: [Exception],
       );
@@ -31,11 +31,11 @@ void main() {
 }
 
 void _testFilterBySearchText({
-  required bool useTalkerFilter,
+  required bool useISpectifyFilter,
 }) {
   return group('By search text', () {
     _testFilterFoundBySearchText(
-      useTalkerFilter: useTalkerFilter,
+      useISpectifyFilter: useISpectifyFilter,
       searchQuery: 'http',
       countFound: 4,
       logCallback: (iSpectify) {
@@ -51,11 +51,11 @@ void _testFilterBySearchText({
 }
 
 void _testFilterByTypes({
-  required bool useTalkerFilter,
+  required bool useISpectifyFilter,
 }) {
   group('By type', () {
     _testFilterFoundByType(
-      useTalkerFilter: useTalkerFilter,
+      useISpectifyFilter: useISpectifyFilter,
       types: [ISpectifyLog],
       countFound: 1,
       logCallback: (iSpectify) {
@@ -63,8 +63,8 @@ void _testFilterByTypes({
       },
     );
     _testFilterFoundByType(
-      useTalkerFilter: useTalkerFilter,
-      types: [TalkerError],
+      useISpectifyFilter: useISpectifyFilter,
+      types: [ISpectifyError],
       countFound: 2,
       logCallback: (iSpectify) {
         iSpectify.info('Test log');
@@ -76,13 +76,13 @@ void _testFilterByTypes({
 }
 
 void _testFilterByTitles({
-  required bool useTalkerFilter,
+  required bool useISpectifyFilter,
 }) {
   return group(
     'By title',
     () {
       _testFilterFoundByTitle(
-        useTalkerFilter: useTalkerFilter,
+        useISpectifyFilter: useISpectifyFilter,
         titles: ['error'],
         countFound: 1,
         logCallback: (iSpectify) {
@@ -91,7 +91,7 @@ void _testFilterByTitles({
       );
 
       _testFilterFoundByTitle(
-        useTalkerFilter: useTalkerFilter,
+        useISpectifyFilter: useISpectifyFilter,
         titles: ['error', 'exception'],
         countFound: 2,
         logCallback: (iSpectify) {
@@ -101,7 +101,7 @@ void _testFilterByTitles({
       );
 
       _testFilterFoundByTitle(
-        useTalkerFilter: useTalkerFilter,
+        useISpectifyFilter: useISpectifyFilter,
         titles: ['error', 'verbose'],
         countFound: 2,
         logCallback: (iSpectify) {
@@ -112,7 +112,7 @@ void _testFilterByTitles({
       );
 
       _testFilterFoundByTitle(
-        useTalkerFilter: useTalkerFilter,
+        useISpectifyFilter: useISpectifyFilter,
         titles: ['verbose'],
         countFound: 5,
         logCallback: (iSpectify) {
@@ -135,16 +135,16 @@ void _testFilterFoundBySearchText({
   required String searchQuery,
   required Function(ISpectiy iSpectify) logCallback,
   required int countFound,
-  required bool useTalkerFilter,
+  required bool useISpectifyFilter,
 }) {
-  final filter = BaseTalkerFilter(types: [], titles: [], searchQuery: searchQuery);
+  final filter = BaseISpectifyFilter(types: [], titles: [], searchQuery: searchQuery);
 
-  final iSpectify = useTalkerFilter ? ISpectiy(filter: filter) : ISpectiy();
+  final iSpectify = useISpectifyFilter ? ISpectiy(filter: filter) : ISpectiy();
 
-  test('Found $countFound ${useTalkerFilter ? 'By ISpectiy' : 'By Filter'} with searchQuery $searchQuery', () {
+  test('Found $countFound ${useISpectifyFilter ? 'By ISpectiy' : 'By Filter'} with searchQuery $searchQuery', () {
     logCallback.call(iSpectify);
     final foundRecords =
-        useTalkerFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
+        useISpectifyFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
 
     expect(foundRecords, isNotEmpty);
     expect(foundRecords.length, countFound);
@@ -155,15 +155,15 @@ void _testFilterFoundByType({
   required List<Type> types,
   required Function(ISpectiy iSpectify) logCallback,
   required int countFound,
-  required bool useTalkerFilter,
+  required bool useISpectifyFilter,
 }) {
-  final filter = BaseTalkerFilter(types: types);
-  final iSpectify = useTalkerFilter ? ISpectiy(filter: filter) : ISpectiy();
+  final filter = BaseISpectifyFilter(types: types);
+  final iSpectify = useISpectifyFilter ? ISpectiy(filter: filter) : ISpectiy();
 
-  test('Found $countFound ${useTalkerFilter ? 'By ISpectiy' : 'By Filter'} in ${types.join(',')}', () {
+  test('Found $countFound ${useISpectifyFilter ? 'By ISpectiy' : 'By Filter'} in ${types.join(',')}', () {
     logCallback.call(iSpectify);
     final foundRecords =
-        useTalkerFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
+        useISpectifyFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
     expect(foundRecords, isNotEmpty);
     expect(foundRecords.length, countFound);
   });
@@ -173,15 +173,15 @@ void _testFilterFoundByTitle(
     {required List<String> titles,
     required Function(ISpectiy) logCallback,
     required int countFound,
-    required bool useTalkerFilter}) {
-  final filter = BaseTalkerFilter(titles: titles);
-  final iSpectify = useTalkerFilter ? ISpectiy(filter: filter) : ISpectiy();
+    required bool useISpectifyFilter}) {
+  final filter = BaseISpectifyFilter(titles: titles);
+  final iSpectify = useISpectifyFilter ? ISpectiy(filter: filter) : ISpectiy();
 
-  test('Found $countFound ${useTalkerFilter ? 'By ISpectiy' : 'By Filter'} in ${titles.join(',')}', () {
+  test('Found $countFound ${useISpectifyFilter ? 'By ISpectiy' : 'By Filter'} in ${titles.join(',')}', () {
     logCallback.call(iSpectify);
 
     final foundRecords =
-        useTalkerFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
+        useISpectifyFilter ? iSpectify.history : iSpectify.history.where((e) => filter.filter(e)).toList();
 
     expect(foundRecords, isNotEmpty);
     expect(foundRecords.length, countFound);

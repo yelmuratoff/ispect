@@ -8,7 +8,7 @@ void main() {
   group('DioRequestLog', () {
     test('generateTextMessage should include method and message', () {
       final requestOptions = RequestOptions(path: '/test', method: 'GET');
-      final settings = TalkerDioLoggerSettings(
+      final settings = ISpectifyDioLoggerSettings(
         requestPen: AnsiPen()..blue(),
       );
       final dioRequestLog = DioRequestLog(
@@ -24,7 +24,7 @@ void main() {
 
     test('generateTextMessage should include data if printRequestData is true', () {
       final requestOptions = RequestOptions(path: '/test', method: 'POST', data: {'key': 'value'});
-      final settings = TalkerDioLoggerSettings(printRequestData: true);
+      final settings = ISpectifyDioLoggerSettings(printRequestData: true);
       final dioRequestLog = DioRequestLog('Test message', requestOptions: requestOptions, settings: settings);
 
       final result = dioRequestLog.generateTextMessage();
@@ -34,7 +34,7 @@ void main() {
 
     test('generateTextMessage should include headers if printRequestHeaders is true', () {
       final requestOptions = RequestOptions(path: '/test', method: 'GET', headers: {'Authorization': 'Bearer Token'});
-      final settings = TalkerDioLoggerSettings(printRequestHeaders: true);
+      final settings = ISpectifyDioLoggerSettings(printRequestHeaders: true);
       final dioRequestLog = DioRequestLog('Test message', requestOptions: requestOptions, settings: settings);
 
       final result = dioRequestLog.generateTextMessage();
@@ -55,7 +55,7 @@ void main() {
           'content-type': ['application/json']
         }),
       );
-      final settings = TalkerDioLoggerSettings(
+      final settings = ISpectifyDioLoggerSettings(
         responsePen: AnsiPen()..blue(),
       );
       final dioResponseLog = DioResponseLog(
@@ -78,7 +78,7 @@ void main() {
         statusCode: 200,
         statusMessage: 'OK',
       );
-      final settings = TalkerDioLoggerSettings(printResponseMessage: true);
+      final settings = ISpectifyDioLoggerSettings(printResponseMessage: true);
       final dioResponseLog = DioResponseLog(
         'Test message',
         response: response,
@@ -98,7 +98,7 @@ void main() {
           'content-type': ['application/json'],
         }),
       );
-      final settings = TalkerDioLoggerSettings(printResponseHeaders: true);
+      final settings = ISpectifyDioLoggerSettings(printResponseHeaders: true);
       final dioResponseLog = DioResponseLog('Test message', response: response, settings: settings);
 
       final result = dioResponseLog.generateTextMessage();
@@ -121,7 +121,7 @@ void main() {
         requestOptions: RequestOptions(path: '/test', method: 'GET'),
         message: 'Error message',
       );
-      final settings = TalkerDioLoggerSettings(
+      final settings = ISpectifyDioLoggerSettings(
         errorPen: AnsiPen()..blue(),
       );
       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
@@ -145,7 +145,7 @@ void main() {
                   'content-type': ['application/json'],
                 },
               )));
-      final settings = TalkerDioLoggerSettings(
+      final settings = ISpectifyDioLoggerSettings(
         errorPen: AnsiPen()..blue(),
         printErrorData: false,
         printErrorHeaders: false,
@@ -178,7 +178,7 @@ void main() {
         message: 'Error message',
       );
 
-      final settings = TalkerDioLoggerSettings();
+      final settings = ISpectifyDioLoggerSettings();
       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
       final result = dioErrorLog.generateTextMessage();
@@ -199,7 +199,7 @@ void main() {
         response: response,
       );
 
-      final settings = TalkerDioLoggerSettings();
+      final settings = ISpectifyDioLoggerSettings();
       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
       final result = dioErrorLog.generateTextMessage();
@@ -220,7 +220,7 @@ void main() {
         response: response,
       );
 
-      final settings = TalkerDioLoggerSettings(printResponseHeaders: true);
+      final settings = ISpectifyDioLoggerSettings(printResponseHeaders: true);
       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
       final result = dioErrorLog.generateTextMessage();

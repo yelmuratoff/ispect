@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-class DefaultTalkerHistory implements LogHistory {
-  DefaultTalkerHistory(this.settings, {List<ISpectiyData>? history}) {
+class DefaultISpectifyHistory implements LogHistory {
+  DefaultISpectifyHistory(this.settings, {List<ISpectiyData>? history}) {
     if (history != null) {
       _history.addAll(history);
     }
