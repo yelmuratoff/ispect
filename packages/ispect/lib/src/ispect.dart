@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_final_parameters, lines_longer_than_80_chars, inference_failure_on_untyped_parameter
 
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +10,9 @@ import 'package:ispect/src/common/extensions/pretty_json.dart';
 import 'package:ispect/src/common/observers/bloc_observer.dart';
 import 'package:ispect/src/features/talker/logs.dart';
 import 'package:ispect/src/features/talker/talker_options.dart';
+import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_bloc/settings.dart';
 import 'package:provider/provider.dart';
-import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 /// `ISpect` - This class contains the main functionality of the library.
 final class ISpect {
@@ -21,14 +20,14 @@ final class ISpect {
   // ignore: prefer_const_constructor_declarations
   ISpect._();
 
-  late final Talker _talker;
+  late final ISpectiy _talker;
 
   static final ISpect _instance = ISpect._();
 
   static ISpect get instance => _instance;
 
-  static Talker get talker => _instance._talker;
-  static set talker(Talker talker) => _instance._talker = talker;
+  static ISpectiy get iSpectify => _instance._talker;
+  static set iSpectify(ISpectiy iSpectify) => _instance._talker = iSpectify;
 
   static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(
         context,
@@ -43,7 +42,7 @@ final class ISpect {
   /// It initializes the handling of the app.
   static void run<T>(
     T Function() callback, {
-    required Talker talker,
+    required ISpectiy iSpectify,
     VoidCallback? onInit,
     VoidCallback? onInitialized,
     void Function(Object error, StackTrace stackTrace)? onZonedError,
@@ -75,7 +74,7 @@ final class ISpect {
     List<String> filters = const [],
   }) {
     ISpect.initHandling(
-      talker: talker,
+      iSpectify: iSpectify,
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
@@ -138,7 +137,7 @@ final class ISpect {
   /// Filters works only for `BLoC` and Excetions: `FlutterError`, `PlatformDispatcher`, `UncaughtErrors`.
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
-    required Talker talker,
+    required ISpectiy iSpectify,
     void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
@@ -159,7 +158,7 @@ final class ISpect {
     final ISpectTalkerOptions options = const ISpectTalkerOptions(),
     final List<String> filters = const [],
   }) async {
-    _instance._talker = talker;
+    _instance._talker = iSpectify;
     info('🚀 ISpect: Initialize started.');
 
     FlutterError.presentError = (details) {
@@ -182,8 +181,8 @@ final class ISpect {
     };
 
     Bloc.observer = ISpectBlocObserver(
-      talker: talker,
-      settings: TalkerBlocLoggerSettings(
+      iSpectify: iSpectify,
+      settings: ISpectifyBlocSettings(
         enabled: options.isBlocHandlingEnabled,
         printStateFullData: false,
       ),
@@ -242,22 +241,6 @@ final class ISpect {
       }
     };
 
-    Isolate.current
-      ..setErrorsFatal(false)
-      ..addErrorListener(
-        RawReceivePort(
-          // ignore: avoid_types_on_closure_parameters
-          (List<dynamic> pair) {
-            onUncaughtErrors?.call(pair);
-            final exceptionAsString = pair.toString();
-            final isFilterContains = filters.any(exceptionAsString.contains);
-            if (options.isUncaughtErrorsHandlingEnabled && !isFilterContains) {
-              _instance._talker.error(pair);
-            }
-          },
-        ).sendPort,
-      );
-
     good('✅ ISpect: Success initialized.');
   }
 
@@ -279,7 +262,7 @@ final class ISpect {
     );
   }
 
-  static void logTyped(TalkerLog log) {
+  static void logTyped(ISpectifyLog log) {
     _instance._talker.logCustom(log);
   }
 

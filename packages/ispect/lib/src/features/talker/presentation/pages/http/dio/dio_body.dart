@@ -8,7 +8,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/json_tree/json_widget.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/talker/presentation/pages/http/item_container.dart';
-import 'package:talker_dio_logger/dio_logs.dart';
+import 'package:ispectify_dio/dio_logs.dart';
 
 part 'error_body.dart';
 part 'request_body.dart';
@@ -305,8 +305,7 @@ class DioHTTPBody extends StatelessWidget {
                     'files': (data as FormData)
                         .files
                         .map(
-                          (e) =>
-                              '${e.value.filename}: Length: ${e.value.length}',
+                          (e) => '${e.value.filename}: Length: ${e.value.length}',
                         )
                         .toList(),
                     'fields': (data as FormData)

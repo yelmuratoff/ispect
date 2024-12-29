@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:talker_bloc_logger/talker_bloc_logger.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-/// `BLoC` logger on `Talker` base
+/// `BLoC` logger on `ISpectiy` base
 ///
-/// `talker` field is the current `Talker` instance.
-/// Provide your instance if your application uses `Talker` as the default logger
-/// Common Talker instance will be used by default
+/// `iSpectify` field is the current `ISpectiy` instance.
+/// Provide your instance if your application uses `ISpectiy` as the default logger
+/// Common ISpectiy instance will be used by default
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
-    Talker? talker,
-    this.settings = const TalkerBlocLoggerSettings(),
+    ISpectiy? iSpectify,
+    this.settings = const ISpectifyBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
     this.onBlocChange,
@@ -20,10 +20,10 @@ class ISpectBlocObserver extends BlocObserver {
     this.onBlocClose,
     this.filters = const [],
   }) {
-    _talker = talker ?? Talker();
+    _talker = iSpectify ?? ISpectiy();
   }
 
-  late Talker _talker;
+  late ISpectiy _talker;
   final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
   final void Function(
     Bloc<dynamic, dynamic> bloc,
@@ -37,7 +37,7 @@ class ISpectBlocObserver extends BlocObserver {
   )? onBlocError;
   final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
   final void Function(BlocBase<dynamic> bloc)? onBlocClose;
-  final TalkerBlocLoggerSettings settings;
+  final ISpectifyBlocSettings settings;
   final List<String> filters;
 
   @override

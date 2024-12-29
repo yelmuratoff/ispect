@@ -6,7 +6,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> loadFilesList({
     required BuildContext context,
-    required Talker talker,
+    required ISpectiy iSpectify,
   }) async {
     try {
       final f = await AppFileService.instance.getFiles();
@@ -15,9 +15,8 @@ class AppDataController extends ChangeNotifier {
         notifyListeners();
       });
     } catch (e, st) {
-      if (context.mounted &&
-          !e.toString().contains('No such file or directory')) {
-        talker.handle(e, st);
+      if (context.mounted && !e.toString().contains('No such file or directory')) {
+        iSpectify.handle(e, st);
         await ISpectToaster.showErrorToast(
           context,
           title: e.toString(),
@@ -33,7 +32,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFile({
     required BuildContext context,
-    required Talker talker,
+    required ISpectiy iSpectify,
     required int index,
   }) async {
     try {
@@ -41,11 +40,11 @@ class AppDataController extends ChangeNotifier {
       if (context.mounted) {
         await loadFilesList(
           context: context,
-          talker: talker,
+          iSpectify: iSpectify,
         );
       }
     } on Exception catch (e, st) {
-      talker.handle(e, st);
+      iSpectify.handle(e, st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
@@ -57,7 +56,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFiles({
     required BuildContext context,
-    required Talker talker,
+    required ISpectiy iSpectify,
   }) async {
     try {
       for (final file in _files) {
@@ -66,11 +65,11 @@ class AppDataController extends ChangeNotifier {
       if (context.mounted) {
         await loadFilesList(
           context: context,
-          talker: talker,
+          iSpectify: iSpectify,
         );
       }
     } on Exception catch (e, st) {
-      talker.handle(e, st);
+      iSpectify.handle(e, st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,

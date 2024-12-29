@@ -12,9 +12,9 @@ class _MonitorView extends StatelessWidget {
   });
   final String typeName;
 
-  final List<TalkerData> logs;
+  final List<ISpectiyData> logs;
   final ISpectOptions options;
-  final void Function(BuildContext context, TalkerData data)? onCopyTap;
+  final void Function(BuildContext context, ISpectiyData data)? onCopyTap;
   final VoidCallback onReverseLogsOrder;
   final VoidCallback toggleLogsExpansion;
   final bool isLogsExpanded;
@@ -41,9 +41,7 @@ class _MonitorView extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              isLogsExpanded
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+              isLogsExpanded ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             ),
             onPressed: toggleLogsExpansion,
           ),

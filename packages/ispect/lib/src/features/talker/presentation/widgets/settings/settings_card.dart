@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
-import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 
 class TalkerSettingsCardItem extends StatelessWidget {
   const TalkerSettingsCardItem({
@@ -13,7 +12,7 @@ class TalkerSettingsCardItem extends StatelessWidget {
     required this.onChanged,
     super.key,
     this.canEdit = true,
-    this.backgroundColor = defaultCardBackgroundColor,
+    this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
   });
 
   final String title;
@@ -32,8 +31,7 @@ class TalkerSettingsCardItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: ISpectBaseCard(
           padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(right: 4),
-          color: iSpect.theme.dividerColor(context) ??
-              context.ispectTheme.dividerColor,
+          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
           backgroundColor: backgroundColor,
           child: Material(
             color: Colors.transparent,

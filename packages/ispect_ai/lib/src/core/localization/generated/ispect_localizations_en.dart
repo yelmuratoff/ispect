@@ -16,8 +16,7 @@ class ISpectAILocalizationEn extends ISpectAILocalization {
   String get allLogsCopied => 'All logs have been copied to the clipboard';
 
   @override
-  String get analyticsLogDesc =>
-      'Log of event submissions to the analytics service';
+  String get analyticsLogDesc => 'Log of event submissions to the analytics service';
 
   @override
   String get apiToken => 'API Token';

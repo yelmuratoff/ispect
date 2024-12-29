@@ -6,14 +6,13 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/cache/src/app_cache_manager.dart';
 import 'package:ispect/src/common/services/file/file_service.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/view.dart';
 part 'controller/controller.dart';
 
 class AppDataPage extends StatefulWidget {
-  const AppDataPage({required this.talker, super.key});
-  final Talker talker;
+  const AppDataPage({required this.iSpectify, super.key});
+  final ISpectiy iSpectify;
 
   @override
   State<AppDataPage> createState() => _AppDataPageState();
@@ -26,7 +25,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.loadFilesList(context: context, talker: widget.talker);
+      _controller.loadFilesList(context: context, iSpectify: widget.iSpectify);
     });
   }
 
@@ -42,14 +41,14 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
         deleteFile: (value) {
           _controller.deleteFile(
             context: context,
-            talker: widget.talker,
+            iSpectify: widget.iSpectify,
             index: value,
           );
         },
         deleteFiles: () {
           _controller.deleteFiles(
             context: context,
-            talker: widget.talker,
+            iSpectify: widget.iSpectify,
           );
         },
         cacheSizeNotifier: cacheSizeNotifier,
@@ -61,7 +60,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
           if (context.mounted) {
             await _controller.loadFilesList(
               context: context,
-              talker: widget.talker,
+              iSpectify: widget.iSpectify,
             );
           }
           if (context.mounted) {

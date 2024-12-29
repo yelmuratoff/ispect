@@ -1,7 +1,6 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
-import 'package:talker_flutter/src/ui/theme/default_theme.dart';
 
 class ISpectBaseCard extends StatelessWidget {
   const ISpectBaseCard({
@@ -9,7 +8,7 @@ class ISpectBaseCard extends StatelessWidget {
     required this.color,
     super.key,
     this.padding = const EdgeInsets.all(4),
-    this.backgroundColor = defaultCardBackgroundColor,
+    this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
   });
 
   final Widget child;

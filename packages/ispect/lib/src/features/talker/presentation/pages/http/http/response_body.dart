@@ -30,7 +30,7 @@ class HttpResponseBodyState extends State<HttpResponseBody> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: HTTPBody(
-        dataKey: widget.log.key ?? widget.log.title,
+        dataKey: widget.log.key,
         request: request,
         path: request?.url.path,
         fullUrl: request?.url.toString(),

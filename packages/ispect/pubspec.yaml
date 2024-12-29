@@ -1,8 +1,9 @@
 name: ispect
-description: "A package combining Inspector, Talker, and more from pub.dev for efficient project implementation."
+description: "A package combining Inspector, ISpectiy, and more from pub.dev for efficient project implementation."
 version: 2.0.8
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
+publish_to: none
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -19,10 +20,15 @@ dependencies:
     any
 
     # Logging
-  talker_flutter: ^4.5.2
-  talker_dio_logger: ^4.5.2
-  talker_http_logger: ^0.1.0-dev.21
-  talker_bloc_logger: ^4.5.2
+  # ispectify: ^1.0.0
+  ispectify:
+    path: ../ispectify
+  ispectify_dio:
+    path: ../ispectify_dio
+  ispectify_http:
+    path: ../ispectify_http
+  ispectify_bloc:
+    path: ../ispectify_bloc
 
   # Utils
   path_provider: ^2.1.5
@@ -32,7 +38,7 @@ dependencies:
 
   # UI
   gap: ^3.0.1
-  draggable_panel: ^0.0.5
+  draggable_panel: ^0.0.7
 
   # Lints
   # custom_lint: ^0.6.4

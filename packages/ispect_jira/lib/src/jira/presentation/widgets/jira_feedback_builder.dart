@@ -94,9 +94,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ),
                     const Gap(8),
                     TextField(
-                      style: FeedbackTheme.of(context)
-                          .bottomSheetTextInputStyle
-                          .copyWith(
+                      style: FeedbackTheme.of(context).bottomSheetTextInputStyle.copyWith(
                             color: widget.theme.textTheme.bodyMedium?.color,
                           ),
                       key: const Key('text_input_field'),
@@ -112,8 +110,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                         contentPadding: const EdgeInsets.all(12),
                         hintText: context.ispectL10n.feedbackDescriptionText,
                         hintStyle: TextStyle(
-                          color: widget.theme.textTheme.bodyMedium?.color
-                              ?.withValues(alpha: 0.5),
+                          color: widget.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                           fontSize: 14,
                         ),
                         border: const OutlineInputBorder(
@@ -123,8 +120,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ),
                   ],
                 ),
-                if (widget.scrollController != null)
-                  const FeedbackSheetDragHandle(),
+                if (widget.scrollController != null) const FeedbackSheetDragHandle(),
               ],
             ),
           ),
@@ -134,12 +130,9 @@ class _StringFeedbackState extends State<StringFeedback> {
               TextButton(
                 key: const Key('submit_feedback_button'),
                 style: TextButton.styleFrom(
-                  foregroundColor:
-                      FeedbackTheme.of(context).activeFeedbackModeColor,
-                  backgroundColor:
-                      context.ispectTheme.colorScheme.primaryContainer,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  foregroundColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+                  backgroundColor: context.ispectTheme.colorScheme.primaryContainer,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(16)),
                   ),
@@ -159,10 +152,8 @@ class _StringFeedbackState extends State<StringFeedback> {
                 TextButton(
                   key: const Key('create_issue_button'),
                   style: TextButton.styleFrom(
-                    foregroundColor:
-                        FeedbackTheme.of(context).activeFeedbackModeColor,
-                    backgroundColor:
-                        context.ispectTheme.colorScheme.primaryContainer,
+                    foregroundColor: FeedbackTheme.of(context).activeFeedbackModeColor,
+                    backgroundColor: context.ispectTheme.colorScheme.primaryContainer,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
@@ -181,11 +172,9 @@ class _StringFeedbackState extends State<StringFeedback> {
                     ],
                   ),
                   onPressed: () async {
-                    final screenshotController =
-                        BetterFeedback.ofScreenshot(context);
+                    final screenshotController = BetterFeedback.ofScreenshot(context);
                     final screenshot = await screenshotController.capture();
-                    final screenshotFilePath =
-                        await writeImageToStorage(screenshot);
+                    final screenshotFilePath = await writeImageToStorage(screenshot);
                     final jiraPage = MaterialPageRoute<dynamic>(
                       builder: (_) => JiraSendIssueScreen(
                         initialDescription: _controller.text,

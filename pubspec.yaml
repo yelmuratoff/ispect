@@ -5,6 +5,9 @@ environment:
 
 workspace:
   - packages/ispect
-  - packages/ispectify
   - packages/ispect_ai
   - packages/ispect_jira
+  - packages/ispectify
+  - packages/ispectify_bloc
+  - packages/ispectify_dio
+  - packages/ispectify_http

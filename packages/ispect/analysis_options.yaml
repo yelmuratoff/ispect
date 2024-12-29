@@ -21,6 +21,7 @@ analyzer:
     parameter_assignments: error
     avoid_slow_async_io: error
     use_key_in_widget_constructors: error
+    comment_references: ignore
 
 linter:
   rules:

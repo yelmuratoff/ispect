@@ -3,7 +3,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/log_card/log_card.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 part 'view/monitor_info_view.dart';
 
@@ -16,7 +15,7 @@ class MonitorPage extends StatefulWidget {
   });
 
   final String typeName;
-  final List<TalkerData> data;
+  final List<ISpectiyData> data;
   final ISpectOptions options;
 
   @override
@@ -24,7 +23,7 @@ class MonitorPage extends StatefulWidget {
 }
 
 class _MonitorPageState extends State<MonitorPage> {
-  final _logs = <TalkerData>[];
+  final _logs = <ISpectiyData>[];
   bool _isLogsExpanded = false;
 
   @override
@@ -56,7 +55,7 @@ class _MonitorPageState extends State<MonitorPage> {
     });
   }
 
-  void _copyTalkerDataItemText(BuildContext context, TalkerData data) {
+  void _copyTalkerDataItemText(BuildContext context, ISpectiyData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
   }

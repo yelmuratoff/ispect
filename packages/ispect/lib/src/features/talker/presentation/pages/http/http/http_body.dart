@@ -10,7 +10,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/json_tree/json_widget.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/talker/presentation/pages/http/item_container.dart';
-import 'package:talker_http_logger/talker_http_logger.dart';
+import 'package:ispectify_http/ispectify_http.dart';
 
 part 'request_body.dart';
 part 'response_body.dart';

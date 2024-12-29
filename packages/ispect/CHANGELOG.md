@@ -16,7 +16,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Feature: Added support for `http` package. See the example project for more details.
 
 ## 2.0.3
-- Fix: `setState` during build inside `ISpectPage` (Talker).
+- Fix: `setState` during build inside `ISpectPage` (ISpectiy).
 
 ## 2.0.1
 - Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
@@ -26,7 +26,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Fix: panel height factor fixed
 
 ## 1.9.8
-- `Talker` was upgraded to v4.5.0.
+- `ISpectiy` was upgraded to v4.5.0.
 - Now you can customize `track` method.
    - You can add analytic's service name.
    - You can add event's name.
@@ -51,7 +51,7 @@ Example: *(SuccessLog is your custom log)*
           SuccessLog.logKey: const Color(0xFF880E4F),
         },
         logIcons: {
-          TalkerLogType.route.key: Icons.router_rounded,
+          ISpectifyLogType.route.key: Icons.router_rounded,
           SuccessLog.logKey: Icons.check_circle_rounded,
         },
       ),
@@ -116,7 +116,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Upgraded feedback_plus to version 0.1.2.
 
 ## 1.6.5
-- Fix issue with late talker initialization.
+- Fix issue with late iSpectify initialization.
 
 ## 1.6.4
 - Added ISpectTalker's options to the ISpect's params.
@@ -183,7 +183,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Updated documentation: added a video preview of the package.
 
 ## 1.2.4
-- Added some options to the `Talker` detailed monitor page: reverse all logs and toggle expansion.
+- Added some options to the `ISpectiy` detailed monitor page: reverse all logs and toggle expansion.
 - Moved performance tracker to the `Draggable` button and removed it from the settings sheet.
 
 ## 1.2.3
@@ -191,7 +191,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
   - To use the Draggable button inside ISpectPage, pass the key. By default, it is not possible to use the Draggable button inside ISpectPage.
 
 ## 1.2.0
-- Upgraded Talker to version 4.3.2.
+- Upgraded ISpectiy to version 4.3.2.
 
 ## 1.1.8
 - Added Kazakh language support.
@@ -201,12 +201,12 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Refactored options theme of ISpect.
 
 ## 1.1.6
-- Refactored Riverpod logs on the Talker Page.
+- Refactored Riverpod logs on the ISpectiy Page.
 - Updated dependencies.
 
 ## 1.1.5
 - Added Riverpod logs.
-- Made updates to the Talker Page and Feedback builder.
+- Made updates to the ISpectiy Page and Feedback builder.
 
 ## 1.1.2
 - Fixed issues with the light theme.
@@ -231,4 +231,4 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Added ISpectLocalization and cache management.
 
 ## 1.0.0
-- Initial release: Wrapper around Inspector, Talker, etc.
+- Initial release: Wrapper around Inspector, ISpectiy, etc.

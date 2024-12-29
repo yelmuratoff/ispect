@@ -5,8 +5,6 @@ import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/talker/presentation/pages/http/detailed_http_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
-import 'package:talker_flutter/src/ui/theme/default_theme.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 part 'collapsed_body.dart';
 part 'expanded_body.dart';
@@ -21,10 +19,10 @@ class ISpectLogCard extends StatefulWidget {
     this.onTap,
     this.expanded = true,
     this.margin,
-    this.backgroundColor = defaultCardBackgroundColor,
+    this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
   });
 
-  final TalkerData data;
+  final ISpectiyData data;
   final VoidCallback? onCopyTap;
   final VoidCallback? onTap;
   final bool expanded;
@@ -71,8 +69,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ??
-                    Icons.bug_report_outlined,
+                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.title,
                 dateTime: widget.data.displayTime(),
@@ -88,8 +85,8 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
                     ),
                   );
                 },
-                isHttpLog: (widget.data.key?.contains('http') ?? false) ||
-                    (widget.data.title?.contains('http') ?? false),
+                isHttpLog:
+                    (widget.data.key?.contains('http') ?? false) || (widget.data.title?.contains('http') ?? false),
                 message: _message,
                 errorMessage: _errorMessage,
                 expanded: _expanded,
@@ -142,9 +139,9 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
       return widget.data.message;
     }
     final isHttpLog = [
-      TalkerLogType.httpError.key,
-      TalkerLogType.httpRequest.key,
-      TalkerLogType.httpResponse.key,
+      ISpectifyLogType.httpError.key,
+      ISpectifyLogType.httpRequest.key,
+      ISpectifyLogType.httpResponse.key,
     ].contains(widget.data.title);
     if (isHttpLog) {
       return widget.data.generateTextMessage();
@@ -159,7 +156,7 @@ class _TalkerDataCardState extends State<ISpectLogCard> {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';
     }
     final isHttpLog = [
-      TalkerLogType.httpError.key,
+      ISpectifyLogType.httpError.key,
     ].contains(widget.data.title);
     if (isHttpLog) {
       return widget.data.generateTextMessage();

@@ -8,18 +8,16 @@ import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_card.dart';
 
-import 'package:talker_flutter/talker_flutter.dart';
-
 class TalkerSettingsBottomSheets extends StatefulWidget {
   const TalkerSettingsBottomSheets({
-    required this.talker,
+    required this.iSpectify,
     required this.options,
     required this.actions,
     super.key,
   });
 
-  /// Talker implementation
-  final ValueNotifier<Talker> talker;
+  /// ISpectiy implementation
+  final ValueNotifier<ISpectiy> iSpectify;
 
   /// Options for `ISpect`
   final ISpectOptions options;
@@ -27,17 +25,15 @@ class TalkerSettingsBottomSheets extends StatefulWidget {
   final List<TalkerActionItem> actions;
 
   @override
-  State<TalkerSettingsBottomSheets> createState() =>
-      _TalkerSettingsBottomSheetState();
+  State<TalkerSettingsBottomSheets> createState() => _TalkerSettingsBottomSheetState();
 }
 
-class _TalkerSettingsBottomSheetState
-    extends State<TalkerSettingsBottomSheets> {
+class _TalkerSettingsBottomSheetState extends State<TalkerSettingsBottomSheets> {
   @override
   void initState() {
     super.initState();
     // ignore: avoid_empty_blocks
-    widget.talker.addListener(() => setState(() {}));
+    widget.iSpectify.addListener(() => setState(() {}));
   }
 
   @override
@@ -46,40 +42,39 @@ class _TalkerSettingsBottomSheetState
     final settings = <Widget>[
       TalkerSettingsCardItem(
         title: context.ispectL10n.enabled,
-        enabled: widget.talker.value.settings.enabled,
+        enabled: widget.iSpectify.value.settings.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.talker.value.enable : widget.talker.value.disable)
-              .call();
-          widget.talker.notifyListeners();
+          (enabled ? widget.iSpectify.value.enable : widget.iSpectify.value.disable).call();
+          widget.iSpectify.notifyListeners();
         },
       ),
       TalkerSettingsCardItem(
-        canEdit: widget.talker.value.settings.enabled,
+        canEdit: widget.iSpectify.value.settings.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.talker.value.settings.useConsoleLogs,
+        enabled: widget.iSpectify.value.settings.useConsoleLogs,
         onChanged: (enabled) {
-          widget.talker.value.configure(
-            settings: widget.talker.value.settings.copyWith(
+          widget.iSpectify.value.configure(
+            settings: widget.iSpectify.value.settings.copyWith(
               useConsoleLogs: enabled,
             ),
           );
-          widget.talker.notifyListeners();
+          widget.iSpectify.notifyListeners();
         },
       ),
       TalkerSettingsCardItem(
-        canEdit: widget.talker.value.settings.enabled,
+        canEdit: widget.iSpectify.value.settings.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.talker.value.settings.useHistory,
+        enabled: widget.iSpectify.value.settings.useHistory,
         onChanged: (enabled) {
-          widget.talker.value.configure(
-            settings: widget.talker.value.settings.copyWith(
+          widget.iSpectify.value.configure(
+            settings: widget.iSpectify.value.settings.copyWith(
               useHistory: enabled,
             ),
           );
-          widget.talker.notifyListeners();
+          widget.iSpectify.notifyListeners();
         },
       ),
     ];
@@ -95,16 +90,14 @@ class _TalkerSettingsBottomSheetState
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16, top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -129,16 +122,14 @@ class _TalkerSettingsBottomSheetState
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -195,8 +186,7 @@ class _ActionTile extends StatelessWidget {
         ),
         if (showDivider)
           Divider(
-            color: iSpect.theme.dividerColor(context) ??
-                context.ispectTheme.dividerColor,
+            color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
             height: 1,
           ),
       ],

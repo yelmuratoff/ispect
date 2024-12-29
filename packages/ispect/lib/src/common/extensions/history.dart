@@ -1,0 +1,18 @@
+import 'package:ispectify/ispectify.dart';
+
+extension HistoryListFlutterText on List<ISpectiyData> {
+  /// This method allows you to get
+  /// full text of logs in history with formatting
+  String getFormattedText({
+    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
+  }) {
+    final sb = StringBuffer();
+    for (final data in this) {
+      final text = data.generateTextMessage(timeFormat: timeFormat);
+      sb
+        ..write('$text\n')
+        ..write(ConsoleUtils.getUnderline(30));
+    }
+    return sb.toString();
+  }
+}

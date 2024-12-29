@@ -5,8 +5,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/history.dart';
+import 'package:ispect/src/common/widgets/builder/data_builder.dart';
+import 'package:ispect/src/common/widgets/builder/talker_builder.dart';
 import 'package:ispect/src/features/app_data/app_data.dart';
 import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/talker/presentation/pages/monitor/monitoring_page.dart';
@@ -14,12 +18,10 @@ import 'package:ispect/src/features/talker/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/settings/settings_bottom_sheet.dart';
-import 'package:talker_flutter/src/controller/controller.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 class ISpectPageView extends StatefulWidget {
   const ISpectPageView({
-    required this.talker,
+    required this.iSpectify,
     required this.options,
     super.key,
     this.controller,
@@ -29,8 +31,8 @@ class ISpectPageView extends StatefulWidget {
     this.appBarLeading,
   });
 
-  /// Talker implementation
-  final Talker talker;
+  /// ISpectiy implementation
+  final ISpectiy iSpectify;
 
   /// Screen [AppBar] title
   final String? appBarTitle;
@@ -79,10 +81,9 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       child: AnimatedBuilder(
         animation: _controller,
         builder: (_, __) => TalkerBuilder(
-          talker: widget.talker,
+          iSpectify: widget.iSpectify,
           builder: (context, data) {
-            final filtredElements =
-                data.where((e) => _controller.filter.filter(e)).toList();
+            final filtredElements = data.where((e) => _controller.filter.filter(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -93,7 +94,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                   focusNode: _focusNode,
                   title: widget.appBarTitle,
                   leading: widget.appBarLeading,
-                  talker: widget.talker,
+                  iSpectify: widget.iSpectify,
                   titlesController: _titlesController,
                   titles: titles,
                   uniqTitles: uniqTitles,
@@ -118,8 +119,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                 SliverList.separated(
                   itemCount: filtredElements.length,
                   separatorBuilder: (_, __) => Divider(
-                    color: iSpect.theme.dividerColor(context) ??
-                        context.ispectTheme.dividerColor,
+                    color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
                     thickness: 1,
                   ),
                   itemBuilder: (context, index) {
@@ -158,19 +158,18 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     }
   }
 
-  TalkerData _getListItem(
-    List<TalkerData> filtredElements,
+  ISpectiyData _getListItem(
+    List<ISpectiyData> filtredElements,
     int i,
   ) {
-    final data = filtredElements[
-        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filtredElements[_controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
     return data;
   }
 
   void _openTalkerSettings(
     BuildContext context,
   ) {
-    final talker = ValueNotifier(widget.talker);
+    final iSpectify = ValueNotifier(widget.iSpectify);
 
     showModalBottomSheet<void>(
       context: context,
@@ -178,7 +177,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       backgroundColor: Colors.transparent,
       builder: (_) => TalkerSettingsBottomSheets(
         options: widget.options,
-        talker: talker,
+        iSpectify: iSpectify,
         actions: [
           TalkerActionItem(
             onTap: (_) => _controller.toggleLogOrder(),
@@ -192,16 +191,12 @@ class _ISpectPageViewState extends State<ISpectPageView> {
           ),
           TalkerActionItem(
             onTap: (_) => _toggleLogsExpanded(),
-            title: _controller.expandedLogs
-                ? context.ispectL10n.collapseLogs
-                : context.ispectL10n.expandLogs,
-            icon: _controller.expandedLogs
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
+            title: _controller.expandedLogs ? context.ispectL10n.collapseLogs : context.ispectL10n.expandLogs,
+            icon: _controller.expandedLogs ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
           TalkerActionItem(
             onTap: (_) => _cleanHistory(),
-            title: context.ispectL10n.cleanHistory,
+            title: context.ispectL10n.clearHistory,
             icon: Icons.delete_outline,
           ),
           TalkerActionItem(
@@ -232,7 +227,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
           options: widget.options,
         ),
         settings: RouteSettings(
-          name: 'Talker Monitor Page',
+          name: 'ISpectiy Monitor Page',
           arguments: {
             'options': widget.options,
           },
@@ -241,14 +236,14 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     );
   }
 
-  void _copyTalkerDataItemText(TalkerData data) {
+  void _copyTalkerDataItemText(ISpectiyData data) {
     final text = data.generateTextMessage();
     copyClipboard(context, value: text);
   }
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(
-      widget.talker.history.formattedText(),
+      widget.iSpectify.history.formattedText(),
     );
   }
 
@@ -257,12 +252,12 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       context,
       MaterialPageRoute<dynamic>(
         builder: (_) => AppDataPage(
-          talker: widget.talker,
+          iSpectify: widget.iSpectify,
         ),
         settings: RouteSettings(
           name: 'AppDataPage',
           arguments: {
-            'talker': widget.talker,
+            'iSpectify': widget.iSpectify,
           },
         ),
       ),
@@ -274,12 +269,12 @@ class _ISpectPageViewState extends State<ISpectPageView> {
       context,
       MaterialPageRoute<dynamic>(
         builder: (_) => AppInfoPage(
-          talker: widget.talker,
+          iSpectify: widget.iSpectify,
         ),
         settings: RouteSettings(
           name: 'AppInfoPage',
           arguments: {
-            'talker': widget.talker,
+            'iSpectify': widget.iSpectify,
           },
         ),
       ),
@@ -287,7 +282,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
   }
 
   void _cleanHistory() {
-    widget.talker.cleanHistory();
+    widget.iSpectify.clearHistory();
     _controller.update();
   }
 
@@ -298,7 +293,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
   void _copyAllLogs(BuildContext context) {
     copyClipboard(
       context,
-      value: widget.talker.history.formattedText(),
+      value: widget.iSpectify.history.formattedText(),
       title: '✅ ${context.ispectL10n.allLogsCopied}',
       showValue: false,
     );

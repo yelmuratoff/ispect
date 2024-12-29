@@ -35,13 +35,9 @@ class _AiReporterPageState extends State<AiReporterPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _cubit.generateReport(
         payload: AiLogsPayload(
-          possibleKeys:
-              ISpect.read(context).theme.colors(context).keys.toList(),
+          possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
           now: DateTime.now(),
-          logsText: ISpect.talker.history.reversed
-              .map((e) => e.generateText())
-              .toList()
-              .toString(),
+          logsText: ISpect.iSpectify.history.reversed.map((e) => e.generateText()).toList().toString(),
           locale: ISpect.read(context).options.locale.languageCode,
         ),
       );
@@ -81,8 +77,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
           ],
         ),
         body: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,20 +106,13 @@ class _AiReporterPageState extends State<AiReporterPage> {
                             onPressed: () {
                               _cubit.generateReport(
                                 payload: AiLogsPayload(
-                                  possibleKeys: ISpect.read(context)
-                                      .theme
-                                      .colors(context)
-                                      .keys
-                                      .toList(),
+                                  possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
                                   now: DateTime.now(),
-                                  logsText: ISpect.talker.history.reversed
+                                  logsText: ISpect.iSpectify.history.reversed
                                       .map((e) => e.generateText())
                                       .toList()
                                       .toString(),
-                                  locale: ISpect.read(context)
-                                      .options
-                                      .locale
-                                      .languageCode,
+                                  locale: ISpect.read(context).options.locale.languageCode,
                                 ),
                               );
                             },
@@ -147,20 +135,13 @@ class _AiReporterPageState extends State<AiReporterPage> {
                             onPressed: () {
                               _cubit.generateReport(
                                 payload: AiLogsPayload(
-                                  possibleKeys: ISpect.read(context)
-                                      .theme
-                                      .colors(context)
-                                      .keys
-                                      .toList(),
+                                  possibleKeys: ISpect.read(context).theme.colors(context).keys.toList(),
                                   now: DateTime.now(),
-                                  logsText: ISpect.talker.history.reversed
+                                  logsText: ISpect.iSpectify.history.reversed
                                       .map((e) => e.generateText())
                                       .toList()
                                       .toString(),
-                                  locale: ISpect.read(context)
-                                      .options
-                                      .locale
-                                      .languageCode,
+                                  locale: ISpect.read(context).options.locale.languageCode,
                                 ),
                               );
                             },
@@ -187,8 +168,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
       );
 
   Future<void> _downloadLogs() async {
-    final logs =
-        '''AI Reporter\nLogs:\n${ISpect.talker.history.formattedText()}}''';
+    final logs = '''AI Reporter\nLogs:\n${ISpect.iSpectify.history.getFormattedText()}}''';
     final file = await generateFile(logs, name: 'ai-reporter-logs');
 
     final xFile = XFile(file.path, name: file.path.split('/').last);

@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/builder/talker_builder.dart';
 import 'package:ispect/src/features/talker/presentation/pages/detailed_info/monitor_info_page.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/monitor_card.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 class TalkerMonitorPage extends StatefulWidget {
   const TalkerMonitorPage({
@@ -42,7 +42,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
         ),
       ),
       body: TalkerBuilder(
-        talker: ISpect.talker,
+        iSpectify: ISpect.iSpectify,
         builder: (context, data) {
           // TODO(Yelaman): Change to uniqKeys when it will be implemented.
           final keys = data.map((e) => e.key ?? e.title).toList();
@@ -51,8 +51,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
           return CustomScrollView(
             slivers: [
               ...uniqKeys.map((key) {
-                final logs =
-                    data.where((e) => (e.key ?? e.title) == key).toList();
+                final logs = data.where((e) => (e.key ?? e.title) == key).toList();
                 return SliverToBoxAdapter(
                   child: ISpectMonitorCard(
                     logs: logs,
@@ -61,8 +60,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
                       context,
                       key: key,
                     ),
-                    icon:
-                        iSpect.theme.logIcons[key] ?? Icons.bug_report_rounded,
+                    icon: iSpect.theme.logIcons[key] ?? Icons.bug_report_rounded,
                     subtitle: '${context.ispectL10n.logsCount}: ${logs.length}',
                     onTap: () => _openTypedLogsScreen(
                       context,
@@ -81,7 +79,7 @@ class _TalkerMonitorPageState extends State<TalkerMonitorPage> {
 
   void _openTypedLogsScreen(
     BuildContext context,
-    List<TalkerData> logs,
+    List<ISpectiyData> logs,
     String typeName,
   ) {
     Navigator.of(context).push(

@@ -4,13 +4,12 @@ import 'package:ispect/src/common/controllers/json_controller.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/talker/presentation/pages/http/dio/dio_body.dart';
 import 'package:ispect/src/features/talker/presentation/pages/http/http/http_body.dart';
-import 'package:talker_dio_logger/dio_logs.dart';
-import 'package:talker_flutter/talker_flutter.dart';
-import 'package:talker_http_logger/talker_http_logger.dart';
+import 'package:ispectify_dio/dio_logs.dart';
+import 'package:ispectify_http/ispectify_http.dart';
 
 class DetailedHTTPPage extends StatefulWidget {
   const DetailedHTTPPage({required this.data, super.key});
-  final TalkerData data;
+  final ISpectiyData data;
 
   @override
   State<DetailedHTTPPage> createState() => _DetailedHTTPPageState();
@@ -22,7 +21,7 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
     uncovered: 3,
   );
 
-  late final TalkerData _data;
+  late final ISpectiyData _data;
 
   @override
   void initState() {

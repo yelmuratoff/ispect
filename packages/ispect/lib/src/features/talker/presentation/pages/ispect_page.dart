@@ -3,13 +3,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/talker/presentation/pages/body_view.dart'
-    as view;
+import 'package:ispect/src/common/widgets/builder/data_builder.dart';
+import 'package:ispect/src/features/talker/presentation/pages/body_view.dart' as view;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
-/// UI view for output of all Talker logs and errors
+/// UI view for output of all ISpectiy logs and errors
 class ISpectPage extends StatefulWidget {
   const ISpectPage({
     required this.options,
@@ -39,7 +38,7 @@ class _ISpectPageState extends State<ISpectPage> {
 
   @override
   Widget build(BuildContext context) => _View(
-        talker: ISpect.talker,
+        iSpectify: ISpect.iSpectify,
         appBarTitle: widget.appBarTitle,
         options: widget.options,
       );
@@ -47,12 +46,12 @@ class _ISpectPageState extends State<ISpectPage> {
 
 class _View extends StatelessWidget {
   const _View({
-    required this.talker,
+    required this.iSpectify,
     required this.appBarTitle,
     required this.options,
   });
 
-  final Talker talker;
+  final ISpectiy iSpectify;
   final String? appBarTitle;
   final ISpectOptions options;
 
@@ -60,7 +59,7 @@ class _View extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: ISpect.read(context).theme.backgroundColor(context),
         body: view.ISpectPageView(
-          talker: talker,
+          iSpectify: iSpectify,
           appBarTitle: appBarTitle,
           appBarLeading: IconButton(
             onPressed: () {
@@ -77,8 +76,7 @@ class _View extends StatelessWidget {
 
 Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
   final output = await getTemporaryDirectory();
-  final screenshotFilePath =
-      '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
+  final screenshotFilePath = '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
   final screenshotFile = File(screenshotFilePath);
   await screenshotFile.writeAsBytes(feedbackScreenshot);
   return XFile(screenshotFilePath, bytes: feedbackScreenshot);

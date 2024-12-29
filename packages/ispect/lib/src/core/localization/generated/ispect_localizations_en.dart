@@ -25,8 +25,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'All logs copied in buffer';
 
   @override
-  String get analyticsLogDesc =>
-      'The log of sending events to the analytics service';
+  String get analyticsLogDesc => 'The log of sending events to the analytics service';
 
   @override
   String get apiToken => 'API token';
@@ -85,7 +84,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get changeTheme => 'Change theme';
 
   @override
-  String get cleanHistory => 'Clean history';
+  String get clearHistory => 'Clean history';
 
   @override
   String get clearCache => 'Clear cache';
@@ -234,8 +233,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get notFound => 'not found';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Other logs are already being used by developers';
+  String get otherLogsForDevelopers => 'Other logs are already being used by developers';
 
   @override
   String get pageNotFound => 'Oops, the page on this path';
@@ -253,8 +251,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Please authorize to Jira';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'An error has occurred. Please check the authorization data.';
+  String get pleaseCheckAuthCred => 'An error has occurred. Please check the authorization data.';
 
   @override
   String get pleaseSelectYourProject => 'Now, please select a project';
@@ -483,8 +480,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc =>
-      'It will be useful for testers to know about these logs';
+  String get testerLogDesc => 'It will be useful for testers to know about these logs';
 
   @override
   String totalFilesCount(Object number) {

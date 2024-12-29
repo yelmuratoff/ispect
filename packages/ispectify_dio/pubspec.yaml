@@ -1,0 +1,20 @@
+name: ispectify_dio
+description: Lightweight and customizable dio http client logger on iSpectify base
+version: 4.5.2
+homepage: https://github.com/yelmuratoff/ispect.git
+issue_tracker: https://github.com/yelmuratoff/ispect/issues
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+resolution: workspace
+
+dependencies:
+  ansicolor: ^2.0.3
+  dio: ^5.7.0
+  ispectify:
+    path: ../ispectify
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.23.1

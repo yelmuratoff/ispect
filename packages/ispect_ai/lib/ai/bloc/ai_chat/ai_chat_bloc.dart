@@ -6,7 +6,6 @@ import 'package:ispect_ai/src/common/utils/date_util.dart';
 import '../../core/data/models/chat_message.dart';
 import '../../core/domain/ai_repository.dart';
 import 'package:meta/meta.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 part 'ai_chat_event.dart';
 part 'ai_chat_state.dart';
@@ -33,8 +32,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   ) async {
     try {
       emit(const AiChatLoading());
-      final response =
-          await chatSession.sendMessage(Content.text(event.message.message));
+      final response = await chatSession.sendMessage(Content.text(event.message.message));
       emit(
         AiChatReceived(
           message: AIMessage.fromResponse(
@@ -51,7 +49,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   Future<void> _onInitChat(InitChat event, Emitter<AiChatState> emit) async {
     emit(const AiChatLoading());
-    final file = await generateFile(event.logs.formattedText());
+    final file = await generateFile(event.logs.getFormattedText());
 
     final bytes = file.readAsBytesSync();
     chatSession = ISpectGoogleAi.instance.model.startChat(

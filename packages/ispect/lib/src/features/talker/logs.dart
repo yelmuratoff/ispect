@@ -1,7 +1,7 @@
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// `GoodLog` - This class contains the basic structure of the log.
-class GoodLog extends TalkerLog {
+class GoodLog extends ISpectifyLog {
   GoodLog(String super.message);
 
   @override
@@ -19,7 +19,7 @@ class GoodLog extends TalkerLog {
 }
 
 /// `AnalyticsLog` - This class contains the analytics log.
-class AnalyticsLog extends TalkerLog {
+class AnalyticsLog extends ISpectifyLog {
   AnalyticsLog(super.message, {this.analytics});
 
   final String? analytics;
@@ -39,7 +39,7 @@ class AnalyticsLog extends TalkerLog {
 }
 
 /// `RouteLog` - This class contains the route log.
-class RouteLog extends TalkerLog {
+class RouteLog extends ISpectifyLog {
   RouteLog(String super.message);
 
   @override
@@ -57,7 +57,7 @@ class RouteLog extends TalkerLog {
 }
 
 /// `ProviderLog` - This class contains the provider log.
-class ProviderLog extends TalkerLog {
+class ProviderLog extends ISpectifyLog {
   ProviderLog(String super.message, {super.exception, super.stackTrace});
 
   @override
@@ -75,7 +75,7 @@ class ProviderLog extends TalkerLog {
 }
 
 /// `PrintLog` - This class contains the print log.
-class PrintLog extends TalkerLog {
+class PrintLog extends ISpectifyLog {
   PrintLog(String super.message);
 
   @override

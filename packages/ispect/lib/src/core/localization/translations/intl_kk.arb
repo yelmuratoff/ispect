@@ -25,7 +25,7 @@
   "changeEnvironment": "Ағымдағы ортаны өзгерту",
   "changeProject": "Жобаны өзгерту",
   "changeTheme": "Тақырыпты өзгерту",
-  "cleanHistory": "Тарихты тазарту",
+  "clearHistory": "Тарихты тазарту",
   "clearCache": "Кэшті тазарту",
   "collapseLogs": "Журналды жасыру",
   "common": "Жалпы",

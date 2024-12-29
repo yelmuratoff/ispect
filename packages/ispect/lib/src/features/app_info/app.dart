@@ -6,17 +6,16 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 part 'controller/controller.dart';
 part 'view/app_info_view.dart';
 part 'widgets/device_info_body.dart';
-part 'widgets/package_info_body.dart';
 part 'widgets/key_value_line.dart';
+part 'widgets/package_info_body.dart';
 
 class AppInfoPage extends StatefulWidget {
-  const AppInfoPage({required this.talker, super.key});
-  final Talker talker;
+  const AppInfoPage({required this.iSpectify, super.key});
+  final ISpectiy iSpectify;
 
   @override
   State<AppInfoPage> createState() => _AppInfoPageState();
@@ -28,7 +27,7 @@ class _AppInfoPageState extends State<AppInfoPage> {
   @override
   void initState() {
     super.initState();
-    _contorller.loadAll(context: context, talker: widget.talker);
+    _contorller.loadAll(context: context, iSpectify: widget.iSpectify);
   }
 
   @override

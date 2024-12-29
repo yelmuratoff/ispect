@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/talker/presentation/widgets/base_card.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispectify/ispectify.dart';
 
 class ISpectMonitorCard extends StatelessWidget {
   const ISpectMonitorCard({
@@ -18,7 +18,7 @@ class ISpectMonitorCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? subtitleWidget;
-  final List<TalkerData> logs;
+  final List<ISpectiyData> logs;
   final Color color;
   final IconData icon;
   final VoidCallback? onTap;

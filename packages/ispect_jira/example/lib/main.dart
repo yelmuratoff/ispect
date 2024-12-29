@@ -3,25 +3,24 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/ispect_jira.dart';
 import 'package:ispect_jira_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_jira_example/theme_manager.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 void main() {
-  final talker = TalkerFlutter.init();
+  final iSpectify = TalkerFlutter.init();
 
   ISpect.run(
     () => runApp(
       ThemeProvider(
-        child: App(talker: talker),
+        child: App(iSpectify: iSpectify),
       ),
     ),
-    talker: talker,
+    iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
   );
 }
 
 class App extends StatefulWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
+  final ISpectiy iSpectify;
+  const App({super.key, required this.iSpectify});
 
   @override
   State<App> createState() => _AppState();
@@ -88,8 +87,7 @@ class _AppState extends State<App> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (_) => JiraAuthScreen(
-                      onAuthorized:
-                          (domain, email, apiToken, projectId, projectKey) {
+                      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
                         ISpect.good(
                           '''✅ Jira authorized:
   Project domain: $domain
@@ -135,8 +133,7 @@ class _AppState extends State<App> {
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
-            feedbackBuilder: (context, onSubmit, controller) =>
-                JiraFeedbackBuilder(
+            feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
               onSubmit: onSubmit,
               theme: Theme.of(context),
               scrollController: controller,

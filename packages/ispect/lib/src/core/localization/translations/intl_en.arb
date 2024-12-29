@@ -25,7 +25,7 @@
    "changeEnvironment": "Change current environment",
    "changeProject": "Change project",
    "changeTheme": "Change theme",
-   "cleanHistory": "Clean history",
+   "clearHistory": "Clean history",
    "clearCache": "Clear cache",
    "collapseLogs": "Collapse logs",
    "common": "Common",

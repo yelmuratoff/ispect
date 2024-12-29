@@ -4,9 +4,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_ai/ispect_ai.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/theme_manager.dart';
-
-import 'package:talker_dio_logger/talker_dio_logger.dart';
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispectify_dio/talker_dio_logger_interceptor.dart';
 
 // Dio instances
 final dio = Dio(
@@ -16,20 +14,20 @@ final dio = Dio(
 );
 
 void main() {
-  final talker = TalkerFlutter.init();
+  final iSpectify = TalkerFlutter.init();
 
   ISpect.run(
     () => runApp(
       ThemeProvider(
-        child: App(talker: talker),
+        child: App(iSpectify: iSpectify),
       ),
     ),
-    talker: talker,
+    iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
     onInitialized: () {
       dio.interceptors.add(
         TalkerDioLogger(
-          talker: ISpect.talker,
+          iSpectify: ISpect.iSpectify,
         ),
       );
     },
@@ -37,8 +35,8 @@ void main() {
 }
 
 class App extends StatefulWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
+  final ISpectiy iSpectify;
+  const App({super.key, required this.iSpectify});
 
   @override
   State<App> createState() => _AppState();
