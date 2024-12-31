@@ -168,7 +168,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
       );
 
   Future<void> _downloadLogs() async {
-    final logs = '''AI Reporter\nLogs:\n${ISpect.iSpectify.history.getFormattedText()}}''';
+    final logs = '''AI Reporter\nLogs:\n${ISpect.iSpectify.history.formattedText}}''';
     final file = await generateFile(logs, name: 'ai-reporter-logs');
 
     final xFile = XFile(file.path, name: file.path.split('/').last);

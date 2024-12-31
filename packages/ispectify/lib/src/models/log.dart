@@ -14,7 +14,7 @@ class ISpectifyLog extends ISpectiyData {
   });
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
-    return '${displayTitleWithTime(timeFormat: timeFormat)}$displayMessage$displayException$displayStackTrace';
+  String get textMessage {
+    return '$header$messageText$exceptionText$stackTraceText';
   }
 }

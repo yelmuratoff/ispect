@@ -8,8 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/extensions/pretty_json.dart';
 import 'package:ispect/src/common/observers/bloc_observer.dart';
-import 'package:ispect/src/features/talker/logs.dart';
-import 'package:ispect/src/features/talker/talker_options.dart';
+import 'package:ispect/src/features/ispectify/logs.dart';
+import 'package:ispect/src/features/ispectify/options.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/settings.dart';
 import 'package:provider/provider.dart';
@@ -20,14 +20,14 @@ final class ISpect {
   // ignore: prefer_const_constructor_declarations
   ISpect._();
 
-  late final ISpectiy _talker;
+  late final ISpectiy _iSpectify;
 
   static final ISpect _instance = ISpect._();
 
   static ISpect get instance => _instance;
 
-  static ISpectiy get iSpectify => _instance._talker;
-  static set iSpectify(ISpectiy iSpectify) => _instance._talker = iSpectify;
+  static ISpectiy get iSpectify => _instance._iSpectify;
+  static set iSpectify(ISpectiy iSpectify) => _instance._iSpectify = iSpectify;
 
   static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(
         context,
@@ -70,7 +70,7 @@ final class ISpect {
     void Function(BlocBase<dynamic> bloc)? onBlocCreate,
     void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
-    ISpectISpectifyOptions options = const ISpectISpectifyOptions(),
+    ISpectLogOptions options = const ISpectLogOptions(),
     List<String> filters = const [],
   }) {
     ISpect.initHandling(
@@ -155,10 +155,10 @@ final class ISpect {
     final void Function(BlocBase<dynamic> bloc)? onBlocCreate,
     final void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
-    final ISpectISpectifyOptions options = const ISpectISpectifyOptions(),
+    final ISpectLogOptions options = const ISpectLogOptions(),
     final List<String> filters = const [],
   }) async {
-    _instance._talker = iSpectify;
+    _instance._iSpectify = iSpectify;
     info('🚀 ISpect: Initialize started.');
 
     FlutterError.presentError = (details) {
@@ -173,9 +173,9 @@ final class ISpect {
         );
 
         if (options.isFlutterPresentHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
-          _instance._talker.handle(details, details.stack);
+          _instance._iSpectify.handle(details, details.stack);
         } else if (!isFilterNotEmpty) {
-          _instance._talker.handle(details, details.stack);
+          _instance._iSpectify.handle(details, details.stack);
         }
       });
     };
@@ -206,9 +206,9 @@ final class ISpect {
       );
 
       if (options.isPlatformDispatcherHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
-        _instance._talker.handle(error, stack);
+        _instance._iSpectify.handle(error, stack);
       } else if (!isFilterNotEmpty) {
-        _instance._talker.handle(error, stack);
+        _instance._iSpectify.handle(error, stack);
       }
       return true;
     };
@@ -226,14 +226,14 @@ final class ISpect {
         );
 
         if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
-          _instance._talker.error(
+          _instance._iSpectify.error(
             'FlutterErrorDetails',
             details.toString(),
             details.stack,
           );
         }
       } else {
-        _instance._talker.error(
+        _instance._iSpectify.error(
           'FlutterErrorDetails',
           details.toString(),
           details.stack,
@@ -253,7 +253,7 @@ final class ISpect {
     LogLevel? level,
     AnsiPen? pen,
   }) {
-    _instance._talker.log(
+    _instance._iSpectify.log(
       message,
       exception: exception,
       stackTrace: stackTrace,
@@ -263,11 +263,11 @@ final class ISpect {
   }
 
   static void logTyped(ISpectifyLog log) {
-    _instance._talker.logCustom(log);
+    _instance._iSpectify.logCustom(log);
   }
 
   static void good(String message) {
-    _instance._talker.logCustom(
+    _instance._iSpectify.logCustom(
       GoodLog(message),
     );
   }
@@ -278,7 +278,7 @@ final class ISpect {
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
-    _instance._talker.logCustom(
+    _instance._iSpectify.logCustom(
       AnalyticsLog(
         analytics: analytics,
         '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
@@ -287,7 +287,7 @@ final class ISpect {
   }
 
   static void print(String message) {
-    _instance._talker.logCustom(
+    _instance._iSpectify.logCustom(
       PrintLog(
         message,
       ),
@@ -295,7 +295,7 @@ final class ISpect {
   }
 
   static void route(String message) {
-    _instance._talker.logCustom(
+    _instance._iSpectify.logCustom(
       RouteLog(message),
     );
   }
@@ -305,7 +305,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.logCustom(
+    _instance._iSpectify.logCustom(
       ProviderLog(
         message,
         exception: exception,
@@ -319,7 +319,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.debug(
+    _instance._iSpectify.debug(
       message,
       exception,
       stackTrace,
@@ -331,7 +331,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.info(
+    _instance._iSpectify.info(
       message,
       exception,
       stackTrace,
@@ -343,7 +343,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.warning(
+    _instance._iSpectify.warning(
       message,
       exception,
       stackTrace,
@@ -355,7 +355,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.error(
+    _instance._iSpectify.error(
       message ?? 'An error occurred.',
       exception,
       stackTrace,
@@ -367,7 +367,7 @@ final class ISpect {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _instance._talker.critical(
+    _instance._iSpectify.critical(
       message ?? 'A critical error occurred.',
       exception,
       stackTrace,
@@ -380,7 +380,7 @@ final class ISpect {
     StackTrace? stackTrace,
   }) {
     if (exception != null) {
-      _instance._talker.handle(exception, stackTrace, message);
+      _instance._iSpectify.handle(exception, stackTrace, message);
     }
   }
 }

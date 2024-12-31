@@ -5,17 +5,17 @@ import 'package:ispectify/ispectify.dart';
 
 class ISpectifyHttpLogger extends InterceptorContract {
   ISpectifyHttpLogger({ISpectiy? iSpectify}) {
-    _talker = iSpectify ?? ISpectiy();
+    _iSpectify = iSpectify ?? ISpectiy();
   }
 
-  late ISpectiy _talker;
+  late ISpectiy _iSpectify;
 
   @override
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
     final message = '${request.url}';
-    _talker.logCustom(HttpRequestLog(message, request: request));
+    _iSpectify.logCustom(HttpRequestLog(message, request: request));
     return request;
   }
 
@@ -26,9 +26,9 @@ class ISpectifyHttpLogger extends InterceptorContract {
     final message = '${response.request?.url}';
 
     if (response.statusCode >= 400 && response.statusCode < 600) {
-      _talker.logCustom(HttpErrorLog(message, response: response));
+      _iSpectify.logCustom(HttpErrorLog(message, response: response));
     } else {
-      _talker.logCustom(HttpResponseLog(message, response: response));
+      _iSpectify.logCustom(HttpResponseLog(message, response: response));
     }
 
     return response;
@@ -49,10 +49,12 @@ class HttpRequestLog extends ISpectifyLog {
   AnsiPen get pen => (AnsiPen()..xterm(219));
 
   @override
-  String get key => ISpectifyLogType.httpRequest.key;
+  String get key => getKey;
+
+  static const getKey = 'http-request';
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String get textMessage {
     var msg = '[$title] [${request.method}] $message';
 
     final headers = request.headers;
@@ -63,7 +65,7 @@ class HttpRequestLog extends ISpectifyLog {
         msg += '\nHeaders: $prettyHeaders';
       }
     } catch (_) {
-      // TODO: add handling can`t convert
+      return msg;
     }
     return msg;
   }
@@ -81,10 +83,12 @@ class HttpResponseLog extends ISpectifyLog {
   AnsiPen get pen => (AnsiPen()..xterm(46));
 
   @override
-  String get key => ISpectifyLogType.httpResponse.key;
+  String get key => getKey;
+
+  static const getKey = 'http-response';
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String get textMessage {
     var msg = '[$title] [${response.request?.method}] $message';
 
     final headers = response.request?.headers;
@@ -97,7 +101,7 @@ class HttpResponseLog extends ISpectifyLog {
         msg += '\nHeaders: $prettyHeaders';
       }
     } catch (_) {
-      // TODO: add handling can`t convert
+      return msg;
     }
     return msg;
   }
@@ -115,10 +119,12 @@ class HttpErrorLog extends ISpectifyLog {
   AnsiPen get pen => AnsiPen()..red();
 
   @override
-  String get key => ISpectifyLogType.httpError.key;
+  String get key => getKey;
+
+  static const getKey = 'http-error';
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String get textMessage {
     var msg = '[$title] [${response.request?.method}] $message';
 
     final headers = response.request?.headers;
@@ -131,7 +137,7 @@ class HttpErrorLog extends ISpectifyLog {
         msg += '\nHeaders: $prettyHeaders';
       }
     } catch (_) {
-      // TODO: add handling can`t convert
+      return msg;
     }
     return msg;
   }

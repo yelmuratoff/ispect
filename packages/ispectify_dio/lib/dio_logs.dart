@@ -20,12 +20,12 @@ class DioRequestLog extends ISpectifyLog {
   AnsiPen get pen => settings.requestPen ?? (AnsiPen()..xterm(219));
 
   @override
-  String get key => ISpectifyLogType.httpRequest.key;
+  String get key => getKey;
+
+  static const getKey = 'http-request';
 
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     var msg = '[$title] [${requestOptions.method}] $message';
 
     final data = requestOptions.data;
@@ -41,7 +41,7 @@ class DioRequestLog extends ISpectifyLog {
         msg += '\nHeaders: $prettyHeaders';
       }
     } catch (_) {
-      // TODO: add handling can`t convert
+      return msg;
     }
     return msg;
   }
@@ -61,12 +61,12 @@ class DioResponseLog extends ISpectifyLog {
   AnsiPen get pen => settings.responsePen ?? (AnsiPen()..xterm(46));
 
   @override
-  String get key => ISpectifyLogType.httpResponse.key;
+  String get key => getKey;
+
+  static const getKey = 'http-response';
 
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     var msg = '[$title] [${response.requestOptions.method}] $message';
 
     final responseMessage = response.statusMessage;
@@ -89,7 +89,7 @@ class DioResponseLog extends ISpectifyLog {
         msg += '\nHeaders: $prettyHeaders';
       }
     } catch (_) {
-      // TODO: add handling can`t convert
+      return msg;
     }
     return msg;
   }
@@ -109,12 +109,12 @@ class DioErrorLog extends ISpectifyLog {
   AnsiPen get pen => settings.errorPen ?? (AnsiPen()..red());
 
   @override
-  String get key => ISpectifyLogType.httpError.key;
+  String get key => getKey;
+
+  static const getKey = 'http-error';
 
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     var msg = '[$title] [${dioException.requestOptions.method}] $message';
 
     final responseMessage = dioException.message;

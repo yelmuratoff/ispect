@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
-import '../lib/ispectify_dio.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:test/test.dart';
 
 void main() {

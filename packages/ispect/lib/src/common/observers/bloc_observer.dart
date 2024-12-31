@@ -20,10 +20,10 @@ class ISpectBlocObserver extends BlocObserver {
     this.onBlocClose,
     this.filters = const [],
   }) {
-    _talker = iSpectify ?? ISpectiy();
+    _iSpectify = iSpectify ?? ISpectiy();
   }
 
-  late ISpectiy _talker;
+  late ISpectiy _iSpectify;
   final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
   final void Function(
     Bloc<dynamic, dynamic> bloc,
@@ -54,7 +54,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocEvent?.call(bloc, event);
-    _talker.logCustom(
+    _iSpectify.logCustom(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -80,7 +80,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocTransition?.call(bloc, transition);
-    _talker.logCustom(
+    _iSpectify.logCustom(
       BlocStateLog(
         bloc: bloc,
         transition: transition,
@@ -98,7 +98,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocChange?.call(bloc, change);
-    _talker.logCustom(
+    _iSpectify.logCustom(
       BlocChangeLog(
         bloc: bloc,
         change: change,
@@ -117,7 +117,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocError?.call(bloc, error, stackTrace);
-    _talker.error('${bloc.runtimeType}', error, stackTrace);
+    _iSpectify.error('${bloc.runtimeType}', error, stackTrace);
   }
 
   @override
@@ -129,7 +129,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocCreate?.call(bloc);
-    _talker.logCustom(BlocCreateLog(bloc: bloc));
+    _iSpectify.logCustom(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -141,6 +141,6 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocClose?.call(bloc);
-    _talker.logCustom(BlocCloseLog(bloc: bloc));
+    _iSpectify.logCustom(BlocCloseLog(bloc: bloc));
   }
 }

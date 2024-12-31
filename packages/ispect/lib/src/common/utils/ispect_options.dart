@@ -1,7 +1,7 @@
 // ignore_for_file: use_if_null_to_convert_nulls_to_bools
 
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/models/talker_action_item.dart';
+import 'package:ispect/src/common/models/action_item.dart';
 
 final class ISpectOptions {
   const ISpectOptions({

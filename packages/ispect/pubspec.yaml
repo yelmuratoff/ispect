@@ -20,7 +20,6 @@ dependencies:
     any
 
     # Logging
-  # ispectify: ^1.0.0
   ispectify:
     path: ../ispectify
   ispectify_dio:
@@ -37,22 +36,16 @@ dependencies:
   device_info_plus: ^10.1.2
 
   # UI
-  gap: ^3.0.1
   draggable_panel: ^0.0.7
-
-  # Lints
-  # custom_lint: ^0.6.4
 
   # Others
   dio: ^5.7.0
   http: ^1.2.2
-  provider: ^6.1.2
   flutter_bloc: ^8.1.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # pyramid_lint: ^2.0.0
 
 flutter:
   generate: true

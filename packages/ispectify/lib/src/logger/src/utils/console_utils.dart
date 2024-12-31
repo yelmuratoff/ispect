@@ -3,7 +3,7 @@ abstract class ConsoleUtils {
   ConsoleUtils._();
 
   /// Method returns a line for the bottom of the message
-  static String getUnderline(
+  static String underline(
     int length, {
     String lineSymbol = '─',
     bool withCorner = false,
@@ -16,7 +16,7 @@ abstract class ConsoleUtils {
   }
 
   /// Method returns a line for the top of the message
-  static String getTopline(
+  static String topline(
     int length, {
     String lineSymbol = '─',
     bool withCorner = false,

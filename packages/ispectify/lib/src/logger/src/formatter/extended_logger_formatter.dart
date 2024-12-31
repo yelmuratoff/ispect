@@ -1,25 +1,24 @@
 import 'package:ispectify/src/logger/src/formatter/formatter.dart';
 import 'package:ispectify/src/logger/src/models/log_details.dart';
 import 'package:ispectify/src/logger/src/settings.dart';
-import 'package:ispectify/src/logger/src/utils/utils.dart';
+import 'package:ispectify/src/logger/src/utils/console_utils.dart';
 
-/// This formatter makes messages colorful
-/// if this setting is enabled in the settings [ISpectifyLoggerSettings]
 class ExtendedLoggerFormatter implements LoggerFormatter {
   const ExtendedLoggerFormatter();
 
   @override
-  String fmt(LogDetails details, ISpectifyLoggerSettings settings) {
-    final underline = ConsoleUtils.getUnderline(
+  String format(LogDetails details, ISpectifyLoggerSettings settings) {
+    final topline = ConsoleUtils.topline(
       settings.maxLineWidth,
       lineSymbol: settings.lineSymbol,
       withCorner: true,
     );
-    final topline = ConsoleUtils.getTopline(
+    final underline = ConsoleUtils.underline(
       settings.maxLineWidth,
       lineSymbol: settings.lineSymbol,
       withCorner: true,
     );
+
     final msg = details.message?.toString() ?? '';
     final msgBorderedLines = msg.split('\n').map((e) => '│ $e');
     if (!settings.enableColors) {

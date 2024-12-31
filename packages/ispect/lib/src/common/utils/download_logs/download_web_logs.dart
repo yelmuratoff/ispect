@@ -8,6 +8,6 @@ Future<void> downloadFile(String logs) async {
   AnchorElement(
     href: Url.createObjectUrlFromBlob(blob),
   )
-    ..setAttribute('download', 'talker_logs_$fmtDate.txt')
+    ..setAttribute('download', 'iSpectify_logs_$fmtDate.txt')
     ..click();
 }

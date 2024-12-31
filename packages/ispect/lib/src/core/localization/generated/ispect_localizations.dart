@@ -747,203 +747,203 @@ abstract class ISpectGeneratedLocalization {
   /// **'Summary'**
   String get summary;
 
-  /// No description provided for @talkerBlocClosesCount.
+  /// No description provided for @iSpectifyBlocClosesCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC closes count: {text}'**
-  String talkerBlocClosesCount(Object text);
+  String iSpectifyBlocClosesCount(Object text);
 
-  /// No description provided for @talkerBlocCreatesCount.
+  /// No description provided for @iSpectifyBlocCreatesCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC creates count: {text}'**
-  String talkerBlocCreatesCount(Object text);
+  String iSpectifyBlocCreatesCount(Object text);
 
-  /// No description provided for @talkerBlocEventsCount.
+  /// No description provided for @iSpectifyBlocEventsCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC events count: {text}'**
-  String talkerBlocEventsCount(Object text);
+  String iSpectifyBlocEventsCount(Object text);
 
-  /// No description provided for @talkerBlocTransitionCount.
+  /// No description provided for @iSpectifyBlocTransitionCount.
   ///
   /// In en, this message translates to:
   /// **'BLoC transitions count: {text}'**
-  String talkerBlocTransitionCount(Object text);
+  String iSpectifyBlocTransitionCount(Object text);
 
-  /// No description provided for @talkerHttpFailuresCount.
+  /// No description provided for @iSpectifyHttpFailuresCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP failure logs count: {text}'**
-  String talkerHttpFailuresCount(Object text);
+  String iSpectifyHttpFailuresCount(Object text);
 
-  /// No description provided for @talkerHttpRequestsCount.
+  /// No description provided for @iSpectifyHttpRequestsCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP request logs count: {text}'**
-  String talkerHttpRequestsCount(Object text);
+  String iSpectifyHttpRequestsCount(Object text);
 
-  /// No description provided for @talkerHttpResponsesCount.
+  /// No description provided for @iSpectifyHttpResponsesCount.
   ///
   /// In en, this message translates to:
   /// **'HTTP response logs count: {text}'**
-  String talkerHttpResponsesCount(Object text);
+  String iSpectifyHttpResponsesCount(Object text);
 
-  /// No description provided for @talkerLogsInfo.
+  /// No description provided for @iSpectifyLogsInfo.
   ///
   /// In en, this message translates to:
   /// **'Info about logs'**
-  String get talkerLogsInfo;
+  String get iSpectifyLogsInfo;
 
-  /// No description provided for @talkerRiverpodAddCount.
+  /// No description provided for @iSpectifyRiverpodAddCount.
   ///
   /// In en, this message translates to:
   /// **'Riverpod adds count: {text}'**
-  String talkerRiverpodAddCount(Object text);
+  String iSpectifyRiverpodAddCount(Object text);
 
-  /// No description provided for @talkerRiverpodDisposeCount.
+  /// No description provided for @iSpectifyRiverpodDisposeCount.
   ///
   /// In en, this message translates to:
   /// **'Riverpod disposes count: {text}'**
-  String talkerRiverpodDisposeCount(Object text);
+  String iSpectifyRiverpodDisposeCount(Object text);
 
-  /// No description provided for @talkerRiverpodFailsCount.
+  /// No description provided for @iSpectifyRiverpodFailsCount.
   ///
   /// In en, this message translates to:
   /// **'Riverpod fails count: {text}'**
-  String talkerRiverpodFailsCount(Object text);
+  String iSpectifyRiverpodFailsCount(Object text);
 
-  /// No description provided for @talkerRiverpodUpdateCount.
+  /// No description provided for @iSpectifyRiverpodUpdateCount.
   ///
   /// In en, this message translates to:
   /// **'Riverpod updates count: {text}'**
-  String talkerRiverpodUpdateCount(Object text);
+  String iSpectifyRiverpodUpdateCount(Object text);
 
-  /// No description provided for @talkerTypeAnalytics.
+  /// No description provided for @iSpectifyTypeAnalytics.
   ///
   /// In en, this message translates to:
   /// **'Event logging method'**
-  String get talkerTypeAnalytics;
+  String get iSpectifyTypeAnalytics;
 
-  /// No description provided for @talkerTypeAnalyticsCount.
+  /// No description provided for @iSpectifyTypeAnalyticsCount.
   ///
   /// In en, this message translates to:
   /// **'Number of track logs: {text}'**
-  String talkerTypeAnalyticsCount(Object text);
+  String iSpectifyTypeAnalyticsCount(Object text);
 
-  /// No description provided for @talkerTypeBloc.
+  /// No description provided for @iSpectifyTypeBloc.
   ///
   /// In en, this message translates to:
   /// **'BLoC'**
-  String get talkerTypeBloc;
+  String get iSpectifyTypeBloc;
 
-  /// No description provided for @talkerTypeDebug.
+  /// No description provided for @iSpectifyTypeDebug.
   ///
   /// In en, this message translates to:
   /// **'Verbose & debug'**
-  String get talkerTypeDebug;
+  String get iSpectifyTypeDebug;
 
-  /// No description provided for @talkerTypeDebugCount.
+  /// No description provided for @iSpectifyTypeDebugCount.
   ///
   /// In en, this message translates to:
   /// **'Verbose and debug logs count: {text}'**
-  String talkerTypeDebugCount(Object text);
+  String iSpectifyTypeDebugCount(Object text);
 
-  /// No description provided for @talkerTypeErrors.
+  /// No description provided for @iSpectifyTypeErrors.
   ///
   /// In en, this message translates to:
   /// **'Errors'**
-  String get talkerTypeErrors;
+  String get iSpectifyTypeErrors;
 
-  /// No description provided for @talkerTypeErrorsCount.
+  /// No description provided for @iSpectifyTypeErrorsCount.
   ///
   /// In en, this message translates to:
   /// **'Error logs count: {text}'**
-  String talkerTypeErrorsCount(Object text);
+  String iSpectifyTypeErrorsCount(Object text);
 
-  /// No description provided for @talkerTypeExceptions.
+  /// No description provided for @iSpectifyTypeExceptions.
   ///
   /// In en, this message translates to:
   /// **'Exceptions'**
-  String get talkerTypeExceptions;
+  String get iSpectifyTypeExceptions;
 
-  /// No description provided for @talkerTypeExceptionsCount.
+  /// No description provided for @iSpectifyTypeExceptionsCount.
   ///
   /// In en, this message translates to:
   /// **'Exception logs count: {text}'**
-  String talkerTypeExceptionsCount(Object text);
+  String iSpectifyTypeExceptionsCount(Object text);
 
-  /// No description provided for @talkerTypeGood.
+  /// No description provided for @iSpectifyTypeGood.
   ///
   /// In en, this message translates to:
   /// **'Good'**
-  String get talkerTypeGood;
+  String get iSpectifyTypeGood;
 
-  /// No description provided for @talkerTypeGoodCount.
+  /// No description provided for @iSpectifyTypeGoodCount.
   ///
   /// In en, this message translates to:
   /// **'Good logs count: {text}'**
-  String talkerTypeGoodCount(Object text);
+  String iSpectifyTypeGoodCount(Object text);
 
-  /// No description provided for @talkerTypeHttp.
+  /// No description provided for @iSpectifyTypeHttp.
   ///
   /// In en, this message translates to:
   /// **'HTTP requests'**
-  String get talkerTypeHttp;
+  String get iSpectifyTypeHttp;
 
-  /// No description provided for @talkerTypeInfo.
+  /// No description provided for @iSpectifyTypeInfo.
   ///
   /// In en, this message translates to:
   /// **'Info'**
-  String get talkerTypeInfo;
+  String get iSpectifyTypeInfo;
 
-  /// No description provided for @talkerTypeInfoCount.
+  /// No description provided for @iSpectifyTypeInfoCount.
   ///
   /// In en, this message translates to:
   /// **'Info logs count: {text}'**
-  String talkerTypeInfoCount(Object text);
+  String iSpectifyTypeInfoCount(Object text);
 
-  /// No description provided for @talkerTypePrint.
+  /// No description provided for @iSpectifyTypePrint.
   ///
   /// In en, this message translates to:
   /// **'Print method'**
-  String get talkerTypePrint;
+  String get iSpectifyTypePrint;
 
-  /// No description provided for @talkerTypePrintCount.
+  /// No description provided for @iSpectifyTypePrintCount.
   ///
   /// In en, this message translates to:
   /// **'Print method logs count: {text}'**
-  String talkerTypePrintCount(Object text);
+  String iSpectifyTypePrintCount(Object text);
 
-  /// No description provided for @talkerTypeProvider.
+  /// No description provided for @iSpectifyTypeProvider.
   ///
   /// In en, this message translates to:
   /// **'Providers'**
-  String get talkerTypeProvider;
+  String get iSpectifyTypeProvider;
 
-  /// No description provided for @talkerTypeProviderCount.
+  /// No description provided for @iSpectifyTypeProviderCount.
   ///
   /// In en, this message translates to:
   /// **'Provider logs count: {text}'**
-  String talkerTypeProviderCount(Object text);
+  String iSpectifyTypeProviderCount(Object text);
 
-  /// No description provided for @talkerTypeRiverpod.
+  /// No description provided for @iSpectifyTypeRiverpod.
   ///
   /// In en, this message translates to:
   /// **'Riverpod'**
-  String get talkerTypeRiverpod;
+  String get iSpectifyTypeRiverpod;
 
-  /// No description provided for @talkerTypeWarnings.
+  /// No description provided for @iSpectifyTypeWarnings.
   ///
   /// In en, this message translates to:
   /// **'Warnings'**
-  String get talkerTypeWarnings;
+  String get iSpectifyTypeWarnings;
 
-  /// No description provided for @talkerTypeWarningsCount.
+  /// No description provided for @iSpectifyTypeWarningsCount.
   ///
   /// In en, this message translates to:
   /// **'Warning logs count: {text}'**
-  String talkerTypeWarningsCount(Object text);
+  String iSpectifyTypeWarningsCount(Object text);
 
   /// No description provided for @testerLogDesc.
   ///

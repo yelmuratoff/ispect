@@ -49,7 +49,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
   Future<void> _onInitChat(InitChat event, Emitter<AiChatState> emit) async {
     emit(const AiChatLoading());
-    final file = await generateFile(event.logs.getFormattedText());
+    final file = await generateFile(event.logs.formattedText);
 
     final bytes = file.readAsBytesSync();
     chatSession = ISpectGoogleAi.instance.model.startChat(

@@ -114,7 +114,6 @@ dependencies:
 
 ```dart
 import 'package:ispect/ispect.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 import 'package:ispect_jira/ispect_jira.dart';
 ```
 
@@ -217,13 +216,12 @@ Alternatively, you can use a `listener`:
     _router.routerDelegate.addListener(() {
       final String location =
           _router.routerDelegate.currentConfiguration.last.matchedLocation;
-      talkerWrapper.route(location);
+      ISpect.route(location);
     });
 ```
 
 ### Referenced packages:
 A list of great packages I've used in ISpect:
-[iSpectify](https://pub.dev/packages/talker), 
 [path_provider](https://pub.dev/packages/path_provider), 
 [device_info_plus](https://pub.dev/packages/device_info_plus), 
 [share_plus](https://pub.dev/packages/share_plus), 

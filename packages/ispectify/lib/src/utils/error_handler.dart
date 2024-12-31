@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 class ISpectifyErrorHandler {
-  ISpectifyErrorHandler(this.settings);
+  const ISpectifyErrorHandler(this.settings);
 
   final ISpectifyOptions settings;
 
@@ -12,37 +12,38 @@ class ISpectifyErrorHandler {
   ]) {
     if (exception is ISpectifyError) {
       return exception;
-    }
-    if (exception is ISpectifyException) {
+    } else if (exception is ISpectifyException) {
       return exception;
-    }
-    if (exception is Error) {
-      final errType = ISpectifyLogType.error;
+    } else if (exception is Error) {
       return ISpectifyError(
         exception,
-        key: errType.key,
-        title: settings.getTitleByLogKey(errType.key),
+        key: ISpectifyLogType.error.key,
+        title: settings.titleByKey(
+          ISpectifyLogType.error.key,
+        ),
         message: msg,
         stackTrace: stackTrace,
       );
-    }
-    if (exception is Exception) {
-      final exceptionType = ISpectifyLogType.exception;
+    } else if (exception is Exception) {
       return ISpectifyException(
         exception,
-        key: exceptionType.key,
-        title: settings.getTitleByLogKey(exceptionType.key),
+        key: ISpectifyLogType.exception.key,
+        title: settings.titleByKey(
+          ISpectifyLogType.exception.key,
+        ),
         message: msg,
         stackTrace: stackTrace,
       );
+    } else {
+      return ISpectifyLog(
+        exception.toString(),
+        key: ISpectifyLogType.error.key,
+        title: settings.titleByKey(
+          ISpectifyLogType.error.key,
+        ),
+        logLevel: LogLevel.error,
+        stackTrace: stackTrace,
+      );
     }
-    final errType = ISpectifyLogType.error;
-    return ISpectifyLog(
-      exception.toString(),
-      key: errType.key,
-      title: settings.getTitleByLogKey(errType.key),
-      logLevel: LogLevel.error,
-      stackTrace: stackTrace,
-    );
   }
 }

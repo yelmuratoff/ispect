@@ -1,38 +1,26 @@
-import 'package:ispectify/src/utils/time_format.dart';
-
-/// Utility class for [DateTime] formatting.
 class ISpectifyDateTimeFormatter {
-  /// Constructs a [ISpectifyDateTimeFormatter] with the given [date].
-  const ISpectifyDateTimeFormatter(this.date, {this.timeFormat = TimeFormat.timeAndSeconds});
+  const ISpectifyDateTimeFormatter(this.date);
 
-  /// The [DateTime] object to be formatted.
-  final DateTime date;
+  final DateTime? date;
 
-  /// The [TimeFormat] to be used for formatting.
-  final TimeFormat? timeFormat;
-
-  /// Returns a string representation of the time and seconds.
-  /// Format: ['HH:mm:s ms']
   String get timeAndSeconds {
-    final d = date;
-    final minutesPadded = '${d.minute}'.padLeft(2, '0');
-    final secondsPadded = '${d.second}'.padLeft(2, '0');
+    if (date == null) return '';
 
-    return '${d.hour}:$minutesPadded:$secondsPadded ${d.millisecond}ms';
+    final minutesPadded = '${date!.minute}'.padLeft(2, '0');
+    final secondsPadded = '${date!.second}'.padLeft(2, '0');
+
+    return '${date!.hour}:$minutesPadded:$secondsPadded | ${date!.millisecond}ms';
   }
 
-  /// Returns a string representation of the year, month, day, and time.
-  /// Format: ['YYYY-MM-DD HH:mm:s ms']
-  String get yearMonthDayAndTime => '${date.year}-${date.month}-${date.day} $timeAndSeconds';
+  String get yearMonthDayAndTime {
+    if (date == null) return '';
+
+    return '${date!.year}-${date!.month}-${date!.day} | $timeAndSeconds';
+  }
 
   String get format {
-    switch (timeFormat) {
-      case TimeFormat.timeAndSeconds:
-        return timeAndSeconds;
-      case TimeFormat.yearMonthDayAndTime:
-        return yearMonthDayAndTime;
-      case null:
-        return timeAndSeconds;
-    }
+    if (date == null) return '';
+
+    return yearMonthDayAndTime;
   }
 }

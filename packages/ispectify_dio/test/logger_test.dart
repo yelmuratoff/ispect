@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
-import '../lib/dio_logs.dart';
-import '../lib/ispectify_dio.dart';
+import 'package:ispectify_dio/dio_logs.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -10,7 +10,11 @@ void main() {
     late ISpectiy iSpectify;
 
     setUp(() {
-      iSpectify = ISpectiy(settings: ISpectifyOptions(useConsoleLogs: false));
+      iSpectify = ISpectiy(
+        options: ISpectifyOptions(
+          useConsoleLogs: false,
+        ),
+      );
       logger = ISpectifyDioLogger(iSpectify: iSpectify);
     });
 
@@ -55,7 +59,7 @@ void main() {
       final response = Response(requestOptions: options, statusCode: 200, headers: Headers()..add("HEADER", "VALUE"));
       logger.onResponse(response, ResponseInterceptorHandler());
       expect(
-          iSpectify.history.last.generateTextMessage(),
+          iSpectify.history.last.textMessage,
           '[http-response] [GET] /test\n'
           'Status: 200\n'
           'Headers: {\n'

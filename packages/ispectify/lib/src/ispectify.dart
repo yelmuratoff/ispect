@@ -6,12 +6,12 @@ class ISpectiy {
   ISpectiy({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
-    ISpectifyOptions? settings,
+    ISpectifyOptions? options,
     ISpectifyFilter? filter,
     ISpectifyErrorHandler? errorHandler,
     LogHistory? history,
   }) {
-    _init(filter, settings, logger, observer, errorHandler, history);
+    _init(filter, options, logger, observer, errorHandler, history);
   }
 
   void _init(
@@ -22,10 +22,10 @@ class ISpectiy {
     ISpectifyErrorHandler? errorHandler,
     LogHistory? history,
   ) {
-    _filter = filter ?? _DefaultISpectifyFilter();
+    _filter = filter;
     this.settings = settings ?? ISpectifyOptions();
     _initLogger(logger);
-    _observer = observer ?? const _DefaultISpectifyObserver();
+    _observer = observer;
     _errorHandler = errorHandler ?? ISpectifyErrorHandler(this.settings);
     _history = history ?? DefaultISpectifyHistory(this.settings);
   }
@@ -35,12 +35,12 @@ class ISpectiy {
     _logger = _logger.copyWith(
       settings: _logger.settings.copyWith(
         colors: {
-          LogLevel.critical: settings.getAnsiPenByLogType(ISpectifyLogType.critical),
-          LogLevel.error: settings.getAnsiPenByLogType(ISpectifyLogType.error),
-          LogLevel.warning: settings.getAnsiPenByLogType(ISpectifyLogType.warning),
-          LogLevel.verbose: settings.getAnsiPenByLogType(ISpectifyLogType.verbose),
-          LogLevel.info: settings.getAnsiPenByLogType(ISpectifyLogType.info),
-          LogLevel.debug: settings.getAnsiPenByLogType(ISpectifyLogType.debug),
+          LogLevel.critical: settings.penByKey(ISpectifyLogType.critical.key),
+          LogLevel.error: settings.penByKey(ISpectifyLogType.error.key),
+          LogLevel.warning: settings.penByKey(ISpectifyLogType.warning.key),
+          LogLevel.verbose: settings.penByKey(ISpectifyLogType.verbose.key),
+          LogLevel.info: settings.penByKey(ISpectifyLogType.info.key),
+          LogLevel.debug: settings.penByKey(ISpectifyLogType.debug.key),
         },
       ),
     );
@@ -49,8 +49,8 @@ class ISpectiy {
   late ISpectifyOptions settings;
   late ISpectifyLogger _logger;
   late ISpectifyErrorHandler _errorHandler;
-  late ISpectifyFilter _filter;
-  late ISpectifyObserver _observer;
+  late ISpectifyFilter? _filter;
+  late ISpectifyObserver? _observer;
   late LogHistory _history;
 
   void configure({
@@ -73,9 +73,9 @@ class ISpectiy {
     _history = DefaultISpectifyHistory(this.settings, history: _history.history);
   }
 
-  final _talkerStreamController = StreamController<ISpectiyData>.broadcast();
+  final _iSpectifyStreamController = StreamController<ISpectiyData>.broadcast();
 
-  Stream<ISpectiyData> get stream => _talkerStreamController.stream.asBroadcastStream();
+  Stream<ISpectiyData> get stream => _iSpectifyStreamController.stream.asBroadcastStream();
 
   List<ISpectiyData> get history => _history.history;
 
@@ -86,12 +86,12 @@ class ISpectiy {
   ]) {
     final data = _errorHandler.handle(exception, stackTrace, msg?.toString());
     if (data is ISpectifyError) {
-      _observer.onError(data);
+      _observer?.onError(data);
       _handleErrorData(data);
       return;
     }
     if (data is ISpectifyException) {
-      _observer.onException(data);
+      _observer?.onException(data);
       _handleErrorData(data);
       return;
     }
@@ -107,7 +107,13 @@ class ISpectiy {
     StackTrace? stackTrace,
     AnsiPen? pen,
   }) {
-    _handleLog(message, exception, stackTrace, logLevel, pen: pen);
+    _handleLog(
+      message: message,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: logLevel,
+      pen: pen,
+    );
   }
 
   void logCustom(ISpectifyLog log) => _handleLogData(log);
@@ -117,7 +123,12 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.critical);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: LogLevel.critical,
+    );
   }
 
   void debug(
@@ -125,7 +136,11 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.debug);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+    );
   }
 
   void error(
@@ -133,7 +148,12 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.error);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: LogLevel.error,
+    );
   }
 
   void info(
@@ -141,7 +161,12 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.info);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: LogLevel.info,
+    );
   }
 
   void verbose(
@@ -149,7 +174,12 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.verbose);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: LogLevel.verbose,
+    );
   }
 
   void warning(
@@ -157,7 +187,12 @@ class ISpectiy {
     Object? exception,
     StackTrace? stackTrace,
   ]) {
-    _handleLog(msg, exception, stackTrace, LogLevel.warning);
+    _handleLog(
+      message: msg,
+      exception: exception,
+      stackTrace: stackTrace,
+      logLevel: LogLevel.warning,
+    );
   }
 
   void clearHistory() => _history.clear();
@@ -166,21 +201,21 @@ class ISpectiy {
 
   void disable() => settings.enabled = false;
 
-  void _handleLog(
-    dynamic message,
+  void _handleLog({
+    Object? message,
     Object? exception,
     StackTrace? stackTrace,
-    LogLevel logLevel, {
+    LogLevel? logLevel,
     AnsiPen? pen,
   }) {
     final type = ISpectifyLogType.fromLogLevel(logLevel);
     final data = ISpectifyLog(
       key: type.key,
       message?.toString() ?? '',
-      title: settings.getTitleByLogKey(type.key),
+      title: settings.titleByKey(type.key),
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? settings.getPenByLogKey(type.key),
+      pen: pen ?? settings.penByKey(type.key),
       logLevel: logLevel,
     );
     _handleLogData(data);
@@ -194,11 +229,11 @@ class ISpectiy {
     if (!isApproved) {
       return;
     }
-    _talkerStreamController.add(data);
+    _iSpectifyStreamController.add(data);
     _handleForOutputs(data);
     if (settings.useConsoleLogs) {
       _logger.log(
-        data.generateTextMessage(timeFormat: settings.timeFormat),
+        data.textMessage,
         level: data.logLevel ?? LogLevel.error,
       );
     }
@@ -217,20 +252,12 @@ class ISpectiy {
       return;
     }
 
-    final logTypeKey = data.key;
-    if (logTypeKey != null) {
-      data.title = settings.getTitleByLogKey(logTypeKey);
-      data.pen = settings.getPenByLogKey(
-        logTypeKey,
-        fallbackPen: data.pen,
-      );
-    }
-    _observer.onLog(data);
-    _talkerStreamController.add(data);
+    _observer?.onLog(data);
+    _iSpectifyStreamController.add(data);
     _handleForOutputs(data);
     if (settings.useConsoleLogs) {
       _logger.log(
-        data.generateTextMessage(timeFormat: settings.timeFormat),
+        data.textMessage,
         level: logLevel ?? data.logLevel,
         pen: data.pen,
       );
@@ -242,16 +269,7 @@ class ISpectiy {
   }
 
   bool _isApprovedByFilter(ISpectiyData data) {
-    final approved = _filter.filter(data);
-    return approved;
+    final approved = _filter?.filter(data);
+    return approved ?? true;
   }
-}
-
-class _DefaultISpectifyObserver extends ISpectifyObserver {
-  const _DefaultISpectifyObserver();
-}
-
-class _DefaultISpectifyFilter extends ISpectifyFilter {
-  @override
-  bool filter(ISpectiyData item) => true;
 }

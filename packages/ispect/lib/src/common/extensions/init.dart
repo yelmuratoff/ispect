@@ -7,16 +7,16 @@ extension ISpectifyFlutter on ISpectiy {
   static ISpectiy init({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
-    ISpectifyOptions? settings,
+    ISpectifyOptions? options,
     ISpectifyFilter? filter,
   }) =>
       ISpectiy(
         logger: (logger ?? ISpectifyLogger()).copyWith(
           output: _defaultFlutterOutput,
         ),
-        settings: settings,
+        options: options,
         observer: observer,
-        filter: filter,
+        // filter: filter,
       );
 
   static dynamic _defaultFlutterOutput(String message) {

@@ -341,141 +341,141 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get summary => 'Summary';
 
   @override
-  String talkerBlocClosesCount(Object text) {
+  String iSpectifyBlocClosesCount(Object text) {
     return 'BLoC closes count: $text';
   }
 
   @override
-  String talkerBlocCreatesCount(Object text) {
+  String iSpectifyBlocCreatesCount(Object text) {
     return 'BLoC creates count: $text';
   }
 
   @override
-  String talkerBlocEventsCount(Object text) {
+  String iSpectifyBlocEventsCount(Object text) {
     return 'BLoC events count: $text';
   }
 
   @override
-  String talkerBlocTransitionCount(Object text) {
+  String iSpectifyBlocTransitionCount(Object text) {
     return 'BLoC transitions count: $text';
   }
 
   @override
-  String talkerHttpFailuresCount(Object text) {
+  String iSpectifyHttpFailuresCount(Object text) {
     return 'HTTP failure logs count: $text';
   }
 
   @override
-  String talkerHttpRequestsCount(Object text) {
+  String iSpectifyHttpRequestsCount(Object text) {
     return 'HTTP request logs count: $text';
   }
 
   @override
-  String talkerHttpResponsesCount(Object text) {
+  String iSpectifyHttpResponsesCount(Object text) {
     return 'HTTP response logs count: $text';
   }
 
   @override
-  String get talkerLogsInfo => 'Info about logs';
+  String get iSpectifyLogsInfo => 'Info about logs';
 
   @override
-  String talkerRiverpodAddCount(Object text) {
+  String iSpectifyRiverpodAddCount(Object text) {
     return 'Riverpod adds count: $text';
   }
 
   @override
-  String talkerRiverpodDisposeCount(Object text) {
+  String iSpectifyRiverpodDisposeCount(Object text) {
     return 'Riverpod disposes count: $text';
   }
 
   @override
-  String talkerRiverpodFailsCount(Object text) {
+  String iSpectifyRiverpodFailsCount(Object text) {
     return 'Riverpod fails count: $text';
   }
 
   @override
-  String talkerRiverpodUpdateCount(Object text) {
+  String iSpectifyRiverpodUpdateCount(Object text) {
     return 'Riverpod updates count: $text';
   }
 
   @override
-  String get talkerTypeAnalytics => 'Event logging method';
+  String get iSpectifyTypeAnalytics => 'Event logging method';
 
   @override
-  String talkerTypeAnalyticsCount(Object text) {
+  String iSpectifyTypeAnalyticsCount(Object text) {
     return 'Number of track logs: $text';
   }
 
   @override
-  String get talkerTypeBloc => 'BLoC';
+  String get iSpectifyTypeBloc => 'BLoC';
 
   @override
-  String get talkerTypeDebug => 'Verbose & debug';
+  String get iSpectifyTypeDebug => 'Verbose & debug';
 
   @override
-  String talkerTypeDebugCount(Object text) {
+  String iSpectifyTypeDebugCount(Object text) {
     return 'Verbose and debug logs count: $text';
   }
 
   @override
-  String get talkerTypeErrors => 'Errors';
+  String get iSpectifyTypeErrors => 'Errors';
 
   @override
-  String talkerTypeErrorsCount(Object text) {
+  String iSpectifyTypeErrorsCount(Object text) {
     return 'Error logs count: $text';
   }
 
   @override
-  String get talkerTypeExceptions => 'Exceptions';
+  String get iSpectifyTypeExceptions => 'Exceptions';
 
   @override
-  String talkerTypeExceptionsCount(Object text) {
+  String iSpectifyTypeExceptionsCount(Object text) {
     return 'Exception logs count: $text';
   }
 
   @override
-  String get talkerTypeGood => 'Good';
+  String get iSpectifyTypeGood => 'Good';
 
   @override
-  String talkerTypeGoodCount(Object text) {
+  String iSpectifyTypeGoodCount(Object text) {
     return 'Good logs count: $text';
   }
 
   @override
-  String get talkerTypeHttp => 'HTTP requests';
+  String get iSpectifyTypeHttp => 'HTTP requests';
 
   @override
-  String get talkerTypeInfo => 'Info';
+  String get iSpectifyTypeInfo => 'Info';
 
   @override
-  String talkerTypeInfoCount(Object text) {
+  String iSpectifyTypeInfoCount(Object text) {
     return 'Info logs count: $text';
   }
 
   @override
-  String get talkerTypePrint => 'Print method';
+  String get iSpectifyTypePrint => 'Print method';
 
   @override
-  String talkerTypePrintCount(Object text) {
+  String iSpectifyTypePrintCount(Object text) {
     return 'Print method logs count: $text';
   }
 
   @override
-  String get talkerTypeProvider => 'Providers';
+  String get iSpectifyTypeProvider => 'Providers';
 
   @override
-  String talkerTypeProviderCount(Object text) {
+  String iSpectifyTypeProviderCount(Object text) {
     return 'Provider logs count: $text';
   }
 
   @override
-  String get talkerTypeRiverpod => 'Riverpod';
+  String get iSpectifyTypeRiverpod => 'Riverpod';
 
   @override
-  String get talkerTypeWarnings => 'Warnings';
+  String get iSpectifyTypeWarnings => 'Warnings';
 
   @override
-  String talkerTypeWarningsCount(Object text) {
+  String iSpectifyTypeWarningsCount(Object text) {
     return 'Warning logs count: $text';
   }
 

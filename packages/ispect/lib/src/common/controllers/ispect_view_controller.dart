@@ -5,14 +5,14 @@ import 'package:ispectify/ispectify.dart';
 
 /// Controller to work with [ISpectifyScreen]
 class ISpectifyViewController extends ChangeNotifier {
-  BaseISpectifyFilter _filter = BaseISpectifyFilter();
+  DefaultISpectifyFilter _filter = DefaultISpectifyFilter();
 
   var _expandedLogs = true;
   bool _isLogOrderReversed = true;
 
   /// Filter for selecting specific logs and errors
-  BaseISpectifyFilter get filter => _filter;
-  set filter(BaseISpectifyFilter val) {
+  DefaultISpectifyFilter get filter => _filter;
+  set filter(DefaultISpectifyFilter val) {
     _filter = val;
     notifyListeners();
   }

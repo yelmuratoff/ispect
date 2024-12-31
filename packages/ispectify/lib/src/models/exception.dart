@@ -1,7 +1,5 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Base implementation of [ISpectiyData]
-/// to handle ONLY [Exceptions]s
 class ISpectifyException extends ISpectiyData {
   ISpectifyException(
     Exception exception, {
@@ -10,23 +8,15 @@ class ISpectifyException extends ISpectiyData {
     String? key,
     super.title,
     LogLevel? logLevel,
-  }) : super(message, exception: exception) {
-    _key = key ?? ISpectifyLogType.exception.key;
-    _logLevel = logLevel ?? LogLevel.error;
-  }
-
-  late String _key;
-  late LogLevel _logLevel;
-
-  @override
-  String get key => _key;
+  }) : super(
+          message,
+          exception: exception,
+          key: ISpectifyLogType.exception.key,
+          logLevel: LogLevel.error,
+        );
 
   @override
-  LogLevel? get logLevel => _logLevel;
-
-  /// {@macro talker_data_generateTextMessage}
-  @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
-    return '${displayTitleWithTime(timeFormat: timeFormat)}$displayMessage$displayException$displayStackTrace';
+  String get textMessage {
+    return '$header$messageText$exceptionText$stackTraceText';
   }
 }

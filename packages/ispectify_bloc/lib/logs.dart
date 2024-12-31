@@ -2,16 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/settings.dart';
 
-/// A log class for recording Bloc events.
-///
-/// This log captures when a [Bloc] receives an event and formats
-/// the message according to the provided [settings].
 class BlocEventLog extends ISpectifyLog {
-  /// Creates a log entry for a received Bloc event.
-  ///
-  /// - [bloc]: The Bloc instance receiving the event.
-  /// - [event]: The event received by the Bloc.
-  /// - [settings]: Configuration settings for logging behavior.
   BlocEventLog({
     required this.bloc,
     required this.event,
@@ -25,33 +16,20 @@ class BlocEventLog extends ISpectifyLog {
   final ISpectifyBlocSettings settings;
 
   @override
-  String get key => ISpectifyLogType.blocEvent.key;
+  String get key => getKey;
 
-  /// Generates a formatted log message for the event.
-  ///
-  /// - [timeFormat]: The format to use for the timestamp in the log.
-  /// Returns a formatted string representing the event log.
+  static const getKey = 'bloc-event';
+
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     final sb = StringBuffer();
-    sb.write(displayTitleWithTime(timeFormat: timeFormat));
+    sb.write(header);
     sb.write('\n$message');
     return sb.toString();
   }
 }
 
-/// A log class for recording Bloc state transitions.
-///
-/// This log captures transitions between Bloc states, including
-/// the event that triggered the transition.
 class BlocStateLog extends ISpectifyLog {
-  /// Creates a log entry for a Bloc state transition.
-  ///
-  /// - [bloc]: The Bloc instance undergoing the transition.
-  /// - [transition]: Details of the transition.
-  /// - [settings]: Configuration settings for logging behavior.
   BlocStateLog({
     required this.bloc,
     required this.transition,
@@ -63,18 +41,14 @@ class BlocStateLog extends ISpectifyLog {
   final ISpectifyBlocSettings settings;
 
   @override
-  String get key => ISpectifyLogType.blocTransition.key;
+  String get key => getKey;
 
-  /// Generates a formatted log message for the state transition.
-  ///
-  /// - [timeFormat]: The format to use for the timestamp in the log.
-  /// Returns a formatted string representing the state transition log.
+  static const getKey = 'bloc-state';
+
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     final sb = StringBuffer();
-    sb.write(displayTitleWithTime(timeFormat: timeFormat));
+    sb.write(header);
     sb.write('\n$message');
     sb.write(
         '\nCURRENT state: ${settings.printStateFullData ? '\n${transition.currentState}' : transition.currentState.runtimeType}');
@@ -84,16 +58,7 @@ class BlocStateLog extends ISpectifyLog {
   }
 }
 
-/// A log class for recording Bloc state changes.
-///
-/// This log captures changes to the Bloc's state without
-/// specific transition details.
 class BlocChangeLog extends ISpectifyLog {
-  /// Creates a log entry for a Bloc state change.
-  ///
-  /// - [bloc]: The Bloc instance whose state has changed.
-  /// - [change]: The details of the state change.
-  /// - [settings]: Configuration settings for logging behavior.
   BlocChangeLog({
     required this.bloc,
     required this.change,
@@ -105,18 +70,14 @@ class BlocChangeLog extends ISpectifyLog {
   final ISpectifyBlocSettings settings;
 
   @override
-  String get key => ISpectifyLogType.blocTransition.key;
+  String get key => getKey;
 
-  /// Generates a formatted log message for the state change.
-  ///
-  /// - [timeFormat]: The format to use for the timestamp in the log.
-  /// Returns a formatted string representing the state change log.
+  static const getKey = 'bloc-transition';
+
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     final sb = StringBuffer();
-    sb.write(displayTitleWithTime(timeFormat: timeFormat));
+    sb.write(header);
     sb.write('\n$message');
     sb.write(
         '\nCURRENT state: ${settings.printStateFullData ? '\n${change.currentState}' : change.currentState.runtimeType}');
@@ -125,13 +86,7 @@ class BlocChangeLog extends ISpectifyLog {
   }
 }
 
-/// A log class for recording the creation of a Bloc instance.
-///
-/// This log captures when a Bloc is created.
 class BlocCreateLog extends ISpectifyLog {
-  /// Creates a log entry for the creation of a Bloc.
-  ///
-  /// - [bloc]: The newly created Bloc instance.
   BlocCreateLog({
     required this.bloc,
   }) : super('${bloc.runtimeType} created');
@@ -139,30 +94,20 @@ class BlocCreateLog extends ISpectifyLog {
   final BlocBase bloc;
 
   @override
-  String? get key => ISpectifyLogType.blocCreate.key;
+  String? get key => getKey;
 
-  /// Generates a formatted log message for the Bloc creation.
-  ///
-  /// - [timeFormat]: The format to use for the timestamp in the log.
-  /// Returns a formatted string representing the Bloc creation log.
+  static const getKey = 'bloc-create';
+
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     final sb = StringBuffer();
-    sb.write(displayTitleWithTime(timeFormat: timeFormat));
+    sb.write(header);
     sb.write('\n$message');
     return sb.toString();
   }
 }
 
-/// A log class for recording the closure of a Bloc instance.
-///
-/// This log captures when a Bloc is closed.
 class BlocCloseLog extends ISpectifyLog {
-  /// Creates a log entry for the closure of a Bloc.
-  ///
-  /// - [bloc]: The Bloc instance being closed.
   BlocCloseLog({
     required this.bloc,
   }) : super('${bloc.runtimeType} closed');
@@ -170,18 +115,14 @@ class BlocCloseLog extends ISpectifyLog {
   final BlocBase bloc;
 
   @override
-  String? get key => ISpectifyLogType.blocClose.key;
+  String? get key => getKey;
 
-  /// Generates a formatted log message for the Bloc closure.
-  ///
-  /// - [timeFormat]: The format to use for the timestamp in the log.
-  /// Returns a formatted string representing the Bloc closure log.
+  static const getKey = 'bloc-close';
+
   @override
-  String generateTextMessage({
-    TimeFormat timeFormat = TimeFormat.timeAndSeconds,
-  }) {
+  String get textMessage {
     final sb = StringBuffer();
-    sb.write(displayTitleWithTime(timeFormat: timeFormat));
+    sb.write(header);
     sb.write('\n$message');
     return sb.toString();
   }

@@ -10,12 +10,11 @@ final _defaultColors = {
   LogLevel.debug: AnsiPen()..gray(),
 };
 
-/// Logger customization settings
 class ISpectifyLoggerSettings {
   ISpectifyLoggerSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enable = true,
-    this.defaultTitle = 'LOG',
+    this.defaultTitle = 'Log',
     this.level = LogLevel.verbose,
     this.lineSymbol = '─',
     this.maxLineWidth = 110,
@@ -27,38 +26,13 @@ class ISpectifyLoggerSettings {
     this.colors.addAll(_defaultColors);
   }
 
-  /// Field to setup custom log colors
-  ///```dart
-  /// final logger = ISpectifyLogger(
-  ///   settings: ISpectifyLoggerSettings(
-  ///     colors: {
-  ///       LogLevel.critical: AnsiPen()..red(),
-  ///       LogLevel.error: AnsiPen()..magenta(),
-  ///       LogLevel.info: AnsiPen()..cyan(),
-  ///     },
-  ///     enableColors: true,
-  ///   ),
-  /// );
-  /// ```
   final Map<LogLevel, AnsiPen> colors = _defaultColors;
 
-  ///  Field for enable and disable print logger
   bool enable;
-
-  /// Title of default log without [LogLevel]
   final String defaultTitle;
-
-  /// Current log level
-  /// All messages with a priority below this will be ignored
   final LogLevel level;
-
-  ///The symbol separating logs by lower border
   final String lineSymbol;
-
-  /// Maximum width of the lower border
   final int maxLineWidth;
-
-  /// Field for enable and disable colored logs
   final bool enableColors;
 
   ISpectifyLoggerSettings copyWith({
