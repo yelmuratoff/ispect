@@ -16,10 +16,10 @@ class PackageInfoBody extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Package info',
-              style: context.ispectTheme.textTheme.bodyMedium?.copyWith(
-                color: context.ispectTheme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ),
           Padding(

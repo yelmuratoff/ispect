@@ -10,13 +10,12 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
-import 'package:ispect/src/features/app_data/app_data.dart';
-import 'package:ispect/src/features/app_info/app.dart';
 import 'package:ispect/src/features/ispectify/presentation/pages/monitor/monitoring_page.dart';
 import 'package:ispect/src/features/ispectify/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispectify/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispectify/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispectify/presentation/widgets/settings/settings_bottom_sheet.dart';
+import 'package:ispect_device/src/features/app_data/app_data.dart';
 
 class ISpectPageView extends StatefulWidget {
   const ISpectPageView({
@@ -208,11 +207,6 @@ class _ISpectPageViewState extends State<ISpectPageView> {
             title: context.ispectL10n.viewAndManageData,
             icon: Icons.data_usage_sharp,
           ),
-          ISpectifyActionItem(
-            onTap: (_) => _checkAppInfo(),
-            title: context.ispectL10n.appInfo,
-            icon: Icons.info_outline_rounded,
-          ),
           ...widget.options.actionItems,
         ],
       ),
@@ -255,23 +249,6 @@ class _ISpectPageViewState extends State<ISpectPageView> {
         ),
         settings: RouteSettings(
           name: 'AppDataPage',
-          arguments: {
-            'iSpectify': widget.iSpectify,
-          },
-        ),
-      ),
-    );
-  }
-
-  Future<void> _checkAppInfo() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute<dynamic>(
-        builder: (_) => AppInfoPage(
-          iSpectify: widget.iSpectify,
-        ),
-        settings: RouteSettings(
-          name: 'AppInfoPage',
           arguments: {
             'iSpectify': widget.iSpectify,
           },

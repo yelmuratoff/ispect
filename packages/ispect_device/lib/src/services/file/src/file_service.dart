@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:ispect/src/common/services/file/file_service.dart';
+import 'package:ispect_device/src/services/file/file_service.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AppFileService implements BaseFileService {

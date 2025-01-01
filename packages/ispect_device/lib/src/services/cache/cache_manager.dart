@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/painting.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/services/cache/src/base_cache.dart';
+import 'package:ispect_device/src/services/cache/base.dart';
+
 import 'package:path_provider/path_provider.dart';
 
 final class AppCacheManager implements BaseCacheService {

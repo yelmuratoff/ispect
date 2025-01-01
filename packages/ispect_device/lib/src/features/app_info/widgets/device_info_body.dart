@@ -33,10 +33,10 @@ class DeviceInfoBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Device info',
-            style: context.ispectTheme.textTheme.bodyMedium?.copyWith(
-              color: context.ispectTheme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
         Padding(

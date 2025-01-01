@@ -19,12 +19,14 @@ class _AppInfoView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.copy_all_rounded),
             onPressed: () async {
-              copyClipboard(
-                // ignore: use_build_context_synchronously
-                context,
-                value: await controller.allData(),
-                showValue: false,
-              );
+              final value = await controller.allData();
+              if (context.mounted) {
+                copyClipboard(
+                  context,
+                  value: value,
+                  showValue: false,
+                );
+              }
             },
           ),
         ],

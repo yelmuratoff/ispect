@@ -7,6 +7,7 @@ workspace:
   - packages/ispect
   - packages/ispect_ai
   - packages/ispect_jira
+  - packages/ispect_device
   - packages/ispectify
   - packages/ispectify_bloc
   - packages/ispectify_dio

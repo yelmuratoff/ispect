@@ -39,37 +39,40 @@ class _AppDataView extends StatelessWidget {
                   ValueListenableBuilder(
                     valueListenable: cacheSizeNotifier,
                     builder: (context, cacheSize, _) => Text(
-                      context.ispectL10n.cacheSize(cacheSize),
+                      ISpectDeviceLocalization.of(context)?.cacheSize(cacheSize) ?? 'Cache size: $cacheSize',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   if (cacheSizeNotifier.value != '0.00 B' && controller.files.isNotEmpty)
                     ElevatedButton(
                       onPressed: clearCache,
-                      child: Text(context.ispectL10n.clearCache),
+                      child: Text(
+                        ISpectDeviceLocalization.of(context)?.clearCache ?? 'Clear cache',
+                      ),
                     ),
                 ],
               ),
             ),
-            const Gap(10),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.ispectL10n.appData,
-                    style: context.ispectTheme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    ISpectDeviceLocalization.of(context)?.appData ?? 'App data',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    context.ispectL10n.totalFilesCount(controller.files.length),
-                    style: context.ispectTheme.textTheme.bodyMedium,
+                    ISpectDeviceLocalization.of(context)?.totalFilesCount(controller.files.length) ??
+                        'Total files count: ${controller.files.length}',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
@@ -93,7 +96,7 @@ class _AppDataView extends StatelessWidget {
                           Expanded(
                             child: Text(
                               '$i. File:\n ${f.path}',
-                              style: context.ispectTheme.textTheme.labelMedium,
+                              style: Theme.of(context).textTheme.labelMedium,
                             ),
                           ),
                         ],

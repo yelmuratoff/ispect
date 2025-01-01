@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/services/cache/src/app_cache_manager.dart';
-import 'package:ispect/src/common/services/file/file_service.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect_device/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect_device/src/features/app_info/utils/copy.dart';
+import 'package:ispect_device/src/services/cache/cache_manager.dart';
+import 'package:ispect_device/src/services/file/src/file_service.dart';
 
 part 'view/view.dart';
 part 'controller/controller.dart';
@@ -54,7 +53,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
         cacheSizeNotifier: cacheSizeNotifier,
         clearCache: () async {
           await appCacheManager.deleteCacheDir(
-            isAndroid: context.ispectTheme.platform == TargetPlatform.android,
+            isAndroid: Theme.of(context).platform == TargetPlatform.android,
           );
           await updateCacheSize();
           if (context.mounted) {
@@ -66,7 +65,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
           if (context.mounted) {
             await ISpectToaster.showSuccessToast(
               context,
-              title: context.ispectL10n.cacheCleared,
+              title: 'Cache cleared',
             );
           }
         },
