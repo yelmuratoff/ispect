@@ -1,9 +1,9 @@
 // ignore_for_file: inference_failure_on_function_return_type, prefer_int_literals, unnecessary_parenthesis, prefer_underscore_for_unused_callback_parameters, unnecessary_lambdas
 
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/painters/curve_line_painter.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/panel/panel_item.dart';

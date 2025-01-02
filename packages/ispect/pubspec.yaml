@@ -7,7 +7,7 @@ publish_to: none
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
-resolution: workspace
+#
 
 dependencies:
   flutter:
@@ -22,26 +22,13 @@ dependencies:
     # Logging
   ispectify:
     path: ../ispectify
-  ispectify_dio:
-    path: ../ispectify_dio
-  ispectify_http:
-    path: ../ispectify_http
-  ispectify_bloc:
-    path: ../ispectify_bloc
 
-  # # Utils
-  # path_provider: ^2.1.5
-  # share_plus: ^10.0.1
-  # package_info_plus: ^8.0.2
-  # device_info_plus: ^10.1.2
+  # Utils
+  path_provider: ^2.1.5
+  share_plus: ^10.0.1
 
   # UI
   draggable_panel: ^0.0.7
-
-  # Others
-  dio: ^5.7.0
-  http: ^1.2.2
-  flutter_bloc: ^8.1.6
 
 dev_dependencies:
   flutter_test:

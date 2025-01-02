@@ -17,6 +17,6 @@ class ISpectifyException extends ISpectiyData {
 
   @override
   String get textMessage {
-    return '$header$messageText$exceptionText$stackTraceText';
+    return '$messageText$exceptionText$stackTraceText';
   }
 }

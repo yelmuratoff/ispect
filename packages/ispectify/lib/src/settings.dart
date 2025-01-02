@@ -86,7 +86,7 @@ class ISpectifyOptions {
     return titles[key] ?? key;
   }
 
-  AnsiPen penByKey(String key, {AnsiPen? fallbackPen}) {
+  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) {
     return colors[key] ?? fallbackPen ?? _fallbackPen;
   }
 

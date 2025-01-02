@@ -11,10 +11,11 @@ class ISpectifyLog extends ISpectiyData {
     super.time,
     super.pen,
     super.logLevel,
+    super.data,
   });
 
   @override
   String get textMessage {
-    return '$header$messageText$exceptionText$stackTraceText';
+    return '$messageText$exceptionText$stackTraceText';
   }
 }

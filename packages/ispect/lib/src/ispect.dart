@@ -4,15 +4,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/extensions/pretty_json.dart';
-import 'package:ispect/src/common/observers/bloc_observer.dart';
-import 'package:ispect/src/features/ispectify/logs.dart';
-import 'package:ispect/src/features/ispectify/options.dart';
+import 'package:ispect/src/features/ispect/logs.dart';
+import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/settings.dart';
-import 'package:provider/provider.dart';
 
 /// `ISpect` - This class contains the main functionality of the library.
 final class ISpect {
@@ -29,12 +25,7 @@ final class ISpect {
   static ISpectiy get iSpectify => _instance._iSpectify;
   static set iSpectify(ISpectiy iSpectify) => _instance._iSpectify = iSpectify;
 
-  static ISpectScopeModel read(BuildContext context) => Provider.of<ISpectScopeModel>(
-        context,
-        listen: false,
-      );
-
-  static ISpectScopeModel watch(BuildContext context) => Provider.of<ISpectScopeModel>(
+  static ISpectScopeModel read(BuildContext context) => ISpectScopeController.of(
         context,
       );
 
@@ -56,19 +47,19 @@ final class ISpect {
     void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
-    void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
-    void Function(
-      Bloc<dynamic, dynamic> bloc,
-      Transition<dynamic, dynamic> transition,
-    )? onBlocTransition,
-    void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
-    void Function(
-      BlocBase<dynamic> bloc,
-      Object error,
-      StackTrace stackTrace,
-    )? onBlocError,
-    void Function(BlocBase<dynamic> bloc)? onBlocCreate,
-    void Function(BlocBase<dynamic> bloc)? onBlocClose,
+    // void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
+    // void Function(
+    //   Bloc<dynamic, dynamic> bloc,
+    //   Transition<dynamic, dynamic> transition,
+    // )? onBlocTransition,
+    // void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
+    // void Function(
+    //   BlocBase<dynamic> bloc,
+    //   Object error,
+    //   StackTrace stackTrace,
+    // )? onBlocError,
+    // void Function(BlocBase<dynamic> bloc)? onBlocCreate,
+    // void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
     ISpectLogOptions options = const ISpectLogOptions(),
     List<String> filters = const [],
@@ -78,12 +69,12 @@ final class ISpect {
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
-      onBlocEvent: onBlocEvent,
-      onBlocTransition: onBlocTransition,
-      onBlocChange: onBlocChange,
-      onBlocError: onBlocError,
-      onBlocCreate: onBlocCreate,
-      onBlocClose: onBlocClose,
+      // onBlocEvent: onBlocEvent,
+      // onBlocTransition: onBlocTransition,
+      // onBlocChange: onBlocChange,
+      // onBlocError: onBlocError,
+      // onBlocCreate: onBlocCreate,
+      // onBlocClose: onBlocClose,
       onUncaughtErrors: onUncaughtErrors,
       options: options,
       filters: filters,
@@ -141,19 +132,19 @@ final class ISpect {
     void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
-    final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
-    final void Function(
-      Bloc<dynamic, dynamic> bloc,
-      Transition<dynamic, dynamic> transition,
-    )? onBlocTransition,
-    final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
-    final void Function(
-      BlocBase<dynamic> bloc,
-      Object error,
-      StackTrace stackTrace,
-    )? onBlocError,
-    final void Function(BlocBase<dynamic> bloc)? onBlocCreate,
-    final void Function(BlocBase<dynamic> bloc)? onBlocClose,
+    // final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
+    // final void Function(
+    //   Bloc<dynamic, dynamic> bloc,
+    //   Transition<dynamic, dynamic> transition,
+    // )? onBlocTransition,
+    // final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange,
+    // final void Function(
+    //   BlocBase<dynamic> bloc,
+    //   Object error,
+    //   StackTrace stackTrace,
+    // )? onBlocError,
+    // final void Function(BlocBase<dynamic> bloc)? onBlocCreate,
+    // final void Function(BlocBase<dynamic> bloc)? onBlocClose,
     void Function(List<dynamic> pair)? onUncaughtErrors,
     final ISpectLogOptions options = const ISpectLogOptions(),
     final List<String> filters = const [],
@@ -180,20 +171,20 @@ final class ISpect {
       });
     };
 
-    Bloc.observer = ISpectBlocObserver(
-      iSpectify: iSpectify,
-      settings: ISpectifyBlocSettings(
-        enabled: options.isBlocHandlingEnabled,
-        printStateFullData: false,
-      ),
-      onBlocError: onBlocError,
-      onBlocTransition: onBlocTransition,
-      onBlocEvent: onBlocEvent,
-      onBlocChange: onBlocChange,
-      onBlocCreate: onBlocCreate,
-      onBlocClose: onBlocClose,
-      filters: filters,
-    );
+    // Bloc.observer = ISpectifyBlocObserver(
+    //   iSpectify: iSpectify,
+    //   settings: ISpectifyBlocSettings(
+    //     enabled: options.isBlocHandlingEnabled,
+    //     printStateFullData: false,
+    //   ),
+    //   onBlocError: onBlocError,
+    //   onBlocTransition: onBlocTransition,
+    //   onBlocEvent: onBlocEvent,
+    //   onBlocChange: onBlocChange,
+    //   onBlocCreate: onBlocCreate,
+    //   onBlocClose: onBlocClose,
+    //   filters: filters,
+    // );
 
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);

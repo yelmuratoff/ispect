@@ -233,7 +233,7 @@ class ISpectiy {
     _handleForOutputs(data);
     if (settings.useConsoleLogs) {
       _logger.log(
-        data.textMessage,
+        '${data.header}${data.textMessage}',
         level: data.logLevel ?? LogLevel.error,
       );
     }
@@ -257,9 +257,9 @@ class ISpectiy {
     _handleForOutputs(data);
     if (settings.useConsoleLogs) {
       _logger.log(
-        data.textMessage,
+        '${data.header}${data.textMessage}',
         level: logLevel ?? data.logLevel,
-        pen: data.pen,
+        pen: data.pen ?? settings.penByKey(data.key),
       );
     }
   }

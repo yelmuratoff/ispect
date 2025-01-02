@@ -1,82 +1,66 @@
 // ignore_for_file: avoid_setters_without_getters
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/icons.dart';
 
-import 'package:provider/provider.dart';
-
 /// `ISpectScopeModel` is a model class that holds the state of the ISpect scope.
-class ISpectScopeModel with ChangeNotifier {
-  bool _isISpectEnabled = false;
-  bool _isPerformanceTrackingEnabled = false;
-  ISpectOptions _options = const ISpectOptions();
-  ISpectTheme _theme = const ISpectTheme();
+class ISpectScopeModel {
+  ISpectScopeModel({
+    this.isISpectEnabled = false,
+    this.isPerformanceTrackingEnabled = false,
+    this.options = const ISpectOptions(),
+    this.theme = const ISpectTheme(),
+    this.observer,
+  });
 
-  NavigatorObserver? _observer;
+  bool isISpectEnabled;
+  bool isPerformanceTrackingEnabled;
+  ISpectOptions options;
+  ISpectTheme theme;
 
-  bool get isISpectEnabled => _isISpectEnabled;
-
-  bool get isPerformanceTrackingEnabled => _isPerformanceTrackingEnabled;
-
-  ISpectOptions get options => _options;
-
-  ISpectTheme get theme => _theme;
-
-  NavigatorObserver? get observer => _observer;
-
-  set setObserver(NavigatorObserver? observer) {
-    _observer = observer;
-    notifyListeners();
-  }
+  NavigatorObserver? observer;
 
   void toggleISpect() {
-    _isISpectEnabled = !_isISpectEnabled;
-    notifyListeners();
+    isISpectEnabled = !isISpectEnabled;
   }
 
   set setISpect(bool value) {
-    _isISpectEnabled = value;
-    notifyListeners();
+    isISpectEnabled = value;
   }
 
   void togglePerformanceTracking() {
-    _isPerformanceTrackingEnabled = !_isPerformanceTrackingEnabled;
-    notifyListeners();
+    isPerformanceTrackingEnabled = !isPerformanceTrackingEnabled;
   }
 
   set setPerformanceTracking(bool value) {
-    _isPerformanceTrackingEnabled = value;
-    notifyListeners();
+    isPerformanceTrackingEnabled = value;
   }
 
-  void setOptions(ISpectOptions? options) {
-    if (options == null) return;
-
-    _options = options;
-    notifyListeners();
+  void setOptions(ISpectOptions? newOptions) {
+    if (newOptions != null) {
+      options = newOptions;
+    }
   }
 
-  void setTheme(ISpectTheme? theme) {
-    if (theme != null) {
-      _theme = theme.copyWith(
+  void setTheme(ISpectTheme? newTheme) {
+    if (newTheme != null) {
+      theme = newTheme.copyWith(
         logIcons: {
           ...typeIcons,
-          ...theme.logIcons,
+          ...newTheme.logIcons,
         },
       );
     } else {
-      _theme = const ISpectTheme(
+      theme = const ISpectTheme(
         logIcons: typeIcons,
       );
     }
-    notifyListeners();
   }
 }
 
 /// `ISpectScopeWrapper` is a wrapper widget that provides the `ISpectScopeModel` to its children.
-class ISpectScopeWrapper extends StatelessWidget {
+class ISpectScopeWrapper extends StatefulWidget {
   const ISpectScopeWrapper({
     required this.child,
     required this.isISpectEnabled,
@@ -84,17 +68,52 @@ class ISpectScopeWrapper extends StatelessWidget {
     this.theme,
     super.key,
   });
+
   final Widget child;
   final ISpectOptions? options;
   final ISpectTheme? theme;
   final bool isISpectEnabled;
 
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<ISpectScopeModel>(
-        create: (_) => ISpectScopeModel()
-          ..setISpect = isISpectEnabled
-          ..setOptions(options)
-          ..setTheme(theme),
-        child: child,
+  State<ISpectScopeWrapper> createState() => _ISpectScopeWrapperState();
+}
+
+class _ISpectScopeWrapperState extends State<ISpectScopeWrapper> {
+  late ISpectScopeModel model;
+
+  @override
+  void initState() {
+    super.initState();
+    model = ISpectScopeModel();
+
+    model
+      ..setISpect = widget.isISpectEnabled
+      ..setOptions(widget.options)
+      ..setTheme(widget.theme);
+  }
+
+  @override
+  Widget build(BuildContext context) => ISpectScopeController(
+        model: model,
+        child: widget.child,
       );
+}
+
+/// InheritedWidget to provide the `ISpectScopeModel` to the widget tree.
+class ISpectScopeController extends InheritedWidget {
+  const ISpectScopeController({
+    required this.model,
+    required super.child,
+  });
+
+  final ISpectScopeModel model;
+
+  static ISpectScopeModel of(BuildContext context) {
+    final inherited = context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
+    assert(inherited != null, 'No ISpectScopeModel found in context');
+    return inherited!.model;
+  }
+
+  @override
+  bool updateShouldNotify(covariant ISpectScopeController oldWidget) => oldWidget.model != model;
 }

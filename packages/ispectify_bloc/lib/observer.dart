@@ -1,44 +1,57 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/logs.dart';
-import 'package:ispectify_bloc/settings.dart';
-import 'package:meta/meta.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-/// A custom [BlocObserver] implementation that integrates with the ISpectify logging system.
+/// `BLoC` logger on `ISpectiy` base
 ///
-/// This observer provides detailed logging for Bloc lifecycle events such as
-/// event reception, state transitions, state changes, errors, creation, and closure.
+/// `iSpectify` field is the current `ISpectiy` instance.
+/// Provide your instance if your application uses `ISpectiy` as the default logger
+/// Common ISpectiy instance will be used by default
 class ISpectifyBlocObserver extends BlocObserver {
-  /// Creates an instance of [ISpectifyBlocObserver].
-  ///
-  /// - [iSpectify]: An optional instance of [ISpectiy] for logging. If not provided,
-  ///   a default [ISpectiy] instance is used.
-  /// - [settings]: Configuration settings to control the logging behavior.
   ISpectifyBlocObserver({
     ISpectiy? iSpectify,
     this.settings = const ISpectifyBlocSettings(),
+    this.onBlocEvent,
+    this.onBlocTransition,
+    this.onBlocChange,
+    this.onBlocError,
+    this.onBlocCreate,
+    this.onBlocClose,
+    this.filters = const [],
   }) {
     _iSpectify = iSpectify ?? ISpectiy();
   }
 
-  late final ISpectiy _iSpectify;
+  late ISpectiy _iSpectify;
+  final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
+  final void Function(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  )? onBlocTransition;
+  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)? onBlocChange;
+  final void Function(
+    BlocBase<dynamic> bloc,
+    Object error,
+    StackTrace stackTrace,
+  )? onBlocError;
+  final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
+  final void Function(BlocBase<dynamic> bloc)? onBlocClose;
   final ISpectifyBlocSettings settings;
+  final List<String> filters;
 
-  /// Logs when a [Bloc] receives an event.
-  ///
-  /// - [bloc]: The [Bloc] receiving the event.
-  /// - [event]: The event being received.
   @override
-  @mustCallSuper
-  void onEvent(Bloc bloc, Object? event) {
+  void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!settings.enabled || !settings.printEvents) {
+    final eventString = event.toString();
+    final isFilterContains = filters.any(eventString.contains);
+    if (!settings.enabled || !settings.printEvents || isFilterContains) {
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
     if (!accepted) {
       return;
     }
+    onBlocEvent?.call(bloc, event);
     _iSpectify.logCustom(
       BlocEventLog(
         bloc: bloc,
@@ -48,21 +61,22 @@ class ISpectifyBlocObserver extends BlocObserver {
     );
   }
 
-  /// Logs when a [Bloc] undergoes a state transition.
-  ///
-  /// - [bloc]: The [Bloc] undergoing the transition.
-  /// - [transition]: The transition details.
   @override
-  @mustCallSuper
-  void onTransition(Bloc bloc, Transition transition) {
+  void onTransition(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  ) {
     super.onTransition(bloc, transition);
-    if (!settings.enabled || !settings.printTransitions) {
+    final transitionString = transition.toString();
+    final isFilterContains = filters.any(transitionString.contains);
+    if (!settings.enabled || !settings.printTransitions || isFilterContains) {
       return;
     }
     final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
     if (!accepted) {
       return;
     }
+    onBlocTransition?.call(bloc, transition);
     _iSpectify.logCustom(
       BlocStateLog(
         bloc: bloc,
@@ -72,16 +86,15 @@ class ISpectifyBlocObserver extends BlocObserver {
     );
   }
 
-  /// Logs when a [BlocBase] state changes.
-  ///
-  /// - [bloc]: The [BlocBase] whose state has changed.
-  /// - [change]: Details of the state change.
   @override
-  void onChange(BlocBase bloc, Change change) {
+  void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!settings.enabled || !settings.printChanges) {
+    final changeString = change.toString();
+    final isFilterContains = filters.any(changeString.contains);
+    if (!settings.enabled || !settings.printChanges || isFilterContains) {
       return;
     }
+    onBlocChange?.call(bloc, change);
     _iSpectify.logCustom(
       BlocChangeLog(
         bloc: bloc,
@@ -91,43 +104,39 @@ class ISpectifyBlocObserver extends BlocObserver {
     );
   }
 
-  /// Logs errors occurring in a [BlocBase].
-  ///
-  /// - [bloc]: The [BlocBase] where the error occurred.
-  /// - [error]: The error that occurred.
-  /// - [stackTrace]: The stack trace for the error.
   @override
-  @mustCallSuper
-  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
+    final errorAsString = error.toString();
+    final isFilterContains = filters.any(errorAsString.contains);
+    if (!settings.enabled || isFilterContains) {
+      return;
+    }
+    onBlocError?.call(bloc, error, stackTrace);
     _iSpectify.error('${bloc.runtimeType}', error, stackTrace);
   }
 
-  /// Logs when a [BlocBase] is created.
-  ///
-  /// - [bloc]: The newly created [BlocBase].
   @override
-  void onCreate(BlocBase bloc) {
+  void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    if (!settings.enabled || !settings.printCreations) {
+    final blocAsString = bloc.toString();
+    final isFilterContains = filters.any(blocAsString.contains);
+    if (!settings.enabled || !settings.printCreations || isFilterContains) {
       return;
     }
-    _iSpectify.logCustom(
-      BlocCreateLog(bloc: bloc),
-    );
+    onBlocCreate?.call(bloc);
+    _iSpectify.logCustom(BlocCreateLog(bloc: bloc));
   }
 
-  /// Logs when a [BlocBase] is closed.
-  ///
-  /// - [bloc]: The [BlocBase] being closed.
   @override
-  void onClose(BlocBase bloc) {
+  void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
-    if (!settings.enabled || !settings.printClosings) {
+    final blocAsString = bloc.toString();
+    final isFilterContains = filters.any(blocAsString.contains);
+    if (!settings.enabled || !settings.printClosings || isFilterContains) {
       return;
     }
-    _iSpectify.logCustom(
-      BlocCloseLog(bloc: bloc),
-    );
+    onBlocClose?.call(bloc);
+    _iSpectify.logCustom(BlocCloseLog(bloc: bloc));
   }
 }

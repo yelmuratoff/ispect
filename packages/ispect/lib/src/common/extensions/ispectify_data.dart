@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
 extension ISpectISpectifyDataX on ISpectiyData {
@@ -45,9 +44,8 @@ extension ISpectISpectifyDataX on ISpectiyData {
             : this.message
         : '';
     var exceptionTitle = '';
-    if (exception is DioException && exception != null) {
-      exceptionTitle = (exception! as DioException).message ?? '';
-    } else if (exception is Exception) {
+
+    if (exception is Exception) {
       exceptionTitle = exception.toString();
     }
     exceptionTitle = exceptionTitle.length > 500 ? '${exceptionTitle.substring(0, 500)}...' : exceptionTitle;

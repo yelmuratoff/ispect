@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:ispectify/ispectify.dart';
 
 class ISpectiyData {
@@ -13,7 +11,7 @@ class ISpectiyData {
     this.title,
     this.pen,
     this.key,
-    this.color,
+    this.data,
   }) {
     _time = time ?? DateTime.now();
   }
@@ -25,7 +23,7 @@ class ISpectiyData {
   final LogLevel? logLevel;
   final String? title;
   final AnsiPen? pen;
-  final Color? color;
+  final Map<String, dynamic>? data;
 
   final Object? exception;
   final Error? error;
@@ -34,11 +32,11 @@ class ISpectiyData {
   DateTime get time => _time;
 
   String get textMessage {
-    return '$header$message$stackTraceText';
+    return '$message$stackTraceText';
   }
 
   String get header {
-    return '[$title] | $formattedTime\n';
+    return '[${title ?? key}] | $formattedTime\n';
   }
 
   String get stackTraceText {

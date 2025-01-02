@@ -17,12 +17,15 @@ dependencies:
 
   dio: ^5.7.0
   http: ^1.2.2
+  flutter_bloc: ^8.1.4
 
   ispectify_dio:
     path: ../../ispectify_dio
   http_interceptor: ^2.0.0
   ispectify_http:
     path: ../../ispectify_http
+  ispectify_bloc:
+    path: ../../ispectify_bloc
 
 dev_dependencies:
   flutter_test:

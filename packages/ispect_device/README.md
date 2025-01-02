@@ -21,4 +21,24 @@
             title: 'App Info',
             icon: Icons.info_outline_rounded,
           ),
+            ISpectifyActionItem(
+            onTap: (_) async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (_) => AppDataPage(
+                    iSpectify: widget.iSpectify,
+                  ),
+                  settings: RouteSettings(
+                    name: 'AppDataPage',
+                    arguments: {
+                      'iSpectify': widget.iSpectify,
+                    },
+                  ),
+                ),
+              );
+            },
+            title: context.ispectL10n.viewAndManageData,
+            icon: Icons.data_usage_sharp,
+          ),
 ```

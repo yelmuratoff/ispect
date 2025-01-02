@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/icons.dart';
 
 class ISpectTheme {
   const ISpectTheme({
@@ -54,6 +55,11 @@ class ISpectTheme {
 
     return mergedColors;
   }
+
+  Map<String, IconData> icons(BuildContext context) => {
+        ...logIcons,
+        ...typeIcons,
+      };
 
   static const lightTypeColors = {
     /// Base logs section

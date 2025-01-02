@@ -175,7 +175,7 @@ class InspectorState extends State<Inspector> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.observer != null) {
-        ISpect.read(context).setObserver = widget.observer;
+        ISpect.read(context).observer = widget.observer;
       }
     });
   }

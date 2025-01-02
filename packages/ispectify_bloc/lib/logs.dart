@@ -7,9 +7,12 @@ class BlocEventLog extends ISpectifyLog {
     required this.bloc,
     required this.event,
     required this.settings,
-  }) : super(settings.printEventFullData
-            ? '${bloc.runtimeType} receive event:\n$event'
-            : '${bloc.runtimeType} receive event: ${event.runtimeType}');
+  }) : super(
+          settings.printEventFullData
+              ? '${bloc.runtimeType} receive event:\n$event'
+              : '${bloc.runtimeType} receive event: ${event.runtimeType}',
+          title: getKey,
+        );
 
   final Bloc bloc;
   final Object? event;
@@ -23,8 +26,8 @@ class BlocEventLog extends ISpectifyLog {
   @override
   String get textMessage {
     final sb = StringBuffer();
-    sb.write(header);
-    sb.write('\n$message');
+    // sb.write(header);
+    sb.write(message);
     return sb.toString();
   }
 }
@@ -34,7 +37,10 @@ class BlocStateLog extends ISpectifyLog {
     required this.bloc,
     required this.transition,
     required this.settings,
-  }) : super('${bloc.runtimeType} with event ${transition.event.runtimeType}');
+  }) : super(
+          '${bloc.runtimeType} with event ${transition.event.runtimeType}',
+          title: getKey,
+        );
 
   final Bloc bloc;
   final Transition transition;
@@ -48,8 +54,8 @@ class BlocStateLog extends ISpectifyLog {
   @override
   String get textMessage {
     final sb = StringBuffer();
-    sb.write(header);
-    sb.write('\n$message');
+    // sb.write(header);
+    sb.write(message);
     sb.write(
         '\nCURRENT state: ${settings.printStateFullData ? '\n${transition.currentState}' : transition.currentState.runtimeType}');
     sb.write(
@@ -63,7 +69,10 @@ class BlocChangeLog extends ISpectifyLog {
     required this.bloc,
     required this.change,
     required this.settings,
-  }) : super('${bloc.runtimeType} changed');
+  }) : super(
+          '${bloc.runtimeType} changed',
+          title: getKey,
+        );
 
   final BlocBase bloc;
   final Change change;
@@ -77,8 +86,8 @@ class BlocChangeLog extends ISpectifyLog {
   @override
   String get textMessage {
     final sb = StringBuffer();
-    sb.write(header);
-    sb.write('\n$message');
+    // sb.write(header);
+    sb.write(message);
     sb.write(
         '\nCURRENT state: ${settings.printStateFullData ? '\n${change.currentState}' : change.currentState.runtimeType}');
     sb.write('\nNEXT state: ${settings.printStateFullData ? '\n${change.nextState}' : change.nextState.runtimeType}');
@@ -89,7 +98,10 @@ class BlocChangeLog extends ISpectifyLog {
 class BlocCreateLog extends ISpectifyLog {
   BlocCreateLog({
     required this.bloc,
-  }) : super('${bloc.runtimeType} created');
+  }) : super(
+          '${bloc.runtimeType} created',
+          title: getKey,
+        );
 
   final BlocBase bloc;
 
@@ -101,8 +113,8 @@ class BlocCreateLog extends ISpectifyLog {
   @override
   String get textMessage {
     final sb = StringBuffer();
-    sb.write(header);
-    sb.write('\n$message');
+    // sb.write(header);
+    sb.write(message);
     return sb.toString();
   }
 }
@@ -110,7 +122,10 @@ class BlocCreateLog extends ISpectifyLog {
 class BlocCloseLog extends ISpectifyLog {
   BlocCloseLog({
     required this.bloc,
-  }) : super('${bloc.runtimeType} closed');
+  }) : super(
+          '${bloc.runtimeType} closed',
+          title: getKey,
+        );
 
   final BlocBase bloc;
 
@@ -122,8 +137,8 @@ class BlocCloseLog extends ISpectifyLog {
   @override
   String get textMessage {
     final sb = StringBuffer();
-    sb.write(header);
-    sb.write('\n$message');
+    // sb.write(header);
+    sb.write(message);
     return sb.toString();
   }
 }

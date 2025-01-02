@@ -1,7 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
+import 'package:ispect_example/src/cubit/test_cubit.dart';
+import 'package:ispect_example/src/theme_manager.dart';
+import 'package:ispectify_bloc/observer.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
@@ -24,10 +28,15 @@ final dummyDio = Dio(
 
 void main() {
   final iSpectify = ISpectifyFlutter.init();
+  Bloc.observer = ISpectifyBlocObserver(
+    iSpectify: iSpectify,
+  );
 
   ISpect.run(
     () => runApp(
-      App(iSpectify: iSpectify),
+      ThemeProvider(
+        child: App(iSpectify: iSpectify),
+      ),
     ),
     iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
@@ -36,6 +45,7 @@ void main() {
     //   'Handler: "onTap"',
     //   'This exception was thrown because',
     // ],
+    onInit: () {},
     onInitialized: () {
       client.interceptors.add(
         ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
@@ -67,6 +77,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     const locale = Locale('en');
     final observer = ISpectNavigatorObserver();
+    final themeMode = ThemeProvider.themeMode(context);
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -155,7 +166,7 @@ class App extends StatelessWidget {
             brightness: Brightness.dark,
           ),
         ),
-        // themeMode: themeMode,
+        themeMode: themeMode,
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
@@ -182,9 +193,15 @@ class App extends StatelessWidget {
   }
 }
 
-class _Home extends StatelessWidget {
+class _Home extends StatefulWidget {
   const _Home();
 
+  @override
+  State<_Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<_Home> {
+  final _testBloc = TestCubit();
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
@@ -198,6 +215,19 @@ class _Home extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [
+              BlocBuilder<TestCubit, TestState>(
+                bloc: _testBloc,
+                builder: (context, state) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      _testBloc.load(
+                        data: 'Test data',
+                      );
+                    },
+                    child: const Text('Test Cubit'),
+                  );
+                },
+              ),
               ElevatedButton(
                 onPressed: () async {
                   await client.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
@@ -212,7 +242,7 @@ class _Home extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // ref.read(themeProvider.notifier).toggleTheme();
+                  ThemeProvider.toggleTheme(context);
                 },
                 child: const Text('Toggle theme'),
               ),
@@ -293,7 +323,7 @@ class _Home extends StatelessWidget {
                   // Create the multipart request
                   var request = http_interceptor.MultipartRequest(
                     'POST',
-                    Uri.parse('https://jsonplaceholder.typicode.com/api/v1/files/upload'),
+                    Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
                   );
 
                   // Add the file to the request

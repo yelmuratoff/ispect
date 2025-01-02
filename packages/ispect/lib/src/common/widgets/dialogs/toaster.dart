@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 final class ISpectToaster {
   static Future<void> hideToast(BuildContext context) async {
