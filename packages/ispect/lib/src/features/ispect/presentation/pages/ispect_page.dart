@@ -8,7 +8,7 @@ import 'package:ispect/src/features/ispect/presentation/pages/body_view.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// UI view for output of all ISpectiy logs and errors
+/// UI view for output of all ISpectify logs and errors
 class ISpectPage extends StatefulWidget {
   const ISpectPage({
     required this.options,
@@ -51,7 +51,7 @@ class _View extends StatelessWidget {
     required this.options,
   });
 
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
   final String? appBarTitle;
   final ISpectOptions options;
 

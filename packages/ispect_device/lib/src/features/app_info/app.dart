@@ -14,7 +14,7 @@ part 'widgets/package_info_body.dart';
 
 class AppInfoPage extends StatefulWidget {
   const AppInfoPage({required this.iSpectify, super.key});
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
 
   @override
   State<AppInfoPage> createState() => _AppInfoPageState();

@@ -36,15 +36,13 @@ enum ISpectifyLogType {
 }
 
 extension ISpectifyLogTypeExt on ISpectifyLogType {
-  LogLevel get level {
-    return switch (this) {
-      ISpectifyLogType.error => LogLevel.error,
-      ISpectifyLogType.critical => LogLevel.critical,
-      ISpectifyLogType.info => LogLevel.info,
-      ISpectifyLogType.debug => LogLevel.debug,
-      ISpectifyLogType.verbose => LogLevel.verbose,
-      ISpectifyLogType.warning => LogLevel.warning,
-      _ => LogLevel.debug,
-    };
-  }
+  LogLevel get level => switch (this) {
+        ISpectifyLogType.error => LogLevel.error,
+        ISpectifyLogType.critical => LogLevel.critical,
+        ISpectifyLogType.info => LogLevel.info,
+        ISpectifyLogType.debug => LogLevel.debug,
+        ISpectifyLogType.verbose => LogLevel.verbose,
+        ISpectifyLogType.warning => LogLevel.warning,
+        _ => LogLevel.debug,
+      };
 }

@@ -13,7 +13,7 @@ class ISpectifyBuilder extends StatelessWidget {
     super.key,
   });
 
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
   final ISpectifyWidgetBuilder builder;
 
   @override

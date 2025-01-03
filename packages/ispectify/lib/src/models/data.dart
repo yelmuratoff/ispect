@@ -31,13 +31,9 @@ class ISpectiyData {
 
   DateTime get time => _time;
 
-  String get textMessage {
-    return '$message$stackTraceText';
-  }
+  String get textMessage => '$message$stackTraceText';
 
-  String get header {
-    return '[${title ?? key}] | $formattedTime\n';
-  }
+  String get header => '[${title ?? key}] | $formattedTime\n';
 
   String get stackTraceText {
     if (stackTrace == null || stackTrace == StackTrace.empty) {

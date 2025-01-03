@@ -3,26 +3,26 @@ import 'package:ispectify/ispectify.dart';
 import 'dio_logs.dart';
 import 'ispectify_dio.dart';
 
-/// [Dio] http client logger on [ISpectiy] base
+/// [Dio] http client logger on [ISpectify] base
 ///
-/// [iSpectify] filed is current [ISpectiy] instance.
-/// Provide your instance if your application used [ISpectiy] as default logger
-/// Common ISpectiy instance will be used by default
+/// [iSpectify] filed is current [ISpectify] instance.
+/// Provide your instance if your application used [ISpectify] as default logger
+/// Common ISpectify instance will be used by default
 class ISpectifyDioLogger extends Interceptor {
   ISpectifyDioLogger({
-    ISpectiy? iSpectify,
+    ISpectify? iSpectify,
     this.settings = const ISpectifyDioLoggerSettings(),
     this.addonId,
   }) {
-    _iSpectify = iSpectify ?? ISpectiy();
+    _iSpectify = iSpectify ?? ISpectify();
   }
 
-  late ISpectiy _iSpectify;
+  late ISpectify _iSpectify;
 
   /// [ISpectifyDioLogger] settings and customization
   ISpectifyDioLoggerSettings settings;
 
-  /// ISpectiy addon functionality
+  /// ISpectify addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
 

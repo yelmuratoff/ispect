@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 Future<void> main() async {
-  final iSpectify = ISpectiy(
+  final iSpectify = ISpectify(
     options: ISpectifyOptions(
       colors: {
         ISpectifyLogType.info.key: AnsiPen()..magenta(),
@@ -12,10 +12,9 @@ Future<void> main() async {
         CustomLog.logKey: 'Custom',
       },
     ),
-  );
-
-  iSpectify.error('The restaurant is closed ❌');
-  iSpectify.info('Ordering from other restaurant...');
+  )
+    ..error('The restaurant is closed ❌')
+    ..info('Ordering from other restaurant...');
 
   try {
     throw Exception('Something went wrong');

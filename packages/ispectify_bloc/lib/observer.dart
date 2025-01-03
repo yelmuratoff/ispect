@@ -2,14 +2,14 @@ import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-/// `BLoC` logger on `ISpectiy` base
+/// `BLoC` logger on `ISpectify` base
 ///
-/// `iSpectify` field is the current `ISpectiy` instance.
-/// Provide your instance if your application uses `ISpectiy` as the default logger
-/// Common ISpectiy instance will be used by default
+/// `iSpectify` field is the current `ISpectify` instance.
+/// Provide your instance if your application uses `ISpectify` as the default logger
+/// Common ISpectify instance will be used by default
 class ISpectifyBlocObserver extends BlocObserver {
   ISpectifyBlocObserver({
-    ISpectiy? iSpectify,
+    ISpectify? iSpectify,
     this.settings = const ISpectifyBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
@@ -19,10 +19,10 @@ class ISpectifyBlocObserver extends BlocObserver {
     this.onBlocClose,
     this.filters = const [],
   }) {
-    _iSpectify = iSpectify ?? ISpectiy();
+    _iSpectify = iSpectify ?? ISpectify();
   }
 
-  late ISpectiy _iSpectify;
+  late ISpectify _iSpectify;
   final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
   final void Function(
     Bloc<dynamic, dynamic> bloc,

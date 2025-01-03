@@ -27,8 +27,8 @@ class ISpectPageView extends StatefulWidget {
     this.appBarLeading,
   });
 
-  /// ISpectiy implementation
-  final ISpectiy iSpectify;
+  /// ISpectify implementation
+  final ISpectify iSpectify;
 
   /// Screen [AppBar] title
   final String? appBarTitle;

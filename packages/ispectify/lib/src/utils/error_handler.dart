@@ -17,7 +17,6 @@ class ISpectifyErrorHandler {
     } else if (exception is Error) {
       return ISpectifyError(
         exception,
-        key: ISpectifyLogType.error.key,
         title: settings.titleByKey(
           ISpectifyLogType.error.key,
         ),
@@ -27,7 +26,6 @@ class ISpectifyErrorHandler {
     } else if (exception is Exception) {
       return ISpectifyException(
         exception,
-        key: ISpectifyLogType.exception.key,
         title: settings.titleByKey(
           ISpectifyLogType.exception.key,
         ),

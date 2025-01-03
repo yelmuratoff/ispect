@@ -28,9 +28,6 @@ final dummyDio = Dio(
 
 void main() {
   final iSpectify = ISpectifyFlutter.init();
-  Bloc.observer = ISpectifyBlocObserver(
-    iSpectify: iSpectify,
-  );
 
   ISpect.run(
     () => runApp(
@@ -45,8 +42,10 @@ void main() {
     //   'Handler: "onTap"',
     //   'This exception was thrown because',
     // ],
-    onInit: () {},
-    onInitialized: () {
+    onInit: (iSpectify) {
+      Bloc.observer = ISpectifyBlocObserver(
+        iSpectify: iSpectify,
+      );
       client.interceptors.add(
         ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
       );
@@ -66,11 +65,12 @@ void main() {
         ),
       );
     },
+    onInitialized: () {},
   );
 }
 
 class App extends StatelessWidget {
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
   const App({super.key, required this.iSpectify});
 
   @override

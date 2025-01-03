@@ -3,14 +3,14 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:ispectify/ispectify.dart';
 
-extension ISpectifyFlutter on ISpectiy {
-  static ISpectiy init({
+extension ISpectifyFlutter on ISpectify {
+  static ISpectify init({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
     ISpectifyOptions? options,
     ISpectifyFilter? filter,
   }) =>
-      ISpectiy(
+      ISpectify(
         logger: (logger ?? ISpectifyLogger()).copyWith(
           output: _defaultFlutterOutput,
         ),
@@ -26,7 +26,7 @@ extension ISpectifyFlutter on ISpectiy {
       return;
     }
     if ([TargetPlatform.iOS, TargetPlatform.macOS].contains(defaultTargetPlatform)) {
-      log(message, name: 'ISpectiy');
+      log(message, name: 'ISpectify');
       return;
     }
     debugPrint(message);

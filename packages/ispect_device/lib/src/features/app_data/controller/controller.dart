@@ -6,7 +6,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> loadFilesList({
     required BuildContext context,
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
   }) async {
     try {
       final f = await AppFileService.instance.getFiles();
@@ -32,7 +32,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFile({
     required BuildContext context,
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
     required int index,
   }) async {
     try {
@@ -56,7 +56,7 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFiles({
     required BuildContext context,
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
   }) async {
     try {
       for (final file in _files) {

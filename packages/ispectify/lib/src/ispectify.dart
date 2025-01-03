@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
 
-class ISpectiy {
-  ISpectiy({
+class ISpectify {
+  ISpectify({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
     ISpectifyOptions? options,
@@ -70,19 +70,21 @@ class ISpectiy {
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
     _errorHandler = errorHandler ?? ISpectifyErrorHandler(this.settings);
-    _history = DefaultISpectifyHistory(this.settings, history: _history.history);
+    _history =
+        DefaultISpectifyHistory(this.settings, history: _history.history);
   }
 
   final _iSpectifyStreamController = StreamController<ISpectiyData>.broadcast();
 
-  Stream<ISpectiyData> get stream => _iSpectifyStreamController.stream.asBroadcastStream();
+  Stream<ISpectiyData> get stream =>
+      _iSpectifyStreamController.stream.asBroadcastStream();
 
   List<ISpectiyData> get history => _history.history;
 
   void handle(
     Object exception, [
     StackTrace? stackTrace,
-    dynamic msg,
+    Object? msg,
   ]) {
     final data = _errorHandler.handle(exception, stackTrace, msg?.toString());
     if (data is ISpectifyError) {
@@ -101,7 +103,7 @@ class ISpectiy {
   }
 
   void log(
-    dynamic message, {
+    Object? message, {
     LogLevel logLevel = LogLevel.debug,
     Object? exception,
     StackTrace? stackTrace,
@@ -119,7 +121,7 @@ class ISpectiy {
   void logCustom(ISpectifyLog log) => _handleLogData(log);
 
   void critical(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {
@@ -132,7 +134,7 @@ class ISpectiy {
   }
 
   void debug(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {
@@ -144,7 +146,7 @@ class ISpectiy {
   }
 
   void error(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {
@@ -157,7 +159,7 @@ class ISpectiy {
   }
 
   void info(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {
@@ -170,7 +172,7 @@ class ISpectiy {
   }
 
   void verbose(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {
@@ -183,7 +185,7 @@ class ISpectiy {
   }
 
   void warning(
-    dynamic msg, [
+    Object? msg, [
     Object? exception,
     StackTrace? stackTrace,
   ]) {

@@ -1,9 +1,0 @@
-{
-    "git.enabled": true,
-    "dart.previewLsp": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": true,
-        "source.organizeImports": true,
-    },
-    "editor.formatOnSave": true,
-}

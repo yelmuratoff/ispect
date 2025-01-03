@@ -42,14 +42,13 @@ class ISpectifyLoggerSettings {
     String? lineSymbol,
     int? maxLineWidth,
     bool? enableColors,
-  }) {
-    return ISpectifyLoggerSettings(
-      colors: colors ?? this.colors,
-      defaultTitle: defaultTitle ?? this.defaultTitle,
-      level: level ?? this.level,
-      lineSymbol: lineSymbol ?? this.lineSymbol,
-      maxLineWidth: maxLineWidth ?? this.maxLineWidth,
-      enableColors: enableColors ?? this.enableColors,
-    );
-  }
+  }) =>
+      ISpectifyLoggerSettings(
+        colors: colors ?? this.colors,
+        defaultTitle: defaultTitle ?? this.defaultTitle,
+        level: level ?? this.level,
+        lineSymbol: lineSymbol ?? this.lineSymbol,
+        maxLineWidth: maxLineWidth ?? this.maxLineWidth,
+        enableColors: enableColors ?? this.enableColors,
+      );
 }

@@ -19,7 +19,7 @@ void main() {
 }
 
 class App extends StatefulWidget {
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
   const App({super.key, required this.iSpectify});
 
   @override

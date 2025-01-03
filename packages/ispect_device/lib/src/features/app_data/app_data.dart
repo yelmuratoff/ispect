@@ -11,7 +11,7 @@ part 'controller/controller.dart';
 
 class AppDataPage extends StatefulWidget {
   const AppDataPage({required this.iSpectify, super.key});
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
 
   @override
   State<AppDataPage> createState() => _AppDataPageState();

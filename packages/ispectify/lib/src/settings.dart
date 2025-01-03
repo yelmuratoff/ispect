@@ -82,13 +82,10 @@ class ISpectifyOptions {
 
   final Map<String, AnsiPen> colors = _defaultColors;
 
-  String titleByKey(String key) {
-    return titles[key] ?? key;
-  }
+  String titleByKey(String key) => titles[key] ?? key;
 
-  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) {
-    return colors[key] ?? fallbackPen ?? _fallbackPen;
-  }
+  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) =>
+      colors[key] ?? fallbackPen ?? _fallbackPen;
 
   ISpectifyOptions copyWith({
     bool? enabled,
@@ -97,14 +94,13 @@ class ISpectifyOptions {
     int? maxHistoryItems,
     Map<String, String>? titles,
     Map<String, AnsiPen>? colors,
-  }) {
-    return ISpectifyOptions(
-      useHistory: useHistory ?? _useHistory,
-      useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
-      maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
-      enabled: enabled ?? this.enabled,
-      titles: titles ?? this.titles,
-      colors: colors ?? this.colors,
-    );
-  }
+  }) =>
+      ISpectifyOptions(
+        useHistory: useHistory ?? _useHistory,
+        useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
+        maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
+        enabled: enabled ?? this.enabled,
+        titles: titles ?? this.titles,
+        colors: colors ?? this.colors,
+      );
 }

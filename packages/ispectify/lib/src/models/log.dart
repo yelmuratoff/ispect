@@ -15,7 +15,5 @@ class ISpectifyLog extends ISpectiyData {
   });
 
   @override
-  String get textMessage {
-    return '$messageText$exceptionText$stackTraceText';
-  }
+  String get textMessage => '$messageText$exceptionText$stackTraceText';
 }

@@ -16,14 +16,14 @@ final class ISpect {
   // ignore: prefer_const_constructor_declarations
   ISpect._();
 
-  late final ISpectiy _iSpectify;
+  late final ISpectify _iSpectify;
 
   static final ISpect _instance = ISpect._();
 
   static ISpect get instance => _instance;
 
-  static ISpectiy get iSpectify => _instance._iSpectify;
-  static set iSpectify(ISpectiy iSpectify) => _instance._iSpectify = iSpectify;
+  static ISpectify get iSpectify => _instance._iSpectify;
+  static set iSpectify(ISpectify iSpectify) => _instance._iSpectify = iSpectify;
 
   static ISpectScopeModel read(BuildContext context) => ISpectScopeController.of(
         context,
@@ -33,8 +33,8 @@ final class ISpect {
   /// It initializes the handling of the app.
   static void run<T>(
     T Function() callback, {
-    required ISpectiy iSpectify,
-    VoidCallback? onInit,
+    required ISpectify iSpectify,
+    void Function(ISpectify iSpectify)? onInit,
     VoidCallback? onInitialized,
     void Function(Object error, StackTrace stackTrace)? onZonedError,
 
@@ -79,7 +79,7 @@ final class ISpect {
       options: options,
       filters: filters,
     );
-    onInit?.call();
+    onInit?.call(iSpectify);
     runZonedGuarded(
       () {
         callback();
@@ -128,7 +128,7 @@ final class ISpect {
   /// Filters works only for `BLoC` and Excetions: `FlutterError`, `PlatformDispatcher`, `UncaughtErrors`.
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
     void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
     void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,

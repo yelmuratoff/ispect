@@ -5,9 +5,7 @@ class ISpectifyException extends ISpectiyData {
     Exception exception, {
     String? message,
     super.stackTrace,
-    String? key,
     super.title,
-    LogLevel? logLevel,
   }) : super(
           message,
           exception: exception,
@@ -16,7 +14,5 @@ class ISpectifyException extends ISpectiyData {
         );
 
   @override
-  String get textMessage {
-    return '$messageText$exceptionText$stackTraceText';
-  }
+  String get textMessage => '$messageText$exceptionText$stackTraceText';
 }

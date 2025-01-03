@@ -4,11 +4,11 @@ import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
 class ISpectifyHttpLogger extends InterceptorContract {
-  ISpectifyHttpLogger({ISpectiy? iSpectify}) {
-    _iSpectify = iSpectify ?? ISpectiy();
+  ISpectifyHttpLogger({ISpectify? iSpectify}) {
+    _iSpectify = iSpectify ?? ISpectify();
   }
 
-  late ISpectiy _iSpectify;
+  late ISpectify _iSpectify;
 
   @override
   Future<BaseRequest> interceptRequest({

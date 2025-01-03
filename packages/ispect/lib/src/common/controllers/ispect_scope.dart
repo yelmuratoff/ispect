@@ -88,11 +88,12 @@ class _ISpectScopeWrapperState extends State<ISpectScopeWrapper> {
   @override
   void initState() {
     super.initState();
-    model = ISpectScopeModel(
-      isISpectEnabled: widget.isISpectEnabled,
-      options: widget.options ?? const ISpectOptions(),
-      theme: widget.theme ?? const ISpectTheme(),
-    );
+    model = ISpectScopeModel();
+
+    model
+      ..isISpectEnabled = widget.isISpectEnabled
+      ..options = widget.options ?? model.options
+      ..theme = widget.theme ?? model.theme;
   }
 
   @override

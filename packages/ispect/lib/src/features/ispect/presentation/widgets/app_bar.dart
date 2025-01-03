@@ -28,7 +28,7 @@ class ISpectAppBar extends StatelessWidget {
   final String? title;
   final Widget? leading;
 
-  final ISpectiy iSpectify;
+  final ISpectify iSpectify;
 
   final GroupButtonController titlesController;
   final ISpectifyViewController controller;

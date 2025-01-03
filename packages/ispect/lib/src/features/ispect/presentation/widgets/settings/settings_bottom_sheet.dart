@@ -16,8 +16,8 @@ class ISpectifySettingsBottomSheets extends StatefulWidget {
     super.key,
   });
 
-  /// ISpectiy implementation
-  final ValueNotifier<ISpectiy> iSpectify;
+  /// ISpectify implementation
+  final ValueNotifier<ISpectify> iSpectify;
 
   /// Options for `ISpect`
   final ISpectOptions options;

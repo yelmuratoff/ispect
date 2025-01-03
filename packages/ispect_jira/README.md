@@ -6,7 +6,7 @@
 </p>
 </div>
 
-<h2 align="center"> A package combining Inspector, ISpectiy, and more from pub.dev for efficient project implementation. 🚀 </h2>
+<h2 align="center"> A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation. 🚀 </h2>
 
 <p align="center">
 This package is not meant to be a groundbreaking innovation but rather a curated collection of high-quality tools from pub.dev, tailored for my future projects. I've decided to share it with the community in hopes it might be of use to others. It combines time-tested utilities and my personal enhancements aimed at improving project efficiency and adaptability.
@@ -48,7 +48,7 @@ ISpect can be extended using other parts of this package <br>
 
 - ✅ Draggable button for route to ISpect page, manage Inspector tools
 - ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
-- ✅ ISpectiy logger implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
+- ✅ ISpectify logger implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
 - ✅ You can customize more options during initialization of ISpectISpectify like BLoC, Dispatcher error and etc.
 - ✅ Updated ISpectISpectify page: added more options.
    - Detailed `HTTP` logs: `request`, `response`, `error`
@@ -121,7 +121,7 @@ import 'package:ispect_jira/ispect_jira.dart';
 
 ### Instructions for use:
 
-1. Wrap `runApp` with `ISpect.run` method and pass `ISpectiy` instance to it.
+1. Wrap `runApp` with `ISpect.run` method and pass `ISpectify` instance to it.
 2. Initialize `ISpectJiraClient` to `MaterialApp` and pass the necessary parameters.
 For example, from local storage.
 ```dart

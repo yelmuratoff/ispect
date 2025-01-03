@@ -13,7 +13,7 @@ class AppInfoController extends ChangeNotifier {
 
   Future<void> loadAll({
     required BuildContext context,
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
   }) async {
     try {
       await _loadPackageInfo(
@@ -39,7 +39,7 @@ class AppInfoController extends ChangeNotifier {
 
   Future<void> _loadPackageInfo({
     required BuildContext context,
-    required ISpectiy iSpectify,
+    required ISpectify iSpectify,
   }) async {
     try {
       _packageInfo = await PackageInfo.fromPlatform();

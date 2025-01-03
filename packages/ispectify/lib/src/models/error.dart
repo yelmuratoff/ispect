@@ -5,9 +5,7 @@ class ISpectifyError extends ISpectiyData {
     Error error, {
     String? message,
     super.stackTrace,
-    String? key,
     super.title,
-    LogLevel? logLevel,
   }) : super(
           message,
           error: error,
@@ -16,7 +14,5 @@ class ISpectifyError extends ISpectiyData {
         );
 
   @override
-  String get textMessage {
-    return '$messageText$errorText$stackTraceText';
-  }
+  String get textMessage => '$messageText$errorText$stackTraceText';
 }

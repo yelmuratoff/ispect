@@ -33,7 +33,8 @@ class DefaultISpectifyFilter implements ISpectifyFilter {
       final fullMsg = item.textMessage;
       final fullUpperMsg = fullMsg.toUpperCase();
       final fullLowerMsg = fullMsg.toLowerCase();
-      final textContain = fullUpperMsg.contains(searchQuery!) || fullLowerMsg.contains(searchQuery!);
+      final textContain = fullUpperMsg.contains(searchQuery!) ||
+          fullLowerMsg.contains(searchQuery!);
       match = match || textContain;
     }
 
@@ -58,11 +59,10 @@ class DefaultISpectifyFilter implements ISpectifyFilter {
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
-  }) {
-    return DefaultISpectifyFilter(
-      titles: titles ?? this.titles,
-      types: types ?? this.types,
-      searchQuery: searchQuery ?? this.searchQuery,
-    );
-  }
+  }) =>
+      DefaultISpectifyFilter(
+        titles: titles ?? this.titles,
+        types: types ?? this.types,
+        searchQuery: searchQuery ?? this.searchQuery,
+      );
 }
