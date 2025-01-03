@@ -28,7 +28,7 @@ dependencies:
   share_plus: ^10.0.1
 
   # UI
-  draggable_panel: ^0.0.7
+  draggable_panel: ^0.0.8
 
 dev_dependencies:
   flutter_test:

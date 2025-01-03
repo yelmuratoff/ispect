@@ -476,7 +476,6 @@ class InspectorState extends State<Inspector> {
               );
             },
           ),
-        // AssistiveTouch(),
         if (_isPanelVisible)
           AnimatedBuilder(
             animation: Listenable.merge([
@@ -580,14 +579,14 @@ class InspectorState extends State<Inspector> {
       }
     } else {
       if (widget.observer?.navigator == null) {
-        _controller.setInLoggerPage(true);
+        _controller.setInLoggerPage(inLoggerPage: true);
         await Navigator.of(context).push(iSpectPage).then((_) {
-          _controller.setInLoggerPage(false);
+          _controller.setInLoggerPage(inLoggerPage: false);
         });
       } else {
-        _controller.setInLoggerPage(true);
+        _controller.setInLoggerPage(inLoggerPage: true);
         await widget.observer?.navigator?.push(iSpectPage).then((_) {
-          _controller.setInLoggerPage(false);
+          _controller.setInLoggerPage(inLoggerPage: false);
         });
       }
     }
