@@ -6,25 +6,28 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectifyDioLoggerSettings', () {
     test('copyWith should create a new instance with the provided values', () {
-      final originalSettings = ISpectifyDioLoggerSettings();
+      const originalSettings = ISpectifyDioLoggerSettings();
       final updatedSettings = originalSettings.copyWith(
         printResponseData: false,
         printRequestHeaders: true,
         printErrorHeaders: false,
         requestPen: AnsiPen()..yellow(),
-        responseFilter: null,
       );
 
       expect(updatedSettings.printResponseData, equals(false));
       expect(updatedSettings.printRequestHeaders, equals(true));
       expect(updatedSettings.printErrorHeaders, equals(false));
-      expect(updatedSettings.requestPen, isNot(same(originalSettings.requestPen)));
+      expect(
+        updatedSettings.requestPen,
+        isNot(same(originalSettings.requestPen)),
+      );
       expect(updatedSettings.responseFilter, isNull);
     });
 
     test('requestFilter should return true for allowed paths', () {
       final settings = ISpectifyDioLoggerSettings(
-          requestFilter: (RequestOptions requestOptions) => requestOptions.path == '/allowed');
+        requestFilter: (requestOptions) => requestOptions.path == '/allowed',
+      );
       final allowedRequestOptions = RequestOptions(path: '/allowed', method: 'GET');
       final disallowedRequestOptions = RequestOptions(path: '/disallowed', method: 'GET');
 
@@ -33,21 +36,34 @@ void main() {
     });
 
     test('responseFilter should return true for successful responses', () {
-      final settings = ISpectifyDioLoggerSettings(responseFilter: (Response response) => response.statusCode == 200);
-      final successfulResponse = Response(requestOptions: RequestOptions(path: '/test'), statusCode: 200);
-      final unsuccessfulResponse = Response(requestOptions: RequestOptions(path: '/test'), statusCode: 404);
+      final settings = ISpectifyDioLoggerSettings(
+        responseFilter: (response) => response.statusCode == 200,
+      );
+      final successfulResponse = Response<dynamic>(
+        requestOptions: RequestOptions(path: '/test'),
+        statusCode: 200,
+      );
+      final unsuccessfulResponse = Response<dynamic>(
+        requestOptions: RequestOptions(path: '/test'),
+        statusCode: 404,
+      );
 
       expect(settings.responseFilter!(successfulResponse), equals(true));
       expect(settings.responseFilter!(unsuccessfulResponse), equals(false));
     });
 
     test('errorFilter should return true for cancelled responses', () {
-      final settings =
-          ISpectifyDioLoggerSettings(errorFilter: (DioException err) => err.type == DioExceptionType.cancel);
-      final cancelledResponse =
-          DioException(requestOptions: RequestOptions(path: '/test'), type: DioExceptionType.cancel);
-      final timeoutResponse =
-          DioException(requestOptions: RequestOptions(path: '/test'), type: DioExceptionType.sendTimeout);
+      final settings = ISpectifyDioLoggerSettings(
+        errorFilter: (err) => err.type == DioExceptionType.cancel,
+      );
+      final cancelledResponse = DioException(
+        requestOptions: RequestOptions(path: '/test'),
+        type: DioExceptionType.cancel,
+      );
+      final timeoutResponse = DioException(
+        requestOptions: RequestOptions(path: '/test'),
+        type: DioExceptionType.sendTimeout,
+      );
 
       expect(settings.errorFilter!(cancelledResponse), equals(true));
       expect(settings.errorFilter!(timeoutResponse), equals(false));
@@ -55,13 +71,7 @@ void main() {
 
     test('copyWith should create a new instance with updated values for all fields', () {
       final originalSettings = ISpectifyDioLoggerSettings(
-        printResponseData: true,
-        printResponseHeaders: false,
-        printResponseMessage: true,
-        printRequestData: true,
-        printRequestHeaders: false,
         printErrorHeaders: false,
-        printErrorData: true,
         requestPen: AnsiPen()..green(),
         responsePen: AnsiPen()..cyan(),
         errorPen: AnsiPen()..red(),

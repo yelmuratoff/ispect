@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
-import 'ispectify_dio.dart';
+import 'package:ispectify_dio/dio_logger_settings.dart';
 
 const _encoder = JsonEncoder.withIndent('  ');
 
@@ -133,7 +133,7 @@ class DioResponseLog extends ISpectifyLog {
 
 class DioErrorLog extends ISpectifyLog {
   DioErrorLog(
-    super.title, {
+    super.message, {
     required this.method,
     required this.url,
     required this.path,

@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+migrate_working_dir/
 
 # IntelliJ related
 *.iml
@@ -25,7 +26,16 @@
 /pubspec.lock
 **/doc/api/
 .dart_tool/
-.packages
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+
+.env
+.DS_Store
+
+# Code generation
+**/*.g.dart
+**/*.gr.dart
+**/*.gen.dart
+**/*.freezed.dart
+**/*.select.dart

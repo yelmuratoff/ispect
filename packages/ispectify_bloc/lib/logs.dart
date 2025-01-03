@@ -14,7 +14,7 @@ class BlocEventLog extends ISpectifyLog {
           title: getKey,
         );
 
-  final Bloc bloc;
+  final Bloc<dynamic, dynamic> bloc;
   final Object? event;
   final ISpectifyBlocSettings settings;
 
@@ -25,9 +25,7 @@ class BlocEventLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    final sb = StringBuffer();
-    // sb.write(header);
-    sb.write(message);
+    final sb = StringBuffer()..write(message);
     return sb.toString();
   }
 }
@@ -42,8 +40,8 @@ class BlocStateLog extends ISpectifyLog {
           title: getKey,
         );
 
-  final Bloc bloc;
-  final Transition transition;
+  final Bloc<dynamic, dynamic> bloc;
+  final Transition<dynamic, dynamic> transition;
   final ISpectifyBlocSettings settings;
 
   @override
@@ -53,13 +51,14 @@ class BlocStateLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    final sb = StringBuffer();
-    // sb.write(header);
-    sb.write(message);
-    sb.write(
-        '\nCURRENT state: ${settings.printStateFullData ? '\n${transition.currentState}' : transition.currentState.runtimeType}');
-    sb.write(
-        '\nNEXT state: ${settings.printStateFullData ? '\n${transition.nextState}' : transition.nextState.runtimeType}');
+    final sb = StringBuffer()
+      ..write(message)
+      ..write(
+        '\nCURRENT state: ${settings.printStateFullData ? '\n${transition.currentState}' : transition.currentState.runtimeType}',
+      )
+      ..write(
+        '\nNEXT state: ${settings.printStateFullData ? '\n${transition.nextState}' : transition.nextState.runtimeType}',
+      );
     return sb.toString();
   }
 }
@@ -74,8 +73,8 @@ class BlocChangeLog extends ISpectifyLog {
           title: getKey,
         );
 
-  final BlocBase bloc;
-  final Change change;
+  final BlocBase<dynamic> bloc;
+  final Change<dynamic> change;
   final ISpectifyBlocSettings settings;
 
   @override
@@ -85,12 +84,14 @@ class BlocChangeLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    final sb = StringBuffer();
-    // sb.write(header);
-    sb.write(message);
-    sb.write(
-        '\nCURRENT state: ${settings.printStateFullData ? '\n${change.currentState}' : change.currentState.runtimeType}');
-    sb.write('\nNEXT state: ${settings.printStateFullData ? '\n${change.nextState}' : change.nextState.runtimeType}');
+    final sb = StringBuffer()
+      ..write(message)
+      ..write(
+        '\nCURRENT state: ${settings.printStateFullData ? '\n${change.currentState}' : change.currentState.runtimeType}',
+      )
+      ..write(
+        '\nNEXT state: ${settings.printStateFullData ? '\n${change.nextState}' : change.nextState.runtimeType}',
+      );
     return sb.toString();
   }
 }
@@ -103,7 +104,7 @@ class BlocCreateLog extends ISpectifyLog {
           title: getKey,
         );
 
-  final BlocBase bloc;
+  final BlocBase<dynamic> bloc;
 
   @override
   String? get key => getKey;
@@ -112,9 +113,7 @@ class BlocCreateLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    final sb = StringBuffer();
-    // sb.write(header);
-    sb.write(message);
+    final sb = StringBuffer()..write(message);
     return sb.toString();
   }
 }
@@ -127,7 +126,7 @@ class BlocCloseLog extends ISpectifyLog {
           title: getKey,
         );
 
-  final BlocBase bloc;
+  final BlocBase<dynamic> bloc;
 
   @override
   String? get key => getKey;
@@ -136,9 +135,7 @@ class BlocCloseLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    final sb = StringBuffer();
-    // sb.write(header);
-    sb.write(message);
+    final sb = StringBuffer()..write(message);
     return sb.toString();
   }
 }

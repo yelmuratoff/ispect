@@ -58,11 +58,14 @@ class ISpectifyBlocSettings {
   ///
   /// If provided, this function is called for each transition. If it returns
   /// `true`, the transition is logged; otherwise, it is skipped.
-  final bool Function(Bloc bloc, Transition transition)? transitionFilter;
+  final bool Function(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  )? transitionFilter;
 
   /// A filter function for events.
   ///
   /// If provided, this function is called for each event. If it returns `true`,
   /// the event is logged; otherwise, it is skipped.
-  final bool Function(Bloc bloc, Object? event)? eventFilter;
+  final bool Function(Bloc<dynamic, dynamic> bloc, Object? event)? eventFilter;
 }

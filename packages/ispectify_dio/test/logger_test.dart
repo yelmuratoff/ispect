@@ -32,7 +32,7 @@ void main() {
 
     test('onResponse method should log http response', () {
       final options = RequestOptions(path: '/test');
-      final response = Response(requestOptions: options, statusCode: 200);
+      final response = Response<dynamic>(requestOptions: options, statusCode: 200);
       final logMessage = '${response.requestOptions.uri}';
       logger.onResponse(response, ResponseInterceptorHandler());
       expect(iSpectify.history.last.message, logMessage);
@@ -45,6 +45,7 @@ void main() {
       dio.interceptors.add(logger);
 
       try {
+        // ignore: inference_failure_on_function_invocation
         await dio.get('asdsada');
       } catch (_) {}
       expect(iSpectify.history, isNotEmpty);
@@ -52,11 +53,17 @@ void main() {
     });
 
     test('onResponse method should log http response headers', () {
-      final logger =
-          ISpectifyDioLogger(iSpectify: iSpectify, settings: ISpectifyDioLoggerSettings(printResponseHeaders: true));
+      final logger = ISpectifyDioLogger(
+        iSpectify: iSpectify,
+        settings: const ISpectifyDioLoggerSettings(printResponseHeaders: true),
+      );
 
       final options = RequestOptions(path: '/test');
-      final response = Response(requestOptions: options, statusCode: 200, headers: Headers()..add("HEADER", "VALUE"));
+      final response = Response<dynamic>(
+        requestOptions: options,
+        statusCode: 200,
+        headers: Headers()..add('HEADER', 'VALUE'),
+      );
       logger.onResponse(response, ResponseInterceptorHandler());
       expect(
           iSpectify.history.last.textMessage,

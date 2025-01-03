@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
-import 'dio_logs.dart';
-import 'ispectify_dio.dart';
+import 'package:ispectify_dio/dio_logger_settings.dart';
+import 'package:ispectify_dio/dio_logs.dart';
 
 /// [Dio] http client logger on [ISpectify] base
 ///
@@ -86,7 +86,10 @@ class ISpectifyDioLogger extends Interceptor {
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
     super.onResponse(response, handler);
     if (!settings.enabled) {
       return;
@@ -105,23 +108,23 @@ class ISpectifyDioLogger extends Interceptor {
       if (response.requestOptions.data is FormData) {
         final formData = response.requestOptions.data as FormData;
         final fields = formData.fields;
-        final files = formData.files.map(
-          (e) {
-            return {
-              'key': e.key,
-              'filename': e.value.filename,
-              'contentType': e.value.contentType,
-              'length': e.value.length,
-              'headers': e.value.headers,
-            };
-          },
-        ).toList();
+        final files = formData.files
+            .map(
+              (e) => {
+                'key': e.key,
+                'filename': e.value.filename,
+                'contentType': e.value.contentType,
+                'length': e.value.length,
+                'headers': e.value.headers,
+              },
+            )
+            .toList();
         requestBody = {
           'fields': fields,
           'files': files,
         };
       } else {
-        requestBody = response.requestOptions.data;
+        requestBody = response.requestOptions.data as Map<String, dynamic>?;
       }
 
       //
@@ -131,17 +134,17 @@ class ISpectifyDioLogger extends Interceptor {
       if (response.data is FormData) {
         final formData = response.data as FormData;
         final fields = formData.fields;
-        final files = formData.files.map(
-          (e) {
-            return {
-              'key': e.key,
-              'filename': e.value.filename,
-              'contentType': e.value.contentType,
-              'length': e.value.length,
-              'headers': e.value.headers,
-            };
-          },
-        ).toList();
+        final files = formData.files
+            .map(
+              (e) => {
+                'key': e.key,
+                'filename': e.value.filename,
+                'contentType': e.value.contentType,
+                'length': e.value.length,
+                'headers': e.value.headers,
+              },
+            )
+            .toList();
         responseBody = {
           'fields': fields,
           'files': files,
@@ -190,7 +193,7 @@ class ISpectifyDioLogger extends Interceptor {
         statusMessage: err.response?.statusMessage,
         requestHeaders: err.requestOptions.headers,
         headers: err.response?.headers.map.map((key, value) => MapEntry(key, value.toString())),
-        body: err.response?.data,
+        body: err.response?.data as Map<String, dynamic>?,
         settings: settings,
       );
       _iSpectify.logCustom(httpErrorLog);

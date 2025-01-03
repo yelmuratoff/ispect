@@ -1,23 +1,19 @@
+// ignore_for_file: unreachable_from_main
+
 import 'package:bloc/bloc.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 void main() async {
   Bloc.observer = ISpectifyBlocObserver(
-    settings: ISpectifyBlocSettings(
-      enabled: true,
+    settings: const ISpectifyBlocSettings(
       printEventFullData: false,
       printStateFullData: false,
-      printChanges: true,
-      printClosings: true,
-      printCreations: true,
-      printEvents: true,
-      printTransitions: true,
     ),
   );
-  final somethingBloc = SomethingBloc();
-  somethingBloc.add(LoadSomething(LoadSomethingCase.successful));
-  await Future.delayed(const Duration(milliseconds: 300));
-  somethingBloc.add(LoadSomething(LoadSomethingCase.failure));
+  final somethingBloc = SomethingBloc()
+    ..add(const LoadSomething(LoadSomethingCase.successful));
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  somethingBloc.add(const LoadSomething(LoadSomethingCase.failure));
 }
 
 enum LoadSomethingCase { successful, failure }
@@ -35,10 +31,12 @@ class SomethingBloc extends Bloc<SomethingEvent, SomethingState> {
   }
 }
 
-abstract class SomethingEvent {}
+abstract class SomethingEvent {
+  const SomethingEvent();
+}
 
 class LoadSomething extends SomethingEvent {
-  LoadSomething(this.loadCase);
+  const LoadSomething(this.loadCase);
 
   final LoadSomethingCase loadCase;
 }
@@ -52,6 +50,6 @@ class SomethingLoading extends SomethingState {}
 class SomethingLoaded extends SomethingState {}
 
 class SomethingLoadingFailure extends SomethingState {
-  SomethingLoadingFailure(this.exception);
-  final Object? exception;
+  SomethingLoadingFailure(this.error);
+  final Object? error;
 }

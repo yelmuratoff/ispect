@@ -15,14 +15,16 @@ class ISpectifyHttpLogger extends InterceptorContract {
     required BaseRequest request,
   }) async {
     final message = '${request.url}';
-    _iSpectify.logCustom(HttpRequestLog(
-      message,
-      method: request.method,
-      url: request.url.toString(),
-      path: request.url.path,
-      headers: request.headers,
-      body: (request is Request) ? request.body : null,
-    ));
+    _iSpectify.logCustom(
+      HttpRequestLog(
+        message,
+        method: request.method,
+        url: request.url.toString(),
+        path: request.url.path,
+        headers: request.headers,
+        body: (request is Request) ? request.body : null,
+      ),
+    );
     return request;
   }
 
@@ -34,7 +36,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
     Map<String, dynamic>? body;
 
     if (response is Response) {
-      body = jsonDecode(response.body);
+      body = jsonDecode(response.body) as Map<String, dynamic>;
     } else if (response.request is MultipartRequest) {
       final request = response.request! as MultipartRequest;
       body = {
@@ -53,30 +55,34 @@ class ISpectifyHttpLogger extends InterceptorContract {
     }
 
     if (response.statusCode >= 400 && response.statusCode < 600) {
-      _iSpectify.logCustom(HttpErrorLog(
-        message,
-        method: response.request?.method,
-        url: response.request?.url.toString(),
-        path: response.request?.url.path,
-        statusCode: response.statusCode,
-        statusMessage: response.reasonPhrase,
-        requestHeaders: response.request?.headers,
-        headers: response.headers,
-        body: body ?? {},
-      ));
+      _iSpectify.logCustom(
+        HttpErrorLog(
+          message,
+          method: response.request?.method,
+          url: response.request?.url.toString(),
+          path: response.request?.url.path,
+          statusCode: response.statusCode,
+          statusMessage: response.reasonPhrase,
+          requestHeaders: response.request?.headers,
+          headers: response.headers,
+          body: body ?? {},
+        ),
+      );
     } else {
-      _iSpectify.logCustom(HttpResponseLog(
-        message,
-        method: response.request?.method,
-        url: response.request?.url.toString(),
-        path: response.request?.url.path,
-        statusCode: response.statusCode,
-        statusMessage: response.reasonPhrase,
-        requestHeaders: response.request?.headers,
-        headers: response.headers,
-        requestBody: body ?? {},
-        responseBody: response,
-      ));
+      _iSpectify.logCustom(
+        HttpResponseLog(
+          message,
+          method: response.request?.method,
+          url: response.request?.url.toString(),
+          path: response.request?.url.path,
+          statusCode: response.statusCode,
+          statusMessage: response.reasonPhrase,
+          requestHeaders: response.request?.headers,
+          headers: response.headers,
+          requestBody: body ?? {},
+          responseBody: response,
+        ),
+      );
     }
 
     return response;

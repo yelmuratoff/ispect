@@ -87,7 +87,7 @@ class ISpectifyDioLoggerSettings {
 
   /// For response filtering.
   /// You can add your custom logic to log only specific HTTP responses [Response].
-  final bool Function(Response response)? responseFilter;
+  final bool Function(Response<dynamic> response)? responseFilter;
 
   /// For error filtering.
   /// You can add your custom logic to log only specific Dio error [DioException].
@@ -106,24 +106,23 @@ class ISpectifyDioLoggerSettings {
     AnsiPen? responsePen,
     AnsiPen? errorPen,
     bool Function(RequestOptions requestOptions)? requestFilter,
-    bool Function(Response response)? responseFilter,
+    bool Function(Response<dynamic> response)? responseFilter,
     bool Function(DioException response)? errorFilter,
-  }) {
-    return ISpectifyDioLoggerSettings(
-      printResponseData: printResponseData ?? this.printResponseData,
-      printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
-      printResponseMessage: printResponseMessage ?? this.printResponseMessage,
-      printErrorData: printErrorData ?? this.printErrorData,
-      printErrorHeaders: printErrorHeaders ?? this.printErrorHeaders,
-      printErrorMessage: printErrorMessage ?? this.printErrorMessage,
-      printRequestData: printRequestData ?? this.printRequestData,
-      printRequestHeaders: printRequestHeaders ?? this.printRequestHeaders,
-      requestPen: requestPen ?? this.requestPen,
-      responsePen: responsePen ?? this.responsePen,
-      errorPen: errorPen ?? this.errorPen,
-      requestFilter: requestFilter ?? this.requestFilter,
-      responseFilter: responseFilter ?? this.responseFilter,
-      errorFilter: errorFilter ?? this.errorFilter,
-    );
-  }
+  }) =>
+      ISpectifyDioLoggerSettings(
+        printResponseData: printResponseData ?? this.printResponseData,
+        printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
+        printResponseMessage: printResponseMessage ?? this.printResponseMessage,
+        printErrorData: printErrorData ?? this.printErrorData,
+        printErrorHeaders: printErrorHeaders ?? this.printErrorHeaders,
+        printErrorMessage: printErrorMessage ?? this.printErrorMessage,
+        printRequestData: printRequestData ?? this.printRequestData,
+        printRequestHeaders: printRequestHeaders ?? this.printRequestHeaders,
+        requestPen: requestPen ?? this.requestPen,
+        responsePen: responsePen ?? this.responsePen,
+        errorPen: errorPen ?? this.errorPen,
+        requestFilter: requestFilter ?? this.requestFilter,
+        responseFilter: responseFilter ?? this.responseFilter,
+        errorFilter: errorFilter ?? this.errorFilter,
+      );
 }
