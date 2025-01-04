@@ -1,9 +1,8 @@
 name: ispect_jira
 description: "A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation."
-version: 0.0.2
+version: 0.0.3-dev.1
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
-publish_to: "none"
 
 environment:
   sdk: ^3.6.0
@@ -16,12 +15,11 @@ dependencies:
   intl: any
 
   atlassian_apis: ^0.15.0
-  ispect:
-    path: ../ispect
+  ispect: ^3.0.0-dev.1
   flutter_bloc: ^8.1.6
   meta: ^1.15.0
   gap: ^3.0.1
-  file_picker: ^8.1.5
+  file_picker: ^8.1.7
 
 dev_dependencies:
   flutter_test:

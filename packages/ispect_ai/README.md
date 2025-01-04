@@ -6,14 +6,10 @@
 </p>
 </div>
 
-<h2 align="center"> A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation. 🚀 </h2>
+<h2 align="center"> An additional package for ISpect to interact with logs using Google Gemini AI. 🚀 </h2>
 
 <p align="center">
-This package is not meant to be a groundbreaking innovation but rather a curated collection of high-quality tools from pub.dev, tailored for my future projects. I've decided to share it with the community in hopes it might be of use to others. It combines time-tested utilities and my personal enhancements aimed at improving project efficiency and adaptability.
-
-As the underlying packages evolve, I plan to update and enhance this package, possibly adding new features based on community feedback and emerging needs. This package is meant to be a dynamic toolset that grows and improves over time, facilitating smoother development processes for Flutter developers.
-
-Your feedback is highly valued as it will help shape future updates and ensure the package remains relevant and useful. 😊
+An additional package for ISpect to interact with logs using Google Gemini AI.
 
 
    <br>

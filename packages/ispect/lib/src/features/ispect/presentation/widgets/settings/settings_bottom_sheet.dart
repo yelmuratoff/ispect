@@ -25,10 +25,12 @@ class ISpectifySettingsBottomSheets extends StatefulWidget {
   final List<ISpectifyActionItem> actions;
 
   @override
-  State<ISpectifySettingsBottomSheets> createState() => _ISpectifySettingsBottomSheetState();
+  State<ISpectifySettingsBottomSheets> createState() =>
+      _ISpectifySettingsBottomSheetState();
 }
 
-class _ISpectifySettingsBottomSheetState extends State<ISpectifySettingsBottomSheets> {
+class _ISpectifySettingsBottomSheetState
+    extends State<ISpectifySettingsBottomSheets> {
   @override
   void initState() {
     super.initState();
@@ -45,7 +47,10 @@ class _ISpectifySettingsBottomSheetState extends State<ISpectifySettingsBottomSh
         enabled: widget.iSpectify.value.settings.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.iSpectify.value.enable : widget.iSpectify.value.disable).call();
+          (enabled
+                  ? widget.iSpectify.value.enable
+                  : widget.iSpectify.value.disable)
+              .call();
           widget.iSpectify.notifyListeners();
         },
       ),
@@ -90,14 +95,16 @@ class _ISpectifySettingsBottomSheetState extends State<ISpectifySettingsBottomSh
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16, top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16)
+                      .copyWith(bottom: 16, top: 8),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ??
+                              context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -122,14 +129,16 @@ class _ISpectifySettingsBottomSheetState extends State<ISpectifySettingsBottomSh
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16)
+                      .copyWith(bottom: 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+                          color: iSpect.theme.dividerColor(context) ??
+                              context.ispectTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -186,7 +195,8 @@ class _ActionTile extends StatelessWidget {
         ),
         if (showDivider)
           Divider(
-            color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+            color: iSpect.theme.dividerColor(context) ??
+                context.ispectTheme.dividerColor,
             height: 1,
           ),
       ],

@@ -38,9 +38,11 @@ class ISpectTheme {
         logIcons: logIcons ?? this.logIcons,
       );
 
-  Color? backgroundColor(BuildContext context) => context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
+  Color? backgroundColor(BuildContext context) =>
+      context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
 
-  Color? dividerColor(BuildContext context) => context.isDarkMode ? darkDividerColor : lightDividerColor;
+  Color? dividerColor(BuildContext context) =>
+      context.isDarkMode ? darkDividerColor : lightDividerColor;
 
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;

@@ -15,7 +15,8 @@ class AppDataController extends ChangeNotifier {
         notifyListeners();
       });
     } catch (e, st) {
-      if (context.mounted && !e.toString().contains('No such file or directory')) {
+      if (context.mounted &&
+          !e.toString().contains('No such file or directory')) {
         iSpectify.handle(e, st);
         await ISpectToaster.showErrorToast(
           context,

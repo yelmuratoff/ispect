@@ -58,7 +58,9 @@ class ISpectifyViewController extends ChangeNotifier {
 
   /// Method removes an title from the filter
   void removeFilterTitle(String title) {
-    _filter = _filter.copyWith(titles: _filter.titles.where((t) => t != title).toList());
+    _filter = _filter.copyWith(
+      titles: _filter.titles.where((t) => t != title).toList(),
+    );
     notifyListeners();
   }
 

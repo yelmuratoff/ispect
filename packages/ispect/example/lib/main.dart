@@ -230,13 +230,15 @@ class _HomeState extends State<_Home> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  await client.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+                  await client.get(Uri.parse(
+                      'https://jsonplaceholder.typicode.com/posts/1'));
                 },
                 child: const Text('Send HTTP request (http package)'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  await client.get(Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'));
+                  await client.get(Uri.parse(
+                      'https://jsonplaceholder.typicode.com/po2323sts/1'));
                 },
                 child: const Text('Send error HTTP request (http package)'),
               ),

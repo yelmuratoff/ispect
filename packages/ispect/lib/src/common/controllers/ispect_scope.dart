@@ -111,7 +111,8 @@ class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
   }) : super(notifier: model);
 
   static ISpectScopeModel of(BuildContext context) {
-    final inherited = context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
     assert(inherited != null, 'No ISpectScopeModel found in context');
     return inherited!.notifier!;
   }

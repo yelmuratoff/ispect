@@ -75,7 +75,8 @@ class ISpectBuilder extends StatelessWidget {
             feedbackSheetColor: context.ispectTheme.colorScheme.surface,
             activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
             cardColor: context.ispectTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+            bottomSheetDescriptionStyle:
+                context.ispectTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[800],
             ),
             dragHandleColor: Colors.grey[400],
@@ -88,7 +89,8 @@ class ISpectBuilder extends StatelessWidget {
             feedbackSheetColor: context.ispectTheme.colorScheme.surface,
             activeFeedbackModeColor: context.ispectTheme.colorScheme.primary,
             cardColor: context.ispectTheme.scaffoldBackgroundColor,
-            bottomSheetDescriptionStyle: context.ispectTheme.textTheme.bodyMedium!.copyWith(
+            bottomSheetDescriptionStyle:
+                context.ispectTheme.textTheme.bodyMedium!.copyWith(
               color: Colors.grey[300],
             ),
             dragHandleColor: Colors.grey[400],

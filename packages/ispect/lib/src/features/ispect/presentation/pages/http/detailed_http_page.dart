@@ -79,7 +79,8 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
     final path = innerData?['path'] as String?;
     final statusCode = innerData?['status_code'] as int?;
     final statusMessage = innerData?['status_message'] as String?;
-    final requestHeaders = innerData?['request_headers'] as Map<String, dynamic>?;
+    final requestHeaders =
+        innerData?['request_headers'] as Map<String, dynamic>?;
     final headers = innerData?['headers'] as Map<String, String>?;
     final requestBody = innerData?['request_body'];
     final responseBody = innerData?['response_body'];

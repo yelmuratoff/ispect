@@ -32,7 +32,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   ) async {
     try {
       emit(const AiChatLoading());
-      final response = await chatSession.sendMessage(Content.text(event.message.message));
+      final response =
+          await chatSession.sendMessage(Content.text(event.message.message));
       emit(
         AiChatReceived(
           message: AIMessage.fromResponse(

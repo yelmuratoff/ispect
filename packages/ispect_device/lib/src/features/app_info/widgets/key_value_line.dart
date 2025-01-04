@@ -22,7 +22,10 @@ class KeyValueLine extends StatelessWidget {
             flex: 3,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
               ),
               child: Padding(
@@ -37,7 +40,8 @@ class KeyValueLine extends StatelessWidget {
           Flexible(
             flex: 5,
             child: Divider(
-              color: iSpect.theme.dividerColor(context) ?? Theme.of(context).dividerColor,
+              color: iSpect.theme.dividerColor(context) ??
+                  Theme.of(context).dividerColor,
             ),
           ),
           Flexible(
@@ -49,7 +53,10 @@ class KeyValueLine extends StatelessWidget {
               },
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),
                 child: Padding(

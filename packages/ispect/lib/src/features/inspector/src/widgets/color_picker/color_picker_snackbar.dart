@@ -23,7 +23,8 @@ void showColorPickerResultSnackbar({
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+          color: iSpect.theme.dividerColor(context) ??
+              context.ispectTheme.dividerColor,
         ),
       ),
       content: Row(

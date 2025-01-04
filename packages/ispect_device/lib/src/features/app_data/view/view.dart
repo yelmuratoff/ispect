@@ -39,7 +39,9 @@ class _AppDataView extends StatelessWidget {
                   ValueListenableBuilder(
                     valueListenable: cacheSizeNotifier,
                     builder: (context, cacheSize, _) => Text(
-                      ISpectDeviceLocalization.of(context)?.cacheSize(cacheSize) ?? 'Cache size: $cacheSize',
+                      ISpectDeviceLocalization.of(context)
+                              ?.cacheSize(cacheSize) ??
+                          'Cache size: $cacheSize',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -49,11 +51,13 @@ class _AppDataView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (cacheSizeNotifier.value != '0.00 B' && controller.files.isNotEmpty)
+                  if (cacheSizeNotifier.value != '0.00 B' &&
+                      controller.files.isNotEmpty)
                     ElevatedButton(
                       onPressed: clearCache,
                       child: Text(
-                        ISpectDeviceLocalization.of(context)?.clearCache ?? 'Clear cache',
+                        ISpectDeviceLocalization.of(context)?.clearCache ??
+                            'Clear cache',
                       ),
                     ),
                 ],
@@ -67,10 +71,14 @@ class _AppDataView extends StatelessWidget {
                 children: [
                   Text(
                     ISpectDeviceLocalization.of(context)?.appData ?? 'App data',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    ISpectDeviceLocalization.of(context)?.totalFilesCount(controller.files.length) ??
+                    ISpectDeviceLocalization.of(context)
+                            ?.totalFilesCount(controller.files.length) ??
                         'Total files count: ${controller.files.length}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),

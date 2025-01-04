@@ -69,7 +69,8 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
+                icon: iSpect.theme.logIcons[widget.data.key] ??
+                    Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.key,
                 dateTime: widget.data.formattedTime,

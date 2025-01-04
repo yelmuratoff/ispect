@@ -1,4 +1,4 @@
-
+An additional package for `ISpect` to retrieve platform information.
 
 ```dart
           ISpectifyActionItem(

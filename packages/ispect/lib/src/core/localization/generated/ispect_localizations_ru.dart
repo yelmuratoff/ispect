@@ -233,7 +233,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get notFound => 'не найдена';
 
   @override
-  String get otherLogsForDevelopers => 'Другие логи уже используют разработчики';
+  String get otherLogsForDevelopers =>
+      'Другие логи уже используют разработчики';
 
   @override
   String get pageNotFound => 'Ой, страница по этому пути';
@@ -251,7 +252,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Пожалуйста, авторизуйтесь в Jira';
 
   @override
-  String get pleaseCheckAuthCred => 'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+  String get pleaseCheckAuthCred =>
+      'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
 
   @override
   String get pleaseSelectYourProject => 'Теперь, пожалуйста выберите проект';
@@ -480,7 +482,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'Для тестировщиков будет полезно знать про эти логи';
+  String get testerLogDesc =>
+      'Для тестировщиков будет полезно знать про эти логи';
 
   @override
   String totalFilesCount(Object number) {

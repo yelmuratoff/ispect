@@ -19,13 +19,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get aiChat => 'ЖИ (AI) чат';
 
   @override
-  String get aiWelcomeMessage => 'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
+  String get aiWelcomeMessage =>
+      'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
 
   @override
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
-  String get analyticsLogDesc => 'Журнал оқиғаларды талдау қызметіне жіберу логы';
+  String get analyticsLogDesc =>
+      'Журнал оқиғаларды талдау қызметіне жіберу логы';
 
   @override
   String get apiToken => 'API токен';
@@ -196,7 +198,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get httpRequestLogDesc => 'Серверге жіберілген сұраныс журналы';
 
   @override
-  String get httpResponseLogDesc => 'Жіберілген сұранысқа серверден жауап журналы';
+  String get httpResponseLogDesc =>
+      'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
   String get infoLogDesc => 'Ақпараттық хабарлама журналы';
@@ -233,7 +236,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get notFound => 'табылған жоқ';
 
   @override
-  String get otherLogsForDevelopers => 'Басқа журналдарды әзірлеушілер қолданады';
+  String get otherLogsForDevelopers =>
+      'Басқа журналдарды әзірлеушілер қолданады';
 
   @override
   String get pageNotFound => 'Ой, бұл жолдағы бет';
@@ -251,7 +255,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
 
   @override
-  String get pleaseCheckAuthCred => 'Қате. Авторизация деректерін тексеріп көріңіз.';
+  String get pleaseCheckAuthCred =>
+      'Қате. Авторизация деректерін тексеріп көріңіз.';
 
   @override
   String get pleaseSelectYourProject => 'Енді жобаны таңдаңыз';
@@ -480,7 +485,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
+  String get testerLogDesc =>
+      'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
 
   @override
   String totalFilesCount(Object number) {

@@ -25,7 +25,8 @@ extension ISpectifyFlutter on ISpectify {
       print(message);
       return;
     }
-    if ([TargetPlatform.iOS, TargetPlatform.macOS].contains(defaultTargetPlatform)) {
+    if ([TargetPlatform.iOS, TargetPlatform.macOS]
+        .contains(defaultTargetPlatform)) {
       log(message, name: 'ISpectify');
       return;
     }

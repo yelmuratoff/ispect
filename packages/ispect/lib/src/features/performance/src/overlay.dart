@@ -206,7 +206,8 @@ class _CustomPerformanceOverlay extends StatefulWidget {
   final Color highLatencyColor;
 
   @override
-  _CustomPerformanceOverlayState createState() => _CustomPerformanceOverlayState();
+  _CustomPerformanceOverlayState createState() =>
+      _CustomPerformanceOverlayState();
 }
 
 class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
@@ -371,7 +372,9 @@ class _PerformanceChart extends StatelessWidget {
       maxDuration = sample > maxDuration ? sample : maxDuration;
       cumulative += sample;
     }
-    final avg = samples.isEmpty ? Duration.zero : Duration(microseconds: cumulative.inMicroseconds ~/ samples.length);
+    final avg = samples.isEmpty
+        ? Duration.zero
+        : Duration(microseconds: cumulative.inMicroseconds ~/ samples.length);
     final fps = samples.isEmpty ? 0 : 1e6 / avg.inMicroseconds;
 
     return Stack(
@@ -471,7 +474,8 @@ class _OverlayPainter extends CustomPainter {
   // are not equal because above, we are reassigning the samples list
   // whenever new timings are reported.
   @override
-  bool shouldRepaint(_OverlayPainter oldDelegate) => oldDelegate.samples != samples;
+  bool shouldRepaint(_OverlayPainter oldDelegate) =>
+      oldDelegate.samples != samples;
 }
 
 extension on Duration {

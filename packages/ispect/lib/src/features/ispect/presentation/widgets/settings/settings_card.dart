@@ -31,7 +31,8 @@ class ISpectifySettingsCardItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: ISpectBaseCard(
           padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(right: 4),
-          color: iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor,
+          color: iSpect.theme.dividerColor(context) ??
+              context.ispectTheme.dividerColor,
           backgroundColor: backgroundColor,
           child: Material(
             color: Colors.transparent,
