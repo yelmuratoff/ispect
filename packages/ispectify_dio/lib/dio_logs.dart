@@ -38,7 +38,7 @@ class DioRequestLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[$title] [$method] $message';
+    var msg = '[$method] $message';
 
     final data = body;
 
@@ -103,7 +103,7 @@ class DioResponseLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[$title] [$method] $message';
+    var msg = '[$method] $message';
 
     final responseMessage = statusMessage;
     final data = responseBody;
@@ -173,7 +173,7 @@ class DioErrorLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[$title] [$method] $message';
+    var msg = '[$method] $message';
 
     final responseMessage = statusMessage;
 

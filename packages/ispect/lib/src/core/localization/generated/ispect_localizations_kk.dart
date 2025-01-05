@@ -54,16 +54,24 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get basicSettings => 'Негізгі баптаулар';
 
   @override
-  String get blocCloseLogDesc => 'Блокты жабу журналы';
+  String get blocCloseLogDesc =>
+      'BLoC жабылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocCreateLogDesc => 'Блокты құру журналы';
+  String get blocCreateLogDesc =>
+      'BLoC құрылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocEventLogDesc => 'Блоктағы оқиға журналы';
+  String get blocEventLogDesc =>
+      'BLoC-тағы оқиғаны өңдеу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocTransitionLogDesc => 'Блоктағы күй ауысуы журналы';
+  String get blocTransitionLogDesc =>
+      'BLoC-тағы күйлер арасындағы ауысуларды логтау үшін қолданылатын тег';
+
+  @override
+  String get blocStateLogDesc =>
+      'BLoC-тағы ағымдағы күйді логтау үшін қолданылатын тег';
 
   @override
   String get buildVersion => 'Құрастыру нұсқасы';
@@ -121,13 +129,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Мәселе құрылуда';
 
   @override
-  String get criticalLogDesc => 'Сын қате журналы';
+  String get criticalLogDesc =>
+      'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get data => 'Деректер';
 
   @override
-  String get debugLogDesc => 'Отладка хабарламасы журналы';
+  String get debugLogDesc =>
+      'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
 
   @override
   String get description => 'Сипаттама';
@@ -147,7 +157,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Кэш тазарту қатесі';
 
   @override
-  String get errorLogDesc => 'Қате журналы';
+  String get errorLogDesc =>
+      'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
 
   @override
   String get errorMessage => 'Қате туралы хабар';
@@ -156,7 +167,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorType => 'Қате түрі';
 
   @override
-  String get exceptionLogDesc => 'Ерекше жағдай журналы';
+  String get exceptionLogDesc =>
+      'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
 
   @override
   String get expandLogs => 'Журналды ашу';
@@ -183,7 +195,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get goToLogger => 'Журналға өту';
 
   @override
-  String get goodLogDesc => 'Сәтті әрекет журналы';
+  String get goodLogDesc =>
+      'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get headers => 'Headers';
@@ -202,7 +215,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
-  String get infoLogDesc => 'Ақпараттық хабарлама журналы';
+  String get infoLogDesc =>
+      'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
 
   @override
   String get initializationFailed => 'Бастапқы жүктеу қатесі';
@@ -515,13 +529,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get userEmail => 'Электрондық пошта';
 
   @override
-  String get verboseLogDesc => 'Толық хабарлама журналы';
+  String get verboseLogDesc =>
+      'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
 
   @override
   String get viewAndManageData => 'Қолданба мәліметтерін қарау және басқару';
 
   @override
-  String get warningLogDesc => 'Ескерту журналы';
+  String get warningLogDesc =>
+      'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
 
   @override
   String get you => 'Сіз';

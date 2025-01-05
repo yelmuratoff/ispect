@@ -52,16 +52,24 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get basicSettings => 'Основные настройки';
 
   @override
-  String get blocCloseLogDesc => 'Лог закрытия блока';
+  String get blocCloseLogDesc =>
+      'Тег для логирования события, связанного с моментом закрытия BLoC';
 
   @override
-  String get blocCreateLogDesc => 'Лог создания блока';
+  String get blocCreateLogDesc =>
+      'Тег для логирования события, связанного с моментом создания BLoC';
 
   @override
-  String get blocEventLogDesc => 'Лог события в блоке';
+  String get blocEventLogDesc =>
+      'Тег для логирования события, связанного с обработкой события в BLoC';
 
   @override
-  String get blocTransitionLogDesc => 'Лог перехода состояния в блоке';
+  String get blocTransitionLogDesc =>
+      'Тег для логирования переходов между состояниями в BLoC';
+
+  @override
+  String get blocStateLogDesc =>
+      'Тег для логирования текущего состояния в BLoC';
 
   @override
   String get buildVersion => 'Версия сборки';
@@ -119,13 +127,15 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Создание задачи';
 
   @override
-  String get criticalLogDesc => 'Лог критической ошибки';
+  String get criticalLogDesc =>
+      'Тег для логирования критических ошибок или событий, требующих немедленного внимания';
 
   @override
   String get data => 'Данные';
 
   @override
-  String get debugLogDesc => 'Лог отладочного сообщения';
+  String get debugLogDesc =>
+      'Тег для логирования отладочной информации для анализа работы приложения';
 
   @override
   String get description => 'Описание';
@@ -145,7 +155,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Ошибка при очистке кэша';
 
   @override
-  String get errorLogDesc => 'Лог ошибки';
+  String get errorLogDesc =>
+      'Тег для логирования ошибок, возникших в приложении';
 
   @override
   String get errorMessage => 'Текст ошибки';
@@ -154,7 +165,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorType => 'Тип ошибки';
 
   @override
-  String get exceptionLogDesc => 'Лог исключения';
+  String get exceptionLogDesc =>
+      'Тег для логирования исключений, возникающих в приложении';
 
   @override
   String get expandLogs => 'Развернуть журнал';
@@ -181,7 +193,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get goToLogger => 'Перейти к журналу';
 
   @override
-  String get goodLogDesc => 'Лог успешного действия';
+  String get goodLogDesc =>
+      'Тег для логирования успешных операций или позитивных событий в приложении';
 
   @override
   String get headers => 'Headers';
@@ -199,7 +212,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Лог ответа сервера на отправленный запрос';
 
   @override
-  String get infoLogDesc => 'Лог информативного сообщения';
+  String get infoLogDesc =>
+      'Тег для логирования информационных сообщений о работе приложения';
 
   @override
   String get initializationFailed => 'Ошибка инициализации';
@@ -512,13 +526,15 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get userEmail => 'Электронная почта';
 
   @override
-  String get verboseLogDesc => 'Лог подробного сообщения';
+  String get verboseLogDesc =>
+      'Тег для логирования детализированной информации для глубокого анализа приложения';
 
   @override
   String get viewAndManageData => 'Просмотр и управление данными приложения';
 
   @override
-  String get warningLogDesc => 'Лог предупреждения';
+  String get warningLogDesc =>
+      'Тег для логирования предупреждающих сообщений о потенциальных проблемах в приложении';
 
   @override
   String get you => 'Вы';

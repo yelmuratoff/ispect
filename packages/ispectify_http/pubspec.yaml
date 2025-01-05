@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   http_interceptor: ^2.0.0
-  ispectify: ^0.0.1-dev.1
+  ispectify: ^0.0.1-dev.2
 
 dev_dependencies:
   lints: ^5.1.1

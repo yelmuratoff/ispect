@@ -194,26 +194,32 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @blocCloseLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc close log'**
+  /// **'A tag used for logging the event of BLoC closure'**
   String get blocCloseLogDesc;
 
   /// No description provided for @blocCreateLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc creation log'**
+  /// **'A tag used for logging the event of BLoC creation'**
   String get blocCreateLogDesc;
 
   /// No description provided for @blocEventLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc event log'**
+  /// **'A tag used for logging the processing of an event in BLoC'**
   String get blocEventLogDesc;
 
   /// No description provided for @blocTransitionLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc state transition log'**
+  /// **'A tag used for logging state transitions in BLoC'**
   String get blocTransitionLogDesc;
+
+  /// No description provided for @blocStateLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'A tag used for logging the current state in BLoC'**
+  String get blocStateLogDesc;
 
   /// No description provided for @buildVersion.
   ///
@@ -320,7 +326,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @criticalLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Critical error log'**
+  /// **'A tag used for logging critical errors or events that require immediate attention'**
   String get criticalLogDesc;
 
   /// No description provided for @data.
@@ -332,7 +338,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @debugLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Debug message log'**
+  /// **'A tag used for logging debug information to analyze the application\'s behavior'**
   String get debugLogDesc;
 
   /// No description provided for @description.
@@ -368,7 +374,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @errorLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Error log'**
+  /// **'A tag used for logging errors that occur in the application'**
   String get errorLogDesc;
 
   /// No description provided for @errorMessage.
@@ -386,7 +392,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @exceptionLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Exception log'**
+  /// **'A tag used for logging exceptions occurring in the application'**
   String get exceptionLogDesc;
 
   /// No description provided for @expandLogs.
@@ -440,7 +446,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @goodLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Successful action log'**
+  /// **'A tag used for logging successful operations or positive events in the application'**
   String get goodLogDesc;
 
   /// No description provided for @headers.
@@ -476,7 +482,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @infoLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Informational message log'**
+  /// **'A tag used for logging informational messages about the application\'s operation'**
   String get infoLogDesc;
 
   /// No description provided for @initializationFailed.
@@ -1010,7 +1016,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @verboseLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Verbose message log'**
+  /// **'A tag used for logging detailed information for in-depth application analysis'**
   String get verboseLogDesc;
 
   /// No description provided for @viewAndManageData.
@@ -1022,7 +1028,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @warningLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Warning log'**
+  /// **'A tag used for logging warning messages about potential issues in the application'**
   String get warningLogDesc;
 
   /// No description provided for @you.

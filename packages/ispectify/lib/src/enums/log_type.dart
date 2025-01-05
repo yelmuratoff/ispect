@@ -17,6 +17,7 @@ enum ISpectifyLogType {
   blocTransition('bloc-transition'),
   blocClose('bloc-close'),
   blocCreate('bloc-create'),
+  blocState('bloc-state'),
 
   riverpodAdd('riverpod-add'),
   riverpodUpdate('riverpod-update'),

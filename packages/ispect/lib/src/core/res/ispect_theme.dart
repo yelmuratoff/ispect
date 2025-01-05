@@ -86,6 +86,7 @@ class ISpectTheme {
     'bloc-transition': Color.fromARGB(255, 85, 139, 47),
     'bloc-close': Color.fromARGB(255, 192, 38, 38),
     'bloc-create': Color.fromARGB(255, 56, 142, 60),
+    'bloc-state': Color.fromARGB(255, 0, 105, 135),
 
     'riverpod-add': Color.fromARGB(255, 56, 142, 60),
     'riverpod-update': Color.fromARGB(255, 0, 105, 135),
@@ -119,6 +120,7 @@ class ISpectTheme {
     'bloc-transition': Color(0xFF56FEA8),
     'bloc-close': Color(0xFFFF005F),
     'bloc-create': Color.fromARGB(255, 120, 230, 129),
+    'bloc-state': Color.fromARGB(255, 0, 125, 160),
 
     'riverpod-add': Color.fromARGB(255, 120, 230, 129),
     'riverpod-update': Color.fromARGB(255, 120, 180, 190),

@@ -8,6 +8,7 @@ class BlocEventLog extends ISpectifyLog {
     required this.event,
     required this.settings,
   }) : super(
+          key: getKey,
           settings.printEventFullData
               ? '${bloc.runtimeType} receive event:\n$event'
               : '${bloc.runtimeType} receive event: ${event.runtimeType}',
@@ -17,9 +18,6 @@ class BlocEventLog extends ISpectifyLog {
   final Bloc<dynamic, dynamic> bloc;
   final Object? event;
   final ISpectifyBlocSettings settings;
-
-  @override
-  String get key => getKey;
 
   static const getKey = 'bloc-event';
 
@@ -36,6 +34,7 @@ class BlocStateLog extends ISpectifyLog {
     required this.transition,
     required this.settings,
   }) : super(
+          key: getKey,
           '${bloc.runtimeType} with event ${transition.event.runtimeType}',
           title: getKey,
         );
@@ -43,9 +42,6 @@ class BlocStateLog extends ISpectifyLog {
   final Bloc<dynamic, dynamic> bloc;
   final Transition<dynamic, dynamic> transition;
   final ISpectifyBlocSettings settings;
-
-  @override
-  String get key => getKey;
 
   static const getKey = 'bloc-state';
 
@@ -69,6 +65,7 @@ class BlocChangeLog extends ISpectifyLog {
     required this.change,
     required this.settings,
   }) : super(
+          key: getKey,
           '${bloc.runtimeType} changed',
           title: getKey,
         );
@@ -76,9 +73,6 @@ class BlocChangeLog extends ISpectifyLog {
   final BlocBase<dynamic> bloc;
   final Change<dynamic> change;
   final ISpectifyBlocSettings settings;
-
-  @override
-  String get key => getKey;
 
   static const getKey = 'bloc-transition';
 
@@ -100,14 +94,12 @@ class BlocCreateLog extends ISpectifyLog {
   BlocCreateLog({
     required this.bloc,
   }) : super(
+          key: getKey,
           '${bloc.runtimeType} created',
           title: getKey,
         );
 
   final BlocBase<dynamic> bloc;
-
-  @override
-  String? get key => getKey;
 
   static const getKey = 'bloc-create';
 
@@ -122,14 +114,12 @@ class BlocCloseLog extends ISpectifyLog {
   BlocCloseLog({
     required this.bloc,
   }) : super(
+          key: getKey,
           '${bloc.runtimeType} closed',
           title: getKey,
         );
 
   final BlocBase<dynamic> bloc;
-
-  @override
-  String? get key => getKey;
 
   static const getKey = 'bloc-close';
 

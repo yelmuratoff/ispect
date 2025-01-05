@@ -1,6 +1,6 @@
 name: ispectify_bloc
 description: Lightweight and customizable BLoC state management library logger on iSpectify base.
-version: 0.0.1-dev.1
+version: 0.0.1-dev.2
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -8,7 +8,7 @@ environment:
   sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
-  ispectify: ^0.0.1-dev.1
+  ispectify: ^0.0.1-dev.2
   bloc: ^8.1.4
   meta: ^1.8.0
 

@@ -122,7 +122,7 @@ class HttpRequestLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[${title ?? key}] [$method] $message';
+    var msg = '[$method] $message';
 
     try {
       if (headers.isNotEmpty) {
@@ -179,7 +179,7 @@ class HttpResponseLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[${title ?? key}] [$method] $message';
+    var msg = '[$method] $message';
 
     msg += '\nStatus: $statusCode';
 
@@ -235,7 +235,7 @@ class HttpErrorLog extends ISpectifyLog {
 
   @override
   String get textMessage {
-    var msg = '[${title ?? key}] [$method] $message';
+    var msg = '[$method] $message';
 
     msg += '\nStatus: $statusCode';
 

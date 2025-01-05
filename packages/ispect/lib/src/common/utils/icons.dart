@@ -23,6 +23,7 @@ const typeIcons = {
   'bloc-transition': Icons.swap_horiz_rounded,
   'bloc-close': Icons.close_rounded,
   'bloc-create': Icons.add_rounded,
+  'bloc-state': Icons.change_circle_rounded,
 
   'riverpod-add': Icons.add_rounded,
   'riverpod-update': Icons.refresh_rounded,

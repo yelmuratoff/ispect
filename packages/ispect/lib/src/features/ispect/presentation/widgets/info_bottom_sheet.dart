@@ -360,6 +360,11 @@ class _InfoDescriptionPlaceholder extends StatelessWidget {
               context.ispectL10n.blocCreateLogDesc,
               'bloc-create',
             ),
+            _LogKey(
+              '5. bloc-state',
+              context.ispectL10n.blocStateLogDesc,
+              'bloc-state',
+            ),
           ],
           const Gap(16),
           Text(
