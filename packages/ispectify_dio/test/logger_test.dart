@@ -32,7 +32,8 @@ void main() {
 
     test('onResponse method should log http response', () {
       final options = RequestOptions(path: '/test');
-      final response = Response<dynamic>(requestOptions: options, statusCode: 200);
+      final response =
+          Response<dynamic>(requestOptions: options, statusCode: 200);
       final logMessage = '${response.requestOptions.uri}';
       logger.onResponse(response, ResponseInterceptorHandler());
       expect(iSpectify.history.last.message, logMessage);

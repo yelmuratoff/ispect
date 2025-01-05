@@ -28,8 +28,10 @@ void main() {
       final settings = ISpectifyDioLoggerSettings(
         requestFilter: (requestOptions) => requestOptions.path == '/allowed',
       );
-      final allowedRequestOptions = RequestOptions(path: '/allowed', method: 'GET');
-      final disallowedRequestOptions = RequestOptions(path: '/disallowed', method: 'GET');
+      final allowedRequestOptions =
+          RequestOptions(path: '/allowed', method: 'GET');
+      final disallowedRequestOptions =
+          RequestOptions(path: '/disallowed', method: 'GET');
 
       expect(settings.requestFilter!(allowedRequestOptions), equals(true));
       expect(settings.requestFilter!(disallowedRequestOptions), equals(false));
@@ -69,7 +71,9 @@ void main() {
       expect(settings.errorFilter!(timeoutResponse), equals(false));
     });
 
-    test('copyWith should create a new instance with updated values for all fields', () {
+    test(
+        'copyWith should create a new instance with updated values for all fields',
+        () {
       final originalSettings = ISpectifyDioLoggerSettings(
         printErrorHeaders: false,
         requestPen: AnsiPen()..green(),

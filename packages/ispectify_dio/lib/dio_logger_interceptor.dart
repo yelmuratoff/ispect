@@ -162,7 +162,8 @@ class ISpectifyDioLogger extends Interceptor {
         statusCode: response.statusCode,
         statusMessage: response.statusMessage,
         requestHeaders: response.requestOptions.headers,
-        headers: response.headers.map.map((key, value) => MapEntry(key, value.toString())),
+        headers: response.headers.map
+            .map((key, value) => MapEntry(key, value.toString())),
         requestBody: requestBody,
         responseBody: responseBody,
       );
@@ -192,7 +193,8 @@ class ISpectifyDioLogger extends Interceptor {
         statusCode: err.response?.statusCode,
         statusMessage: err.response?.statusMessage,
         requestHeaders: err.requestOptions.headers,
-        headers: err.response?.headers.map.map((key, value) => MapEntry(key, value.toString())),
+        headers: err.response?.headers.map
+            .map((key, value) => MapEntry(key, value.toString())),
         body: err.response?.data as Map<String, dynamic>?,
         settings: settings,
       );
