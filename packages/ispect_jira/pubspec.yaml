@@ -15,8 +15,8 @@ dependencies:
   intl: any
 
   atlassian_apis: ^0.15.0
-  ispect: ^3.0.0-dev.1
-  flutter_bloc: ^8.1.6
+  ispect: ^3.0.0-dev.3
+  flutter_bloc: ^9.0.0
   meta: ^1.15.0
   gap: ^3.0.1
   file_picker: ^8.1.7
