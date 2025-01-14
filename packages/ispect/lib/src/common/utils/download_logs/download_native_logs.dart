@@ -7,8 +7,7 @@ Future<void> downloadFile(String logs) async {
   final dir = await getTemporaryDirectory();
   final dirPath = dir.path;
   final fmtDate = DateTime.now().toString().replaceAll(':', ' ');
-  final file =
-      await File('$dirPath/app_logs_$fmtDate.txt').create(recursive: true);
+  final file = await File('$dirPath/app_logs_$fmtDate.txt').create(recursive: true);
   await file.writeAsString(logs);
   await Share.shareXFiles(
     <XFile>[

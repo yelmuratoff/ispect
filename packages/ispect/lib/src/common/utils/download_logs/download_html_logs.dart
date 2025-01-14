@@ -1,4 +1,3 @@
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
 Future<void> downloadFile(String logs) async {
@@ -8,6 +7,6 @@ Future<void> downloadFile(String logs) async {
   AnchorElement(
     href: Url.createObjectUrlFromBlob(blob),
   )
-    ..setAttribute('download', 'iSpectify_logs_$fmtDate.txt')
+    ..setAttribute('download', 'app_logs_$fmtDate.txt')
     ..click();
 }

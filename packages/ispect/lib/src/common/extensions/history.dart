@@ -6,7 +6,7 @@ extension HistoryListFlutterText on List<ISpectiyData> {
     for (final data in this) {
       final text = data.textMessage;
       sb
-        ..write('$text\n')
+        ..write('\n$text\n')
         ..write(ConsoleUtils.underline(30));
     }
     return sb.toString();

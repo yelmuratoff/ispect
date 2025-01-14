@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/utils/download_logs/download_nonweb_logs.dart'
-    if (dart.library.html) 'package:ispect/src/common/utils/download_logs/download_web_logs.dart';
+import 'package:ispect/src/common/utils/download_logs/download_logs.dart';
+
 import 'package:ispectify/ispectify.dart';
 
 /// Controller to work with [ISpectifyScreen]
@@ -46,8 +46,7 @@ class ISpectifyViewController extends ChangeNotifier {
 
   /// Method removes an type from the filter
   void removeFilterType(Type type) {
-    _filter =
-        _filter.copyWith(types: _filter.types.where((t) => t != type).toList());
+    _filter = _filter.copyWith(types: _filter.types.where((t) => t != type).toList());
     notifyListeners();
   }
 
