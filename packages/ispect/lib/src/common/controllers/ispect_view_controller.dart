@@ -46,7 +46,8 @@ class ISpectifyViewController extends ChangeNotifier {
 
   /// Method removes an type from the filter
   void removeFilterType(Type type) {
-    _filter = _filter.copyWith(types: _filter.types.where((t) => t != type).toList());
+    _filter =
+        _filter.copyWith(types: _filter.types.where((t) => t != type).toList());
     notifyListeners();
   }
 
