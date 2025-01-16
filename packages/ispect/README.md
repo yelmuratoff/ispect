@@ -1,3 +1,7 @@
+
+<!----------------------------
+----------Logo & Title--------
+------------------------------>
 <div align="center">
 <p align="center">
     <a href="https://github.com/yelmuratoff/ispect" align="center">
@@ -6,12 +10,11 @@
 </p>
 </div>
 
-<h2 align="center"> A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation. 🚀 </h2>
+<h2 align="center"> A Handy Toolkit for Mobile App Debugging 🚀 </h2>
 
 <p align="center">
-This package is not meant to be a groundbreaking innovation but rather a curated collection of high-quality tools from pub.dev, tailored for my future projects. I've decided to share it with the community in hopes it might be of use to others. It combines time-tested utilities and my personal enhancements aimed at improving project efficiency and adaptability.
-
-As the underlying packages evolve, I plan to update and enhance this package, possibly adding new features based on community feedback and emerging needs. This package is meant to be a dynamic toolset that grows and improves over time, facilitating smoother development processes for Flutter developers.
+ISpect is a simple yet versatile library inspired by web inspectors, tailored for mobile application development.
+ISpect is a collection of refined tools from trusted sources, enhanced with custom improvements to simplify development. It’s designed to boost efficiency and adapt to various project needs.
 
 Your feedback is highly valued as it will help shape future updates and ensure the package remains relevant and useful. 😊
 
@@ -19,6 +22,10 @@ Your feedback is highly valued as it will help shape future updates and ensure t
    <br>
    <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/yelmuratoff/ispect.git">star the repo</a> to support the project! </span>
 </p>
+
+<!----------------------------
+-------------Badges-----------
+------------------------------>
 
 <p align="center">
   <a href="https://pub.dev/packages/ispect"><img src="https://img.shields.io/pub/v/ispect.svg" alt="Pub"></a>
@@ -34,6 +41,10 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 
 <br>
 
+<!----------------------------
+--------Other packages--------
+------------------------------>
+
 ## Packages
 ISpect can be extended using other parts of this package <br>
 
@@ -43,42 +54,54 @@ ISpect can be extended using other parts of this package <br>
 | [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai) | [![Pub](https://img.shields.io/pub/v/ispect_ai.svg)](https://pub.dev/packages/ispect_ai) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
 | [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
 
+<!----------------------------
+-----------Features-----------
+------------------------------>
 
 ## 📌 Features
 
-- ✅ Draggable button for route to ISpect page, manage Inspector tools
+- ✅ Draggable panel for route to ISpect page and manage Inspector tools
+You can also use it separately: https://pub.dev/packages/draggable_panel
 - ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
-- ✅ ISpectify logger implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
-- ✅ You can customize more options during initialization of ISpectISpectify like BLoC, Dispatcher error and etc.
-- ✅ Updated ISpectISpectify page: added more options.
+- ✅ `ISpectify` logger *(inspired on `Talker`)* implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
+- ✅ You can customize more options during initialization of ISpect like BLoC, Dispatcher error and etc.
+- ✅ Updated ISpect page: added more options.
    - Detailed `HTTP` logs: `request`, `response`, `error`
    - Debug tools
    - Cache manager
-   - Device and app info
-- ✅ Feedback
+   - Device and app info *([ispect_device](https://pub.dev/packages/ispect_device))*
+- ✅ Feedback builder from [pub.dev/feedback](https://pub.dev/packages/feedback)
 - ✅ Performance tracker
 - ✅ AI helper
+
+<!----------------------------
+--------Showcase images-------
+------------------------------>
 
 ## 📜 Showcase
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/panel.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/draggable.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/color_picker.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/feedback.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/logs.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/reporter.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/monitoring.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/cache.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/device_info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/preview/inspector.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/draggable.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/feedback.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/reporter.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/monitoring.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="200" style="margin: 5px;" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/inspector.png?raw=true" width="200" style="margin: 5px;" />
 </div>
+
+<!----------------------------
+--------Getting Started-------
+------------------------------>
 
 ## 📌 Getting Started
 Follow these steps to use this package
@@ -95,6 +118,10 @@ dependencies:
 ```dart
 import 'package:ispect/ispect.dart';
 ```
+
+<!----------------------------
+---------Instructions---------
+------------------------------>
 
 ## Easy to use
 Simple example of use `ISpect`<br>
@@ -137,6 +164,10 @@ Alternatively, you can use a `listener`:
       ISpect.route(location);
     });
 ```
+
+<!----------------------------
+------Referenced packages-----
+------------------------------>
 
 ### Referenced packages:
 A list of great packages I've used in ISpect:
