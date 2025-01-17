@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-final class DraggableButtonController extends ChangeNotifier {
+final class InspectorController extends ChangeNotifier {
   bool _inLoggerPage = false;
 
   bool get inLoggerPage => _inLoggerPage;

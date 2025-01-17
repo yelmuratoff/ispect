@@ -30,7 +30,6 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 <p align="center">
   <a href="https://pub.dev/packages/ispect"><img src="https://img.shields.io/pub/v/ispect.svg" alt="Pub"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/K1yoshiSho/ispect"><img src="https://hits.dwyl.com/K1yoshiSho/ispect.svg?style=flat" alt="Repository views"></a>
   <a href="https://github.com/yelmuratoff/ispect"><img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="Pub"></a>
 </p>
 <p align="center">
@@ -53,6 +52,11 @@ ISpect can be extended using other parts of this package <br>
 | [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
 | [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai) | [![Pub](https://img.shields.io/pub/v/ispect_ai.svg)](https://pub.dev/packages/ispect_ai) | An add-on package to use the **Gemini AI Api** to generate a `report` and `log` questions |
 | [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
+| [ispect_device](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device) | [![Pub](https://img.shields.io/pub/v/ispect_device.svg)](https://pub.dev/packages/ispect_device) | An additional package for using tools to view platform & device info. |
+| [ispectify](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify) | [![Pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) | An additional package for logging and handling. Based on `Talker`. |
+| [ispectify_bloc](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_bloc) | [![Pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) | An additional package for logging and handling `BLoC`. |
+| [ispectify_dio](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_dio) | [![Pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) | An additional package for logging and handling `Dio`. |
+| [ispectify_http](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_http) | [![Pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) | An additional package for logging and handling `http`. |
 
 <!----------------------------
 -----------Features-----------
@@ -134,6 +138,12 @@ Put this code in your project at an screen and learn how it works. 😊
 1. Wrap `runApp` with `ISpect.run` method and pass `ISpectify` instance to it.
 2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
 3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+4. Add `ISpectLocalizations` to your `localizationsDelegates` in `MaterialApp`.
+```dart
+localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect localization delegates
+          ExampleGeneratedLocalization.delegate, // Your localization delegate
+        ]),
+```
 
 Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 
@@ -146,12 +156,10 @@ Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/pack
 > - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
 >
 > You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
-
-```dart
-### For change `ISpect` theme:
-```dart
-ISpect.read(context).setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
-```
+>
+> - To `platform & device` tools follow the instructions provided here [ispect_device](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device).
+>
+> You can also check out an example of usage directly in [ispect_device/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device/example).
 
 ### For handle routing (GoRouter)
 You can use `ISpectNavigatorObserver`, but in practice it does not always work correctly with the `GoRouter` package. You need add observer in each GoRoute.
