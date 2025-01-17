@@ -1,3 +1,6 @@
+## 3.0.3
+- Upgrade version of `draggable_panel` to `1.0.2`.
+
 ## 3.0.2
 - Fix:
    - Fixed `_output = output ?? log_output.outputLog;`.

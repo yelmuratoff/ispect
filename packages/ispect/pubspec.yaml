@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation."
-version: 3.0.2
+version: 3.0.3
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -26,7 +26,7 @@ dependencies:
   web: ^1.1.0
 
   # UI
-  draggable_panel: ^1.0.1
+  draggable_panel: ^1.0.2
 
 dev_dependencies:
   flutter_test:

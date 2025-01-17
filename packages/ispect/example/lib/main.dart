@@ -86,97 +86,69 @@ class _AppState extends State<App> {
     final observer = ISpectNavigatorObserver();
     final themeMode = ThemeProvider.themeMode(context);
 
-    return ISpectScopeWrapper(
-      // theme: const ISpectTheme(
-      //   lightBackgroundColor: Colors.white,
-      //   darkBackgroundColor: Colors.black,
-      //   lightCardColor: Color.fromARGB(255, 241, 240, 240),
-      //   darkCardColor: Color.fromARGB(255, 23, 23, 23),
-      //   lightDividerColor: Color.fromARGB(255, 218, 218, 218),
-      //   darkDividerColor: Color.fromARGB(255, 77, 76, 76),
-      // ),
-      // theme: ISpectTheme(
-      //   logColors: {
-      //     SuccessLog.logKey: const Color(0xFF880E4F),
-      //   },
-      //   logIcons: {
-      //     // ISpectifyLogType.route.key: Icons.router_rounded,
-      //     SuccessLog.logKey: Icons.check_circle_rounded,
-      //   },
-      // ),
-      options: ISpectOptions(
-        locale: locale,
-        panelButtons: [
-          (
-            icon: Icons.copy_rounded,
-            label: 'Token',
-            onTap: (context) {
-              _controller.toggle(context);
-              debugPrint('Token copied');
-            },
-          ),
-        ],
-        panelItems: [
-          (
-            icon: Icons.home,
-            enableBadge: false,
-            onTap: (context) {
-              debugPrint('Home');
-            },
-          ),
-        ],
-        actionItems: [
-          ISpectifyActionItem(
-            title: 'Test',
-            icon: Icons.account_tree_rounded,
-            onTap: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                    body: Center(
-                      child: Text('Test'),
-                    ),
-                  ),
-                ),
-              );
-            },
-            // onTap: (ispectContext) {
-            //   Navigator.of(ispectContext).push(
-            //     MaterialPageRoute(
-            //       builder: (context) => const Scaffold(
-            //         body: Center(
-            //           child: Text('Test'),
-            //         ),
-            //       ),
-            //     ),
-            //   );
-            // },
-          ),
-        ],
+    return MaterialApp(
+      navigatorObservers: [observer],
+      locale: locale,
+      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        ExampleGeneratedLocalization.delegate,
+      ]),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
       ),
-      isISpectEnabled: true,
-      child: MaterialApp(
-        navigatorObservers: [observer],
-        locale: locale,
-        supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
-          ExampleGeneratedLocalization.delegate,
-        ]),
-        theme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
+      darkTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
         ),
-        darkTheme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
+      ),
+      themeMode: themeMode,
+      builder: (context, child) {
+        child = ISpectScopeWrapper(
+          options: ISpectOptions(
+            locale: locale,
+            panelButtons: [
+              (
+                icon: Icons.copy_rounded,
+                label: 'Token',
+                onTap: (context) {
+                  _controller.toggle(context);
+                  debugPrint('Token copied');
+                },
+              ),
+            ],
+            panelItems: [
+              (
+                icon: Icons.home,
+                enableBadge: false,
+                onTap: (context) {
+                  debugPrint('Home');
+                },
+              ),
+            ],
+            actionItems: [
+              ISpectifyActionItem(
+                title: 'Test',
+                icon: Icons.account_tree_rounded,
+                onTap: (context) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const Scaffold(
+                        body: Center(
+                          child: Text('Test'),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ),
-        themeMode: themeMode,
-        builder: (context, child) {
-          child = ISpectBuilder(
+          isISpectEnabled: true,
+          child: ISpectBuilder(
             observer: observer,
             controller: _controller,
 
@@ -194,11 +166,11 @@ class _AppState extends State<App> {
             },
 
             child: child,
-          );
-          return child;
-        },
-        home: const _Home(),
-      ),
+          ),
+        );
+        return child;
+      },
+      home: const _Home(),
     );
   }
 }
