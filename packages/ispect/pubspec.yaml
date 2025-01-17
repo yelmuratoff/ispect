@@ -1,6 +1,6 @@
 name: ispect
 description: "A package combining Inspector, ISpectify, and more from pub.dev for efficient project implementation."
-version: 3.0.1
+version: 3.0.2
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -18,7 +18,7 @@ dependencies:
     any
 
     # Logging
-  ispectify: ^0.0.1
+  ispectify: ^0.0.4
 
   # Utils
   path_provider: ^2.1.5

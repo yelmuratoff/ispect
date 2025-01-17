@@ -2,7 +2,8 @@ import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/logger/src/filter/logger_filter.dart';
 import 'package:ispectify/src/logger/src/formatter/formatter.dart';
 import 'package:ispectify/src/logger/src/logger_io.dart'
-    if (dart.library.html) 'logger_web.dart' as log_output;
+    if (dart.library.html) 'logger_html.dart'
+    if (dart.library.js_interop) 'logger_io.dart';
 import 'package:ispectify/src/logger/src/models/log_details.dart';
 import 'package:ispectify/src/logger/src/models/log_level.dart';
 import 'package:ispectify/src/logger/src/settings.dart';
@@ -15,7 +16,7 @@ class ISpectifyLogger {
     void Function(String message)? output,
   }) {
     this.settings = settings ?? ISpectifyLoggerSettings();
-    _output = output ?? log_output.outputLog;
+    _output = output ?? outputLog;
     _filter = filter;
     ansiColorDisabled = false;
   }

@@ -1,3 +1,7 @@
+## 3.0.2
+- Fix:
+   - Fixed `_output = output ?? log_output.outputLog;`.
+
 ## 3.0.1
 - Fix:
    - Added `DraggablePanelController` to `ISpectBuilder` for controlling the panel.
