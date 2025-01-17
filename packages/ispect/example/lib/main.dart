@@ -69,9 +69,16 @@ void main() {
   );
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   final ISpectify iSpectify;
   const App({super.key, required this.iSpectify});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  final _controller = DraggablePanelController();
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +111,7 @@ class App extends StatelessWidget {
             icon: Icons.copy_rounded,
             label: 'Token',
             onTap: (context) {
+              _controller.toggle(context);
               debugPrint('Token copied');
             },
           ),
@@ -170,6 +178,8 @@ class App extends StatelessWidget {
         builder: (context, child) {
           child = ISpectBuilder(
             observer: observer,
+            controller: _controller,
+
             initialPosition: (x: 0, y: 200),
             // initialJiraData: (
             //   apiToken:

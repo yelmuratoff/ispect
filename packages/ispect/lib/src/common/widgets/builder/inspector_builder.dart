@@ -16,6 +16,7 @@ class ISpectBuilder extends StatelessWidget {
     this.feedBackDarkTheme,
     this.feedbackBuilder,
     this.onPositionChanged,
+    this.controller,
     super.key,
   });
 
@@ -31,6 +32,8 @@ class ISpectBuilder extends StatelessWidget {
   final void Function(double x, double y)? onPositionChanged;
 
   final ({double x, double y})? initialPosition;
+
+  final DraggablePanelController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +56,7 @@ class ISpectBuilder extends StatelessWidget {
       textColor: theme.colorScheme.onSurface,
       selectedTextColor: theme.colorScheme.onSurface,
       onPositionChanged: onPositionChanged,
-      initialPosition: initialPosition,
+      controller: controller,
       child: currentChild,
     );
 
