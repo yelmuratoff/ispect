@@ -1,3 +1,5 @@
+export 'package:draggable_panel/draggable_panel.dart';
+export 'package:draggable_panel/src/controller/controller.dart';
 export 'package:ispect/src/common/controllers/ispect_scope.dart';
 export 'package:ispect/src/common/models/action_item.dart';
 export 'package:ispect/src/common/utils/ispect_localizations.dart';

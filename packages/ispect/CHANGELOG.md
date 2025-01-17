@@ -1,3 +1,8 @@
+## 3.0.1
+- Fix:
+   - Added `DraggablePanelController` to `ISpectBuilder` for controlling the panel.
+   See the example project for more details.
+
 ## 3.0.0
 - BREAKING CHANGES:
    - I forked the `Talker` package where I'm just as actively contributing and added it to `ISpect` as `ISpectify`. This was done for ease of use, and to not depend on external packages. You can now use `ISpectify` to log all actions in your application.

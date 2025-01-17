@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -61,6 +60,7 @@ class Inspector extends StatefulWidget {
     this.isPanelVisible = true,
     this.isWidgetInspectorEnabled = true,
     this.isColorPickerEnabled = true,
+    this.controller,
     this.widgetInspectorShortcuts = const [
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
@@ -78,7 +78,6 @@ class Inspector extends StatefulWidget {
       LogicalKeyboardKey.keyZ,
     ],
     this.isEnabled,
-    this.initialPosition,
   });
 
   final Widget child;
@@ -99,10 +98,8 @@ class Inspector extends StatefulWidget {
   final NavigatorObserver? observer;
   final ISpectOptions options;
   final void Function(double x, double y)? onPositionChanged;
-  final ({
-    double x,
-    double y,
-  })? initialPosition;
+
+  final DraggablePanelController? controller;
 
   static InspectorState of(BuildContext context) {
     final result = maybeOf(context);
@@ -158,9 +155,7 @@ class InspectorState extends State<Inspector> {
   void initState() {
     super.initState();
 
-    _draggablePanelController = DraggablePanelController(
-      initialPosition: widget.initialPosition,
-    );
+    _draggablePanelController = widget.controller ?? DraggablePanelController();
     _isPanelVisible = widget.isPanelVisible;
 
     _keyboardHandler = KeyboardHandler(

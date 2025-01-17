@@ -12,7 +12,7 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-  ispect: ^3.0.0-dev.3
+  ispect: ^3.0.0
 
   dio: ^5.7.0
   http: ^1.2.2
