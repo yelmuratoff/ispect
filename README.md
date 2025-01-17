@@ -107,26 +107,6 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
 --------Getting Started-------
 ------------------------------>
 
-## 📌 Getting Started
-Follow these steps to use this package
-
-### Add dependency
-
-```yaml
-dependencies:
-  ispect: ^2.0.8
-```
-
-### Add import package
-
-```dart
-import 'package:ispect/ispect.dart';
-```
-
-<!----------------------------
----------Instructions---------
------------------------------->
-
 ## Easy to use
 Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.

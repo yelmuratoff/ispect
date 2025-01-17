@@ -1,3 +1,16 @@
+## 3.0.0
+- BREAKING CHANGES:
+   - I forked the `Talker` package where I'm just as actively contributing and added it to `ISpect` as `ISpectify`. This was done for ease of use, and to not depend on external packages. You can now use `ISpectify` to log all actions in your application.
+   - I have separated the main functions into different separate packages, so you can decide what you want to use.
+      - `ispect_ai` - for using `AI` as a log reporter and log description generator. Useful for managers and testers.
+      - `ispect_jira` - for using `Jira` to create tickets directly in the application.
+      - `ispect_device` - for getting device data, etc.
+      - `ispectify_http` - for logging `HTTP` requests.
+      - `ispectify_dio` - for logging `Dio` requests.
+      - `ispectify_bloc` - for `BLoC` logging.
+   Please look at the usage examples in the corresponding packages. You can look at the usage example in `ispect/example`.
+   For any questions you can write to my mail: `yelamanyelmuratov@gmail.com`.
+
 ## 2.0.8
 - Now, `ISpectPanelButton` and `ISpectPanelItem` have been removed and replaced with Records.
 Additionally, `DraggablePanel` has been separated into its own package and moved to [draggable_panel](https://pub.dev/packages/draggable_panel).

@@ -101,10 +101,6 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
 ## 📌 Getting Started
 Follow these steps to use this package
 
-<!----------------------------
----------Instructions---------
------------------------------->
-
 ## Easy to use
 Simple example of use `ISpect`<br>
 You can manage ISpect using `ISpect.read(context)`.
