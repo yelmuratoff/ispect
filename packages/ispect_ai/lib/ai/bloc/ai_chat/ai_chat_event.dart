@@ -18,6 +18,6 @@ class InitChat extends AiChatEvent {
   });
 
   final List<String> possibleKeys;
-  final List<TalkerData> logs;
+  final List<ISpectiyData> logs;
   final String welcomeMessage;
 }

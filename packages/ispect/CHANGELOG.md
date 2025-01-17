@@ -1,3 +1,16 @@
+## 3.0.0
+- BREAKING CHANGES:
+   - I forked the `Talker` package where I'm just as actively contributing and added it to `ISpect` as `ISpectify`. This was done for ease of use, and to not depend on external packages. You can now use `ISpectify` to log all actions in your application.
+   - I have separated the main functions into different separate packages, so you can decide what you want to use.
+      - `ispect_ai` - for using `AI` as a log reporter and log description generator. Useful for managers and testers.
+      - `ispect_jira` - for using `Jira` to create tickets directly in the application.
+      - `ispect_device` - for getting device data, etc.
+      - `ispectify_http` - for logging `HTTP` requests.
+      - `ispectify_dio` - for logging `Dio` requests.
+      - `ispectify_bloc` - for `BLoC` logging.
+   Please look at the usage examples in the corresponding packages. You can look at the usage example in `ispect/example`.
+   For any questions you can write to my mail: `yelamanyelmuratov@gmail.com`.
+
 ## 2.0.8
 - Now, `ISpectPanelButton` and `ISpectPanelItem` have been removed and replaced with Records.
 Additionally, `DraggablePanel` has been separated into its own package and moved to [draggable_panel](https://pub.dev/packages/draggable_panel).
@@ -16,7 +29,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Feature: Added support for `http` package. See the example project for more details.
 
 ## 2.0.3
-- Fix: `setState` during build inside `ISpectPage` (Talker).
+- Fix: `setState` during build inside `ISpectPage` (ISpectify).
 
 ## 2.0.1
 - Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
@@ -26,7 +39,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Fix: panel height factor fixed
 
 ## 1.9.8
-- `Talker` was upgraded to v4.5.0.
+- `ISpectify` was upgraded to v4.5.0.
 - Now you can customize `track` method.
    - You can add analytic's service name.
    - You can add event's name.
@@ -41,8 +54,8 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 
 ## 1.9.5
 - Added new method for logging: `ISpect.track`. This method allows you to log custom events for analytics *(Amplitude, Firebase, etc.)*.
-- `ISpectTalker` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  
-Example: `ISpectTalker.debug('Hello, ISpect!')` -> `ISpect.debug('Hello, ISpect!')`.
+- `ISpect` replaced with `ISpect`. Now you can use `ISpect` for all logging purposes.  
+Example: `ISpect.debug('Hello, ISpect!')` -> `ISpect.debug('Hello, ISpect!')`.
 - The ability to change the color of logs and custom log icons.  
 Example: *(SuccessLog is your custom log)*  
 ```dart
@@ -51,7 +64,7 @@ Example: *(SuccessLog is your custom log)*
           SuccessLog.logKey: const Color(0xFF880E4F),
         },
         logIcons: {
-          TalkerLogType.route.key: Icons.router_rounded,
+          ISpectifyLogType.route.key: Icons.router_rounded,
           SuccessLog.logKey: Icons.check_circle_rounded,
         },
       ),
@@ -116,13 +129,13 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Upgraded feedback_plus to version 0.1.2.
 
 ## 1.6.5
-- Fix issue with late talker initialization.
+- Fix issue with late iSpectify initialization.
 
 ## 1.6.4
-- Added ISpectTalker's options to the ISpect's params.
+- Added ISpect's options to the ISpect's params.
 
 ## 1.6.3
-- Implemented print handler and moved ISpectTalker's initialization to the ISpect's run method. Please check example project for better understanding.
+- Implemented print handler and moved ISpect's initialization to the ISpect's run method. Please check example project for better understanding.
 
 ## 1.6.2
 - Handle if data is String inside detailed HTTP page.
@@ -131,7 +144,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Updated info text description of logs inside `ISpectPage`.
 
 ## 1.5.9
-- Added context to `onTap` option for TalkerActionItem for routing to a specific page.
+- Added context to `onTap` option for ISpectifyActionItem for routing to a specific page.
 
 ## 1.5.7
 - Added info button for all logs.
@@ -153,7 +166,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Added a new parameter `actionItems` to `ISpectOptions` for adding custom actions to the `ISpect` page's actions sheet.
 
 ## 1.4.3
-- Initial ISpectTalker page logs are now collapsed by default.
+- Initial ISpect page logs are now collapsed by default.
 - Added a new parameter `filters` to the `initHandling` method. 
   - Filters work only for `BLoC` and exceptions such as `FlutterError`, `PlatformDispatcher`, and `UncaughtErrors`.
   - For Riverpod, routes, Dio, etc., manual configuration is required.
@@ -173,17 +186,17 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Updated `README.md` file.
 
 ## 1.3.0
-- Updated options of `ISpectTalker.initHandling` (also applies to versions 1.2.8 and 1.2.9).
+- Updated options of `ISpect.initHandling` (also applies to versions 1.2.8 and 1.2.9).
 
 ## 1.2.7
-- Added more options to `ISpectTalker.initHandling`.
-  - You can now customize more options during the initialization of `ISpectTalker`, such as BLoC, Dispatcher error, etc.
+- Added more options to `ISpect.initHandling`.
+  - You can now customize more options during the initialization of `ISpect`, such as BLoC, Dispatcher error, etc.
 
 ## 1.2.6
 - Updated documentation: added a video preview of the package.
 
 ## 1.2.4
-- Added some options to the `Talker` detailed monitor page: reverse all logs and toggle expansion.
+- Added some options to the `ISpectify` detailed monitor page: reverse all logs and toggle expansion.
 - Moved performance tracker to the `Draggable` button and removed it from the settings sheet.
 
 ## 1.2.3
@@ -191,7 +204,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
   - To use the Draggable button inside ISpectPage, pass the key. By default, it is not possible to use the Draggable button inside ISpectPage.
 
 ## 1.2.0
-- Upgraded Talker to version 4.3.2.
+- Upgraded ISpectify to version 4.3.2.
 
 ## 1.1.8
 - Added Kazakh language support.
@@ -201,20 +214,20 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Refactored options theme of ISpect.
 
 ## 1.1.6
-- Refactored Riverpod logs on the Talker Page.
+- Refactored Riverpod logs on the ISpectify Page.
 - Updated dependencies.
 
 ## 1.1.5
 - Added Riverpod logs.
-- Made updates to the Talker Page and Feedback builder.
+- Made updates to the ISpectify Page and Feedback builder.
 
 ## 1.1.2
 - Fixed issues with the light theme.
-- Removed `TalkerScreenTheme`. Use ISpectOptions theme properties instead.
+- Removed `ISpectifyScreenTheme`. Use ISpectOptions theme properties instead.
 
 ## 1.1.0
 - Upgraded dependencies to the latest version.
-- Refactored `ISpectTalker`.
+- Refactored `ISpect`.
 
 ## 1.0.8
 - Upgraded dependencies to the latest version.
@@ -231,4 +244,4 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Added ISpectLocalization and cache management.
 
 ## 1.0.0
-- Initial release: Wrapper around Inspector, Talker, etc.
+- Initial release: Wrapper around Inspector, ISpectify, etc.

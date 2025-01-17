@@ -53,16 +53,24 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get basicSettings => 'Basic settings';
 
   @override
-  String get blocCloseLogDesc => 'Bloc close log';
+  String get blocCloseLogDesc =>
+      'A tag used for logging the event of BLoC closure';
 
   @override
-  String get blocCreateLogDesc => 'Bloc creation log';
+  String get blocCreateLogDesc =>
+      'A tag used for logging the event of BLoC creation';
 
   @override
-  String get blocEventLogDesc => 'Bloc event log';
+  String get blocEventLogDesc =>
+      'A tag used for logging the processing of an event in BLoC';
 
   @override
-  String get blocTransitionLogDesc => 'Bloc state transition log';
+  String get blocTransitionLogDesc =>
+      'A tag used for logging state transitions in BLoC';
+
+  @override
+  String get blocStateLogDesc =>
+      'A tag used for logging the current state in BLoC';
 
   @override
   String get buildVersion => 'Build version';
@@ -85,7 +93,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get changeTheme => 'Change theme';
 
   @override
-  String get cleanHistory => 'Clean history';
+  String get clearHistory => 'Clean history';
 
   @override
   String get clearCache => 'Clear cache';
@@ -120,13 +128,15 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Creating issue';
 
   @override
-  String get criticalLogDesc => 'Critical error log';
+  String get criticalLogDesc =>
+      'A tag used for logging critical errors or events that require immediate attention';
 
   @override
   String get data => 'Data';
 
   @override
-  String get debugLogDesc => 'Debug message log';
+  String get debugLogDesc =>
+      'A tag used for logging debug information to analyze the application\'s behavior';
 
   @override
   String get description => 'Description';
@@ -146,7 +156,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Error on clearing cache';
 
   @override
-  String get errorLogDesc => 'Error log';
+  String get errorLogDesc =>
+      'A tag used for logging errors that occur in the application';
 
   @override
   String get errorMessage => 'Error message';
@@ -155,7 +166,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get errorType => 'Error type';
 
   @override
-  String get exceptionLogDesc => 'Exception log';
+  String get exceptionLogDesc =>
+      'A tag used for logging exceptions occurring in the application';
 
   @override
   String get expandLogs => 'Expand logs';
@@ -182,7 +194,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get goToLogger => 'Go to logger';
 
   @override
-  String get goodLogDesc => 'Successful action log';
+  String get goodLogDesc =>
+      'A tag used for logging successful operations or positive events in the application';
 
   @override
   String get headers => 'Headers';
@@ -200,7 +213,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Server response log';
 
   @override
-  String get infoLogDesc => 'Informational message log';
+  String get infoLogDesc =>
+      'A tag used for logging informational messages about the application\'s operation';
 
   @override
   String get initializationFailed => 'Initialization failed';
@@ -344,141 +358,141 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get summary => 'Summary';
 
   @override
-  String talkerBlocClosesCount(Object text) {
+  String iSpectifyBlocClosesCount(Object text) {
     return 'BLoC closes count: $text';
   }
 
   @override
-  String talkerBlocCreatesCount(Object text) {
+  String iSpectifyBlocCreatesCount(Object text) {
     return 'BLoC creates count: $text';
   }
 
   @override
-  String talkerBlocEventsCount(Object text) {
+  String iSpectifyBlocEventsCount(Object text) {
     return 'BLoC events count: $text';
   }
 
   @override
-  String talkerBlocTransitionCount(Object text) {
+  String iSpectifyBlocTransitionCount(Object text) {
     return 'BLoC transitions count: $text';
   }
 
   @override
-  String talkerHttpFailuresCount(Object text) {
+  String iSpectifyHttpFailuresCount(Object text) {
     return 'HTTP failure logs count: $text';
   }
 
   @override
-  String talkerHttpRequestsCount(Object text) {
+  String iSpectifyHttpRequestsCount(Object text) {
     return 'HTTP request logs count: $text';
   }
 
   @override
-  String talkerHttpResponsesCount(Object text) {
+  String iSpectifyHttpResponsesCount(Object text) {
     return 'HTTP response logs count: $text';
   }
 
   @override
-  String get talkerLogsInfo => 'Info about logs';
+  String get iSpectifyLogsInfo => 'Info about logs';
 
   @override
-  String talkerRiverpodAddCount(Object text) {
+  String iSpectifyRiverpodAddCount(Object text) {
     return 'Riverpod adds count: $text';
   }
 
   @override
-  String talkerRiverpodDisposeCount(Object text) {
+  String iSpectifyRiverpodDisposeCount(Object text) {
     return 'Riverpod disposes count: $text';
   }
 
   @override
-  String talkerRiverpodFailsCount(Object text) {
+  String iSpectifyRiverpodFailsCount(Object text) {
     return 'Riverpod fails count: $text';
   }
 
   @override
-  String talkerRiverpodUpdateCount(Object text) {
+  String iSpectifyRiverpodUpdateCount(Object text) {
     return 'Riverpod updates count: $text';
   }
 
   @override
-  String get talkerTypeAnalytics => 'Event logging method';
+  String get iSpectifyTypeAnalytics => 'Event logging method';
 
   @override
-  String talkerTypeAnalyticsCount(Object text) {
+  String iSpectifyTypeAnalyticsCount(Object text) {
     return 'Number of track logs: $text';
   }
 
   @override
-  String get talkerTypeBloc => 'BLoC';
+  String get iSpectifyTypeBloc => 'BLoC';
 
   @override
-  String get talkerTypeDebug => 'Verbose & debug';
+  String get iSpectifyTypeDebug => 'Verbose & debug';
 
   @override
-  String talkerTypeDebugCount(Object text) {
+  String iSpectifyTypeDebugCount(Object text) {
     return 'Verbose and debug logs count: $text';
   }
 
   @override
-  String get talkerTypeErrors => 'Errors';
+  String get iSpectifyTypeErrors => 'Errors';
 
   @override
-  String talkerTypeErrorsCount(Object text) {
+  String iSpectifyTypeErrorsCount(Object text) {
     return 'Error logs count: $text';
   }
 
   @override
-  String get talkerTypeExceptions => 'Exceptions';
+  String get iSpectifyTypeExceptions => 'Exceptions';
 
   @override
-  String talkerTypeExceptionsCount(Object text) {
+  String iSpectifyTypeExceptionsCount(Object text) {
     return 'Exception logs count: $text';
   }
 
   @override
-  String get talkerTypeGood => 'Good';
+  String get iSpectifyTypeGood => 'Good';
 
   @override
-  String talkerTypeGoodCount(Object text) {
+  String iSpectifyTypeGoodCount(Object text) {
     return 'Good logs count: $text';
   }
 
   @override
-  String get talkerTypeHttp => 'HTTP requests';
+  String get iSpectifyTypeHttp => 'HTTP requests';
 
   @override
-  String get talkerTypeInfo => 'Info';
+  String get iSpectifyTypeInfo => 'Info';
 
   @override
-  String talkerTypeInfoCount(Object text) {
+  String iSpectifyTypeInfoCount(Object text) {
     return 'Info logs count: $text';
   }
 
   @override
-  String get talkerTypePrint => 'Print method';
+  String get iSpectifyTypePrint => 'Print method';
 
   @override
-  String talkerTypePrintCount(Object text) {
+  String iSpectifyTypePrintCount(Object text) {
     return 'Print method logs count: $text';
   }
 
   @override
-  String get talkerTypeProvider => 'Providers';
+  String get iSpectifyTypeProvider => 'Providers';
 
   @override
-  String talkerTypeProviderCount(Object text) {
+  String iSpectifyTypeProviderCount(Object text) {
     return 'Provider logs count: $text';
   }
 
   @override
-  String get talkerTypeRiverpod => 'Riverpod';
+  String get iSpectifyTypeRiverpod => 'Riverpod';
 
   @override
-  String get talkerTypeWarnings => 'Warnings';
+  String get iSpectifyTypeWarnings => 'Warnings';
 
   @override
-  String talkerTypeWarningsCount(Object text) {
+  String iSpectifyTypeWarningsCount(Object text) {
     return 'Warning logs count: $text';
   }
 
@@ -513,13 +527,15 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get userEmail => 'User email';
 
   @override
-  String get verboseLogDesc => 'Verbose message log';
+  String get verboseLogDesc =>
+      'A tag used for logging detailed information for in-depth application analysis';
 
   @override
   String get viewAndManageData => 'Viewing and managing application data';
 
   @override
-  String get warningLogDesc => 'Warning log';
+  String get warningLogDesc =>
+      'A tag used for logging warning messages about potential issues in the application';
 
   @override
   String get you => 'You';

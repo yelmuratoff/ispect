@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/icons.dart';
 
 class ISpectTheme {
   const ISpectTheme({
@@ -37,9 +38,11 @@ class ISpectTheme {
         logIcons: logIcons ?? this.logIcons,
       );
 
-  Color? backgroundColor(BuildContext context) => context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
+  Color? backgroundColor(BuildContext context) =>
+      context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
 
-  Color? dividerColor(BuildContext context) => context.isDarkMode ? darkDividerColor : lightDividerColor;
+  Color? dividerColor(BuildContext context) =>
+      context.isDarkMode ? darkDividerColor : lightDividerColor;
 
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
@@ -54,6 +57,11 @@ class ISpectTheme {
 
     return mergedColors;
   }
+
+  Map<String, IconData> icons(BuildContext context) => {
+        ...logIcons,
+        ...typeIcons,
+      };
 
   static const lightTypeColors = {
     /// Base logs section
@@ -78,6 +86,7 @@ class ISpectTheme {
     'bloc-transition': Color.fromARGB(255, 85, 139, 47),
     'bloc-close': Color.fromARGB(255, 192, 38, 38),
     'bloc-create': Color.fromARGB(255, 56, 142, 60),
+    'bloc-state': Color.fromARGB(255, 0, 105, 135),
 
     'riverpod-add': Color.fromARGB(255, 56, 142, 60),
     'riverpod-update': Color.fromARGB(255, 0, 105, 135),
@@ -111,6 +120,7 @@ class ISpectTheme {
     'bloc-transition': Color(0xFF56FEA8),
     'bloc-close': Color(0xFFFF005F),
     'bloc-create': Color.fromARGB(255, 120, 230, 129),
+    'bloc-state': Color.fromARGB(255, 0, 125, 160),
 
     'riverpod-add': Color.fromARGB(255, 120, 230, 129),
     'riverpod-update': Color.fromARGB(255, 120, 180, 190),

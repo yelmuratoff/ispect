@@ -54,16 +54,24 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get basicSettings => 'Негізгі баптаулар';
 
   @override
-  String get blocCloseLogDesc => 'Блокты жабу журналы';
+  String get blocCloseLogDesc =>
+      'BLoC жабылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocCreateLogDesc => 'Блокты құру журналы';
+  String get blocCreateLogDesc =>
+      'BLoC құрылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocEventLogDesc => 'Блоктағы оқиға журналы';
+  String get blocEventLogDesc =>
+      'BLoC-тағы оқиғаны өңдеу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocTransitionLogDesc => 'Блоктағы күй ауысуы журналы';
+  String get blocTransitionLogDesc =>
+      'BLoC-тағы күйлер арасындағы ауысуларды логтау үшін қолданылатын тег';
+
+  @override
+  String get blocStateLogDesc =>
+      'BLoC-тағы ағымдағы күйді логтау үшін қолданылатын тег';
 
   @override
   String get buildVersion => 'Құрастыру нұсқасы';
@@ -86,7 +94,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get changeTheme => 'Тақырыпты өзгерту';
 
   @override
-  String get cleanHistory => 'Тарихты тазарту';
+  String get clearHistory => 'Тарихты тазарту';
 
   @override
   String get clearCache => 'Кэшті тазарту';
@@ -121,13 +129,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Мәселе құрылуда';
 
   @override
-  String get criticalLogDesc => 'Сын қате журналы';
+  String get criticalLogDesc =>
+      'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get data => 'Деректер';
 
   @override
-  String get debugLogDesc => 'Отладка хабарламасы журналы';
+  String get debugLogDesc =>
+      'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
 
   @override
   String get description => 'Сипаттама';
@@ -147,7 +157,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Кэш тазарту қатесі';
 
   @override
-  String get errorLogDesc => 'Қате журналы';
+  String get errorLogDesc =>
+      'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
 
   @override
   String get errorMessage => 'Қате туралы хабар';
@@ -156,7 +167,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorType => 'Қате түрі';
 
   @override
-  String get exceptionLogDesc => 'Ерекше жағдай журналы';
+  String get exceptionLogDesc =>
+      'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
 
   @override
   String get expandLogs => 'Журналды ашу';
@@ -183,7 +195,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get goToLogger => 'Журналға өту';
 
   @override
-  String get goodLogDesc => 'Сәтті әрекет журналы';
+  String get goodLogDesc =>
+      'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get headers => 'Headers';
@@ -202,7 +215,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
-  String get infoLogDesc => 'Ақпараттық хабарлама журналы';
+  String get infoLogDesc =>
+      'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
 
   @override
   String get initializationFailed => 'Бастапқы жүктеу қатесі';
@@ -346,141 +360,141 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get summary => 'Қысқаша мазмұн';
 
   @override
-  String talkerBlocClosesCount(Object text) {
+  String iSpectifyBlocClosesCount(Object text) {
     return 'BLoC closes count: $text';
   }
 
   @override
-  String talkerBlocCreatesCount(Object text) {
+  String iSpectifyBlocCreatesCount(Object text) {
     return 'BLoC creates count: $text';
   }
 
   @override
-  String talkerBlocEventsCount(Object text) {
+  String iSpectifyBlocEventsCount(Object text) {
     return 'BLoC оқиғаларының саны: $text';
   }
 
   @override
-  String talkerBlocTransitionCount(Object text) {
+  String iSpectifyBlocTransitionCount(Object text) {
     return 'BLoC өтпеліктерінің саны: $text';
   }
 
   @override
-  String talkerHttpFailuresCount(Object text) {
+  String iSpectifyHttpFailuresCount(Object text) {
     return 'Сәтсіз HTTP сұраныстары жазбаларының саны: $text';
   }
 
   @override
-  String talkerHttpRequestsCount(Object text) {
+  String iSpectifyHttpRequestsCount(Object text) {
     return 'HTTP сұраныстарының саны: $text';
   }
 
   @override
-  String talkerHttpResponsesCount(Object text) {
+  String iSpectifyHttpResponsesCount(Object text) {
     return 'HTTP жауаптары жазбаларының саны: $text';
   }
 
   @override
-  String get talkerLogsInfo => 'Жазба бойынша ақпарат';
+  String get iSpectifyLogsInfo => 'Жазба бойынша ақпарат';
 
   @override
-  String talkerRiverpodAddCount(Object text) {
+  String iSpectifyRiverpodAddCount(Object text) {
     return 'Riverpod қосуларының саны: $text';
   }
 
   @override
-  String talkerRiverpodDisposeCount(Object text) {
+  String iSpectifyRiverpodDisposeCount(Object text) {
     return 'Riverpod жабулар саны: $text';
   }
 
   @override
-  String talkerRiverpodFailsCount(Object text) {
+  String iSpectifyRiverpodFailsCount(Object text) {
     return 'Riverpod қателер саны: $text';
   }
 
   @override
-  String talkerRiverpodUpdateCount(Object text) {
+  String iSpectifyRiverpodUpdateCount(Object text) {
     return 'Riverpod жаңартуларының саны: $text';
   }
 
   @override
-  String get talkerTypeAnalytics => 'Іс-шараны тіркеу әдісі';
+  String get iSpectifyTypeAnalytics => 'Іс-шараны тіркеу әдісі';
 
   @override
-  String talkerTypeAnalyticsCount(Object text) {
+  String iSpectifyTypeAnalyticsCount(Object text) {
     return 'Track жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeBloc => 'BLoC';
+  String get iSpectifyTypeBloc => 'BLoC';
 
   @override
-  String get talkerTypeDebug => 'Толық және жөндеу';
+  String get iSpectifyTypeDebug => 'Толық және жөндеу';
 
   @override
-  String talkerTypeDebugCount(Object text) {
+  String iSpectifyTypeDebugCount(Object text) {
     return 'Толық және жөндеу жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeErrors => 'Қателер';
+  String get iSpectifyTypeErrors => 'Қателер';
 
   @override
-  String talkerTypeErrorsCount(Object text) {
+  String iSpectifyTypeErrorsCount(Object text) {
     return 'Қате жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeExceptions => 'Ерекшеліктер';
+  String get iSpectifyTypeExceptions => 'Ерекшеліктер';
 
   @override
-  String talkerTypeExceptionsCount(Object text) {
+  String iSpectifyTypeExceptionsCount(Object text) {
     return 'Ерекшелік жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeGood => 'Жақсы';
+  String get iSpectifyTypeGood => 'Жақсы';
 
   @override
-  String talkerTypeGoodCount(Object text) {
+  String iSpectifyTypeGoodCount(Object text) {
     return 'Жақсы жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeHttp => 'HTTP сұраныстар';
+  String get iSpectifyTypeHttp => 'HTTP сұраныстар';
 
   @override
-  String get talkerTypeInfo => 'Ақпарат';
+  String get iSpectifyTypeInfo => 'Ақпарат';
 
   @override
-  String talkerTypeInfoCount(Object text) {
+  String iSpectifyTypeInfoCount(Object text) {
     return 'Ақпараттық жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypePrint => 'Print методы';
+  String get iSpectifyTypePrint => 'Print методы';
 
   @override
-  String talkerTypePrintCount(Object text) {
+  String iSpectifyTypePrintCount(Object text) {
     return 'Print метод жазбалар саны: $text';
   }
 
   @override
-  String get talkerTypeProvider => 'Провайдерлер';
+  String get iSpectifyTypeProvider => 'Провайдерлер';
 
   @override
-  String talkerTypeProviderCount(Object text) {
+  String iSpectifyTypeProviderCount(Object text) {
     return 'Провайдерлер жазбаларының саны: $text';
   }
 
   @override
-  String get talkerTypeRiverpod => 'Riverpod';
+  String get iSpectifyTypeRiverpod => 'Riverpod';
 
   @override
-  String get talkerTypeWarnings => 'Ескертулер';
+  String get iSpectifyTypeWarnings => 'Ескертулер';
 
   @override
-  String talkerTypeWarningsCount(Object text) {
+  String iSpectifyTypeWarningsCount(Object text) {
     return 'Ескертулер саны: $text';
   }
 
@@ -515,13 +529,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get userEmail => 'Электрондық пошта';
 
   @override
-  String get verboseLogDesc => 'Толық хабарлама журналы';
+  String get verboseLogDesc =>
+      'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
 
   @override
   String get viewAndManageData => 'Қолданба мәліметтерін қарау және басқару';
 
   @override
-  String get warningLogDesc => 'Ескерту журналы';
+  String get warningLogDesc =>
+      'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
 
   @override
   String get you => 'Сіз';

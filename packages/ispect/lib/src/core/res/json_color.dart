@@ -21,7 +21,7 @@ class JsonColors {
     } else if (statusCode >= 200 && statusCode < 300) {
       return Colors.green;
     } else if (statusCode >= 400 && statusCode < 500) {
-      return Colors.orange;
+      return Colors.red;
     } else if (statusCode >= 500) {
       return Colors.red;
     } else {

@@ -1,0 +1,17 @@
+name: ispectify_dio
+description: An additional package for Dio (logging and handling). Based on Talker.
+version: 0.0.1
+homepage: https://github.com/yelmuratoff/ispect.git
+issue_tracker: https://github.com/yelmuratoff/ispect/issues
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  ansicolor: ^2.0.3
+  dio: ^5.7.0
+  ispectify: ^0.0.2
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.14

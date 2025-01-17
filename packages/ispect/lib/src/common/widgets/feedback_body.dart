@@ -1,8 +1,8 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:ispect/src/features/snapshot/src/theme/feedback_theme.dart';
 

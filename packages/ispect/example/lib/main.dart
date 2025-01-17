@@ -1,18 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
-import 'package:ispect_example/src/logs/success.dart';
+import 'package:ispect_example/src/cubit/test_cubit.dart';
+import 'package:ispect_example/src/theme_manager.dart';
+import 'package:ispectify_bloc/observer.dart';
 
-import 'package:talker_dio_logger/talker_dio_logger.dart';
-import 'package:talker_flutter/talker_flutter.dart';
-import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:ispectify_http/ispectify_http.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
-import 'package:talker_http_logger/talker_http_logger.dart';
-
-final themeProvider = StateNotifierProvider<ThemeManager, ThemeMode>((ref) => ThemeManager());
 
 final dio = Dio(
   BaseOptions(
@@ -29,35 +27,32 @@ final dummyDio = Dio(
 );
 
 void main() {
-  final talker = TalkerFlutter.init();
+  final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(
-      ProviderScope(
-        observers: [
-          TalkerRiverpodObserver(
-            talker: talker,
-            settings: const TalkerRiverpodLoggerSettings(),
-          ),
-        ],
-        child: App(talker: talker),
+      ThemeProvider(
+        child: App(iSpectify: iSpectify),
       ),
     ),
-    talker: talker,
+    iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
     // isFlutterPrintEnabled: false,
     // filters: [
     //   'Handler: "onTap"',
     //   'This exception was thrown because',
     // ],
-    onInitialized: () {
+    onInit: (iSpectify) {
+      Bloc.observer = ISpectifyBlocObserver(
+        iSpectify: iSpectify,
+      );
       client.interceptors.add(
-        TalkerHttpLogger(talker: ISpect.talker),
+        ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
       );
       dio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
-          settings: const TalkerDioLoggerSettings(
+        ISpectifyDioLogger(
+          iSpectify: ISpect.iSpectify,
+          settings: const ISpectifyDioLoggerSettings(
               // errorFilter: (response) {
               //   return (response.message?.contains('This exception was thrown because')) == false;
               // },
@@ -65,23 +60,24 @@ void main() {
         ),
       );
       dummyDio.interceptors.add(
-        TalkerDioLogger(
-          talker: ISpect.talker,
+        ISpectifyDioLogger(
+          iSpectify: ISpect.iSpectify,
         ),
       );
     },
+    onInitialized: () {},
   );
 }
 
-class App extends ConsumerWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
+class App extends StatelessWidget {
+  final ISpectify iSpectify;
+  const App({super.key, required this.iSpectify});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
+  Widget build(BuildContext context) {
     const locale = Locale('en');
     final observer = ISpectNavigatorObserver();
+    final themeMode = ThemeProvider.themeMode(context);
 
     return ISpectScopeWrapper(
       // theme: const ISpectTheme(
@@ -97,7 +93,7 @@ class App extends ConsumerWidget {
       //     SuccessLog.logKey: const Color(0xFF880E4F),
       //   },
       //   logIcons: {
-      //     // TalkerLogType.route.key: Icons.router_rounded,
+      //     // ISpectifyLogType.route.key: Icons.router_rounded,
       //     SuccessLog.logKey: Icons.check_circle_rounded,
       //   },
       // ),
@@ -122,7 +118,7 @@ class App extends ConsumerWidget {
           ),
         ],
         actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'Test',
             icon: Icons.account_tree_rounded,
             onTap: (context) {
@@ -197,171 +193,198 @@ class App extends ConsumerWidget {
   }
 }
 
-class _Home extends ConsumerWidget {
+class _Home extends StatefulWidget {
   const _Home();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(themeProvider.notifier);
+  State<_Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<_Home> {
+  final _testBloc = TestCubit();
+  @override
+  Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                await client.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
-              },
-              child: const Text('Send HTTP request (http package)'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await client.get(Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'));
-              },
-              child: const Text('Send error HTTP request (http package)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ref.read(themeProvider.notifier).toggleTheme();
-              },
-              child: const Text('Toggle theme'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ISpect.track(
-                  'Toggle',
-                  analytics: 'amplitude',
-                  event: 'ISpect',
-                  parameters: {
-                    'isISpectEnabled': iSpect.isISpectEnabled,
-                  },
-                );
-                iSpect.toggleISpect();
-              },
-              child: const Text('Toggle ISpect'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/posts/1');
-              },
-              child: const Text('Send HTTP request'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.get('/post3s/1');
-              },
-              child: const Text('Send HTTP request with error'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                dio.options.headers.addAll({
-                  'Authorization': 'Bearer token',
-                });
-                dio.get('/posts/1');
-                dio.options.headers.remove('Authorization');
-              },
-              child: const Text('Send HTTP request with Token'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final formData = FormData();
-                formData.files.add(MapEntry(
-                  'file',
-                  MultipartFile.fromBytes(
-                    [1, 2, 3],
-                    filename: 'file.txt',
-                  ),
-                ));
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 10,
+            children: [
+              BlocBuilder<TestCubit, TestState>(
+                bloc: _testBloc,
+                builder: (context, state) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      _testBloc.load(
+                        data: 'Test data',
+                      );
+                    },
+                    child: const Text('Test Cubit'),
+                  );
+                },
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await client.get(Uri.parse(
+                      'https://jsonplaceholder.typicode.com/posts/1'));
+                },
+                child: const Text('Send HTTP request (http package)'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await client.get(Uri.parse(
+                      'https://jsonplaceholder.typicode.com/po2323sts/1'));
+                },
+                child: const Text('Send error HTTP request (http package)'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ThemeProvider.toggleTheme(context);
+                },
+                child: const Text('Toggle theme'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.track(
+                    'Toggle',
+                    analytics: 'amplitude',
+                    event: 'ISpect',
+                    parameters: {
+                      'isISpectEnabled': iSpect.isISpectEnabled,
+                    },
+                  );
+                  iSpect.toggleISpect();
+                },
+                child: const Text('Toggle ISpect'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  dio.get('/posts/1');
+                },
+                child: const Text('Send HTTP request'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  dio.get('/post3s/1');
+                },
+                child: const Text('Send HTTP request with error'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  dio.options.headers.addAll({
+                    'Authorization': 'Bearer token',
+                  });
+                  dio.get('/posts/1');
+                  dio.options.headers.remove('Authorization');
+                },
+                child: const Text('Send HTTP request with Token'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final formData = FormData();
+                  formData.files.add(MapEntry(
+                    'file',
+                    MultipartFile.fromBytes(
+                      [1, 2, 3],
+                      filename: 'file.txt',
+                    ),
+                  ));
 
-                dummyDio.post(
-                  '/api/v1/files/upload',
-                  data: formData,
-                );
-              },
-              child: const Text('Upload file to dummy server'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // final formData = FormData();
-                // formData.files.add(MapEntry(
-                //   'file',
-                //   MultipartFile.fromBytes(
-                //     [1, 2, 3],
-                //     filename: 'file.txt',
-                //   ),
-                // ));
+                  dummyDio.post(
+                    '/api/v1/files/upload',
+                    data: formData,
+                  );
+                },
+                child: const Text('Upload file to dummy server'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // final formData = FormData();
+                  // formData.files.add(MapEntry(
+                  //   'file',
+                  //   MultipartFile.fromBytes(
+                  //     [1, 2, 3],
+                  //     filename: 'file.txt',
+                  //   ),
+                  // ));
 
-                // dummyDio.post(
-                //   '/api/v1/files/upload',
-                //   data: formData,
-                // );
+                  // dummyDio.post(
+                  //   '/api/v1/files/upload',
+                  //   data: formData,
+                  // );
 
-                // Prepare the file data
-                final bytes = [1, 2, 3]; // File data as bytes
-                const filename = 'file.txt';
+                  // Prepare the file data
+                  final bytes = [1, 2, 3]; // File data as bytes
+                  const filename = 'file.txt';
 
-                // Create the multipart request
-                var request = http_interceptor.MultipartRequest(
-                  'POST',
-                  Uri.parse('https://jsonplaceholder.typicode.com/api/v1/files/upload'),
-                );
+                  // Create the multipart request
+                  var request = http_interceptor.MultipartRequest(
+                    'POST',
+                    Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
+                  );
 
-                // Add the file to the request
-                request.files.add(http_interceptor.MultipartFile.fromBytes(
-                  'file', // Field name
-                  bytes,
-                  filename: filename,
-                ));
+                  // Add the file to the request
+                  request.files.add(http_interceptor.MultipartFile.fromBytes(
+                    'file', // Field name
+                    bytes,
+                    filename: filename,
+                  ));
 
-                // Send the request
-                client.send(request);
-              },
-              child: const Text('Upload file to dummy server (http)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                throw Exception('Test exception');
-              },
-              child: const Text('Throw exception'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                debugPrint('Send print message');
-              },
-              child: const Text('Send print message'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const _SecondPage(),
-                    settings: const RouteSettings(name: 'SecondPage'),
-                  ),
-                );
-              },
-              child: const Text('Go to second page'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const _SecondPage(),
-                  ),
-                );
-              },
-              child: const Text('Replace with second page'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ISpect.logTyped(SuccessLog('Success log'));
-              },
-              child: const Text('Success log'),
-            ),
-          ],
+                  // Send the request
+                  client.send(request);
+                },
+                child: const Text('Upload file to dummy server (http)'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  throw Exception('Test exception');
+                },
+                child: const Text('Throw exception'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  debugPrint('Send print message');
+                  //  final logger = CustomLogger('MyApp');
+                  //  logger.info('Application started');
+                  //  logger.warning('Low disk space');
+                  //  logger.error('Unhandled exception occurred');
+                },
+                child: const Text('Send print message'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const _SecondPage(),
+                      settings: const RouteSettings(name: 'SecondPage'),
+                    ),
+                  );
+                },
+                child: const Text('Go to second page'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const _SecondPage(),
+                    ),
+                  );
+                },
+                child: const Text('Replace with second page'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  //  ISpect.logTyped(SuccessLog('Success log'));
+                },
+                child: const Text('Success log'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -388,18 +411,4 @@ class _SecondPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class ThemeManager extends StateNotifier<ThemeMode> {
-  ThemeManager() : super(ThemeMode.dark);
-
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
-
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  ThemeMode get themeMode => state;
 }

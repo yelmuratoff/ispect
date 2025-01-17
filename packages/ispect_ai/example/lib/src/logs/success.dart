@@ -1,7 +1,7 @@
-import 'package:talker_flutter/talker_flutter.dart';
+import 'package:ispect/ispect.dart';
 
 /// `SuccessLog` - This class contains the basic structure of the log.
-class SuccessLog extends TalkerLog {
+class SuccessLog extends ISpectifyLog {
   SuccessLog(String super.message);
 
   @override

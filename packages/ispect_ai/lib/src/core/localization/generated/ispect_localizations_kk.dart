@@ -16,8 +16,7 @@ class ISpectAILocalizationKk extends ISpectAILocalization {
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
-  String get analyticsLogDesc =>
-      'Аналитика қызметіне оқиғаларды жіберу журналы';
+  String get analyticsLogDesc => 'Аналитика қызметіне оқиғаларды жіберу журналы';
 
   @override
   String get apiToken => 'API токені';

@@ -3,25 +3,24 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/ispect_jira.dart';
 import 'package:ispect_jira_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_jira_example/theme_manager.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 
 void main() {
-  final talker = TalkerFlutter.init();
+  final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(
       ThemeProvider(
-        child: App(talker: talker),
+        child: App(iSpectify: iSpectify),
       ),
     ),
-    talker: talker,
+    iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
   );
 }
 
 class App extends StatefulWidget {
-  final Talker talker;
-  const App({super.key, required this.talker});
+  final ISpectify iSpectify;
+  const App({super.key, required this.iSpectify});
 
   @override
   State<App> createState() => _AppState();
@@ -69,7 +68,7 @@ class _AppState extends State<App> {
           ),
         ],
         actionItems: [
-          TalkerActionItem(
+          ISpectifyActionItem(
             title: 'ISpect',
             icon: Icons.bug_report_outlined,
             onTap: (context) {
