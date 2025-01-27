@@ -12,10 +12,8 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-  ispect:
-    path: ../../ispect
-  ispect_ai:
-    path: ../
+  ispect: ^3.0.3
+  ispect_ai: ^0.0.4
 
   dio: ^5.7.0
 

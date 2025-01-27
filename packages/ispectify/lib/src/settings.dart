@@ -86,8 +86,7 @@ class ISpectifyOptions {
 
   String titleByKey(String key) => titles[key] ?? key;
 
-  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) =>
-      colors[key] ?? fallbackPen ?? _fallbackPen;
+  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) => colors[key] ?? fallbackPen ?? _fallbackPen;
 
   ISpectifyOptions copyWith({
     bool? enabled,

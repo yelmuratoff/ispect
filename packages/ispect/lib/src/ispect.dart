@@ -25,8 +25,7 @@ final class ISpect {
   static ISpectify get iSpectify => _instance._iSpectify;
   static set iSpectify(ISpectify iSpectify) => _instance._iSpectify = iSpectify;
 
-  static ISpectScopeModel read(BuildContext context) =>
-      ISpectScopeController.of(
+  static ISpectScopeModel read(BuildContext context) => ISpectScopeController.of(
         context,
       );
 
@@ -40,17 +39,14 @@ final class ISpect {
     void Function(Object error, StackTrace stackTrace)? onZonedError,
 
     /// Print logging in ISpect.
-    bool isPrintLoggingEnabled = kReleaseMode,
+    bool isPrintLoggingEnabled = !kReleaseMode,
 
     /// Flutter print logs.
     bool isFlutterPrintEnabled = true,
     bool isZoneErrorHandlingEnabled = true,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
     // void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     // void Function(
     //   Bloc<dynamic, dynamic> bloc,
@@ -93,16 +89,12 @@ final class ISpect {
         final exceptionAsString = error.toString();
         final stackAsString = stackTrace.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (isZoneErrorHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (isZoneErrorHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           ISpect.handle(
             exception: error,
             stackTrace: stackTrace,
@@ -137,12 +129,9 @@ final class ISpect {
   /// For riverpod, routes, dio, etc. You need do it manually.
   static Future<void> initHandling({
     required ISpectify iSpectify,
-    void Function(Object error, StackTrace stackTrace)?
-        onPlatformDispatcherError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onFlutterError,
-    void Function(FlutterErrorDetails details, StackTrace? stackTrace)?
-        onPresentError,
+    void Function(Object error, StackTrace stackTrace)? onPlatformDispatcherError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onFlutterError,
+    void Function(FlutterErrorDetails details, StackTrace? stackTrace)? onPresentError,
     // final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent,
     // final void Function(
     //   Bloc<dynamic, dynamic> bloc,
@@ -169,16 +158,12 @@ final class ISpect {
         final exceptionAsString = details.exceptionAsString();
         final stackAsString = details.stack.toString();
 
-        final isFilterNotEmpty =
-            filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+        final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
-        if (options.isFlutterPresentHandlingEnabled &&
-            (!isFilterNotEmpty || !isFilterContains)) {
+        if (options.isFlutterPresentHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
           _instance._iSpectify.handle(details, details.stack);
         } else if (!isFilterNotEmpty) {
           _instance._iSpectify.handle(details, details.stack);
@@ -206,16 +191,12 @@ final class ISpect {
       final exceptionAsString = error.toString();
       final stackAsString = stack.toString();
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
       final isFilterContains = filters.any(
-        (filter) =>
-            exceptionAsString.contains(filter) ||
-            stackAsString.contains(filter),
+        (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
       );
 
-      if (options.isPlatformDispatcherHandlingEnabled &&
-          (!isFilterNotEmpty || !isFilterContains)) {
+      if (options.isPlatformDispatcherHandlingEnabled && (!isFilterNotEmpty || !isFilterContains)) {
         _instance._iSpectify.handle(error, stack);
       } else if (!isFilterNotEmpty) {
         _instance._iSpectify.handle(error, stack);
@@ -226,16 +207,13 @@ final class ISpect {
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
 
-      final isFilterNotEmpty =
-          filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
+      final isFilterNotEmpty = filters.isNotEmpty && filters.any((element) => element.isNotEmpty);
 
       if (isFilterNotEmpty) {
         final exceptionAsString = details.toString();
         final stackAsString = details.stack.toString();
         final isFilterContains = filters.any(
-          (filter) =>
-              exceptionAsString.contains(filter) ||
-              stackAsString.contains(filter),
+          (filter) => exceptionAsString.contains(filter) || stackAsString.contains(filter),
         );
 
         if (options.isFlutterErrorHandlingEnabled && !isFilterContains) {
