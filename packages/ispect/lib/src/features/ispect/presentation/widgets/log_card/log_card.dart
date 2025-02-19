@@ -49,10 +49,10 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
 
   void _initializeValues() {
     _expanded = widget.expanded;
-    _stackTrace = _getStackTrace;
+    _stackTrace = widget.data.stackTraceLogText;
 
-    _errorMessage = _getErrorMessage;
-    _type = _getType;
+    _errorMessage = widget.data.errorLogText;
+    _type = widget.data.typeText;
   }
 
   @override
@@ -69,8 +69,7 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ??
-                    Icons.bug_report_outlined,
+                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
                 color: widget.color,
                 title: widget.data.key,
                 dateTime: widget.data.formattedTime,
@@ -86,7 +85,7 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
                     ),
                   );
                 },
-                isHttpLog: _isHttpLog,
+                isHttpLog: widget.data.isHttpLog,
                 message: widget.data.textMessage,
                 errorMessage: _errorMessage,
                 expanded: _expanded,
@@ -99,7 +98,7 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
                   type: _type,
                   message: widget.data.textMessage,
                   errorMessage: _errorMessage,
-                  isHTTP: _isHttpLog,
+                  isHTTP: widget.data.isHttpLog,
                 ),
               if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
                 _StrackTraceBody(
@@ -121,46 +120,5 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
     setState(() {
       _expanded = !_expanded;
     });
-  }
-
-  String? get _getStackTrace {
-    if ((widget.data is ISpectifyError ||
-            widget.data is ISpectifyException ||
-            widget.data.message == 'FlutterErrorDetails') &&
-        widget.data.stackTrace != null &&
-        widget.data.stackTrace.toString().isNotEmpty) {
-      return 'StackTrace:\n${widget.data.stackTrace}';
-    }
-    return null;
-  }
-
-  bool get _isHttpLog => [
-        ISpectifyLogType.httpRequest.key,
-        ISpectifyLogType.httpResponse.key,
-        ISpectifyLogType.httpError.key,
-      ].contains(widget.data.key);
-
-  String? get _getErrorMessage {
-    var txt = widget.data.exception?.toString();
-
-    if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
-      txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';
-    }
-    final isHttpLog = [
-      ISpectifyLogType.httpRequest.key,
-      ISpectifyLogType.httpResponse.key,
-      ISpectifyLogType.httpError.key,
-    ].contains(widget.data.key);
-    if (isHttpLog) {
-      return widget.data.textMessage;
-    }
-    return txt;
-  }
-
-  String? get _getType {
-    if (widget.data is! ISpectifyError && widget.data is! ISpectifyException) {
-      return null;
-    }
-    return 'Type: ${widget.data.exception?.runtimeType.toString() ?? widget.data.error?.runtimeType.toString() ?? ''}';
   }
 }
