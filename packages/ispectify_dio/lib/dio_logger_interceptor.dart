@@ -185,6 +185,12 @@ class ISpectifyDioLogger extends Interceptor {
     }
     try {
       final message = '${err.requestOptions.uri}';
+      Map<String, dynamic> data;
+      if (err.response?.data is Map<String, dynamic>) {
+        data = err.response?.data as Map<String, dynamic>;
+      } else {
+        data = {'data': err.response?.data};
+      }
       final httpErrorLog = DioErrorLog(
         message,
         method: err.requestOptions.method,
@@ -195,7 +201,7 @@ class ISpectifyDioLogger extends Interceptor {
         requestHeaders: err.requestOptions.headers,
         headers: err.response?.headers.map
             .map((key, value) => MapEntry(key, value.toString())),
-        body: err.response?.data as Map<String, dynamic>?,
+        body: data,
         settings: settings,
       );
       _iSpectify.logCustom(httpErrorLog);

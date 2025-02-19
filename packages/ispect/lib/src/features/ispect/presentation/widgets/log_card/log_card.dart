@@ -99,6 +99,7 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
                   type: _type,
                   message: widget.data.textMessage,
                   errorMessage: _errorMessage,
+                  isHTTP: _isHttpLog,
                 ),
               if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
                 _StrackTraceBody(

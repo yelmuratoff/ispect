@@ -10,7 +10,8 @@ class ISpectJiraLocalizationEn extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'You have successfully authorized';
 
   @override
-  String get pleaseCheckAuthCred => 'An error occurred. Please double-check your authorization credentials.';
+  String get pleaseCheckAuthCred =>
+      'An error occurred. Please double-check your authorization credentials.';
 
   @override
   String get pickedImages => 'Selected images';
@@ -111,7 +112,8 @@ class ISpectJiraLocalizationEn extends ISpectJiraLocalization {
   String get fieldIsRequired => 'This field is required';
 
   @override
-  String get jiraInstruction => '1. Go to your Jira site.\n2. Click your profile avatar in the bottom-left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to API token management and click on it.\n7. Generate a token, then copy and paste it.';
+  String get jiraInstruction =>
+      '1. Go to your Jira site.\n2. Click your profile avatar in the bottom-left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to API token management and click on it.\n7. Generate a token, then copy and paste it.';
 
   @override
   String get projectDomain => 'Project domain';

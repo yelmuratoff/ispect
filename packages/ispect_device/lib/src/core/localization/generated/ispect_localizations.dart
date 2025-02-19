@@ -63,15 +63,18 @@ import 'ispect_localizations_ru.dart';
 /// be consistent with the languages listed in the ISpectDeviceLocalization.supportedLocales
 /// property.
 abstract class ISpectDeviceLocalization {
-  ISpectDeviceLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ISpectDeviceLocalization(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectDeviceLocalization? of(BuildContext context) {
-    return Localizations.of<ISpectDeviceLocalization>(context, ISpectDeviceLocalization);
+    return Localizations.of<ISpectDeviceLocalization>(
+        context, ISpectDeviceLocalization);
   }
 
-  static const LocalizationsDelegate<ISpectDeviceLocalization> delegate = _ISpectDeviceLocalizationDelegate();
+  static const LocalizationsDelegate<ISpectDeviceLocalization> delegate =
+      _ISpectDeviceLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,7 +86,8 @@ abstract class ISpectDeviceLocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -122,35 +126,38 @@ abstract class ISpectDeviceLocalization {
   String totalFilesCount(Object count);
 }
 
-class _ISpectDeviceLocalizationDelegate extends LocalizationsDelegate<ISpectDeviceLocalization> {
+class _ISpectDeviceLocalizationDelegate
+    extends LocalizationsDelegate<ISpectDeviceLocalization> {
   const _ISpectDeviceLocalizationDelegate();
 
   @override
   Future<ISpectDeviceLocalization> load(Locale locale) {
-    return SynchronousFuture<ISpectDeviceLocalization>(lookupISpectDeviceLocalization(locale));
+    return SynchronousFuture<ISpectDeviceLocalization>(
+        lookupISpectDeviceLocalization(locale));
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'kk', 'ru'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'kk', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectDeviceLocalizationDelegate old) => false;
 }
 
 ISpectDeviceLocalization lookupISpectDeviceLocalization(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return ISpectDeviceLocalizationEn();
-    case 'kk': return ISpectDeviceLocalizationKk();
-    case 'ru': return ISpectDeviceLocalizationRu();
+    case 'en':
+      return ISpectDeviceLocalizationEn();
+    case 'kk':
+      return ISpectDeviceLocalizationKk();
+    case 'ru':
+      return ISpectDeviceLocalizationRu();
   }
 
   throw FlutterError(
-    'ISpectDeviceLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'ISpectDeviceLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }
