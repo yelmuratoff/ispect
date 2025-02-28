@@ -62,4 +62,41 @@ extension ISpectDataX on ISpectiyData {
 
     return '''[Item with hashcode:$hashCode\nTime: $formattedTime\nTitle: $title\nMessage: $message\nException: $exceptionTitle\nError: $error\nStackTrace: $stackTrace]''';
   }
+
+  String? get stackTraceLogText {
+    if ((this is ISpectifyError ||
+            this is ISpectifyException ||
+            message == 'FlutterErrorDetails') &&
+        stackTrace != null &&
+        stackTrace.toString().isNotEmpty) {
+      return 'StackTrace:\n$stackTrace';
+    }
+    return null;
+  }
+
+  String? get errorLogText {
+    var txt = exception?.toString();
+
+    if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
+      txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';
+    }
+
+    if (isHttpLog) {
+      return textMessage;
+    }
+    return txt;
+  }
+
+  bool get isHttpLog => [
+        ISpectifyLogType.httpRequest.key,
+        ISpectifyLogType.httpResponse.key,
+        ISpectifyLogType.httpError.key,
+      ].contains(key);
+
+  String? get typeText {
+    if (this is! ISpectifyError && this is! ISpectifyException) {
+      return null;
+    }
+    return 'Type: ${exception?.runtimeType.toString() ?? error?.runtimeType.toString() ?? ''}';
+  }
 }
