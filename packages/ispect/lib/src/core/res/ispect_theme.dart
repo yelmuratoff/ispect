@@ -10,16 +10,19 @@ class ISpectTheme {
     this.darkDividerColor,
     this.logColors = const {},
     this.logIcons = const {},
+    this.logDescriptions = const {},
+    this.disabledLogDescriptions = const {},
   });
 
   final Color? lightBackgroundColor;
   final Color? darkBackgroundColor;
-
   final Color? lightDividerColor;
   final Color? darkDividerColor;
 
   final Map<String, Color> logColors;
   final Map<String, IconData> logIcons;
+  final Map<String, String> logDescriptions;
+  final Set<String> disabledLogDescriptions;
 
   ISpectTheme copyWith({
     Color? lightBackgroundColor,
@@ -28,6 +31,8 @@ class ISpectTheme {
     Color? darkDividerColor,
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
+    Map<String, String>? logDescriptions,
+    Set<String>? disabledLogDescriptions,
   }) =>
       ISpectTheme(
         lightBackgroundColor: lightBackgroundColor ?? this.lightBackgroundColor,
@@ -36,6 +41,9 @@ class ISpectTheme {
         darkDividerColor: darkDividerColor ?? this.darkDividerColor,
         logColors: logColors ?? this.logColors,
         logIcons: logIcons ?? this.logIcons,
+        logDescriptions: logDescriptions ?? this.logDescriptions,
+        disabledLogDescriptions:
+            disabledLogDescriptions ?? this.disabledLogDescriptions,
       );
 
   Color? backgroundColor(BuildContext context) =>
@@ -45,7 +53,7 @@ class ISpectTheme {
       context.isDarkMode ? darkDividerColor : lightDividerColor;
 
   Color getTypeColor(BuildContext context, {required String? key}) {
-    if (key == null) return Colors.grey;
+    if (key == null) return Colors.transparent;
     return colors(context)[key] ?? Colors.grey;
   }
 
@@ -54,14 +62,29 @@ class ISpectTheme {
       ...logColors,
       ...context.isDarkMode ? darkTypeColors : lightTypeColors,
     };
-
     return mergedColors;
   }
 
-  Map<String, IconData> icons(BuildContext context) => {
-        ...logIcons,
-        ...typeIcons,
-      };
+  Map<String, IconData> icons(BuildContext context) {
+    final mergedIcons = {
+      ...logIcons,
+      ...typeIcons,
+    };
+
+    return mergedIcons;
+  }
+
+  Map<String, String> descriptions(BuildContext context) {
+    final mergedDescriptions = {
+      ...defaultLogDescriptions(context),
+      ...logDescriptions,
+    };
+
+    return Map.fromEntries(
+      mergedDescriptions.entries
+          .where((entry) => !disabledLogDescriptions.contains(entry.key)),
+    );
+  }
 
   static const lightTypeColors = {
     /// Base logs section
@@ -130,4 +153,33 @@ class ISpectTheme {
     /// Flutter section
     'route': Color(0xFFAF5FFF),
   };
+
+  Map<String, String> defaultLogDescriptions(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return {
+      'error': l10n.errorLogDesc,
+      'critical': l10n.criticalLogDesc,
+      'info': l10n.infoLogDesc,
+      'debug': l10n.debugLogDesc,
+      'verbose': l10n.verboseLogDesc,
+      'warning': l10n.warningLogDesc,
+      'exception': l10n.exceptionLogDesc,
+      'good': l10n.goodLogDesc,
+      'print': l10n.printLogDesc,
+      'analytics': l10n.analyticsLogDesc,
+      'http-error': l10n.httpErrorLogDesc,
+      'http-request': l10n.httpRequestLogDesc,
+      'http-response': l10n.httpResponseLogDesc,
+      'bloc-event': l10n.blocEventLogDesc,
+      'bloc-transition': l10n.blocTransitionLogDesc,
+      'bloc-close': l10n.blocCloseLogDesc,
+      'bloc-create': l10n.blocCreateLogDesc,
+      'bloc-state': l10n.blocStateLogDesc,
+      'riverpod-add': l10n.riverpodAddLogDesc,
+      'riverpod-update': l10n.riverpodUpdateLogDesc,
+      'riverpod-dispose': l10n.riverpodDisposeLogDesc,
+      'riverpod-fail': l10n.riverpodFailLogDesc,
+      'route': l10n.routeLogDesc,
+    };
+  }
 }
