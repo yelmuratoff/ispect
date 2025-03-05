@@ -1,17 +1,15 @@
-// ignore_for_file: avoid_positional_boolean_parameters, prefer_foreach, inference_failure_on_collection_literal
-
-import 'dart:convert';
+// ignore_for_file: prefer_foreach, avoid_positional_boolean_parameters
 
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/json_viewer/src/json_tree_node.dart';
 import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 import 'package:ispect/src/features/json_viewer/src/utils/json_parser.dart';
 
 class JsonTreeView extends StatefulWidget {
-  //
-
   const JsonTreeView({
-    required this.jsonString,
+    required this.json,
     super.key,
     this.expandIcon,
     this.collapseIcon,
@@ -30,7 +28,7 @@ class JsonTreeView extends StatefulWidget {
     this.nodePadding = const EdgeInsets.symmetric(vertical: 4),
   });
 
-  final String jsonString;
+  final Map<String, dynamic> json;
 
   final Widget? expandIcon;
   final Widget? collapseIcon;
@@ -80,7 +78,7 @@ class JsonTreeViewState extends State<JsonTreeView> {
   @override
   void didUpdateWidget(JsonTreeView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.jsonString != oldWidget.jsonString) {
+    if (widget.json != oldWidget.json) {
       _searchController.clear();
       _searchQuery = '';
       _searchMatchedNodes.clear();
@@ -90,14 +88,13 @@ class JsonTreeViewState extends State<JsonTreeView> {
   }
 
   void _parseJson() {
-    if (widget.jsonString.trim().isEmpty) {
+    if (widget.json.isEmpty) {
       _rootNode = JsonParser.parse({});
       return;
     }
 
     try {
-      final dynamic jsonData = json.decode(widget.jsonString);
-      _rootNode = JsonParser.parse(jsonData);
+      _rootNode = JsonParser.parse(widget.json);
       if (widget.initiallyExpanded) {
         _expandAllNodesWithoutSetState(_rootNode);
       }
@@ -192,45 +189,85 @@ class JsonTreeViewState extends State<JsonTreeView> {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-        color: widget.backgroundColor,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.enableSearch) _buildSearchBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: _buildNode(_rootNode),
+  Widget build(BuildContext context) => SelectionArea(
+        child: Container(
+          color: widget.backgroundColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.enableSearch) _buildSearchBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: _buildNode(_rootNode),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
 
-  Widget _buildSearchBar() => Padding(
-        padding: const EdgeInsets.all(8),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: widget.searchHintText,
-            prefixIcon: const Icon(Icons.search),
-            border: const OutlineInputBorder(),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      _handleSearch('');
-                    },
-                  )
-                : null,
-          ),
-          onChanged: _handleSearch,
+  Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+    final iSpect = ISpect.read(context);
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: TextFormField(
+        controller: _searchController,
+        style: theme.textTheme.bodyLarge!.copyWith(
+          color: context.ispectTheme.textColor,
+          fontSize: 14,
         ),
-      );
+        onChanged: _handleSearch,
+        cursorColor: context.isDarkMode
+            ? context.ispectTheme.colorScheme.primaryContainer
+            : context.ispectTheme.colorScheme.primary,
+        onTapOutside: (_) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        decoration: InputDecoration(
+          fillColor: theme.cardColor,
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: context.isDarkMode
+                  ? context.ispectTheme.colorScheme.primaryContainer
+                  : context.ispectTheme.colorScheme.primary,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: iSpect.theme.dividerColor(context) ??
+                  context.ispectTheme.dividerColor,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: iSpect.theme.dividerColor(context) ??
+                  context.ispectTheme.dividerColor,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          prefixIcon: Icon(
+            Icons.search,
+            color: context.isDarkMode
+                ? context.ispectTheme.colorScheme.primaryContainer
+                : context.ispectTheme.colorScheme.primary,
+            size: 20,
+          ),
+          hintText: context.ispectL10n.search,
+          hintStyle: theme.textTheme.bodyLarge!.copyWith(
+            color: context.ispectTheme.hintColor,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildNode(JsonNode node, [int depth = 0]) {
     final isExpanded = _expandedNodes[node.key] ?? false;
@@ -255,19 +292,18 @@ class JsonTreeViewState extends State<JsonTreeView> {
           isHighlighted: isMatched,
           highlightColor: widget.searchHighlightColor,
           searchQuery: _searchQuery,
-          padding: widget.nodePadding, // 传递节点内边距
+          padding: widget.nodePadding,
         ),
         AnimatedCrossFade(
           firstChild: const SizedBox.shrink(),
           secondChild: Padding(
-            padding: EdgeInsets.only(left: widget.indentWidth), // 使用配置的缩进宽度
+            padding: EdgeInsets.only(left: widget.indentWidth),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: node.children
                   .map(
                     (child) => Padding(
-                      padding:
-                          EdgeInsets.only(top: widget.nodeSpacing), // 添加节点间距
+                      padding: EdgeInsets.only(top: widget.nodeSpacing),
                       child: _buildNode(child, depth + 1),
                     ),
                   )

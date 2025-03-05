@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -46,7 +44,7 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
       ),
       body: JsonTreeView(
         showControls: true,
-        jsonString: json.encode(_data.toJson()),
+        json: _data.toJson(),
         keyStyle: TextStyle(
           color: context.ispectTheme.colorScheme.primary,
           fontWeight: FontWeight.bold,

@@ -49,11 +49,14 @@ class JsonTreeNode extends StatelessWidget {
               onTap: (type == JsonNodeType.object || type == JsonNodeType.array)
                   ? onTap
                   : null,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(4),
+              ),
               child: _buildExpandButton(),
             ),
             const Gap(4),
             Expanded(
-              child: SelectableText.rich(
+              child: Text.rich(
                 TextSpan(
                   children: _buildTextSpans(),
                 ),
@@ -75,13 +78,13 @@ class JsonTreeNode extends StatelessWidget {
         child: isExpanded
             ? (collapseIcon ??
                 Icon(
-                  Icons.keyboard_arrow_down,
+                  Icons.keyboard_arrow_down_rounded,
                   size: 18,
                   color: Colors.grey[600],
                 ))
             : (expandIcon ??
                 Icon(
-                  Icons.keyboard_arrow_right,
+                  Icons.keyboard_arrow_right_rounded,
                   size: 18,
                   color: Colors.grey[600],
                 )),
@@ -90,7 +93,7 @@ class JsonTreeNode extends StatelessWidget {
     return const SizedBox(width: 20);
   }
 
-  List<TextSpan> _buildTextSpans() {
+  List<InlineSpan> _buildTextSpans() {
     final defaultKeyStyle = TextStyle(
       fontWeight: FontWeight.w600,
       color: Colors.blue[800],
@@ -104,9 +107,21 @@ class JsonTreeNode extends StatelessWidget {
 
     if (searchQuery.isEmpty) {
       return [
-        TextSpan(
-          text: keyName,
-          style: keyStyle ?? defaultKeyStyle,
+        WidgetSpan(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color:
+                  keyStyle?.color?.withValues(alpha: 0.2) ?? Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Text(
+                keyName,
+                style: keyStyle ?? defaultKeyStyle,
+              ),
+            ),
+          ),
         ),
         TextSpan(
           text: ': ',
@@ -115,10 +130,28 @@ class JsonTreeNode extends StatelessWidget {
             fontWeight: FontWeight.w400,
           ),
         ),
-        TextSpan(
-          text: _getDisplayValue(),
-          style: valueStyle ?? defaultValueStyle,
-        ),
+        if (type == JsonNodeType.object || type == JsonNodeType.array)
+          TextSpan(
+            text: _getDisplayValue(),
+            style: defaultValueStyle,
+          )
+        else
+          WidgetSpan(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: valueStyle?.color?.withValues(alpha: 0.2) ??
+                    Colors.grey[200],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Text(
+                  _getDisplayValue(),
+                  style: valueStyle ?? defaultValueStyle,
+                ),
+              ),
+            ),
+          ),
       ];
     }
 
