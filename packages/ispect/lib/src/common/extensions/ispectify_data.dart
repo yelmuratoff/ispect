@@ -99,4 +99,17 @@ extension ISpectDataX on ISpectiyData {
     }
     return 'Type: ${exception?.runtimeType.toString() ?? error?.runtimeType.toString() ?? ''}';
   }
+
+  Map<String, dynamic> toJson() => {
+        if (key != null) 'key': key,
+        'time': time.toIso8601String(),
+        if (title != null) 'title': title,
+        if (logLevel != null) 'log-level': logLevel,
+        if (message != null) 'message': message,
+        if (exception != null) 'exception': exception,
+        if (error != null) 'error': error,
+        if (stackTrace != null) 'stack-trace': stackTrace,
+        if (pen != null) 'pen': pen.toString(),
+        if (data != null) 'data': data,
+      };
 }

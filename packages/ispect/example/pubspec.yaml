@@ -9,8 +9,6 @@ environment:
 dependency_overrides:
   ispect:
     path: ../ispect
-  ispectify:
-    path: ../ispectify
 
 dependencies:
   flutter:

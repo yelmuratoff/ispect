@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/builder/column_builder.dart';
-import 'package:ispect/src/common/widgets/widget/base_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
 class ISpectifySettingsBottomSheets extends StatefulWidget {
@@ -84,81 +83,117 @@ class _ISpectifySettingsBottomSheetState
       ),
     ];
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.87,
-      ),
-      child: BaseBottomSheet(
-        title: context.ispectL10n.settings,
-        child: Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16, top: 8),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: context.ispectTheme.cardColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      border: Border.fromBorderSide(
-                        BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
-                        ),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.ispectTheme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: CustomScrollView(
+          controller: scrollController,
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              sliver: SliverToBoxAdapter(
+                child: _Header(title: context.ispectL10n.settings),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16)
+                    .copyWith(bottom: 16, top: 8),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: context.ispectTheme.cardColor,
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    border: Border.fromBorderSide(
+                      BorderSide(
+                        color: iSpect.theme.dividerColor(context) ??
+                            context.ispectTheme.dividerColor,
                       ),
                     ),
-                    child: ColumnBuilder(
-                      itemCount: settings.length,
-                      itemBuilder: (_, index) => Column(
-                        children: [
-                          settings[index],
-                          if (index != settings.length - 1)
-                            Divider(
-                              color: iSpect.theme.dividerColor(
-                                    context,
-                                  ) ??
-                                  context.ispectTheme.dividerColor,
-                              height: 1,
-                            ),
-                        ],
-                      ),
+                  ),
+                  child: ColumnBuilder(
+                    itemCount: settings.length,
+                    itemBuilder: (_, index) => Column(
+                      children: [
+                        settings[index],
+                        if (index != settings.length - 1)
+                          Divider(
+                            color: iSpect.theme.dividerColor(
+                                  context,
+                                ) ??
+                                context.ispectTheme.dividerColor,
+                            height: 1,
+                          ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: context.ispectTheme.cardColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      border: Border.fromBorderSide(
-                        BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
-                        ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16)
+                    .copyWith(bottom: 16),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: context.ispectTheme.cardColor,
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    border: Border.fromBorderSide(
+                      BorderSide(
+                        color: iSpect.theme.dividerColor(context) ??
+                            context.ispectTheme.dividerColor,
                       ),
                     ),
-                    child: ColumnBuilder(
-                      itemCount: widget.actions.length,
-                      itemBuilder: (_, index) {
-                        final action = widget.actions[index];
-                        return _ActionTile(
-                          action: action,
-                          showDivider: index != widget.actions.length - 1,
-                        );
-                      },
-                    ),
+                  ),
+                  child: ColumnBuilder(
+                    itemCount: widget.actions.length,
+                    itemBuilder: (_, index) {
+                      final action = widget.actions[index];
+                      return _ActionTile(
+                        action: action,
+                        showDivider: index != widget.actions.length - 1,
+                      );
+                    },
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.ispectTheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style:
+              theme.textTheme.headlineSmall?.copyWith(color: theme.textColor),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          visualDensity: VisualDensity.compact,
+          icon: Icon(Icons.close_rounded, color: theme.textColor),
+        ),
+      ],
     );
   }
 }

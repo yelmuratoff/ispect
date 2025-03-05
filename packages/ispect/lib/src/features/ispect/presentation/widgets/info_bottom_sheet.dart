@@ -72,20 +72,17 @@ class _InfoDescription extends StatelessWidget {
     );
   }
 
-  Map<String, Map<String, String>> _getLogCategories(
+  Map<String, List<LogDescription>> _getLogCategories(
     BuildContext context,
     ISpectScopeModel iSpect,
   ) {
     final descriptions = iSpect.theme.descriptions(context);
-    final disabledLogs = iSpect.theme.disabledLogDescriptions;
 
-    final categories = <String, Map<String, String>>{};
+    final categories = <String, List<LogDescription>>{};
 
-    for (final entry in descriptions.entries) {
-      if (!disabledLogs.contains(entry.key)) {
-        final category = _getCategory(entry.key, context);
-        categories.putIfAbsent(category, () => {})[entry.key] = entry.value;
-      }
+    for (final log in descriptions) {
+      final category = _getCategory(log.key, context);
+      categories.putIfAbsent(category, () => []).add(log);
     }
 
     return categories;
@@ -137,7 +134,7 @@ class _CategorySection extends StatelessWidget {
   });
 
   final String title;
-  final Map<String, String> logs;
+  final List<LogDescription> logs;
   final ISpectScopeModel iSpect;
 
   @override
@@ -156,22 +153,22 @@ class _CategorySection extends StatelessWidget {
           ),
         ),
         const Gap(8),
-        ...logs.entries.map((entry) => _LogItem(entry: entry, iSpect: iSpect)),
+        ...logs.map((log) => _LogItem(log: log, iSpect: iSpect)),
       ],
     );
   }
 }
 
 class _LogItem extends StatelessWidget {
-  const _LogItem({required this.entry, required this.iSpect});
+  const _LogItem({required this.log, required this.iSpect});
 
-  final MapEntry<String, String> entry;
+  final LogDescription log;
   final ISpectScopeModel iSpect;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.ispectTheme;
-    final typeColor = iSpect.theme.getTypeColor(context, key: entry.key);
+    final typeColor = iSpect.theme.getTypeColor(context, key: log.key);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -179,11 +176,11 @@ class _LogItem extends StatelessWidget {
         text: TextSpan(
           children: [
             TextSpan(
-              text: '${entry.key}: ',
+              text: '${log.key}: ',
               style: TextStyle(color: typeColor, fontWeight: FontWeight.w500),
             ),
             TextSpan(
-              text: entry.value,
+              text: log.description,
               style: TextStyle(color: theme.textColor),
             ),
           ],

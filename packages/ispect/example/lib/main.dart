@@ -37,11 +37,6 @@ void main() {
     ),
     iSpectify: iSpectify,
     isPrintLoggingEnabled: true,
-    // isFlutterPrintEnabled: false,
-    // filters: [
-    //   'Handler: "onTap"',
-    //   'This exception was thrown because',
-    // ],
     onInit: (iSpectify) {
       Bloc.observer = ISpectifyBlocObserver(
         iSpectify: iSpectify,
@@ -82,7 +77,7 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    const locale = Locale('en');
+    const locale = Locale('uz');
     final observer = ISpectNavigatorObserver();
     final themeMode = ThemeProvider.themeMode(context);
 
@@ -148,35 +143,39 @@ class _AppState extends State<App> {
             ],
           ),
           isISpectEnabled: true,
-          theme: ISpectTheme(
-            logDescriptions: {
-              'error': 'Some error log description',
-              'info': 'Blah blah blah',
-            },
-            disabledLogDescriptions: {
-              'riverpod-add',
-              'riverpod-update',
-              'riverpod-dispose',
-              'riverpod-fail',
-            },
-          ),
+          theme: ISpectTheme(logDescriptions: [
+            LogDescription(
+              key: 'error',
+              description: 'Some error log description',
+            ),
+            LogDescription(
+              key: 'info',
+              description: 'Blah blah blah',
+            ),
+            LogDescription(
+              key: 'riverpod-add',
+              description: 'Riverpod add',
+              isDisabled: true,
+            ),
+          ]
+              // logDescriptions: {
+              //   'error': 'Some error log description',
+              //   'info': 'Blah blah blah',
+              // },
+              // disabledLogDescriptions: {
+              //   'riverpod-add',
+              //   'riverpod-update',
+              //   'riverpod-dispose',
+              //   'riverpod-fail',
+              // },
+              ),
           child: ISpectBuilder(
             observer: observer,
             controller: _controller,
-
             initialPosition: (x: 0, y: 200),
-            // initialJiraData: (
-            //   apiToken:
-            //       'Token',
-            //   domain: 'example',
-            //   email: 'name.surname@example.com',
-            //   projectId: '00000',
-            //   projectKey: 'AAAA'
-            // ),
             onPositionChanged: (x, y) {
               debugPrint('x: $x, y: $y');
             },
-
             child: child,
           ),
         );

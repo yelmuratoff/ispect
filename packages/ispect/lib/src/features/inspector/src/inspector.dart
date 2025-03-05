@@ -19,6 +19,7 @@ import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
+import 'package:ispect/src/features/ispect/presentation/pages/theme_scheme/theme_debug_screen.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -542,6 +543,20 @@ class InspectorState extends State<Inspector> {
                     enableBadge: feedback.isVisible,
                     onTap: (_) {
                       _toggleFeedback(feedback, context);
+                    },
+                  ),
+                  (
+                    icon: Icons.color_lens_rounded,
+                    enableBadge: false,
+                    onTap: (_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const ThemeDebuggerScreen(),
+                          settings: const RouteSettings(
+                            name: 'Theme Scheme Screen',
+                          ),
+                        ),
+                      );
                     },
                   ),
                   ...widget.options.panelItems,
