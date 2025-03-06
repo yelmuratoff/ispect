@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_dio/data.dart';
 import 'package:ispectify_dio/dio_logger_settings.dart';
 
 const _encoder = JsonEncoder.withIndent('  ');
@@ -8,6 +9,7 @@ const _encoder = JsonEncoder.withIndent('  ');
 class DioRequestLog extends ISpectiyData {
   DioRequestLog(
     super.message, {
+    required this.requestData,
     required this.settings,
     required this.method,
     required this.url,
@@ -18,13 +20,7 @@ class DioRequestLog extends ISpectiyData {
           title: getKey,
           key: getKey,
           pen: settings.requestPen ?? (AnsiPen()..xterm(219)),
-          additionalData: {
-            'method': method,
-            'url': url,
-            'path': path,
-            'headers': headers,
-            'body': body,
-          },
+          additionalData: requestData.toJson,
         );
 
   final String method;
@@ -33,6 +29,7 @@ class DioRequestLog extends ISpectiyData {
   final Map<String, dynamic> headers;
   final Object? body;
   final ISpectifyDioLoggerSettings settings;
+  final DioRequestData requestData;
 
   static const getKey = 'http-request';
 
@@ -61,6 +58,7 @@ class DioRequestLog extends ISpectiyData {
 class DioResponseLog extends ISpectiyData {
   DioResponseLog(
     super.message, {
+    required this.responseData,
     required this.settings,
     required this.method,
     required this.url,
@@ -75,17 +73,19 @@ class DioResponseLog extends ISpectiyData {
           key: getKey,
           title: getKey,
           pen: settings.responsePen ?? (AnsiPen()..xterm(46)),
-          additionalData: {
-            'method': method,
-            'url': url,
-            'path': path,
-            'status_code': statusCode,
-            'status_message': statusMessage,
-            'request_headers': requestHeaders,
-            'headers': headers,
-            'request_body': requestBody,
-            'response_body': responseBody,
-          },
+          additionalData: responseData.toJson,
+          // additionalData: {
+          //   'method': method,
+          //   'url': url,
+          //   'path': path,
+          //   'status_code': statusCode,
+          //   'status_message': statusMessage,
+          //   'request_headers': requestHeaders,
+          //   'headers': headers,
+          //   'request_body': requestBody,
+          //   'response_body': responseBody,
+
+          // },
         );
 
   final String? method;
@@ -98,6 +98,7 @@ class DioResponseLog extends ISpectiyData {
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
   final ISpectifyDioLoggerSettings settings;
+  final DioResponseData responseData;
 
   static const getKey = 'http-response';
 
@@ -135,6 +136,7 @@ class DioErrorLog extends ISpectiyData {
   DioErrorLog(
     super.message, {
     required this.method,
+    required this.errorData,
     required this.url,
     required this.path,
     required this.statusCode,
@@ -147,16 +149,7 @@ class DioErrorLog extends ISpectiyData {
           key: getKey,
           title: getKey,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: {
-            'method': method,
-            'url': url,
-            'path': path,
-            'status_code': statusCode,
-            'status_message': statusMessage,
-            'request_headers': requestHeaders,
-            'headers': headers,
-            'body': body,
-          },
+          additionalData: errorData.toJson,
         );
 
   final String? method;
@@ -168,6 +161,7 @@ class DioErrorLog extends ISpectiyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? body;
   final ISpectifyDioLoggerSettings settings;
+  final DioErrorData errorData;
 
   static const getKey = 'http-error';
 

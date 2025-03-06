@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_dio/data.dart';
 import 'package:ispectify_dio/dio_logger_settings.dart';
 import 'package:ispectify_dio/dio_logs.dart';
 
@@ -79,6 +80,7 @@ class ISpectifyDioLogger extends Interceptor {
         headers: options.headers,
         body: options.data,
         settings: settings,
+        requestData: DioRequestData(options),
       );
       _iSpectify.logCustom(httpLog);
     } catch (_) {
@@ -167,6 +169,10 @@ class ISpectifyDioLogger extends Interceptor {
             .map((key, value) => MapEntry(key, value.toString())),
         requestBody: requestBody,
         responseBody: responseBody,
+        responseData: DioResponseData(
+          response: response,
+          requestData: DioRequestData(response.requestOptions),
+        ),
       );
       _iSpectify.logCustom(httpLog);
     } catch (_) {
@@ -192,6 +198,7 @@ class ISpectifyDioLogger extends Interceptor {
       } else {
         data = {'data': err.response?.data};
       }
+      final requestData = DioRequestData(err.requestOptions);
       final httpErrorLog = DioErrorLog(
         message,
         method: err.requestOptions.method,
@@ -204,6 +211,14 @@ class ISpectifyDioLogger extends Interceptor {
             .map((key, value) => MapEntry(key, value.toString())),
         body: data,
         settings: settings,
+        errorData: DioErrorData(
+          exception: err,
+          requestData: requestData,
+          responseData: DioResponseData(
+            response: err.response,
+            requestData: requestData,
+          ),
+        ),
       );
       _iSpectify.logCustom(httpErrorLog);
     } catch (_) {

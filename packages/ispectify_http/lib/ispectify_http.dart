@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_http/data.dart';
 
 class ISpectifyHttpLogger extends InterceptorContract {
   ISpectifyHttpLogger({ISpectify? iSpectify}) {
@@ -66,6 +67,14 @@ class ISpectifyHttpLogger extends InterceptorContract {
           requestHeaders: response.request?.headers,
           headers: response.headers,
           body: body ?? {},
+          responseData: HttpResponseData(
+            baseResponse: response,
+            requestData: HttpRequestData(response.request),
+            response: response is Response ? response : null,
+            multipartRequest: response.request is MultipartRequest
+                ? response.request! as MultipartRequest
+                : null,
+          ),
         ),
       );
     } else {
@@ -81,6 +90,14 @@ class ISpectifyHttpLogger extends InterceptorContract {
           headers: response.headers,
           requestBody: body ?? {},
           responseBody: response,
+          responseData: HttpResponseData(
+            baseResponse: response,
+            requestData: HttpRequestData(response.request),
+            response: response is Response ? response : null,
+            multipartRequest: response.request is MultipartRequest
+                ? response.request! as MultipartRequest
+                : null,
+          ),
         ),
       );
     }
@@ -139,6 +156,7 @@ class HttpRequestLog extends ISpectiyData {
 class HttpResponseLog extends ISpectiyData {
   HttpResponseLog(
     super.message, {
+    required this.responseData,
     required this.method,
     required this.url,
     required this.path,
@@ -152,17 +170,18 @@ class HttpResponseLog extends ISpectiyData {
           key: getKey,
           title: getKey,
           pen: AnsiPen()..xterm(46),
-          additionalData: {
-            'method': method,
-            'url': url,
-            'path': path,
-            'status_code': statusCode,
-            'status_message': statusMessage,
-            'request_headers': requestHeaders,
-            'headers': headers,
-            'request_body': requestBody,
-            'response_body': responseBody,
-          },
+          additionalData: responseData?.toJson,
+          // additionalData: {
+          //   'method': method,
+          //   'url': url,
+          //   'path': path,
+          //   'status_code': statusCode,
+          //   'status_message': statusMessage,
+          //   'request_headers': requestHeaders,
+          //   'headers': headers,
+          //   'request_body': requestBody,
+          //   'response_body': responseBody,
+          // },
         );
 
   final String? method;
@@ -174,6 +193,7 @@ class HttpResponseLog extends ISpectiyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
+  final HttpResponseData? responseData;
 
   static const getKey = 'http-response';
 
@@ -206,19 +226,11 @@ class HttpErrorLog extends ISpectiyData {
     required this.requestHeaders,
     required this.headers,
     required this.body,
+    required this.responseData,
   }) : super(
           key: getKey,
           pen: AnsiPen()..red(),
-          additionalData: {
-            'method': method,
-            'url': url,
-            'path': path,
-            'status_code': statusCode,
-            'status_message': statusMessage,
-            'request_headers': requestHeaders,
-            'headers': headers,
-            'body': body,
-          },
+          additionalData: responseData?.toJson,
         );
 
   final String? method;
@@ -229,6 +241,7 @@ class HttpErrorLog extends ISpectiyData {
   final Map<String, dynamic>? requestHeaders;
   final Map<String, String>? headers;
   final Map<String, dynamic>? body;
+  final HttpResponseData? responseData;
 
   static const getKey = 'http-error';
 
