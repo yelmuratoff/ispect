@@ -589,9 +589,11 @@ class InspectorState extends State<Inspector> {
   }
 
   Future<void> _launchInfospect(BuildContext context) async {
+    final iSpect = ISpect.read(context);
     final iSpectPage = MaterialPageRoute<dynamic>(
       builder: (_) => ISpectPage(
         options: widget.options,
+        appBarTitle: iSpect.theme.pageTitle,
       ),
       settings: RouteSettings(
         name: 'ISpectPage',

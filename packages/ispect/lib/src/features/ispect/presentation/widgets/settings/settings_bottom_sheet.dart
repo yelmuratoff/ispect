@@ -84,7 +84,7 @@ class _ISpectifySettingsBottomSheetState
     ];
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.7,
+      initialChildSize: 0.8,
       minChildSize: 0.3,
       maxChildSize: 0.9,
       expand: false,
@@ -161,6 +161,47 @@ class _ISpectifySettingsBottomSheetState
                       );
                     },
                   ),
+                ),
+              ),
+            ),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'ISpect',
+                          style: context.ispectTheme.textTheme.titleLarge
+                              ?.copyWith(
+                            color: context.ispectTheme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '\n📫 How to reach me: \n',
+                              children: [
+                                TextSpan(
+                                  text: 'yelamanyelmuratov@gmail.com',
+                                  style: context
+                                      .ispectTheme.textTheme.bodyMedium
+                                      ?.copyWith(
+                                    color:
+                                        context.ispectTheme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                              style: context.ispectTheme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

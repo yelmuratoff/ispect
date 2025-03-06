@@ -151,6 +151,7 @@ class _AppState extends State<App> {
           ),
           isISpectEnabled: true,
           theme: ISpectTheme(
+            pageTitle: 'Custom Name',
             logDescriptions: [
               LogDescription(
                 key: 'error',

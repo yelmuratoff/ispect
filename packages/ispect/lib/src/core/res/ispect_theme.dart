@@ -6,6 +6,7 @@ import 'package:ispect/src/features/ispect/models/log_description.dart';
 
 class ISpectTheme {
   const ISpectTheme({
+    this.pageTitle = 'ISpect',
     this.lightBackgroundColor,
     this.darkBackgroundColor,
     this.lightDividerColor,
@@ -14,6 +15,8 @@ class ISpectTheme {
     this.logIcons = const {},
     this.logDescriptions = const [],
   });
+
+  final String? pageTitle;
 
   final Color? lightBackgroundColor;
   final Color? darkBackgroundColor;
@@ -32,6 +35,7 @@ class ISpectTheme {
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
     List<LogDescription>? logDescriptions,
+    String? pageTitle,
   }) =>
       ISpectTheme(
         lightBackgroundColor: lightBackgroundColor ?? this.lightBackgroundColor,
@@ -41,6 +45,7 @@ class ISpectTheme {
         logColors: logColors ?? this.logColors,
         logIcons: logIcons ?? this.logIcons,
         logDescriptions: logDescriptions ?? this.logDescriptions,
+        pageTitle: pageTitle ?? this.pageTitle,
       );
 
   Color? backgroundColor(BuildContext context) =>

@@ -12,8 +12,8 @@ import 'package:share_plus/share_plus.dart';
 class ISpectPage extends StatefulWidget {
   const ISpectPage({
     required this.options,
+    required this.appBarTitle,
     super.key,
-    this.appBarTitle = 'ISpect',
     this.itemsBuilder,
   });
 
