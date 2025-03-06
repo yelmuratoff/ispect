@@ -65,13 +65,13 @@ class JsonNodeContent extends StatelessWidget {
 
   Color _getTypeColor(Object? content) {
     if (content is int) {
-      return JsonColors.intColor;
+      return JsonColors.numColor;
     } else if (content is String) {
       return JsonColors.stringColor;
     } else if (content is bool) {
       return JsonColors.boolColor;
     } else if (content is double) {
-      return JsonColors.doubleColor;
+      return JsonColors.numColor;
     } else {
       return JsonColors.nullColor;
     }

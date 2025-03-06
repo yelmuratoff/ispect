@@ -91,7 +91,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
 
 const encoder = JsonEncoder.withIndent('  ');
 
-class HttpRequestLog extends ISpectifyLog {
+class HttpRequestLog extends ISpectiyData {
   HttpRequestLog(
     super.message, {
     required this.method,
@@ -103,7 +103,7 @@ class HttpRequestLog extends ISpectifyLog {
           title: getKey,
           key: getKey,
           pen: AnsiPen()..xterm(219),
-          data: {
+          additionalData: {
             'method': method,
             'url': url,
             'path': path,
@@ -136,7 +136,7 @@ class HttpRequestLog extends ISpectifyLog {
   }
 }
 
-class HttpResponseLog extends ISpectifyLog {
+class HttpResponseLog extends ISpectiyData {
   HttpResponseLog(
     super.message, {
     required this.method,
@@ -152,7 +152,7 @@ class HttpResponseLog extends ISpectifyLog {
           key: getKey,
           title: getKey,
           pen: AnsiPen()..xterm(46),
-          data: {
+          additionalData: {
             'method': method,
             'url': url,
             'path': path,
@@ -195,7 +195,7 @@ class HttpResponseLog extends ISpectifyLog {
   }
 }
 
-class HttpErrorLog extends ISpectifyLog {
+class HttpErrorLog extends ISpectiyData {
   HttpErrorLog(
     super.message, {
     required this.method,
@@ -208,9 +208,8 @@ class HttpErrorLog extends ISpectifyLog {
     required this.body,
   }) : super(
           key: getKey,
-          // title: getKey ,
           pen: AnsiPen()..red(),
-          data: {
+          additionalData: {
             'method': method,
             'url': url,
             'path': path,

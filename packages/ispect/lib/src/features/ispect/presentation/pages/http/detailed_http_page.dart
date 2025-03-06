@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/extensions/pretty_json.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/json_viewer/pretty_json_view.dart';
 
@@ -37,7 +38,7 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
           IconButton(
             icon: const Icon(Icons.copy),
             onPressed: () {
-              copyClipboard(context, value: _data.textMessage);
+              copyClipboard(context, value: prettyJson(_data.toJson()));
             },
           ),
         ],

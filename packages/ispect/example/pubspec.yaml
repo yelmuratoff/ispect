@@ -8,7 +8,15 @@ environment:
 
 dependency_overrides:
   ispect:
-    path: ../ispect
+    path: ../../ispect
+  ispectify:
+    path: ../../ispectify
+  ispectify_http:
+    path: ../../ispectify_http
+  ispectify_bloc:
+    path: ../../ispectify_bloc
+  ispectify_dio:
+    path: ../../ispectify_dio
 
 dependencies:
   flutter:
@@ -16,16 +24,18 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-  ispect: ^3.0.3
 
   dio: ^5.7.0
   http: ^1.2.2
   flutter_bloc: ^9.0.0
-
-  ispectify_dio: 0.0.2
   http_interceptor: ^2.0.0
+
+  ispect: ^3.0.3
+  ispectify_dio: 0.0.2
   ispectify_http: 0.0.1
-  ispectify_bloc: 0.0.1
+  ispectify_bloc:
+    path: ../../ispectify_bloc
+
   provider: ^6.1.2
 
 dev_dependencies:

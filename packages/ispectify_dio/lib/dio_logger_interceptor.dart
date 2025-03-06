@@ -70,6 +70,7 @@ class ISpectifyDioLogger extends Interceptor {
     }
     try {
       final message = '${options.uri}';
+
       final httpLog = DioRequestLog(
         message,
         method: options.method,

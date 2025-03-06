@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, avoid_dynamic_calls
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -124,6 +124,7 @@ class JsonTreeNode extends StatelessWidget {
 
     return [
       WidgetSpan(
+        alignment: PlaceholderAlignment.top,
         child: _buildDecoratedText(
           keyName,
           keyTextStyle,
@@ -138,6 +139,7 @@ class JsonTreeNode extends StatelessWidget {
         TextSpan(children: _highlightText(_displayValue(), valueTextStyle))
       else
         WidgetSpan(
+          alignment: PlaceholderAlignment.top,
           child: _buildDecoratedText(
             _displayValue(),
             valueTextStyle,
@@ -147,18 +149,26 @@ class JsonTreeNode extends StatelessWidget {
     ];
   }
 
-  String _displayValue() => switch (type) {
-        JsonNodeType.object => isExpanded ? '' : '{...}',
-        JsonNodeType.array => isExpanded ? '' : '[...]',
-        JsonNodeType.string => '"$value"',
-        _ => value.toString(),
-      };
+  String _displayValue() {
+    if (type == JsonNodeType.object || type == JsonNodeType.array) {
+      final isObject = type == JsonNodeType.object;
+      final open = isObject ? '{' : '[';
+      final close = isObject ? '}' : ']';
+      return isExpanded
+          ? (value.length == 0 ? '$open$close' : '$open...$close')
+          : '$open${value.length}$close';
+    } else if (type == JsonNodeType.string) {
+      return '"$value"';
+    }
+    return value.toString();
+  }
 
   Color _getValueColor(Color defaultColor) => switch (type) {
-        JsonNodeType.number => Colors.purple[500]!,
-        JsonNodeType.boolean => Colors.orange[500]!,
-        JsonNodeType.object => Colors.blue[800]!,
-        JsonNodeType.array => Colors.green[800]!,
+        JsonNodeType.number => JsonColors.numColor,
+        JsonNodeType.boolean => JsonColors.boolColor,
+        JsonNodeType.object => JsonColors.objectColor,
+        JsonNodeType.array => JsonColors.arrayColor,
+        JsonNodeType.null_ => Colors.amber,
         _ => defaultColor,
       };
 
@@ -166,8 +176,16 @@ class JsonTreeNode extends StatelessWidget {
     final theme = ISpect.read(context).theme;
     return switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
+      'title' => theme.getTypeColor(context, key: value.toString()),
       'method' => JsonColors.methodColors[value.toString()]!,
+      'url' => JsonColors.stringColor,
+      'path' => JsonColors.stringColor,
+      'Authorization' => JsonColors.stringColor,
       'status_code' => JsonColors.getStatusColor(value as int?),
+      'exception' => theme.getTypeColor(context, key: 'exception'),
+      'error' => theme.getTypeColor(context, key: 'error'),
+      'stack-trace' => theme.getTypeColor(context, key: 'error'),
+      'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
       _ => _getValueColor(Theme.of(context).colorScheme.secondary),
     };
   }
@@ -184,7 +202,9 @@ class JsonTreeNode extends StatelessWidget {
             const Gap(4),
             Expanded(
               child: Text.rich(
-                TextSpan(children: _buildTextSpans(context)),
+                TextSpan(
+                  children: _buildTextSpans(context),
+                ),
                 style: const TextStyle(
                   height: 1.5,
                   fontSize: 14,

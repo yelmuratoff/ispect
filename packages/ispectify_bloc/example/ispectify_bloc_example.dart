@@ -7,7 +7,6 @@ void main() async {
   Bloc.observer = ISpectifyBlocObserver(
     settings: const ISpectifyBlocSettings(
       printEventFullData: false,
-      printStateFullData: false,
     ),
   );
   final somethingBloc = SomethingBloc()

@@ -8,9 +8,9 @@ import 'package:ispect_example/src/theme_manager.dart';
 import 'package:ispectify_bloc/observer.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
-import 'package:ispectify_http/ispectify_http.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
 
 final dio = Dio(
   BaseOptions(

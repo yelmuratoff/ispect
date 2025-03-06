@@ -29,25 +29,18 @@ class JsonTreeView extends StatefulWidget {
   });
 
   final Map<String, dynamic> json;
-
   final Widget? expandIcon;
   final Widget? collapseIcon;
-
   final TextStyle? keyStyle;
   final TextStyle? valueStyle;
   final bool initiallyExpanded;
-
   final void Function(bool isExpanded)? onExpandedChanged;
-
   final Duration animationDuration;
   final bool showControls;
-
   final bool enableSearch;
   final Color searchHighlightColor;
   final String searchHintText;
-
   final Color? backgroundColor;
-
   final double indentWidth;
   final double nodeSpacing;
   final EdgeInsets nodePadding;
@@ -60,7 +53,7 @@ class JsonTreeViewState extends State<JsonTreeView> {
   late JsonNode _rootNode;
   final Map<String, bool> _expandedNodes = {};
   String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
+  final _searchController = TextEditingController();
   final Set<String> _searchMatchedNodes = {};
 
   @override
@@ -70,52 +63,52 @@ class JsonTreeViewState extends State<JsonTreeView> {
   }
 
   @override
+  void didUpdateWidget(JsonTreeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.json != oldWidget.json) {
+      _resetState();
+      _parseJson();
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(JsonTreeView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.json != oldWidget.json) {
-      _searchController.clear();
-      _searchQuery = '';
-      _searchMatchedNodes.clear();
-      _expandedNodes.clear();
-      _parseJson();
-    }
+  void _resetState() {
+    _searchController.clear();
+    _searchQuery = '';
+    _searchMatchedNodes.clear();
+    _expandedNodes.clear();
   }
 
   void _parseJson() {
-    if (widget.json.isEmpty) {
-      _rootNode = JsonParser.parse({});
-      return;
-    }
-
     try {
-      _rootNode = JsonParser.parse(widget.json);
-      if (widget.initiallyExpanded) {
-        _expandAllNodesWithoutSetState(_rootNode);
-      }
+      _rootNode = widget.json.isEmpty
+          ? JsonParser.parse({})
+          : JsonParser.parse(widget.json);
     } catch (e) {
-      _rootNode = JsonParser.parse(
-        {'error': 'Invalid JSON string', 'details': e.toString()},
-      );
+      _rootNode = JsonParser.parse({
+        'error': 'Invalid JSON string',
+        'details': e.toString(),
+      });
+    }
+    if (widget.initiallyExpanded) {
+      _setExpandedRecursive(_rootNode, true);
     }
   }
 
-  void _expandAllNodesWithoutSetState(JsonNode node) {
-    _expandedNodes[node.key] = true;
+  void _setExpandedRecursive(JsonNode node, bool expanded) {
+    _expandedNodes[node.key] = expanded;
     for (final child in node.children) {
-      _expandAllNodesWithoutSetState(child);
+      _setExpandedRecursive(child, expanded);
     }
   }
 
   void _expandAll() {
-    setState(() {
-      _expandAllNodes(_rootNode);
-    });
+    setState(() => _setExpandedRecursive(_rootNode, true));
     widget.onExpandedChanged?.call(true);
   }
 
@@ -130,26 +123,17 @@ class JsonTreeViewState extends State<JsonTreeView> {
       _searchMatchedNodes.clear();
       if (_searchQuery.isNotEmpty) {
         _searchNodes(_rootNode);
-
         _expandMatchedNodes();
       }
     });
   }
 
   bool _searchNodes(JsonNode node) {
-    var hasMatch = false;
-
-    if (_nodeMatchesSearch(node)) {
-      _searchMatchedNodes.add(node.key);
-      hasMatch = true;
-    }
-
+    var hasMatch = _nodeMatchesSearch(node);
+    if (hasMatch) _searchMatchedNodes.add(node.key);
     for (final child in node.children) {
-      if (_searchNodes(child)) {
-        hasMatch = true;
-      }
+      if (_searchNodes(child)) hasMatch = true;
     }
-
     return hasMatch;
   }
 
@@ -174,44 +158,15 @@ class JsonTreeViewState extends State<JsonTreeView> {
     var currentKey = node.key;
     while (currentKey.isNotEmpty) {
       _expandedNodes[currentKey] = true;
-
       final lastDotIndex = currentKey.lastIndexOf('.');
       if (lastDotIndex == -1) break;
       currentKey = currentKey.substring(0, lastDotIndex);
     }
   }
 
-  void _expandAllNodes(JsonNode node) {
-    _expandedNodes[node.key] = true;
-    for (final child in node.children) {
-      _expandAllNodes(child);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => SelectionArea(
-        child: Container(
-          color: widget.backgroundColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.enableSearch) _buildSearchBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: _buildNode(_rootNode),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
   Widget _buildSearchBar() {
     final theme = Theme.of(context);
-    final iSpect = ISpect.read(context);
+    ISpect.read(context);
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TextFormField(
@@ -224,9 +179,7 @@ class JsonTreeViewState extends State<JsonTreeView> {
         cursorColor: context.isDarkMode
             ? context.ispectTheme.colorScheme.primaryContainer
             : context.ispectTheme.colorScheme.primary,
-        onTapOutside: (_) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(
           fillColor: theme.cardColor,
           focusedBorder: OutlineInputBorder(
@@ -239,14 +192,14 @@ class JsonTreeViewState extends State<JsonTreeView> {
           ),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: iSpect.theme.dividerColor(context) ??
+              color: ISpect.read(context).theme.dividerColor(context) ??
                   context.ispectTheme.dividerColor,
             ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           border: OutlineInputBorder(
             borderSide: BorderSide(
-              color: iSpect.theme.dividerColor(context) ??
+              color: ISpect.read(context).theme.dividerColor(context) ??
                   context.ispectTheme.dividerColor,
             ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -281,7 +234,7 @@ class JsonTreeViewState extends State<JsonTreeView> {
           keyName: node.key,
           value: node.value,
           isExpanded: isExpanded,
-          onTap: () => _toggleNode(node.key),
+          onTap: () => setState(() => _expandedNodes[node.key] = !isExpanded),
           keyStyle: widget.keyStyle,
           valueStyle: widget.valueStyle,
           expandIcon: widget.expandIcon,
@@ -318,19 +271,29 @@ class JsonTreeViewState extends State<JsonTreeView> {
     );
   }
 
-  void _toggleNode(String key) {
-    setState(() {
-      _expandedNodes[key] = !(_expandedNodes[key] ?? false);
-    });
-  }
+  @override
+  Widget build(BuildContext context) => SelectionArea(
+        child: Container(
+          color: widget.backgroundColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.enableSearch) _buildSearchBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: _buildNode(_rootNode),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 
 extension JsonTreeViewStateExtension on GlobalKey<JsonTreeViewState> {
-  void expandAll() {
-    currentState?._expandAll();
-  }
-
-  void collapseAll() {
-    currentState?._collapseAll();
-  }
+  void expandAll() => currentState?._expandAll();
+  void collapseAll() => currentState?._collapseAll();
 }

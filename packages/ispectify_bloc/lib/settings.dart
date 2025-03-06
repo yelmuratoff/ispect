@@ -23,7 +23,6 @@ class ISpectifyBlocSettings {
     this.printTransitions = true,
     this.printChanges = true,
     this.printEventFullData = true,
-    this.printStateFullData = true,
     this.printCreations = true,
     this.printClosings = true,
     this.transitionFilter,
@@ -44,9 +43,6 @@ class ISpectifyBlocSettings {
 
   /// Whether to log full event data.
   final bool printEventFullData;
-
-  /// Whether to log full state data.
-  final bool printStateFullData;
 
   /// Whether to log Bloc creation events.
   final bool printCreations;

@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 /// `GoodLog` - This class contains the basic structure of the log.
-class GoodLog extends ISpectifyLog {
+class GoodLog extends ISpectiyData {
   GoodLog(String super.message);
 
   @override
@@ -19,7 +19,7 @@ class GoodLog extends ISpectifyLog {
 }
 
 /// `AnalyticsLog` - This class contains the analytics log.
-class AnalyticsLog extends ISpectifyLog {
+class AnalyticsLog extends ISpectiyData {
   AnalyticsLog(super.message, {this.analytics});
 
   final String? analytics;
@@ -39,7 +39,7 @@ class AnalyticsLog extends ISpectifyLog {
 }
 
 /// `RouteLog` - This class contains the route log.
-class RouteLog extends ISpectifyLog {
+class RouteLog extends ISpectiyData {
   RouteLog(String super.message);
 
   @override
@@ -57,7 +57,7 @@ class RouteLog extends ISpectifyLog {
 }
 
 /// `ProviderLog` - This class contains the provider log.
-class ProviderLog extends ISpectifyLog {
+class ProviderLog extends ISpectiyData {
   ProviderLog(String super.message, {super.exception, super.stackTrace});
 
   @override
@@ -75,7 +75,7 @@ class ProviderLog extends ISpectifyLog {
 }
 
 /// `PrintLog` - This class contains the print log.
-class PrintLog extends ISpectifyLog {
+class PrintLog extends ISpectiyData {
   PrintLog(String super.message);
 
   @override

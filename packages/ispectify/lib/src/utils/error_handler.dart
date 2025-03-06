@@ -33,7 +33,7 @@ class ISpectifyErrorHandler {
         stackTrace: stackTrace,
       );
     } else {
-      return ISpectifyLog(
+      return ISpectiyData(
         exception.toString(),
         key: ISpectifyLogType.error.key,
         title: settings.titleByKey(

@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/settings.dart';
 
-class BlocEventLog extends ISpectifyLog {
+class BlocEventLog extends ISpectiyData {
   BlocEventLog({
     required this.bloc,
     required this.event,
@@ -28,14 +28,14 @@ class BlocEventLog extends ISpectifyLog {
   }
 }
 
-class BlocStateLog extends ISpectifyLog {
+class BlocStateLog extends ISpectiyData {
   BlocStateLog({
     required this.bloc,
     required this.transition,
     required this.settings,
   }) : super(
           key: getKey,
-          '${bloc.runtimeType} with event ${transition.event.runtimeType}',
+          '''${bloc.runtimeType} with event ${transition.event.runtimeType}\nCURRENT state: ${transition.currentState.runtimeType}\nNEXT state: ${transition.nextState.runtimeType}''',
           title: getKey,
         );
 
@@ -44,29 +44,16 @@ class BlocStateLog extends ISpectifyLog {
   final ISpectifyBlocSettings settings;
 
   static const getKey = 'bloc-state';
-
-  @override
-  String get textMessage {
-    final sb = StringBuffer()
-      ..write(message)
-      ..write(
-        '\nCURRENT state: ${settings.printStateFullData ? '\n${transition.currentState}' : transition.currentState.runtimeType}',
-      )
-      ..write(
-        '\nNEXT state: ${settings.printStateFullData ? '\n${transition.nextState}' : transition.nextState.runtimeType}',
-      );
-    return sb.toString();
-  }
 }
 
-class BlocChangeLog extends ISpectifyLog {
+class BlocChangeLog extends ISpectiyData {
   BlocChangeLog({
     required this.bloc,
     required this.change,
     required this.settings,
   }) : super(
           key: getKey,
-          '${bloc.runtimeType} changed',
+          '''${bloc.runtimeType} changed\nCURRENT state: ${change.currentState.runtimeType}\nNEXT state: ${change.nextState.runtimeType}''',
           title: getKey,
         );
 
@@ -75,22 +62,9 @@ class BlocChangeLog extends ISpectifyLog {
   final ISpectifyBlocSettings settings;
 
   static const getKey = 'bloc-transition';
-
-  @override
-  String get textMessage {
-    final sb = StringBuffer()
-      ..write(message)
-      ..write(
-        '\nCURRENT state: ${settings.printStateFullData ? '\n${change.currentState}' : change.currentState.runtimeType}',
-      )
-      ..write(
-        '\nNEXT state: ${settings.printStateFullData ? '\n${change.nextState}' : change.nextState.runtimeType}',
-      );
-    return sb.toString();
-  }
 }
 
-class BlocCreateLog extends ISpectifyLog {
+class BlocCreateLog extends ISpectiyData {
   BlocCreateLog({
     required this.bloc,
   }) : super(
@@ -110,7 +84,7 @@ class BlocCreateLog extends ISpectifyLog {
   }
 }
 
-class BlocCloseLog extends ISpectifyLog {
+class BlocCloseLog extends ISpectiyData {
   BlocCloseLog({
     required this.bloc,
   }) : super(

@@ -11,7 +11,7 @@ class ISpectiyData {
     this.title,
     this.pen,
     this.key,
-    this.data,
+    this.additionalData,
   }) {
     _time = time ?? DateTime.now();
   }
@@ -23,7 +23,7 @@ class ISpectiyData {
   final LogLevel? logLevel;
   final String? title;
   final AnsiPen? pen;
-  final Map<String, dynamic>? data;
+  final Map<String, dynamic>? additionalData;
 
   final Object? exception;
   final Error? error;

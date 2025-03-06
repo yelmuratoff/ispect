@@ -90,21 +90,21 @@ class _CollapsedBody extends StatelessWidget {
               onPressed: onCopyTap,
             ),
           ),
-          if (isHttpLog) ...[
-            const Gap(8),
-            SizedBox.square(
-              dimension: 18,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                iconSize: 18,
-                icon: Icon(
-                  Icons.zoom_out_map_rounded,
-                  color: color,
-                ),
-                onPressed: onHttpTap,
+          // if (isHttpLog) ...[
+          const Gap(8),
+          SizedBox.square(
+            dimension: 18,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              iconSize: 18,
+              icon: Icon(
+                Icons.zoom_out_map_rounded,
+                color: color,
               ),
+              onPressed: onHttpTap,
             ),
-          ],
+          ),
+          // ],
         ],
       );
 }

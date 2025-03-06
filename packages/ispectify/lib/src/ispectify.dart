@@ -97,9 +97,7 @@ class ISpectify {
       _handleErrorData(data);
       return;
     }
-    if (data is ISpectifyLog) {
-      _handleLogData(data);
-    }
+    _handleLogData(data);
   }
 
   void log(
@@ -118,7 +116,7 @@ class ISpectify {
     );
   }
 
-  void logCustom(ISpectifyLog log) => _handleLogData(log);
+  void logCustom(ISpectiyData log) => _handleLogData(log);
 
   void critical(
     Object? msg, [
@@ -211,7 +209,7 @@ class ISpectify {
     AnsiPen? pen,
   }) {
     final type = ISpectifyLogType.fromLogLevel(logLevel);
-    final data = ISpectifyLog(
+    final data = ISpectiyData(
       key: type.key,
       message?.toString() ?? '',
       title: settings.titleByKey(type.key),
@@ -242,7 +240,7 @@ class ISpectify {
   }
 
   void _handleLogData(
-    ISpectifyLog data, {
+    ISpectiyData data, {
     LogLevel? logLevel,
   }) {
     if (!settings.enabled) {

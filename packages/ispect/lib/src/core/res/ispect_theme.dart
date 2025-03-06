@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/icons.dart';
 import 'package:ispect/src/features/ispect/models/log_description.dart';
@@ -51,6 +52,11 @@ class ISpectTheme {
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.transparent;
     return colors(context)[key] ?? Colors.grey;
+  }
+
+  Color getColorByLogLevel(BuildContext context, {required String? key}) {
+    if (key == null) return Colors.transparent;
+    return colors(context)[key.replaceAll('LogLevel.', '')] ?? Colors.grey;
   }
 
   Map<String, Color> colors(BuildContext context) => {

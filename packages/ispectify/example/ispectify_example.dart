@@ -25,7 +25,7 @@ Future<void> main() async {
   iSpectify.logCustom(CustomLog('Something like your own service message'));
 }
 
-class CustomLog extends ISpectifyLog {
+class CustomLog extends ISpectiyData {
   CustomLog(super.message);
 
   static const logKey = 'custom_log_key';

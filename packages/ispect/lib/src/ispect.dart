@@ -228,7 +228,7 @@ final class ISpect {
     );
   }
 
-  static void logTyped(ISpectifyLog log) {
+  static void logTyped(ISpectiyData log) {
     _instance._iSpectify.logCustom(log);
   }
 
