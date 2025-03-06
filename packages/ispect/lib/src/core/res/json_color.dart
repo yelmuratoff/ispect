@@ -28,4 +28,16 @@ class JsonColors {
       return Colors.grey;
     }
   }
+
+  static const methodColors = {
+    'GET': Colors.green,
+    'POST': Colors.blue,
+    'PUT': Colors.orange,
+    'DELETE': Colors.red,
+    'PATCH': Colors.purple,
+    'HEAD': Colors.pink,
+    'OPTIONS': Colors.teal,
+    'TRACE': Colors.grey,
+    'CONNECT': Colors.brown,
+  };
 }

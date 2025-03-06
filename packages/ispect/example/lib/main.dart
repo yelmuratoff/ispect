@@ -143,32 +143,23 @@ class _AppState extends State<App> {
             ],
           ),
           isISpectEnabled: true,
-          theme: ISpectTheme(logDescriptions: [
-            LogDescription(
-              key: 'error',
-              description: 'Some error log description',
-            ),
-            LogDescription(
-              key: 'info',
-              description: 'Blah blah blah',
-            ),
-            LogDescription(
-              key: 'riverpod-add',
-              description: 'Riverpod add',
-              isDisabled: true,
-            ),
-          ]
-              // logDescriptions: {
-              //   'error': 'Some error log description',
-              //   'info': 'Blah blah blah',
-              // },
-              // disabledLogDescriptions: {
-              //   'riverpod-add',
-              //   'riverpod-update',
-              //   'riverpod-dispose',
-              //   'riverpod-fail',
-              // },
+          theme: ISpectTheme(
+            logDescriptions: [
+              LogDescription(
+                key: 'error',
+                description: 'Some error log description',
               ),
+              LogDescription(
+                key: 'info',
+                description: 'Blah blah blah',
+              ),
+              LogDescription(
+                key: 'riverpod-add',
+                description: 'Riverpod add',
+                isDisabled: true,
+              ),
+            ],
+          ),
           child: ISpectBuilder(
             observer: observer,
             controller: _controller,
