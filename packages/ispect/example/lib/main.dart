@@ -75,7 +75,14 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final _controller = DraggablePanelController();
   final _observer = ISpectNavigatorObserver();
+
   static const locale = Locale('uz');
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,15 +109,15 @@ class _AppState extends State<App> {
       ),
       themeMode: themeMode,
       builder: (context, child) {
-        child = ISpectScopeWrapper(
+        child = ISpectBuilder(
           options: ISpectOptions(
             locale: locale,
             panelButtons: [
               (
                 icon: Icons.copy_rounded,
                 label: 'Token',
-                onTap: (panelContext) {
-                  _controller.toggle(panelContext);
+                onTap: (context) {
+                  _controller.toggle(context);
                   debugPrint('Token copied');
                 },
               ),
@@ -160,15 +167,13 @@ class _AppState extends State<App> {
               ),
             ],
           ),
-          child: ISpectBuilder(
-            observer: _observer,
-            controller: _controller,
-            initialPosition: (x: 0, y: 200),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-            child: child,
-          ),
+          observer: _observer,
+          controller: _controller,
+          initialPosition: (x: 0, y: 200),
+          onPositionChanged: (x, y) {
+            debugPrint('x: $x, y: $y');
+          },
+          child: child ?? const SizedBox(),
         );
         return child;
       },

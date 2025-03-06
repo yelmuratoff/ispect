@@ -63,46 +63,6 @@ class ISpectScopeModel extends ChangeNotifier {
   }
 }
 
-/// `ISpectScopeWrapper` is a wrapper widget that provides the `ISpectScopeModel` to its children.
-class ISpectScopeWrapper extends StatefulWidget {
-  const ISpectScopeWrapper({
-    required this.child,
-    required this.isISpectEnabled,
-    this.options,
-    this.theme,
-    super.key,
-  });
-
-  final Widget child;
-  final ISpectOptions? options;
-  final ISpectTheme? theme;
-  final bool isISpectEnabled;
-
-  @override
-  State<ISpectScopeWrapper> createState() => _ISpectScopeWrapperState();
-}
-
-class _ISpectScopeWrapperState extends State<ISpectScopeWrapper> {
-  late ISpectScopeModel model;
-
-  @override
-  void initState() {
-    super.initState();
-    model = ISpectScopeModel();
-
-    model
-      ..isISpectEnabled = widget.isISpectEnabled
-      ..options = widget.options ?? model.options
-      ..theme = widget.theme ?? model.theme;
-  }
-
-  @override
-  Widget build(BuildContext context) => ISpectScopeController(
-        model: model,
-        child: widget.child,
-      );
-}
-
 /// InheritedNotifier to provide the `ISpectScopeModel` to the widget tree.
 class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
   const ISpectScopeController({
