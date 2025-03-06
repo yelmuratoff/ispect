@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 
-class ThemeDebuggerScreen extends StatelessWidget {
-  const ThemeDebuggerScreen({super.key});
+class ThemeSchemeScreen extends StatelessWidget {
+  const ThemeSchemeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Theme Debugger')),
+      appBar: AppBar(
+        title: const Text('Theme Scheme'),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+          ),
+        ),
+      ),
       floatingActionButton: const DebugFloatingActionButton(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ThemeSection(
+            const ThemeSection(
               title: 'Text Styles',
-              child: TextStylesDisplay(textTheme: theme.textTheme),
+              child: TextStylesDisplay(),
             ),
             const ThemeSection(
               title: 'Buttons',
@@ -62,13 +74,60 @@ class ThemeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.only(
+          top: 16,
+          bottom: 16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 4,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          bottomLeft: Radius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(4),
+                    ),
+                  ),
+                  child: Text(
+                    '  $title  ',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SizedBox(
+                    height: 4,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(4),
+                          bottomRight: Radius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             child,
@@ -91,49 +150,72 @@ class DebugFloatingActionButton extends StatelessWidget {
 
 // Text Styles Component
 class TextStylesDisplay extends StatelessWidget {
-  const TextStylesDisplay({required this.textTheme, super.key});
-  final TextTheme textTheme;
+  const TextStylesDisplay({super.key});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Display Large', style: textTheme.displayLarge),
-          Text('Display Medium', style: textTheme.displayMedium),
-          Text('Display Small', style: textTheme.displaySmall),
-          Text('Headline Large', style: textTheme.headlineLarge),
-          Text('Headline Medium', style: textTheme.headlineMedium),
-          Text('Headline Small', style: textTheme.headlineSmall),
-          Text('Title Large', style: textTheme.titleLarge),
-          Text('Title Medium', style: textTheme.titleMedium),
-          Text('Title Small', style: textTheme.titleSmall),
-          Text('Body Large', style: textTheme.bodyLarge),
-          Text('Body Medium', style: textTheme.bodyMedium),
-          Text('Body Small', style: textTheme.bodySmall),
-          Text('Label Large', style: textTheme.labelLarge),
-          Text('Label Medium', style: textTheme.labelMedium),
-          Text('Label Small', style: textTheme.labelSmall),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Display Large', style: textTheme.displayLarge),
+        Text('Display Medium', style: textTheme.displayMedium),
+        Text('Display Small', style: textTheme.displaySmall),
+        Text('Headline Large', style: textTheme.headlineLarge),
+        Text('Headline Medium', style: textTheme.headlineMedium),
+        Text('Headline Small', style: textTheme.headlineSmall),
+        Text('Title Large', style: textTheme.titleLarge),
+        Text('Title Medium', style: textTheme.titleMedium),
+        Text('Title Small', style: textTheme.titleSmall),
+        Text('Body Large', style: textTheme.bodyLarge),
+        Text('Body Medium', style: textTheme.bodyMedium),
+        Text('Body Small', style: textTheme.bodySmall),
+        Text('Label Large', style: textTheme.labelLarge),
+        Text('Label Medium', style: textTheme.labelMedium),
+        Text('Label Small', style: textTheme.labelSmall),
+      ],
+    );
+  }
 }
 
 // Buttons Component
-class ButtonDisplay extends StatelessWidget {
+class ButtonDisplay extends StatefulWidget {
   const ButtonDisplay({super.key});
 
   @override
-  Widget build(BuildContext context) => Column(
+  State<ButtonDisplay> createState() => _ButtonDisplayState();
+}
+
+class _ButtonDisplayState extends State<ButtonDisplay> {
+  @override
+  Widget build(BuildContext context) => Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
           ElevatedButton(
             onPressed: () {},
             child: const Text('Elevated Button'),
           ),
+          FilledButton(
+            onPressed: () {},
+            child: const Text('Filled Button'),
+          ),
+          FilledButton.tonal(
+            onPressed: () {},
+            child: const Text('Filled Tonal Button'),
+          ),
           OutlinedButton(
             onPressed: () {},
             child: const Text('Outlined Button'),
           ),
-          TextButton(onPressed: () {}, child: const Text('Text Button')),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.star)),
+          TextButton(
+            onPressed: () {},
+            child: const Text('Text Button'),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.star),
+          ),
           ToggleButtons(
             isSelected: const [true, false, false],
             children: const [
@@ -142,6 +224,19 @@ class ButtonDisplay extends StatelessWidget {
               Icon(Icons.format_underline),
             ],
             onPressed: (_) {},
+          ),
+          SegmentedButton(
+            segments: const [
+              ButtonSegment(
+                value: 'Segment 1',
+                icon: Icon(Icons.star),
+              ),
+              ButtonSegment(
+                value: 'Segment 2',
+                icon: Icon(Icons.star),
+              ),
+            ],
+            selected: const {'Segment 1'},
           ),
         ],
       );
@@ -154,14 +249,77 @@ class InputDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          const TextField(decoration: InputDecoration(labelText: 'TextField')),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'TextField',
+            ),
+            onTapOutside: (event) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+          ),
+          const Gap(8),
+          SearchBar(
+            onChanged: (_) {},
+            hintText: 'SearchBar',
+            onTapOutside: (event) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+          ),
+          const Gap(8),
+          ElevatedButton(
+            onPressed: () {
+              showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+            },
+            child: const Text('Date Picker'),
+          ),
+          const Gap(8),
           DropdownButton<String>(
             value: 'Option 1',
             items: const [
-              DropdownMenuItem(value: 'Option 1', child: Text('Option 1')),
-              DropdownMenuItem(value: 'Option 2', child: Text('Option 2')),
+              DropdownMenuItem(
+                value: 'Option 1',
+                child: Text('Option 1'),
+              ),
+              DropdownMenuItem(
+                value: 'Option 2',
+                child: Text('Option 2'),
+              ),
             ],
             onChanged: (_) {},
+          ),
+          const Gap(8),
+          ElevatedButton(
+            onPressed: () {
+              showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.now(),
+              );
+            },
+            child: const Text('Time Picker'),
+          ),
+          const Gap(8),
+          PopupMenuButton<String>(
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'Option 1',
+                child: Text('Option 1'),
+              ),
+              const PopupMenuItem(
+                value: 'Option 2',
+                child: Text('Option 2'),
+              ),
+            ],
+          ),
+          RadioMenuButton<String>(
+            onChanged: (_) {},
+            value: '',
+            groupValue: '',
+            child: const Text('Radio Button'),
           ),
         ],
       );
@@ -301,13 +459,22 @@ class ColorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Container(
-            width: 80,
-            height: 40,
+          Card(
             color: color ?? Colors.grey,
+            child: SizedBox.square(
+              dimension: 80,
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: getTextColorOnBackground(color ?? Colors.grey),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12)),
         ],
       );
 }
@@ -319,6 +486,23 @@ class DialogsSnackbarsDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
+          ElevatedButton(
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              builder: (context) => Column(
+                children: [
+                  const ListTile(
+                    title: Text('Bottom Sheet'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            ),
+            child: const Text('Show Bottom Sheet'),
+          ),
           ElevatedButton(
             onPressed: () => showDialog<void>(
               context: context,

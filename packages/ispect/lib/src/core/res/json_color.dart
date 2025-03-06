@@ -14,6 +14,7 @@ class JsonColors {
   static const jsonBackgroundColor = Color(0xFFE8E8E8);
   static const jsonKeyColor = Color(0xFF2D45C3);
   static const hiddenContainerColor = Color(0xFFBB5BC3);
+  static const dateTimeColor = Colors.teal;
 
   static Color getStatusColor(int? statusCode) {
     if (statusCode == null) {

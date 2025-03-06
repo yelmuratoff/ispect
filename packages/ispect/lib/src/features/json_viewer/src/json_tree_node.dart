@@ -186,6 +186,8 @@ class JsonTreeNode extends StatelessWidget {
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
+      'time' => JsonColors.dateTimeColor,
+      'date' => JsonColors.dateTimeColor,
       _ => _getValueColor(Theme.of(context).colorScheme.secondary),
     };
   }

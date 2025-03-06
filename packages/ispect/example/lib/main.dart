@@ -74,15 +74,15 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   final _controller = DraggablePanelController();
+  final _observer = ISpectNavigatorObserver();
+  static const locale = Locale('uz');
 
   @override
   Widget build(BuildContext context) {
-    const locale = Locale('uz');
-    final observer = ISpectNavigatorObserver();
     final themeMode = ThemeProvider.themeMode(context);
 
     return MaterialApp(
-      navigatorObservers: [observer],
+      navigatorObservers: [_observer],
       locale: locale,
       supportedLocales: ExampleGeneratedLocalization.supportedLocales,
       localizationsDelegates: ISpectLocalizations.localizationDelegates([
@@ -109,8 +109,8 @@ class _AppState extends State<App> {
               (
                 icon: Icons.copy_rounded,
                 label: 'Token',
-                onTap: (context) {
-                  _controller.toggle(context);
+                onTap: (panelContext) {
+                  _controller.toggle(panelContext);
                   debugPrint('Token copied');
                 },
               ),
@@ -161,7 +161,7 @@ class _AppState extends State<App> {
             ],
           ),
           child: ISpectBuilder(
-            observer: observer,
+            observer: _observer,
             controller: _controller,
             initialPosition: (x: 0, y: 200),
             onPositionChanged: (x, y) {

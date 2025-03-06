@@ -110,16 +110,19 @@ class ISpectBuilder extends StatelessWidget {
       child: currentChild,
     );
 
-    return Navigator(
-      observers: [
-        ISpectNavigatorObserver(),
-      ],
-      pages: [
-        MaterialPage(
-          child: currentChild,
-        ),
-      ],
-      onDidRemovePage: (_) {},
+    return ISpectScopeWrapper(
+      isISpectEnabled: true,
+      child: Navigator(
+        observers: [
+          ISpectNavigatorObserver(),
+        ],
+        pages: [
+          MaterialPage(
+            child: currentChild,
+          ),
+        ],
+        onDidRemovePage: (_) {},
+      ),
     );
   }
 }

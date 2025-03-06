@@ -21,11 +21,10 @@ class JsonTreeView extends StatefulWidget {
     this.showControls = false,
     this.enableSearch = true,
     this.searchHighlightColor = const Color(0xFFFFEB3B),
-    this.searchHintText = 'Search...',
     this.backgroundColor,
-    this.indentWidth = 24.0,
-    this.nodeSpacing = 4.0,
-    this.nodePadding = const EdgeInsets.symmetric(vertical: 4),
+    this.indentWidth = 6.0,
+    this.nodeSpacing = 0.0,
+    this.nodePadding = const EdgeInsets.symmetric(vertical: 2),
   });
 
   final Map<String, dynamic> json;
@@ -39,7 +38,6 @@ class JsonTreeView extends StatefulWidget {
   final bool showControls;
   final bool enableSearch;
   final Color searchHighlightColor;
-  final String searchHintText;
   final Color? backgroundColor;
   final double indentWidth;
   final double nodeSpacing;

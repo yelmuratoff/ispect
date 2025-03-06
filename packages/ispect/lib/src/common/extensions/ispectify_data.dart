@@ -104,7 +104,6 @@ extension ISpectDataX on ISpectiyData {
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
         if (title != null) 'title': title,
-        if (pen != null) 'pen': pen.toString(),
         if (logLevel != null) 'log-level': logLevel,
         if (message != null) 'message': message,
         if (exception != null) 'exception': exception,
