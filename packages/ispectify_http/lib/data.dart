@@ -34,7 +34,6 @@ class HttpResponseData {
         'url': baseResponse.request?.url,
         'status-code': baseResponse.statusCode,
         'status-message': baseResponse.reasonPhrase,
-        'headers': baseResponse.headers,
         'request-data': requestData.toJson,
         'is-redirect': baseResponse.isRedirect,
         'content-length': baseResponse.contentLength,
@@ -55,5 +54,6 @@ class HttpResponseData {
                 )
                 .toList(),
           },
+        'headers': baseResponse.headers,
       };
 }

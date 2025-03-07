@@ -41,10 +41,9 @@ class DioResponseData {
   final DioRequestData requestData;
 
   Map<String, dynamic> get toJson => {
+        'request-options': requestData.toJson,
         'real-uri': response?.realUri,
         'data': response?.data,
-        'headers': response?.headers.map,
-        'request-options': requestData.toJson,
         'status-code': response?.statusCode,
         'status-message': response?.statusMessage,
         'extra': response?.extra,
@@ -58,6 +57,7 @@ class DioResponseData {
               },
             )
             .toList(),
+        'headers': response?.headers.map,
       };
 }
 
