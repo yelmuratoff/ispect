@@ -1,4 +1,4 @@
-import 'package:ispectify/src/logger/src/models/log_level.dart';
+import 'package:ispectify/src/models/log_level.dart';
 
 abstract class ILoggerFilter {
   const ILoggerFilter();
