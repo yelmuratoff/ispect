@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/widgets/textfields/search_field.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/json_viewer/src/json_tree_node.dart';
 import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 import 'package:ispect/src/features/json_viewer/src/utils/json_parser.dart';
@@ -162,17 +162,6 @@ class JsonTreeViewState extends State<JsonTreeView> {
     }
   }
 
-  Widget _buildSearchBar() {
-    ISpect.read(context);
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: SearchField(
-        controller: _searchController,
-        onChanged: _handleSearch,
-      ),
-    );
-  }
-
   Widget _buildNode(JsonNode node, [int depth = 0]) {
     final isExpanded = _expandedNodes[node.key] ?? false;
     final isMatched =
@@ -229,7 +218,32 @@ class JsonTreeViewState extends State<JsonTreeView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.enableSearch) _buildSearchBar(),
+              if (widget.enableSearch)
+                () {
+                  ISpect.read(context);
+                  return Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: SearchBar(
+                      controller: _searchController,
+                      constraints: const BoxConstraints(
+                        minHeight: 45,
+                      ),
+                      shape: const WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(12),
+                          ),
+                        ),
+                      ),
+                      leading: const Icon(
+                        Icons.search_rounded,
+                      ),
+                      elevation: WidgetStateProperty.all(0),
+                      hintText: context.ispectL10n.search,
+                      onChanged: _handleSearch,
+                    ),
+                  );
+                }(),
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(

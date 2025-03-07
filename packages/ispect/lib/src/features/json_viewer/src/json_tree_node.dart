@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 
 class JsonTreeNode extends StatelessWidget {
@@ -49,6 +50,7 @@ class JsonTreeNode extends StatelessWidget {
     final spans = <InlineSpan>[];
     var start = 0;
     var index = lowerText.indexOf(lowerQuery, start);
+    final colorHighlight = highlightColor.withOpacity(0.6);
     while (index != -1) {
       if (index > start) {
         spans.add(TextSpan(text: text.substring(start, index), style: style));
@@ -56,8 +58,11 @@ class JsonTreeNode extends StatelessWidget {
       spans.add(
         TextSpan(
           text: text.substring(index, index + searchQuery.length),
-          style:
-              style.copyWith(backgroundColor: highlightColor.withOpacity(0.2)),
+          style: style.copyWith(
+            fontWeight: FontWeight.bold,
+            backgroundColor: colorHighlight,
+            color: getTextColorOnBackground(colorHighlight),
+          ),
         ),
       );
       start = index + searchQuery.length;
@@ -199,7 +204,7 @@ class JsonTreeNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
-          color: isHighlighted ? highlightColor.withOpacity(0.1) : null,
+          color: isHighlighted ? highlightColor.withOpacity(0.2) : null,
         ),
         padding: padding,
         child: Row(

@@ -36,7 +36,7 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
         title: Text(_title(_data.key ?? '')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.copy),
+            icon: const Icon(Icons.copy_rounded),
             onPressed: () {
               copyClipboard(context, value: prettyJson(_data.toJson()));
             },
@@ -46,6 +46,7 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
       body: JsonTreeView(
         showControls: true,
         json: _data.toJson(),
+        searchHighlightColor: context.ispectTheme.colorScheme.primary,
         keyStyle: TextStyle(
           color: context.ispectTheme.colorScheme.primary,
           fontWeight: FontWeight.bold,
