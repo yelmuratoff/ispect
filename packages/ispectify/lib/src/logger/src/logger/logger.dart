@@ -1,31 +1,31 @@
 import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/logger/src/filter/logger_filter.dart';
 import 'package:ispectify/src/logger/src/formatter/formatter.dart';
-import 'package:ispectify/src/logger/src/logger_io.dart'
+import 'package:ispectify/src/logger/src/logger/logger_io.dart'
     if (dart.library.html) 'logger_html.dart'
-    if (dart.library.js_interop) 'logger_io.dart';
+    if (dart.library.js_interop) 'logger_web.dart';
 import 'package:ispectify/src/logger/src/models/log_details.dart';
 import 'package:ispectify/src/logger/src/models/log_level.dart';
 import 'package:ispectify/src/logger/src/settings.dart';
 
 class ISpectifyLogger {
   ISpectifyLogger({
-    ISpectifyLoggerSettings? settings,
+    LoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
-    LoggerFilter? filter,
+    ILoggerFilter? filter,
     void Function(String message)? output,
   }) {
-    this.settings = settings ?? ISpectifyLoggerSettings();
+    this.settings = settings ?? LoggerSettings();
     _output = output ?? outputLog;
     _filter = filter;
     ansiColorDisabled = false;
   }
 
-  late final ISpectifyLoggerSettings settings;
+  late final LoggerSettings settings;
   final LoggerFormatter formatter;
 
   late final void Function(String message) _output;
-  LoggerFilter? _filter;
+  ILoggerFilter? _filter;
 
   void log(Object? msg, {LogLevel? level, AnsiPen? pen}) {
     if (!settings.enable) {
@@ -57,9 +57,9 @@ class ISpectifyLogger {
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
   ISpectifyLogger copyWith({
-    ISpectifyLoggerSettings? settings,
+    LoggerSettings? settings,
     LoggerFormatter? formatter,
-    LoggerFilter? filter,
+    ILoggerFilter? filter,
     void Function(String message)? output,
   }) =>
       ISpectifyLogger(

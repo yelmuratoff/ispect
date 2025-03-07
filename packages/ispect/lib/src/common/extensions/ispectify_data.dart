@@ -1,6 +1,12 @@
 import 'package:ispectify/ispectify.dart';
 
+/// Extension on [ISpectifyData] for additional functionalities.
+///
+/// Provides utility methods to manipulate and format log data efficiently.
 extension ISpectDataX on ISpectifyData {
+  /// Returns a copy of this [ISpectifyData] with optional new values.
+  ///
+  /// If no parameters are provided, the original values are retained.
   ISpectifyData copyWith({
     String? message,
     LogLevel? logLevel,
@@ -24,45 +30,38 @@ extension ISpectDataX on ISpectifyData {
         key: key ?? this.key,
       );
 
-  ISpectifyData copy() => ISpectifyData(
-        message,
-        logLevel: logLevel,
-        exception: exception,
-        error: error,
-        title: title,
-        stackTrace: stackTrace,
-        time: time,
-        pen: pen,
-        key: key,
-      );
+  /// Creates an exact duplicate of this [ISpectifyData] instance.
+  ISpectifyData copy() => copyWith();
 
+  /// Generates a formatted summary text for logging.
+  ///
+  /// Limits text length to avoid overly long logs.
   String generateText() {
-    final title = (this.title ?? '').length > 100
-        ? '${this.title?.substring(0, 100)}...'
-        : (this.title ?? '');
-    final message = (this.message != null)
-        ? this.message!.length > 100
-            ? '${this.message?.substring(0, 100)}...'
-            : this.message
-        : '';
-    var exceptionTitle = '';
-
-    if (exception is Exception) {
-      exceptionTitle = exception.toString();
+    String truncate(String? value, int maxLength) {
+      if (value == null) return '';
+      return value.length > maxLength
+          ? '${value.substring(0, maxLength)}...'
+          : value;
     }
-    exceptionTitle = exceptionTitle.length > 500
-        ? '${exceptionTitle.substring(0, 500)}...'
-        : exceptionTitle;
-    final error = (this.error?.toString() ?? '').length > 500
-        ? '${this.error.toString().substring(0, 500)}...'
-        : (this.error?.toString() ?? '');
-    final stackTrace = (this.stackTrace?.toString() ?? '').length > 500
-        ? '${this.stackTrace.toString().substring(0, 500)}...'
-        : (this.stackTrace?.toString() ?? '');
 
-    return '''[Item with hashcode:$hashCode\nTime: $formattedTime\nTitle: $title\nMessage: $message\nException: $exceptionTitle\nError: $error\nStackTrace: $stackTrace]''';
+    final formattedTitle = truncate(title, 100);
+    final formattedMessage = truncate(message, 100);
+    final exceptionText = truncate(exception?.toString(), 500);
+    final errorText = truncate(error?.toString(), 500);
+    final stackTraceText = truncate(stackTrace?.toString(), 500);
+
+    return '''[Item with hashcode: $hashCode
+Time: $formattedTime
+Title: $formattedTitle
+Message: $formattedMessage
+Exception: $exceptionText
+Error: $errorText
+StackTrace: $stackTraceText]''';
   }
 
+  /// Extracts stack trace text for logging.
+  ///
+  /// Returns `null` if no valid stack trace is available.
   String? get stackTraceLogText {
     if ((this is ISpectifyError ||
             this is ISpectifyException ||
@@ -74,41 +73,46 @@ extension ISpectDataX on ISpectifyData {
     return null;
   }
 
+  /// Extracts the error message for logging.
+  ///
+  /// Special handling for HTTP logs and Flutter error details.
   String? get errorLogText {
     var txt = exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
-      txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', '')}';
+      txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', ' ')}';
     }
 
-    if (isHttpLog) {
-      return textMessage;
-    }
-    return txt;
+    return isHttpLog ? textMessage : txt;
   }
 
+  /// Checks if this log entry is related to HTTP requests.
   bool get isHttpLog => [
         ISpectifyLogType.httpRequest.key,
         ISpectifyLogType.httpResponse.key,
         ISpectifyLogType.httpError.key,
       ].contains(key);
 
+  /// Retrieves the type of exception or error, if applicable.
+  ///
+  /// Returns `null` for non-error logs.
   String? get typeText {
-    if (this is! ISpectifyError && this is! ISpectifyException) {
-      return null;
-    }
-    return 'Type: ${exception?.runtimeType.toString() ?? error?.runtimeType.toString() ?? ''}';
+    if (this is! ISpectifyError && this is! ISpectifyException) return null;
+    return 'Type: ${exception?.runtimeType ?? error?.runtimeType ?? ''}';
   }
 
+  /// Converts the log data into a JSON representation.
+  ///
+  /// Omits `null` values for a cleaner output.
   Map<String, dynamic> toJson() => {
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
         if (title != null) 'title': title,
-        if (logLevel != null) 'log-level': logLevel,
+        if (logLevel != null) 'log-level': logLevel.toString(),
         if (message != null) 'message': message,
-        if (exception != null) 'exception': exception,
-        if (error != null) 'error': error,
-        if (stackTrace != null) 'stack-trace': stackTrace,
+        if (exception != null) 'exception': exception.toString(),
+        if (error != null) 'error': error.toString(),
+        if (stackTrace != null) 'stack-trace': stackTrace.toString(),
         if (additionalData != null) 'additional-data': additionalData,
       };
 }

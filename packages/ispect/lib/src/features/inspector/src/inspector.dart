@@ -612,14 +612,14 @@ class InspectorState extends State<Inspector> {
       }
     } else {
       if (widget.observer?.navigator == null) {
-        _controller.setInLoggerPage(inLoggerPage: true);
+        _controller.setInLoggerPage(isLoggerPage: true);
         await Navigator.of(context).push(iSpectPage).then((_) {
-          _controller.setInLoggerPage(inLoggerPage: false);
+          _controller.setInLoggerPage(isLoggerPage: false);
         });
       } else {
-        _controller.setInLoggerPage(inLoggerPage: true);
+        _controller.setInLoggerPage(isLoggerPage: true);
         await widget.observer?.navigator?.push(iSpectPage).then((_) {
-          _controller.setInLoggerPage(inLoggerPage: false);
+          _controller.setInLoggerPage(isLoggerPage: false);
         });
       }
     }
