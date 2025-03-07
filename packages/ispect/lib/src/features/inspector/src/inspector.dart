@@ -360,7 +360,9 @@ class InspectorState extends State<Inspector> {
 
   @override
   void dispose() {
-    _draggablePanelController.dispose();
+    if (widget.controller == null) {
+      _draggablePanelController.dispose();
+    }
     _zoomOverlayOffsetNotifier.dispose();
     _zoomScaleNotifier.dispose();
     _zoomImageOffsetNotifier.dispose();
