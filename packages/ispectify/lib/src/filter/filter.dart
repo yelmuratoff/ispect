@@ -22,18 +22,36 @@ class TypeFilter implements Filter<ISpectifyData> {
 
 class SearchFilter implements Filter<ISpectifyData> {
   SearchFilter(this.query) {
-    _upperQuery = query.toUpperCase();
     _lowerQuery = query.toLowerCase();
   }
   final String query;
-  late final String _upperQuery;
   late final String _lowerQuery;
 
   @override
   bool apply(ISpectifyData item) {
+    if (_lowerQuery.isEmpty) return true;
+
     final message = item.message ?? item.textMessage;
-    return message.toUpperCase().contains(_upperQuery) ||
-        message.toLowerCase().contains(_lowerQuery);
+    if (message.toLowerCase().contains(_lowerQuery)) return true;
+
+    return item.additionalData != null &&
+        _deepSearchIterative(item.additionalData, _lowerQuery);
+  }
+
+  bool _deepSearchIterative(Object? value, String query) {
+    final stack = [value];
+    while (stack.isNotEmpty) {
+      final current = stack.removeLast();
+      if (current is String && current.toLowerCase().contains(query)) {
+        return true;
+      }
+      if (current is Map) {
+        stack.addAll(current.values);
+      } else if (current is Iterable) {
+        stack.addAll(current);
+      }
+    }
+    return false;
   }
 }
 
