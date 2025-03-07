@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_dio/data.dart';
-import 'package:ispectify_dio/dio_logger_settings.dart';
-import 'package:ispectify_dio/dio_logs.dart';
+import 'package:ispectify_dio/src/data/_data.dart';
+import 'package:ispectify_dio/src/models/_models.dart';
+import 'package:ispectify_dio/src/settings.dart';
 
 /// [Dio] http client logger on [ISpectify] base
 ///

@@ -4,7 +4,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_ai/ispect_ai.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/theme_manager.dart';
-import 'package:ispectify_dio/dio_logger_interceptor.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
 
 // Dio instances
 final dio = Dio(

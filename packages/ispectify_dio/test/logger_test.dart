@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_dio/dio_logs.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:test/test.dart';
 
 void main() {

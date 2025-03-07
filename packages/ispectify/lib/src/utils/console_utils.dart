@@ -1,5 +1,4 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/models/models.dart';
 
 /// A utility class for console output formatting.
 ///

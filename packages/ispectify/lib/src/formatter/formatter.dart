@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/settings.dart';
 
 /// An interface for formatting log messages.
 ///
