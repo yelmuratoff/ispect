@@ -111,13 +111,13 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                   isDark: context.isDarkMode,
                   backgroundColor: iSpect.theme.backgroundColor(context),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 SliverList.separated(
                   itemCount: filteredElements.length,
                   separatorBuilder: (_, __) => Divider(
                     color: iSpect.theme.dividerColor(context) ??
                         context.ispectTheme.dividerColor,
                     thickness: 1,
+                    height: 0,
                   ),
                   itemBuilder: (context, index) {
                     final data = _getListItem(filteredElements, index);

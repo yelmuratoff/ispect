@@ -208,7 +208,7 @@ class _HomeState extends State<_Home> {
               BlocBuilder<TestCubit, TestState>(
                 bloc: _testBloc,
                 builder: (context, state) {
-                  return ElevatedButton(
+                  return FilledButton(
                     onPressed: () {
                       _testBloc.load(
                         data: 'Test data',
@@ -218,27 +218,27 @@ class _HomeState extends State<_Home> {
                   );
                 },
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () async {
                   await client.get(Uri.parse(
                       'https://jsonplaceholder.typicode.com/posts/1'));
                 },
                 child: const Text('Send HTTP request (http package)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () async {
                   await client.get(Uri.parse(
                       'https://jsonplaceholder.typicode.com/po2323sts/1'));
                 },
                 child: const Text('Send error HTTP request (http package)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   ThemeProvider.toggleTheme(context);
                 },
                 child: const Text('Toggle theme'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   ISpect.track(
                     'Toggle',
@@ -252,19 +252,19 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Toggle ISpect'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.get('/posts/1');
                 },
                 child: const Text('Send HTTP request'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.get('/post3s/1');
                 },
                 child: const Text('Send HTTP request with error'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.options.headers.addAll({
                     'Authorization': 'Bearer token',
@@ -274,7 +274,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Send HTTP request with Token'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   final formData = FormData();
                   formData.files.add(MapEntry(
@@ -292,7 +292,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Upload file to dummy server'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   // final formData = FormData();
                   // formData.files.add(MapEntry(
@@ -330,13 +330,13 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Upload file to dummy server (http)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   throw Exception('Test exception');
                 },
                 child: const Text('Throw exception'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   debugPrint('Send print message');
                   //  final logger = CustomLogger('MyApp');
@@ -346,7 +346,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Send print message'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -357,7 +357,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Go to second page'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
@@ -367,7 +367,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Replace with second page'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   //  ISpect.logTyped(SuccessLog('Success log'));
                 },
@@ -388,7 +388,7 @@ class _SecondPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
+        child: FilledButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(

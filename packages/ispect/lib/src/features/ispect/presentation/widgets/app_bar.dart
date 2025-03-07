@@ -6,9 +6,8 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/common/widgets/textfields/search_field.dart';
 
-class ISpectAppBar extends StatelessWidget {
+class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
     required this.title,
     required this.leading,
@@ -47,167 +46,179 @@ class ISpectAppBar extends StatelessWidget {
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    return SliverAppBar(
-      elevation: 0,
-      pinned: true,
-      floating: true,
-      expandedHeight: 165,
-      collapsedHeight: 60,
-      toolbarHeight: 60,
-      leading: leading,
-      scrolledUnderElevation: 0,
-      backgroundColor:
-          backgroundColor ?? context.ispectTheme.scaffoldBackgroundColor,
-      actions: [
-        UnconstrainedBox(
-          child: IconButton(
-            onPressed: onInfoTap,
-            icon: const Icon(
-              Icons.info_outline_rounded,
+  State<ISpectAppBar> createState() => _ISpectAppBarState();
+}
+
+class _ISpectAppBarState extends State<ISpectAppBar> {
+  final _isFilterEnabled = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    super.dispose();
+    _isFilterEnabled.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder(
+        valueListenable: _isFilterEnabled,
+        builder: (context, value, _) => SliverAppBar(
+          elevation: 0,
+          pinned: true,
+          floating: true,
+          expandedHeight: !value ? 110 : 160,
+          collapsedHeight: 60,
+          toolbarHeight: 60,
+          leading: widget.leading,
+          scrolledUnderElevation: 0,
+          backgroundColor: widget.backgroundColor ??
+              context.ispectTheme.scaffoldBackgroundColor,
+          actions: [
+            UnconstrainedBox(
+              child: IconButton(
+                onPressed: widget.onInfoTap,
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                ),
+              ),
+            ),
+            UnconstrainedBox(
+              child: IconButton(
+                onPressed: widget.onSettingsTap,
+                icon: const Icon(
+                  Icons.menu_rounded,
+                ),
+              ),
+            ),
+            const Gap(10),
+          ],
+          title: Text(
+            widget.title ?? '',
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
             ),
           ),
-        ),
-        UnconstrainedBox(
-          child: IconButton(
-            onPressed: onSettingsTap,
-            icon: const Icon(
-              Icons.menu_rounded,
-            ),
-          ),
-        ),
-        const Gap(10),
-      ],
-      title: Text(
-        title ?? '',
-        style: const TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        background: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 60),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                    ),
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (_, __) => const Gap(8),
-                    itemCount: uniqTitles.length,
-                    itemBuilder: (context, index) {
-                      final title = uniqTitles[index];
-                      final count = titles.where((e) => e == title).length;
-                      return InkWell(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        onTap: () {
-                          if (titlesController.selectedIndexes
-                              .contains(index)) {
-                            titlesController.unselectIndex(index);
-                          } else {
-                            titlesController.selectIndex(index);
-                          }
-                          _onToggle(
-                            title,
-                            titlesController.selectedIndex == index,
-                          );
-                        },
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
-                            border: Border.fromBorderSide(
-                              BorderSide(
-                                color: titlesController.selectedIndexes
-                                        .contains(index)
-                                    ? isDark
-                                        ? context.ispectTheme.colorScheme
-                                            .primaryContainer
-                                        : context
-                                            .ispectTheme.colorScheme.primary
-                                    : iSpect.theme.dividerColor(
-                                          context,
-                                        ) ??
-                                        context.ispectTheme.dividerColor,
-                              ),
-                            ),
-                            color: titlesController.selectedIndexes
-                                    .contains(index)
-                                ? isDark
-                                    ? context.ispectTheme.colorScheme
-                                        .primaryContainer
-                                    : context.ispectTheme.colorScheme.primary
-                                : context.ispectTheme.cardColor,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Align(
-                              child: Text(
-                                '$count  $title',
-                                style: context.ispectTheme.textTheme.bodyMedium!
-                                    .copyWith(
-                                  color: titlesController.selectedIndexes
-                                          .contains(index)
-                                      ? Colors.white
-                                      : context.ispectTheme.textColor,
-                                ),
-                              ),
+          flexibleSpace: FlexibleSpaceBar(
+            background: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 60),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SearchBar(
+                        focusNode: widget.focusNode,
+                        constraints: const BoxConstraints(
+                          minHeight: 45,
+                        ),
+                        shape: const WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(12),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                        leading: const Icon(
+                          Icons.search_rounded,
+                        ),
+                        trailing: [
+                          Badge(
+                            smallSize: 8,
+                            alignment: const Alignment(0.8, -0.8),
+                            isLabelVisible: widget
+                                .titlesController.selectedIndexes.isNotEmpty,
+                            child: IconButton(
+                              iconSize: 24,
+                              onPressed: () {
+                                _isFilterEnabled.value =
+                                    !_isFilterEnabled.value;
+                              },
+                              icon: const Icon(Icons.tune_rounded),
+                            ),
+                          ),
+                        ],
+                        hintText: context.ispectL10n.search,
+                        onChanged: widget.controller.updateFilterSearchQuery,
+                        elevation: WidgetStateProperty.all(0),
+                      ),
+                    ),
+                    Flexible(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: !value
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: SizedBox(
+                                  key: const ValueKey('filter'),
+                                  height: 40,
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    scrollDirection: Axis.horizontal,
+                                    separatorBuilder: (_, __) => const Gap(8),
+                                    itemCount: widget.uniqTitles.length,
+                                    itemBuilder: (context, index) {
+                                      final title = widget.uniqTitles[index];
+                                      final count = widget.titles
+                                          .where((e) => e == title)
+                                          .length;
+                                      return FilterChip(
+                                        selectedColor: context.ispectTheme
+                                            .colorScheme.primaryContainer,
+                                        label: Text(
+                                          '$count  $title',
+                                          style: context
+                                              .ispectTheme.textTheme.bodyMedium,
+                                        ),
+                                        selected: widget
+                                            .titlesController.selectedIndexes
+                                            .contains(index),
+                                        onSelected: (selected) {
+                                          if (selected) {
+                                            widget.titlesController
+                                                .selectIndex(index);
+                                          } else {
+                                            widget.titlesController
+                                                .unselectIndex(index);
+                                          }
+                                          _onToggle(
+                                            title,
+                                            widget.titlesController
+                                                    .selectedIndex ==
+                                                index,
+                                          );
+                                        },
+                                        backgroundColor: widget.titlesController
+                                                .selectedIndexes
+                                                .contains(index)
+                                            ? widget.isDark
+                                                ? context
+                                                    .ispectTheme
+                                                    .colorScheme
+                                                    .primaryContainer
+                                                : context.ispectTheme
+                                                    .colorScheme.primary
+                                            : context.ispectTheme.cardColor,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-                const Gap(12),
-                _SearchTextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  isDark: isDark,
-                ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   void _onToggle(String? title, bool selected) {
     if (title == null) return;
-    onToggleTitle(title, selected);
-  }
-}
-
-class _SearchTextField extends StatelessWidget {
-  const _SearchTextField({
-    required this.controller,
-    required this.focusNode,
-    required this.isDark,
-  });
-
-  final ISpectifyViewController controller;
-  final FocusNode focusNode;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    Theme.of(context);
-    ISpect.read(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SearchField(
-        onChanged: controller.updateFilterSearchQuery,
-        controller: null,
-      ),
-    );
+    widget.onToggleTitle(title, selected);
   }
 }
