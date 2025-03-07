@@ -12,4 +12,5 @@ export 'src/models/log.dart';
 export 'src/observer.dart';
 export 'src/settings.dart';
 export 'src/utils/error_handler.dart';
+export 'src/utils/pretty_json.dart';
 export 'src/utils/time_formatter.dart';

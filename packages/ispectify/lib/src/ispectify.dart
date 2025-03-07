@@ -117,7 +117,12 @@ class ISpectify {
     );
   }
 
-  void logCustom(ISpectifyData log) => _handleLogData(log);
+  void logCustom(
+    ISpectifyData log,
+  ) =>
+      _handleLogData(
+        log,
+      );
 
   void critical(
     Object? msg, [
@@ -193,6 +198,50 @@ class ISpectify {
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.warning,
+    );
+  }
+
+  void good(String message) {
+    _handleLogData(
+      GoodLog(
+        message,
+      ),
+    );
+  }
+
+  void track(
+    String message, {
+    String? event,
+    String? analytics,
+    Map<String, dynamic>? parameters,
+  }) {
+    _handleLogData(
+      AnalyticsLog(
+        analytics: analytics,
+        '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
+      ),
+    );
+  }
+
+  void print(String message) {
+    _handleLogData(PrintLog(message));
+  }
+
+  void route(String message) {
+    _handleLogData(RouteLog(message));
+  }
+
+  void provider(
+    String message, {
+    Object? exception,
+    StackTrace? stackTrace,
+  }) {
+    _handleLogData(
+      ProviderLog(
+        message,
+        exception: exception,
+        stackTrace: stackTrace,
+      ),
     );
   }
 

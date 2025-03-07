@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/pretty_json.dart';
 
 /// Extension on [StringBuffer] to conditionally write a line.
 extension StringBufferExtension on StringBuffer {
@@ -99,7 +98,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   @override
   void didStopUserGesture() {
     if (isLogGestures) {
-      ISpect.route('User gesture stopped');
+      ISpect.logger.route('User gesture stopped');
     }
     onStopUserGesture?.call();
   }
@@ -126,7 +125,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       );
 
     if (logMessage.isNotEmpty) {
-      ISpect.route(logMessage.toString().trim());
+      ISpect.logger.route(logMessage.toString().trim());
     }
   }
 

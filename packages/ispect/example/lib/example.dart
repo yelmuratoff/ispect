@@ -116,7 +116,7 @@ class MyHomePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 ISpect.read(context).toggleISpect();
-                ISpect.info('Button Pressed');
+                ISpect.logger.info('Button Pressed');
               },
               child: const Text('Log Message'),
             ),

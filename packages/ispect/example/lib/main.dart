@@ -240,7 +240,7 @@ class _HomeState extends State<_Home> {
               ),
               FilledButton(
                 onPressed: () {
-                  ISpect.track(
+                  ISpect.logger.track(
                     'Toggle',
                     analytics: 'amplitude',
                     event: 'ISpect',
