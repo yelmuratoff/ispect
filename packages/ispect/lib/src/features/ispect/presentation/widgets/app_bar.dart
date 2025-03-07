@@ -6,6 +6,7 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/textfields/search_field.dart';
 
 class ISpectAppBar extends StatelessWidget {
   const ISpectAppBar({
@@ -199,65 +200,13 @@ class _SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final iSpect = ISpect.read(context);
+    Theme.of(context);
+    ISpect.read(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextFormField(
-        style: theme.textTheme.bodyLarge!.copyWith(
-          color: context.ispectTheme.textColor,
-          fontSize: 14,
-        ),
-        cursorColor: isDark
-            ? context.ispectTheme.colorScheme.primaryContainer
-            : context.ispectTheme.colorScheme.primary,
-        focusNode: focusNode,
-        onTapOutside: (_) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        onTap: controller.update,
+      child: SearchField(
         onChanged: controller.updateFilterSearchQuery,
-        decoration: InputDecoration(
-          fillColor: theme.cardColor,
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: isDark
-                  ? context.ispectTheme.colorScheme.primaryContainer
-                  : context.ispectTheme.colorScheme.primary,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: iSpect.theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: iSpect.theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-          prefixIcon: Icon(
-            Icons.search,
-            color: focusNode == FocusScope.of(context).focusedChild
-                ? isDark
-                    ? context.ispectTheme.colorScheme.primaryContainer
-                    : context.ispectTheme.colorScheme.primary
-                : iSpect.theme.dividerColor(context) ??
-                    context.ispectTheme.hintColor,
-            size: 20,
-          ),
-          hintText: context.ispectL10n.search,
-          hintStyle: theme.textTheme.bodyLarge!.copyWith(
-            color: context.ispectTheme.hintColor,
-            fontSize: 14,
-          ),
-        ),
+        controller: null,
       ),
     );
   }

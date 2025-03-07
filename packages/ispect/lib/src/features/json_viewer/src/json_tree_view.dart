@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/textfields/search_field.dart';
 import 'package:ispect/src/features/json_viewer/src/json_tree_node.dart';
 import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 import 'package:ispect/src/features/json_viewer/src/utils/json_parser.dart';
@@ -163,59 +163,12 @@ class JsonTreeViewState extends State<JsonTreeView> {
   }
 
   Widget _buildSearchBar() {
-    final theme = Theme.of(context);
     ISpect.read(context);
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: TextFormField(
+      child: SearchField(
         controller: _searchController,
-        style: theme.textTheme.bodyLarge!.copyWith(
-          color: context.ispectTheme.textColor,
-          fontSize: 14,
-        ),
         onChanged: _handleSearch,
-        cursorColor: context.isDarkMode
-            ? context.ispectTheme.colorScheme.primaryContainer
-            : context.ispectTheme.colorScheme.primary,
-        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-        decoration: InputDecoration(
-          fillColor: theme.cardColor,
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: context.isDarkMode
-                  ? context.ispectTheme.colorScheme.primaryContainer
-                  : context.ispectTheme.colorScheme.primary,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: ISpect.read(context).theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: ISpect.read(context).theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-          prefixIcon: Icon(
-            Icons.search,
-            color: context.isDarkMode
-                ? context.ispectTheme.colorScheme.primaryContainer
-                : context.ispectTheme.colorScheme.primary,
-            size: 20,
-          ),
-          hintText: context.ispectL10n.search,
-          hintStyle: theme.textTheme.bodyLarge!.copyWith(
-            color: context.ispectTheme.hintColor,
-            fontSize: 14,
-          ),
-        ),
       ),
     );
   }

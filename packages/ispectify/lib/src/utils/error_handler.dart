@@ -5,7 +5,7 @@ class ISpectifyErrorHandler {
 
   final ISpectifyOptions settings;
 
-  ISpectiyData handle(
+  ISpectifyData handle(
     Object exception, [
     StackTrace? stackTrace,
     String? msg,
@@ -33,7 +33,7 @@ class ISpectifyErrorHandler {
         stackTrace: stackTrace,
       );
     } else {
-      return ISpectiyData(
+      return ISpectifyData(
         exception.toString(),
         key: ISpectifyLogType.error.key,
         title: settings.titleByKey(

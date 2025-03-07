@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-extension ISpectDataX on ISpectiyData {
-  ISpectiyData copyWith({
+extension ISpectDataX on ISpectifyData {
+  ISpectifyData copyWith({
     String? message,
     LogLevel? logLevel,
     Object? exception,
@@ -12,7 +12,7 @@ extension ISpectDataX on ISpectiyData {
     AnsiPen? pen,
     String? key,
   }) =>
-      ISpectiyData(
+      ISpectifyData(
         message ?? this.message,
         logLevel: logLevel ?? this.logLevel,
         exception: exception ?? this.exception,
@@ -24,7 +24,7 @@ extension ISpectDataX on ISpectiyData {
         key: key ?? this.key,
       );
 
-  ISpectiyData copy() => ISpectiyData(
+  ISpectifyData copy() => ISpectifyData(
         message,
         logLevel: logLevel,
         exception: exception,

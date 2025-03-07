@@ -1,15 +1,15 @@
 import 'package:ispectify/ispectify.dart';
 
 abstract class LogHistory {
-  List<ISpectiyData> get history;
+  List<ISpectifyData> get history;
 
   void clear();
 
-  void add(ISpectiyData data);
+  void add(ISpectifyData data);
 }
 
 class DefaultISpectifyHistory implements LogHistory {
-  DefaultISpectifyHistory(this.settings, {List<ISpectiyData>? history}) {
+  DefaultISpectifyHistory(this.settings, {List<ISpectifyData>? history}) {
     if (history != null) {
       _history.addAll(history);
     }
@@ -17,10 +17,10 @@ class DefaultISpectifyHistory implements LogHistory {
 
   final ISpectifyOptions settings;
 
-  final _history = <ISpectiyData>[];
+  final _history = <ISpectifyData>[];
 
   @override
-  List<ISpectiyData> get history => _history;
+  List<ISpectifyData> get history => _history;
 
   @override
   void clear() {
@@ -30,7 +30,7 @@ class DefaultISpectifyHistory implements LogHistory {
   }
 
   @override
-  void add(ISpectiyData data) {
+  void add(ISpectifyData data) {
     if (settings.useHistory && settings.enabled) {
       if (settings.maxHistoryItems <= _history.length) {
         _history.removeAt(0);

@@ -18,7 +18,7 @@ class ISpectMonitorCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? subtitleWidget;
-  final List<ISpectiyData> logs;
+  final List<ISpectifyData> logs;
   final Color color;
   final IconData icon;
   final VoidCallback? onTap;

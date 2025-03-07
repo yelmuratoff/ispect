@@ -1,68 +1,99 @@
 import 'package:ispectify/ispectify.dart';
 
-abstract class _Filter<T> {
-  bool filter(T item);
+abstract class Filter<T> {
+  bool apply(T item);
 }
 
-typedef ISpectifyFilter = _Filter<ISpectiyData>;
-
-class DefaultISpectifyFilter implements ISpectifyFilter {
-  DefaultISpectifyFilter({
-    this.titles = const [],
-    this.types = const [],
-    this.searchQuery,
-  });
-
-  final List<String> titles;
-  final List<Type> types;
-  final String? searchQuery;
+class TitleFilter implements Filter<ISpectifyData> {
+  TitleFilter(List<String> titles) : titles = titles.toSet();
+  final Set<String> titles;
 
   @override
-  bool filter(ISpectiyData item) {
-    var match = false;
+  bool apply(ISpectifyData item) => titles.contains(item.title);
+}
 
-    if (titles.isNotEmpty) {
-      match = match || titles.contains(item.title);
-    }
+class TypeFilter implements Filter<ISpectifyData> {
+  TypeFilter(List<Type> types) : types = types.toSet();
+  final Set<Type> types;
 
-    if (types.isNotEmpty) {
-      match = match || _checkTypeMatch(item);
-    }
+  @override
+  bool apply(ISpectifyData item) => types.contains(item.runtimeType);
+}
 
+class SearchFilter implements Filter<ISpectifyData> {
+  SearchFilter(this.query) {
+    _upperQuery = query.toUpperCase();
+    _lowerQuery = query.toLowerCase();
+  }
+  final String query;
+  late final String _upperQuery;
+  late final String _lowerQuery;
+
+  @override
+  bool apply(ISpectifyData item) {
+    final message = item.message ?? item.textMessage;
+    return message.toUpperCase().contains(_upperQuery) ||
+        message.toLowerCase().contains(_lowerQuery);
+  }
+}
+
+class ISpectifyFilter implements Filter<ISpectifyData> {
+  ISpectifyFilter({
+    List<String> titles = const [],
+    List<Type> types = const [],
+    String? searchQuery,
+  })  : _filters = _buildFilters(titles, types, searchQuery),
+        _isEmpty =
+            titles.isEmpty && types.isEmpty && (searchQuery?.isEmpty ?? true);
+  final List<Filter<ISpectifyData>> _filters;
+  List<Filter<ISpectifyData>> get filters => _filters;
+  final bool _isEmpty;
+
+  static List<Filter<ISpectifyData>> _buildFilters(
+    List<String> titles,
+    List<Type> types,
+    String? searchQuery,
+  ) {
+    final filters = <Filter<ISpectifyData>>[];
+
+    if (titles.isNotEmpty) filters.add(TitleFilter(titles));
+    if (types.isNotEmpty) filters.add(TypeFilter(types));
     if (searchQuery?.isNotEmpty ?? false) {
-      final fullMsg = item.textMessage;
-      final fullUpperMsg = fullMsg.toUpperCase();
-      final fullLowerMsg = fullMsg.toLowerCase();
-      final textContain = fullUpperMsg.contains(searchQuery!) ||
-          fullLowerMsg.contains(searchQuery!);
-      match = match || textContain;
+      filters.add(SearchFilter(searchQuery!));
     }
 
-    if (titles.isEmpty && types.isEmpty && (searchQuery?.isEmpty ?? true)) {
-      match = true;
-    }
-    return match;
+    return filters;
   }
 
-  bool _checkTypeMatch(ISpectiyData item) {
-    var match = false;
-    for (final type in types) {
-      if (item.runtimeType == type) {
-        match = true;
-        break;
-      }
-    }
-    return match;
+  @override
+  bool apply(ISpectifyData item) {
+    if (_isEmpty) return true;
+    return _filters.any((filter) => filter.apply(item));
   }
 
-  DefaultISpectifyFilter copyWith({
+  ISpectifyFilter copyWith({
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
   }) =>
-      DefaultISpectifyFilter(
-        titles: titles ?? this.titles,
-        types: types ?? this.types,
-        searchQuery: searchQuery ?? this.searchQuery,
+      ISpectifyFilter(
+        titles: titles ??
+            (_filters.any((f) => f is TitleFilter)
+                ? (_filters.firstWhere((f) => f is TitleFilter) as TitleFilter)
+                    .titles
+                    .toList()
+                : []),
+        types: types ??
+            (_filters.any((f) => f is TypeFilter)
+                ? (_filters.firstWhere((f) => f is TypeFilter) as TypeFilter)
+                    .types
+                    .toList()
+                : []),
+        searchQuery: searchQuery ??
+            (_filters.any((f) => f is SearchFilter)
+                ? (_filters.firstWhere((f) => f is SearchFilter)
+                        as SearchFilter)
+                    .query
+                : null),
       );
 }

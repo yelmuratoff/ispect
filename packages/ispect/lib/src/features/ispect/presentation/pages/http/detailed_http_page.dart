@@ -7,14 +7,14 @@ import 'package:ispect/src/features/json_viewer/pretty_json_view.dart';
 
 class DetailedHTTPPage extends StatefulWidget {
   const DetailedHTTPPage({required this.data, super.key});
-  final ISpectiyData data;
+  final ISpectifyData data;
 
   @override
   State<DetailedHTTPPage> createState() => _DetailedHTTPPageState();
 }
 
 class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
-  late final ISpectiyData _data;
+  late final ISpectifyData _data;
 
   @override
   void initState() {

@@ -164,45 +164,11 @@ class _ISpectifySettingsBottomSheetState
                 ),
               ),
             ),
-            SliverFillRemaining(
+            const SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Flexible(
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'ISpect',
-                          style: context.ispectTheme.textTheme.titleLarge
-                              ?.copyWith(
-                            color: context.ispectTheme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: '\n📫 How to reach me: \n',
-                              children: [
-                                TextSpan(
-                                  text: 'yelamanyelmuratov@gmail.com',
-                                  style: context
-                                      .ispectTheme.textTheme.bodyMedium
-                                      ?.copyWith(
-                                    color:
-                                        context.ispectTheme.colorScheme.primary,
-                                  ),
-                                ),
-                              ],
-                              style: context.ispectTheme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
+                padding: EdgeInsets.only(bottom: 32),
+                child: _HowToReachMeWidget(),
               ),
             ),
           ],
@@ -210,6 +176,44 @@ class _ISpectifySettingsBottomSheetState
       ),
     );
   }
+}
+
+class _HowToReachMeWidget extends StatelessWidget {
+  const _HowToReachMeWidget();
+
+  @override
+  Widget build(BuildContext context) => Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                text: 'ISpect',
+                style: context.ispectTheme.textTheme.titleLarge?.copyWith(
+                  color: context.ispectTheme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: [
+                  TextSpan(
+                    text: '\n📫 How to reach me: \n',
+                    children: [
+                      TextSpan(
+                        text: 'yelamanyelmuratov@gmail.com',
+                        style:
+                            context.ispectTheme.textTheme.bodyMedium?.copyWith(
+                          color: context.ispectTheme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                    style: context.ispectTheme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      );
 }
 
 class _Header extends StatelessWidget {

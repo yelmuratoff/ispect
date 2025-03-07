@@ -1,6 +1,6 @@
 // import 'package:ispectify/ispectify.dart';
 
-// class ISpectifyLog extends ISpectiyData {
+// class ISpectifyLog extends ISpectifyData {
 //   ISpectifyLog(
 //     super.message, {
 //     super.key,

@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-extension HistoryListFlutterText on List<ISpectiyData> {
+extension HistoryListFlutterText on List<ISpectifyData> {
   String get formattedText {
     final sb = StringBuffer();
     for (final data in this) {

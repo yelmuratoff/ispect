@@ -79,8 +79,8 @@ class _ISpectPageViewState extends State<ISpectPageView> {
         builder: (_, __) => ISpectifyBuilder(
           iSpectify: widget.iSpectify,
           builder: (context, data) {
-            final filtredElements =
-                data.where((e) => _controller.filter.filter(e)).toList();
+            final filteredElements =
+                data.where((e) => _controller.filter.apply(e)).toList();
             final titles = data.map((e) => e.title).toList();
             final uniqTitles = titles.toSet().toList();
 
@@ -113,14 +113,14 @@ class _ISpectPageViewState extends State<ISpectPageView> {
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 SliverList.separated(
-                  itemCount: filtredElements.length,
+                  itemCount: filteredElements.length,
                   separatorBuilder: (_, __) => Divider(
                     color: iSpect.theme.dividerColor(context) ??
                         context.ispectTheme.dividerColor,
                     thickness: 1,
                   ),
                   itemBuilder: (context, index) {
-                    final data = _getListItem(filtredElements, index);
+                    final data = _getListItem(filteredElements, index);
                     if (widget.itemsBuilder != null) {
                       return widget.itemsBuilder!.call(context, data);
                     }
@@ -155,12 +155,12 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     }
   }
 
-  ISpectiyData _getListItem(
-    List<ISpectiyData> filtredElements,
+  ISpectifyData _getListItem(
+    List<ISpectifyData> filteredElements,
     int i,
   ) {
-    final data = filtredElements[
-        _controller.isLogOrderReversed ? filtredElements.length - 1 - i : i];
+    final data = filteredElements[
+        _controller.isLogOrderReversed ? filteredElements.length - 1 - i : i];
     return data;
   }
 
@@ -212,7 +212,7 @@ class _ISpectPageViewState extends State<ISpectPageView> {
     );
   }
 
-  void _copyISpectifyDataItemText(ISpectiyData data) {
+  void _copyISpectifyDataItemText(ISpectifyData data) {
     final text = data.textMessage;
     copyClipboard(context, value: text);
   }

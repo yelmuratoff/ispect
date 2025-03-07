@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-class ISpectiyData {
-  ISpectiyData(
+class ISpectifyData {
+  ISpectifyData(
     this.message, {
     DateTime? time,
     this.logLevel,

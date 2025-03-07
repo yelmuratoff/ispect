@@ -9,5 +9,5 @@ abstract class ISpectifyObserver {
 
   void onException(ISpectifyException err) {}
 
-  void onLog(ISpectiyData log) {}
+  void onLog(ISpectifyData log) {}
 }

@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/settings.dart';
 
-class BlocEventLog extends ISpectiyData {
+class BlocEventLog extends ISpectifyData {
   BlocEventLog({
     required this.bloc,
     required this.event,
@@ -28,7 +28,7 @@ class BlocEventLog extends ISpectiyData {
   }
 }
 
-class BlocStateLog extends ISpectiyData {
+class BlocStateLog extends ISpectifyData {
   BlocStateLog({
     required this.bloc,
     required this.transition,
@@ -46,7 +46,7 @@ class BlocStateLog extends ISpectiyData {
   static const getKey = 'bloc-state';
 }
 
-class BlocChangeLog extends ISpectiyData {
+class BlocChangeLog extends ISpectifyData {
   BlocChangeLog({
     required this.bloc,
     required this.change,
@@ -64,7 +64,7 @@ class BlocChangeLog extends ISpectiyData {
   static const getKey = 'bloc-transition';
 }
 
-class BlocCreateLog extends ISpectiyData {
+class BlocCreateLog extends ISpectifyData {
   BlocCreateLog({
     required this.bloc,
   }) : super(
@@ -84,7 +84,7 @@ class BlocCreateLog extends ISpectiyData {
   }
 }
 
-class BlocCloseLog extends ISpectiyData {
+class BlocCloseLog extends ISpectifyData {
   BlocCloseLog({
     required this.bloc,
   }) : super(

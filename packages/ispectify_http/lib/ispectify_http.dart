@@ -108,7 +108,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
 
 const encoder = JsonEncoder.withIndent('  ');
 
-class HttpRequestLog extends ISpectiyData {
+class HttpRequestLog extends ISpectifyData {
   HttpRequestLog(
     super.message, {
     required this.method,
@@ -153,7 +153,7 @@ class HttpRequestLog extends ISpectiyData {
   }
 }
 
-class HttpResponseLog extends ISpectiyData {
+class HttpResponseLog extends ISpectifyData {
   HttpResponseLog(
     super.message, {
     required this.responseData,
@@ -215,7 +215,7 @@ class HttpResponseLog extends ISpectiyData {
   }
 }
 
-class HttpErrorLog extends ISpectiyData {
+class HttpErrorLog extends ISpectifyData {
   HttpErrorLog(
     super.message, {
     required this.method,

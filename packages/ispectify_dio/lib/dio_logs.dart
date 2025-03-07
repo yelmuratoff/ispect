@@ -6,7 +6,7 @@ import 'package:ispectify_dio/dio_logger_settings.dart';
 
 const _encoder = JsonEncoder.withIndent('  ');
 
-class DioRequestLog extends ISpectiyData {
+class DioRequestLog extends ISpectifyData {
   DioRequestLog(
     super.message, {
     required this.requestData,
@@ -55,7 +55,7 @@ class DioRequestLog extends ISpectiyData {
   }
 }
 
-class DioResponseLog extends ISpectiyData {
+class DioResponseLog extends ISpectifyData {
   DioResponseLog(
     super.message, {
     required this.responseData,
@@ -132,7 +132,7 @@ class DioResponseLog extends ISpectiyData {
   }
 }
 
-class DioErrorLog extends ISpectiyData {
+class DioErrorLog extends ISpectifyData {
   DioErrorLog(
     super.message, {
     required this.method,

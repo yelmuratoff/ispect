@@ -74,12 +74,13 @@ class ISpectify {
         DefaultISpectifyHistory(this.settings, history: _history.history);
   }
 
-  final _iSpectifyStreamController = StreamController<ISpectiyData>.broadcast();
+  final _iSpectifyStreamController =
+      StreamController<ISpectifyData>.broadcast();
 
-  Stream<ISpectiyData> get stream =>
+  Stream<ISpectifyData> get stream =>
       _iSpectifyStreamController.stream.asBroadcastStream();
 
-  List<ISpectiyData> get history => _history.history;
+  List<ISpectifyData> get history => _history.history;
 
   void handle(
     Object exception, [
@@ -116,7 +117,7 @@ class ISpectify {
     );
   }
 
-  void logCustom(ISpectiyData log) => _handleLogData(log);
+  void logCustom(ISpectifyData log) => _handleLogData(log);
 
   void critical(
     Object? msg, [
@@ -209,7 +210,7 @@ class ISpectify {
     AnsiPen? pen,
   }) {
     final type = ISpectifyLogType.fromLogLevel(logLevel);
-    final data = ISpectiyData(
+    final data = ISpectifyData(
       key: type.key,
       message?.toString() ?? '',
       title: settings.titleByKey(type.key),
@@ -221,7 +222,7 @@ class ISpectify {
     _handleLogData(data);
   }
 
-  void _handleErrorData(ISpectiyData data) {
+  void _handleErrorData(ISpectifyData data) {
     if (!settings.enabled) {
       return;
     }
@@ -240,7 +241,7 @@ class ISpectify {
   }
 
   void _handleLogData(
-    ISpectiyData data, {
+    ISpectifyData data, {
     LogLevel? logLevel,
   }) {
     if (!settings.enabled) {
@@ -264,12 +265,12 @@ class ISpectify {
     }
   }
 
-  void _handleForOutputs(ISpectiyData data) {
+  void _handleForOutputs(ISpectifyData data) {
     _history.add(data);
   }
 
-  bool _isApprovedByFilter(ISpectiyData data) {
-    final approved = _filter?.filter(data);
+  bool _isApprovedByFilter(ISpectifyData data) {
+    final approved = _filter?.apply(data);
     return approved ?? true;
   }
 }

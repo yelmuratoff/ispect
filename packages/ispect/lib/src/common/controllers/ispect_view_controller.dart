@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/download_logs/download_logs.dart';
-
 import 'package:ispectify/ispectify.dart';
 
-/// Controller to work with [ISpectifyScreen]
 class ISpectifyViewController extends ChangeNotifier {
-  DefaultISpectifyFilter _filter = DefaultISpectifyFilter();
-
-  var _expandedLogs = true;
+  ISpectifyFilter _filter = ISpectifyFilter();
+  bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
 
-  /// Filter for selecting specific logs and errors
-  DefaultISpectifyFilter get filter => _filter;
-  set filter(DefaultISpectifyFilter val) {
+  ISpectifyFilter get filter => _filter;
+  set filter(ISpectifyFilter val) {
     _filter = val;
     notifyListeners();
   }
@@ -26,47 +22,81 @@ class ISpectifyViewController extends ChangeNotifier {
 
   bool get isLogOrderReversed => _isLogOrderReversed;
 
-  /// Toggle log order (earliest or latest first)
   void toggleLogOrder() {
     _isLogOrderReversed = !_isLogOrderReversed;
     notifyListeners();
   }
 
-  /// Method for updating a search query based on errors and logs
   void updateFilterSearchQuery(String query) {
     _filter = _filter.copyWith(searchQuery: query);
     notifyListeners();
   }
 
-  /// Method adds an type to the filter
   void addFilterType(Type type) {
-    _filter = _filter.copyWith(types: [..._filter.types, type]);
+    final currentTypes = _getCurrentTypes();
+    _filter = ISpectifyFilter(
+      titles: _getCurrentTitles(),
+      types: [...currentTypes, type],
+      searchQuery: _getCurrentSearchQuery(),
+    );
     notifyListeners();
   }
 
-  /// Method removes an type from the filter
   void removeFilterType(Type type) {
-    _filter =
-        _filter.copyWith(types: _filter.types.where((t) => t != type).toList());
+    final currentTypes = _getCurrentTypes();
+    _filter = ISpectifyFilter(
+      titles: _getCurrentTitles(),
+      types: currentTypes.where((t) => t != type).toList(),
+      searchQuery: _getCurrentSearchQuery(),
+    );
     notifyListeners();
   }
 
-  /// Method adds an title to the filter
   void addFilterTitle(String title) {
-    _filter = _filter.copyWith(titles: [..._filter.titles, title]);
+    final currentTitles = _getCurrentTitles();
+    _filter = ISpectifyFilter(
+      titles: [...currentTitles, title],
+      types: _getCurrentTypes(),
+      searchQuery: _getCurrentSearchQuery(),
+    );
     notifyListeners();
   }
 
-  /// Method removes an title from the filter
   void removeFilterTitle(String title) {
-    _filter = _filter.copyWith(
-      titles: _filter.titles.where((t) => t != title).toList(),
+    final currentTitles = _getCurrentTitles();
+    _filter = ISpectifyFilter(
+      titles: currentTitles.where((t) => t != title).toList(),
+      types: _getCurrentTypes(),
+      searchQuery: _getCurrentSearchQuery(),
     );
     notifyListeners();
   }
 
   Future<void> downloadLogsFile(String logs) async => downloadFile(logs);
 
-  /// Redefinition [notifyListeners]
   void update() => notifyListeners();
+
+  List<String> _getCurrentTitles() {
+    final titleFilter = _filter.filters.firstWhere(
+      (f) => f is TitleFilter,
+      orElse: () => TitleFilter([]),
+    ) as TitleFilter;
+    return titleFilter.titles.toList();
+  }
+
+  List<Type> _getCurrentTypes() {
+    final typeFilter = _filter.filters.firstWhere(
+      (f) => f is TypeFilter,
+      orElse: () => TypeFilter([]),
+    ) as TypeFilter;
+    return typeFilter.types.toList();
+  }
+
+  String? _getCurrentSearchQuery() {
+    final searchFilter = _filter.filters.firstWhere(
+      (f) => f is SearchFilter,
+      orElse: () => SearchFilter(''),
+    ) as SearchFilter;
+    return searchFilter.query.isEmpty ? null : searchFilter.query;
+  }
 }

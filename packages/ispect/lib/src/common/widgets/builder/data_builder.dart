@@ -15,8 +15,8 @@ typedef ISpectifyExceptionBuilder = Widget Function(
   ISpectifyException data,
 );
 
-/// Signature for build custom [ISpectiyData] widgets
+/// Signature for build custom [ISpectifyData] widgets
 typedef ISpectifyDataBuilder = Widget Function(
   BuildContext context,
-  ISpectiyData data,
+  ISpectifyData data,
 );

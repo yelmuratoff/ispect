@@ -22,7 +22,7 @@ class ISpectLogCard extends StatefulWidget {
     this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
   });
 
-  final ISpectiyData data;
+  final ISpectifyData data;
   final VoidCallback? onCopyTap;
   final VoidCallback? onTap;
   final bool expanded;

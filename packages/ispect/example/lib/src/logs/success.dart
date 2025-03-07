@@ -1,7 +1,7 @@
 import 'package:ispect/ispect.dart';
 
 /// `SuccessLog` - This class contains the basic structure of the log.
-class SuccessLog extends ISpectiyData {
+class SuccessLog extends ISpectifyData {
   SuccessLog(String super.message);
 
   @override
