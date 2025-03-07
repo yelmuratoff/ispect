@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/file_utils.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
@@ -19,7 +20,7 @@ import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
-import 'package:ispect/src/features/ispect/presentation/pages/theme_scheme/theme_scheme_screen.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_screen.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -576,7 +577,7 @@ class InspectorState extends State<Inspector> {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
         final screenshotFilePath =
-            await writeImageToStorage(feedback.screenshot);
+            await FileUtils.writeImageToStorage(feedback.screenshot);
 
         await Share.shareXFiles(
           [screenshotFilePath],
@@ -592,13 +593,13 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _launchInfospect(BuildContext context) async {
     final iSpect = ISpect.read(context);
-    final iSpectPage = MaterialPageRoute<dynamic>(
-      builder: (_) => ISpectPage(
+    final iSpectScreen = MaterialPageRoute<dynamic>(
+      builder: (_) => ISpectScreen(
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
       ),
       settings: RouteSettings(
-        name: 'ISpectPage',
+        name: 'ISpectScreen',
         arguments: {
           'options': widget.options,
         },
@@ -613,12 +614,12 @@ class InspectorState extends State<Inspector> {
     } else {
       if (widget.observer?.navigator == null) {
         _controller.setInLoggerPage(isLoggerPage: true);
-        await Navigator.of(context).push(iSpectPage).then((_) {
+        await Navigator.of(context).push(iSpectScreen).then((_) {
           _controller.setInLoggerPage(isLoggerPage: false);
         });
       } else {
         _controller.setInLoggerPage(isLoggerPage: true);
-        await widget.observer?.navigator?.push(iSpectPage).then((_) {
+        await widget.observer?.navigator?.push(iSpectScreen).then((_) {
           _controller.setInLoggerPage(isLoggerPage: false);
         });
       }

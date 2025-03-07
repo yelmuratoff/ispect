@@ -4,15 +4,15 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/json_viewer/pretty_json_view.dart';
 
-class DetailedHTTPPage extends StatefulWidget {
-  const DetailedHTTPPage({required this.data, super.key});
+class DetailedLogScreen extends StatefulWidget {
+  const DetailedLogScreen({required this.data, super.key});
   final ISpectifyData data;
 
   @override
-  State<DetailedHTTPPage> createState() => _DetailedHTTPPageState();
+  State<DetailedLogScreen> createState() => _DetailedLogScreenState();
 }
 
-class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
+class _DetailedLogScreenState extends State<DetailedLogScreen> {
   late final ISpectifyData _data;
 
   @override
@@ -34,11 +34,14 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
         ),
         title: Text(_title(_data.key ?? '')),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.copy_rounded),
-            onPressed: () {
-              copyClipboard(context, value: prettyJson(_data.toJson()));
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: IconButton(
+              icon: const Icon(Icons.copy_rounded),
+              onPressed: () {
+                copyClipboard(context, value: prettyJson(_data.toJson()));
+              },
+            ),
           ),
         ],
       ),
@@ -61,6 +64,6 @@ class _DetailedHTTPPageState extends State<DetailedHTTPPage> {
         'http-request' => 'HTTP Request',
         'http-response' => 'HTTP Response',
         'http-error' => 'HTTP Error',
-        _ => '',
+        _ => 'Detailed log: $key',
       };
 }

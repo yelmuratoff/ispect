@@ -41,7 +41,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Feature: Added support for `http` package. See the example project for more details.
 
 ## 2.0.3
-- Fix: `setState` during build inside `ISpectPage` (ISpectify).
+- Fix: `setState` during build inside `ISpectScreen` (ISpectify).
 
 ## 2.0.1
 - Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
@@ -153,7 +153,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Handle if data is String inside detailed HTTP page.
 
 ## 1.6.0
-- Updated info text description of logs inside `ISpectPage`.
+- Updated info text description of logs inside `ISpectScreen`.
 
 ## 1.5.9
 - Added context to `onTap` option for ISpectifyActionItem for routing to a specific page.
@@ -213,7 +213,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 
 ## 1.2.3
 - `navigatorContext` is no longer required for ISpectBuilder.
-  - To use the Draggable button inside ISpectPage, pass the key. By default, it is not possible to use the Draggable button inside ISpectPage.
+  - To use the Draggable button inside ISpectScreen, pass the key. By default, it is not possible to use the Draggable button inside ISpectScreen.
 
 ## 1.2.0
 - Upgraded ISpectify to version 4.3.2.

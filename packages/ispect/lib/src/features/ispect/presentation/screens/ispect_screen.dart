@@ -1,7 +1,3 @@
-// ignore_for_file: implementation_imports
-
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
@@ -15,8 +11,44 @@ import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_shee
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 
-class ISpectPageView extends StatefulWidget {
-  const ISpectPageView({
+/// UI view for output of all ISpectify logs and errors
+class ISpectScreen extends StatefulWidget {
+  const ISpectScreen({
+    required this.options,
+    required this.appBarTitle,
+    super.key,
+    this.itemsBuilder,
+  });
+
+  /// Screen [AppBar] title
+  final String? appBarTitle;
+
+  /// Optional Builder to customize
+  /// log items cards in list
+  final ISpectifyDataBuilder? itemsBuilder;
+
+  final ISpectOptions options;
+
+  @override
+  State<ISpectScreen> createState() => _ISpectScreenState();
+}
+
+class _ISpectScreenState extends State<ISpectScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) => ISpectScreenView(
+        iSpectify: ISpect.iSpectify,
+        appBarTitle: widget.appBarTitle,
+        options: widget.options,
+      );
+}
+
+class ISpectScreenView extends StatefulWidget {
+  const ISpectScreenView({
     required this.iSpectify,
     required this.options,
     super.key,
@@ -24,7 +56,6 @@ class ISpectPageView extends StatefulWidget {
     this.scrollController,
     this.appBarTitle,
     this.itemsBuilder,
-    this.appBarLeading,
   });
 
   /// ISpectify implementation
@@ -32,9 +63,6 @@ class ISpectPageView extends StatefulWidget {
 
   /// Screen [AppBar] title
   final String? appBarTitle;
-
-  /// Screen [AppBar] leading
-  final Widget? appBarLeading;
 
   /// Optional Builder to customize
   /// log items cards in list
@@ -47,10 +75,10 @@ class ISpectPageView extends StatefulWidget {
   final ISpectOptions options;
 
   @override
-  State<ISpectPageView> createState() => _ISpectPageViewState();
+  State<ISpectScreenView> createState() => _ISpectScreenViewState();
 }
 
-class _ISpectPageViewState extends State<ISpectPageView> {
+class _ISpectScreenViewState extends State<ISpectScreenView> {
   final _titlesController = GroupButtonController();
   final _focusNode = FocusNode();
   late final _controller = widget.controller ?? ISpectifyViewController();
@@ -72,76 +100,76 @@ class _ISpectPageViewState extends State<ISpectPageView> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (_, __) => ISpectifyBuilder(
-          iSpectify: widget.iSpectify,
-          builder: (context, data) {
-            final filteredElements =
-                data.where((e) => _controller.filter.apply(e)).toList();
-            final titles = data.map((e) => e.title).toList();
-            final uniqTitles = titles.toSet().toList();
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (_, __) => ISpectifyBuilder(
+            iSpectify: widget.iSpectify,
+            builder: (context, data) {
+              final filteredElements =
+                  data.where((e) => _controller.filter.apply(e)).toList();
+              final titles = data.map((e) => e.title).toList();
+              final uniqTitles = titles.toSet().toList();
 
-            return CustomScrollView(
-              controller: widget.scrollController,
-              slivers: [
-                ISpectAppBar(
-                  focusNode: _focusNode,
-                  title: widget.appBarTitle,
-                  leading: widget.appBarLeading,
-                  iSpectify: widget.iSpectify,
-                  titlesController: _titlesController,
-                  titles: titles,
-                  uniqTitles: uniqTitles,
-                  controller: _controller,
-                  onSettingsTap: () {
-                    _openISpectifySettings(context);
-                  },
-                  onInfoTap: () async {
-                    await showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => const ISpectLogsInfoBottomSheet(),
-                    );
-                  },
-                  onToggleTitle: _onToggleTitle,
-                  isDark: context.isDarkMode,
-                  backgroundColor: iSpect.theme.backgroundColor(context),
-                ),
-                SliverList.separated(
-                  itemCount: filteredElements.length,
-                  separatorBuilder: (_, __) => Divider(
-                    color: iSpect.theme.dividerColor(context) ??
-                        context.ispectTheme.dividerColor,
-                    thickness: 1,
-                    height: 0,
+              return CustomScrollView(
+                controller: widget.scrollController,
+                slivers: [
+                  ISpectAppBar(
+                    focusNode: _focusNode,
+                    title: widget.appBarTitle,
+                    iSpectify: widget.iSpectify,
+                    titlesController: _titlesController,
+                    titles: titles,
+                    uniqTitles: uniqTitles,
+                    controller: _controller,
+                    onSettingsTap: () {
+                      _openISpectifySettings(context);
+                    },
+                    onInfoTap: () async {
+                      await showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const ISpectLogsInfoBottomSheet(),
+                      );
+                    },
+                    onToggleTitle: _onToggleTitle,
+                    backgroundColor: iSpect.theme.backgroundColor(context),
                   ),
-                  itemBuilder: (context, index) {
-                    final data = _getListItem(filteredElements, index);
-                    if (widget.itemsBuilder != null) {
-                      return widget.itemsBuilder!.call(context, data);
-                    }
+                  SliverList.separated(
+                    itemCount: filteredElements.length,
+                    separatorBuilder: (_, __) => Divider(
+                      color: iSpect.theme.dividerColor(context) ??
+                          context.ispectTheme.dividerColor,
+                      thickness: 1,
+                      height: 0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final data = _getListItem(filteredElements, index);
+                      if (widget.itemsBuilder != null) {
+                        return widget.itemsBuilder!.call(context, data);
+                      }
 
-                    return ISpectLogCard(
-                      key: ValueKey(data.time.microsecondsSinceEpoch),
-                      data: data,
-                      backgroundColor: context.ispectTheme.cardColor,
-                      onCopyTap: () => _copyISpectifyDataItemText(data),
-                      expanded: _controller.expandedLogs,
-                      color: iSpect.theme.getTypeColor(
-                        context,
-                        key: data.key ?? data.title,
-                      ),
-                    );
-                  },
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 8)),
-              ],
-            );
-          },
+                      return ISpectLogCard(
+                        key: ValueKey(data.time.microsecondsSinceEpoch),
+                        data: data,
+                        backgroundColor: context.ispectTheme.cardColor,
+                        onCopyTap: () => _copyISpectifyDataItemText(data),
+                        expanded: _controller.expandedLogs,
+                        color: iSpect.theme.getTypeColor(
+                          context,
+                          key: data.key ?? data.title,
+                        ),
+                      );
+                    },
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

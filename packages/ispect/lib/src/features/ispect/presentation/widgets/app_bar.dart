@@ -10,7 +10,6 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
     required this.title,
-    required this.leading,
     required this.iSpectify,
     required this.titlesController,
     required this.controller,
@@ -20,13 +19,11 @@ class ISpectAppBar extends StatefulWidget {
     required this.onInfoTap,
     required this.onToggleTitle,
     required this.focusNode,
-    required this.isDark,
     this.backgroundColor,
     super.key,
   });
 
   final String? title;
-  final Widget? leading;
 
   final ISpectify iSpectify;
 
@@ -42,7 +39,7 @@ class ISpectAppBar extends StatefulWidget {
   final FocusNode focusNode;
 
   final Function(String title, bool selected) onToggleTitle;
-  final bool isDark;
+
   final Color? backgroundColor;
 
   @override
@@ -68,7 +65,14 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           expandedHeight: !value ? 110 : 160,
           collapsedHeight: 60,
           toolbarHeight: 60,
-          leading: widget.leading,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+            ),
+          ),
           scrolledUnderElevation: 0,
           backgroundColor: widget.backgroundColor ??
               context.ispectTheme.scaffoldBackgroundColor,
@@ -194,7 +198,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                         backgroundColor: widget.titlesController
                                                 .selectedIndexes
                                                 .contains(index)
-                                            ? widget.isDark
+                                            ? context.isDarkMode
                                                 ? context
                                                     .ispectTheme
                                                     .colorScheme

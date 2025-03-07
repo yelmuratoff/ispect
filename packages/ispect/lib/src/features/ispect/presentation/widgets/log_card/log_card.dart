@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/pages/http/detailed_http_page.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/detailed_log_screen.dart';
 
 part 'collapsed_body.dart';
 part 'expanded_body.dart';
@@ -84,9 +84,11 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
         onHttpTap: () {
           Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) => DetailedHTTPPage(data: widget.data),
+              builder: (_) => DetailedLogScreen(
+                data: widget.data,
+              ),
               settings: RouteSettings(
-                name: 'Detailed HTTP Page',
+                name: 'Detailed Log Page',
                 arguments: widget.data,
               ),
             ),
