@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
+import 'package:ispectify_bloc/src/models/_models.dart';
 
 /// `BLoC` logger on `ISpectify` base
 ///

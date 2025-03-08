@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ispect_ai/ai/presentation/widgets/ai_painter.dart';
+import 'package:ispect_ai/src/ai/presentation/widgets/ai_painter.dart';
 
 class AiLoaderWidget extends StatelessWidget {
   const AiLoaderWidget({super.key});

@@ -5,7 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
 import 'package:ispect_example/src/theme_manager.dart';
-import 'package:ispectify_bloc/observer.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
 

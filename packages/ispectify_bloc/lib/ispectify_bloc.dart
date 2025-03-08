@@ -1,3 +1,2 @@
-export 'logs.dart';
-export 'observer.dart';
-export 'settings.dart';
+export 'src/observer.dart';
+export 'src/settings.dart';
