@@ -8,6 +8,7 @@ import 'package:intl/intl.dart' as intl;
 import 'ispect_localizations_en.dart';
 import 'ispect_localizations_kk.dart';
 import 'ispect_localizations_ru.dart';
+import 'ispect_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -98,7 +99,8 @@ abstract class ISpectJiraLocalization {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('kk'),
-    Locale('ru')
+    Locale('ru'),
+    Locale('zh')
   ];
 
   /// No description provided for @successfullyAuthorized.
@@ -360,7 +362,7 @@ class _ISpectJiraLocalizationDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'kk', 'ru'].contains(locale.languageCode);
+      <String>['en', 'kk', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectJiraLocalizationDelegate old) => false;
@@ -375,6 +377,8 @@ ISpectJiraLocalization lookupISpectJiraLocalization(Locale locale) {
       return ISpectJiraLocalizationKk();
     case 'ru':
       return ISpectJiraLocalizationRu();
+    case 'zh':
+      return ISpectJiraLocalizationZh();
   }
 
   throw FlutterError(

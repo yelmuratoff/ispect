@@ -21,7 +21,7 @@ class StatusCubit extends Cubit<StatusState> {
         ),
       );
     } catch (e, stackTrace) {
-      ISpect.handle(exception: e, stackTrace: stackTrace);
+      ISpect.logger.handle(exception: e, stackTrace: stackTrace);
       emit(StatusState.error(error: e, stackTrace: stackTrace));
     }
   }

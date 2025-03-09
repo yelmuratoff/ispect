@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/src/common/widgets/column_builder.dart';
 import 'package:ispect_jira/src/common/widgets/ispect_textfield.dart';
@@ -106,7 +105,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CircularProgressIndicator(),
-                const Gap(16),
+                const SizedBox(height: 16),
                 Text(
                   message,
                   style: TextStyle(
@@ -184,7 +183,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
               ),
               child: Text(ISpectJiraLocalization.of(context)!.changeProject),
             ),
-            const Gap(8),
+            const SizedBox(width: 8),
           ],
         ),
         floatingActionButton: Row(
@@ -218,7 +217,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Gap(12),
+                  const SizedBox(width: 12),
                   const Icon(Icons.send),
                 ],
               ),
@@ -301,7 +300,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                 });
                               },
                             ),
-                            const Gap(16),
+                            const SizedBox(height: 16),
                             ISpectDropDown(
                               value: _selectedStatus,
                               hintText: ISpectJiraLocalization.of(context)!
@@ -332,19 +331,19 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                         ),
                       ),
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     ISpectTextfield(
                       controller: _summaryController,
                       hintText: ISpectJiraLocalization.of(context)!.summary,
                       isRequired: true,
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     ISpectTextfield(
                       controller: _descriptionController,
                       hintText: ISpectJiraLocalization.of(context)!.description,
                       minLines: 5,
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     BlocBuilder<LabelsCubit, LabelsState>(
                       bloc: _labelsCubit,
                       builder: (_, state) => state.maybeWhen(
@@ -379,7 +378,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                         ),
                       ),
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     BlocBuilder<PriorityCubit, PriorityState>(
                       bloc: _priorityCubit,
                       builder: (_, state) => state.maybeWhen(
@@ -414,7 +413,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                         ),
                       ),
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     BlocBuilder<UsersCubit, UsersState>(
                       bloc: _usersCubit,
                       builder: (_, state) => state.maybeWhen(
@@ -440,7 +439,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                               ),
                                               minRadius: 14,
                                             ),
-                                            const Gap(12),
+                                            const SizedBox(width: 12),
                                           ],
                                           Expanded(
                                             child: Text(
@@ -467,7 +466,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                         ),
                       ),
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     BlocBuilder<BoardsCubit, BoardsState>(
                       bloc: _boardsCubit,
                       builder: (_, state) => state.maybeWhen(
@@ -510,7 +509,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                       });
                                     },
                                   ),
-                                  const Gap(16),
+                                  const SizedBox(height: 16),
                                 ],
                               )
                             : const SizedBox(),
@@ -555,7 +554,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                 });
                               },
                             ),
-                            const Gap(16),
+                            const SizedBox(height: 16),
                           ],
                         ),
                         error: (error, stackTrace) => JiraErrorWidget(
@@ -591,17 +590,17 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.cloud_upload_outlined),
-                            const Gap(16),
+                            const SizedBox(width: 16),
                             Text(ISpectJiraLocalization.of(context)!
                                 .uploadImages),
                           ],
                         ),
                       ),
                     ),
-                    const Gap(16),
+                    const SizedBox(height: 16),
                     if (_attachments.isNotEmpty) ...[
                       Text(ISpectJiraLocalization.of(context)!.pickedImages),
-                      const Gap(16),
+                      const SizedBox(height: 16),
                       ColumnBuilder(
                         itemCount: _attachments.length,
                         itemBuilder: (_, index) {
@@ -617,7 +616,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                       maxLines: 2,
                                     ),
                                   ),
-                                  const Gap(8),
+                                  const SizedBox(height: 8),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
                                     onPressed: () {
@@ -628,7 +627,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                                   ),
                                 ],
                               ),
-                              const Gap(8),
+                              const SizedBox(height: 8),
                               ClipRRect(
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(16)),
@@ -644,7 +643,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                         },
                       ),
                     ],
-                    const Gap(16),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -709,7 +708,7 @@ class ISpectDropDown<T> extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Gap(8),
+                  const SizedBox(width: 8),
                   if (isRequired) ...[
                     const Text(
                       ' *',

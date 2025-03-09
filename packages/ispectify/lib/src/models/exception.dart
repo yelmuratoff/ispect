@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-class ISpectifyException extends ISpectiyData {
+class ISpectifyException extends ISpectifyData {
   ISpectifyException(
     Exception exception, {
     String? message,

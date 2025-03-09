@@ -3,8 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/pages/http/detailed_http_page.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/base_card.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/detailed_log_screen.dart';
 
 part 'collapsed_body.dart';
 part 'expanded_body.dart';
@@ -22,7 +21,7 @@ class ISpectLogCard extends StatefulWidget {
     this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
   });
 
-  final ISpectiyData data;
+  final ISpectifyData data;
   final VoidCallback? onCopyTap;
   final VoidCallback? onTap;
   final bool expanded;
@@ -58,67 +57,65 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    return Padding(
-      padding: widget.margin ?? EdgeInsets.zero,
-      child: GestureDetector(
-        onTap: _onTap,
-        child: ISpectBaseCard(
-          color: widget.color,
-          backgroundColor: widget.backgroundColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _CollapsedBody(
-                icon: iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
-                color: widget.color,
-                title: widget.data.key,
-                dateTime: widget.data.formattedTime,
-                onCopyTap: widget.onCopyTap,
-                onHttpTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => DetailedHTTPPage(data: widget.data),
-                      settings: RouteSettings(
-                        name: 'Detailed HTTP Page',
-                        arguments: widget.data,
-                      ),
-                    ),
-                  );
-                },
-                isHttpLog: widget.data.isHttpLog,
-                message: widget.data.textMessage,
-                errorMessage: _errorMessage,
-                expanded: _expanded,
-              ),
-              if (_expanded)
-                _ExpandedBody(
-                  stackTrace: _stackTrace,
-                  widget: widget,
-                  expanded: _expanded,
-                  type: _type,
-                  message: widget.data.textMessage,
-                  errorMessage: _errorMessage,
-                  isHTTP: widget.data.isHttpLog,
-                ),
-              if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
-                _StrackTraceBody(
-                  widget: widget,
-                  stackTrace: _stackTrace,
-                ),
-            ],
-          ),
-        ),
+    return ExpansionTile(
+      dense: true,
+      initiallyExpanded: widget.expanded,
+      showTrailingIcon: false,
+      visualDensity: VisualDensity.compact,
+      tilePadding: const EdgeInsets.symmetric(
+        horizontal: 12,
       ),
+      childrenPadding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
+      onExpansionChanged: (value) {
+        setState(() {
+          _expanded = value;
+        });
+      },
+      title: _CollapsedBody(
+        icon:
+            iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
+        color: widget.color,
+        title: widget.data.key,
+        dateTime: widget.data.formattedTime,
+        onCopyTap: widget.onCopyTap,
+        onHttpTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => DetailedLogScreen(
+                data: widget.data,
+              ),
+              settings: RouteSettings(
+                name: 'Detailed Log Page',
+                arguments: widget.data,
+              ),
+            ),
+          );
+        },
+        isHttpLog: widget.data.isHttpLog,
+        message: widget.data.textMessage,
+        errorMessage: _errorMessage,
+        expanded: _expanded,
+      ),
+      children: [
+        if (_expanded)
+          _ExpandedBody(
+            stackTrace: _stackTrace,
+            widget: widget,
+            expanded: _expanded,
+            type: _type,
+            message: widget.data.textMessage,
+            errorMessage: _errorMessage,
+            isHTTP: widget.data.isHttpLog,
+          ),
+        if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
+          _StrackTraceBody(
+            widget: widget,
+            stackTrace: _stackTrace,
+          ),
+      ],
     );
-  }
-
-  void _onTap() {
-    if (widget.onTap != null) {
-      widget.onTap?.call();
-      return;
-    }
-    setState(() {
-      _expanded = !_expanded;
-    });
   }
 }

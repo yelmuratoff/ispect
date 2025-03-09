@@ -2,11 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
+/// A utility class for displaying various types of toast notifications using `SnackBar`.
+///
+/// Provides methods to show different types of toasts such as:
+/// - **Loading Toast**
+/// - **Error Toast**
+/// - **Info Toast**
+/// - **Success Toast**
+/// - **Copied Toast** (for clipboard notifications)
+///
+/// Each toast is designed with a specific color scheme and layout to maintain consistency.
 final class ISpectToaster {
+  const ISpectToaster._();
+
+  /// Hides the currently displayed toast notification (if any).
+  ///
+  /// This method removes the active `SnackBar` from the `ScaffoldMessenger`.
   static Future<void> hideToast(BuildContext context) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
+  /// Displays a loading toast with an animated circular progress indicator.
+  ///
+  /// - [context]: The `BuildContext` used to show the toast.
+  /// - [title]: The title text displayed in the toast.
+  ///
+  /// The toast includes a **spinning progress indicator** next to the title.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// ISpectToaster.showLoadingToast(context, title: "Loading...");
+  /// ```
   static Future<void> showLoadingToast(
     BuildContext context, {
     required String title,
@@ -28,6 +54,16 @@ final class ISpectToaster {
         color: const Color.fromARGB(255, 49, 49, 49),
       );
 
+  /// Displays an error toast with a red background.
+  ///
+  /// - [context]: The `BuildContext` used to show the toast.
+  /// - [title]: The title of the error message.
+  /// - [message]: (Optional) Additional details about the error.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// ISpectToaster.showErrorToast(context, title: "Something went wrong");
+  /// ```
   static Future<void> showErrorToast(
     BuildContext context, {
     required String title,
@@ -40,6 +76,16 @@ final class ISpectToaster {
         color: Colors.red,
       );
 
+  /// Displays an informational toast with a dark background.
+  ///
+  /// - [context]: The `BuildContext` used to show the toast.
+  /// - [title]: The title of the message.
+  /// - [message]: (Optional) Additional details.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// ISpectToaster.showInfoToast(context, title: "Update available");
+  /// ```
   static Future<void> showInfoToast(
     BuildContext context, {
     required String title,
@@ -52,6 +98,17 @@ final class ISpectToaster {
         color: const Color.fromARGB(255, 49, 49, 49),
       );
 
+  /// Displays a success toast with a green background.
+  ///
+  /// - [context]: The `BuildContext` used to show the toast.
+  /// - [title]: The title of the success message.
+  /// - [message]: (Optional) Additional details.
+  /// - [trailing]: (Optional) A trailing widget (e.g., an icon or button).
+  ///
+  /// ### Example:
+  /// ```dart
+  /// ISpectToaster.showSuccessToast(context, title: "Upload completed");
+  /// ```
   static Future<void> showSuccessToast(
     BuildContext context, {
     required String title,
@@ -66,6 +123,17 @@ final class ISpectToaster {
         trailing: trailing,
       );
 
+  /// Displays a toast indicating that a value has been copied to the clipboard.
+  ///
+  /// - [context]: The `BuildContext` used to show the toast.
+  /// - [value]: The copied text.
+  /// - [title]: (Optional) A custom title for the toast.
+  /// - [showValue]: Determines whether the copied text should be displayed.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// ISpectToaster.showCopiedToast(context, value: "Copied text");
+  /// ```
   static Future<void> showCopiedToast(
     BuildContext context, {
     required String value,
@@ -79,6 +147,7 @@ final class ISpectToaster {
         showValue: showValue,
       );
 
+  /// A private helper method to display a custom toast message.
   static Future<void> _showToast(
     BuildContext context, {
     required String title,
@@ -119,9 +188,7 @@ final class ISpectToaster {
             if (message != null)
               Text(
                 message,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
           ],
         ),
@@ -129,6 +196,7 @@ final class ISpectToaster {
     );
   }
 
+  /// A private helper method to display a "copied to clipboard" toast.
   static Future<void> _showCopiedToast(
     BuildContext context, {
     required String value,
@@ -148,7 +216,6 @@ final class ISpectToaster {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //   ),
             Text.rich(
               TextSpan(
                 children: [

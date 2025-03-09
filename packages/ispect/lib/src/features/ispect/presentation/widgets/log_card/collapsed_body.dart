@@ -56,8 +56,8 @@ class _CollapsedBody extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Gap(2),
-                if (message != null && !expanded)
+                if (message != null && !expanded) ...[
+                  const Gap(2),
                   Text(
                     message!,
                     maxLines: expanded ? 200 : 2,
@@ -66,6 +66,7 @@ class _CollapsedBody extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
+                ],
                 if (message == 'FlutterErrorDetails' && !expanded)
                   Text(
                     errorMessage.toString(),
@@ -90,21 +91,21 @@ class _CollapsedBody extends StatelessWidget {
               onPressed: onCopyTap,
             ),
           ),
-          if (isHttpLog) ...[
-            const Gap(8),
-            SizedBox.square(
-              dimension: 18,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                iconSize: 18,
-                icon: Icon(
-                  Icons.zoom_out_map_rounded,
-                  color: color,
-                ),
-                onPressed: onHttpTap,
+          // if (isHttpLog) ...[
+          const Gap(8),
+          SizedBox.square(
+            dimension: 18,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              iconSize: 18,
+              icon: Icon(
+                Icons.zoom_out_map_rounded,
+                color: color,
               ),
+              onPressed: onHttpTap,
             ),
-          ],
+          ),
+          // ],
         ],
       );
 }

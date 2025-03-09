@@ -1,14 +1,18 @@
 name: ispectify_bloc
-description: An additional package for BLoC (logging and handling). Based on Talker.
-version: 0.0.1
+description: An additional package for BLoC (logging and handling).
+version: 4.0.1
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
 
+dependency_overrides:
+  ispectify:
+    path: ../ispectify
+
 dependencies:
-  ispectify: ^0.0.2
+  ispectify: ^4.0.1
   bloc: ^9.0.0
   meta: ^1.8.0
 

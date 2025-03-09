@@ -27,7 +27,7 @@ class _ExpandedBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         width: double.infinity,
-        margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
+        // margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
         padding:
             _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
         decoration: _stackTrace != null
@@ -42,7 +42,7 @@ class _ExpandedBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_expanded && _message != null && !_isHTTP)
-              Text(
+              SelectableText(
                 _message,
                 style: TextStyle(
                   color: widget.color,
@@ -50,7 +50,7 @@ class _ExpandedBody extends StatelessWidget {
                 ),
               ),
             if (_expanded && _type != null)
-              Text(
+              SelectableText(
                 _type!,
                 style: TextStyle(
                   color: widget.color,
@@ -58,7 +58,7 @@ class _ExpandedBody extends StatelessWidget {
                 ),
               ),
             if (_expanded && _errorMessage != null)
-              Text(
+              SelectableText(
                 _errorMessage!,
                 style: TextStyle(
                   color: widget.color,

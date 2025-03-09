@@ -134,8 +134,6 @@ class _DraggableFeedbackSheetState extends State<_DraggableFeedbackSheet> {
 
   bool _onBackButton() {
     if (widget.sheetProgress.value != 0) {
-      // TODO(caseycrogers): replace `reset` with `animateTo` when
-      //   `DraggableScrollableController` reaches production
       if (DraggableScrollableActuator.reset(context)) {
         widget.sheetProgress.value = 0;
         return true;

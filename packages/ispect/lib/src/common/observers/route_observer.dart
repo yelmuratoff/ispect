@@ -2,18 +2,27 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/pretty_json.dart';
 
+/// Extension on [StringBuffer] to conditionally write a line.
 extension StringBufferExtension on StringBuffer {
+  /// Writes [value] to the buffer if [condition] is true.
   // ignore: avoid_positional_boolean_parameters
   void writelnIf(bool condition, String value) {
-    if (condition) {
-      writeln(value);
-    }
+    if (condition) writeln(value);
   }
 }
 
+/// A custom [NavigatorObserver] for logging navigation events.
+///
+/// This observer logs page transitions, modals, gestures, and other navigation events.
+/// It provides callbacks for external listeners and allows filtering specific event types.
 class ISpectNavigatorObserver extends NavigatorObserver {
+  /// Creates an instance of [ISpectNavigatorObserver].
+  ///
+  /// - [isLogGestures]: Whether to log user gestures.
+  /// - [isLogPages]: Whether to log page navigations.
+  /// - [isLogModals]: Whether to log modal transitions.
+  /// - [isLogOtherTypes]: Whether to log other navigation types.
   ISpectNavigatorObserver({
     this.isLogGestures = false,
     this.isLogPages = true,
@@ -32,148 +41,47 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogModals;
   final bool isLogOtherTypes;
 
-  final void Function(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  )? onPush;
-  final void Function({
-    Route<dynamic>? newRoute,
-    Route<dynamic>? oldRoute,
-  })? onReplace;
-  final void Function(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  )? onPop;
-  final void Function(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  )? onRemove;
-  final void Function(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  )? onStartUserGesture;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPush;
+  final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
+      onReplace;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onPop;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onRemove;
+  final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
+      onStartUserGesture;
   final VoidCallback? onStopUserGesture;
 
+  /// Determines the type of a given [route].
   String _getRouteType(Route<dynamic>? route) {
-    if (route is PageRoute) {
-      return 'Page';
-    } else if (route is ModalRoute) {
-      return 'Modal';
-    } else {
-      return route.runtimeType.toString();
-    }
+    if (route is PageRoute) return 'Page';
+    if (route is ModalRoute) return 'Modal';
+    return route.runtimeType.toString();
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     onPush?.call(route, previousRoute);
-
-    if (!_validate(route)) return;
-
-    final routeName = route.settings.name ?? 'Unknown';
-    final previousRouteName = previousRoute?.settings.name ?? 'Unknown';
-
-    final logMessage = StringBuffer()
-      ..writeln('Push: $routeName (Type: ${_getRouteType(route)})')
-      ..writelnIf(
-        previousRouteName.isNotEmpty,
-        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
-      )
-      ..writelnIf(
-        route.settings.arguments != null,
-        'Arguments: ${prettyJson(route.settings.arguments)}',
-      );
-
-    if (logMessage.isNotEmpty) {
-      ISpect.route(logMessage.toString().trim());
-    }
+    _logRouteEvent('Push', route, previousRoute);
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     onReplace?.call(newRoute: newRoute, oldRoute: oldRoute);
-
-    if (!_validate(newRoute)) return;
-
-    final logMessage = StringBuffer();
-
-    final newRouteName = newRoute?.settings.name ?? 'Unknown';
-    final oldRouteName = oldRoute?.settings.name ?? 'None';
-
-    logMessage
-      ..writeln(
-        'Replace: New route after replaced: $newRouteName (Type: ${_getRouteType(newRoute)})',
-      )
-      ..writelnIf(
-        oldRouteName.isNotEmpty,
-        'Old route: $oldRouteName (Type: ${_getRouteType(oldRoute)})',
-      )
-      ..writelnIf(
-        newRoute?.settings.arguments != null,
-        'Arguments: ${newRoute?.settings.arguments}',
-      );
-
-    if (logMessage.isNotEmpty) {
-      ISpect.route(logMessage.toString().trim());
-    }
+    _logRouteEvent('Replace', newRoute, oldRoute);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     onPop?.call(route, previousRoute);
-
-    if (!_validate(route)) return;
-
-    final logMessage = StringBuffer();
-
-    final routeName = previousRoute?.settings.name ?? 'Unknown';
-    final previousRouteName = route.settings.name ?? 'None';
-
-    logMessage
-      ..writeln(
-        'Pop: New route after popped: $routeName (Type: ${_getRouteType(previousRoute)})',
-      )
-      ..writelnIf(
-        previousRouteName.isNotEmpty,
-        'Previous route: $previousRouteName (Type: ${_getRouteType(route)})',
-      )
-      ..writelnIf(
-        route.settings.arguments != null,
-        'Arguments: ${prettyJson(previousRoute?.settings.arguments)}',
-      );
-
-    if (logMessage.isNotEmpty) {
-      ISpect.route(logMessage.toString().trim());
-    }
+    _logRouteEvent('Pop', previousRoute, route);
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     onRemove?.call(route, previousRoute);
-
-    if (!_validate(route)) return;
-
-    final logMessage = StringBuffer();
-
-    final routeName = route.settings.name ?? 'Unknown';
-    final previousRouteName = previousRoute?.settings.name ?? 'None';
-
-    logMessage
-      ..writeln(
-        'Remove: New route after removed: $routeName (Type: ${_getRouteType(route)})',
-      )
-      ..writelnIf(
-        previousRouteName.isNotEmpty,
-        'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
-      )
-      ..writelnIf(
-        route.settings.arguments != null,
-        'Arguments: ${prettyJson(previousRoute?.settings.arguments)}',
-      );
-
-    if (logMessage.isNotEmpty) {
-      ISpect.route(logMessage.toString().trim());
-    }
+    _logRouteEvent('Remove', route, previousRoute);
   }
 
   @override
@@ -182,48 +90,92 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? previousRoute,
   ) {
     if (isLogGestures) {
-      final logMessage = StringBuffer();
-
-      final routeName = route.settings.name ?? 'Unknown';
-      final previousRouteName = previousRoute?.settings.name ?? 'None';
-
-      logMessage
-        ..writeln(
-          'Gesture: User gesture started on route: $routeName (Type: ${_getRouteType(route)})',
-        )
-        ..writelnIf(
-          previousRouteName.isNotEmpty,
-          'Previous route: $previousRouteName (Type: ${_getRouteType(previousRoute)})',
-        )
-        ..writelnIf(
-          route.settings.arguments != null,
-          'Arguments: ${prettyJson(route.settings.arguments)}',
-        );
-
-      if (logMessage.isNotEmpty) {
-        ISpect.route(logMessage.toString().trim());
-      }
+      _logRouteEvent('Gesture: User gesture started', route, previousRoute);
     }
-
     onStartUserGesture?.call(route, previousRoute);
   }
 
   @override
   void didStopUserGesture() {
     if (isLogGestures) {
-      ISpect.route('User gesture stopped');
+      ISpect.logger.route('User gesture stopped');
     }
-
     onStopUserGesture?.call();
   }
 
-  bool _validate(Route<dynamic>? route) {
-    if (route is PageRoute) {
-      return isLogPages;
-    } else if (route is ModalRoute) {
-      return isLogModals;
-    } else {
-      return isLogOtherTypes;
+  /// Logs navigation events based on event type and route validation.
+  void _logRouteEvent(
+    String eventType,
+    Route<dynamic>? route,
+    Route<dynamic>? previousRoute,
+  ) {
+    if (!_shouldLog(route, previousRoute)) return;
+
+    final logMessage = StringBuffer()
+      ..writeln(
+        '$eventType: ${_routeName(route)} (Type: ${_getRouteType(route)})',
+      )
+      ..writelnIf(
+        _routeName(previousRoute).isNotEmpty,
+        'Previous route: ${_routeName(previousRoute)} (Type: ${_getRouteType(previousRoute)})',
+      )
+      ..writelnIf(
+        route?.settings.arguments != null,
+        'Arguments: ${prettyJson(route?.settings.arguments)}',
+      );
+
+    if (logMessage.isNotEmpty) {
+      ISpect.logger.route(logMessage.toString().trim());
     }
   }
+
+  /// Determines whether a route transition should be logged based on route types and configuration.
+  ///
+  /// This method evaluates the combination of route types in the transition against
+  /// logging configuration flags to determine whether logging should occur.
+  ///
+  /// The logic follows these rules:
+  /// 1. If both routes are PageRoutes, log only if [isLogPages] is true
+  /// 2. If both routes are ModalRoutes (excluding PageRoutes), log only if [isLogModals] is true
+  /// 3. If routes are of mixed types (e.g., one PageRoute and one ModalRoute), do not log
+  /// 4. For any other route type combinations, log only if [isLogOtherTypes] is true
+  ///
+  /// - [route]: The new/current route being navigated to
+  /// - [previousRoute]: The previous route being navigated from
+  ///
+  /// Returns true if the route transition should be logged based on current settings.
+  bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
+    final routeIsPage = route is PageRoute;
+    final prevRouteIsPage = previousRoute is PageRoute;
+
+    // If both routes are PageRoutes
+    if (routeIsPage && prevRouteIsPage) {
+      return isLogPages;
+    }
+
+    // If one route is PageRoute and the other is not, don't log
+    if (routeIsPage != prevRouteIsPage) {
+      return false;
+    }
+
+    // At this point, neither route is a PageRoute
+    final routeIsModal = route is ModalRoute;
+    final prevRouteIsModal = previousRoute is ModalRoute;
+
+    // If both routes are ModalRoutes
+    if (routeIsModal && prevRouteIsModal) {
+      return isLogModals;
+    }
+
+    // If one route is ModalRoute and the other is not, don't log
+    if (routeIsModal != prevRouteIsModal) {
+      return false;
+    }
+
+    // At this point, routes are neither PageRoutes nor ModalRoutes
+    return isLogOtherTypes;
+  }
+
+  /// Retrieves the route name or a default placeholder.
+  String _routeName(Route<dynamic>? route) => route?.settings.name ?? 'Unknown';
 }

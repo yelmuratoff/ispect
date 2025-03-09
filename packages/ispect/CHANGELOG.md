@@ -1,3 +1,46 @@
+# Changelog
+
+## 4.0.1
+
+### Major Changes
+- **`ISpectScopeWrapper` Relocation**: Moved inside `ISpectBuilder`. Now, `ISpectBuilder` serves as a one-stop solution for all your needs. Refer to the example project for a clearer understanding.
+- **`ISpect.log()` Update**: Replaced with `ISpect.logger.log()` for improved consistency and clarity.
+
+### New Features
+- **Language Support**: Added **Chinese (zh_CN)** localization.
+- **JSON Log Viewer**: Introduced detailed log viewing as a `JSON` tree structure.
+- **Enhanced HTTP Logs**: Updated HTTP request logging to display all details in a `JSON` tree format, with added search and filtering capabilities.
+- **Log Descriptions**: Added `logDescriptions` to `ISpectTheme`. This allows you to add, modify, or disable descriptions in the info bottom sheet.
+- **Theme Scheme Screen**: Included a basic `Theme Scheme Screen` in the `ISpect` panel for testing purposes.
+
+### ISpectify Updates
+- **Documentation**: Added comprehensive documentation to the `ISpectify` class.
+- **Constructor Enhancement**: Modified to accept optional components (`logger`, `observer`, `options`, `filter`, `errorHandler`, `history`).
+- **Configuration Method**: Introduced a `configure` method to update the configuration of an existing inspector instance.
+- **Internal Logic**: Updated to leverage the new components and options effectively.
+
+### Minor Updates & Improvements
+- **Bottom Sheet Revamp**:
+  - Removed `BaseBottomSheet` widget.
+  - Implemented `DraggableScrollableSheet` with configurable `initial`, `min`, and `max` child sizes.
+  - Updated the build method to integrate `DraggableScrollableSheet`.
+  - Adjusted layout and styling for the new bottom sheet structure.
+- **Filtering Enhancements**:
+  - Added a `ValueNotifier` to manage filter enablement state.
+  - Introduced a `SearchBar` for log filtering.
+  - Replaced `InkWell` with `FilterChip` for title filtering.
+  - Adjusted layout and styling to support new search and filter components.
+- **Navigation Logging**:
+  - Added properties to control logging of gestures, pages, modals, and other navigation types.
+  - Updated `didPush`, `didReplace`, `didPop`, `didRemove`, and `didStartUserGesture` methods to log navigation events based on these properties.
+  - Introduced a `validate` method to determine if a route should be logged based on its type.
+  - Enhanced log messages with detailed route and argument information.
+
+### Styling & Optimization
+- Improved consistency in terminology and formatting.
+- Streamlined descriptions for clarity and brevity.
+
+
 ## 3.0.3
 - Upgrade version of `draggable_panel` to `1.0.2`.
 
@@ -41,7 +84,7 @@ Additionally, `DraggablePanel` has been separated into its own package and moved
 - Feature: Added support for `http` package. See the example project for more details.
 
 ## 2.0.3
-- Fix: `setState` during build inside `ISpectPage` (ISpectify).
+- Fix: `setState` during build inside `ISpectScreen` (ISpectify).
 
 ## 2.0.1
 - Breaking changes: `navigatorKey` is removed. Now you can use `NavigatorObserver` for pin panel.
@@ -153,7 +196,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 - Handle if data is String inside detailed HTTP page.
 
 ## 1.6.0
-- Updated info text description of logs inside `ISpectPage`.
+- Updated info text description of logs inside `ISpectScreen`.
 
 ## 1.5.9
 - Added context to `onTap` option for ISpectifyActionItem for routing to a specific page.
@@ -213,7 +256,7 @@ Note: I removed it because after inside Feedback I changed the Navigator to the 
 
 ## 1.2.3
 - `navigatorContext` is no longer required for ISpectBuilder.
-  - To use the Draggable button inside ISpectPage, pass the key. By default, it is not possible to use the Draggable button inside ISpectPage.
+  - To use the Draggable button inside ISpectScreen, pass the key. By default, it is not possible to use the Draggable button inside ISpectScreen.
 
 ## 1.2.0
 - Upgraded ISpectify to version 4.3.2.

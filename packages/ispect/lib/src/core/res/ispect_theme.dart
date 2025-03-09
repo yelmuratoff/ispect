@@ -1,26 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/icons.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/features/ispect/models/log_description.dart';
 
+/// Defines the theme configuration for `ISpect`, including colors, icons, and log descriptions.
+///
+/// This class allows customization of appearance settings such as:
+/// - Background and divider colors for light and dark modes.
+/// - Log-specific colors and icons.
+/// - Custom descriptions for log levels.
+///
+/// ### Example Usage:
+/// ```dart
+/// final theme = ISpectTheme(
+///   pageTitle: 'Custom Inspector',
+///   lightBackgroundColor: Colors.white,
+///   darkBackgroundColor: Colors.black,
+///   logColors: {'error': Colors.red, 'info': Colors.blue},
+///   logIcons: {'error': Icons.error, 'info': Icons.info},
+///   logDescriptions: [LogDescription(name: 'Error', description: 'An error occurred')],
+/// );
+/// ```
 class ISpectTheme {
+  /// Creates an `ISpectTheme` instance with customizable settings.
+  ///
+  /// - [pageTitle]: The title displayed on the inspector page.
+  /// - [lightBackgroundColor]: Background color in light mode.
+  /// - [darkBackgroundColor]: Background color in dark mode.
+  /// - [lightDividerColor]: Divider color in light mode.
+  /// - [darkDividerColor]: Divider color in dark mode.
+  /// - [logColors]: Custom colors mapped to log types.
+  /// - [logIcons]: Custom icons mapped to log types.
+  /// - [logDescriptions]: List of descriptions for various log types.
   const ISpectTheme({
+    this.pageTitle = 'ISpect',
     this.lightBackgroundColor,
     this.darkBackgroundColor,
     this.lightDividerColor,
     this.darkDividerColor,
     this.logColors = const {},
     this.logIcons = const {},
+    this.logDescriptions = const [],
   });
 
+  /// The title displayed on the inspector page.
+  final String? pageTitle;
+
+  /// Background color used in light mode.
   final Color? lightBackgroundColor;
+
+  /// Background color used in dark mode.
   final Color? darkBackgroundColor;
 
+  /// Divider color used in light mode.
   final Color? lightDividerColor;
+
+  /// Divider color used in dark mode.
   final Color? darkDividerColor;
 
+  /// A map of colors associated with different log types.
   final Map<String, Color> logColors;
+
+  /// A map of icons associated with different log types.
   final Map<String, IconData> logIcons;
 
+  /// A list of descriptions for log types.
+  final List<LogDescription> logDescriptions;
+
+  /// Creates a new `ISpectTheme` instance with updated values while retaining
+  /// existing ones where not specified.
+  ///
+  /// - [pageTitle]: Updates the title.
+  /// - [lightBackgroundColor]: Updates the background color for light mode.
+  /// - [darkBackgroundColor]: Updates the background color for dark mode.
+  /// - [lightDividerColor]: Updates the divider color for light mode.
+  /// - [darkDividerColor]: Updates the divider color for dark mode.
+  /// - [logColors]: Updates the map of log colors.
+  /// - [logIcons]: Updates the map of log icons.
+  /// - [logDescriptions]: Updates the list of log descriptions.
+  ///
+  /// ### Example:
+  /// ```dart
+  /// final updatedTheme = theme.copyWith(pageTitle: 'New Inspector');
+  /// ```
   ISpectTheme copyWith({
     Color? lightBackgroundColor,
     Color? darkBackgroundColor,
@@ -28,106 +91,81 @@ class ISpectTheme {
     Color? darkDividerColor,
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
+    List<LogDescription>? logDescriptions,
+    String? pageTitle,
   }) =>
       ISpectTheme(
+        pageTitle: pageTitle ?? this.pageTitle,
         lightBackgroundColor: lightBackgroundColor ?? this.lightBackgroundColor,
         darkBackgroundColor: darkBackgroundColor ?? this.darkBackgroundColor,
         lightDividerColor: lightDividerColor ?? this.lightDividerColor,
         darkDividerColor: darkDividerColor ?? this.darkDividerColor,
         logColors: logColors ?? this.logColors,
         logIcons: logIcons ?? this.logIcons,
+        logDescriptions: logDescriptions ?? this.logDescriptions,
       );
 
+  /// Returns the appropriate background color based on the current theme mode.
+  ///
+  /// - Uses [darkBackgroundColor] in dark mode.
+  /// - Uses [lightBackgroundColor] in light mode.
   Color? backgroundColor(BuildContext context) =>
       context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
 
+  /// Returns the appropriate divider color based on the current theme mode.
+  ///
+  /// - Uses [darkDividerColor] in dark mode.
+  /// - Uses [lightDividerColor] in light mode.
   Color? dividerColor(BuildContext context) =>
       context.isDarkMode ? darkDividerColor : lightDividerColor;
 
+  /// Retrieves the color associated with a specific log type.
+  ///
+  /// - [key]: The log type identifier.
+  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
     return colors(context)[key] ?? Colors.grey;
   }
 
-  Map<String, Color> colors(BuildContext context) {
-    final mergedColors = {
-      ...logColors,
-      ...context.isDarkMode ? darkTypeColors : lightTypeColors,
-    };
-
-    return mergedColors;
+  /// Retrieves the color associated with a log level.
+  ///
+  /// - [key]: The log level identifier.
+  /// - Strips the `'LogLevel.'` prefix before looking up the color.
+  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
+  Color getColorByLogLevel(BuildContext context, {required String? key}) {
+    if (key == null) return Colors.transparent;
+    return colors(context)[key.replaceAll('LogLevel.', '')] ?? Colors.grey;
   }
 
-  Map<String, IconData> icons(BuildContext context) => {
-        ...logIcons,
-        ...typeIcons,
+  /// Returns a combined map of default and custom log colors based on theme mode.
+  ///
+  /// - Merges [logColors] with default colors from `ISpectConstants`.
+  /// - Uses dark mode colors if enabled.
+  Map<String, Color> colors(BuildContext context) => {
+        ...logColors,
+        ...context.isDarkMode
+            ? ISpectConstants.darkTypeColors
+            : ISpectConstants.lightTypeColors,
       };
 
-  static const lightTypeColors = {
-    /// Base logs section
-    'error': Color.fromARGB(255, 192, 38, 38),
-    'critical': Color.fromARGB(255, 142, 22, 22),
-    'info': Color.fromARGB(255, 25, 118, 210),
-    'debug': Color.fromARGB(255, 97, 97, 97),
-    'verbose': Color.fromARGB(255, 117, 117, 117),
-    'warning': Color.fromARGB(255, 255, 160, 0),
-    'exception': Color.fromARGB(255, 211, 47, 47),
-    'good': Color.fromARGB(255, 56, 142, 60),
-    'print': Color.fromARGB(255, 25, 118, 210),
-    'analytics': Color.fromARGB(255, 182, 177, 25),
+  /// Returns a combined map of default and custom log icons.
+  ///
+  /// - Merges [logIcons] with default icons from `ISpectConstants`.
+  Map<String, IconData> icons(BuildContext context) => {
+        ...logIcons,
+        ...ISpectConstants.typeIcons,
+      };
 
-    /// Http section
-    'http-error': Color.fromARGB(255, 192, 38, 38),
-    'http-request': Color.fromARGB(255, 162, 0, 190),
-    'http-response': Color.fromARGB(255, 0, 158, 66),
-
-    /// Bloc section
-    'bloc-event': Color.fromARGB(255, 25, 118, 210),
-    'bloc-transition': Color.fromARGB(255, 85, 139, 47),
-    'bloc-close': Color.fromARGB(255, 192, 38, 38),
-    'bloc-create': Color.fromARGB(255, 56, 142, 60),
-    'bloc-state': Color.fromARGB(255, 0, 105, 135),
-
-    'riverpod-add': Color.fromARGB(255, 56, 142, 60),
-    'riverpod-update': Color.fromARGB(255, 0, 105, 135),
-    'riverpod-dispose': Color(0xFFD50000),
-    'riverpod-fail': Color.fromARGB(255, 192, 38, 38),
-
-    /// Flutter section
-    'route': Color(0xFF8E24AA),
-  };
-
-  static const darkTypeColors = {
-    /// Base logs section
-    'error': Color.fromARGB(255, 239, 83, 80),
-    'critical': Color.fromARGB(255, 198, 40, 40),
-    'info': Color.fromARGB(255, 66, 165, 245),
-    'debug': Color.fromARGB(255, 158, 158, 158),
-    'verbose': Color.fromARGB(255, 189, 189, 189),
-    'warning': Color.fromARGB(255, 239, 108, 0),
-    'exception': Color.fromARGB(255, 239, 83, 80),
-    'good': Color.fromARGB(255, 120, 230, 129),
-    'print': Color.fromARGB(255, 66, 165, 245),
-    'analytics': Color.fromARGB(255, 255, 255, 0),
-
-    /// Http section
-    'http-error': Color.fromARGB(255, 239, 83, 80),
-    'http-request': Color(0xFFF602C1),
-    'http-response': Color(0xFF26FF3C),
-
-    /// Bloc section
-    'bloc-event': Color(0xFF63FAFE),
-    'bloc-transition': Color(0xFF56FEA8),
-    'bloc-close': Color(0xFFFF005F),
-    'bloc-create': Color.fromARGB(255, 120, 230, 129),
-    'bloc-state': Color.fromARGB(255, 0, 125, 160),
-
-    'riverpod-add': Color.fromARGB(255, 120, 230, 129),
-    'riverpod-update': Color.fromARGB(255, 120, 180, 190),
-    'riverpod-dispose': Color(0xFFFF005F),
-    'riverpod-fail': Color.fromARGB(255, 239, 83, 80),
-
-    /// Flutter section
-    'route': Color(0xFFAF5FFF),
-  };
+  /// Returns a filtered list of enabled log descriptions.
+  ///
+  /// - Merges default descriptions from `ISpectConstants`.
+  /// - Filters out descriptions marked as disabled.
+  List<LogDescription> descriptions(BuildContext context) {
+    final defaultDescriptions = ISpectConstants.defaultLogDescriptions(context);
+    return [
+      ...defaultDescriptions,
+      ...logDescriptions.where((desc) => !desc.isDisabled),
+    ];
+  }
 }

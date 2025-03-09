@@ -14,18 +14,29 @@ Future<void> main() async {
     ),
   )
     ..error('The restaurant is closed ❌')
-    ..info('Ordering from other restaurant...');
+    ..info('Ordering from other restaurant...')
+    ..provider('Provider is ready')
+    ..good('The food is ready ✅')
+    ..track(
+      'User clicked on the button',
+      analytics: 'Amplitude',
+      parameters: {'button': 'order'},
+    );
 
   try {
     throw Exception('Something went wrong');
   } catch (e, st) {
-    iSpectify.handle(e, st, 'Exception with');
+    iSpectify.handle(
+      exception: e,
+      stackTrace: st,
+      message: 'Exception with',
+    );
   }
 
   iSpectify.logCustom(CustomLog('Something like your own service message'));
 }
 
-class CustomLog extends ISpectifyLog {
+class CustomLog extends ISpectifyData {
   CustomLog(super.message);
 
   static const logKey = 'custom_log_key';

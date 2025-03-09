@@ -5,12 +5,12 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
 import 'package:ispect_example/src/theme_manager.dart';
-import 'package:ispectify_bloc/observer.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
-import 'package:ispectify_http/ispectify_http.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
 
 final dio = Dio(
   BaseOptions(
@@ -35,24 +35,23 @@ void main() {
         child: App(iSpectify: iSpectify),
       ),
     ),
-    iSpectify: iSpectify,
+    logger: iSpectify,
     isPrintLoggingEnabled: true,
-    // isFlutterPrintEnabled: false,
-    // filters: [
-    //   'Handler: "onTap"',
-    //   'This exception was thrown because',
-    // ],
-    onInit: (iSpectify) {
+    onInit: () {
       Bloc.observer = ISpectifyBlocObserver(
         iSpectify: iSpectify,
       );
       client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
+        ISpectifyHttpLogger(iSpectify: iSpectify),
       );
       dio.interceptors.add(
         ISpectifyDioLogger(
-          iSpectify: ISpect.iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+          iSpectify: iSpectify,
+          settings: ISpectifyDioLoggerSettings(
+              // requestFilter: (requestOptions) =>
+              //     requestOptions.path != '/post3s/1',
+              // responseFilter: (response) => response.statusCode != 404,
+              // errorFilter: (response) => response.response?.statusCode != 404,
               // errorFilter: (response) {
               //   return (response.message?.contains('This exception was thrown because')) == false;
               // },
@@ -61,7 +60,7 @@ void main() {
       );
       dummyDio.interceptors.add(
         ISpectifyDioLogger(
-          iSpectify: ISpect.iSpectify,
+          iSpectify: iSpectify,
         ),
       );
     },
@@ -79,15 +78,24 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   final _controller = DraggablePanelController();
+  final _observer = ISpectNavigatorObserver(
+    isLogModals: false,
+  );
+
+  static const locale = Locale('uz');
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    const locale = Locale('en');
-    final observer = ISpectNavigatorObserver();
     final themeMode = ThemeProvider.themeMode(context);
 
     return MaterialApp(
-      navigatorObservers: [observer],
+      navigatorObservers: [_observer],
       locale: locale,
       supportedLocales: ExampleGeneratedLocalization.supportedLocales,
       localizationsDelegates: ISpectLocalizations.localizationDelegates([
@@ -107,7 +115,7 @@ class _AppState extends State<App> {
       ),
       themeMode: themeMode,
       builder: (context, child) {
-        child = ISpectScopeWrapper(
+        child = ISpectBuilder(
           options: ISpectOptions(
             locale: locale,
             panelButtons: [
@@ -148,25 +156,31 @@ class _AppState extends State<App> {
             ],
           ),
           isISpectEnabled: true,
-          child: ISpectBuilder(
-            observer: observer,
-            controller: _controller,
-
-            initialPosition: (x: 0, y: 200),
-            // initialJiraData: (
-            //   apiToken:
-            //       'Token',
-            //   domain: 'example',
-            //   email: 'name.surname@example.com',
-            //   projectId: '00000',
-            //   projectKey: 'AAAA'
-            // ),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-
-            child: child,
+          theme: ISpectTheme(
+            pageTitle: 'Custom Name',
+            logDescriptions: [
+              LogDescription(
+                key: 'error',
+                description: 'Some error log description',
+              ),
+              LogDescription(
+                key: 'info',
+                description: 'Blah blah blah',
+              ),
+              LogDescription(
+                key: 'riverpod-add',
+                description: 'Riverpod add',
+                isDisabled: true,
+              ),
+            ],
           ),
+          observer: _observer,
+          controller: _controller,
+          initialPosition: (x: 0, y: 200),
+          onPositionChanged: (x, y) {
+            debugPrint('x: $x, y: $y');
+          },
+          child: child ?? const SizedBox(),
         );
         return child;
       },
@@ -189,7 +203,9 @@ class _HomeState extends State<_Home> {
     final iSpect = ISpect.read(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+        title: Text(
+          ExampleGeneratedLocalization.of(context)!.app_title,
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -200,7 +216,7 @@ class _HomeState extends State<_Home> {
               BlocBuilder<TestCubit, TestState>(
                 bloc: _testBloc,
                 builder: (context, state) {
-                  return ElevatedButton(
+                  return FilledButton(
                     onPressed: () {
                       _testBloc.load(
                         data: 'Test data',
@@ -210,29 +226,29 @@ class _HomeState extends State<_Home> {
                   );
                 },
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () async {
                   await client.get(Uri.parse(
                       'https://jsonplaceholder.typicode.com/posts/1'));
                 },
                 child: const Text('Send HTTP request (http package)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () async {
                   await client.get(Uri.parse(
                       'https://jsonplaceholder.typicode.com/po2323sts/1'));
                 },
                 child: const Text('Send error HTTP request (http package)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   ThemeProvider.toggleTheme(context);
                 },
                 child: const Text('Toggle theme'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
-                  ISpect.track(
+                  ISpect.logger.track(
                     'Toggle',
                     analytics: 'amplitude',
                     event: 'ISpect',
@@ -244,19 +260,19 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Toggle ISpect'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.get('/posts/1');
                 },
                 child: const Text('Send HTTP request'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.get('/post3s/1');
                 },
                 child: const Text('Send HTTP request with error'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   dio.options.headers.addAll({
                     'Authorization': 'Bearer token',
@@ -266,7 +282,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Send HTTP request with Token'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   final formData = FormData();
                   formData.files.add(MapEntry(
@@ -284,7 +300,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Upload file to dummy server'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   // final formData = FormData();
                   // formData.files.add(MapEntry(
@@ -322,13 +338,13 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Upload file to dummy server (http)'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   throw Exception('Test exception');
                 },
                 child: const Text('Throw exception'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   debugPrint('Send print message');
                   //  final logger = CustomLogger('MyApp');
@@ -338,7 +354,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Send print message'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -349,7 +365,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Go to second page'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
@@ -359,7 +375,7 @@ class _HomeState extends State<_Home> {
                 },
                 child: const Text('Replace with second page'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   //  ISpect.logTyped(SuccessLog('Success log'));
                 },
@@ -380,7 +396,7 @@ class _SecondPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
+        child: FilledButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(

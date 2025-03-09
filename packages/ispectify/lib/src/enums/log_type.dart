@@ -24,7 +24,11 @@ enum ISpectifyLogType {
   riverpodDispose('riverpod-dispose'),
   riverpodFail('riverpod-fail'),
 
-  route('route');
+  route('route'),
+  good('good'),
+  analytics('analytics'),
+  provider('provider'),
+  print('print');
 
   const ISpectifyLogType(this.key);
   final String key;
@@ -44,6 +48,6 @@ extension ISpectifyLogTypeExt on ISpectifyLogType {
         ISpectifyLogType.debug => LogLevel.debug,
         ISpectifyLogType.verbose => LogLevel.verbose,
         ISpectifyLogType.warning => LogLevel.warning,
-        _ => LogLevel.debug,
+        _ => LogLevel.info,
       };
 }

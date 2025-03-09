@@ -6,7 +6,6 @@ This is the markdown todo file for ISpect.
 
 Tasks for the project are listed below:
 
-
 # DONE
 
 * [x] Added support for detailed HTTP logs

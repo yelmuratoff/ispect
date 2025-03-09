@@ -17,7 +17,7 @@ class AppDataController extends ChangeNotifier {
     } catch (e, st) {
       if (context.mounted &&
           !e.toString().contains('No such file or directory')) {
-        iSpectify.handle(e, st);
+        iSpectify.handle(exception: e, stackTrace: st);
         await ISpectToaster.showErrorToast(
           context,
           title: e.toString(),
@@ -45,7 +45,7 @@ class AppDataController extends ChangeNotifier {
         );
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(e, st);
+      iSpectify.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
@@ -70,7 +70,7 @@ class AppDataController extends ChangeNotifier {
         );
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(e, st);
+      iSpectify.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,

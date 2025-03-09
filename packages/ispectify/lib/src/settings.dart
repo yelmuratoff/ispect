@@ -1,108 +1,68 @@
-import 'package:ispectify/ispectify.dart';
+import 'package:ansicolor/ansicolor.dart';
+import 'package:ispectify/src/models/log_level.dart';
+import 'package:ispectify/src/utils/console_utils.dart';
 
-final _defaultTitles = {
-  ISpectifyLogType.critical.key: 'critical',
-  ISpectifyLogType.warning.key: 'warning',
-  ISpectifyLogType.verbose.key: 'verbose',
-  ISpectifyLogType.info.key: 'info',
-  ISpectifyLogType.debug.key: 'debug',
-  ISpectifyLogType.error.key: 'error',
-  ISpectifyLogType.exception.key: 'exception',
-  ISpectifyLogType.httpError.key: 'http-error',
-  ISpectifyLogType.httpRequest.key: 'http-request',
-  ISpectifyLogType.httpResponse.key: 'http-response',
-  ISpectifyLogType.blocEvent.key: 'bloc-event',
-  ISpectifyLogType.blocTransition.key: 'bloc-transition',
-  ISpectifyLogType.blocCreate.key: 'bloc-create',
-  ISpectifyLogType.blocState.key: 'bloc-state',
-  ISpectifyLogType.blocState.key: 'riverpod-add',
-  ISpectifyLogType.riverpodAdd.key: 'riverpod-add',
-  ISpectifyLogType.riverpodUpdate.key: 'riverpod-update',
-  ISpectifyLogType.riverpodDispose.key: 'riverpod-dispose',
-  ISpectifyLogType.riverpodFail.key: 'riverpod-fail',
-  ISpectifyLogType.route.key: 'route',
-};
+/// Configuration settings for ISpectify logger.
+///
+/// This class defines how logs are formatted, colored, and displayed.
+class LoggerSettings {
+  /// Creates an instance of [LoggerSettings] with customizable options.
+  ///
+  /// - [colors]: Custom ANSI colors for different log levels.
+  /// - [enable]: Enables or disables logging (default: `true`).
+  /// - [defaultTitle]: Default title for logs (default: `'Log'`).
+  /// - [level]: Minimum log level to be recorded (default: `LogLevel.verbose`).
+  /// - [lineSymbol]: The symbol used for log separators (default: `'─'`).
+  /// - [maxLineWidth]: Maximum width for log lines (default: `110`).
+  /// - [enableColors]: Enables ANSI colors in console output (default: `true`).
+  LoggerSettings({
+    Map<LogLevel, AnsiPen>? colors,
+    this.enable = true,
+    this.defaultTitle = 'Log',
+    this.level = LogLevel.verbose,
+    this.lineSymbol = '─',
+    this.maxLineWidth = 110,
+    this.enableColors = true,
+  }) : colors = {...ConsoleUtils.ansiColors, if (colors != null) ...colors};
 
-final _defaultColors = {
-  ISpectifyLogType.critical.key: AnsiPen()..red(),
-  ISpectifyLogType.warning.key: AnsiPen()..yellow(),
-  ISpectifyLogType.verbose.key: AnsiPen()..gray(),
-  ISpectifyLogType.info.key: AnsiPen()..blue(),
-  ISpectifyLogType.debug.key: AnsiPen()..gray(),
-  ISpectifyLogType.error.key: AnsiPen()..red(),
-  ISpectifyLogType.exception.key: AnsiPen()..red(),
-  ISpectifyLogType.httpError.key: AnsiPen()..red(),
-  ISpectifyLogType.httpRequest.key: AnsiPen()..xterm(219),
-  ISpectifyLogType.httpResponse.key: AnsiPen()..xterm(46),
-  ISpectifyLogType.blocEvent.key: AnsiPen()..xterm(51),
-  ISpectifyLogType.blocTransition.key: AnsiPen()..xterm(49),
-  ISpectifyLogType.blocCreate.key: AnsiPen()..xterm(35),
-  ISpectifyLogType.blocClose.key: AnsiPen()..xterm(198),
-  ISpectifyLogType.blocState.key: AnsiPen()..xterm(33),
-  ISpectifyLogType.riverpodAdd.key: AnsiPen()..xterm(51),
-  ISpectifyLogType.riverpodUpdate.key: AnsiPen()..xterm(49),
-  ISpectifyLogType.riverpodDispose.key: AnsiPen()..xterm(198),
-  ISpectifyLogType.riverpodFail.key: AnsiPen()..red(),
-  ISpectifyLogType.route.key: AnsiPen()..xterm(135),
-};
+  /// ANSI colors for log levels.
+  final Map<LogLevel, AnsiPen> colors;
 
-final _fallbackPen = AnsiPen()..gray();
+  /// Whether logging is enabled.
+  bool enable;
 
-class ISpectifyOptions {
-  ISpectifyOptions({
-    this.enabled = true,
-    bool useHistory = true,
-    bool useConsoleLogs = true,
-    int maxHistoryItems = 1000,
-    Map<String, String>? titles,
-    Map<String, AnsiPen>? colors,
-  })  : _useHistory = useHistory,
-        _useConsoleLogs = useConsoleLogs,
-        _maxHistoryItems = maxHistoryItems {
-    if (colors != null) {
-      _defaultColors.addAll(colors);
-    }
-    if (titles != null) {
-      _defaultTitles.addAll(titles);
-    }
-    this.colors.addAll(_defaultColors);
-    this.titles.addAll(_defaultTitles);
-  }
+  /// Default log title.
+  final String defaultTitle;
 
-  bool get useHistory => _useHistory && enabled;
-  final bool _useHistory;
+  /// Minimum log level required for a log to be recorded.
+  final LogLevel level;
 
-  bool get useConsoleLogs => _useConsoleLogs && enabled;
-  final bool _useConsoleLogs;
+  /// Symbol used for log line separators.
+  final String lineSymbol;
 
-  int get maxHistoryItems => _maxHistoryItems;
-  final int _maxHistoryItems;
+  /// Maximum width for log messages.
+  final int maxLineWidth;
 
-  bool enabled;
+  /// Whether ANSI colors are enabled in logs.
+  final bool enableColors;
 
-  final Map<String, String> titles = _defaultTitles;
-
-  final Map<String, AnsiPen> colors = _defaultColors;
-
-  String titleByKey(String key) => titles[key] ?? key;
-
-  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) =>
-      colors[key] ?? fallbackPen ?? _fallbackPen;
-
-  ISpectifyOptions copyWith({
-    bool? enabled,
-    bool? useHistory,
-    bool? useConsoleLogs,
-    int? maxHistoryItems,
-    Map<String, String>? titles,
-    Map<String, AnsiPen>? colors,
+  /// Creates a new instance of [LoggerSettings] with modified properties.
+  ///
+  /// If a parameter is `null`, the existing value is preserved.
+  LoggerSettings copyWith({
+    Map<LogLevel, AnsiPen>? colors,
+    String? defaultTitle,
+    LogLevel? level,
+    String? lineSymbol,
+    int? maxLineWidth,
+    bool? enableColors,
   }) =>
-      ISpectifyOptions(
-        useHistory: useHistory ?? _useHistory,
-        useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
-        maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
-        enabled: enabled ?? this.enabled,
-        titles: titles ?? this.titles,
+      LoggerSettings(
         colors: colors ?? this.colors,
+        defaultTitle: defaultTitle ?? this.defaultTitle,
+        level: level ?? this.level,
+        lineSymbol: lineSymbol ?? this.lineSymbol,
+        maxLineWidth: maxLineWidth ?? this.maxLineWidth,
+        enableColors: enableColors ?? this.enableColors,
       );
 }

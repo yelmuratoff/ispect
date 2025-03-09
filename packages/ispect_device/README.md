@@ -32,7 +32,6 @@ An additional package for using tools to view platform & device info.
 </p>
 <p align="center">
   <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/likes/ispect_device?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/popularity/ispect_device?logo=flutter" alt="Pub popularity"></a>
   <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/points/ispect_device?logo=flutter" alt="Pub points"></a>
 </p>
 
@@ -113,14 +112,11 @@ For example:
               await Navigator.push(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (_) => AppInfoPage(
+                  builder: (_) => AppInfoScreen(
                     iSpectify: widget.iSpectify,
                   ),
                   settings: RouteSettings(
-                    name: 'AppInfoPage',
-                    arguments: {
-                      'iSpectify': widget.iSpectify,
-                    },
+                    name: 'App Info Screen',
                   ),
                 ),
               );
@@ -133,14 +129,11 @@ For example:
               await Navigator.push(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (_) => AppDataPage(
+                  builder: (_) => AppDataScreen(
                     iSpectify: widget.iSpectify,
                   ),
                   settings: RouteSettings(
-                    name: 'AppDataPage',
-                    arguments: {
-                      'iSpectify': widget.iSpectify,
-                    },
+                    name: 'App Data Screen',
                   ),
                 ),
               );
@@ -156,8 +149,7 @@ localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect lo
           ISpectDeviceLocalization.delegate, // ISpect Device localization delegate
         ]),
 ```
-5. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-6. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+5. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
 
 Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 

@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 
 typedef ISpectifyWidgetBuilder = Widget Function(
   BuildContext context,
-  List<ISpectiyData> data,
+  List<ISpectifyData> data,
 );
 
 class ISpectifyBuilder extends StatelessWidget {
