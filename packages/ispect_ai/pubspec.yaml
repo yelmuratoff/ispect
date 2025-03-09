@@ -23,7 +23,7 @@ dependencies:
   flutter_bloc: ^9.0.0
   google_generative_ai: ^0.4.6
   path_provider: ^2.1.5
-  ispect: ^3.0.0
+  ispect: ^4.0.2-dev
   meta: ^1.15.0
   flutter_markdown: ^0.7.5
   gap: ^3.0.1

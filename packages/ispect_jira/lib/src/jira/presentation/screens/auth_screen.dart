@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_empty_blocks
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/src/jira/bloc/current_user/current_user_cubit.dart';
 import 'package:ispect_jira/src/jira/bloc/projects/projects_bloc.dart';
@@ -118,27 +117,27 @@ class _JiraAuthScreenState extends State<JiraAuthScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const Gap(14),
+                    const SizedBox(height: 14),
                     Text(
                       ISpectJiraLocalization.of(context)!.jiraInstruction,
                     ),
-                    const Gap(46),
+                    const SizedBox(height: 46),
                     ISpectTextfield(
                       controller: _projectDomainController,
                       hintText:
                           ISpectJiraLocalization.of(context)!.projectDomain,
                     ),
-                    const Gap(12),
+                    const SizedBox(height: 12),
                     ISpectTextfield(
                       controller: _userEmailController,
                       hintText: ISpectJiraLocalization.of(context)!.userEmail,
                     ),
-                    const Gap(12),
+                    const SizedBox(height: 12),
                     ISpectTextfield(
                       controller: _apiTokenController,
                       hintText: ISpectJiraLocalization.of(context)!.apiToken,
                     ),
-                    const Gap(12),
+                    const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
                         ISpectJiraClient.initClient(
@@ -170,7 +169,7 @@ class _JiraAuthScreenState extends State<JiraAuthScreen> {
                       ),
                       orElse: () => const SizedBox.shrink(),
                     ),
-                    const Gap(24),
+                    const SizedBox(height: 24),
                     BlocConsumer<ProjectsCubit, ProjectsState>(
                       bloc: _bloc,
                       listener: (_, state) {

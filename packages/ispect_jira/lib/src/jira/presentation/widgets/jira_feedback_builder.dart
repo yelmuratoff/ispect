@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
@@ -92,7 +91,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                       context.ispectL10n.feedbackDescriptionText,
                       maxLines: 2,
                     ),
-                    const Gap(8),
+                    const SizedBox(height: 8),
                     TextField(
                       style: FeedbackTheme.of(context)
                           .bottomSheetTextInputStyle
@@ -147,7 +146,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                 child: Row(
                   children: [
                     const Icon(Icons.share_rounded),
-                    const Gap(8),
+                    const SizedBox(width: 8),
                     Text(
                       context.ispectL10n.share,
                     ),
@@ -174,7 +173,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                   child: Row(
                     children: [
                       const Icon(Icons.bug_report_rounded),
-                      const Gap(8),
+                      const SizedBox(width: 8),
                       Text(
                         context.ispectL10n.createJiraIssue,
                       ),
@@ -185,7 +184,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                         BetterFeedback.ofScreenshot(context);
                     final screenshot = await screenshotController.capture();
                     final screenshotFilePath =
-                        await writeImageToStorage(screenshot);
+                        await ISpectFileUtils.writeImageToStorage(screenshot);
                     final jiraPage = MaterialPageRoute<dynamic>(
                       builder: (_) => JiraSendIssueScreen(
                         initialDescription: _controller.text,
@@ -207,7 +206,7 @@ class _StringFeedbackState extends State<StringFeedback> {
                 ),
             ],
           ),
-          const Gap(32),
+          const SizedBox(width: 32),
         ],
       );
 }

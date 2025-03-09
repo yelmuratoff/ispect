@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/file_utils.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
@@ -577,7 +576,7 @@ class InspectorState extends State<Inspector> {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
         final screenshotFilePath =
-            await FileUtils.writeImageToStorage(feedback.screenshot);
+            await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
 
         await Share.shareXFiles(
           [screenshotFilePath],

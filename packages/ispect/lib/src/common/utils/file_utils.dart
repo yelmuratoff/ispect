@@ -10,9 +10,9 @@ import 'package:share_plus/share_plus.dart';
 /// particularly for handling feedback screenshots.
 ///
 /// **Note:** This class cannot be instantiated.
-final class FileUtils {
+final class ISpectFileUtils {
   /// Private constructor to prevent instantiation.
-  const FileUtils._();
+  const ISpectFileUtils._();
 
   /// Writes the given [feedbackScreenshot] (as `Uint8List`) to a temporary storage location
   /// and returns an `XFile` instance pointing to the stored file.
@@ -29,7 +29,7 @@ final class FileUtils {
   /// ### Example:
   /// ```dart
   /// Uint8List screenshotBytes = await captureScreenshot();
-  /// XFile screenshotFile = await FileUtils.writeImageToStorage(screenshotBytes);
+  /// XFile screenshotFile = await ISpectFileUtils.writeImageToStorage(screenshotBytes);
   /// print("Screenshot saved at: ${screenshotFile.path}");
   /// ```
   ///

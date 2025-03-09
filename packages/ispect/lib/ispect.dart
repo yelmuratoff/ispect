@@ -14,6 +14,7 @@ export 'src/common/extensions/history.dart';
 export 'src/common/extensions/init.dart';
 export 'src/common/extensions/ispectify_data.dart';
 export 'src/common/observers/route_observer.dart';
+export 'src/common/utils/file_utils.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/features/inspector/src/widgets/panel/panel_item.dart';
 export 'src/features/ispect/models/log_description.dart';

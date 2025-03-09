@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 
 class JiraErrorWidget extends StatelessWidget {
   const JiraErrorWidget({
@@ -16,7 +15,7 @@ class JiraErrorWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Error: $error'),
-            const Gap(8),
+            const SizedBox(height: 8),
             Text('Stack trace: $stackTrace'),
           ],
         ),

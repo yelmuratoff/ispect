@@ -117,7 +117,7 @@ final class ISpectJiraClient {
 
       _instance._isClientInitialized = true;
     } catch (e, st) {
-      ISpect.handle(
+      ISpect.logger.handle(
         exception: e,
         stackTrace: st,
       );
@@ -193,7 +193,7 @@ final class ISpectJiraClient {
 
       return response;
     } catch (e, st) {
-      ISpect.handle(
+      ISpect.logger.handle(
         exception: e,
         stackTrace: st,
       );
@@ -227,7 +227,7 @@ final class ISpectJiraClient {
         );
       }
     } catch (e, st) {
-      ISpect.handle(
+      ISpect.logger.handle(
         exception: e,
         stackTrace: st,
       );
@@ -253,7 +253,7 @@ final class ISpectJiraClient {
         );
       }
     } catch (e, st) {
-      ISpect.handle(
+      ISpect.logger.handle(
         exception: e,
         stackTrace: st,
       );
