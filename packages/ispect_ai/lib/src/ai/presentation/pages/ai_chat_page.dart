@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_ai/src/ai/core/data/datasource/ai_remote_ds.dart';
 import 'package:ispect_ai/src/ai/core/data/repositories/ai_repository.dart';
@@ -66,7 +65,7 @@ class _AiChatPageState extends State<AiChatPage> {
                 painter: AiLoaderPainter(),
                 child: const SizedBox(width: 24, height: 24),
               ),
-              const Gap(12),
+              const SizedBox(width: 12),
               Text(
                 ISpectAILocalization.of(context)!.aiChat,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -136,7 +135,7 @@ class _AiChatPageState extends State<AiChatPage> {
                           },
                         ),
                       ),
-                      const Gap(8),
+                      const SizedBox(width: 8),
                       BlocBuilder<AiChatBloc, AiChatState>(
                         bloc: _aiChatBloc,
                         builder: (context, state) {
@@ -228,7 +227,7 @@ class _AIMessageWidget extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Gap(8),
+                        const SizedBox(width: 8),
                         Text(
                           'ISpect AI',
                           style:
@@ -294,7 +293,7 @@ class _UserMessageWidget extends StatelessWidget {
                                     fontWeight: FontWeight.w600,
                                   ),
                         ),
-                        const Gap(8),
+                        const SizedBox(width: 8),
                         SizedBox(
                           width: 24,
                           height: 24,

@@ -13,7 +13,7 @@ void main() {
         child: App(iSpectify: iSpectify),
       ),
     ),
-    iSpectify: iSpectify,
+    logger: iSpectify,
     isPrintLoggingEnabled: true,
   );
 }
@@ -46,110 +46,108 @@ class _AppState extends State<App> {
 
     final themeMode = ThemeProvider.themeMode(context);
 
-    return ISpectScopeWrapper(
-      options: ISpectOptions(
-        locale: locale,
-        panelButtons: [
-          (
-            icon: Icons.copy_rounded,
-            label: 'Token',
-            onTap: (context) {
-              debugPrint('Token copied');
-            },
-          ),
-        ],
-        panelItems: [
-          (
-            icon: Icons.home,
-            enableBadge: false,
-            onTap: (context) {
-              debugPrint('Home');
-            },
-          ),
-        ],
-        actionItems: [
-          ISpectifyActionItem(
-            title: 'ISpect',
-            icon: Icons.bug_report_outlined,
-            onTap: (context) {
-              if (ISpectJiraClient.isInitialized) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (_) => const JiraSendIssueScreen(),
-                    settings: const RouteSettings(
-                      name: 'Jira Send Issue Page',
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (_) => JiraAuthScreen(
-                      onAuthorized:
-                          (domain, email, apiToken, projectId, projectKey) {
-                        ISpect.good(
-                          '''✅ Jira authorized:
+    return MaterialApp(
+      navigatorObservers: [observer],
+      locale: locale,
+      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        ExampleGeneratedLocalization.delegate,
+        ISpectJiraLocalization.delegate,
+      ]),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: themeMode,
+      builder: (context, child) {
+        child = ISpectBuilder(
+          observer: observer,
+          options: ISpectOptions(
+            locale: locale,
+            panelButtons: [
+              (
+                icon: Icons.copy_rounded,
+                label: 'Token',
+                onTap: (context) {
+                  debugPrint('Token copied');
+                },
+              ),
+            ],
+            panelItems: [
+              (
+                icon: Icons.home,
+                enableBadge: false,
+                onTap: (context) {
+                  debugPrint('Home');
+                },
+              ),
+            ],
+            actionItems: [
+              ISpectifyActionItem(
+                title: 'ISpect',
+                icon: Icons.bug_report_outlined,
+                onTap: (context) {
+                  if (ISpectJiraClient.isInitialized) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (_) => const JiraSendIssueScreen(),
+                        settings: const RouteSettings(
+                          name: 'Jira Send Issue Page',
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (_) => JiraAuthScreen(
+                          onAuthorized:
+                              (domain, email, apiToken, projectId, projectKey) {
+                            ISpect.logger.good(
+                              '''✅ Jira authorized:
   Project domain: $domain
   User email: $email
   Project id: $projectId
   API token: $apiToken
   Project key: $projectKey''',
-                        );
-                      },
-                    ),
-                    settings: const RouteSettings(
-                      name: 'Jira Auth Page',
-                    ),
-                  ),
-                );
-              }
-            },
+                            );
+                          },
+                        ),
+                        settings: const RouteSettings(
+                          name: 'Jira Auth Page',
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      isISpectEnabled: true,
-      child: MaterialApp(
-        navigatorObservers: [observer],
-        locale: locale,
-        supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
-          ExampleGeneratedLocalization.delegate,
-          ISpectJiraLocalization.delegate,
-        ]),
-        theme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
+          isISpectEnabled: true,
+          feedbackBuilder: (context, onSubmit, controller) =>
+              JiraFeedbackBuilder(
+            onSubmit: onSubmit,
+            theme: Theme.of(context),
+            scrollController: controller,
           ),
-        ),
-        darkTheme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-        ),
-        themeMode: themeMode,
-        builder: (context, child) {
-          child = ISpectBuilder(
-            observer: observer,
-            feedbackBuilder: (context, onSubmit, controller) =>
-                JiraFeedbackBuilder(
-              onSubmit: onSubmit,
-              theme: Theme.of(context),
-              scrollController: controller,
-            ),
-            initialPosition: (x: 0, y: 200),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-            child: child,
-          );
-          return child;
-        },
-        home: const _Home(),
-      ),
+          initialPosition: (x: 0, y: 200),
+          onPositionChanged: (x, y) {
+            debugPrint('x: $x, y: $y');
+          },
+          child: child ?? const SizedBox.shrink(),
+        );
+        return child;
+      },
+      home: const _Home(),
     );
   }
 }
@@ -181,9 +179,9 @@ class _Home extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                ISpect.good('Good log');
-                ISpect.info('Info log');
-                ISpect.warning('Warning log');
+                ISpect.logger.good('Good log');
+                ISpect.logger.info('Info log');
+                ISpect.logger.warning('Warning log');
               },
               child: const Text('Print some logs'),
             ),

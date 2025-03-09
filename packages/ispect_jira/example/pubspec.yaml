@@ -13,7 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   ispect: ^4.0.2-dev
-  ispect_jira: ^0.0.3
+  ispect_jira: ^1.0.0-dev
 
 dev_dependencies:
   flutter_test:

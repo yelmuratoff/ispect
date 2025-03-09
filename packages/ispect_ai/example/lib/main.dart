@@ -22,12 +22,12 @@ void main() {
         child: App(iSpectify: iSpectify),
       ),
     ),
-    iSpectify: iSpectify,
+    logger: iSpectify,
     isPrintLoggingEnabled: true,
     onInitialized: () {
       dio.interceptors.add(
         ISpectifyDioLogger(
-          iSpectify: ISpect.iSpectify,
+          iSpectify: iSpectify,
         ),
       );
     },
@@ -56,69 +56,67 @@ class _AppState extends State<App> {
 
     final themeMode = ThemeProvider.themeMode(context);
 
-    return ISpectScopeWrapper(
-      options: ISpectOptions(
-        locale: locale,
-        actionItems: [
-          ISpectifyActionItem(
-            title: 'AI Chat',
-            icon: Icons.bubble_chart,
-            onTap: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AiChatPage(),
-                ),
-              );
-            },
-          ),
-          ISpectifyActionItem(
-            title: 'AI Reporter',
-            icon: Icons.report_rounded,
-            onTap: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AiReporterPage(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      isISpectEnabled: true,
-      child: MaterialApp(
-        navigatorObservers: [observer],
-        locale: locale,
-        supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-        localizationsDelegates: ISpectLocalizations.localizationDelegates([
-          ExampleGeneratedLocalization.delegate,
-          ISpectAILocalization.delegate,
-        ]),
-        theme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
+    return MaterialApp(
+      navigatorObservers: [observer],
+      locale: locale,
+      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        ExampleGeneratedLocalization.delegate,
+        ISpectAILocalization.delegate,
+      ]),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
         ),
-        darkTheme: ThemeData.from(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-        ),
-        themeMode: themeMode,
-        builder: (context, child) {
-          child = ISpectBuilder(
-            observer: observer,
-            initialPosition: (x: 0, y: 200),
-            onPositionChanged: (x, y) {
-              debugPrint('x: $x, y: $y');
-            },
-            child: child,
-          );
-          return child;
-        },
-        home: const _Home(),
       ),
+      darkTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: themeMode,
+      builder: (context, child) {
+        child = ISpectBuilder(
+          observer: observer,
+          options: ISpectOptions(
+            locale: locale,
+            actionItems: [
+              ISpectifyActionItem(
+                title: 'AI Chat',
+                icon: Icons.bubble_chart,
+                onTap: (context) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AiChatPage(),
+                    ),
+                  );
+                },
+              ),
+              ISpectifyActionItem(
+                title: 'AI Reporter',
+                icon: Icons.report_rounded,
+                onTap: (context) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AiReporterPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          isISpectEnabled: true,
+          initialPosition: (x: 0, y: 200),
+          onPositionChanged: (x, y) {
+            debugPrint('x: $x, y: $y');
+          },
+          child: child ?? const SizedBox.shrink(),
+        );
+        return child;
+      },
+      home: const _Home(),
     );
   }
 }

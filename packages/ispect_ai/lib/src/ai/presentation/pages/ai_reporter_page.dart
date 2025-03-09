@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:gap/gap.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_ai/src/ai/core/data/datasource/ai_remote_ds.dart';
 import 'package:ispect_ai/src/ai/core/data/repositories/ai_repository.dart';
@@ -61,7 +60,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                 painter: AiLoaderPainter(),
                 child: const SizedBox(width: 24, height: 24),
               ),
-              const Gap(12),
+              const SizedBox(width: 12),
               const Text(
                 'AI Reporter',
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -106,7 +105,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                       return Column(
                         children: [
                           MarkdownBody(data: state.report),
-                          const Gap(16),
+                          const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               _cubit.generateReport(
@@ -132,7 +131,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.refresh),
-                                const Gap(8),
+                                const SizedBox(width: 8),
                                 Text(ISpectAILocalization.of(context)!.retry),
                               ],
                             ),
@@ -168,7 +167,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.refresh),
-                                const Gap(8),
+                                const SizedBox(width: 8),
                                 Text(ISpectAILocalization.of(context)!.retry),
                               ],
                             ),
