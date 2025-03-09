@@ -32,7 +32,6 @@ An additional package for using tools to view platform & device info.
 </p>
 <p align="center">
   <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/likes/ispect_device?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/popularity/ispect_device?logo=flutter" alt="Pub popularity"></a>
   <a href="https://pub.dev/packages/ispect_device/score"><img src="https://img.shields.io/pub/points/ispect_device?logo=flutter" alt="Pub points"></a>
 </p>
 
