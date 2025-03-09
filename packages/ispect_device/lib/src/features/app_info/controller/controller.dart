@@ -1,4 +1,4 @@
-part of '../app.dart';
+part of '../app_info_screen.dart';
 
 class AppInfoController extends ChangeNotifier {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -26,7 +26,7 @@ class AppInfoController extends ChangeNotifier {
         _androidDeviceInfo = await _deviceInfo.androidInfo;
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(e, st);
+      iSpectify.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
@@ -45,7 +45,7 @@ class AppInfoController extends ChangeNotifier {
       _packageInfo = await PackageInfo.fromPlatform();
       notifyListeners();
     } on Exception catch (e, st) {
-      iSpectify.handle(e, st);
+      iSpectify.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,

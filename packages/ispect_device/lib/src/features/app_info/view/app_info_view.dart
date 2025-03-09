@@ -1,4 +1,4 @@
-part of '../app.dart';
+part of '../app_info_screen.dart';
 
 class _AppInfoView extends StatelessWidget {
   const _AppInfoView({required this.controller});

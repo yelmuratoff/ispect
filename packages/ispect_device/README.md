@@ -113,14 +113,11 @@ For example:
               await Navigator.push(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (_) => AppInfoPage(
+                  builder: (_) => AppInfoScreen(
                     iSpectify: widget.iSpectify,
                   ),
                   settings: RouteSettings(
-                    name: 'AppInfoPage',
-                    arguments: {
-                      'iSpectify': widget.iSpectify,
-                    },
+                    name: 'App Info Screen',
                   ),
                 ),
               );
@@ -133,14 +130,11 @@ For example:
               await Navigator.push(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (_) => AppDataPage(
+                  builder: (_) => AppDataScreen(
                     iSpectify: widget.iSpectify,
                   ),
                   settings: RouteSettings(
-                    name: 'AppDataPage',
-                    arguments: {
-                      'iSpectify': widget.iSpectify,
-                    },
+                    name: 'App Data Screen',
                   ),
                 ),
               );

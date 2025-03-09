@@ -9,15 +9,15 @@ import 'package:ispect_device/src/services/file/src/file_service.dart';
 part 'view/view.dart';
 part 'controller/controller.dart';
 
-class AppDataPage extends StatefulWidget {
-  const AppDataPage({required this.iSpectify, super.key});
+class AppDataScreen extends StatefulWidget {
+  const AppDataScreen({required this.iSpectify, super.key});
   final ISpectify iSpectify;
 
   @override
-  State<AppDataPage> createState() => _AppDataPageState();
+  State<AppDataScreen> createState() => _AppDataScreenState();
 }
 
-class _AppDataPageState extends State<AppDataPage> with CacheMixin {
+class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
   final _controller = AppDataController();
 
   @override
@@ -72,7 +72,7 @@ class _AppDataPageState extends State<AppDataPage> with CacheMixin {
       );
 }
 
-mixin CacheMixin on State<AppDataPage> {
+mixin CacheMixin on State<AppDataScreen> {
   late final AppCacheManager appCacheManager;
 
   late ValueNotifier<String> cacheSizeNotifier = ValueNotifier<String>('');

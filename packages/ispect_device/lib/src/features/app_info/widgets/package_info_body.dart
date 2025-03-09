@@ -1,4 +1,4 @@
-part of '../app.dart';
+part of '../app_info_screen.dart';
 
 class PackageInfoBody extends StatelessWidget {
   const PackageInfoBody({

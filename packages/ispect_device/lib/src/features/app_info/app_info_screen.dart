@@ -12,21 +12,24 @@ part 'widgets/device_info_body.dart';
 part 'widgets/key_value_line.dart';
 part 'widgets/package_info_body.dart';
 
-class AppInfoPage extends StatefulWidget {
-  const AppInfoPage({required this.iSpectify, super.key});
+class AppInfoScreen extends StatefulWidget {
+  const AppInfoScreen({required this.iSpectify, super.key});
   final ISpectify iSpectify;
 
   @override
-  State<AppInfoPage> createState() => _AppInfoPageState();
+  State<AppInfoScreen> createState() => _AppInfoScreenState();
 }
 
-class _AppInfoPageState extends State<AppInfoPage> {
+class _AppInfoScreenState extends State<AppInfoScreen> {
   final _contorller = AppInfoController();
 
   @override
   void initState() {
     super.initState();
-    _contorller.loadAll(context: context, iSpectify: widget.iSpectify);
+    _contorller.loadAll(
+      context: context,
+      iSpectify: widget.iSpectify,
+    );
   }
 
   @override
