@@ -65,7 +65,7 @@ ISpect can be extended using other parts of this package <br>
 
 - ✅ Draggable panel for route to ISpect page and manage Inspector tools
 You can also use it separately: https://pub.dev/packages/draggable_panel
-- ✅ Localizations: ru, en, kk. *(I will add more translations in the future.)*
+- ✅ Localizations: kk, en, zh, ru. *(I will add more translations in the future.)*
 - ✅ `ISpectify` logger *(inspired on `Talker`)* implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
 - ✅ You can customize more options during initialization of ISpect like BLoC, Dispatcher error and etc.
 - ✅ Updated ISpect page: added more options.
