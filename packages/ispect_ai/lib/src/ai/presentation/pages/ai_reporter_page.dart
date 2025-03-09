@@ -38,7 +38,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
           possibleKeys:
               ISpect.read(context).theme.colors(context).keys.toList(),
           now: DateTime.now(),
-          logsText: ISpect.iSpectify.history.reversed
+          logsText: ISpect.logger.history.reversed
               .map((e) => e.generateText())
               .toList()
               .toString(),
@@ -117,7 +117,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                                       .keys
                                       .toList(),
                                   now: DateTime.now(),
-                                  logsText: ISpect.iSpectify.history.reversed
+                                  logsText: ISpect.logger.history.reversed
                                       .map((e) => e.generateText())
                                       .toList()
                                       .toString(),
@@ -153,7 +153,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
                                       .keys
                                       .toList(),
                                   now: DateTime.now(),
-                                  logsText: ISpect.iSpectify.history.reversed
+                                  logsText: ISpect.logger.history.reversed
                                       .map((e) => e.generateText())
                                       .toList()
                                       .toString(),
@@ -188,7 +188,7 @@ class _AiReporterPageState extends State<AiReporterPage> {
 
   Future<void> _downloadLogs() async {
     final logs =
-        '''AI Reporter\nLogs:\n${ISpect.iSpectify.history.formattedText}}''';
+        '''AI Reporter\nLogs:\n${ISpect.logger.history.formattedText}}''';
     final file = await generateFile(logs, name: 'ai-reporter-logs');
 
     final xFile = XFile(file.path, name: file.path.split('/').last);

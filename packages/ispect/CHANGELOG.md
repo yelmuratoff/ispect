@@ -1,7 +1,11 @@
 ## 4.0.0
+- `ISpectScopeWrapper` moved to inside `ISpectBuilder`. Now you can use `ISpectBuilder` for all your needs.
+Please check the example project for better understanding.
+- `ISpect.log()` replaced by -> `ISpect.logger.log()`.
 - Added ability to view all logs in detail as `JSON` tree.
 - Viewing of detailed logs of `HTTP` requests has been changed. Now absolutely all logs are displayed as a `JSON` tree. You can use search and filtering for convenience.
 - Changed the log view on the `ISpect` page.
+- Added `logDescriptions` to the `ISpectTheme` class. This option allows you to add/change/disable descriptions to your logs in info bottom sheet.
 - Test added a simple Theme Scheme page in the `ISpect` panel.
 - ISpectify upds:
    - Added documentation to the `ISpectify` class.

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:ispect/ispect.dart';
 
 void main() {
-  final ISpectify iSpectify = ISpectifyFlutter.init(
+  final ISpectify logger = ISpectifyFlutter.init(
     options: ISpectifyOptions(
       useConsoleLogs: true,
       titles: <String, String>{
@@ -29,7 +29,7 @@ void main() {
       WidgetsFlutterBinding.ensureInitialized();
       runApp(MyApp());
     },
-    iSpectify: iSpectify,
+    logger: logger,
   );
 }
 

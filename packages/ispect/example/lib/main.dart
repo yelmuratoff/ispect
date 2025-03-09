@@ -35,19 +35,23 @@ void main() {
         child: App(iSpectify: iSpectify),
       ),
     ),
-    iSpectify: iSpectify,
+    logger: iSpectify,
     isPrintLoggingEnabled: true,
-    onInit: (iSpectify) {
+    onInit: () {
       Bloc.observer = ISpectifyBlocObserver(
         iSpectify: iSpectify,
       );
       client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
+        ISpectifyHttpLogger(iSpectify: iSpectify),
       );
       dio.interceptors.add(
         ISpectifyDioLogger(
-          iSpectify: ISpect.iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+          iSpectify: iSpectify,
+          settings: ISpectifyDioLoggerSettings(
+              // requestFilter: (requestOptions) =>
+              //     requestOptions.path != '/post3s/1',
+              // responseFilter: (response) => response.statusCode != 404,
+              // errorFilter: (response) => response.response?.statusCode != 404,
               // errorFilter: (response) {
               //   return (response.message?.contains('This exception was thrown because')) == false;
               // },
@@ -56,7 +60,7 @@ void main() {
       );
       dummyDio.interceptors.add(
         ISpectifyDioLogger(
-          iSpectify: ISpect.iSpectify,
+          iSpectify: iSpectify,
         ),
       );
     },
@@ -199,7 +203,9 @@ class _HomeState extends State<_Home> {
     final iSpect = ISpect.read(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+        title: Text(
+          ExampleGeneratedLocalization.of(context)!.app_title,
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(

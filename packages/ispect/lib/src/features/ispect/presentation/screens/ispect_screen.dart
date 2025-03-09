@@ -41,7 +41,7 @@ class _ISpectScreenState extends State<ISpectScreen> {
 
   @override
   Widget build(BuildContext context) => ISpectScreenView(
-        iSpectify: ISpect.iSpectify,
+        iSpectify: ISpect.logger,
         appBarTitle: widget.appBarTitle,
         options: widget.options,
       );

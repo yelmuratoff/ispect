@@ -39,7 +39,7 @@ class _AiChatPageState extends State<AiChatPage> {
           possibleKeys:
               ISpect.read(context).theme.colors(context).keys.toList(),
           welcomeMessage: ISpectAILocalization.of(context)!.aiWelcomeMessage,
-          logs: ISpect.iSpectify.history,
+          logs: ISpect.logger.history,
         ),
       );
     });

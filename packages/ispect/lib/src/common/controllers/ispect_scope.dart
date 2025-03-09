@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/utils/icons.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// A model class that holds the state of the ISpect scope.
 ///
@@ -63,7 +63,7 @@ class ISpectScopeModel extends ChangeNotifier {
     if (_theme != value) {
       _theme = value.copyWith(
         logIcons: {
-          ...typeIcons, // Default icons
+          ...ISpectConstants.typeIcons, // Default icons
           ...value.logIcons, // Custom user-defined icons
         },
       );
