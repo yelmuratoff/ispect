@@ -1,26 +1,44 @@
 import 'package:ispectify/ispectify.dart';
 
+/// An abstract class representing a log history storage.
+///
+/// This defines a common interface for managing logged data.
 abstract class LogHistory {
+  /// A list of stored log entries.
   List<ISpectifyData> get history;
 
+  /// Clears the log history.
   void clear();
 
+  /// Adds a new log entry to the history.
   void add(ISpectifyData data);
 }
 
+/// The default implementation of [LogHistory] for managing log history.
+///
+/// This class stores log entries in-memory and follows the configuration
+/// defined in [ISpectifyOptions].
 class DefaultISpectifyHistory implements LogHistory {
-  DefaultISpectifyHistory(this.settings, {List<ISpectifyData>? history}) {
+  /// Creates a log history manager with the given [settings].
+  ///
+  /// Optionally, an initial [history] list can be provided.
+  DefaultISpectifyHistory(
+    this.settings, {
+    List<ISpectifyData>? history,
+  }) {
     if (history != null) {
       _history.addAll(history);
     }
   }
 
+  /// Configuration options for logging behavior.
   final ISpectifyOptions settings;
 
-  final _history = <ISpectifyData>[];
+  /// Internal list to store log history.
+  final List<ISpectifyData> _history = [];
 
   @override
-  List<ISpectifyData> get history => _history;
+  List<ISpectifyData> get history => List.unmodifiable(_history);
 
   @override
   void clear() {
@@ -31,11 +49,12 @@ class DefaultISpectifyHistory implements LogHistory {
 
   @override
   void add(ISpectifyData data) {
-    if (settings.useHistory && settings.enabled) {
-      if (settings.maxHistoryItems <= _history.length) {
-        _history.removeAt(0);
-      }
-      _history.add(data);
+    if (!settings.useHistory || !settings.enabled) return;
+
+    // Enforce max history size
+    if (_history.length >= settings.maxHistoryItems) {
+      _history.removeAt(0); // Remove oldest entry
     }
+    _history.add(data);
   }
 }

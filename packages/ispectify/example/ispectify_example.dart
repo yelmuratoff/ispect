@@ -14,7 +14,14 @@ Future<void> main() async {
     ),
   )
     ..error('The restaurant is closed ❌')
-    ..info('Ordering from other restaurant...');
+    ..info('Ordering from other restaurant...')
+    ..provider('Provider is ready')
+    ..good('The food is ready ✅')
+    ..track(
+      'User clicked on the button',
+      analytics: 'Amplitude',
+      parameters: {'button': 'order'},
+    );
 
   try {
     throw Exception('Something went wrong');

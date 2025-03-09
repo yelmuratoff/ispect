@@ -8,7 +8,6 @@ export 'src/logger/logger.dart';
 export 'src/models/data.dart';
 export 'src/models/error.dart';
 export 'src/models/exception.dart';
-export 'src/models/log.dart';
 export 'src/models/models.dart';
 export 'src/observer.dart';
 export 'src/options.dart';

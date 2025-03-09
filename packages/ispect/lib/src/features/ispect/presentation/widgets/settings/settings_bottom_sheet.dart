@@ -43,7 +43,7 @@ class _ISpectifySettingsBottomSheetState
     final settings = <Widget>[
       ISpectifySettingsCardItem(
         title: context.ispectL10n.enabled,
-        enabled: widget.iSpectify.value.settings.enabled,
+        enabled: widget.iSpectify.value.options.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
           (enabled
@@ -54,13 +54,13 @@ class _ISpectifySettingsBottomSheetState
         },
       ),
       ISpectifySettingsCardItem(
-        canEdit: widget.iSpectify.value.settings.enabled,
+        canEdit: widget.iSpectify.value.options.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.iSpectify.value.settings.useConsoleLogs,
+        enabled: widget.iSpectify.value.options.useConsoleLogs,
         onChanged: (enabled) {
           widget.iSpectify.value.configure(
-            settings: widget.iSpectify.value.settings.copyWith(
+            options: widget.iSpectify.value.options.copyWith(
               useConsoleLogs: enabled,
             ),
           );
@@ -68,13 +68,13 @@ class _ISpectifySettingsBottomSheetState
         },
       ),
       ISpectifySettingsCardItem(
-        canEdit: widget.iSpectify.value.settings.enabled,
+        canEdit: widget.iSpectify.value.options.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.iSpectify.value.settings.useHistory,
+        enabled: widget.iSpectify.value.options.useHistory,
         onChanged: (enabled) {
           widget.iSpectify.value.configure(
-            settings: widget.iSpectify.value.settings.copyWith(
+            options: widget.iSpectify.value.options.copyWith(
               useHistory: enabled,
             ),
           );

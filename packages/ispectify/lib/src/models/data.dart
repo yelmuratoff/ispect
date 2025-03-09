@@ -1,6 +1,19 @@
 import 'package:ispectify/ispectify.dart';
 
+/// A model class representing a structured log entry.
 class ISpectifyData {
+  /// Creates an instance of [ISpectifyData] to store log details.
+  ///
+  /// - [message]: The main log message.
+  /// - [time]: The timestamp of the log entry. Defaults to [DateTime.now()].
+  /// - [logLevel]: The severity level of the log.
+  /// - [exception]: Any associated exception.
+  /// - [error]: Any associated error.
+  /// - [stackTrace]: The stack trace for debugging.
+  /// - [title]: An optional title for categorizing logs.
+  /// - [pen]: ANSI color for styling logs.
+  /// - [key]: A unique identifier for this log entry.
+  /// - [additionalData]: Any extra metadata attached to the log.
   ISpectifyData(
     this.message, {
     DateTime? time,
@@ -12,57 +25,62 @@ class ISpectifyData {
     this.pen,
     this.key,
     this.additionalData,
-  }) {
-    _time = time ?? DateTime.now();
-  }
+  }) : _time = time ?? DateTime.now();
 
-  late DateTime _time;
+  /// The timestamp when the log entry was created.
+  final DateTime _time;
 
+  /// A unique identifier for the log entry.
   final String? key;
+
+  /// The main log message.
   final String? message;
+
+  /// The severity level of the log entry.
   final LogLevel? logLevel;
+
+  /// An optional title for categorizing the log.
   final String? title;
+
+  /// ANSI color styling for the log message.
   final AnsiPen? pen;
+
+  /// Additional metadata associated with the log entry.
   final Map<String, dynamic>? additionalData;
 
+  /// Any exception associated with the log entry.
   final Object? exception;
+
+  /// Any error associated with the log entry.
   final Error? error;
+
+  /// The stack trace associated with the log entry.
   final StackTrace? stackTrace;
 
+  /// Returns the timestamp of the log.
   DateTime get time => _time;
 
+  /// Returns the full message, including the stack trace if available.
   String get textMessage => '$message$stackTraceText';
 
+  /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
 
-  String get stackTraceText {
-    if (stackTrace == null || stackTrace == StackTrace.empty) {
-      return '';
-    }
-    return '\nStackTrace: $stackTrace}';
-  }
+  /// Returns the formatted stack trace if available, otherwise an empty string.
+  String get stackTraceText =>
+      (stackTrace != null && stackTrace != StackTrace.empty)
+          ? '\nStackTrace: $stackTrace'
+          : '';
 
-  String get exceptionText {
-    if (exception == null) return '';
+  /// Returns the exception as a string if available, otherwise an empty string.
+  String get exceptionText => exception != null ? '\n$exception' : '';
 
-    return '\n$exception';
-  }
+  /// Returns the error as a string if available, otherwise an empty string.
+  String get errorText => error != null ? '\n$error' : '';
 
-  String get errorText {
-    if (error == null) {
-      return '';
-    }
-    return '\n$error';
-  }
+  /// Returns the log message as a string, or an empty string if `null`.
+  String get messageText => message ?? '';
 
-  String get messageText {
-    if (message == null) {
-      return '';
-    }
-    return '$message';
-  }
-
-  String get formattedTime => ISpectifyDateTimeFormatter(
-        time,
-      ).format;
+  /// Returns the formatted timestamp of the log entry.
+  String get formattedTime => ISpectifyDateTimeFormatter(time).format;
 }
