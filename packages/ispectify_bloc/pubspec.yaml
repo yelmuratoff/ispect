@@ -1,6 +1,6 @@
 name: ispectify_bloc
 description: An additional package for BLoC (logging and handling). Based on Talker.
-version: 0.0.1
+version: 1.0.0-dev
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 

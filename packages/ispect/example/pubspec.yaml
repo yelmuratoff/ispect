@@ -31,10 +31,9 @@ dependencies:
   http_interceptor: ^2.0.0
 
   ispect: ^3.0.3
-  ispectify_dio: 0.0.2
-  ispectify_http: 0.0.1
-  ispectify_bloc:
-    path: ../../ispectify_bloc
+  ispectify_dio: ^1.0.0-dev
+  ispectify_http: ^1.0.0-dev
+  ispectify_bloc: ^1.0.0-dev
 
   provider: ^6.1.2
 
