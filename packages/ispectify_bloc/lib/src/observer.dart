@@ -115,7 +115,11 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocError?.call(bloc, error, stackTrace);
-    _iSpectify.error('${bloc.runtimeType}', error, stackTrace);
+    _iSpectify.error(
+      '${bloc.runtimeType}',
+      exception: error,
+      stackTrace: stackTrace,
+    );
   }
 
   @override

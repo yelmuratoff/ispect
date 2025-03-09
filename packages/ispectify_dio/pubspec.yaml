@@ -14,7 +14,7 @@ dependency_overrides:
 dependencies:
   ansicolor: ^2.0.3
   dio: ^5.8.0+1
-  ispectify: ^1.0.1-dev
+  ispectify: ^1.0.2-dev
 
 dev_dependencies:
   lints: ^5.1.1

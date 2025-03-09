@@ -26,7 +26,11 @@ Future<void> main() async {
   try {
     throw Exception('Something went wrong');
   } catch (e, st) {
-    iSpectify.handle(e, st, 'Exception with');
+    iSpectify.handle(
+      exception: e,
+      stackTrace: st,
+      message: 'Exception with',
+    );
   }
 
   iSpectify.logCustom(CustomLog('Something like your own service message'));

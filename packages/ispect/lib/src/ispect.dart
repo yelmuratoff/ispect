@@ -73,7 +73,11 @@ final class ISpect {
             stackTrace.toString(),
             filters,
           )) {
-            logger.handle(error, stackTrace, 'Zoned error caught');
+            logger.handle(
+              exception: error,
+              stackTrace: stackTrace,
+              message: 'Zoned error caught',
+            );
           }
         },
         zoneSpecification: ZoneSpecification(
@@ -111,7 +115,10 @@ final class ISpect {
           details.stack.toString(),
           filters,
         )) {
-          logger.handle(details, details.stack);
+          logger.handle(
+            exception: details,
+            stackTrace: details.stack,
+          );
         }
       });
     };
@@ -119,7 +126,10 @@ final class ISpect {
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
       if (_shouldHandleError(error.toString(), stack.toString(), filters)) {
-        logger.handle(error, stack);
+        logger.handle(
+          exception: error,
+          stackTrace: stack,
+        );
       }
       return true;
     };
@@ -131,7 +141,11 @@ final class ISpect {
         details.stack.toString(),
         filters,
       )) {
-        logger.error('FlutterErrorDetails', details.toString(), details.stack);
+        logger.error(
+          'FlutterErrorDetails',
+          exception: details.toString(),
+          stackTrace: details.stack,
+        );
       }
     };
 

@@ -151,12 +151,13 @@ class ISpectify {
   /// - [exception]: The exception or error to handle.
   /// - [stackTrace]: Optional stack trace associated with the exception.
   /// - [msg]: Optional message to include with the exception.
-  void handle(
-    Object exception, [
+  void handle({
+    required Object exception,
     StackTrace? stackTrace,
-    Object? msg,
-  ]) {
-    final data = _errorHandler.handle(exception, stackTrace, msg?.toString());
+    Object? message,
+  }) {
+    final data =
+        _errorHandler.handle(exception, stackTrace, message?.toString());
     if (data is ISpectifyError) {
       _observer?.onError(data);
       _handleErrorData(data);
@@ -210,10 +211,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void critical(
-    Object? msg, [
+    Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
-  ]) {
+  }) {
     _handleLog(
       message: msg,
       exception: exception,
@@ -230,14 +231,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void debug(
-    Object? msg, [
-    Object? exception,
-    StackTrace? stackTrace,
-  ]) {
+    Object? msg,
+  ) {
     _handleLog(
       message: msg,
-      exception: exception,
-      stackTrace: stackTrace,
     );
   }
 
@@ -249,10 +246,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void error(
-    Object? msg, [
+    Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
-  ]) {
+  }) {
     _handleLog(
       message: msg,
       exception: exception,
@@ -269,14 +266,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void info(
-    Object? msg, [
-    Object? exception,
-    StackTrace? stackTrace,
-  ]) {
+    Object? msg,
+  ) {
     _handleLog(
       message: msg,
-      exception: exception,
-      stackTrace: stackTrace,
       logLevel: LogLevel.info,
     );
   }
@@ -289,14 +282,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void verbose(
-    Object? msg, [
-    Object? exception,
-    StackTrace? stackTrace,
-  ]) {
+    Object? msg,
+  ) {
     _handleLog(
       message: msg,
-      exception: exception,
-      stackTrace: stackTrace,
       logLevel: LogLevel.verbose,
     );
   }
@@ -309,14 +298,10 @@ class ISpectify {
   /// - [exception]: Optional exception associated with the log.
   /// - [stackTrace]: Optional stack trace for the log.
   void warning(
-    Object? msg, [
-    Object? exception,
-    StackTrace? stackTrace,
-  ]) {
+    Object? msg,
+  ) {
     _handleLog(
       message: msg,
-      exception: exception,
-      stackTrace: stackTrace,
       logLevel: LogLevel.warning,
     );
   }
