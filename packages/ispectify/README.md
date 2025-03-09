@@ -13,11 +13,8 @@
 <h2 align="center"> A Handy Toolkit for Mobile App Debugging 🚀 </h2>
 
 <p align="center">
-ISpect is a simple yet versatile library inspired by web inspectors, tailored for mobile application development.
-ISpect is a collection of refined tools from trusted sources, enhanced with custom improvements to simplify development. It’s designed to boost efficiency and adapt to various project needs.
-
-Your feedback is highly valued as it will help shape future updates and ensure the package remains relevant and useful. 😊
-
+This package is a additional package of ISpect for logging.
+See more: https://pub.dev/packages/ispect
 
    <br>
    <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/yelmuratoff/ispect.git">star the repo</a> to support the project! </span>
@@ -34,7 +31,7 @@ Your feedback is highly valued as it will help shape future updates and ensure t
 </p>
 <p align="center">
   <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/popularity/ispect?logo=flutter" alt="Pub popularity"></a>
+  <!-- <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/popularity/ispect?logo=flutter" alt="Pub popularity"></a> -->
   <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points"></a>
 </p>
 
@@ -78,97 +75,6 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
 - ✅ Performance tracker
 - ✅ AI helper
 
-<!----------------------------
---------Showcase images-------
------------------------------->
-
-## 📜 Showcase
-
-<div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/draggable.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/feedback.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_request.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_error.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_response.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/jira_auth.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ai_chat.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/reporter.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/monitoring.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/inspector.png?raw=true" width="200" style="margin: 5px;" />
-</div>
-
-<!----------------------------
---------Getting Started-------
------------------------------->
-
-## Easy to use
-Simple example of use `ISpect`<br>
-You can manage ISpect using `ISpect.read(context)`.
-Put this code in your project at an screen and learn how it works. 😊
-
-
-### Instructions for use:
-
-1. Wrap `runApp` with `ISpect.run` method and pass `ISpectify` instance to it.
-2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
-4. Add `ISpectLocalizations` to your `localizationsDelegates` in `MaterialApp`.
-```dart
-localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect localization delegates
-          ExampleGeneratedLocalization.delegate, // Your localization delegate
-        ]),
-```
-
-Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
-
->[!NOTE]
->
-> - To add `ISpect AI helper`, follow the instructions provided here [ispect_ai](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai).
->
-> You can also check out an example of usage directly in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example).
->
-> - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
->
-> You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
->
-> - To `platform & device` tools follow the instructions provided here [ispect_device](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device).
->
-> You can also check out an example of usage directly in [ispect_device/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device/example).
-
-### For handle routing (GoRouter)
-You can use `ISpectNavigatorObserver`, but in practice it does not always work correctly with the `GoRouter` package. You need add observer in each GoRoute.
-Alternatively, you can use a `listener`:
-
-```dart
-    _router.routerDelegate.addListener(() {
-      final String location =
-          _router.routerDelegate.currentConfiguration.last.matchedLocation;
-      ISpect.route(location);
-    });
-```
-
-<!----------------------------
-------Referenced packages-----
------------------------------->
-
-### Referenced packages:
-A list of great packages I've used in ISpect:
-[path_provider](https://pub.dev/packages/path_provider), 
-[device_info_plus](https://pub.dev/packages/device_info_plus), 
-[share_plus](https://pub.dev/packages/share_plus), 
-[package_info_plus](https://pub.dev/packages/package_info_plus), 
-[gap](https://pub.dev/packages/gap), 
-[auto_size_text](https://pub.dev/packages/auto_size_text), 
-[feedback](https://pub.dev/packages/feedback), 
-[inspector](https://pub.dev/packages/inspector), 
-[performance](https://pub.dev/packages/performance), 
-[cr_json_widget](https://pub.dev/packages/cr_json_widget).
 
 <br>
 <div align="center" >

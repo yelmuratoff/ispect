@@ -193,21 +193,6 @@ class _HowToReachMeWidget extends StatelessWidget {
                   color: context.ispectTheme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
-                children: [
-                  TextSpan(
-                    text: '\n📫 How to reach me: \n',
-                    children: [
-                      TextSpan(
-                        text: 'yelamanyelmuratov@gmail.com',
-                        style:
-                            context.ispectTheme.textTheme.bodyMedium?.copyWith(
-                          color: context.ispectTheme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                    style: context.ispectTheme.textTheme.bodyMedium,
-                  ),
-                ],
               ),
               textAlign: TextAlign.center,
             ),

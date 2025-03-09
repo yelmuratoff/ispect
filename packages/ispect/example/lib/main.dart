@@ -74,7 +74,9 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   final _controller = DraggablePanelController();
-  final _observer = ISpectNavigatorObserver();
+  final _observer = ISpectNavigatorObserver(
+    isLogModals: false,
+  );
 
   static const locale = Locale('uz');
 

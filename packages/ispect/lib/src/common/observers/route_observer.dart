@@ -109,7 +109,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? route,
     Route<dynamic>? previousRoute,
   ) {
-    if (!_shouldLog(route)) return;
+    if (!_shouldLog(route, previousRoute)) return;
 
     final logMessage = StringBuffer()
       ..writeln(
@@ -129,10 +129,50 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     }
   }
 
-  /// Determines if a route should be logged based on its type.
-  bool _shouldLog(Route<dynamic>? route) {
-    if (route is PageRoute) return isLogPages;
-    if (route is ModalRoute) return isLogModals;
+  /// Determines whether a route transition should be logged based on route types and configuration.
+  ///
+  /// This method evaluates the combination of route types in the transition against
+  /// logging configuration flags to determine whether logging should occur.
+  ///
+  /// The logic follows these rules:
+  /// 1. If both routes are PageRoutes, log only if [isLogPages] is true
+  /// 2. If both routes are ModalRoutes (excluding PageRoutes), log only if [isLogModals] is true
+  /// 3. If routes are of mixed types (e.g., one PageRoute and one ModalRoute), do not log
+  /// 4. For any other route type combinations, log only if [isLogOtherTypes] is true
+  ///
+  /// - [route]: The new/current route being navigated to
+  /// - [previousRoute]: The previous route being navigated from
+  ///
+  /// Returns true if the route transition should be logged based on current settings.
+  bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
+    final routeIsPage = route is PageRoute;
+    final prevRouteIsPage = previousRoute is PageRoute;
+
+    // If both routes are PageRoutes
+    if (routeIsPage && prevRouteIsPage) {
+      return isLogPages;
+    }
+
+    // If one route is PageRoute and the other is not, don't log
+    if (routeIsPage != prevRouteIsPage) {
+      return false;
+    }
+
+    // At this point, neither route is a PageRoute
+    final routeIsModal = route is ModalRoute;
+    final prevRouteIsModal = previousRoute is ModalRoute;
+
+    // If both routes are ModalRoutes
+    if (routeIsModal && prevRouteIsModal) {
+      return isLogModals;
+    }
+
+    // If one route is ModalRoute and the other is not, don't log
+    if (routeIsModal != prevRouteIsModal) {
+      return false;
+    }
+
+    // At this point, routes are neither PageRoutes nor ModalRoutes
     return isLogOtherTypes;
   }
 

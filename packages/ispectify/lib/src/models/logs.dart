@@ -6,6 +6,7 @@ class GoodLog extends ISpectifyData {
     String super.message,
   ) : super(
           key: ISpectifyLogType.good.key,
+          title: ISpectifyLogType.good.key,
         );
 }
 

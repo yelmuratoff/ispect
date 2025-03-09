@@ -12,9 +12,6 @@ import 'package:ispectify/ispectify.dart';
 /// - Stream-based log monitoring
 /// - Specialized log types (analytics, routes, providers, etc.)
 ///
-/// The class is designed following SOLID principles, allowing for dependency
-/// injection of its components for better testability and flexibility.
-///
 /// ### Example usage:
 ///
 /// ```dart

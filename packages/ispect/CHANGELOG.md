@@ -1,3 +1,28 @@
+## 4.0.0
+- Added ability to view all logs in detail as `JSON` tree.
+- Viewing of detailed logs of `HTTP` requests has been changed. Now absolutely all logs are displayed as a `JSON` tree. You can use search and filtering for convenience.
+- Changed the log view on the `ISpect` page.
+- Test added a simple Theme Scheme page in the `ISpect` panel.
+- ISpectify upds:
+   - Added documentation to the `ISpectify` class.
+   - Modified the constructor to accept optional components *(logger, observer, options, filter, errorHandler, history)*.
+   - Introduced a configure method to update the configuration of an existing inspector instance.
+   - Updated the internal logic to use the new components and options.
+- Minor upds:
+   - Removed the `BaseBottomSheet` widget.
+   - Implemented `DraggableScrollableSheet` with configurable initial, min, and max child sizes.
+   - Updated the build method to use `DraggableScrollableSheet`.
+   - Adjusted the layout and styling to fit the new bottom sheet structure.
+   - Introduced a ValueNotifier to manage the filter enablement state.
+   - Added a SearchBar for log filtering.
+   - Replaced InkWell with FilterChip for title filtering.
+   - Adjusted the layout and styling to accommodate the new search and filter components.
+   - Added properties to control logging of gestures, pages, modals, and other navigation types.
+   - Modified the didPush, didReplace, didPop, didRemove, and didStartUserGesture methods to log navigation events based on the new properties.
+   - Introduced a validate method to check if a route should be logged based on its type.
+   - Updated the log messages to include more detailed information about the routes and arguments.
+
+
 ## 3.0.3
 - Upgrade version of `draggable_panel` to `1.0.2`.
 
