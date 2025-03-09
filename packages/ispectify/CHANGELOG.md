@@ -1,4 +1,4 @@
-## 4.0.0
+## 4.0.1
 - The same version as the `ispect` package.
 - Logs `good`, `provider`, `analytics`, and `print` moved to the `ispectify`.
 - Added support to `js_interop` and `web` package.

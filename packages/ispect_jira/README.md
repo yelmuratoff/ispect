@@ -32,7 +32,6 @@ An add-on package to use the Jira Atlassian Api to create issue tickets immediat
 </p>
 <p align="center">
   <a href="https://pub.dev/packages/ispect_jira/score"><img src="https://img.shields.io/pub/likes/ispect_jira?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect_jira/score"><img src="https://img.shields.io/pub/popularity/ispect_jira?logo=flutter" alt="Pub popularity"></a>
   <a href="https://pub.dev/packages/ispect_jira/score"><img src="https://img.shields.io/pub/points/ispect_jira?logo=flutter" alt="Pub points"></a>
 </p>
 
@@ -184,8 +183,7 @@ localizationsDelegates: ISpectLocalizations.localizationDelegates([
           ISpectJiraLocalization.delegate,
         ]),
 ```
-5. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-6. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`, `JiraFeedbackBuilder`.
+5. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`, `JiraFeedbackBuilder`.
 ```dart
 child = ISpectBuilder(
             observer: observer,

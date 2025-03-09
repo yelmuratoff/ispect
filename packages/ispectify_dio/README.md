@@ -31,7 +31,6 @@ An additional package for logging and handling Dio.
 </p>
 <p align="center">
   <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/popularity/ispect?logo=flutter" alt="Pub popularity"></a>
   <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points"></a>
 </p>
 
@@ -110,15 +109,14 @@ Put this code in your project at an screen and learn how it works. 😊
 ### Instructions for use:
 
 1. Wrap `runApp` with `ISpect.run` method and pass `ISpectify` instance to it.
-2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
-4. Add `ISpectLocalizations` to your `localizationsDelegates` in `MaterialApp`.
+2. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+3. Add `ISpectLocalizations` to your `localizationsDelegates` in `MaterialApp`.
 ```dart
 localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect localization delegates
           ExampleGeneratedLocalization.delegate, // Your localization delegate
         ]),
 ```
-5. Add `ISpectifyDioLogger` to the `Dio` instance form interceptors in the `onInit` method of `ISpect.run`.
+4. Add `ISpectifyDioLogger` to the `Dio` instance form interceptors in the `onInit` method of `ISpect.run`.
 ```dart
 onInit: (iSpectify) {
       dio.interceptors.add(

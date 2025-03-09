@@ -1,30 +1,44 @@
-## 4.0.0
-- `ISpectScopeWrapper` moved to inside `ISpectBuilder`. Now you can use `ISpectBuilder` for all your needs.
-Please check the example project for better understanding.
-- `ISpect.log()` replaced by -> `ISpect.logger.log()`.
-- Added ability to view all logs in detail as `JSON` tree.
-- Viewing of detailed logs of `HTTP` requests has been changed. Now absolutely all logs are displayed as a `JSON` tree. You can use search and filtering for convenience.
-- Changed the log view on the `ISpect` page.
-- Added `logDescriptions` to the `ISpectTheme` class. This option allows you to add/change/disable descriptions to your logs in info bottom sheet.
-- Test added a simple Theme Scheme page in the `ISpect` panel.
-- ISpectify upds:
-   - Added documentation to the `ISpectify` class.
-   - Modified the constructor to accept optional components *(logger, observer, options, filter, errorHandler, history)*.
-   - Introduced a configure method to update the configuration of an existing inspector instance.
-   - Updated the internal logic to use the new components and options.
-- Minor upds:
-   - Removed the `BaseBottomSheet` widget.
-   - Implemented `DraggableScrollableSheet` with configurable initial, min, and max child sizes.
-   - Updated the build method to use `DraggableScrollableSheet`.
-   - Adjusted the layout and styling to fit the new bottom sheet structure.
-   - Introduced a ValueNotifier to manage the filter enablement state.
-   - Added a SearchBar for log filtering.
-   - Replaced InkWell with FilterChip for title filtering.
-   - Adjusted the layout and styling to accommodate the new search and filter components.
-   - Added properties to control logging of gestures, pages, modals, and other navigation types.
-   - Modified the didPush, didReplace, didPop, didRemove, and didStartUserGesture methods to log navigation events based on the new properties.
-   - Introduced a validate method to check if a route should be logged based on its type.
-   - Updated the log messages to include more detailed information about the routes and arguments.
+# Changelog
+
+## 4.0.1
+
+### Major Changes
+- **`ISpectScopeWrapper` Relocation**: Moved inside `ISpectBuilder`. Now, `ISpectBuilder` serves as a one-stop solution for all your needs. Refer to the example project for a clearer understanding.
+- **`ISpect.log()` Update**: Replaced with `ISpect.logger.log()` for improved consistency and clarity.
+
+### New Features
+- **Language Support**: Added **Chinese (zh_CN)** localization.
+- **JSON Log Viewer**: Introduced detailed log viewing as a `JSON` tree structure.
+- **Enhanced HTTP Logs**: Updated HTTP request logging to display all details in a `JSON` tree format, with added search and filtering capabilities.
+- **Log Descriptions**: Added `logDescriptions` to `ISpectTheme`. This allows you to add, modify, or disable descriptions in the info bottom sheet.
+- **Theme Scheme Screen**: Included a basic `Theme Scheme Screen` in the `ISpect` panel for testing purposes.
+
+### ISpectify Updates
+- **Documentation**: Added comprehensive documentation to the `ISpectify` class.
+- **Constructor Enhancement**: Modified to accept optional components (`logger`, `observer`, `options`, `filter`, `errorHandler`, `history`).
+- **Configuration Method**: Introduced a `configure` method to update the configuration of an existing inspector instance.
+- **Internal Logic**: Updated to leverage the new components and options effectively.
+
+### Minor Updates & Improvements
+- **Bottom Sheet Revamp**:
+  - Removed `BaseBottomSheet` widget.
+  - Implemented `DraggableScrollableSheet` with configurable `initial`, `min`, and `max` child sizes.
+  - Updated the build method to integrate `DraggableScrollableSheet`.
+  - Adjusted layout and styling for the new bottom sheet structure.
+- **Filtering Enhancements**:
+  - Added a `ValueNotifier` to manage filter enablement state.
+  - Introduced a `SearchBar` for log filtering.
+  - Replaced `InkWell` with `FilterChip` for title filtering.
+  - Adjusted layout and styling to support new search and filter components.
+- **Navigation Logging**:
+  - Added properties to control logging of gestures, pages, modals, and other navigation types.
+  - Updated `didPush`, `didReplace`, `didPop`, `didRemove`, and `didStartUserGesture` methods to log navigation events based on these properties.
+  - Introduced a `validate` method to determine if a route should be logged based on its type.
+  - Enhanced log messages with detailed route and argument information.
+
+### Styling & Optimization
+- Improved consistency in terminology and formatting.
+- Streamlined descriptions for clarity and brevity.
 
 
 ## 3.0.3

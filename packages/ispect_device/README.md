@@ -149,8 +149,7 @@ localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect lo
           ISpectDeviceLocalization.delegate, // ISpect Device localization delegate
         ]),
 ```
-5. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-6. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
+5. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
 
 Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 

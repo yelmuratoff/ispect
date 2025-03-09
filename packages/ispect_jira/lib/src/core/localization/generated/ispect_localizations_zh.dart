@@ -113,7 +113,8 @@ class ISpectJiraLocalizationZh extends ISpectJiraLocalization {
   String get fieldIsRequired => '此字段为必填项';
 
   @override
-  String get jiraInstruction => '1. 前往您的Jira站点。\n2. 点击左下角的个人资料头像。\n3. 点击“个人资料”。\n4. 点击“管理您的账户”。\n5. 选择“安全”。\n6. 向下滚动至API令牌管理并点击。\n7. 生成一个令牌，然后复制并粘贴。';
+  String get jiraInstruction =>
+      '1. 前往您的Jira站点。\n2. 点击左下角的个人资料头像。\n3. 点击“个人资料”。\n4. 点击“管理您的账户”。\n5. 选择“安全”。\n6. 向下滚动至API令牌管理并点击。\n7. 生成一个令牌，然后复制并粘贴。';
 
   @override
   String get projectDomain => '项目域名';

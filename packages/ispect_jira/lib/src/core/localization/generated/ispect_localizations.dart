@@ -64,15 +64,18 @@ import 'ispect_localizations_zh.dart';
 /// be consistent with the languages listed in the ISpectJiraLocalization.supportedLocales
 /// property.
 abstract class ISpectJiraLocalization {
-  ISpectJiraLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ISpectJiraLocalization(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectJiraLocalization? of(BuildContext context) {
-    return Localizations.of<ISpectJiraLocalization>(context, ISpectJiraLocalization);
+    return Localizations.of<ISpectJiraLocalization>(
+        context, ISpectJiraLocalization);
   }
 
-  static const LocalizationsDelegate<ISpectJiraLocalization> delegate = _ISpectJiraLocalizationDelegate();
+  static const LocalizationsDelegate<ISpectJiraLocalization> delegate =
+      _ISpectJiraLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,7 +87,8 @@ abstract class ISpectJiraLocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -346,36 +350,40 @@ abstract class ISpectJiraLocalization {
   String get description;
 }
 
-class _ISpectJiraLocalizationDelegate extends LocalizationsDelegate<ISpectJiraLocalization> {
+class _ISpectJiraLocalizationDelegate
+    extends LocalizationsDelegate<ISpectJiraLocalization> {
   const _ISpectJiraLocalizationDelegate();
 
   @override
   Future<ISpectJiraLocalization> load(Locale locale) {
-    return SynchronousFuture<ISpectJiraLocalization>(lookupISpectJiraLocalization(locale));
+    return SynchronousFuture<ISpectJiraLocalization>(
+        lookupISpectJiraLocalization(locale));
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'kk', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'kk', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectJiraLocalizationDelegate old) => false;
 }
 
 ISpectJiraLocalization lookupISpectJiraLocalization(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return ISpectJiraLocalizationEn();
-    case 'kk': return ISpectJiraLocalizationKk();
-    case 'ru': return ISpectJiraLocalizationRu();
-    case 'zh': return ISpectJiraLocalizationZh();
+    case 'en':
+      return ISpectJiraLocalizationEn();
+    case 'kk':
+      return ISpectJiraLocalizationKk();
+    case 'ru':
+      return ISpectJiraLocalizationRu();
+    case 'zh':
+      return ISpectJiraLocalizationZh();
   }
 
   throw FlutterError(
-    'ISpectJiraLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'ISpectJiraLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }
