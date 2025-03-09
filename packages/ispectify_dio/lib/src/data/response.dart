@@ -24,7 +24,7 @@ class DioResponseData {
               (e) => {
                 'location': e.location,
                 'status-code': e.statusCode,
-                'methid': e.method,
+                'method': e.method,
               },
             )
             .toList(),

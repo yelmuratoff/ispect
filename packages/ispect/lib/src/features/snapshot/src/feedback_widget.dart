@@ -56,9 +56,6 @@ class FeedbackWidgetState extends State<FeedbackWidget>
 
   // We use a ValueNotifier instead of just a double and `SetState` because
   // rebuilding the feedback sheet mid-drag cancels the drag.
-  // TODO(caseycrogers): replace `sheetProgress` with a direct reference to
-  //   `DraggableScrollableController` when the latter gets into production.
-  //   See: https://github.com/flutter/flutter/pull/135366.
   final ValueNotifier<double> _sheetProgress = ValueNotifier(0);
 
   late final PainterController _painterController = _create();

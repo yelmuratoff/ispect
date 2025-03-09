@@ -22,7 +22,7 @@ dependencies:
     any
 
     # Logging
-  ispectify: ^1.0.0-dev
+  ispectify: ^1.0.1-dev
 
   # Utils
   path_provider: ^2.1.5

@@ -13,7 +13,7 @@
 <h2 align="center"> A Handy Toolkit for Mobile App Debugging 🚀 </h2>
 
 <p align="center">
-This package is a additional package of ISpect for logging.
+This package is an additional package of ISpect for logging.
 See more: https://pub.dev/packages/ispect
 
    <br>

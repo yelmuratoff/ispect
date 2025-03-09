@@ -12,7 +12,7 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ispectify: ^1.0.0-dev
+  ispectify: ^1.0.1-dev
   bloc: ^9.0.0
   meta: ^1.8.0
 

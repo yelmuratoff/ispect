@@ -1,4 +1,4 @@
-## 1.0.0-dev
+## 1.0.0
 - Logs `good`, `provider`, `analytics`, and `print` moved to the `ispectify`.
 - Added support to `js_interop` and `web` package.
 - Refactor:
