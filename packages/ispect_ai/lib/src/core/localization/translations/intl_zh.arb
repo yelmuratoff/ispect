@@ -1,0 +1,17 @@
+{
+   "@@locale": "zh",
+   "aiChat": "AI 聊天",
+   "aiWelcomeMessage": "你好！我能如何协助你？",
+   "allLogsCopied": "所有日志已复制到剪贴板",
+   "analyticsLogDesc": "发送事件到分析服务的日志",
+   "apiToken": "API 令牌",
+   "copy": "复制",
+   "data": "数据",
+   "statusMessage": "状态",
+   "submitButtonText": "提交",
+   "summary": "概要",
+   "typeMessage": "输入你的请求",
+   "you": "你",
+   "noData": "无数据",
+   "retry": "重试"
+}

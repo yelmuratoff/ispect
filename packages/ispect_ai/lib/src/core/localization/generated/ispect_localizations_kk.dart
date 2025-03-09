@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'ispect_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -16,8 +18,7 @@ class ISpectAILocalizationKk extends ISpectAILocalization {
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
-  String get analyticsLogDesc =>
-      'Аналитика қызметіне оқиғаларды жіберу журналы';
+  String get analyticsLogDesc => 'Аналитика қызметіне оқиғаларды жіберу журналы';
 
   @override
   String get apiToken => 'API токені';

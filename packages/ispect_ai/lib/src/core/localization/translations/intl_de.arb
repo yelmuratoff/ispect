@@ -1,0 +1,17 @@
+{
+   "@@locale": "de",
+   "aiChat": "KI-Chat",
+   "aiWelcomeMessage": "Hallo! Wie kann ich Ihnen helfen?",
+   "allLogsCopied": "Alle Protokolle wurden in die Zwischenablage kopiert",
+   "analyticsLogDesc": "Protokoll der Ereignisübermittlungen an den Analysedienst",
+   "apiToken": "API-Token",
+   "copy": "Kopieren",
+   "data": "Daten",
+   "statusMessage": "Status",
+   "submitButtonText": "Absenden",
+   "summary": "Zusammenfassung",
+   "typeMessage": "Geben Sie Ihre Anfrage ein",
+   "you": "Sie",
+   "noData": "Keine Daten",
+   "retry": "Wiederholen"
+}

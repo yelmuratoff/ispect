@@ -9,19 +9,19 @@ class ISpectJiraLocalizationZh extends ISpectJiraLocalization {
   ISpectJiraLocalizationZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get successfullyAuthorized => '您已成功授权';
+  String get successfullyAuthorized => '你已成功授权';
 
   @override
-  String get pleaseCheckAuthCred => '发生错误。请仔细检查您的授权凭据。';
+  String get pleaseCheckAuthCred => '发生错误。请再次检查你的授权凭据。';
 
   @override
   String get pickedImages => '已选图片';
 
   @override
-  String get pleaseAuthToJira => '请在Jira中授权';
+  String get pleaseAuthToJira => '请在 Jira 上授权';
 
   @override
-  String get pleaseSelectYourProject => '现在，请选择您的项目';
+  String get pleaseSelectYourProject => '现在，请选择你的项目';
 
   @override
   String get addingAttachmentsToIssue => '正在向问题添加附件';
@@ -30,7 +30,7 @@ class ISpectJiraLocalizationZh extends ISpectJiraLocalization {
   String get addingStatusToIssue => '正在向问题添加状态';
 
   @override
-  String get apiToken => 'API令牌';
+  String get apiToken => 'API 令牌';
 
   @override
   String get attachmentsAdded => '附件添加成功';
@@ -48,13 +48,13 @@ class ISpectJiraLocalizationZh extends ISpectJiraLocalization {
   String get createIssue => '创建问题';
 
   @override
-  String get createJiraIssue => '创建Jira问题';
+  String get createJiraIssue => '创建 Jira 问题';
 
   @override
   String get creatingIssue => '正在创建问题';
 
   @override
-  String get finished => '已完成';
+  String get finished => '完成';
 
   @override
   String get fix => '报告';
@@ -113,8 +113,7 @@ class ISpectJiraLocalizationZh extends ISpectJiraLocalization {
   String get fieldIsRequired => '此字段为必填项';
 
   @override
-  String get jiraInstruction =>
-      '1. 前往您的Jira站点。\n2. 点击左下角的个人资料头像。\n3. 点击“个人资料”。\n4. 点击“管理您的账户”。\n5. 选择“安全”。\n6. 向下滚动至API令牌管理并点击。\n7. 生成一个令牌，然后复制并粘贴。';
+  String get jiraInstruction => '1. 前往你的 Jira 网站。\n2. 点击左下角的个人头像。\n3. 点击“个人资料”。\n4. 点击“管理你的账户”。\n5. 选择“安全性”。\n6. 向下滚动到 API 令牌管理并点击。\n7. 生成一个令牌，然后复制并粘贴它。';
 
   @override
   String get projectDomain => '项目域名';

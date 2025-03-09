@@ -1,0 +1,7 @@
+{
+   "@@locale": "ko",
+   "cacheSize": "캐시 크기: {size}",
+   "clearCache": "캐시 지우기",
+   "appData": "앱 데이터",
+   "totalFilesCount": "총 파일 수: {count}"
+}

@@ -1,0 +1,17 @@
+{
+   "@@locale": "hi",
+   "aiChat": "AI चैट",
+   "aiWelcomeMessage": "हाय! मैं आपकी कैसे सहायता कर सकता हूँ?",
+   "allLogsCopied": "सभी लॉग क्लिपबोर्ड में कॉपी कर लिए गए हैं",
+   "analyticsLogDesc": "विश्लेषण सेवा को ईवेंट जमा करने का लॉग",
+   "apiToken": "API टोकन",
+   "copy": "कॉपी करें",
+   "data": "डेटा",
+   "statusMessage": "स्थिति",
+   "submitButtonText": "जमा करें",
+   "summary": "सारांश",
+   "typeMessage": "अपना अनुरोध दर्ज करें",
+   "you": "आप",
+   "noData": "कोई डेटा नहीं",
+   "retry": "पुनः प्रयास करें"
+}

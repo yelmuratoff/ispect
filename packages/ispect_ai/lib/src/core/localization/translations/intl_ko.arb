@@ -1,0 +1,17 @@
+{
+   "@@locale": "ko",
+   "aiChat": "AI 채팅",
+   "aiWelcomeMessage": "안녕하세요! 어떻게 도와드릴까요?",
+   "allLogsCopied": "모든 로그가 클립보드에 복사되었습니다",
+   "analyticsLogDesc": "분석 서비스로 이벤트 제출 로그",
+   "apiToken": "API 토큰",
+   "copy": "복사",
+   "data": "데이터",
+   "statusMessage": "상태",
+   "submitButtonText": "제출",
+   "summary": "요약",
+   "typeMessage": "요청을 입력하세요",
+   "you": "당신",
+   "noData": "데이터 없음",
+   "retry": "재시도"
+}

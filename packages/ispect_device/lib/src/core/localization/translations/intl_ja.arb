@@ -1,0 +1,7 @@
+{
+   "@@locale": "ja",
+   "cacheSize": "キャッシュサイズ: {size}",
+   "clearCache": "キャッシュをクリア",
+   "appData": "アプリデータ",
+   "totalFilesCount": "総ファイル数: {count}"
+}

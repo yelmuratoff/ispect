@@ -12,8 +12,7 @@ class ISpectJiraLocalizationKk extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'Сіз сәтті авторизациядан өттіңіз';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'Қате орын алды. Авторизация деректерін қайта тексеріңіз.';
+  String get pleaseCheckAuthCred => 'Қате орын алды. Авторизация деректерін қайта тексеріңіз.';
 
   @override
   String get pickedImages => 'Таңдалған суреттер';
@@ -114,8 +113,7 @@ class ISpectJiraLocalizationKk extends ISpectJiraLocalization {
   String get fieldIsRequired => 'Бұл жолды толтыру міндетті';
 
   @override
-  String get jiraInstruction =>
-      '1. Jira сайтына кіріңіз.\n2. Сол жақ төменгі бұрыштағы профиль аватарыңызға басыңыз.\n3. Профильге басыңыз.\n4. Есептік жазбаны басқаруға басыңыз.\n5. Қауіпсіздікті таңдаңыз.\n6. API токендерін жасау және басқару бөліміне төмен қарай сырғытып, оны таңдаңыз.\n7. Токен жасап, оны көшіріп, енгізіңіз.';
+  String get jiraInstruction => '1. Jira сайтына кіріңіз.\n2. Сол жақ төменгі бұрыштағы профиль аватарыңызға басыңыз.\n3. Профильге басыңыз.\n4. Есептік жазбаны басқаруға басыңыз.\n5. Қауіпсіздікті таңдаңыз.\n6. API токендерін жасау және басқару бөліміне төмен қарай сырғытып, оны таңдаңыз.\n7. Токен жасап, оны көшіріп, енгізіңіз.';
 
   @override
   String get projectDomain => 'Жоба домені';

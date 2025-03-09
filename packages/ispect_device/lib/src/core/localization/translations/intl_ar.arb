@@ -1,0 +1,7 @@
+{
+   "@@locale": "ar",
+   "cacheSize": "حجم الذاكرة المؤقتة: {size}",
+   "clearCache": "مسح الذاكرة المؤقتة",
+   "appData": "بيانات التطبيق",
+   "totalFilesCount": "إجمالي عدد الملفات: {count}"
+}

@@ -1,0 +1,7 @@
+{
+   "@@locale": "hi",
+   "cacheSize": "कैश आकार: {size}",
+   "clearCache": "कैश साफ करें",
+   "appData": "ऐप डेटा",
+   "totalFilesCount": "कुल फाइलों की संख्या: {count}"
+}

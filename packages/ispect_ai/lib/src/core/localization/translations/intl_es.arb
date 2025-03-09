@@ -1,0 +1,17 @@
+{
+   "@@locale": "es",
+   "aiChat": "Chat de IA",
+   "aiWelcomeMessage": "¡Hola! ¿Cómo puedo asistirte?",
+   "allLogsCopied": "Todos los registros han sido copiados al portapapeles",
+   "analyticsLogDesc": "Registro de envíos de eventos al servicio de análisis",
+   "apiToken": "Token de API",
+   "copy": "Copiar",
+   "data": "Datos",
+   "statusMessage": "Estado",
+   "submitButtonText": "Enviar",
+   "summary": "Resumen",
+   "typeMessage": "Ingresa tu solicitud",
+   "you": "Tú",
+   "noData": "Sin datos",
+   "retry": "Reintentar"
+}
