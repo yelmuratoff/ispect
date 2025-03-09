@@ -12,7 +12,8 @@ class ISpectJiraLocalizationDe extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'Sie haben sich erfolgreich autorisiert';
 
   @override
-  String get pleaseCheckAuthCred => 'Ein Fehler ist aufgetreten. Bitte überprüfen Sie Ihre Autorisierungsdaten erneut.';
+  String get pleaseCheckAuthCred =>
+      'Ein Fehler ist aufgetreten. Bitte überprüfen Sie Ihre Autorisierungsdaten erneut.';
 
   @override
   String get pickedImages => 'Ausgewählte Bilder';
@@ -21,7 +22,8 @@ class ISpectJiraLocalizationDe extends ISpectJiraLocalization {
   String get pleaseAuthToJira => 'Bitte autorisieren Sie sich bei Jira';
 
   @override
-  String get pleaseSelectYourProject => 'Bitte wählen Sie jetzt Ihr Projekt aus';
+  String get pleaseSelectYourProject =>
+      'Bitte wählen Sie jetzt Ihr Projekt aus';
 
   @override
   String get addingAttachmentsToIssue => 'Hinzufügen von Anhängen zum Problem';
@@ -113,7 +115,8 @@ class ISpectJiraLocalizationDe extends ISpectJiraLocalization {
   String get fieldIsRequired => 'Dieses Feld ist erforderlich';
 
   @override
-  String get jiraInstruction => '1. Gehen Sie auf Ihre Jira-Website.\n2. Klicken Sie auf Ihr Profil-Avatar in der unteren linken Ecke.\n3. Klicken Sie auf Profil.\n4. Klicken Sie auf Ihr Konto verwalten.\n5. Wählen Sie Sicherheit.\n6. Scrollen Sie nach unten zu API-Token-Verwaltung und klicken Sie darauf.\n7. Generieren Sie ein Token, dann kopieren und fügen Sie es ein.';
+  String get jiraInstruction =>
+      '1. Gehen Sie auf Ihre Jira-Website.\n2. Klicken Sie auf Ihr Profil-Avatar in der unteren linken Ecke.\n3. Klicken Sie auf Profil.\n4. Klicken Sie auf Ihr Konto verwalten.\n5. Wählen Sie Sicherheit.\n6. Scrollen Sie nach unten zu API-Token-Verwaltung und klicken Sie darauf.\n7. Generieren Sie ein Token, dann kopieren und fügen Sie es ein.';
 
   @override
   String get projectDomain => 'Projektdomäne';

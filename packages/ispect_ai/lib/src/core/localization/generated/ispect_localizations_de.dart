@@ -15,10 +15,12 @@ class ISpectAILocalizationDe extends ISpectAILocalization {
   String get aiWelcomeMessage => 'Hallo! Wie kann ich Ihnen helfen?';
 
   @override
-  String get allLogsCopied => 'Alle Protokolle wurden in die Zwischenablage kopiert';
+  String get allLogsCopied =>
+      'Alle Protokolle wurden in die Zwischenablage kopiert';
 
   @override
-  String get analyticsLogDesc => 'Protokoll der Ereignisübermittlungen an den Analysedienst';
+  String get analyticsLogDesc =>
+      'Protokoll der Ereignisübermittlungen an den Analysedienst';
 
   @override
   String get apiToken => 'API-Token';

@@ -72,15 +72,18 @@ import 'ispect_localizations_zh.dart';
 /// be consistent with the languages listed in the ISpectAILocalization.supportedLocales
 /// property.
 abstract class ISpectAILocalization {
-  ISpectAILocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ISpectAILocalization(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectAILocalization? of(BuildContext context) {
-    return Localizations.of<ISpectAILocalization>(context, ISpectAILocalization);
+    return Localizations.of<ISpectAILocalization>(
+        context, ISpectAILocalization);
   }
 
-  static const LocalizationsDelegate<ISpectAILocalization> delegate = _ISpectAILocalizationDelegate();
+  static const LocalizationsDelegate<ISpectAILocalization> delegate =
+      _ISpectAILocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -92,7 +95,8 @@ abstract class ISpectAILocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -200,44 +204,68 @@ abstract class ISpectAILocalization {
   String get retry;
 }
 
-class _ISpectAILocalizationDelegate extends LocalizationsDelegate<ISpectAILocalization> {
+class _ISpectAILocalizationDelegate
+    extends LocalizationsDelegate<ISpectAILocalization> {
   const _ISpectAILocalizationDelegate();
 
   @override
   Future<ISpectAILocalization> load(Locale locale) {
-    return SynchronousFuture<ISpectAILocalization>(lookupISpectAILocalization(locale));
+    return SynchronousFuture<ISpectAILocalization>(
+        lookupISpectAILocalization(locale));
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'de', 'en', 'es', 'fr', 'hi', 'ja', 'kk', 'ko', 'pt', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+        'ar',
+        'de',
+        'en',
+        'es',
+        'fr',
+        'hi',
+        'ja',
+        'kk',
+        'ko',
+        'pt',
+        'ru',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectAILocalizationDelegate old) => false;
 }
 
 ISpectAILocalization lookupISpectAILocalization(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return ISpectAILocalizationAr();
-    case 'de': return ISpectAILocalizationDe();
-    case 'en': return ISpectAILocalizationEn();
-    case 'es': return ISpectAILocalizationEs();
-    case 'fr': return ISpectAILocalizationFr();
-    case 'hi': return ISpectAILocalizationHi();
-    case 'ja': return ISpectAILocalizationJa();
-    case 'kk': return ISpectAILocalizationKk();
-    case 'ko': return ISpectAILocalizationKo();
-    case 'pt': return ISpectAILocalizationPt();
-    case 'ru': return ISpectAILocalizationRu();
-    case 'zh': return ISpectAILocalizationZh();
+    case 'ar':
+      return ISpectAILocalizationAr();
+    case 'de':
+      return ISpectAILocalizationDe();
+    case 'en':
+      return ISpectAILocalizationEn();
+    case 'es':
+      return ISpectAILocalizationEs();
+    case 'fr':
+      return ISpectAILocalizationFr();
+    case 'hi':
+      return ISpectAILocalizationHi();
+    case 'ja':
+      return ISpectAILocalizationJa();
+    case 'kk':
+      return ISpectAILocalizationKk();
+    case 'ko':
+      return ISpectAILocalizationKo();
+    case 'pt':
+      return ISpectAILocalizationPt();
+    case 'ru':
+      return ISpectAILocalizationRu();
+    case 'zh':
+      return ISpectAILocalizationZh();
   }
 
   throw FlutterError(
-    'ISpectAILocalization.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'ISpectAILocalization.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

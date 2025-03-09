@@ -12,7 +12,8 @@ class ISpectJiraLocalizationAr extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'لقد تم تفويضك بنجاح';
 
   @override
-  String get pleaseCheckAuthCred => 'حدث خطأ. يرجى التحقق مرة أخرى من بيانات التفويض الخاصة بك.';
+  String get pleaseCheckAuthCred =>
+      'حدث خطأ. يرجى التحقق مرة أخرى من بيانات التفويض الخاصة بك.';
 
   @override
   String get pickedImages => 'الصور المختارة';
@@ -113,7 +114,8 @@ class ISpectJiraLocalizationAr extends ISpectJiraLocalization {
   String get fieldIsRequired => 'هذا الحقل مطلوب';
 
   @override
-  String get jiraInstruction => '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
+  String get jiraInstruction =>
+      '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
 
   @override
   String get projectDomain => 'نطاق المشروع';

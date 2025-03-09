@@ -113,7 +113,8 @@ class ISpectJiraLocalizationJa extends ISpectJiraLocalization {
   String get fieldIsRequired => 'このフィールドは必須です';
 
   @override
-  String get jiraInstruction => '1. Jiraサイトにアクセスしてください。\n2. 左下のプロフィールアバターをクリックしてください。\n3. プロフィールをクリックしてください。\n4. アカウントの管理をクリックしてください。\n5. セキュリティを選択してください。\n6. APIトークン管理までスクロールしてクリックしてください。\n7. トークンを生成し、コピーして貼り付けてください。';
+  String get jiraInstruction =>
+      '1. Jiraサイトにアクセスしてください。\n2. 左下のプロフィールアバターをクリックしてください。\n3. プロフィールをクリックしてください。\n4. アカウントの管理をクリックしてください。\n5. セキュリティを選択してください。\n6. APIトークン管理までスクロールしてクリックしてください。\n7. トークンを生成し、コピーして貼り付けてください。';
 
   @override
   String get projectDomain => 'プロジェクトドメイン';

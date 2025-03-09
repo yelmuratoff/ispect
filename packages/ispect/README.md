@@ -14,7 +14,6 @@
 
 <p align="center">
 ISpect is a simple yet versatile library inspired by web inspectors, tailored for mobile application development.
-ISpect is a collection of refined tools from trusted sources, enhanced with custom improvements to simplify development. It’s designed to boost efficiency and adapt to various project needs.
 
 Your feedback is highly valued as it will help shape future updates and ensure the package remains relevant and useful. 😊
 

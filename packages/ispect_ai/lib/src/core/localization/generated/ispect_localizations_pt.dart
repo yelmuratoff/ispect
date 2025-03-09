@@ -15,10 +15,12 @@ class ISpectAILocalizationPt extends ISpectAILocalization {
   String get aiWelcomeMessage => 'Olá! Como posso ajudá-lo?';
 
   @override
-  String get allLogsCopied => 'Todos os logs foram copiados para a área de transferência';
+  String get allLogsCopied =>
+      'Todos os logs foram copiados para a área de transferência';
 
   @override
-  String get analyticsLogDesc => 'Log de submissões de eventos ao serviço de análise';
+  String get analyticsLogDesc =>
+      'Log de submissões de eventos ao serviço de análise';
 
   @override
   String get apiToken => 'Token de API';

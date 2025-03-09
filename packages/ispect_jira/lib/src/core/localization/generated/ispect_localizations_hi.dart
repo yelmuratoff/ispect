@@ -12,7 +12,8 @@ class ISpectJiraLocalizationHi extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'आपने सफलतापूर्वक प्रमाणीकरण किया है';
 
   @override
-  String get pleaseCheckAuthCred => 'एक त्रुटि हुई। कृपया अपने प्रमाणीकरण क्रेडेंशियल्स को दोबारा जांचें।';
+  String get pleaseCheckAuthCred =>
+      'एक त्रुटि हुई। कृपया अपने प्रमाणीकरण क्रेडेंशियल्स को दोबारा जांचें।';
 
   @override
   String get pickedImages => 'चयनित छवियाँ';
@@ -113,7 +114,8 @@ class ISpectJiraLocalizationHi extends ISpectJiraLocalization {
   String get fieldIsRequired => 'यह फ़ील्ड आवश्यक है';
 
   @override
-  String get jiraInstruction => '1. अपनी Jira साइट पर जाएँ।\n2. निचले बाएँ कोने में अपने प्रोफाइल अवतार पर क्लिक करें।\n3. प्रोफाइल पर क्लिक करें।\n4. अपने खाते का प्रबंधन करें पर क्लिक करें।\n5. सुरक्षा चुनें।\n6. API टोकन प्रबंधन तक स्क्रॉल करें और उस पर क्लिक करें।\n7. एक टोकन उत्पन्न करें, फिर उसे कॉपी और पेस्ट करें।';
+  String get jiraInstruction =>
+      '1. अपनी Jira साइट पर जाएँ।\n2. निचले बाएँ कोने में अपने प्रोफाइल अवतार पर क्लिक करें।\n3. प्रोफाइल पर क्लिक करें।\n4. अपने खाते का प्रबंधन करें पर क्लिक करें।\n5. सुरक्षा चुनें।\n6. API टोकन प्रबंधन तक स्क्रॉल करें और उस पर क्लिक करें।\n7. एक टोकन उत्पन्न करें, फिर उसे कॉपी और पेस्ट करें।';
 
   @override
   String get projectDomain => 'प्रोजेक्ट डोमेन';

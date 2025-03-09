@@ -1,3 +1,6 @@
+## 4.0.3
+- Added localizations for: `es`, `fr`, `de`, `pt`, `ar`, `ko`, `ja`, `hi`.
+
 ## 4.0.1
 - The same version as the `ispect` package.
 - Logs `good`, `provider`, `analytics`, and `print` moved to the `ispectify`.

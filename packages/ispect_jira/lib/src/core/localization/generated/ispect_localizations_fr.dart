@@ -12,7 +12,8 @@ class ISpectJiraLocalizationFr extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'Vous avez été autorisé avec succès';
 
   @override
-  String get pleaseCheckAuthCred => 'Une erreur s\'est produite. Veuillez revérifier vos identifiants d\'autorisation.';
+  String get pleaseCheckAuthCred =>
+      'Une erreur s\'est produite. Veuillez revérifier vos identifiants d\'autorisation.';
 
   @override
   String get pickedImages => 'Images sélectionnées';
@@ -21,7 +22,8 @@ class ISpectJiraLocalizationFr extends ISpectJiraLocalization {
   String get pleaseAuthToJira => 'Veuillez vous authentifier sur Jira';
 
   @override
-  String get pleaseSelectYourProject => 'Maintenant, veuillez sélectionner votre projet';
+  String get pleaseSelectYourProject =>
+      'Maintenant, veuillez sélectionner votre projet';
 
   @override
   String get addingAttachmentsToIssue => 'Ajout de pièces jointes au problème';
@@ -113,7 +115,8 @@ class ISpectJiraLocalizationFr extends ISpectJiraLocalization {
   String get fieldIsRequired => 'Ce champ est requis';
 
   @override
-  String get jiraInstruction => '1. Rendez-vous sur votre site Jira.\n2. Cliquez sur votre avatar de profil dans le coin inférieur gauche.\n3. Cliquez sur Profil.\n4. Cliquez sur Gérer votre compte.\n5. Sélectionnez Sécurité.\n6. Faites défiler jusqu\'à la gestion des jetons API et cliquez dessus.\n7. Générez un jeton, puis copiez-le et collez-le.';
+  String get jiraInstruction =>
+      '1. Rendez-vous sur votre site Jira.\n2. Cliquez sur votre avatar de profil dans le coin inférieur gauche.\n3. Cliquez sur Profil.\n4. Cliquez sur Gérer votre compte.\n5. Sélectionnez Sécurité.\n6. Faites défiler jusqu\'à la gestion des jetons API et cliquez dessus.\n7. Générez un jeton, puis copiez-le et collez-le.';
 
   @override
   String get projectDomain => 'Domaine du projet';

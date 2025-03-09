@@ -15,10 +15,12 @@ class ISpectAILocalizationFr extends ISpectAILocalization {
   String get aiWelcomeMessage => 'Bonjour ! Comment puis-je vous aider ?';
 
   @override
-  String get allLogsCopied => 'Tous les journaux ont été copiés dans le presse-papiers';
+  String get allLogsCopied =>
+      'Tous les journaux ont été copiés dans le presse-papiers';
 
   @override
-  String get analyticsLogDesc => 'Journal des soumissions d\'événements au service d\'analyse';
+  String get analyticsLogDesc =>
+      'Journal des soumissions d\'événements au service d\'analyse';
 
   @override
   String get apiToken => 'Jeton API';

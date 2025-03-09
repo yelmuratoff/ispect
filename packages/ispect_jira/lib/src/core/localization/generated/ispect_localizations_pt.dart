@@ -12,7 +12,8 @@ class ISpectJiraLocalizationPt extends ISpectJiraLocalization {
   String get successfullyAuthorized => 'Você foi autorizado com sucesso';
 
   @override
-  String get pleaseCheckAuthCred => 'Ocorreu um erro. Por favor, verifique novamente suas credenciais de autorização.';
+  String get pleaseCheckAuthCred =>
+      'Ocorreu um erro. Por favor, verifique novamente suas credenciais de autorização.';
 
   @override
   String get pickedImages => 'Imagens selecionadas';
@@ -21,7 +22,8 @@ class ISpectJiraLocalizationPt extends ISpectJiraLocalization {
   String get pleaseAuthToJira => 'Por favor, autorize no Jira';
 
   @override
-  String get pleaseSelectYourProject => 'Agora, por favor, selecione seu projeto';
+  String get pleaseSelectYourProject =>
+      'Agora, por favor, selecione seu projeto';
 
   @override
   String get addingAttachmentsToIssue => 'Adicionando anexos ao problema';
@@ -113,7 +115,8 @@ class ISpectJiraLocalizationPt extends ISpectJiraLocalization {
   String get fieldIsRequired => 'Este campo é obrigatório';
 
   @override
-  String get jiraInstruction => '1. Acesse o site do Jira.\n2. Clique no seu avatar de perfil no canto inferior esquerdo.\n3. Clique em Perfil.\n4. Clique em Gerenciar sua conta.\n5. Selecione Segurança.\n6. Role para baixo até a gestão de tokens de API e clique nisso.\n7. Gere um token, depois copie e cole-o.';
+  String get jiraInstruction =>
+      '1. Acesse o site do Jira.\n2. Clique no seu avatar de perfil no canto inferior esquerdo.\n3. Clique em Perfil.\n4. Clique em Gerenciar sua conta.\n5. Selecione Segurança.\n6. Role para baixo até a gestão de tokens de API e clique nisso.\n7. Gere um token, depois copie e cole-o.';
 
   @override
   String get projectDomain => 'Domínio do projeto';
