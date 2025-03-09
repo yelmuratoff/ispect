@@ -4,6 +4,13 @@ version: 4.0.1
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
+topics:
+  - inspector
+  - ispect
+  - debug
+  - toolkit
+  - debug-toolkit
+
 environment:
   sdk: ">=3.6.0 <4.0.0"
 
