@@ -55,7 +55,7 @@ class ISpectTheme {
       context.isDarkMode ? darkDividerColor : lightDividerColor;
 
   Color getTypeColor(BuildContext context, {required String? key}) {
-    if (key == null) return Colors.transparent;
+    if (key == null) return Colors.grey;
     return colors(context)[key] ?? Colors.grey;
   }
 
