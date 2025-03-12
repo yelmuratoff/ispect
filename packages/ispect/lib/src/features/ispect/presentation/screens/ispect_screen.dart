@@ -15,7 +15,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/settings/setting
 class ISpectScreen extends StatefulWidget {
   const ISpectScreen({
     required this.options,
-    required this.appBarTitle,
+    this.appBarTitle,
     super.key,
     this.itemsBuilder,
   });

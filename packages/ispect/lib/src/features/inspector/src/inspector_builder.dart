@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -10,7 +11,7 @@ import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 class ISpectBuilder extends StatefulWidget {
   const ISpectBuilder({
     required this.child,
-    required this.isISpectEnabled,
+    this.isISpectEnabled = kDebugMode,
     this.options,
     this.theme,
     this.initialPosition,

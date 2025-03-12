@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -162,10 +164,19 @@ class ISpectTheme {
   /// - Merges default descriptions from `ISpectConstants`.
   /// - Filters out descriptions marked as disabled.
   List<LogDescription> descriptions(BuildContext context) {
-    final defaultDescriptions = ISpectConstants.defaultLogDescriptions(context);
-    return [
-      ...defaultDescriptions,
-      ...logDescriptions.where((desc) => !desc.isDisabled),
-    ];
+    final descMap = <String, LogDescription>{};
+
+    // Add default descriptions
+    for (final desc in ISpectConstants.defaultLogDescriptions(context)) {
+      descMap[desc.key] = desc;
+    }
+
+    // Overwrite with custom descriptions
+    for (final desc in logDescriptions) {
+      descMap[desc.key] = desc;
+    }
+
+    // Return only enabled descriptions
+    return descMap.values.where((desc) => !desc.isDisabled).toList();
   }
 }

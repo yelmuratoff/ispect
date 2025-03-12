@@ -155,21 +155,43 @@ class _AppState extends State<App> {
               ),
             ],
           ),
-          isISpectEnabled: true,
           theme: ISpectTheme(
             pageTitle: 'Custom Name',
             logDescriptions: [
               LogDescription(
-                key: 'error',
-                description: 'Some error log description',
+                key: 'bloc-event',
+                isDisabled: true,
               ),
               LogDescription(
-                key: 'info',
-                description: 'Blah blah blah',
+                key: 'bloc-transition',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'bloc-close',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'bloc-create',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'bloc-state',
+                isDisabled: true,
               ),
               LogDescription(
                 key: 'riverpod-add',
-                description: 'Riverpod add',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-update',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-dispose',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-fail',
                 isDisabled: true,
               ),
             ],

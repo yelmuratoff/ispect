@@ -7,11 +7,11 @@ import 'package:meta/meta.dart';
 @immutable
 final class LogDescription {
   final String key;
-  final String description;
+  final String? description;
   final bool isDisabled;
   const LogDescription({
     required this.key,
-    required this.description,
+    this.description,
     this.isDisabled = false,
   });
 
