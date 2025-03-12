@@ -1,6 +1,6 @@
 name: ispect_ai
 description: "An additional package for ISpect to interact with logs using Google Gemini AI"
-version: 4.0.3
+version: 4.0.4
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -23,7 +23,7 @@ dependencies:
   flutter_bloc: ^9.1.0
   google_generative_ai: ^0.4.6
   path_provider: ^2.1.5
-  ispect: ^4.0.3
+  ispect: ^4.0.4
   meta: ^1.15.0
   flutter_markdown: ^0.7.6
   share_plus: ^10.1.4

@@ -1,3 +1,6 @@
+## 4.0.4
+- Fixed the log description filtering method.
+
 ## 4.0.3
 - Added localizations for: `es`, `fr`, `de`, `pt`, `ar`, `ko`, `ja`, `hi`.
 
