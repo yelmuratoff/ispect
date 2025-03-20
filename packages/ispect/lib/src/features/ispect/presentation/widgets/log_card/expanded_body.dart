@@ -26,8 +26,7 @@ class _ExpandedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        // margin: _stackTrace != null ? const EdgeInsets.only(top: 8) : null,
+        width: double.maxFinite,
         padding:
             _stackTrace != null ? const EdgeInsets.all(6) : EdgeInsets.zero,
         decoration: _stackTrace != null
@@ -41,7 +40,10 @@ class _ExpandedBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_expanded && _message != null && !_isHTTP)
+            if (_expanded &&
+                _message != null &&
+                !_isHTTP &&
+                _errorMessage == null)
               SelectableText(
                 _message,
                 style: TextStyle(

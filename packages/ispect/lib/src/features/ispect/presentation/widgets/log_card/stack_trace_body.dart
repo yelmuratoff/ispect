@@ -13,6 +13,7 @@ class _StrackTraceBody extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         margin: const EdgeInsets.only(top: 8),
         padding: const EdgeInsets.all(6),
+        width: double.maxFinite,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           border: Border.fromBorderSide(

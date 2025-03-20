@@ -61,7 +61,13 @@ class ISpectifyData {
   DateTime get time => _time;
 
   /// Returns the full message, including the stack trace if available.
-  String get textMessage => '$message$stackTraceText';
+  String get textMessage {
+    final errMsg = (error != null)
+        ? '$error'.truncated
+        : ((exception != null) ? '$exception' : ''.truncated);
+
+    return '$messageText$errMsg$stackTraceText';
+  }
 
   /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
@@ -73,13 +79,14 @@ class ISpectifyData {
           : '';
 
   /// Returns the exception as a string if available, otherwise an empty string.
-  String get exceptionText => exception != null ? '\n$exception' : '';
+  String? get exceptionText =>
+      exception != null ? '\n$exception'.truncated : '';
 
   /// Returns the error as a string if available, otherwise an empty string.
-  String get errorText => error != null ? '\n$error' : '';
+  String? get errorText => error != null ? '\n$error'.truncated : '';
 
   /// Returns the log message as a string, or an empty string if `null`.
-  String get messageText => message ?? '';
+  String? get messageText => message.truncated;
 
   /// Returns the formatted timestamp of the log entry.
   String get formattedTime => ISpectifyDateTimeFormatter(time).format;

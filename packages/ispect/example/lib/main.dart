@@ -368,11 +368,19 @@ class _HomeState extends State<_Home> {
               ),
               FilledButton(
                 onPressed: () {
+                  throw Exception('Test large exception ' * 1000);
+                },
+                child: const Text('Throw Large exception'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  debugPrint('Print message' * 10000);
+                },
+                child: const Text('Pring Large text'),
+              ),
+              FilledButton(
+                onPressed: () {
                   debugPrint('Send print message');
-                  //  final logger = CustomLogger('MyApp');
-                  //  logger.info('Application started');
-                  //  logger.warning('Low disk space');
-                  //  logger.error('Unhandled exception occurred');
                 },
                 child: const Text('Send print message'),
               ),

@@ -14,4 +14,5 @@ export 'src/options.dart';
 export 'src/utils/console_utils.dart';
 export 'src/utils/error_handler.dart';
 export 'src/utils/pretty_json.dart';
+export 'src/utils/string_extension.dart';
 export 'src/utils/time_formatter.dart';

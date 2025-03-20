@@ -1,6 +1,5 @@
 #!/bin/bash
-# chmod +x bash/update_changelog.sh
-# ./bash/update_changelog.sh
+# chmod +x bash/update_changelog.sh && ./bash/update_changelog.sh
 
 
 # Define the path to the main CHANGELOG.md

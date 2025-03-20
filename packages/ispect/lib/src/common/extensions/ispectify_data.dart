@@ -68,7 +68,7 @@ StackTrace: $stackTraceText]''';
             message == 'FlutterErrorDetails') &&
         stackTrace != null &&
         stackTrace.toString().isNotEmpty) {
-      return 'StackTrace:\n$stackTrace';
+      return 'StackTrace:\n$stackTrace'.truncated;
     }
     return null;
   }
@@ -83,7 +83,9 @@ StackTrace: $stackTraceText]''';
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', ' ')}';
     }
 
-    return isHttpLog ? textMessage : txt;
+    final text = isHttpLog ? textMessage : txt;
+
+    return text.truncated;
   }
 
   /// Checks if this log entry is related to HTTP requests.
@@ -109,10 +111,10 @@ StackTrace: $stackTraceText]''';
         'time': time.toIso8601String(),
         if (title != null) 'title': title,
         if (logLevel != null) 'log-level': logLevel.toString(),
-        if (message != null) 'message': message,
-        if (exception != null) 'exception': exception.toString(),
-        if (error != null) 'error': error.toString(),
-        if (stackTrace != null) 'stack-trace': stackTrace.toString(),
+        if (message != null) 'message': message.truncated,
+        if (exception != null) 'exception': exception.toString().truncated,
+        if (error != null) 'error': error.toString().truncated,
+        if (stackTrace != null) 'stack-trace': stackTrace.toString().truncated,
         if (additionalData != null) 'additional-data': additionalData,
       };
 }
