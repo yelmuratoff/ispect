@@ -2,6 +2,23 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+/// Retrieves the color of a pixel from a [ByteData] object at the specified
+/// coordinates ([x], [y]) within an image of the given [width].
+///
+/// The [ByteData] is expected to represent an image in a format where each
+/// pixel is stored as 4 consecutive bytes (RGBA format).
+///
+/// If the calculated index for the pixel exceeds the length of the [ByteData],
+/// the method returns [Colors.transparent].
+///
+/// - Parameters:
+///   - byteData: The [ByteData] object containing the image data.
+///   - width: The width of the image in pixels.
+///   - x: The x-coordinate of the pixel to retrieve.
+///   - y: The y-coordinate of the pixel to retrieve.
+///
+/// - Returns: A [Color] object representing the color of the pixel at the
+///   specified coordinates.
 Color getPixelFromByteData(
   ByteData byteData, {
   required int width,
@@ -22,9 +39,17 @@ Color getPixelFromByteData(
   return Color.fromARGB(a, r, g, b);
 }
 
-/// Returns the [color] in hexadecimal (#RRGGBB) format.
+/// Converts a [Color] object to its hexadecimal string representation.
 ///
-/// If [withAlpha] is `true`, then returns it in #AARRGGBB format.
+/// The returned string is in the format `#RRGGBB` by default. If [withAlpha]
+/// is set to `true`, the format will include the alpha channel as `#AARRGGBB`.
+///
+/// - [color]: The [Color] object to convert.
+/// - [withAlpha]: A boolean flag indicating whether to include the alpha
+///   channel in the output. Defaults to `false`.
+///
+/// Returns:
+/// A string representing the color in hexadecimal format.
 String colorToHexString(Color color, {bool withAlpha = false}) {
   final a = color.a.round().toRadixString(16).padLeft(2, '0');
   final r = color.r.round().toRadixString(16).padLeft(2, '0');
@@ -38,6 +63,17 @@ String colorToHexString(Color color, {bool withAlpha = false}) {
   return '$r$g$b';
 }
 
+/// Determines the appropriate text color (black or white) to ensure
+/// sufficient contrast against a given background color.
+///
+/// This function calculates the luminance of the background color
+/// and returns black if the luminance is greater than 0.5, otherwise
+/// it returns white.
+///
+/// [background] - The background color to evaluate.
+///
+/// Returns a [Color] object representing either black or white,
+/// depending on the luminance of the background.
 Color getTextColorOnBackground(Color background) {
   final luminance = background.computeLuminance();
 

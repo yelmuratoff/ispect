@@ -8,60 +8,56 @@ import 'package:ispectify/src/models/log_details.dart';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/settings.dart';
 
-/// A logger class for handling structured and formatted logging.
+/// A logger class for structured and formatted logging.
 ///
-/// [ISpectifyLogger] provides multiple logging levels and supports
-/// custom filtering, formatting, and output handling.
+/// Supports multiple log levels, colorized output, filtering,
+/// and customizable formatting/output handling.
 class ISpectifyLogger {
   /// Creates an instance of [ISpectifyLogger] with optional configurations.
   ///
   /// - [settings]: Logger configuration settings. Defaults to [LoggerSettings()].
-  /// - [formatter]: Defines how logs should be formatted. Defaults to [ExtendedLoggerFormatter()].
-  /// - [filter]: A filter to determine whether logs should be recorded.
-  /// - [output]: A callback function to handle log output (e.g., print to console).
+  /// - [formatter]: Formatter for log messages. Defaults to [ExtendedLoggerFormatter()].
+  /// - [filter]: Optional log filter.
+  /// - [output]: Optional output function (e.g., `print`).
   ISpectifyLogger({
     LoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
     ILoggerFilter? filter,
     void Function(String message)? output,
-  }) {
-    this.settings = settings ?? LoggerSettings();
-    _output = output ?? outputLog;
-    _filter = filter;
+  })  : settings = settings ?? LoggerSettings(),
+        _filter = filter,
+        _output = output ?? outputLog {
     ansiColorDisabled = false;
   }
 
-  /// Logger settings that define behavior, such as enabled state and color mappings.
-  late final LoggerSettings settings;
+  /// Logger settings such as enabled state and color mapping.
+  final LoggerSettings settings;
 
-  /// Formatter responsible for structuring log messages.
+  /// Formatter for structuring log messages.
   final LoggerFormatter formatter;
 
-  /// Output function for writing logs (e.g., console output).
-  late final void Function(String message) _output;
+  /// Output function to handle final log message.
+  final void Function(String message) _output;
 
-  /// Optional filter that determines whether a log message should be recorded.
-  ILoggerFilter? _filter;
+  /// Optional filter to determine whether a log should be logged.
+  final ILoggerFilter? _filter;
 
-  /// Logs a message with an optional [level] and [pen] (color).
-  ///
-  /// - [msg]: The message to log.
-  /// - [level]: The severity level of the log. Defaults to [LogLevel.debug].
-  /// - [pen]: ANSI color pen for styling logs. If not provided, defaults to settings-based colors.
+  /// Logs a message at a specified level with optional ANSI color pen.
   void log(Object? msg, {LogLevel? level, AnsiPen? pen}) {
-    if (!settings.enable) return;
+    if (!settings.enable ||
+        !(_filter?.shouldLog(msg, level ?? LogLevel.debug) ?? true)) {
+      return;
+    }
 
     final selectedLevel = level ?? LogLevel.debug;
     final selectedPen =
         pen ?? settings.colors[selectedLevel] ?? (AnsiPen()..gray());
 
-    if (_filter?.shouldLog(msg, selectedLevel) ?? true) {
-      final formattedMsg = formatter.format(
-        LogDetails(message: msg, level: selectedLevel, pen: selectedPen),
-        settings,
-      );
-      _output(formattedMsg);
-    }
+    final formattedMsg = formatter.format(
+      LogDetails(message: msg, level: selectedLevel, pen: selectedPen),
+      settings,
+    );
+    _output(formattedMsg);
   }
 
   /// Logs a critical-level message.
@@ -74,7 +70,7 @@ class ISpectifyLogger {
   void warning(Object? msg) => log(msg, level: LogLevel.warning);
 
   /// Logs a debug-level message.
-  void debug(Object? msg) => log(msg);
+  void debug(Object? msg) => log(msg, level: LogLevel.debug);
 
   /// Logs a verbose-level message.
   void verbose(Object? msg) => log(msg, level: LogLevel.verbose);
@@ -82,9 +78,7 @@ class ISpectifyLogger {
   /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Returns a new instance of [ISpectifyLogger] with modified properties.
-  ///
-  /// If a parameter is `null`, the existing instance values are preserved.
+  /// Creates a new [ISpectifyLogger] instance with overridden properties.
   ISpectifyLogger copyWith({
     LoggerSettings? settings,
     LoggerFormatter? formatter,
@@ -97,4 +91,8 @@ class ISpectifyLogger {
         filter: filter ?? _filter,
         output: output ?? _output,
       );
+
+  @override
+  String toString() =>
+      'ISpectifyLogger(enabled: ${settings.enable}, level: ${settings.level})';
 }
