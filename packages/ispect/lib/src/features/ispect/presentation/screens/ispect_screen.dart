@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
@@ -44,6 +46,7 @@ class _ISpectScreenState extends State<ISpectScreen> {
         iSpectify: ISpect.logger,
         appBarTitle: widget.appBarTitle,
         options: widget.options,
+        itemsBuilder: widget.itemsBuilder,
       );
 }
 
@@ -102,7 +105,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
     final iSpect = ISpect.read(context);
     return Scaffold(
       body: GestureDetector(
-        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        onTap: _focusNode.unfocus,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (_, __) => ISpectifyBuilder(
@@ -111,7 +114,9 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
               final filteredElements =
                   data.where((e) => _controller.filter.apply(e)).toList();
               final titles = data.map((e) => e.title).toList();
-              final uniqTitles = titles.toSet().toList();
+              final uniqTitles = LinkedHashSet<String>.from(
+                filteredElements.map((e) => e.title),
+              ).toList();
 
               return CustomScrollView(
                 controller: widget.scrollController,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/detailed_log_screen.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/custom_expansion_tile.dart';
 
 part 'collapsed_body.dart';
 part 'expanded_body.dart';
@@ -57,7 +58,7 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    return ExpansionTile(
+    return ISpectExpansionTile(
       dense: true,
       initiallyExpanded: widget.expanded,
       showTrailingIcon: false,
@@ -65,6 +66,11 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
       tilePadding: const EdgeInsets.symmetric(
         horizontal: 12,
       ),
+      backgroundColor: widget.color.withValues(
+        alpha: 0.1,
+      ),
+      shape: const RoundedRectangleBorder(),
+      collapsedShape: const RoundedRectangleBorder(),
       childrenPadding: const EdgeInsets.symmetric(
         horizontal: 12,
         vertical: 8,
@@ -74,6 +80,9 @@ class _ISpectifyDataCardState extends State<ISpectLogCard> {
           _expanded = value;
         });
       },
+      dividerColor: widget.color.withValues(
+        alpha: 0.2,
+      ),
       title: _CollapsedBody(
         icon:
             iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
