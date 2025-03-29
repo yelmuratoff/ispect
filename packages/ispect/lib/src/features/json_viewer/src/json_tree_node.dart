@@ -7,6 +7,26 @@ import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 
+/// A single node widget used in the JSON tree view representation.
+///
+/// This widget displays a JSON key-value pair, optionally with expand/collapse
+/// support for nested arrays or objects. It highlights matched search queries,
+/// supports customizable styling, and adapts color based on the node's semantic context.
+///
+/// ### Parameters:
+/// - [keyName]: The JSON key to display.
+/// - [value]: The corresponding value for the key.
+/// - [type]: The data type of the value (used for coloring and formatting).
+/// - [isExpanded]: Whether the node is currently expanded.
+/// - [onTap]: Callback triggered when the expand icon is tapped.
+/// - [expandIcon], [collapseIcon]: Optional override icons for expand/collapse.
+/// - [keyStyle], [valueStyle]: Optional text styles for key and value.
+/// - [depth]: The nesting level, used externally (not rendered here).
+/// - [animationDuration]: Duration of expand animation (not directly used here).
+/// - [isHighlighted]: Whether the node should visually indicate a search match.
+/// - [highlightColor]: Background color for search highlight.
+/// - [searchQuery]: The search text used for partial highlighting.
+/// - [padding]: Inner padding around the node row.
 class JsonTreeNode extends StatelessWidget {
   const JsonTreeNode({
     required this.keyName,
@@ -43,14 +63,17 @@ class JsonTreeNode extends StatelessWidget {
   final String searchQuery;
   final EdgeInsets padding;
 
+  /// Highlights [searchQuery] matches within [text], returning a list of styled [InlineSpan]s.
   List<InlineSpan> _highlightText(String text, TextStyle style) {
     if (searchQuery.isEmpty) return [TextSpan(text: text, style: style)];
+
     final lowerText = text.toLowerCase();
     final lowerQuery = searchQuery.toLowerCase();
     final spans = <InlineSpan>[];
     var start = 0;
     var index = lowerText.indexOf(lowerQuery, start);
     final colorHighlight = highlightColor.withOpacity(0.6);
+
     while (index != -1) {
       if (index > start) {
         spans.add(TextSpan(text: text.substring(start, index), style: style));
@@ -68,15 +91,19 @@ class JsonTreeNode extends StatelessWidget {
       start = index + searchQuery.length;
       index = lowerText.indexOf(lowerQuery, start);
     }
+
     if (start < text.length) {
       spans.add(TextSpan(text: text.substring(start), style: style));
     }
+
     return spans;
   }
 
+  /// Builds the expand/collapse button or a spacer if not expandable.
   Widget _buildExpandButton() {
     final isExpandable =
         type == JsonNodeType.object || type == JsonNodeType.array;
+
     return SizedBox(
       width: 20,
       child: isExpandable
@@ -101,6 +128,7 @@ class JsonTreeNode extends StatelessWidget {
     );
   }
 
+  /// Wraps highlighted [text] in a [DecoratedBox] with rounded background.
   Widget _buildDecoratedText(String text, TextStyle style, Color bgColor) =>
       DecoratedBox(
         decoration: BoxDecoration(
@@ -115,6 +143,7 @@ class JsonTreeNode extends StatelessWidget {
         ),
       );
 
+  /// Constructs styled spans for key-value pair display, with optional decoration.
   List<InlineSpan> _buildTextSpans(BuildContext context) {
     final defaultKeyStyle = TextStyle(
       fontWeight: FontWeight.w600,
@@ -154,6 +183,7 @@ class JsonTreeNode extends StatelessWidget {
     ];
   }
 
+  /// Converts the node value into a human-readable display string.
   String _displayValue() {
     if (type == JsonNodeType.object || type == JsonNodeType.array) {
       final isObject = type == JsonNodeType.object;
@@ -168,6 +198,7 @@ class JsonTreeNode extends StatelessWidget {
     return value.toString();
   }
 
+  /// Returns a default color based on the [JsonNodeType].
   Color _getValueColor(Color defaultColor) => switch (type) {
         JsonNodeType.number => JsonColors.numColor,
         JsonNodeType.boolean => JsonColors.boolColor,
@@ -177,26 +208,27 @@ class JsonTreeNode extends StatelessWidget {
         _ => defaultColor,
       };
 
+  /// Resolves the display color of the value based on the [keyName].
   Color _getValueColorByKey(BuildContext context) {
     final theme = ISpect.read(context).theme;
     return switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
       'method' => JsonColors.methodColors[value.toString()]!,
-      'base-url' => JsonColors.stringColor,
-      'url' => JsonColors.stringColor,
-      'uri' => JsonColors.stringColor,
-      'real-uri' => JsonColors.stringColor,
-      'location' => JsonColors.stringColor,
-      'path' => JsonColors.stringColor,
-      'Authorization' => JsonColors.stringColor,
+      'base-url' ||
+      'url' ||
+      'uri' ||
+      'real-uri' ||
+      'location' ||
+      'path' ||
+      'Authorization' =>
+        JsonColors.stringColor,
       'status_code' => JsonColors.getStatusColor(value as int?),
       'exception' => theme.getTypeColor(context, key: 'exception'),
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
-      'time' => JsonColors.dateTimeColor,
-      'date' => JsonColors.dateTimeColor,
+      'time' || 'date' => JsonColors.dateTimeColor,
       _ => _getValueColor(Theme.of(context).colorScheme.secondary),
     };
   }
@@ -213,9 +245,7 @@ class JsonTreeNode extends StatelessWidget {
             const Gap(4),
             Expanded(
               child: Text.rich(
-                TextSpan(
-                  children: _buildTextSpans(context),
-                ),
+                TextSpan(children: _buildTextSpans(context)),
                 style: const TextStyle(
                   height: 1.5,
                   fontSize: 14,

@@ -1,19 +1,26 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-/// Widget that shows a performance overlay based on the [FrameTiming] API.
+/// A widget that displays a custom performance overlay showing frame timing stats
+/// (UI, Raster, and High Latency) based on [FrameTiming].
 ///
-/// This is like the [PerformanceOverlay] from the framework, however, this is
-/// supported on all platforms while the framework [PerformanceOverlay] is not
-/// supported on Flutter web.
-/// Furthermore, the way the information is displayed in this overlay closely
-/// resembles the data available via the [FrameTiming] API and is opinionated
-/// differently than the native [PerformanceOverlay].
+/// Unlike Flutter's native [PerformanceOverlay], this works across all platforms
+/// including web, and provides more granular, opinionated visual feedback.
+///
+/// The overlay displays charts for:
+/// - UI frame build durations
+/// - Raster durations
+/// - Total frame latencies
+///
+/// Each bar represents a recent frame, with red bars indicating frame times
+/// that exceed the [targetFrameTime].
+///
+/// Can be aligned and scaled, and provides customizable styling options.
 class CustomPerformanceOverlay extends StatelessWidget {
-  /// Creates a [CustomPerformanceOverlay] widget wrapped around the given
-  /// [child] widget.
+  /// Creates a performance overlay widget.
+  ///
+  /// The [child] is the main content; the overlay renders on top of it when [enabled].
   const CustomPerformanceOverlay({
     required this.child,
     super.key,
@@ -31,103 +38,43 @@ class CustomPerformanceOverlay extends StatelessWidget {
     this.highLatencyColor = Colors.cyan,
   });
 
-  /// Whether the custom performance overlay should be enabled or not.
-  ///
-  /// When this is false, the custom performance overlay will not be inserted
-  /// into the tree and therefore not be visible. Note that toggling this will
-  /// only add or remove a child of a [Stack], which means that it is preferable
-  /// to toggle this property instead of returning a completely different
-  /// widget tree.
-  ///
-  /// Defaults to true.
+  /// Whether the overlay is visible.
   final bool enabled;
 
-  /// Alignment of the whole overlay.
-  ///
-  /// The overlay is aligned within a stack that has a size determined by the
-  /// [child] that is passed.
-  ///
-  /// Defaults to [Alignment.topRight].
+  /// Where to align the overlay within the screen.
   final Alignment alignment;
 
-  /// The value the overlay is scaled by.
-  ///
-  /// The overlay has a default size of 448x64 and is simply scaled by the
-  /// scale value using [Transform.scale].
-  ///
-  /// Defaults to `1`.
+  /// How much to scale the overlay.
   final double scale;
 
-  /// How many frame timings will be stored for extrapolating the FPS and
-  /// showing the bar chart.
-  ///
-  /// The FPS values are computed based on the last `n = sampleSize` samples,
-  /// which are also the samples visible in the chart.
-  /// Note that the first few readings will be below the sample size until
-  /// enough samples have been collected.
-  ///
-  /// Defaults to `32`.
+  /// Number of recent frames to display in the chart.
   final int sampleSize;
 
-  /// The target time for every single frame.
-  ///
-  /// If a frame takes longer than this target time, the corresponding bar in
-  /// the bar chart turns red and the average FPS as well as it will be below
-  /// the target value.
-  ///
-  /// To calculate the target frame timing for your desired FPS value, use
-  /// `(1000 / targetFPS).floor()` to get the timing in ms.
-  ///
-  /// This also draws a line at `y = targetFrameTime` indicating the goal time
-  /// span for frames.
-  ///
-  /// Defaults to 16ms, which corresponds to 60 FPS.
+  /// Target frame time; durations above this will be shown in red.
   final Duration targetFrameTime;
 
-  /// The max value of the visible range of the bar chart.
-  ///
-  /// This indicates the largest visible value on the y-axis for the frame
-  /// timing bars.
-  ///
-  /// There is no min value as the bar chart always starts from 0, which means
-  /// that we view the y-axis from 0 to `barRangeMax`.
-  ///
-  /// Defaults to 24ms.
+  /// Maximum expected bar duration range; durations beyond this are capped.
   final Duration barRangeMax;
 
-  /// Color that is used for the background of the individual charts.
-  ///
-  /// Defaults to [Colors.white].
+  /// Background color of the chart container.
   final Color backgroundColor;
 
-  /// Color that is used for all text displaying stats.
-  ///
-  /// Defaults to [Colors.black].
+  /// Foreground color for the text labels.
   final Color textColor;
 
-  /// Color that is used as the background color for all text.
-  ///
-  /// Defaults to `Color(0x77ffffff)`.
+  /// Background color behind the text.
   final Color textBackgroundColor;
 
-  /// Color that is used for indicating UI times.
-  ///
-  /// Defaults to [Colors.teal].
+  /// Bar color for UI durations.
   final Color uiColor;
 
-  /// Color that is used for indicating raster times.
-  ///
-  /// Defaults to [Colors.blue].
+  /// Bar color for raster durations.
   final Color rasterColor;
 
-  /// Color that is used for indicating high latency times.
-  ///
-  /// Defaults to [Colors.cyan].
+  /// Bar color for total latency durations.
   final Color highLatencyColor;
 
-  /// The widget below this widget in the tree.
-  ///
-  /// {@macro flutter.widgets.ProxyWidget.child}
+  /// The widget to display behind the overlay.
   final Widget child;
 
   @override
@@ -162,26 +109,8 @@ class CustomPerformanceOverlay extends StatelessWidget {
       );
 }
 
-/// Implementation of a simple custom performance overlay that tries to
-/// show the current FPS.
-///
-/// This is a custom concept for how to use frame begin time and frame
-/// end time to draw a bar chart and extrapolate FPS numbers (using
-/// [SchedulerBinding.addPersistentFrameCallback] and post frame callbacks
-/// for example). But it turns out [SchedulerBinding.addTimingsCallback]
-/// already implements curated reports that also work on web :)
-///
-/// This widget handles both receiving the frame timings, storing a
-/// `_kSampleSize`, and drawing a stacked bar chart that shows all
-/// [FrameTiming] properties.
-///
-/// See also:
-///
-/// * The [SchedulerBinding.addTimingsCallback] docs for further
-///   information.
-/// * `PlatformDispatcher.onReportTimings`, which is the source of the data.
+/// Internal stateful widget that collects and displays frame timings.
 class _CustomPerformanceOverlay extends StatefulWidget {
-  /// Constructs a [_CustomPerformanceOverlay] widget.
   const _CustomPerformanceOverlay({
     required this.sampleSize,
     required this.targetFrameTime,
@@ -197,7 +126,6 @@ class _CustomPerformanceOverlay extends StatefulWidget {
   final int sampleSize;
   final Duration targetFrameTime;
   final Duration barRangeMax;
-
   final Color backgroundColor;
   final Color textColor;
   final Color textBackgroundColor;
@@ -206,13 +134,13 @@ class _CustomPerformanceOverlay extends StatefulWidget {
   final Color highLatencyColor;
 
   @override
-  _CustomPerformanceOverlayState createState() =>
+  State<_CustomPerformanceOverlay> createState() =>
       _CustomPerformanceOverlayState();
 }
 
 class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
-  var _samples = <FrameTiming>[];
-  var _skippedFirstSample = false;
+  List<FrameTiming> _samples = [];
+  bool _skippedFirstSample = false;
 
   @override
   void initState() {
@@ -226,37 +154,50 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
     super.dispose();
   }
 
+  /// Collects new [FrameTiming] samples and updates the widget state.
+  ///
+  /// This method is used as a callback for [SchedulerBinding.addTimingsCallback]
+  /// to gather frame performance metrics.
+  ///
+  /// Behavior:
+  /// - Skips the very first sample received after initialization to avoid
+  ///   potentially invalid or noisy data.
+  /// - Merges the incoming [frameTimings] with the existing [_samples].
+  /// - Ensures the sample list length does not exceed [widget.sampleSize].
+  /// - Schedules a post-frame update to safely call [setState] after the frame.
+  ///
+  /// Guards:
+  /// - Skips processing entirely if the widget is not [mounted].
+  /// - Also checks [mounted] inside the post-frame callback to avoid
+  ///   updating state on a disposed widget.
+  ///
+  /// Parameters:
+  /// - [frameTimings]: A list of recent [FrameTiming] data from the engine.
+  ///
+  /// Edge cases:
+  /// - The first batch of frame timings will have its first sample ignored,
+  ///   ensuring cleaner data collection.
+  /// - If the combined list of samples exceeds [widget.sampleSize],
+  ///   older entries are dropped from the front.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// SchedulerBinding.instance.addTimingsCallback(_timingsCallback);
+  /// ```
   void _timingsCallback(List<FrameTiming> frameTimings) {
-    var temp = List<FrameTiming>.from(frameTimings);
     if (!mounted) return;
 
-    if (!_skippedFirstSample) {
-      // Throw away the first sample since it seems to always be some cumulative
-      // value that does not at all represent actual performance.
-      temp = frameTimings.sublist(1);
-      _skippedFirstSample = true;
-    }
+    final newSamples =
+        _skippedFirstSample ? frameTimings : frameTimings.sublist(1);
+    _skippedFirstSample = true;
 
-    final combinedSamples = [
-      ..._samples,
-      ...temp,
-    ];
-    // The timings callback can be called during build on web, which is why we
-    // need to defer updating the state to the next frame.
-    // Furthermore, this prevents indefinite rebuilds on desktop as setting
-    // state after the timings callback triggers another timings callback but
-    // doing so in a post frame callback somehow does not.
+    final combined = [..._samples, ...newSamples];
+    final dropCount = math.max(0, combined.length - widget.sampleSize);
+
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() {
-        _samples = combinedSamples.sublist(
-          math.max(
-            0,
-            // Drop all samples exceeding the sample size to the left.
-            combinedSamples.length - widget.sampleSize,
-          ),
-        );
-        assert(_samples.length <= widget.sampleSize);
+        _samples = combined.sublist(dropCount);
       });
     });
   }
@@ -288,10 +229,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                   textStyle: textStyle,
                 ),
               ),
-              const VerticalDivider(
-                width: 2,
-                thickness: 2,
-              ),
+              const VerticalDivider(width: 2, thickness: 2),
               Expanded(
                 child: _PerformanceChart(
                   type: 'raster',
@@ -303,10 +241,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                   textStyle: textStyle,
                 ),
               ),
-              const VerticalDivider(
-                width: 2,
-                thickness: 2,
-              ),
+              const VerticalDivider(width: 2, thickness: 2),
               Expanded(
                 child: _PerformanceChart(
                   type: 'high latency',
@@ -326,9 +261,10 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
   }
 }
 
-/// Performance chart widget for arbitrary metrics.
+/// A chart widget that renders frame timings as vertical bars.
+///
+/// Displays the maximum, average, and FPS summary for each sample set.
 class _PerformanceChart extends StatelessWidget {
-  /// Constructs a [_PerformanceChart] widget.
   const _PerformanceChart({
     required this.type,
     required this.samples,
@@ -339,42 +275,27 @@ class _PerformanceChart extends StatelessWidget {
     required this.textStyle,
   }) : assert(samples.length <= sampleSize);
 
-  /// The measurement type.
-  ///
-  /// This would be UI, raster, or high latencies (according to
-  /// `PlatformDispatcher.onReportTimings`).
   final String type;
-
-  /// The duration samples for the given [type].
   final List<Duration> samples;
-
-  /// The maximum number of samples.
-  ///
-  /// The chart will always be drawn to the extent of this sample size and
-  /// [samples] must not be longer than this.
   final int sampleSize;
-
   final Duration targetFrameTime;
   final Duration barRangeMax;
-
-  /// The bar color.
   final Color color;
-
-  /// The text style used for the written stats.
   final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
     var maxDuration = Duration.zero;
-    var cumulative = Duration.zero;
-    for (var i = 0; i < samples.length; i++) {
-      final sample = samples[i];
-      maxDuration = sample > maxDuration ? sample : maxDuration;
-      cumulative += sample;
+    var total = Duration.zero;
+
+    for (final sample in samples) {
+      if (sample > maxDuration) maxDuration = sample;
+      total += sample;
     }
+
     final avg = samples.isEmpty
         ? Duration.zero
-        : Duration(microseconds: cumulative.inMicroseconds ~/ samples.length);
+        : Duration(microseconds: total.inMicroseconds ~/ samples.length);
     final fps = samples.isEmpty ? 0 : 1e6 / avg.inMicroseconds;
 
     return Stack(
@@ -424,7 +345,26 @@ class _PerformanceChart extends StatelessWidget {
   }
 }
 
+/// A custom painter that visualizes frame performance over time.
+///
+/// This painter draws:
+/// - A horizontal black line representing the target frame duration.
+/// - A series of vertical bars (one per sampled frame duration) showing how
+///   each frame compares to the target and maximum frame duration.
+///   - Bars under the target duration are colored with [color].
+///   - Bars exceeding the target are colored red.
+///
+/// Used in performance overlays to provide visual feedback on frame rendering
+/// times, particularly useful in diagnosing dropped frames or jank.
 class _OverlayPainter extends CustomPainter {
+  /// Creates an instance of [_OverlayPainter].
+  ///
+  /// - [samples] is the list of frame render durations to visualize.
+  /// - [sampleSize] controls the number of bars (samples) shown on screen.
+  /// - [targetFrameTime] is the ideal frame time (e.g., 16ms for 60 FPS),
+  ///   used to determine the success threshold.
+  /// - [barRangeMax] is the maximum duration used for bar scaling.
+  /// - [color] is the color used for bars that are under the target frame time.
   const _OverlayPainter(
     this.samples,
     this.sampleSize,
@@ -433,54 +373,69 @@ class _OverlayPainter extends CustomPainter {
     this.color,
   );
 
+  /// Frame duration samples to visualize.
   final List<Duration> samples;
+
+  /// Number of frame samples to show in the overlay.
   final int sampleSize;
+
+  /// Target frame duration (e.g., 16ms for 60 FPS).
   final Duration targetFrameTime;
+
+  /// Maximum frame duration represented in the chart.
+  ///
+  /// Any durations above this value will be capped visually at full height.
   final Duration barRangeMax;
+
+  /// Color for bars that are within or below [targetFrameTime].
+  ///
+  /// Frames exceeding the target will be rendered in red.
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final aimHeight = size.height * (1 - targetFrameTime / barRangeMax);
+    // Draw a horizontal line to mark the target frame time.
+    final lineY = size.height * (1 - targetFrameTime / barRangeMax);
     canvas.drawLine(
-      Offset(0, aimHeight),
-      Offset(size.width, aimHeight),
+      Offset.zero.translate(0, lineY),
+      Offset(size.width, lineY),
       Paint()..color = Colors.black,
     );
 
     final barWidth = size.width / sampleSize;
-    final paint = Paint()..color = color;
-    for (var i = sampleSize - 1; i >= 0; i--) {
-      final shifted = i - sampleSize + samples.length;
-      if (shifted < 0) break;
-      final timing = samples[shifted];
+    final paint = Paint();
 
-      final x = barWidth * i;
-      final barExtent = timing / barRangeMax;
+    // Draw bars for each sample (most recent on the right).
+    for (var i = sampleSize - 1; i >= 0; i--) {
+      final index = i - sampleSize + samples.length;
+      if (index < 0) break;
+
+      final duration = samples[index];
+      final heightFactor = duration / barRangeMax;
+      paint.color = duration <= targetFrameTime ? color : Colors.red;
+
       canvas.drawRect(
         Rect.fromLTWH(
-          x,
-          size.height * (1 - barExtent),
+          i * barWidth,
+          size.height * (1 - heightFactor),
           barWidth,
-          size.height * barExtent,
+          size.height * heightFactor,
         ),
-        timing <= targetFrameTime ? paint : (Paint()..color = Colors.red),
+        paint,
       );
     }
   }
 
-  // Using object equality here rather than list equality because it is
-  // cheaper and we *know* that the contents are different when the objects
-  // are not equal because above, we are reassigning the samples list
-  // whenever new timings are reported.
   @override
-  bool shouldRepaint(_OverlayPainter oldDelegate) =>
+  bool shouldRepaint(covariant _OverlayPainter oldDelegate) =>
       oldDelegate.samples != samples;
 }
 
+/// Extension to add convenience methods to [Duration].
 extension on Duration {
+  /// Divide two durations and return a double.
   double operator /(Duration other) => inMicroseconds / other.inMicroseconds;
 
-  /// The duration in milliseconds as a string with 1 decimal place.
+  /// Convert to milliseconds with 1 decimal place.
   String get ms => (inMicroseconds / 1e3).toStringAsFixed(1);
 }

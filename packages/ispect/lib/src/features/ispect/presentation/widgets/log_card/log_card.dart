@@ -1,5 +1,3 @@
-// ignore_for_file: implementation_imports
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -31,98 +29,72 @@ class ISpectLogCard extends StatefulWidget {
   final Color backgroundColor;
 
   @override
-  State<ISpectLogCard> createState() => _ISpectifyDataCardState();
+  State<ISpectLogCard> createState() => _ISpectLogCardState();
 }
 
-class _ISpectifyDataCardState extends State<ISpectLogCard> {
-  late bool _expanded;
-  late String? _stackTrace;
-
-  late String? _errorMessage;
-  late String? _type;
+class _ISpectLogCardState extends State<ISpectLogCard> {
+  late bool _isExpanded;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _initializeValues();
-  }
-
-  void _initializeValues() {
-    _expanded = widget.expanded;
-    _stackTrace = widget.data.stackTraceLogText;
-
-    _errorMessage = widget.data.errorLogText;
-    _type = widget.data.typeText;
+  void initState() {
+    super.initState();
+    _isExpanded = widget.expanded;
   }
 
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
+    final data = widget.data;
+    final stackTrace = data.stackTraceLogText;
+    final errorMessage = data.errorLogText;
+    final type = data.typeText;
+
     return ISpectExpansionTile(
       dense: true,
-      initiallyExpanded: widget.expanded,
+      initiallyExpanded: _isExpanded,
       showTrailingIcon: false,
       visualDensity: VisualDensity.compact,
-      tilePadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      backgroundColor: widget.color.withValues(
-        alpha: 0.1,
-      ),
+      tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+      backgroundColor: widget.color.withValues(alpha: 0.1),
       shape: const RoundedRectangleBorder(),
       collapsedShape: const RoundedRectangleBorder(),
-      childrenPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
-      onExpansionChanged: (value) {
-        setState(() {
-          _expanded = value;
-        });
-      },
-      dividerColor: widget.color.withValues(
-        alpha: 0.2,
-      ),
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      onExpansionChanged: (value) => setState(() => _isExpanded = value),
+      dividerColor: widget.color.withValues(alpha: 0.2),
       title: _CollapsedBody(
-        icon:
-            iSpect.theme.logIcons[widget.data.key] ?? Icons.bug_report_outlined,
+        icon: iSpect.theme.logIcons[data.key] ?? Icons.bug_report_outlined,
         color: widget.color,
-        title: widget.data.key,
-        dateTime: widget.data.formattedTime,
+        title: data.key,
+        dateTime: data.formattedTime,
         onCopyTap: widget.onCopyTap,
-        onHttpTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DetailedLogScreen(
-                data: widget.data,
-              ),
-              settings: RouteSettings(
-                name: 'Detailed Log Page',
-                arguments: widget.data,
-              ),
+        onHttpTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => DetailedLogScreen(data: data),
+            settings: RouteSettings(
+              name: 'Detailed Log Page',
+              arguments: data,
             ),
-          );
-        },
-        isHttpLog: widget.data.isHttpLog,
-        message: widget.data.textMessage,
-        errorMessage: _errorMessage,
-        expanded: _expanded,
+          ),
+        ),
+        message: data.textMessage,
+        errorMessage: errorMessage,
+        expanded: _isExpanded,
       ),
       children: [
-        if (_expanded)
+        if (_isExpanded)
           _ExpandedBody(
-            stackTrace: _stackTrace,
+            stackTrace: stackTrace,
             widget: widget,
-            expanded: _expanded,
-            type: _type,
+            expanded: _isExpanded,
+            type: type,
             message: widget.data.textMessage,
-            errorMessage: _errorMessage,
+            errorMessage: errorMessage,
             isHTTP: widget.data.isHttpLog,
           ),
-        if (_expanded && _stackTrace != null && _stackTrace!.isNotEmpty)
+        if (_isExpanded && stackTrace != null && stackTrace.isNotEmpty)
           _StrackTraceBody(
             widget: widget,
-            stackTrace: _stackTrace,
+            stackTrace: stackTrace,
           ),
       ],
     );

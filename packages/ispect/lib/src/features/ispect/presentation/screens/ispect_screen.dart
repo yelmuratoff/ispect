@@ -114,7 +114,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
               final filteredElements =
                   data.where((e) => _controller.filter.apply(e)).toList();
               final titles = data.map((e) => e.title).toList();
-              final uniqTitles = LinkedHashSet<String>.from(
+              final uniqTitles = LinkedHashSet<String?>.from(
                 filteredElements.map((e) => e.title),
               ).toList();
 
