@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.6
+- ISpectify AI was removed. I do not recommend using tokens on the client side, as this may lead to token leakage.
+
 ## 4.0.5
 - Display of errors has been changed. Now, if the errors are large, only the first 10,000 characters will be displayed.
 This is done in order not to overload the widget and not to cause the application to hang.
