@@ -153,7 +153,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       }
 
                       return ISpectLogCard(
-                        key: ValueKey(data.time.microsecondsSinceEpoch),
+                        key: ValueKey(data.hashCode),
                         data: data,
                         backgroundColor: context.ispectTheme.cardColor,
                         onCopyTap: () => _copyISpectifyDataItemText(data),

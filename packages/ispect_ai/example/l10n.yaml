@@ -1,7 +1,0 @@
-output-class: ExampleGeneratedLocalization
-main-locale: en
-arb-dir: lib/src/core/localization/translations
-output-dir: lib/src/core/localization/generated
-template-arb-file: intl_en.arb
-output-localization-file: app_localizations.dart
-synthetic-package: false
