@@ -6,7 +6,7 @@ import 'package:flutter/scheduler.dart';
 /// (UI, Raster, and High Latency) based on [FrameTiming].
 ///
 /// Unlike Flutter's native [PerformanceOverlay], this works across all platforms
-/// including web, and provides more granular, opinionated visual feedback.
+/// including web and desktop, and provides more granular, opinionated visual feedback.
 ///
 /// The overlay displays charts for:
 /// - UI frame build durations
@@ -154,49 +154,32 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
     super.dispose();
   }
 
-  /// Collects new [FrameTiming] samples and updates the widget state.
+  /// Callback that collects frame timing samples from the engine.
   ///
-  /// This method is used as a callback for [SchedulerBinding.addTimingsCallback]
-  /// to gather frame performance metrics.
-  ///
-  /// Behavior:
-  /// - Skips the very first sample received after initialization to avoid
-  ///   potentially invalid or noisy data.
-  /// - Merges the incoming [frameTimings] with the existing [_samples].
-  /// - Ensures the sample list length does not exceed [widget.sampleSize].
-  /// - Schedules a post-frame update to safely call [setState] after the frame.
-  ///
-  /// Guards:
-  /// - Skips processing entirely if the widget is not [mounted].
-  /// - Also checks [mounted] inside the post-frame callback to avoid
-  ///   updating state on a disposed widget.
-  ///
-  /// Parameters:
-  /// - [frameTimings]: A list of recent [FrameTiming] data from the engine.
-  ///
-  /// Edge cases:
-  /// - The first batch of frame timings will have its first sample ignored,
-  ///   ensuring cleaner data collection.
-  /// - If the combined list of samples exceeds [widget.sampleSize],
-  ///   older entries are dropped from the front.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// SchedulerBinding.instance.addTimingsCallback(_timingsCallback);
-  /// ```
+  /// This is invoked by [SchedulerBinding.addTimingsCallback] whenever new frame
+  /// timings are available. It stores a rolling window of the most recent
+  /// [widget.sampleSize] entries.
   void _timingsCallback(List<FrameTiming> frameTimings) {
+    // Prevent updating state if widget is already disposed.
     if (!mounted) return;
 
+    // Skip the very first frame sample to avoid warm-up noise.
     final newSamples =
         _skippedFirstSample ? frameTimings : frameTimings.sublist(1);
     _skippedFirstSample = true;
 
+    // Merge existing and new samples into a combined list.
     final combined = [..._samples, ...newSamples];
+
+    // If combined exceeds sample size, calculate how many old entries to drop.
     final dropCount = math.max(0, combined.length - widget.sampleSize);
 
+    // Defer setState until the current frame is done rendering.
+    // This ensures safe rebuild and avoids context usage during build.
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() {
+        // Retain only the latest `sampleSize` number of samples.
         _samples = combined.sublist(dropCount);
       });
     });
@@ -210,9 +193,15 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
       backgroundColor: widget.textBackgroundColor,
     );
 
+    final mediaQuery = MediaQuery.maybeOf(context);
+    final devicePixelRatio = mediaQuery?.devicePixelRatio ?? 1;
+
+    final width = 448.0 * devicePixelRatio.clamp(1.0, 2.0);
+    final height = 80.0 * devicePixelRatio.clamp(0, 1.0);
+
     return SizedBox(
-      width: 448,
-      height: 64,
+      width: width,
+      height: height,
       child: ColoredBox(
         color: widget.backgroundColor,
         child: ClipRect(
@@ -357,14 +346,6 @@ class _PerformanceChart extends StatelessWidget {
 /// Used in performance overlays to provide visual feedback on frame rendering
 /// times, particularly useful in diagnosing dropped frames or jank.
 class _OverlayPainter extends CustomPainter {
-  /// Creates an instance of [_OverlayPainter].
-  ///
-  /// - [samples] is the list of frame render durations to visualize.
-  /// - [sampleSize] controls the number of bars (samples) shown on screen.
-  /// - [targetFrameTime] is the ideal frame time (e.g., 16ms for 60 FPS),
-  ///   used to determine the success threshold.
-  /// - [barRangeMax] is the maximum duration used for bar scaling.
-  /// - [color] is the color used for bars that are under the target frame time.
   const _OverlayPainter(
     this.samples,
     this.sampleSize,
@@ -392,12 +373,32 @@ class _OverlayPainter extends CustomPainter {
   /// Frames exceeding the target will be rendered in red.
   final Color color;
 
+  /// Paints the performance overlay chart with frame duration bars.
+  ///
+  /// This method visualizes:
+  /// - A horizontal line at the target frame duration to indicate the performance threshold.
+  /// - A sequence of vertical bars for each frame timing sample:
+  ///   - Bars are scaled relative to [barRangeMax].
+  ///   - Bars with duration above [targetFrameTime] are colored red.
+  ///   - Bars below or equal to [targetFrameTime] use the configured [color].
+  ///
+  /// Parameters:
+  /// - [canvas]: The canvas to draw onto.
+  /// - [size]: The size of the available drawing area.
+  ///
+  /// Example visualization behavior:
+  /// - If `targetFrameTime` is 16ms, and a bar represents 24ms, it will be colored red and capped
+  ///   to full chart height if it exceeds [barRangeMax].
+  ///
+  /// Edge cases:
+  /// - If there are fewer samples than [sampleSize], only the available samples are drawn.
+  /// - Samples are rendered from oldest (left) to newest (right).
   @override
   void paint(Canvas canvas, Size size) {
     // Draw a horizontal line to mark the target frame time.
     final lineY = size.height * (1 - targetFrameTime / barRangeMax);
     canvas.drawLine(
-      Offset.zero.translate(0, lineY),
+      Offset(0, lineY),
       Offset(size.width, lineY),
       Paint()..color = Colors.black,
     );
@@ -431,11 +432,33 @@ class _OverlayPainter extends CustomPainter {
       oldDelegate.samples != samples;
 }
 
-/// Extension to add convenience methods to [Duration].
+/// Extension on [Duration] to provide convenience methods for
+/// division and formatted millisecond representation.
+///
+/// Useful for performance monitoring and frame timing calculations.
 extension on Duration {
-  /// Divide two durations and return a double.
+  /// Divides this [Duration] by another [Duration] and returns the result as a [double].
+  ///
+  /// For example:
+  /// ```dart
+  /// const a = Duration(milliseconds: 24);
+  /// const b = Duration(milliseconds: 12);
+  /// final ratio = a / b; // 2.0
+  /// ```
+  ///
+  /// Edge cases:
+  /// - Returns `infinity` if [other] is zero.
+  /// - Returns `NaN` if both are zero.
   double operator /(Duration other) => inMicroseconds / other.inMicroseconds;
 
-  /// Convert to milliseconds with 1 decimal place.
+  /// Returns this duration as milliseconds with 1 decimal precision.
+  ///
+  /// Example:
+  /// ```dart
+  /// const d = Duration(microseconds: 12345);
+  /// print(d.ms); // "12.3"
+  /// ```
+  ///
+  /// This is useful for readable frame timing overlays or logs.
   String get ms => (inMicroseconds / 1e3).toStringAsFixed(1);
 }
