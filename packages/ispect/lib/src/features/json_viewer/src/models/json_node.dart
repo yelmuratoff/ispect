@@ -32,6 +32,8 @@ class JsonNode {
     required this.value,
     required this.type,
     this.children = const [],
+    this.hasMoreChildren = false,
+    this.totalChildrenCount,
   });
 
   /// The unique key of the node (e.g. field name or list index).
@@ -45,6 +47,14 @@ class JsonNode {
 
   /// The type of the value, used to determine rendering and color.
   final JsonNodeType type;
+
+  /// Indicates if there are more children that haven't been loaded yet.
+  /// Used for lazy loading large arrays or objects.
+  bool hasMoreChildren;
+
+  /// The total number of children this node has, if known.
+  /// This helps with showing progress in "Load more" UI.
+  final int? totalChildrenCount;
 
   /// Whether this node has one or more children.
   bool get hasChildren => children.isNotEmpty;

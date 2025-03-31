@@ -235,6 +235,26 @@ class _HomeState extends State<_Home> {
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [
+              FilledButton(
+                onPressed: () {
+                  final largeList = List.generate(
+                      3001, (index) => {'id': index, 'value': 'Item $index'});
+                  final response = Response(
+                    requestOptions: RequestOptions(path: '/mock-large'),
+                    data: largeList,
+                    statusCode: 200,
+                  );
+
+                  // Мокаем как-будто это реальный ответ от Dio
+                  for (var interceptor in dio.interceptors) {
+                    if (interceptor is ISpectifyDioLogger) {
+                      interceptor.onResponse(
+                          response, ResponseInterceptorHandler());
+                    }
+                  }
+                },
+                child: const Text('Mock Large JSON Response'),
+              ),
               BlocBuilder<TestCubit, TestState>(
                 bloc: _testBloc,
                 builder: (context, state) {
