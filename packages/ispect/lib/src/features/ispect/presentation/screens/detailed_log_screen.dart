@@ -160,18 +160,13 @@ class _DetailedLogScreenState extends State<DetailedLogScreen> {
                       color: context.ispectTheme.colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
-                    valueSearchHighlightTextStyle: TextStyle(
-                      color: Colors.yellowAccent,
-                      backgroundColor: Colors.yellow.withValues(
-                        alpha: 0.2,
-                      ),
-                      fontWeight: FontWeight.bold,
+                    valueSearchHighlightTextStyle: const TextStyle(
+                      color: Colors.black,
+                      backgroundColor: Colors.yellow,
                     ),
-                    focusedValueSearchHighlightTextStyle: TextStyle(
-                      color: Colors.greenAccent,
-                      backgroundColor: Colors.green.withValues(
-                        alpha: 0.2,
-                      ),
+                    focusedValueSearchHighlightTextStyle: const TextStyle(
+                      color: Colors.black,
+                      backgroundColor: Colors.yellow,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

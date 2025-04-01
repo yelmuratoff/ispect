@@ -10,7 +10,7 @@ class JsonColorsUtils {
   /// Returns a default color based on the [JsonNodeType].
   static Color getValueColor(Object? value, Color defaultColor) {
     if (value == null) {
-      return Colors.amber;
+      return JsonColors.nullColor;
     }
     if (value is int || value is double || value is num) {
       return JsonColors.numColor;

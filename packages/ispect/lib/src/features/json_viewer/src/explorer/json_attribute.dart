@@ -554,6 +554,9 @@ class _HighlightedText extends StatelessWidget {
             backgroundColor: isSearchMatched
                 ? primaryMatchStyle.backgroundColor
                 : secondaryMatchStyle.backgroundColor,
+            fontWeight: isSearchMatched
+                ? primaryMatchStyle.fontWeight
+                : secondaryMatchStyle.fontWeight,
           ),
         ),
       );
