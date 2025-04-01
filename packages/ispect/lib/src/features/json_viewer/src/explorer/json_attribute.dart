@@ -455,7 +455,7 @@ class _Indentation extends StatelessWidget {
     required this.node,
     required this.indentationPadding,
     this.lineColor = Colors.grey,
-    this.propertyPaddingFactor = 4,
+    this.propertyPaddingFactor = 2,
   });
 
   /// Current node view model
@@ -473,16 +473,50 @@ class _Indentation extends StatelessWidget {
   final double propertyPaddingFactor;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          if (!node.isRoot)
-            SizedBox(
-              width: node.treeDepth > 0
-                  ? indentationPadding * propertyPaddingFactor
-                  : indentationPadding,
+  Widget build(BuildContext context) {
+    const lineWidth = 1.0;
+    return Row(
+      children: [
+        for (int i = 0; i < node.treeDepth; i++)
+          Container(
+            margin: EdgeInsets.only(
+              right: indentationPadding,
             ),
+            width: lineWidth,
+            color: lineColor,
+          ),
+        if (!node.isRoot)
+          SizedBox(
+            width: node.treeDepth > 0
+                ? indentationPadding * propertyPaddingFactor
+                : indentationPadding,
+          ),
+        if (node.isRoot && !node.isCollapsed) ...[
+          Align(
+            alignment: node.childrenCount > 0
+                ? Alignment.bottomCenter
+                : Alignment.center,
+            child: FractionallySizedBox(
+              heightFactor: 0.52,
+              child: Container(
+                width: 1,
+                color: lineColor,
+              ),
+            ),
+          ),
+          Container(
+            height: lineWidth,
+            width: (indentationPadding / 2) - lineWidth,
+            color: lineColor,
+          ),
         ],
-      );
+        if (node.isRoot && node.isCollapsed)
+          SizedBox(
+            width: indentationPadding / 2,
+          ),
+      ],
+    );
+  }
 }
 
 /// Highlights found occurrences of [highlightedText] with [highlightedStyle]
@@ -529,7 +563,7 @@ class _HighlightedText extends StatelessWidget {
     while (true) {
       var index = lowerCaseText.indexOf(lowerCaseQuery, start);
       index = index >= 0 ? index : text.length;
-      final isSearchMatched = index == focusedSearchMatchIndex;
+      // final isSearchMatched = index == focusedSearchMatchIndex;
 
       if (start != index) {
         spans.add(
@@ -548,15 +582,18 @@ class _HighlightedText extends StatelessWidget {
         TextSpan(
           text: text.substring(index, index + highlightedText.length),
           style: style.copyWith(
-            color: isSearchMatched
-                ? primaryMatchStyle.color
-                : secondaryMatchStyle.color,
-            backgroundColor: isSearchMatched
-                ? primaryMatchStyle.backgroundColor
-                : secondaryMatchStyle.backgroundColor,
-            fontWeight: isSearchMatched
-                ? primaryMatchStyle.fontWeight
-                : secondaryMatchStyle.fontWeight,
+            color: primaryMatchStyle.color,
+            backgroundColor: primaryMatchStyle.backgroundColor,
+            fontWeight: primaryMatchStyle.fontWeight,
+            // color: isSearchMatched
+            //     ? primaryMatchStyle.color
+            //     : secondaryMatchStyle.color,
+            // backgroundColor: isSearchMatched
+            //     ? primaryMatchStyle.backgroundColor
+            //     : secondaryMatchStyle.backgroundColor,
+            // fontWeight: isSearchMatched
+            //     ? primaryMatchStyle.fontWeight
+            //     : secondaryMatchStyle.fontWeight,
           ),
         ),
       );

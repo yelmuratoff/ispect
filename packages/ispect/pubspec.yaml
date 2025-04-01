@@ -38,7 +38,6 @@ dependencies:
 
   # UI
   draggable_panel: ^1.0.3
-  scrollable_positioned_list: ^0.3.8
   provider: ^6.1.4
 
 dev_dependencies:

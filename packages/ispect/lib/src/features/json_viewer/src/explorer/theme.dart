@@ -14,7 +14,7 @@ class JsonExplorerTheme {
     this.indentationLineColor = Colors.grey,
     this.highlightColor,
     this.indentationPadding = 8.0,
-    this.propertyIndentationPaddingFactor = 4,
+    this.propertyIndentationPaddingFactor = 2,
   })  : rootKeyTextStyle = rootKeyTextStyle ??
             (propertyKeyTextStyle ??
                 JsonExplorerTheme.defaultTheme.rootKeyTextStyle),
