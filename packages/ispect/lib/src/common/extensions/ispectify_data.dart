@@ -76,7 +76,7 @@ StackTrace: $stackTraceText]''';
   /// Extracts the error message for logging.
   ///
   /// Special handling for HTTP logs and Flutter error details.
-  String? get errorLogText {
+  String? get httpLogText {
     var txt = exception?.toString();
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {

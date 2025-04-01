@@ -29,7 +29,7 @@ final dummyDio = Dio(
 void main() {
   final iSpectify = ISpectifyFlutter.init(
     options: ISpectifyOptions(
-      truncateLength: 500,
+      logTruncateLength: 500,
     ),
   );
 

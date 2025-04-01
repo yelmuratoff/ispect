@@ -46,7 +46,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
     final iSpect = ISpect.read(context);
     final data = widget.data;
     final stackTrace = data.stackTraceLogText;
-    final errorMessage = data.errorLogText;
+    final httpLogText = data.httpLogText;
     final type = data.typeText;
 
     return ISpectExpansionTile(
@@ -76,7 +76,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
           ),
         ),
         message: data.textMessage,
-        errorMessage: errorMessage,
+        errorMessage: httpLogText,
         expanded: _isExpanded,
       ),
       children: [
@@ -87,7 +87,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
             expanded: _isExpanded,
             type: type,
             message: widget.data.textMessage,
-            errorMessage: errorMessage,
+            errorMessage: httpLogText,
             isHTTP: widget.data.isHttpLog,
           ),
         if (_isExpanded && stackTrace != null && stackTrace.isNotEmpty)

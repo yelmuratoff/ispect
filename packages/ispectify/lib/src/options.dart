@@ -71,7 +71,7 @@ class ISpectifyOptions {
   /// - [useHistory]: Whether to store logs in history.
   /// - [useConsoleLogs]: Whether to print logs to the console.
   /// - [maxHistoryItems]: Maximum number of logs to retain in history.
-  /// - [truncateLength]: Maximum length for log messages in console.
+  /// - [logTruncateLength]: Maximum length for log messages in console.
   /// - [titles]: Custom log titles.
   /// - [colors]: Custom log colors.
   ISpectifyOptions({
@@ -79,13 +79,13 @@ class ISpectifyOptions {
     bool useHistory = true,
     bool useConsoleLogs = true,
     int maxHistoryItems = 1000,
-    int truncateLength = 10000,
+    int logTruncateLength = 10000,
     Map<String, String>? titles,
     Map<String, AnsiPen>? colors,
   })  : _useHistory = useHistory,
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
-        _truncateLength = truncateLength,
+        _logTruncateLength = logTruncateLength,
         titles = {..._defaultTitles, if (titles != null) ...titles},
         colors = {..._defaultColors, if (colors != null) ...colors};
 
@@ -102,8 +102,8 @@ class ISpectifyOptions {
   final int _maxHistoryItems;
 
   /// Truncate length for log messages in console.
-  int get truncateLength => _truncateLength;
-  final int _truncateLength;
+  int get logTruncateLength => _logTruncateLength;
+  final int _logTruncateLength;
 
   /// Whether logging is globally enabled.
   bool enabled;
@@ -133,7 +133,7 @@ class ISpectifyOptions {
     bool? useHistory,
     bool? useConsoleLogs,
     int? maxHistoryItems,
-    int? truncateLength,
+    int? logTruncateLength,
     Map<String, String>? titles,
     Map<String, AnsiPen>? colors,
   }) =>
@@ -142,7 +142,7 @@ class ISpectifyOptions {
         useHistory: useHistory ?? _useHistory,
         useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
         maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
-        truncateLength: truncateLength ?? _truncateLength,
+        logTruncateLength: logTruncateLength ?? _logTruncateLength,
         titles: titles ?? this.titles,
         colors: colors ?? this.colors,
       );

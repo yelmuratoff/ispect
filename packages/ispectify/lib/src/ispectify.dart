@@ -419,7 +419,7 @@ class ISpectify {
     if (_options.useConsoleLogs) {
       _logger.log(
         '${data.header}${data.textMessage}'.truncate(
-          maxLength: _options.truncateLength,
+          maxLength: _options.logTruncateLength,
         ),
         level: data.logLevel ?? (isError ? LogLevel.error : null),
         pen: data.pen ?? _options.penByKey(data.key),
