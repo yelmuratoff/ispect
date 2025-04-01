@@ -597,11 +597,8 @@ class InspectorState extends State<Inspector> {
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
       ),
-      settings: RouteSettings(
+      settings: const RouteSettings(
         name: 'ISpectScreen',
-        arguments: {
-          'options': widget.options,
-        },
       ),
     );
     if (_controller.inLoggerPage) {

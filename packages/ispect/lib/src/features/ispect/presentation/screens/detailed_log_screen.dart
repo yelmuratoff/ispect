@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/json_viewer/src/explorer/explorer.dart';
 import 'package:ispect/src/features/json_viewer/src/explorer/store.dart';
 import 'package:ispect/src/features/json_viewer/src/explorer/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class DetailedLogScreen extends StatefulWidget {
   const DetailedLogScreen({required this.data, super.key});
@@ -17,20 +19,28 @@ class DetailedLogScreen extends StatefulWidget {
 
 class _DetailedLogScreenState extends State<DetailedLogScreen> {
   late final ISpectifyData _data;
-  final JsonExplorerStore store = JsonExplorerStore();
+  final JsonExplorerStore _store = JsonExplorerStore();
+  final _searchController = TextEditingController();
+  final _itemScrollController = ItemScrollController();
 
   @override
   void initState() {
     super.initState();
     _data = widget.data;
-    store.buildNodes(_data.toJson(), areAllCollapsed: true);
+    _store.buildNodes(_data.toJson(), areAllCollapsed: true);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _searchController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return ChangeNotifierProvider.value(
-      value: store,
+      value: _store,
       child: Scaffold(
         backgroundColor: iSpect.theme.backgroundColor(context),
         appBar: AppBar(
@@ -43,42 +53,134 @@ class _DetailedLogScreenState extends State<DetailedLogScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 4),
-              child: IconButton(
-                icon: const Icon(Icons.copy_rounded),
-                onPressed: () {
-                  copyClipboard(context, value: prettyJson(_data.toJson()));
-                },
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.unfold_more_rounded),
+                    onPressed: _store.expandAll,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.unfold_less_rounded),
+                    onPressed: _store.collapseAll,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded),
+                    onPressed: () {
+                      copyClipboard(
+                        context,
+                        value: _data.toJson(truncated: true).toString(),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],
         ),
         body: Consumer<JsonExplorerStore>(
-          builder: (context, model, child) => JsonExplorer(
-            nodes: store.displayNodes,
-            theme: JsonExplorerTheme(
-              propertyKeyTextStyle: TextStyle(
-                color: context.ispectTheme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
+          builder: (context, model, child) => Column(
+            children: [
+              //
+              // <--- Search bar --->
+              //
+              const Gap(12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SearchBar(
+                        constraints: const BoxConstraints(
+                          minHeight: 45,
+                        ),
+                        shape: const WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(12),
+                            ),
+                          ),
+                        ),
+                        // trailing: [
+                        //   IconButton(
+                        //     icon: const Icon(Icons.search),
+                        //     onPressed: () {
+                        //       model.search(_searchController.text);
+                        //       // ..expandSearchResults();
+                        //     },
+                        //   ),
+                        // ],
+                        onChanged: (value) => model.search(value),
+                        hintText: context.ispectL10n.search,
+                        controller: _searchController,
+                        elevation: WidgetStateProperty.all(0),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (model.searchResults.isNotEmpty)
+                      Text(
+                        _searchFocusText(),
+                      ),
+                    if (model.searchResults.isNotEmpty)
+                      IconButton(
+                        onPressed: () {
+                          model.focusPreviousSearchResult();
+                          _scrollToSearchMatch(
+                            model,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_drop_up),
+                      ),
+                    if (model.searchResults.isNotEmpty)
+                      IconButton(
+                        onPressed: () {
+                          model.focusNextSearchResult();
+                          _scrollToSearchMatch(
+                            model,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_drop_down),
+                      ),
+                  ],
+                ),
               ),
-              rootKeyTextStyle: TextStyle(
-                color: context.ispectTheme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
+              const Gap(12),
+              //
+              // <--- Json Tree --->
+              //
+              Expanded(
+                child: JsonExplorer(
+                  nodes: model.displayNodes,
+                  itemScrollController: _itemScrollController,
+                  theme: JsonExplorerTheme(
+                    propertyKeyTextStyle: TextStyle(
+                      color: context.ispectTheme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    rootKeyTextStyle: TextStyle(
+                      color: context.ispectTheme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    valueSearchHighlightTextStyle: TextStyle(
+                      color: Colors.yellowAccent,
+                      backgroundColor: Colors.yellow.withValues(
+                        alpha: 0.2,
+                      ),
+                      fontWeight: FontWeight.bold,
+                    ),
+                    focusedValueSearchHighlightTextStyle: TextStyle(
+                      color: Colors.greenAccent,
+                      backgroundColor: Colors.green.withValues(
+                        alpha: 0.2,
+                      ),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const Gap(32),
+            ],
           ),
         ),
-        // body: JsonTreeView(
-        //   showControls: true,
-        //   json: _data.toJson(),
-        //   searchHighlightColor: context.ispectTheme.colorScheme.primary,
-        // keyStyle: TextStyle(
-        //   color: context.ispectTheme.colorScheme.primary,
-        //   fontWeight: FontWeight.bold,
-        // ),
-        //   valueStyle: TextStyle(
-        //     color: context.ispectTheme.colorScheme.secondary,
-        //   ),
-        // ),
       ),
     );
   }
@@ -89,4 +191,35 @@ class _DetailedLogScreenState extends State<DetailedLogScreen> {
         'http-error' => 'HTTP Error',
         _ => 'Detailed log: $key',
       };
+
+  String _searchFocusText() =>
+      '${_store.focusedSearchResultIndex + 1} of ${_store.searchResults.length}';
+
+  Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
+    final index = store.focusedSearchResultIndex;
+    final parent = store.focusedSearchResult.node.parent;
+    final parentIndex = _store.displayNodes.indexOf(parent);
+
+    if (parent != null) {
+      _store.expandParentNodes(
+        store.focusedSearchResult.node,
+      );
+
+      await Future<void>.delayed(
+        const Duration(milliseconds: 100),
+      );
+
+      if (parentIndex != -1) {
+        await _itemScrollController.scrollTo(
+          index: parentIndex,
+          duration: const Duration(milliseconds: 300),
+        );
+      }
+    } else if (index != -1) {
+      await _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 300),
+      );
+    }
+  }
 }

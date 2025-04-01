@@ -173,6 +173,14 @@ class NodeViewModelState extends ChangeNotifier {
   /// array.
   bool get isRoot => isClass || isArray;
 
+  bool get isLast {
+    // if (parent == null) {
+    //   return true;
+    // }
+    final children = parent?.children;
+    return children?.last == this;
+  }
+
   /// Returns a list of this node's children.
   Iterable<NodeViewModelState> get children {
     if (isClass) {
@@ -703,19 +711,19 @@ class JsonExplorerStore extends ChangeNotifier {
   /// [searchResults].
   void expandSearchResults() {
     for (final searchResult in searchResults) {
-      _expandParentNodes(searchResult.node);
+      expandParentNodes(searchResult.node);
     }
   }
 
   /// Expands all the parent nodes of the given [node].
-  void _expandParentNodes(NodeViewModelState node) {
+  void expandParentNodes(NodeViewModelState node) {
     final parent = node.parent;
 
     if (parent == null) {
       return;
     }
 
-    _expandParentNodes(parent);
+    expandParentNodes(parent);
 
     expandNode(parent);
   }

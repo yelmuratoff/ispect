@@ -70,9 +70,8 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
         onHttpTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => DetailedLogScreen(data: data),
-            settings: RouteSettings(
-              name: 'Detailed Log Page',
-              arguments: data,
+            settings: const RouteSettings(
+              name: 'Detailed Log Screen',
             ),
           ),
         ),

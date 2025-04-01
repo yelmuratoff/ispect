@@ -242,7 +242,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   }
 
   void _copyISpectifyDataItemText(ISpectifyData data) {
-    final text = data.textMessage;
+    final text = data.toJson(truncated: true).toString();
     copyClipboard(context, value: text);
   }
 

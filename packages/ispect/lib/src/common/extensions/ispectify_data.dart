@@ -106,15 +106,30 @@ StackTrace: $stackTraceText]''';
   /// Converts the log data into a JSON representation.
   ///
   /// Omits `null` values for a cleaner output.
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson({
+    bool truncated = false,
+  }) =>
+      {
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
-        if (title != null) 'title': title,
+        if (title != null)
+          'title': truncated && title != null ? title.truncated : title,
         if (logLevel != null) 'log-level': logLevel.toString(),
-        if (message != null) 'message': message.truncated,
-        if (exception != null) 'exception': exception.toString().truncated,
-        if (error != null) 'error': error.toString().truncated,
-        if (stackTrace != null) 'stack-trace': stackTrace.toString().truncated,
-        if (additionalData != null) 'additional-data': additionalData,
+        if (message != null) 'message': truncated ? message.truncated : message,
+        if (exception != null)
+          'exception':
+              truncated ? exception.toString().truncated : exception.toString(),
+        if (error != null)
+          'error': truncated ? error.toString().truncated : error.toString(),
+        if (stackTrace != null)
+          'stack-trace': truncated
+              ? stackTrace.toString().truncated
+              : stackTrace.toString(),
+        if (additionalData != null)
+          'additional-data': truncated
+              ? prettyJson(
+                  additionalData,
+                ).truncated
+              : additionalData,
       };
 }

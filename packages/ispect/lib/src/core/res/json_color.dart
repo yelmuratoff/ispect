@@ -20,7 +20,7 @@ class JsonColors {
   static const arrayColor = Colors.blue;
 
   /// Color used for numeric values in JSON.
-  static const numColor = Colors.purpleAccent;
+  static const numColor = Colors.yellow;
 
   /// Color used for string values in JSON.
   static const stringColor = Color(0xFFCD44D9);

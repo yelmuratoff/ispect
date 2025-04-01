@@ -238,20 +238,28 @@ class _HomeState extends State<_Home> {
               FilledButton(
                 onPressed: () {
                   final largeList = List.generate(
-                      3001, (index) => {'id': index, 'value': 'Item $index'});
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
                   final response = Response(
                     requestOptions: RequestOptions(path: '/mock-large'),
                     data: largeList,
                     statusCode: 200,
                   );
 
-                  // Мокаем как-будто это реальный ответ от Dio
                   for (var interceptor in dio.interceptors) {
                     if (interceptor is ISpectifyDioLogger) {
                       interceptor.onResponse(
                           response, ResponseInterceptorHandler());
                     }
                   }
+                },
+                child: const Text('Mock Large JSON Response'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  // Print large JSON response
+                  final largeList = List.generate(
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
+                  ISpect.logger.print(largeList.toString());
                 },
                 child: const Text('Mock Large JSON Response'),
               ),

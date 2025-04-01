@@ -418,7 +418,7 @@ class ISpectify {
 
     if (_options.useConsoleLogs) {
       _logger.log(
-        '${data.header}${data.textMessage}',
+        '${data.header}${data.textMessage}'.truncated,
         level: data.logLevel ?? (isError ? LogLevel.error : null),
         pen: data.pen ?? _options.penByKey(data.key),
       );
