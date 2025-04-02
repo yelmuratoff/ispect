@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.0.6
+  - Improved JSON handling with async and lazy loading for better performance on large structures.
+  - Custom Performance Overlay to visualize frame timings and improve performance insights.
+  - Added search, highlighting, and expand/collapse.
+  - Log Card Refactoring to enhance readability and maintainability.
+  - Improved error handling with filtering.
+  - Added `logTruncateLength` to `ISpectifyOptions` for log truncation.
+  - Removed `ispect_ai` package and dependencies due to security concerns.
+  - Updated documentation and removed related references.
+
 ## 4.0.5
 - Display of errors has been changed. Now, if the errors are large, only the first 10,000 characters will be displayed.
 This is done in order not to overload the widget and not to cause the application to hang.
