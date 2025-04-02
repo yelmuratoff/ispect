@@ -197,7 +197,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
     final devicePixelRatio = mediaQuery?.devicePixelRatio ?? 1;
 
     final width = 448.0 * devicePixelRatio.clamp(1.0, 2.0);
-    final height = 80.0 * devicePixelRatio.clamp(0, 1.0);
+    final height = 80.0 * devicePixelRatio.clamp(1.0, 2.0);
 
     return SizedBox(
       width: width,
