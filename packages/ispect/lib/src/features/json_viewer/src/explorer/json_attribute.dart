@@ -430,17 +430,19 @@ class _PropertyNodeWidget extends StatelessWidget {
 
     return Row(
       children: [
-        JsonCard(
-          backgroundColor: valueColor,
-          child: _HighlightedText(
-            text: text,
-            highlightedText: searchTerm,
-            style: style.copyWith(
-              color: valueColor,
+        Flexible(
+          child: JsonCard(
+            backgroundColor: valueColor,
+            child: _HighlightedText(
+              text: text,
+              highlightedText: searchTerm,
+              style: style.copyWith(
+                color: valueColor,
+              ),
+              primaryMatchStyle: focusedSearchHighlightStyle,
+              secondaryMatchStyle: searchHighlightStyle,
+              focusedSearchMatchIndex: focusedSearchMatchIndex,
             ),
-            primaryMatchStyle: focusedSearchHighlightStyle,
-            secondaryMatchStyle: searchHighlightStyle,
-            focusedSearchMatchIndex: focusedSearchMatchIndex,
           ),
         ),
       ],
