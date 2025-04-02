@@ -150,8 +150,8 @@ class JsonParser {
     // Create a placeholder result that will be populated
     JsonNode result;
 
-    // Use a scheduled microtask to perform parsing without blocking the UI
-    scheduleMicrotask(() async {
+    // Use Future.delayed with zero duration for predictable asynchronous execution without blocking the UI
+    Future.delayed(Duration.zero, () async {
       // For large data, we'll chunk the parsing process
       if (data is Map && data.length > 100) {
         final tempMap = <String, dynamic>{};
