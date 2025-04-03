@@ -1,6 +1,6 @@
 name: ispectify
 description: An additional package for ISpect (logging and handling). Based on Talker.
-version: 4.0.7
+version: 4.0.8
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -10,6 +10,7 @@ environment:
 dependencies:
   ansicolor: ^2.0.3
   web: ^1.1.1
+  collection: ^1.19.1
 
 dev_dependencies:
   lints: ^5.1.1
