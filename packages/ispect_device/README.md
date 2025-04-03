@@ -72,7 +72,7 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
    - Device and app info *([ispect_device](https://pub.dev/packages/ispect_device))*
 - ✅ Feedback builder from [pub.dev/feedback](https://pub.dev/packages/feedback)
 - ✅ Performance tracker
-- ✅ AI helper
+
 
 <!----------------------------
 --------Showcase images-------
