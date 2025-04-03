@@ -85,7 +85,7 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="200" style="margin: 5px;" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/feedback.png?raw=true" width="200" style="margin: 5px;" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/monitoring.png?raw=true" width="200" style="margin: 5px;" />
+
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="200" style="margin: 5px;" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="200" style="margin: 5px;" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="200" style="margin: 5px;" />
