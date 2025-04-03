@@ -4,18 +4,63 @@ import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/models/_models.dart';
+import 'package:ispectify_http/src/settings.dart';
 
 class ISpectifyHttpLogger extends InterceptorContract {
-  ISpectifyHttpLogger({ISpectify? iSpectify}) {
+  ISpectifyHttpLogger({
+    ISpectify? iSpectify,
+    this.settings = const ISpectifyHttpLoggerSettings(),
+  }) {
     _iSpectify = iSpectify ?? ISpectify();
   }
 
   late ISpectify _iSpectify;
 
+  /// [ISpectifyHttpLogger] settings and customization
+  ISpectifyHttpLoggerSettings settings;
+
+  /// Method to update [settings] of [ISpectifyHttpLogger]
+  void configure({
+    bool? printResponseData,
+    bool? printResponseHeaders,
+    bool? printResponseMessage,
+    bool? printErrorData,
+    bool? printErrorHeaders,
+    bool? printErrorMessage,
+    bool? printRequestData,
+    bool? printRequestHeaders,
+    AnsiPen? requestPen,
+    AnsiPen? responsePen,
+    AnsiPen? errorPen,
+  }) {
+    settings = settings.copyWith(
+      printRequestData: printRequestData,
+      printRequestHeaders: printRequestHeaders,
+      printResponseData: printResponseData,
+      printErrorData: printErrorData,
+      printErrorHeaders: printErrorHeaders,
+      printErrorMessage: printErrorMessage,
+      printResponseHeaders: printResponseHeaders,
+      printResponseMessage: printResponseMessage,
+      requestPen: requestPen,
+      responsePen: responsePen,
+      errorPen: errorPen,
+    );
+  }
+
   @override
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
+    if (!settings.enabled) {
+      return request;
+    }
+
+    final accepted = settings.requestFilter?.call(request) ?? true;
+    if (!accepted) {
+      return request;
+    }
+
     final message = '${request.url}';
     _iSpectify.logCustom(
       HttpRequestLog(
@@ -23,8 +68,10 @@ class ISpectifyHttpLogger extends InterceptorContract {
         method: request.method,
         url: request.url.toString(),
         path: request.url.path,
-        headers: request.headers,
-        body: (request is Request) ? request.body : null,
+        headers: settings.printRequestHeaders ? request.headers : null,
+        body: settings.printRequestData
+            ? ((request is Request) ? request.body : null)
+            : null,
       ),
     );
     return request;
@@ -34,12 +81,26 @@ class ISpectifyHttpLogger extends InterceptorContract {
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
+    if (!settings.enabled) {
+      return response;
+    }
+
+    final accepted = settings.responseFilter?.call(response) ?? true;
+    if (!accepted) {
+      return response;
+    }
+
     final message = '${response.request?.url}';
     Map<String, dynamic>? body;
 
-    if (response is Response) {
-      body = jsonDecode(response.body) as Map<String, dynamic>;
-    } else if (response.request is MultipartRequest) {
+    if (response is Response && settings.printResponseData) {
+      try {
+        body = jsonDecode(response.body) as Map<String, dynamic>;
+      } catch (_) {
+        body = {'raw': response.body};
+      }
+    } else if (response.request is MultipartRequest &&
+        settings.printRequestData) {
       final request = response.request! as MultipartRequest;
       body = {
         'fields': request.fields,
@@ -57,6 +118,11 @@ class ISpectifyHttpLogger extends InterceptorContract {
     }
 
     if (response.statusCode >= 400 && response.statusCode < 600) {
+      final errorAccepted = settings.errorFilter?.call(response) ?? true;
+      if (!errorAccepted) {
+        return response;
+      }
+
       _iSpectify.logCustom(
         HttpErrorLog(
           message,
@@ -64,9 +130,11 @@ class ISpectifyHttpLogger extends InterceptorContract {
           url: response.request?.url.toString(),
           path: response.request?.url.path,
           statusCode: response.statusCode,
-          statusMessage: response.reasonPhrase,
-          requestHeaders: response.request?.headers,
-          headers: response.headers,
+          statusMessage:
+              settings.printErrorMessage ? response.reasonPhrase : null,
+          requestHeaders:
+              settings.printRequestHeaders ? response.request?.headers : null,
+          headers: settings.printErrorHeaders ? response.headers : null,
           body: body ?? {},
           responseData: HttpResponseData(
             baseResponse: response,
@@ -86,11 +154,13 @@ class ISpectifyHttpLogger extends InterceptorContract {
           url: response.request?.url.toString(),
           path: response.request?.url.path,
           statusCode: response.statusCode,
-          statusMessage: response.reasonPhrase,
-          requestHeaders: response.request?.headers,
-          headers: response.headers,
-          requestBody: body ?? {},
-          responseBody: response,
+          statusMessage:
+              settings.printResponseMessage ? response.reasonPhrase : null,
+          requestHeaders:
+              settings.printRequestHeaders ? response.request?.headers : null,
+          headers: settings.printResponseHeaders ? response.headers : null,
+          requestBody: settings.printRequestData ? body : null,
+          responseBody: settings.printResponseData ? response : null,
           responseData: HttpResponseData(
             baseResponse: response,
             requestData: HttpRequestData(response.request),

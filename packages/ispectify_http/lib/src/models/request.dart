@@ -24,7 +24,7 @@ class HttpRequestLog extends ISpectifyData {
   final String method;
   final String url;
   final String path;
-  final Map<String, dynamic> headers;
+  final Map<String, String>? headers;
   final Object? body;
 
   static const getKey = 'http-request';
@@ -34,7 +34,7 @@ class HttpRequestLog extends ISpectifyData {
     var msg = '[$method] $message';
 
     try {
-      if (headers.isNotEmpty) {
+      if (headers?.isNotEmpty ?? false) {
         final prettyHeaders = encoder.convert(headers);
         msg += '\nHeaders: $prettyHeaders';
       }

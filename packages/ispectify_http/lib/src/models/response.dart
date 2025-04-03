@@ -26,7 +26,7 @@ class HttpResponseLog extends ISpectifyData {
   final String? path;
   final int? statusCode;
   final String? statusMessage;
-  final Map<String, dynamic>? requestHeaders;
+  final Map<String, String>? requestHeaders;
   final Map<String, String>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
