@@ -86,7 +86,7 @@ class JsonExplorer extends StatelessWidget {
     this.propertyNameFormatter,
     this.valueFormatter,
     this.valueStyleBuilder,
-    this.itemSpacing = 2,
+    this.itemSpacing = 4,
     this.physics,
     this.maxRootNodeWidth,
     JsonExplorerTheme? theme,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/src/explorer/explorer.dart';
 import 'package:ispect/src/features/json_viewer/src/explorer/json_item_card.dart';
@@ -19,7 +20,7 @@ class JsonAttribute extends StatelessWidget {
     this.propertyNameFormatter,
     this.valueFormatter,
     this.valueStyleBuilder,
-    this.itemSpacing = 2,
+    this.itemSpacing = 4,
     this.maxRootNodeWidth,
   });
 
@@ -122,21 +123,38 @@ class JsonAttribute extends StatelessWidget {
             padding: const EdgeInsets.only(
               bottom: 4,
             ),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: node.isRoot
-                    ? CrossAxisAlignment.center
-                    : CrossAxisAlignment.start,
-                children: [
-                  _Indentation(
-                    node: node,
-                    indentationPadding: theme.indentationPadding,
-                    propertyPaddingFactor:
-                        theme.propertyIndentationPaddingFactor,
-                    lineColor: theme.indentationLineColor,
-                  ),
-                  if (node.isRoot)
-                    SizedBox(
+            child: Flex(
+              direction: Axis.horizontal,
+              crossAxisAlignment: node.isRoot
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
+              children: [
+                // if (node.isRoot)
+                //   Flexible(
+                //     child: Gap(
+                //       node.treeDepth > 0
+                //           ? node.treeDepth * theme.indentationPadding
+                //           : theme.indentationPadding,
+                //     ),
+                //   )
+                // else ...[
+                //   Flexible(
+                //     child: Gap(node.treeDepth * itemSpacing),
+                //   ),
+                // ],
+                // if (!node.isRoot)
+                //   Gap(
+                //     ,
+                //   ),
+                _Indentation(
+                  node: node,
+                  indentationPadding: theme.indentationPadding,
+                  propertyPaddingFactor: theme.propertyIndentationPaddingFactor,
+                  lineColor: theme.indentationLineColor,
+                ),
+                if (node.isRoot)
+                  Flexible(
+                    child: SizedBox(
                       width: 24,
                       child: collapsableToggleBuilder?.call(
                             context,
@@ -144,27 +162,16 @@ class JsonAttribute extends StatelessWidget {
                           ) ??
                           _defaultCollapsableToggleBuilder(context, node),
                     ),
-                  //
-                  // <-- Key -->
-                  //
-                  if (maxRootNodeWidth != null)
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: maxRootNodeWidth!,
-                      ),
-                      child: JsonCard(
-                        backgroundColor: theme.rootKeyTextStyle.color,
-                        child: _RootNodeWidget(
-                          node: node,
-                          rootNameFormatter: rootNameFormatter,
-                          propertyNameFormatter: propertyNameFormatter,
-                          searchTerm: searchTerm,
-                          theme: theme,
-                        ),
-                      ),
-                    )
-                  else
-                    JsonCard(
+                  ),
+                //
+                // <-- Key -->
+                //
+                if (maxRootNodeWidth != null)
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: maxRootNodeWidth!,
+                    ),
+                    child: JsonCard(
                       backgroundColor: theme.rootKeyTextStyle.color,
                       child: _RootNodeWidget(
                         node: node,
@@ -174,63 +181,88 @@ class JsonAttribute extends StatelessWidget {
                         theme: theme,
                       ),
                     ),
-                  //
-                  // <-- Key Separator -->
-                  //
-                  SizedBox(
+                  )
+                else
+                  JsonCard(
+                    backgroundColor: theme.rootKeyTextStyle.color,
+                    child: _RootNodeWidget(
+                      node: node,
+                      rootNameFormatter: rootNameFormatter,
+                      propertyNameFormatter: propertyNameFormatter,
+                      searchTerm: searchTerm,
+                      theme: theme,
+                    ),
+                  ),
+                //
+                // <-- Key Separator -->
+                //
+                Flexible(
+                  child: SizedBox(
                     width: 8,
                     child: Text(
                       ':',
                       style: theme.rootKeyTextStyle,
                     ),
                   ),
-                  //
-                  // <--- Array Suffix --->
-                  //
-                  if (node.value is List) ...[
-                    const SizedBox(width: 4),
-                    Text(
-                      '[${node.children.length}]',
-                      style: theme.rootKeyTextStyle.copyWith(
-                        color: JsonColors.arrayColor,
+                ),
+                //
+                // <--- Array Suffix --->
+                //
+                if (node.value is List) ...[
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        '[${node.children.length}]',
+                        style: theme.rootKeyTextStyle.copyWith(
+                          color: JsonColors.arrayColor,
+                        ),
                       ),
                     ),
-                  ],
-                  //
-                  // <--- Map Suffix --->
-                  //
-                  if (node.value is Map) ...[
-                    const SizedBox(width: 4),
-                    Text(
-                      '{${node.children.length}}',
-                      style: theme.rootKeyTextStyle.copyWith(
-                        color: JsonColors.objectColor,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(width: 4),
-                  if (node.isRoot)
-                    rootInformationBuilder?.call(context, node) ??
-                        const SizedBox.shrink()
-                  //
-                  // <-- Value -->
-                  //
-                  else
-                    Expanded(
-                      child: _PropertyNodeWidget(
-                        node: node,
-                        searchTerm: searchTerm,
-                        valueFormatter: valueFormatter,
-                        style: valueStyle.style,
-                        searchHighlightStyle:
-                            theme.valueSearchHighlightTextStyle,
-                        focusedSearchHighlightStyle:
-                            theme.focusedValueSearchHighlightTextStyle,
-                      ),
-                    ),
+                  ),
                 ],
-              ),
+                //
+                // <--- Map Suffix --->
+                //
+                if (node.value is Map) ...[
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        '{${node.children.length}}',
+                        style: theme.rootKeyTextStyle.copyWith(
+                          color: JsonColors.objectColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
+                if (node.isRoot)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: rootInformationBuilder?.call(context, node) ??
+                          const SizedBox.shrink(),
+                    ),
+                  )
+                //
+                // <-- Value -->
+                //
+                else
+                  Expanded(
+                    flex: 10,
+                    child: _PropertyNodeWidget(
+                      node: node,
+                      searchTerm: searchTerm,
+                      valueFormatter: valueFormatter,
+                      style: valueStyle.style,
+                      searchHighlightStyle: theme.valueSearchHighlightTextStyle,
+                      focusedSearchHighlightStyle:
+                          theme.focusedValueSearchHighlightTextStyle,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -469,6 +501,7 @@ class _Indentation extends StatelessWidget {
   Widget build(BuildContext context) {
     const lineWidth = 1.0;
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < node.treeDepth; i++)
           Container(
@@ -478,35 +511,35 @@ class _Indentation extends StatelessWidget {
             width: lineWidth,
             color: lineColor,
           ),
-        if (!node.isRoot)
-          SizedBox(
-            width: node.treeDepth > 0
-                ? indentationPadding * propertyPaddingFactor
-                : indentationPadding,
-          ),
-        if (node.isRoot && !node.isCollapsed) ...[
-          Align(
-            alignment: node.childrenCount > 0
-                ? Alignment.bottomCenter
-                : Alignment.center,
-            child: FractionallySizedBox(
-              heightFactor: 0.52,
-              child: Container(
-                width: 1,
-                color: lineColor,
-              ),
-            ),
-          ),
-          Container(
-            height: lineWidth,
-            width: (indentationPadding / 2) - lineWidth,
-            color: lineColor,
-          ),
-        ],
-        if (node.isRoot && node.isCollapsed)
-          SizedBox(
-            width: indentationPadding / 2,
-          ),
+        // if (!node.isRoot)
+        //   SizedBox(
+        //     width: node.treeDepth > 0
+        //         ? indentationPadding * propertyPaddingFactor
+        //         : indentationPadding,
+        //   ),
+        // if (node.isRoot && !node.isCollapsed) ...[
+        //   Align(
+        //     alignment: node.childrenCount > 0
+        //         ? Alignment.bottomCenter
+        //         : Alignment.center,
+        //     child: FractionallySizedBox(
+        //       heightFactor: 0.52,
+        //       child: Container(
+        //         width: 1,
+        //         color: lineColor,
+        //       ),
+        //     ),
+        //   ),
+        //   Container(
+        //     height: lineWidth,
+        //     width: (indentationPadding / 2) - lineWidth,
+        //     color: lineColor,
+        //   ),
+        // ],
+        // if (node.isRoot && node.isCollapsed)
+        //   SizedBox(
+        //     width: indentationPadding / 2,
+        //   ),
       ],
     );
   }
