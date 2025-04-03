@@ -160,15 +160,15 @@ class ISpectify {
         _errorHandler.handle(exception, stackTrace, message?.toString());
     if (data is ISpectifyError) {
       _observer?.onError(data);
-      _handleErrorData(data);
+      _processLog(data);
       return;
     }
     if (data is ISpectifyException) {
       _observer?.onException(data);
-      _handleErrorData(data);
+      _processLog(data);
       return;
     }
-    _handleLogData(data);
+    _processLog(data);
   }
 
   /// Creates a log entry with custom parameters.
@@ -201,7 +201,7 @@ class ISpectify {
   /// This allows for creating fully customized log entries.
   ///
   /// - [log]: The custom log data to process.
-  void logCustom(ISpectifyData log) => _handleLogData(log);
+  void logCustom(ISpectifyData log) => _processLog(log);
 
   /// Creates a critical level log entry.
   ///
@@ -312,7 +312,7 @@ class ISpectify {
   ///
   /// - [message]: The log message.
   void good(String message) {
-    _handleLogData(
+    _processLog(
       GoodLog(message),
     );
   }
@@ -331,7 +331,7 @@ class ISpectify {
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
-    _handleLogData(
+    _processLog(
       AnalyticsLog(
         analytics: analytics,
         '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
@@ -343,7 +343,7 @@ class ISpectify {
   ///
   /// - [message]: The log message.
   void print(String message) {
-    _handleLogData(PrintLog(message));
+    _processLog(PrintLog(message));
   }
 
   /// Creates a route log entry.
@@ -352,7 +352,7 @@ class ISpectify {
   ///
   /// - [message]: The log message, typically a route name or path.
   void route(String message) {
-    _handleLogData(RouteLog(message));
+    _processLog(RouteLog(message));
   }
 
   /// Creates a provider log entry.
@@ -361,7 +361,7 @@ class ISpectify {
   ///
   /// - [message]: The log message.
   void provider(String message) {
-    _handleLogData(ProviderLog(message));
+    _processLog(ProviderLog(message));
   }
 
   /// Internal method to handle basic log creation.
@@ -385,21 +385,32 @@ class ISpectify {
       pen: pen ?? _options.penByKey(type.key),
       logLevel: logLevel,
     );
-    _handleLogData(data);
+    _processLog(data);
   }
 
-  /// Handles error-specific log data.
+  /// Processes a log entry based on the provided [ISpectifyData].
   ///
-  /// This method processes error logs, checking if logging is enabled and
-  /// if the log passes the filter before adding it to the stream and outputs.
-  void _handleErrorData(ISpectifyData data) {
-    if (!_options.enabled) {
-      return;
-    }
+  /// This method performs the following steps:
+  /// 1. Checks if logging is enabled via the `_options.enabled` flag.
+  /// 2. Verifies if the log entry passes the filter criteria using `_isApprovedByFilter`.
+  /// 3. If the log is an error (`isError` is `true`), it triggers the `onError` callback
+  ///    on the `_observer`. Otherwise, it triggers the `onLog` callback.
+  /// 4. Adds the log entry to the `_iSpectifyStreamController` stream.
+  /// 5. Handles additional output processing via `_handleForOutputs`.
+  /// 6. If console logging is enabled (`_options.useConsoleLogs`), logs the message
+  ///    to the console using `_logger.log` with the appropriate log level and pen.
+  ///
+  /// Parameters:
+  /// - [data]: The log entry to process, encapsulated in an [ISpectifyData] object.
+  /// - [isError]: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
+  void _processLog(ISpectifyData data, {bool isError = false}) {
+    if (!_options.enabled) return;
+    if (!_isApprovedByFilter(data)) return;
 
-    final isApproved = _isApprovedByFilter(data);
-    if (!isApproved) {
-      return;
+    if (isError) {
+      _observer?.onError(data);
+    } else {
+      _observer?.onLog(data);
     }
 
     _iSpectifyStreamController.add(data);
@@ -407,38 +418,10 @@ class ISpectify {
 
     if (_options.useConsoleLogs) {
       _logger.log(
-        '${data.header}${data.textMessage}',
-        level: data.logLevel ?? LogLevel.error,
-      );
-    }
-  }
-
-  /// Handles standard log data.
-  ///
-  /// This is the main processing pipeline for log entries. It checks if
-  /// logging is enabled and if the log passes the filter before notifying
-  /// observers, adding to the stream, and sending to outputs.
-  void _handleLogData(
-    ISpectifyData data, {
-    LogLevel? logLevel,
-  }) {
-    if (!_options.enabled) {
-      return;
-    }
-
-    final isApproved = _isApprovedByFilter(data);
-    if (!isApproved) {
-      return;
-    }
-
-    _observer?.onLog(data);
-    _iSpectifyStreamController.add(data);
-    _handleForOutputs(data);
-
-    if (_options.useConsoleLogs) {
-      _logger.log(
-        '${data.header}${data.textMessage}',
-        level: logLevel ?? data.logLevel,
+        '${data.header}${data.textMessage}'.truncate(
+          maxLength: _options.logTruncateLength,
+        ),
+        level: data.logLevel ?? (isError ? LogLevel.error : null),
         pen: data.pen ?? _options.penByKey(data.key),
       );
     }

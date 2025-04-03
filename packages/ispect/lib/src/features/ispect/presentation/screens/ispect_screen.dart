@@ -44,6 +44,7 @@ class _ISpectScreenState extends State<ISpectScreen> {
         iSpectify: ISpect.logger,
         appBarTitle: widget.appBarTitle,
         options: widget.options,
+        itemsBuilder: widget.itemsBuilder,
       );
 }
 
@@ -102,7 +103,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
     final iSpect = ISpect.read(context);
     return Scaffold(
       body: GestureDetector(
-        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        onTap: _focusNode.unfocus,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (_, __) => ISpectifyBuilder(
@@ -153,7 +154,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       }
 
                       return ISpectLogCard(
-                        key: ValueKey(data.time.microsecondsSinceEpoch),
+                        key: ValueKey(data.hashCode),
                         data: data,
                         backgroundColor: context.ispectTheme.cardColor,
                         onCopyTap: () => _copyISpectifyDataItemText(data),
@@ -241,7 +242,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   }
 
   void _copyISpectifyDataItemText(ISpectifyData data) {
-    final text = data.textMessage;
+    final text = data.toJson(truncated: true).toString();
     copyClipboard(context, value: text);
   }
 

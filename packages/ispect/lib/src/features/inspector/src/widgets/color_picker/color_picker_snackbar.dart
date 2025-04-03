@@ -6,6 +6,29 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 
+/// Displays a snackbar with the selected color information and an option to copy the color value.
+///
+/// This function shows a snackbar that includes a preview of the selected color,
+/// its hexadecimal string representation, and a button to copy the color value to the clipboard.
+/// The snackbar is styled according to the application's theme.
+///
+/// - Parameters:
+///   - context: The [BuildContext] used to access theme and localization resources.
+///   - color: The [Color] to be displayed in the snackbar.
+///
+/// The snackbar includes:
+/// - A small box showing the selected color.
+/// - A text displaying the color's hexadecimal value.
+/// - A button to copy the color value to the clipboard.
+///
+/// Example usage:
+/// ```dart
+/// showColorPickerResultSnackbar(
+///   context: context,
+///   color: Colors.blue,
+/// );
+/// ```
+
 void showColorPickerResultSnackbar({
   required BuildContext context,
   required Color color,

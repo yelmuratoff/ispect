@@ -27,7 +27,11 @@ final dummyDio = Dio(
 );
 
 void main() {
-  final iSpectify = ISpectifyFlutter.init();
+  final iSpectify = ISpectifyFlutter.init(
+    options: ISpectifyOptions(
+      logTruncateLength: 500,
+    ),
+  );
 
   ISpect.run(
     () => runApp(
@@ -235,6 +239,34 @@ class _HomeState extends State<_Home> {
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [
+              FilledButton(
+                onPressed: () {
+                  final largeList = List.generate(
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
+                  final response = Response(
+                    requestOptions: RequestOptions(path: '/mock-large'),
+                    data: largeList,
+                    statusCode: 200,
+                  );
+
+                  for (var interceptor in dio.interceptors) {
+                    if (interceptor is ISpectifyDioLogger) {
+                      interceptor.onResponse(
+                          response, ResponseInterceptorHandler());
+                    }
+                  }
+                },
+                child: const Text('Mock Large JSON Response'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  // Print large JSON response
+                  final largeList = List.generate(
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
+                  ISpect.logger.print(largeList.toString());
+                },
+                child: const Text('Mock Large JSON Response'),
+              ),
               BlocBuilder<TestCubit, TestState>(
                 bloc: _testBloc,
                 builder: (context, state) {
@@ -284,7 +316,7 @@ class _HomeState extends State<_Home> {
               ),
               FilledButton(
                 onPressed: () {
-                  dio.get('/posts/1');
+                  dio.get('/posts/143340290-3924-29-19083439');
                 },
                 child: const Text('Send HTTP request'),
               ),

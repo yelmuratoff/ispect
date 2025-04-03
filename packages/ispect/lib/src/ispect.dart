@@ -5,13 +5,15 @@ import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpect` is the main entry point responsible for logging and error handling.
+/// The main entry point for initializing and managing logging/error handling.
 final class ISpect {
   const ISpect._();
 
-  static late final ISpectify _logger;
+  static late ISpectify _logger;
+  static bool _isInitialized = false;
+  static List<String> _filters = [];
 
-  /// Provides static access to the logger instance.
+  /// Returns the global logger instance.
   static ISpectify get logger {
     if (!_isInitialized) {
       throw StateError(
@@ -21,21 +23,27 @@ final class ISpect {
     return _logger;
   }
 
-  static bool _isInitialized = false;
-
-  /// Initializes ISpect with a given logger instance.
-  static void initialize(ISpectify logger) {
-    if (_isInitialized) return;
+  /// Initializes the logger instance once.
+  /// Returns `true` if initialization was successful.
+  static bool initialize(ISpectify logger, {bool force = false}) {
+    if (_isInitialized && !force) return false;
     _logger = logger;
     _isInitialized = true;
     logger.info('🚀 ISpect: Successfully initialized.');
+    return true;
   }
 
-  /// Reads the `ISpectScopeModel` from the given `BuildContext`.
+  /// Disposes current ISpect state (useful for testing or hot restart).
+  static void dispose() {
+    _isInitialized = false;
+    _filters = [];
+  }
+
+  /// Reads the `ISpectScopeModel` from the widget tree.
   static ISpectScopeModel read(BuildContext context) =>
       ISpectScopeController.of(context);
 
-  /// Runs the application with error handling and logging.
+  /// Runs the app with centralized logging and error capture.
   static void run<T>(
     T Function() callback, {
     required ISpectify logger,
@@ -53,42 +61,23 @@ final class ISpect {
     List<String> filters = const [],
   }) {
     initialize(logger);
+    _filters = filters;
+
     _setupErrorHandling(
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
       onUncaughtErrors: onUncaughtErrors,
-      filters: filters,
     );
 
     onInit?.call();
 
     if (isZoneErrorHandlingEnabled) {
-      runZonedGuarded(
+      _runInZone(
         callback,
-        (error, stackTrace) {
-          onZonedError?.call(error, stackTrace);
-          if (_shouldHandleError(
-            error.toString(),
-            stackTrace.toString(),
-            filters,
-          )) {
-            logger.handle(
-              exception: error,
-              stackTrace: stackTrace,
-              message: 'Zoned error caught',
-            );
-          }
-        },
-        zoneSpecification: ZoneSpecification(
-          print: (_, parent, zone, line) {
-            if (isPrintLoggingEnabled && !line.contains('\x1b')) {
-              logger.print(line);
-            } else if (isFlutterPrintEnabled) {
-              parent.print(zone, line);
-            }
-          },
-        ),
+        onZonedError: onZonedError,
+        isPrintLoggingEnabled: isPrintLoggingEnabled,
+        isFlutterPrintEnabled: isFlutterPrintEnabled,
       );
     } else {
       callback();
@@ -97,13 +86,43 @@ final class ISpect {
     onInitialized?.call();
   }
 
-  /// Sets up error handling mechanisms.
+  /// Runs code inside a guarded zone for error capturing and logging.
+  static void _runInZone<T>(
+    T Function() callback, {
+    required bool isPrintLoggingEnabled,
+    required bool isFlutterPrintEnabled,
+    void Function(Object, StackTrace)? onZonedError,
+  }) {
+    runZonedGuarded(
+      callback,
+      (error, stackTrace) {
+        onZonedError?.call(error, stackTrace);
+        if (_shouldHandleError(error.toString(), stackTrace.toString())) {
+          logger.handle(
+            message: 'Zoned error caught',
+            exception: error,
+            stackTrace: stackTrace,
+          );
+        }
+      },
+      zoneSpecification: ZoneSpecification(
+        print: (_, parent, zone, line) {
+          if (isPrintLoggingEnabled && !_containsAnsi(line)) {
+            logger.print(line);
+          } else if (isFlutterPrintEnabled) {
+            parent.print(zone, line);
+          }
+        },
+      ),
+    );
+  }
+
+  /// Configures global Flutter and platform error handlers.
   static void _setupErrorHandling({
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
     void Function(List<dynamic>)? onUncaughtErrors,
-    List<String> filters = const [],
   }) {
     logger.info('🚀 ISpect: Setting up error handling.');
 
@@ -113,9 +132,9 @@ final class ISpect {
         if (_shouldHandleError(
           details.exceptionAsString(),
           details.stack.toString(),
-          filters,
         )) {
           logger.handle(
+            message: 'Flutter error presented',
             exception: details,
             stackTrace: details.stack,
           );
@@ -125,8 +144,9 @@ final class ISpect {
 
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
-      if (_shouldHandleError(error.toString(), stack.toString(), filters)) {
+      if (_shouldHandleError(error.toString(), stack.toString())) {
         logger.handle(
+          message: 'Platform error caught',
           exception: error,
           stackTrace: stack,
         );
@@ -136,11 +156,7 @@ final class ISpect {
 
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
-      if (_shouldHandleError(
-        details.toString(),
-        details.stack.toString(),
-        filters,
-      )) {
+      if (_shouldHandleError(details.toString(), details.stack.toString())) {
         logger.error(
           'FlutterErrorDetails',
           exception: details.toString(),
@@ -152,14 +168,14 @@ final class ISpect {
     logger.good('✅ ISpect: Error handling set up.');
   }
 
-  /// Determines whether an error should be handled based on filters.
-  static bool _shouldHandleError(
-    String exception,
-    String stack,
-    List<String> filters,
-  ) =>
-      filters.isEmpty ||
-      !filters.any(
+  /// Determines whether the given error should be handled based on active filters.
+  static bool _shouldHandleError(String exception, String stack) =>
+      _filters.isEmpty ||
+      !_filters.any(
         (filter) => exception.contains(filter) || stack.contains(filter),
       );
+
+  /// Checks if a string contains ANSI escape sequences (e.g., for color).
+  static bool _containsAnsi(String line) =>
+      line.contains(RegExp(r'\x1B\[[0-9;]*[mGKH]'));
 }

@@ -1,6 +1,6 @@
 name: ispect_device
 description: "An additional package for ISpect to retrieve platform information"
-version: 4.0.5
+version: 4.0.6
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -19,7 +19,7 @@ dependencies:
   share_plus: ^10.1.4
   package_info_plus: ^8.3.0
   device_info_plus: ^11.3.3
-  ispect: ^4.0.5
+  ispect: ^4.0.6
 
 dev_dependencies:
   flutter_test:
