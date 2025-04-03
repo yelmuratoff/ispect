@@ -3,7 +3,7 @@
 ## 4.0.6
 
 ### Added
-- **Custom Performance Overlay** - Visualize frame timings and performance metrics
+- **Custom Performance Overlay** - Changed the approach and some improvements
 - **Enhanced Log Navigation** - Search, highlight, and expand/collapse functionality
 - **New Option: `logTruncateLength`** - Available in `ISpectifyOptions` for configurable log truncation
 - **New Configuration: `ISpectifyHttpLoggerSettings`** - Added to `ISpectifyHttpLogger` for improved setup flexibility
@@ -15,9 +15,6 @@
 
 ### Fixed
 - **Security Cleanup** - Removed `ispect_ai` package and related dependencies
-
-### Documentation
-- Cleaned up references to removed packages
 
 ## 4.0.5
 
