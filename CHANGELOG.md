@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.7
+
+### Fixed
+- Fixed not found image in README documentation
+
 ## 4.0.6
 
 ### Added
