@@ -105,8 +105,7 @@ class NodeViewModelState extends ChangeNotifier {
   /// How deep in the tree this node is.
   final int treeDepth;
 
-  /// Flags if this node is a class, if [true], then [value] is as
-  /// Map<String, NodeViewModelState>.
+  /// Flags if this node is a class, if [true], then [value] is as Map
   final bool isClass;
 
   /// Flags if this node is an array, if [true], then [value] is a
