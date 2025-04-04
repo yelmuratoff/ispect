@@ -129,39 +129,24 @@ class JsonAttribute extends StatelessWidget {
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: [
-                // if (node.isRoot)
-                //   Flexible(
-                //     child: Gap(
-                //       node.treeDepth > 0
-                //           ? node.treeDepth * theme.indentationPadding
-                //           : theme.indentationPadding,
-                //     ),
-                //   )
-                // else ...[
-                //   Flexible(
-                //     child: Gap(node.treeDepth * itemSpacing),
-                //   ),
-                // ],
-                // if (!node.isRoot)
-                //   Gap(
-                //     ,
-                //   ),
-                _Indentation(
-                  node: node,
-                  indentationPadding: theme.indentationPadding,
-                  propertyPaddingFactor: theme.propertyIndentationPaddingFactor,
-                  lineColor: theme.indentationLineColor,
+                Flexible(
+                  child: Gap(
+                    node.treeDepth > 0
+                        ? node.treeDepth * theme.indentationPadding
+                        : theme.indentationPadding,
+                  ),
                 ),
+                //
+                // // <-- Collapsable Toggle -->
+                //
                 if (node.isRoot)
-                  Flexible(
-                    child: SizedBox(
-                      width: 24,
-                      child: collapsableToggleBuilder?.call(
-                            context,
-                            node,
-                          ) ??
-                          _defaultCollapsableToggleBuilder(context, node),
-                    ),
+                  SizedBox(
+                    width: 24,
+                    child: collapsableToggleBuilder?.call(
+                          context,
+                          node,
+                        ) ??
+                        _defaultCollapsableToggleBuilder(context, node),
                   ),
                 //
                 // <-- Key -->
@@ -196,27 +181,23 @@ class JsonAttribute extends StatelessWidget {
                 //
                 // <-- Key Separator -->
                 //
-                Flexible(
-                  child: SizedBox(
-                    width: 8,
-                    child: Text(
-                      ':',
-                      style: theme.rootKeyTextStyle,
-                    ),
+                SizedBox(
+                  width: 8,
+                  child: Text(
+                    ':',
+                    style: theme.rootKeyTextStyle,
                   ),
                 ),
                 //
                 // <--- Array Suffix --->
                 //
                 if (node.value is List) ...[
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text(
-                        '[${node.children.length}]',
-                        style: theme.rootKeyTextStyle.copyWith(
-                          color: JsonColors.arrayColor,
-                        ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      '[${node.children.length}]',
+                      style: theme.rootKeyTextStyle.copyWith(
+                        color: JsonColors.arrayColor,
                       ),
                     ),
                   ),
@@ -225,33 +206,28 @@ class JsonAttribute extends StatelessWidget {
                 // <--- Map Suffix --->
                 //
                 if (node.value is Map) ...[
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text(
-                        '{${node.children.length}}',
-                        style: theme.rootKeyTextStyle.copyWith(
-                          color: JsonColors.objectColor,
-                        ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      '{${node.children.length}}',
+                      style: theme.rootKeyTextStyle.copyWith(
+                        color: JsonColors.objectColor,
                       ),
                     ),
                   ),
                 ],
 
                 if (node.isRoot)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: rootInformationBuilder?.call(context, node) ??
-                          const SizedBox.shrink(),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: rootInformationBuilder?.call(context, node) ??
+                        const SizedBox.shrink(),
                   )
                 //
                 // <-- Value -->
                 //
                 else
                   Expanded(
-                    flex: 10,
                     child: _PropertyNodeWidget(
                       node: node,
                       searchTerm: searchTerm,
@@ -468,78 +444,6 @@ class _PropertyNodeWidget extends StatelessWidget {
             ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-/// Creates the indentation lines and padding of each node depending on its
-/// [node.treeDepth] and whether or not the node is a root node.
-class _Indentation extends StatelessWidget {
-  const _Indentation({
-    required this.node,
-    required this.indentationPadding,
-    this.lineColor = Colors.grey,
-    this.propertyPaddingFactor = 2,
-  });
-
-  /// Current node view model
-  final NodeViewModelState node;
-
-  /// The padding of each indentation, this change the spacing between each
-  /// [node.treeDepth] and the spacing between lines.
-  final double indentationPadding;
-
-  /// Color used to render the indentation lines.
-  final Color lineColor;
-
-  /// A padding factor to be applied on non root nodes, so its properties have
-  /// extra padding steps.
-  final double propertyPaddingFactor;
-
-  @override
-  Widget build(BuildContext context) {
-    const lineWidth = 1.0;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (int i = 0; i < node.treeDepth; i++)
-          Container(
-            margin: EdgeInsets.only(
-              right: indentationPadding,
-            ),
-            width: lineWidth,
-            color: lineColor,
-          ),
-        // if (!node.isRoot)
-        //   SizedBox(
-        //     width: node.treeDepth > 0
-        //         ? indentationPadding * propertyPaddingFactor
-        //         : indentationPadding,
-        //   ),
-        // if (node.isRoot && !node.isCollapsed) ...[
-        //   Align(
-        //     alignment: node.childrenCount > 0
-        //         ? Alignment.bottomCenter
-        //         : Alignment.center,
-        //     child: FractionallySizedBox(
-        //       heightFactor: 0.52,
-        //       child: Container(
-        //         width: 1,
-        //         color: lineColor,
-        //       ),
-        //     ),
-        //   ),
-        //   Container(
-        //     height: lineWidth,
-        //     width: (indentationPadding / 2) - lineWidth,
-        //     color: lineColor,
-        //   ),
-        // ],
-        // if (node.isRoot && node.isCollapsed)
-        //   SizedBox(
-        //     width: indentationPadding / 2,
-        //   ),
       ],
     );
   }
