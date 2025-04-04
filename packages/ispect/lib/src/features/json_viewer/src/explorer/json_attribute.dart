@@ -129,12 +129,11 @@ class JsonAttribute extends StatelessWidget {
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: [
-                Flexible(
-                  child: Gap(
-                    node.treeDepth > 0
-                        ? node.treeDepth * theme.indentationPadding
-                        : theme.indentationPadding,
-                  ),
+                Gap(
+                  node.treeDepth > 0
+                      ? (node.treeDepth * theme.indentationPadding)
+                          .clamp(0, 100)
+                      : theme.indentationPadding,
                 ),
                 //
                 // // <-- Collapsable Toggle -->
@@ -152,18 +151,20 @@ class JsonAttribute extends StatelessWidget {
                 // <-- Key -->
                 //
                 if (maxRootNodeWidth != null)
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: maxRootNodeWidth!,
-                    ),
-                    child: JsonCard(
-                      backgroundColor: theme.rootKeyTextStyle.color,
-                      child: _RootNodeWidget(
-                        node: node,
-                        rootNameFormatter: rootNameFormatter,
-                        propertyNameFormatter: propertyNameFormatter,
-                        searchTerm: searchTerm,
-                        theme: theme,
+                  Flexible(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: maxRootNodeWidth!,
+                      ),
+                      child: JsonCard(
+                        backgroundColor: theme.rootKeyTextStyle.color,
+                        child: _RootNodeWidget(
+                          node: node,
+                          rootNameFormatter: rootNameFormatter,
+                          propertyNameFormatter: propertyNameFormatter,
+                          searchTerm: searchTerm,
+                          theme: theme,
+                        ),
                       ),
                     ),
                   )
@@ -181,23 +182,27 @@ class JsonAttribute extends StatelessWidget {
                 //
                 // <-- Key Separator -->
                 //
-                SizedBox(
-                  width: 8,
-                  child: Text(
-                    ':',
-                    style: theme.rootKeyTextStyle,
+                Flexible(
+                  child: SizedBox(
+                    width: 8,
+                    child: Text(
+                      ':',
+                      style: theme.rootKeyTextStyle,
+                    ),
                   ),
                 ),
                 //
                 // <--- Array Suffix --->
                 //
                 if (node.value is List) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      '[${node.children.length}]',
-                      style: theme.rootKeyTextStyle.copyWith(
-                        color: JsonColors.arrayColor,
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        '[${node.children.length}]',
+                        style: theme.rootKeyTextStyle.copyWith(
+                          color: JsonColors.arrayColor,
+                        ),
                       ),
                     ),
                   ),
@@ -206,12 +211,14 @@ class JsonAttribute extends StatelessWidget {
                 // <--- Map Suffix --->
                 //
                 if (node.value is Map) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      '{${node.children.length}}',
-                      style: theme.rootKeyTextStyle.copyWith(
-                        color: JsonColors.objectColor,
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        '{${node.children.length}}',
+                        style: theme.rootKeyTextStyle.copyWith(
+                          color: JsonColors.objectColor,
+                        ),
                       ),
                     ),
                   ),
@@ -228,6 +235,7 @@ class JsonAttribute extends StatelessWidget {
                 //
                 else
                   Expanded(
+                    flex: 10,
                     child: _PropertyNodeWidget(
                       node: node,
                       searchTerm: searchTerm,
