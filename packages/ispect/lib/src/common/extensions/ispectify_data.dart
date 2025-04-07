@@ -126,10 +126,7 @@ StackTrace: $stackTraceText]''';
               ? stackTrace.toString().truncated
               : stackTrace.toString(),
         if (additionalData != null)
-          'additional-data': truncated
-              ? prettyJson(
-                  additionalData,
-                ).truncated
-              : additionalData,
+          'additional-data':
+              truncated ? additionalData.toString().truncated : additionalData,
       };
 }

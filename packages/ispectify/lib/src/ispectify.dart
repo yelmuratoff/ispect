@@ -334,7 +334,7 @@ class ISpectify {
     _processLog(
       AnalyticsLog(
         analytics: analytics,
-        '${event ?? 'Event'}: $message\nParameters: ${prettyJson(parameters)}',
+        '${event ?? 'Event'}: $message\nParameters: $parameters',
       ),
     );
   }

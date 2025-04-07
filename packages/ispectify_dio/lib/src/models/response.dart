@@ -52,14 +52,17 @@ class DioResponseLog extends ISpectifyData {
     }
 
     try {
-      if (settings.printResponseData && data != null) {
-        final prettyData = encoder.convert(data);
-        msg += '\nData: $prettyData';
-      }
-      if (settings.printResponseHeaders && headers.isNotEmpty) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
+      // if (settings.printResponseData && data != null) {
+      //   final prettyData = encoder.convert(data).truncate(
+      //         maxLength: 1000,
+      //       );
+      //   msg += '\nData: $prettyData';
+      // }
+      // if (settings.printResponseHeaders && headers.isNotEmpty) {
+      //   final prettyHeaders =
+      //       encoder.convert(headers).truncate(maxLength: 1000);
+      //   msg += '\nHeaders: $prettyHeaders';
+      // }
     } catch (_) {
       return msg;
     }
