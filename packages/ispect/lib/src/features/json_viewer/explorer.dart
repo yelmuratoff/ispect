@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/json_attribute.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/store.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/theme.dart';
+import 'package:ispect/src/features/json_viewer/json_attribute.dart';
+import 'package:ispect/src/features/json_viewer/store.dart';
+import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
 
 /// Signature for a function that creates a widget based on a

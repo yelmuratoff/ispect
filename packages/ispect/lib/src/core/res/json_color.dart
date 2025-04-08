@@ -5,7 +5,7 @@ class JsonColors {
   JsonColors._();
 
   /// Color used for `null` values in JSON.
-  static const nullColor = Colors.grey;
+  static const nullColor = Colors.blueGrey;
 
   /// Color used for `boolean` values in JSON.
   static const boolColor = Colors.orange;

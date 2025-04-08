@@ -3,9 +3,9 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/explorer.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/store.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/theme.dart';
+import 'package:ispect/src/features/json_viewer/explorer.dart';
+import 'package:ispect/src/features/json_viewer/store.dart';
+import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
 
 class DetailedLogScreen extends StatefulWidget {

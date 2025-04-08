@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/json_color.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/explorer.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/json_item_card.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/store.dart';
-import 'package:ispect/src/features/json_viewer/src/explorer/theme.dart';
-import 'package:ispect/src/features/json_viewer/src/utils/colors.dart';
+import 'package:ispect/src/features/json_viewer/explorer.dart';
+import 'package:ispect/src/features/json_viewer/json_item_card.dart';
+import 'package:ispect/src/features/json_viewer/store.dart';
+import 'package:ispect/src/features/json_viewer/theme.dart';
+import 'package:ispect/src/features/json_viewer/utils/colors.dart';
 import 'package:provider/provider.dart';
 
 class JsonAttribute extends StatelessWidget {
@@ -108,7 +108,36 @@ class JsonAttribute extends StatelessWidget {
         child: AnimatedBuilder(
           animation: node,
           builder: (context, _) => RepaintBoundary(
-            child: _buildNodeContent(context, searchTerm, valueStyle),
+            child: Padding(
+              padding: JsonAttribute._kBottomPadding,
+              child: Row(
+                crossAxisAlignment: node.isRoot
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                children: [
+                  _buildIndentation(),
+                  if (node.isRoot)
+                    const SizedBox(
+                      width: 24,
+                      child: _ToggleButton(),
+                    ),
+                  _buildNodeKey(context, searchTerm),
+                  const Flexible(
+                    child: SizedBox(
+                      width: 8,
+                      child: _KeySeparatorText(),
+                    ),
+                  ),
+                  if (node.value is List) _buildArraySuffix(),
+                  if (node.value is Map) _buildMapSuffix(),
+                  if (node.isRoot)
+                    _buildRootInformation(context)
+                  else
+                    _buildPropertyValue(context, searchTerm, valueStyle),
+                  if (trailingBuilder != null) trailingBuilder!(context, node),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -135,50 +164,19 @@ class JsonAttribute extends StatelessWidget {
     }
   }
 
-  Widget _buildNodeContent(
-    BuildContext context,
-    String searchTerm,
-    PropertyOverrides valueStyle,
-  ) =>
-      Padding(
-        padding: _kBottomPadding,
-        child: Row(
-          crossAxisAlignment: node.isRoot
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          children: [
-            _buildIndentation(),
-            if (node.isRoot) _buildToggleButton(context),
-            _buildNodeKey(context, searchTerm),
-            _buildKeySeparator(),
-            if (node.value is List) _buildArraySuffix(),
-            if (node.value is Map) _buildMapSuffix(),
-            if (node.isRoot)
-              _buildRootInformation(context)
-            else
-              _buildPropertyValue(context, searchTerm, valueStyle),
-            if (trailingBuilder != null) trailingBuilder!(context, node),
-          ],
-        ),
-      );
-
   Widget _buildIndentation() {
     final double indentation;
 
     // Memoize calculation for better performance and readability
     if (node.treeDepth > 0) {
-      indentation = (node.treeDepth * theme.indentationPadding).clamp(0, 100);
+      indentation =
+          ((node.treeDepth + 1) * theme.indentationPadding).clamp(0, 100);
     } else {
       indentation = theme.indentationPadding;
     }
 
     return Gap(indentation);
   }
-
-  Widget _buildToggleButton(BuildContext context) => const SizedBox(
-        width: 24,
-        child: _ToggleButton(),
-      );
 
   Widget _buildNodeKey(BuildContext context, String searchTerm) {
     final Widget nodeKey = _RootNodeWidget(
@@ -208,13 +206,6 @@ class JsonAttribute extends StatelessWidget {
 
     return jsonCard;
   }
-
-  Widget _buildKeySeparator() => const Flexible(
-        child: SizedBox(
-          width: 8,
-          child: _KeySeparatorText(),
-        ),
-      );
 
   Widget _buildArraySuffix() => Flexible(
         child: Padding(

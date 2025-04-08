@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/core/res/json_color.dart';
-import 'package:ispect/src/features/json_viewer/src/models/json_node.dart';
 
 /// Utility class containing color and styling helper methods for JSON tree viewing
 class JsonColorsUtils {
@@ -24,7 +23,7 @@ class JsonColorsUtils {
     if (value is Iterable || value is List) {
       return JsonColors.arrayColor;
     }
-    if (value is Map || value is JsonNode) {
+    if (value is Map) {
       return JsonColors.objectColor;
     }
     return defaultColor;
