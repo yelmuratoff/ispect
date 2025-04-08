@@ -5,18 +5,18 @@ import 'package:ispectify/ispectify.dart';
 
 /// A model class representing a structured log entry.
 class ISpectifyData {
-  /// Creates an instance of [ISpectifyData] to store log details.
+  /// Creates an instance of `ISpectifyData` to store log details.
   ///
-  /// - [message]: The main log message.
-  /// - [time]: The timestamp of the log entry. Defaults to [DateTime.now()].
-  /// - [logLevel]: The severity level of the log.
-  /// - [exception]: Any associated exception.
-  /// - [error]: Any associated error.
-  /// - [stackTrace]: The stack trace for debugging.
-  /// - [title]: An optional title for categorizing logs.
-  /// - [pen]: ANSI color for styling logs.
-  /// - [key]: A unique identifier for this log entry.
-  /// - [additionalData]: Any extra metadata attached to the log.
+  /// - `message`: The main log message.
+  /// - `time`: The timestamp of the log entry. Defaults to `DateTime.now()`.
+  /// - `logLevel`: The severity level of the log.
+  /// - `exception`: Any associated exception.
+  /// - `error`: Any associated error.
+  /// - `stackTrace`: The stack trace for debugging.
+  /// - `title`: An optional title for categorizing logs.
+  /// - `pen`: ANSI color for styling logs.
+  /// - `key`: A unique identifier for this log entry.
+  /// - `additionalData`: Any extra metadata attached to the log.
   ISpectifyData(
     this.message, {
     DateTime? time,

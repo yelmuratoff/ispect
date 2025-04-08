@@ -1,8 +1,8 @@
 import 'package:flutter/rendering.dart';
 
-/// Contains information about the currently selected [RenderBox].
+/// Contains information about the currently selected `RenderBox`.
 ///
-/// [containerRect] may be `null`.
+/// `containerRect` may be `null`.
 class BoxInfo {
   const BoxInfo({
     required this.targetRenderBox,

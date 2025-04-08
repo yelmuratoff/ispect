@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// A card-like container widget that wraps its child
 /// with customizable styling.
 ///
-/// The [JsonCard] provides a way to display content within a decorated container
+/// The `JsonCard` provides a way to display content within a decorated container
 /// with configurable background color, padding, border radius, and border side.
 ///
 /// Example:
@@ -18,11 +18,11 @@ import 'package:flutter/material.dart';
 /// ```
 ///
 /// Parameters:
-/// * [child] - The widget to be displayed inside the card.
-/// * [backgroundColor] - Optional background color for the card.
-/// * [padding] - The internal padding of the card. Defaults to horizontal padding of 4.
-/// * [borderRadius] - The border radius of the card. Defaults to 4 pixels on all corners.
-/// * [borderSide] - Optional border styling for the card.
+/// * `child` - The widget to be displayed inside the card.
+/// * `backgroundColor` - Optional background color for the card.
+/// * `padding` - The internal padding of the card. Defaults to horizontal padding of 4.
+/// * `borderRadius` - The border radius of the card. Defaults to 4 pixels on all corners.
+/// * `borderSide` - Optional border styling for the card.
 ///
 /// The background color, if provided, will be applied with 20% opacity (alpha: 0.2).
 

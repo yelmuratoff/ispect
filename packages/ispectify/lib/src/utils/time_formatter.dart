@@ -1,12 +1,12 @@
-/// A utility class for formatting [DateTime] objects into readable strings.
+/// A utility class for formatting `DateTime` objects into readable strings.
 ///
 /// Provides various time formatting styles, including full timestamps
 /// and time with milliseconds.
 class ISpectifyDateTimeFormatter {
-  /// Creates an instance of [ISpectifyDateTimeFormatter] with the given [date].
+  /// Creates an instance of `ISpectifyDateTimeFormatter` with the given [date].
   const ISpectifyDateTimeFormatter(this.date);
 
-  /// The [DateTime] instance to be formatted.
+  /// The `DateTime` instance to be formatted.
   final DateTime? date;
 
   /// Returns the formatted time with hours, minutes, seconds, and milliseconds.
@@ -29,7 +29,7 @@ class ISpectifyDateTimeFormatter {
 
   /// Returns the default formatted date-time representation.
   ///
-  /// Uses [fullTime] as the standard format.
+  /// Uses `fullTime` as the standard format.
   String get format => date == null ? '' : fullTime;
 
   /// Pads single-digit values with a leading zero.

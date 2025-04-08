@@ -65,15 +65,15 @@ final AnsiPen _fallbackPen = AnsiPen()..gray();
 /// enabling/disabling logs, storing log history, and customizing
 /// log colors and titles.
 class ISpectifyOptions {
-  /// Creates an instance of [ISpectifyOptions] with customizable settings.
+  /// Creates an instance of `ISpectifyOptions` with customizable settings.
   ///
-  /// - [enabled]: Whether logging is enabled.
-  /// - [useHistory]: Whether to store logs in history.
-  /// - [useConsoleLogs]: Whether to print logs to the console.
-  /// - [maxHistoryItems]: Maximum number of logs to retain in history.
-  /// - [logTruncateLength]: Maximum length for log messages in console.
-  /// - [titles]: Custom log titles.
-  /// - [colors]: Custom log colors.
+  /// - `enabled`: Whether logging is enabled.
+  /// - `useHistory`: Whether to store logs in history.
+  /// - `useConsoleLogs`: Whether to print logs to the console.
+  /// - `maxHistoryItems`: Maximum number of logs to retain in history.
+  /// - `logTruncateLength`: Maximum length for log messages in console.
+  /// - `titles`: Custom log titles.
+  /// - `colors`: Custom log colors.
   ISpectifyOptions({
     this.enabled = true,
     bool useHistory = true,
@@ -125,7 +125,7 @@ class ISpectifyOptions {
   AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) =>
       colors[key] ?? fallbackPen ?? _fallbackPen;
 
-  /// Creates a new [ISpectifyOptions] instance with modified properties.
+  /// Creates a new `ISpectifyOptions` instance with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
   ISpectifyOptions copyWith({

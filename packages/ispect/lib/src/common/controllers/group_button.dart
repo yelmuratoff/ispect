@@ -16,7 +16,7 @@ class GroupButtonController extends ChangeNotifier {
   final Set<int> _selectedIndexes;
   final Set<int> _disabledIndexes;
 
-  /// Callback [Function] works by clicking on a disabled group element
+  /// Callback `Function` works by clicking on a disabled group element
   ///
   /// Returns int `index` of selected button
   void Function(int index)? onDisablePressed;

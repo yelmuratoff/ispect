@@ -19,20 +19,20 @@ import 'package:ispect/src/features/ispect/models/log_description.dart';
 ///   darkBackgroundColor: Colors.black,
 ///   logColors: {'error': Colors.red, 'info': Colors.blue},
 ///   logIcons: {'error': Icons.error, 'info': Icons.info},
-///   logDescriptions: [LogDescription(name: 'Error', description: 'An error occurred')],
+///   logDescriptions: `LogDescription(name: 'Error', description: 'An error occurred')`,
 /// );
 /// ```
 class ISpectTheme {
   /// Creates an `ISpectTheme` instance with customizable settings.
   ///
-  /// - [pageTitle]: The title displayed on the inspector page.
-  /// - [lightBackgroundColor]: Background color in light mode.
-  /// - [darkBackgroundColor]: Background color in dark mode.
-  /// - [lightDividerColor]: Divider color in light mode.
-  /// - [darkDividerColor]: Divider color in dark mode.
-  /// - [logColors]: Custom colors mapped to log types.
-  /// - [logIcons]: Custom icons mapped to log types.
-  /// - [logDescriptions]: List of descriptions for various log types.
+  /// - `pageTitle`: The title displayed on the inspector page.
+  /// - `lightBackgroundColor`: Background color in light mode.
+  /// - `darkBackgroundColor`: Background color in dark mode.
+  /// - `lightDividerColor`: Divider color in light mode.
+  /// - `darkDividerColor`: Divider color in dark mode.
+  /// - `logColors`: Custom colors mapped to log types.
+  /// - `logIcons`: Custom icons mapped to log types.
+  /// - `logDescriptions`: List of descriptions for various log types.
   const ISpectTheme({
     this.pageTitle = 'ISpect',
     this.lightBackgroundColor,
@@ -71,14 +71,14 @@ class ISpectTheme {
   /// Creates a new `ISpectTheme` instance with updated values while retaining
   /// existing ones where not specified.
   ///
-  /// - [pageTitle]: Updates the title.
-  /// - [lightBackgroundColor]: Updates the background color for light mode.
-  /// - [darkBackgroundColor]: Updates the background color for dark mode.
-  /// - [lightDividerColor]: Updates the divider color for light mode.
-  /// - [darkDividerColor]: Updates the divider color for dark mode.
-  /// - [logColors]: Updates the map of log colors.
-  /// - [logIcons]: Updates the map of log icons.
-  /// - [logDescriptions]: Updates the list of log descriptions.
+  /// - `pageTitle`: Updates the title.
+  /// - `lightBackgroundColor`: Updates the background color for light mode.
+  /// - `darkBackgroundColor`: Updates the background color for dark mode.
+  /// - `lightDividerColor`: Updates the divider color for light mode.
+  /// - `darkDividerColor`: Updates the divider color for dark mode.
+  /// - `logColors`: Updates the map of log colors.
+  /// - `logIcons`: Updates the map of log icons.
+  /// - `logDescriptions`: Updates the list of log descriptions.
   ///
   /// ### Example:
   /// ```dart
@@ -107,21 +107,21 @@ class ISpectTheme {
 
   /// Returns the appropriate background color based on the current theme mode.
   ///
-  /// - Uses [darkBackgroundColor] in dark mode.
-  /// - Uses [lightBackgroundColor] in light mode.
+  /// - Uses `darkBackgroundColor` in dark mode.
+  /// - Uses `lightBackgroundColor` in light mode.
   Color? backgroundColor(BuildContext context) =>
       context.isDarkMode ? darkBackgroundColor : lightBackgroundColor;
 
   /// Returns the appropriate divider color based on the current theme mode.
   ///
-  /// - Uses [darkDividerColor] in dark mode.
-  /// - Uses [lightDividerColor] in light mode.
+  /// - Uses `darkDividerColor` in dark mode.
+  /// - Uses `lightDividerColor` in light mode.
   Color? dividerColor(BuildContext context) =>
       context.isDarkMode ? darkDividerColor : lightDividerColor;
 
   /// Retrieves the color associated with a specific log type.
   ///
-  /// - [key]: The log type identifier.
+  /// - `key`: The log type identifier.
   /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
   Color getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
@@ -130,7 +130,7 @@ class ISpectTheme {
 
   /// Retrieves the color associated with a log level.
   ///
-  /// - [key]: The log level identifier.
+  /// - `key`: The log level identifier.
   /// - Strips the `'LogLevel.'` prefix before looking up the color.
   /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
   Color getColorByLogLevel(BuildContext context, {required String? key}) {
@@ -140,7 +140,7 @@ class ISpectTheme {
 
   /// Returns a combined map of default and custom log colors based on theme mode.
   ///
-  /// - Merges [logColors] with default colors from `ISpectConstants`.
+  /// - Merges `logColors` with default colors from `ISpectConstants`.
   /// - Uses dark mode colors if enabled.
   Map<String, Color> colors(BuildContext context) => {
         ...logColors,
@@ -151,7 +151,7 @@ class ISpectTheme {
 
   /// Returns a combined map of default and custom log icons.
   ///
-  /// - Merges [logIcons] with default icons from `ISpectConstants`.
+  /// - Merges `logIcons` with default icons from `ISpectConstants`.
   Map<String, IconData> icons(BuildContext context) => {
         ...logIcons,
         ...ISpectConstants.typeIcons,

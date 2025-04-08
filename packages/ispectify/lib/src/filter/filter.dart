@@ -5,11 +5,11 @@ import 'package:ispectify/ispectify.dart';
 /// A generic filter that checks whether a given item satisfies
 /// certain conditions.
 abstract class Filter<T> {
-  /// Determines if the provided [item] passes the filter criteria.
+  /// Determines if the provided `item` passes the filter criteria.
   bool apply(T item);
 }
 
-/// A filter that checks whether an [ISpectifyData] item matches
+/// A filter that checks whether an `ISpectifyData` item matches
 /// any of the specified titles.
 class TitleFilter implements Filter<ISpectifyData> {
   /// Creates a filter with a set of titles.
@@ -22,7 +22,7 @@ class TitleFilter implements Filter<ISpectifyData> {
   bool apply(ISpectifyData item) => titles.contains(item.title);
 }
 
-/// A filter that checks whether an [ISpectifyData] item matches
+/// A filter that checks whether an `ISpectifyData` item matches
 /// any of the specified runtime types.
 class TypeFilter implements Filter<ISpectifyData> {
   /// Creates a filter with a set of types.
@@ -36,9 +36,9 @@ class TypeFilter implements Filter<ISpectifyData> {
 }
 
 /// A filter that performs a case-insensitive search within
-/// the [message], [textMessage], or [additionalData] fields of [ISpectifyData].
+/// the `message`, [textMessage], or [additionalData] fields of [ISpectifyData].
 class SearchFilter implements Filter<ISpectifyData> {
-  /// Creates a search filter with a specified [query].
+  /// Creates a search filter with a specified `query`.
   SearchFilter(this.query) : _lowerQuery = query.toLowerCase();
 
   /// The original search query.
@@ -83,9 +83,9 @@ class SearchFilter implements Filter<ISpectifyData> {
 
 /// A composite filter that combines multiple filtering criteria.
 ///
-/// It allows filtering based on [titles], [types], and a [searchQuery].
+/// It allows filtering based on `titles`, [types], and a [searchQuery].
 class ISpectifyFilter implements Filter<ISpectifyData> {
-  /// Creates an [ISpectifyFilter] that combines title, type, and search filters.
+  /// Creates an `ISpectifyFilter` that combines title, type, and search filters.
   ISpectifyFilter({
     List<String> titles = const [],
     List<Type> types = const [],
@@ -128,7 +128,7 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     return _filters.any((filter) => filter.apply(item));
   }
 
-  /// Returns a new instance of [ISpectifyFilter] with updated filtering criteria.
+  /// Returns a new instance of `ISpectifyFilter` with updated filtering criteria.
   ///
   /// If a parameter is `null`, the existing value is preserved.
   ISpectifyFilter copyWith({
@@ -152,7 +152,7 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     return filter != null ? extractor(filter).toList() : [];
   }
 
-  /// Retrieves the existing search query if a [SearchFilter] exists.
+  /// Retrieves the existing search query if a `SearchFilter` exists.
   String? _getExistingSearchQuery() {
     final filter = _filters.whereType<SearchFilter>().firstOrNull;
     return filter?.query;

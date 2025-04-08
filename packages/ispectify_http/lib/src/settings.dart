@@ -1,7 +1,7 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// [ISpectifyHttpLogger] settings and customization
+/// `ISpectifyHttpLogger` settings and customization
 class ISpectifyHttpLoggerSettings {
   const ISpectifyHttpLoggerSettings({
     this.enabled = true,
@@ -56,7 +56,7 @@ class ISpectifyHttpLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? requestPen;
 
   /// Field to set custom http response console logs color
@@ -67,7 +67,7 @@ class ISpectifyHttpLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? responsePen;
 
   /// Field to set custom http error console logs color
@@ -78,19 +78,19 @@ class ISpectifyHttpLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? errorPen;
 
   /// For request filtering.
-  /// You can add your custom logic to log only specific HTTP requests [BaseRequest].
+  /// You can add your custom logic to log only specific HTTP requests `BaseRequest`.
   final bool Function(BaseRequest request)? requestFilter;
 
   /// For response filtering.
-  /// You can add your custom logic to log only specific HTTP responses [BaseResponse].
+  /// You can add your custom logic to log only specific HTTP responses `BaseResponse`.
   final bool Function(BaseResponse response)? responseFilter;
 
   /// For error filtering.
-  /// You can add your custom logic to log only specific HTTP errors [BaseResponse].
+  /// You can add your custom logic to log only specific HTTP errors `BaseResponse`.
   final bool Function(BaseResponse response)? errorFilter;
 
   ISpectifyHttpLoggerSettings copyWith({

@@ -8,12 +8,12 @@ import 'package:ispectify/src/settings.dart';
 abstract interface class LoggerFormatter {
   /// Formats the log details based on the provided settings.
   ///
-  /// This method is responsible for transforming [LogDetails] into a human-readable
+  /// This method is responsible for transforming `LogDetails` into a human-readable
   /// string that follows specific formatting rules, such as adding visual elements
   /// (borders, symbols) and applying colorization (if enabled).
   ///
-  /// - [details]: Contains the log message and additional metadata (e.g., log level).
-  /// - [settings]: Defines formatting rules such as max line width, symbols, and color settings.
+  /// - `details`: Contains the log message and additional metadata (e.g., log level).
+  /// - `settings`: Defines formatting rules such as max line width, symbols, and color settings.
   ///
   /// Returns:
   /// A formatted log message as a string.
@@ -25,9 +25,9 @@ abstract interface class LoggerFormatter {
 
 /// A log formatter that enhances log readability by adding visual structure.
 ///
-/// The [ExtendedLoggerFormatter] wraps log messages with top and bottom borders,
+/// The `ExtendedLoggerFormatter` wraps log messages with top and bottom borders,
 /// ensuring clear separation in console outputs. It also supports colorization
-/// when enabled in [LoggerSettings].
+/// when enabled in `LoggerSettings`.
 ///
 /// Example output:
 /// ```
@@ -38,7 +38,7 @@ abstract interface class LoggerFormatter {
 ///
 /// If colorization is enabled, ANSI escape codes will be applied to the output.
 class ExtendedLoggerFormatter implements LoggerFormatter {
-  /// Creates an instance of [ExtendedLoggerFormatter].
+  /// Creates an instance of `ExtendedLoggerFormatter`.
   ///
   /// This formatter does not hold any internal state and can be reused across logs.
   const ExtendedLoggerFormatter();

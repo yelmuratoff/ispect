@@ -4,15 +4,15 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// A model class that holds the state of the ISpect scope.
 ///
-/// This class extends [ChangeNotifier] to allow UI updates when the state changes.
+/// This class extends `ChangeNotifier` to allow UI updates when the state changes.
 class ISpectScopeModel extends ChangeNotifier {
-  /// Creates an instance of [ISpectScopeModel].
+  /// Creates an instance of `ISpectScopeModel`.
   ///
-  /// - [isISpectEnabled]: Whether ISpect is enabled.
-  /// - [isPerformanceTrackingEnabled]: Whether performance tracking is enabled.
-  /// - [options]: Configurations for ISpect.
-  /// - [theme]: Theme settings for ISpect.
-  /// - [observer]: An optional [NavigatorObserver] for tracking navigation events.
+  /// - `isISpectEnabled`: Whether ISpect is enabled.
+  /// - `isPerformanceTrackingEnabled`: Whether performance tracking is enabled.
+  /// - `options`: Configurations for ISpect.
+  /// - `theme`: Theme settings for ISpect.
+  /// - `observer`: An optional `NavigatorObserver` for tracking navigation events.
   ISpectScopeModel({
     bool isISpectEnabled = false,
     bool isPerformanceTrackingEnabled = false,
@@ -87,21 +87,21 @@ class ISpectScopeModel extends ChangeNotifier {
 
 /// Provides the `ISpectScopeModel` to the widget tree.
 ///
-/// This class uses [InheritedNotifier] to make [ISpectScopeModel]
+/// This class uses `InheritedNotifier` to make [ISpectScopeModel]
 /// accessible in the widget tree.
 class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
-  /// Creates an instance of [ISpectScopeController].
+  /// Creates an instance of `ISpectScopeController`.
   ///
-  /// - [model]: The [ISpectScopeModel] instance.
-  /// - [child]: The widget subtree that can access the model.
+  /// - `model`: The `ISpectScopeModel` instance.
+  /// - `child`: The widget subtree that can access the model.
   const ISpectScopeController({
     required ISpectScopeModel model,
     required super.child,
   }) : super(notifier: model);
 
-  /// Retrieves the nearest [ISpectScopeModel] in the widget tree.
+  /// Retrieves the nearest `ISpectScopeModel` in the widget tree.
   ///
-  /// Throws an assertion error if no [ISpectScopeController] is found.
+  /// Throws an assertion error if no `ISpectScopeController` is found.
   static ISpectScopeModel of(BuildContext context) {
     final inherited =
         context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();

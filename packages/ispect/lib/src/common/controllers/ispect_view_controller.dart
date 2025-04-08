@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 
 /// Controller for managing the state of ISpectify views.
 ///
-/// This class extends [ChangeNotifier] to provide state updates
+/// This class extends `ChangeNotifier` to provide state updates
 /// when filters, log visibility, or log order change.
 class ISpectifyViewController extends ChangeNotifier {
   ISpectifyFilter _filter = ISpectifyFilter();

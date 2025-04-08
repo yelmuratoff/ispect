@@ -1,4 +1,4 @@
-/// An extension on nullable [String] to provide additional utility methods.
+/// An extension on nullable `String` to provide additional utility methods.
 extension ISpectStringExtension on String? {
   /// An extension getter that truncates the string to a maximum of 10000 characters.
   ///
@@ -26,8 +26,8 @@ extension ISpectStringExtension on String? {
 
   /// Truncates the string to a specified maximum length.
   ///
-  /// If the string's length exceeds [maxLength], it returns the first
-  /// [maxLength] characters followed by an ellipsis (`...`). Otherwise, it
+  /// If the string's length exceeds `maxLength`, it returns the first
+  /// `maxLength` characters followed by an ellipsis (`...`). Otherwise, it
   /// returns the original string.
   String? truncate({
     int maxLength = 10000,

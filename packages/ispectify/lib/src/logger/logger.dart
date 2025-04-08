@@ -13,12 +13,12 @@ import 'package:ispectify/src/settings.dart';
 /// Supports multiple log levels, colorized output, filtering,
 /// and customizable formatting/output handling.
 class ISpectifyLogger {
-  /// Creates an instance of [ISpectifyLogger] with optional configurations.
+  /// Creates an instance of `ISpectifyLogger` with optional configurations.
   ///
-  /// - [settings]: Logger configuration settings. Defaults to [LoggerSettings()].
-  /// - [formatter]: Formatter for log messages. Defaults to [ExtendedLoggerFormatter()].
-  /// - [filter]: Optional log filter.
-  /// - [output]: Optional output function (e.g., `print`).
+  /// - `settings`: Logger configuration settings. Defaults to `LoggerSettings()`.
+  /// - `formatter`: Formatter for log messages. Defaults to `ExtendedLoggerFormatter()`.
+  /// - `filter`: Optional log filter.
+  /// - `output`: Optional output function (e.g., `print`).
   ISpectifyLogger({
     LoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
@@ -78,7 +78,7 @@ class ISpectifyLogger {
   /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Creates a new [ISpectifyLogger] instance with overridden properties.
+  /// Creates a new `ISpectifyLogger` instance with overridden properties.
   ISpectifyLogger copyWith({
     LoggerSettings? settings,
     LoggerFormatter? formatter,

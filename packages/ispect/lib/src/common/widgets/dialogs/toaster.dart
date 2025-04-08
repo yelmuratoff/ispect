@@ -24,8 +24,8 @@ final class ISpectToaster {
 
   /// Displays a loading toast with an animated circular progress indicator.
   ///
-  /// - [context]: The `BuildContext` used to show the toast.
-  /// - [title]: The title text displayed in the toast.
+  /// - `context`: The `BuildContext` used to show the toast.
+  /// - `title`: The title text displayed in the toast.
   ///
   /// The toast includes a **spinning progress indicator** next to the title.
   ///
@@ -56,9 +56,9 @@ final class ISpectToaster {
 
   /// Displays an error toast with a red background.
   ///
-  /// - [context]: The `BuildContext` used to show the toast.
-  /// - [title]: The title of the error message.
-  /// - [message]: (Optional) Additional details about the error.
+  /// - `context`: The `BuildContext` used to show the toast.
+  /// - `title`: The title of the error message.
+  /// - `message`: (Optional) Additional details about the error.
   ///
   /// ### Example:
   /// ```dart
@@ -78,9 +78,9 @@ final class ISpectToaster {
 
   /// Displays an informational toast with a dark background.
   ///
-  /// - [context]: The `BuildContext` used to show the toast.
-  /// - [title]: The title of the message.
-  /// - [message]: (Optional) Additional details.
+  /// - `context`: The `BuildContext` used to show the toast.
+  /// - `title`: The title of the message.
+  /// - `message`: (Optional) Additional details.
   ///
   /// ### Example:
   /// ```dart
@@ -100,10 +100,10 @@ final class ISpectToaster {
 
   /// Displays a success toast with a green background.
   ///
-  /// - [context]: The `BuildContext` used to show the toast.
-  /// - [title]: The title of the success message.
-  /// - [message]: (Optional) Additional details.
-  /// - [trailing]: (Optional) A trailing widget (e.g., an icon or button).
+  /// - `context`: The `BuildContext` used to show the toast.
+  /// - `title`: The title of the success message.
+  /// - `message`: (Optional) Additional details.
+  /// - `trailing`: (Optional) A trailing widget (e.g., an icon or button).
   ///
   /// ### Example:
   /// ```dart
@@ -125,10 +125,10 @@ final class ISpectToaster {
 
   /// Displays a toast indicating that a value has been copied to the clipboard.
   ///
-  /// - [context]: The `BuildContext` used to show the toast.
-  /// - [value]: The copied text.
-  /// - [title]: (Optional) A custom title for the toast.
-  /// - [showValue]: Determines whether the copied text should be displayed.
+  /// - `context`: The `BuildContext` used to show the toast.
+  /// - `value`: The copied text.
+  /// - `title`: (Optional) A custom title for the toast.
+  /// - `showValue`: Determines whether the copied text should be displayed.
   ///
   /// ### Example:
   /// ```dart

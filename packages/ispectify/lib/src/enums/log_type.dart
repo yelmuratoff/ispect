@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 /// Enum representing various log types used in the ISpectify library.
 ///
 /// Each log type is associated with a unique string key and can be mapped
-/// to a corresponding [LogLevel] using the provided extension.
+/// to a corresponding `LogLevel` using the provided extension.
 ///
 /// - **General Log Types**:
 ///   - `error`: Represents an error log.
@@ -39,10 +39,10 @@ import 'package:ispectify/ispectify.dart';
 ///   - `provider`: Represents a provider log.
 ///   - `print`: Represents a print log.
 ///
-/// Each log type can be mapped to a [LogLevel] using the `level` getter
+/// Each log type can be mapped to a `LogLevel` using the `level` getter
 /// provided in the `ISpectifyLogTypeExt` extension. The `fromLogLevel`
-/// method allows conversion from a [LogLevel] to the corresponding
-/// [ISpectifyLogType].
+/// method allows conversion from a `LogLevel` to the corresponding
+/// `ISpectifyLogType`.
 ///
 /// Example:
 /// ```dart
@@ -82,16 +82,16 @@ enum ISpectifyLogType {
   const ISpectifyLogType(this.key);
   final String key;
 
-  /// Converts a [LogLevel] to its corresponding [ISpectifyLogType].
+  /// Converts a `LogLevel` to its corresponding [ISpectifyLogType].
   ///
-  /// If the provided [logLevel] is `null`, the method defaults to returning
-  /// [ISpectifyLogType.debug].
+  /// If the provided `logLevel` is `null`, the method defaults to returning
+  /// `ISpectifyLogType.debug`.
   ///
-  /// Throws a [StateError] if no matching [ISpectifyLogType] is found for the
-  /// given [logLevel].
+  /// Throws a `StateError` if no matching [ISpectifyLogType] is found for the
+  /// given `logLevel`.
   ///
-  /// - Parameter [logLevel]: The [LogLevel] to be converted.
-  /// - Returns: The corresponding [ISpectifyLogType] for the given [logLevel].
+  /// - Parameter `logLevel`: The [LogLevel` to be converted.
+  /// - Returns: The corresponding `ISpectifyLogType` for the given [logLevel].
   static ISpectifyLogType fromLogLevel(LogLevel? logLevel) {
     if (logLevel == null) return ISpectifyLogType.debug;
 

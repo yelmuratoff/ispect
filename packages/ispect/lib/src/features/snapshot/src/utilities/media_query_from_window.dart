@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 
 /// copied from https://github.com/flutter/flutter/blob/1ad9baa8b9/packages/flutter/lib/src/widgets/app.dart#L1417
-/// Builds [MediaQuery] from `window` by listening to [WidgetsBinding].
+/// Builds `MediaQuery` from `window` by listening to [WidgetsBinding].
 ///
-/// It is performed in a standalone widget to rebuild **only** [MediaQuery] and
+/// It is performed in a standalone widget to rebuild **only** `MediaQuery` and
 /// its dependents when `window` changes, instead of rebuilding the entire
 /// widget tree.
 class MediaQueryFromWindow extends StatefulWidget {

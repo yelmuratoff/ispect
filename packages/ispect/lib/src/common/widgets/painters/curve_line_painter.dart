@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 /// a **midway control point**, giving it an elegant flow.
 ///
 /// ### Parameters:
-/// - [isInRightSide]: Determines whether the curve starts from the right side (`true`)
+/// - `isInRightSide`: Determines whether the curve starts from the right side (`true`)
 ///   or from the left side (`false`).
-/// - [color]: Defines the stroke color of the curve.
+/// - `color`: Defines the stroke color of the curve.
 ///
 /// ### Example Usage:
 /// ```dart
@@ -25,8 +25,8 @@ import 'package:flutter/material.dart';
 class CurveLinePainter extends CustomPainter {
   /// Creates a `CurveLinePainter` instance with the given parameters.
   ///
-  /// - [isInRightSide]: If `true`, the curve starts from the right; otherwise, it starts from the left.
-  /// - [color]: The color used for the curve stroke.
+  /// - `isInRightSide`: If `true`, the curve starts from the right; otherwise, it starts from the left.
+  /// - `color`: The color used for the curve stroke.
   const CurveLinePainter({
     required this.isInRightSide,
     required this.color,

@@ -16,10 +16,10 @@ class ISpectifyHttpLogger extends InterceptorContract {
 
   late ISpectify _iSpectify;
 
-  /// [ISpectifyHttpLogger] settings and customization
+  /// `ISpectifyHttpLogger` settings and customization
   ISpectifyHttpLoggerSettings settings;
 
-  /// Method to update [settings] of [ISpectifyHttpLogger]
+  /// Method to update `settings` of [ISpectifyHttpLogger]
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,

@@ -2,21 +2,21 @@ import 'package:bloc/bloc.dart';
 
 /// Configuration settings for controlling Bloc lifecycle logging.
 ///
-/// The [ISpectifyBlocSettings] class allows customization of what types of
+/// The `ISpectifyBlocSettings` class allows customization of what types of
 /// Bloc lifecycle events should be logged and how the logs should be formatted.
 class ISpectifyBlocSettings {
-  /// Creates an instance of [ISpectifyBlocSettings].
+  /// Creates an instance of `ISpectifyBlocSettings`.
   ///
-  /// - [enabled]: If `true`, logging is enabled. Defaults to `true`.
-  /// - [printEvents]: If `true`, logs events received by the Bloc. Defaults to `true`.
-  /// - [printTransitions]: If `true`, logs state transitions. Defaults to `true`.
-  /// - [printChanges]: If `true`, logs state changes. Defaults to `false`.
-  /// - [printEventFullData]: If `true`, logs full event data. Defaults to `true`.
-  /// - [printStateFullData]: If `true`, logs full state data. Defaults to `true`.
-  /// - [printCreations]: If `true`, logs Bloc creation events. Defaults to `false`.
-  /// - [printClosings]: If `true`, logs Bloc closing events. Defaults to `false`.
-  /// - [transitionFilter]: A filter function to determine if a transition should be logged.
-  /// - [eventFilter]: A filter function to determine if an event should be logged.
+  /// - `enabled`: If `true`, logging is enabled. Defaults to `true`.
+  /// - `printEvents`: If `true`, logs events received by the Bloc. Defaults to `true`.
+  /// - `printTransitions`: If `true`, logs state transitions. Defaults to `true`.
+  /// - `printChanges`: If `true`, logs state changes. Defaults to `false`.
+  /// - `printEventFullData`: If `true`, logs full event data. Defaults to `true`.
+  /// - `printStateFullData`: If `true`, logs full state data. Defaults to `true`.
+  /// - `printCreations`: If `true`, logs Bloc creation events. Defaults to `false`.
+  /// - `printClosings`: If `true`, logs Bloc closing events. Defaults to `false`.
+  /// - `transitionFilter`: A filter function to determine if a transition should be logged.
+  /// - `eventFilter`: A filter function to determine if an event should be logged.
   const ISpectifyBlocSettings({
     this.enabled = true,
     this.printEvents = true,

@@ -2,22 +2,22 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-/// Retrieves the color of a pixel from a [ByteData] object at the specified
-/// coordinates ([x], [y]) within an image of the given [width].
+/// Retrieves the color of a pixel from a `ByteData` object at the specified
+/// coordinates (`x`, [y]) within an image of the given [width].
 ///
-/// The [ByteData] is expected to represent an image in a format where each
+/// The `ByteData` is expected to represent an image in a format where each
 /// pixel is stored as 4 consecutive bytes (RGBA format).
 ///
-/// If the calculated index for the pixel exceeds the length of the [ByteData],
-/// the method returns [Colors.transparent].
+/// If the calculated index for the pixel exceeds the length of the `ByteData`,
+/// the method returns `Colors.transparent`.
 ///
 /// - Parameters:
-///   - byteData: The [ByteData] object containing the image data.
+///   - byteData: The `ByteData` object containing the image data.
 ///   - width: The width of the image in pixels.
 ///   - x: The x-coordinate of the pixel to retrieve.
 ///   - y: The y-coordinate of the pixel to retrieve.
 ///
-/// - Returns: A [Color] object representing the color of the pixel at the
+/// - Returns: A `Color` object representing the color of the pixel at the
 ///   specified coordinates.
 Color getPixelFromByteData(
   ByteData byteData, {
@@ -39,13 +39,13 @@ Color getPixelFromByteData(
   return Color.fromARGB(a, r, g, b);
 }
 
-/// Converts a [Color] object to its hexadecimal string representation.
+/// Converts a `Color` object to its hexadecimal string representation.
 ///
-/// The returned string is in the format `#RRGGBB` by default. If [withAlpha]
+/// The returned string is in the format `#RRGGBB` by default. If `withAlpha`
 /// is set to `true`, the format will include the alpha channel as `#AARRGGBB`.
 ///
-/// - [color]: The [Color] object to convert.
-/// - [withAlpha]: A boolean flag indicating whether to include the alpha
+/// - `color`: The `Color` object to convert.
+/// - `withAlpha`: A boolean flag indicating whether to include the alpha
 ///   channel in the output. Defaults to `false`.
 ///
 /// Returns:
@@ -70,9 +70,9 @@ String colorToHexString(Color color, {bool withAlpha = false}) {
 /// and returns black if the luminance is greater than 0.5, otherwise
 /// it returns white.
 ///
-/// [background] - The background color to evaluate.
+/// `background` - The background color to evaluate.
 ///
-/// Returns a [Color] object representing either black or white,
+/// Returns a `Color` object representing either black or white,
 /// depending on the luminance of the background.
 Color getTextColorOnBackground(Color background) {
   final luminance = background.computeLuminance();

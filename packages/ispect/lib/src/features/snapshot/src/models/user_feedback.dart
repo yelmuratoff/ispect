@@ -1,11 +1,10 @@
 import 'dart:typed_data';
-import 'package:ispect/src/features/snapshot/src/better_feedback.dart';
 
 /// Container for the feedback of the user.
 class UserFeedback {
   const
 
-  /// Creates an [UserFeedback].
+  /// Creates an `UserFeedback`.
   /// Typically never used by a user of this library.
   UserFeedback({
     required this.text,
@@ -21,7 +20,7 @@ class UserFeedback {
   final Uint8List screenshot;
 
   /// This can contain additional information. By default this is always empty.
-  /// When using a custom [BetterFeedback.feedbackBuilder] this can be used
+  /// When using a custom `BetterFeedback.feedbackBuilder` this can be used
   /// to supply additional information.
   final Map<String, dynamic>? extra;
 }

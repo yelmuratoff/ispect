@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.0
+
+### Fixed
+- Replace square bracket references with backticks in code comments and documentation across multiple packages to improve code documentation readability and consistency
+
 ## 4.0.9
 
 ### Added
