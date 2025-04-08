@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.9
+
+### Fixed
+- Fix analyzer issue for pub score
+
 ## 4.0.8
 
 ### Fixed

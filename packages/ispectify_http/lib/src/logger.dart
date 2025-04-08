@@ -69,6 +69,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
         url: request.url.toString(),
         path: request.url.path,
         headers: settings.printRequestHeaders ? request.headers : null,
+        settings: settings,
         body: settings.printRequestData
             ? ((request is Request) ? request.body : null)
             : null,
@@ -130,6 +131,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
           url: response.request?.url.toString(),
           path: response.request?.url.path,
           statusCode: response.statusCode,
+          settings: settings,
           statusMessage:
               settings.printErrorMessage ? response.reasonPhrase : null,
           requestHeaders:
