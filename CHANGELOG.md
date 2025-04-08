@@ -2,8 +2,23 @@
 
 ## 4.0.9
 
+### Added
+- **JsonTruncatorService** for more robust JSON truncation and formatting
+- Introduced more granular widget rendering strategies in JSON explorer
+
 ### Fixed
+- Fixed potential performance bottlenecks in JSON rendering
+- Improved error handling in JSON formatting and logging
 - Fix analyzer issue for pub score
+
+### Enhanced
+- Refactored JSON attribute rendering to reduce widget rebuilds
+- Improved performance of text highlighting in JSON viewer
+- Optimized context selection and memoization in JSON explorer components
+
+### Chore
+- Cleaned up unused code and simplified complex rendering logic
+- Improved code readability in JSON viewer components
 
 ## 4.0.8
 
