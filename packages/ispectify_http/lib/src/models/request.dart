@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_http/src/settings.dart';
 
 class HttpRequestLog extends ISpectifyData {
   HttpRequestLog(
@@ -8,6 +9,7 @@ class HttpRequestLog extends ISpectifyData {
     required this.path,
     required this.headers,
     required this.body,
+    required this.settings,
   }) : super(
           title: getKey,
           key: getKey,
@@ -26,21 +28,23 @@ class HttpRequestLog extends ISpectifyData {
   final String path;
   final Map<String, String>? headers;
   final Object? body;
+  final ISpectifyHttpLoggerSettings settings;
 
   static const getKey = 'http-request';
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message');
 
-    try {
-      if (headers?.isNotEmpty ?? false) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
-    } catch (_) {
-      return msg;
+    if (settings.printRequestHeaders &&
+        headers != null &&
+        headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(
+        headers,
+      );
+      buffer.writeln('Headers: $prettyHeaders');
     }
-    return msg;
+
+    return buffer.toString().truncated!;
   }
 }

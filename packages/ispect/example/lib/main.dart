@@ -241,164 +241,83 @@ class _HomeState extends State<_Home> {
             children: [
               FilledButton(
                 onPressed: () {
-                  final largeList = List.generate(
-                      10,
-                      (index) => {
-                            'id': index,
-                            'value': 'Item $index',
-                            'nested': {
-                              'id': index,
-                              'value': 'Item $index',
-                              'nested': {
-                                'id': index,
-                                'value': 'Item $index',
-                                'nested': {
-                                  'id': index,
-                                  'value': 'Item $index',
-                                  'nested': {
-                                    'id': index,
-                                    'value': 'Item $index',
-                                    'nested': {
-                                      'id': index,
-                                      'value': 'Item $index',
-                                      'nested': {
-                                        'id': index,
-                                        'value': 'Item $index',
-                                        'nested': {
-                                          'id': index,
-                                          'value': 'Item $index',
-                                          'nested': {
-                                            'id': index,
-                                            'value': 'Item $index',
-                                            'nested': {
-                                              'id': index,
-                                              'value': 'Item $index',
-                                              'nested': {
-                                                'id': index,
-                                                'value': 'Item $index',
-                                                'nested': {
-                                                  'id': index,
-                                                  'value': 'Item $index',
-                                                  'nested': {
-                                                    'id': index,
-                                                    'value': 'Item $index',
-                                                    'nested': {
-                                                      'id': index,
-                                                      'value': 'Item $index',
-                                                      'nested': {
-                                                        'id': index,
-                                                        'value': 'Item $index',
-                                                        'nested': {
-                                                          'id': index,
-                                                          'value':
-                                                              'Item $index',
-                                                          'nested': {
-                                                            'id': index,
-                                                            'value':
-                                                                'Item $index',
-                                                            'nested': {
-                                                              'id': index,
-                                                              'value':
-                                                                  'Item $index',
-                                                              'nested': {
-                                                                'id': index,
-                                                                'value':
-                                                                    'Item $index',
-                                                                'nested': {
-                                                                  'id': index,
-                                                                  'value':
-                                                                      'Item $index',
-                                                                  'nested': {
-                                                                    'id': index,
-                                                                    'value':
-                                                                        'Item $index',
-                                                                    'nested': {
-                                                                      'id':
-                                                                          index,
-                                                                      'value':
-                                                                          'Item $index',
-                                                                      'nested':
-                                                                          {
-                                                                        'id':
-                                                                            index,
-                                                                        'value':
-                                                                            'Item $index',
-                                                                        'nested':
-                                                                            {
-                                                                          'id':
-                                                                              index,
-                                                                          'value':
-                                                                              'Item $index',
-                                                                          'nested':
-                                                                              {
-                                                                            'id':
-                                                                                index,
-                                                                            'value':
-                                                                                'Item $index',
-                                                                            'nested':
-                                                                                {
-                                                                              'id': index,
-                                                                              'value': 'Item $index',
-                                                                              'nested': {
-                                                                                'id': index,
-                                                                                'value': 'Item $index',
-                                                                                'nested': {
-                                                                                  'id': index,
-                                                                                  'value': 'Item $index',
-                                                                                  'nested': {
-                                                                                    'id': index,
-                                                                                    'value': 'Item $index',
-                                                                                    'nested': {
-                                                                                      'id': index,
-                                                                                      'value': 'Item $index',
-                                                                                      'nested': {
-                                                                                        'id': index,
-                                                                                        'value': 'Item $index',
-                                                                                        'nested': {
-                                                                                          'id': index,
-                                                                                          'value': 'Item $index',
-                                                                                          'nested': {
-                                                                                            'id': index,
-                                                                                            'value': 'Item $index',
-                                                                                            'nested': {
-                                                                                              'id': index,
-                                                                                              'value': 'Item $index',
-                                                                                            },
-                                                                                          },
-                                                                                        },
-                                                                                      },
-                                                                                    },
-                                                                                  },
-                                                                                },
-                                                                              },
-                                                                            },
-                                                                          },
-                                                                        },
-                                                                      },
-                                                                    },
-                                                                  },
-                                                                },
-                                                              },
-                                                            },
-                                                          },
-                                                        },
-                                                      },
-                                                    },
-                                                  },
-                                                },
-                                              },
-                                            },
-                                          },
-                                        },
-                                      },
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          });
+                  const depth = 5000;
+                  Map<String, dynamic> nested = {
+                    'id': depth,
+                    'value': 'Item $depth'
+                  };
+
+                  for (int i = depth - 1; i >= 0; i--) {
+                    nested = {'id': i, 'value': 'Item $i', 'nested': nested};
+                  }
+
                   final response = Response(
-                    requestOptions: RequestOptions(path: '/mock-large'),
+                    requestOptions: RequestOptions(path: '/mock-nested-id'),
+                    data: nested,
+                    statusCode: 200,
+                  );
+                  for (var interceptor in dio.interceptors) {
+                    if (interceptor is ISpectifyDioLogger) {
+                      interceptor.onResponse(
+                          response, ResponseInterceptorHandler());
+                    }
+                  }
+
+                  // const depth = 10000;
+
+                  // Map<String, dynamic> nested = {
+                  //   'id': depth,
+                  //   'value': 'Item $depth',
+                  // };
+
+                  // for (int i = depth - 1; i >= 0; i--) {
+                  //   nested = {
+                  //     'id': i,
+                  //     'value': 'Item $i',
+                  //     'nested': nested,
+                  //   };
+                  // }
+
+                  // final largeList = List.generate(
+                  //     10000, (index) => {'id': index, 'value': 'Item $index'});
+
+                  // final response = Response(
+                  //   requestOptions: RequestOptions(path: '/mock-nested-id'),
+                  //   data: largeList,
+                  //   statusCode: 200,
+                  // );
+
+                  // for (var interceptor in dio.interceptors) {
+                  //   if (interceptor is ISpectifyDioLogger) {
+                  //     interceptor.onResponse(
+                  //         response, ResponseInterceptorHandler());
+                  //   }
+                  // }
+                },
+                child: const Text('Mock Nested Map with Depth IDs'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  const depth = 10000;
+
+                  Map<String, dynamic> nested = {
+                    'id': depth,
+                    'value': 'Item $depth',
+                  };
+
+                  for (int i = depth - 1; i >= 0; i--) {
+                    nested = {
+                      'id': i,
+                      'value': 'Item $i',
+                      'nested': nested,
+                    };
+                  }
+
+                  final largeList = List.generate(
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
+
+                  final response = Response(
+                    requestOptions: RequestOptions(path: '/mock-nested-id'),
                     data: largeList,
                     statusCode: 200,
                   );
@@ -410,7 +329,7 @@ class _HomeState extends State<_Home> {
                     }
                   }
                 },
-                child: const Text('Mock Large JSON Response'),
+                child: const Text('Mock Nested List with Depth IDs'),
               ),
               FilledButton(
                 onPressed: () {

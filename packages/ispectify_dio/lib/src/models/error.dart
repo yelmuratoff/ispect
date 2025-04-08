@@ -37,27 +37,30 @@ class DioErrorLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
-
-    final responseMessage = statusMessage;
-
-    final data = body;
-    final headers = this.headers ?? {};
+    final buffer = StringBuffer('[$method] $message');
 
     if (statusCode != null) {
-      msg += '\nStatus: $statusCode';
+      buffer.writeln('\nStatus: $statusCode');
     }
 
-    if (settings.printErrorMessage && responseMessage != null) {
-      msg += '\nMessage: $responseMessage';
+    if (settings.printErrorMessage && statusMessage != null) {
+      buffer.writeln('Message: $statusMessage');
     }
 
-    if (settings.printErrorData && data != null) {
-      msg += '\nData: $data';
+    if (settings.printErrorData && body != null) {
+      final prettyData = JsonTruncatorService.pretty(
+        body,
+      );
+      buffer.writeln('Data: $prettyData');
     }
-    if (settings.printErrorHeaders && (headers.isNotEmpty)) {
-      msg += '\nHeaders: $headers';
+
+    if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(
+        headers,
+      );
+      buffer.writeln('Headers: $prettyHeaders');
     }
-    return msg;
+
+    return buffer.toString().truncated!;
   }
 }

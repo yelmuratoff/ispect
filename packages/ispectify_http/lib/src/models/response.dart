@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
+import 'package:ispectify_http/src/settings.dart';
 
 class HttpResponseLog extends ISpectifyData {
   HttpResponseLog(
@@ -14,6 +15,7 @@ class HttpResponseLog extends ISpectifyData {
     required this.headers,
     required this.requestBody,
     required this.responseBody,
+    required this.settings,
   }) : super(
           key: getKey,
           title: getKey,
@@ -30,24 +32,36 @@ class HttpResponseLog extends ISpectifyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
+  final ISpectifyHttpLoggerSettings settings;
   final HttpResponseData? responseData;
 
   static const getKey = 'http-response';
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message')
+      ..writeln('\nStatus: $statusCode');
 
-    msg += '\nStatus: $statusCode';
-
-    try {
-      if (headers?.isNotEmpty ?? false) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
-    } catch (_) {
-      return msg;
+    if (settings.printResponseMessage && statusMessage != null) {
+      buffer.writeln('Message: $statusMessage');
     }
-    return msg;
+
+    if (settings.printResponseData && requestBody != null) {
+      final prettyData = JsonTruncatorService.pretty(
+        requestBody,
+      );
+      buffer.writeln('Data: $prettyData');
+    }
+
+    if (settings.printResponseHeaders &&
+        headers != null &&
+        headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(
+        headers,
+      );
+      buffer.writeln('Headers: $prettyHeaders');
+    }
+
+    return buffer.toString().truncated!;
   }
 }

@@ -46,6 +46,11 @@ class _ISpectScreenState extends State<ISpectScreen> {
         options: widget.options,
         itemsBuilder: widget.itemsBuilder,
       );
+
+  // @override
+  // Widget build(BuildContext context) => Scaffold(
+  //       body: SizedBox(),
+  //     );
 }
 
 class ISpectScreenView extends StatefulWidget {
@@ -147,6 +152,11 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       thickness: 1,
                       height: 0,
                     ),
+                    // itemBuilder: (context, index) => ListTile(
+                    //   title: Text(
+                    //     _getListItem(filteredElements, index).textMessage,
+                    //   ),
+                    // ),
                     itemBuilder: (context, index) {
                       final data = _getListItem(filteredElements, index);
                       if (widget.itemsBuilder != null) {
@@ -154,7 +164,6 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       }
 
                       return ISpectLogCard(
-                        key: ValueKey(data.hashCode),
                         data: data,
                         backgroundColor: context.ispectTheme.cardColor,
                         onCopyTap: () => _copyISpectifyDataItemText(data),

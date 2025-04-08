@@ -1,6 +1,6 @@
 name: ispect
 description: "A Handy Toolkit for Mobile App Debugging. ISpect is a simple yet versatile library inspired by web inspectors, tailored for mobile application development."
-version: 4.0.8
+version: 4.0.9
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -29,7 +29,7 @@ dependencies:
     any
 
     # Logging
-  ispectify: ^4.0.8
+  ispectify: ^4.0.9
 
   # Utils
   path_provider: ^2.1.5

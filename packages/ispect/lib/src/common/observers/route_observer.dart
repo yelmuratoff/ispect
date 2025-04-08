@@ -121,7 +121,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       )
       ..writelnIf(
         route?.settings.arguments != null,
-        'Arguments: ${prettyJson(route?.settings.arguments)}',
+        'Arguments: ${route?.settings.arguments}',
       );
 
     if (logMessage.isNotEmpty) {
