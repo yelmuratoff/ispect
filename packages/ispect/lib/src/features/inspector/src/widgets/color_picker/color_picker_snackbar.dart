@@ -13,8 +13,8 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dar
 /// The snackbar is styled according to the application's theme.
 ///
 /// - Parameters:
-///   - context: The [BuildContext] used to access theme and localization resources.
-///   - color: The [Color] to be displayed in the snackbar.
+///   - context: The `BuildContext` used to access theme and localization resources.
+///   - color: The `Color` to be displayed in the snackbar.
 ///
 /// The snackbar includes:
 /// - A small box showing the selected color.

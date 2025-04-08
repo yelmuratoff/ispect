@@ -4,10 +4,10 @@ import 'package:ispectify_dio/src/data/_data.dart';
 import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:ispectify_dio/src/settings.dart';
 
-/// [Dio] http client logger on [ISpectify] base
+/// `Dio` http client logger on [ISpectify] base
 ///
-/// [iSpectify] filed is current [ISpectify] instance.
-/// Provide your instance if your application used [ISpectify] as default logger
+/// `iSpectify` filed is current [ISpectify] instance.
+/// Provide your instance if your application used `ISpectify` as default logger
 /// Common ISpectify instance will be used by default
 class ISpectifyDioLogger extends Interceptor {
   ISpectifyDioLogger({
@@ -20,14 +20,14 @@ class ISpectifyDioLogger extends Interceptor {
 
   late ISpectify _iSpectify;
 
-  /// [ISpectifyDioLogger] settings and customization
+  /// `ISpectifyDioLogger` settings and customization
   ISpectifyDioLoggerSettings settings;
 
   /// ISpectify addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
 
-  /// Method to update [settings] of [ISpectifyDioLogger]
+  /// Method to update `settings` of [ISpectifyDioLogger]
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,

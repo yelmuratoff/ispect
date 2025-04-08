@@ -37,8 +37,8 @@ class JsonAttribute extends StatelessWidget {
 
   /// Build the expand/collapse icons in root nodes.
   ///
-  /// If this builder is null, a material [Icons.arrow_right] is displayed for
-  /// collapsed nodes and [Icons.arrow_drop_down] for expanded nodes.
+  /// If this builder is null, a material `Icons.arrow_right` is displayed for
+  /// collapsed nodes and `Icons.arrow_drop_down` for expanded nodes.
   final NodeBuilder? collapsableToggleBuilder;
 
   /// A builder to add a trailing widget in each node.
@@ -65,7 +65,7 @@ class JsonAttribute extends StatelessWidget {
   /// Customizes a property style and interaction based on its value.
   ///
   /// See also:
-  /// * [StyleBuilder]
+  /// * `StyleBuilder`
   final StyleBuilder? valueStyleBuilder;
 
   /// Sets the spacing between each list item.
@@ -312,7 +312,7 @@ class _KeySeparatorText extends StatelessWidget {
   }
 }
 
-/// A [Widget] that renders a node that can be a class or a list.
+/// A `Widget` that renders a node that can be a class or a list.
 class _RootNodeWidget extends StatelessWidget {
   const _RootNodeWidget({
     required this.node,
@@ -395,7 +395,7 @@ class _RootNodeWidget extends StatelessWidget {
   }
 }
 
-/// A [Widget] that renders a leaf node.
+/// A `Widget` that renders a leaf node.
 class _PropertyNodeWidget extends StatelessWidget {
   const _PropertyNodeWidget({
     required this.node,
@@ -505,7 +505,7 @@ class _PropertyNodeWidget extends StatelessWidget {
       );
 }
 
-/// Highlights found occurrences of [highlightedText] in [text].
+/// Highlights found occurrences of `highlightedText` in [text].
 class _HighlightedText extends StatelessWidget {
   const _HighlightedText({
     required this.text,

@@ -3,39 +3,39 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 
 /// A view model state that represents a single node item in a json object tree.
-/// A decoded json object can be converted to a [NodeViewModelState] by calling
-/// the [buildViewModelNodes] method.
+/// A decoded json object can be converted to a `NodeViewModelState` by calling
+/// the `buildViewModelNodes` method.
 ///
 /// A node item can be eiter a class root, an array or a single
 /// class/array field.
 ///
 ///
-/// The string [key] is the same as the json key, unless this node is an element
+/// The string `key` is the same as the json key, unless this node is an element
 /// if an array, then its key is its index in the array.
 ///
-/// The node [value] behaviour depends on what this node represents, if it is
+/// The node `value` behaviour depends on what this node represents, if it is
 /// a property (from json: "key": "value"), then the value is the actual
-/// property value, one of [num], [String], [bool], [Null]. Since this node
-/// represents a single property, both [isClass] and [isArray] are false.
+/// property value, one of `num`, [String], [bool], [Null]. Since this node
+/// represents a single property, both `isClass` and [isArray] are false.
 ///
-/// If this node represents a class, [value] contains a
-/// [Map<String, NodeViewModelState>] with this node's children. In this case
-/// [isClass] is true.
+/// If this node represents a class, `value` contains a
+/// `Map<String, NodeViewModelState>` with this node's children. In this case
+/// `isClass` is true.
 ///
-/// If this node represents an array, [value] contains a
-/// [List<NodeViewModelState>] with this node's children. In this case
-/// [isArray] is true.
+/// If this node represents an array, `value` contains a
+/// `List<NodeViewModelState>` with this node's children. In this case
+/// `isArray` is true.
 ///
 /// See also:
-/// * [buildViewModelNodes]
-/// * [flatten]
+/// * `buildViewModelNodes`
+/// * `flatten`
 class NodeViewModelState extends ChangeNotifier {
-  /// Build a [NodeViewModelState] as a property.
+  /// Build a `NodeViewModelState` as a property.
   /// A property is a single attribute in the json, can be of a type
-  /// [num], [String], [bool] or [Null].
+  /// `num`, [String], [bool] or [Null].
   ///
-  /// Properties always return [false] when calling [isClass], [isArray]
-  /// and [isRoot]
+  /// Properties always return `false` when calling [isClass], [isArray]
+  /// and `isRoot`
   factory NodeViewModelState.fromProperty({
     required int treeDepth,
     required String key,
@@ -49,13 +49,13 @@ class NodeViewModelState extends ChangeNotifier {
         parent: parent,
       );
 
-  /// Build a [NodeViewModelState] as a class.
+  /// Build a `NodeViewModelState` as a class.
   /// A class is a JSON node containing a whole class, a class can have
   /// multiple children properties, classes or arrays.
-  /// Its value is always a [Map<String, NodeViewModelState>] containing the
+  /// Its value is always a `Map<String, NodeViewModelState>` containing the
   /// children information.
   ///
-  /// Classes always return [true] when calling [isClass] and [isRoot].
+  /// Classes always return `true` when calling [isClass] and [isRoot].
   factory NodeViewModelState.fromClass({
     required int treeDepth,
     required String key,
@@ -68,14 +68,14 @@ class NodeViewModelState extends ChangeNotifier {
         parent: parent,
       );
 
-  /// Build a [NodeViewModelState] as an array.
+  /// Build a `NodeViewModelState` as an array.
   /// An array is a JSON node containing an array of objects, each element
-  /// inside the array is represented by another [NodeViewModelState]. Thus
+  /// inside the array is represented by another `NodeViewModelState`. Thus
   /// it can be values or classes.
-  /// Its value is always a [List<NodeViewModelState>] containing the
+  /// Its value is always a `List<NodeViewModelState>` containing the
   /// children information.
   ///
-  /// Arrays always return [true] when calling [isArray] and [isRoot].
+  /// Arrays always return `true` when calling [isArray] and [isRoot].
   factory NodeViewModelState.fromArray({
     required int treeDepth,
     required String key,
@@ -105,11 +105,11 @@ class NodeViewModelState extends ChangeNotifier {
   /// How deep in the tree this node is.
   final int treeDepth;
 
-  /// Flags if this node is a class, if [true], then [value] is as Map
+  /// Flags if this node is a class, if `true`, then [value] is as Map
   final bool isClass;
 
-  /// Flags if this node is an array, if [true], then [value] is a
-  /// [List<NodeViewModelState>].
+  /// Flags if this node is an array, if `true`, then [value] is a
+  /// `List<NodeViewModelState>`.
   final bool isArray;
 
   bool _isHighlighted = false;
@@ -123,15 +123,15 @@ class NodeViewModelState extends ChangeNotifier {
 
   dynamic _value;
 
-  /// Updates the [value] of this node.
+  /// Updates the `value` of this node.
   @visibleForTesting
   set value(Object? value) {
     _value = value;
   }
 
   /// This attribute value, it may be one of the following:
-  /// [num], [String], [bool], [Null], [Map<String, NodeViewModelState>] or
-  /// [List<NodeViewModelState>].
+  /// `num`, [String], [bool], [Null], [Map<String, NodeViewModelState>] or
+  /// `List<NodeViewModelState>`.
   dynamic get value => _value;
 
   late int childrenCount = () {
@@ -148,25 +148,25 @@ class NodeViewModelState extends ChangeNotifier {
     return 0;
   }();
 
-  /// Returns [true] if this node is highlighted.
+  /// Returns `true` if this node is highlighted.
   ///
-  /// This is a mutable property, [notifyListeners] is called to notify all
+  /// This is a mutable property, `notifyListeners` is called to notify all
   ///  registered listeners.
   bool get isHighlighted => _isHighlighted;
 
-  /// Returns [true] if this node is focused.
+  /// Returns `true` if this node is focused.
   ///
-  /// This is a mutable property, [notifyListeners] is called to notify all
+  /// This is a mutable property, `notifyListeners` is called to notify all
   ///  registered listeners.
   bool get isFocused => _isFocused;
 
-  /// Returns [true] if this node is collapsed.
+  /// Returns `true` if this node is collapsed.
   ///
-  /// This is a mutable property, [notifyListeners] is called to notify all
+  /// This is a mutable property, `notifyListeners` is called to notify all
   /// registered listeners.
   bool get isCollapsed => _isCollapsed;
 
-  /// Returns [true] if this is a root node.
+  /// Returns `true` if this is a root node.
   ///
   /// A root node is a node that contains multiple children. A class or an
   /// array.
@@ -192,7 +192,7 @@ class NodeViewModelState extends ChangeNotifier {
 
   /// Sets the highlight property of this node and all of its children.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   void highlight({bool isHighlighted = true}) {
     _isHighlighted = isHighlighted;
     for (final children in children) {
@@ -203,34 +203,34 @@ class NodeViewModelState extends ChangeNotifier {
 
   /// Sets the focus property of this node.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   void focus({bool isFocused = true}) {
     _isFocused = isFocused;
     notifyListeners();
   }
 
-  /// Sets the [isCollapsed] property to [false].
+  /// Sets the `isCollapsed` property to [false].
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   void collapse() {
     _isCollapsed = true;
     notifyListeners();
   }
 
-  /// Sets the [isCollapsed] property to [true].
+  /// Sets the `isCollapsed` property to [true].
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   void expand() {
     _isCollapsed = false;
     notifyListeners();
   }
 }
 
-/// Builds [NodeViewModelState] nodes based on a decoded json object.
+/// Builds `NodeViewModelState` nodes based on a decoded json object.
 ///
-/// The return [Map<String, NodeViewModelState>] has the same structure as
-/// the decoded [object], except that every class, array and property is now
-/// a [NodeViewModelState].
+/// The return `Map<String, NodeViewModelState>` has the same structure as
+/// the decoded `object`, except that every class, array and property is now
+/// a `NodeViewModelState`.
 @visibleForTesting
 Map<String, NodeViewModelState> buildViewModelNodes(Object? object) {
   if (object is Map<String, dynamic>) {
@@ -374,12 +374,12 @@ List<NodeViewModelState> _flattenArray(List<NodeViewModelState> objects) {
 
 /// Handles the data and manages the state of a json explorer.
 ///
-/// The data must be initialized by calling the [buildNodes] method.
-/// This method takes a raw JSON object [Map<String, dynamic>] or
-/// [List<dynamic>] and builds a flat node list of [NodeViewModelState].
+/// The data must be initialized by calling the `buildNodes` method.
+/// This method takes a raw JSON object `Map<String, dynamic>` or
+/// `List<dynamic>` and builds a flat node list of [NodeViewModelState].
 ///
 ///
-/// The property [displayNodes] contains a flat list of all nodes that can be
+/// The property `displayNodes` contains a flat list of all nodes that can be
 /// displayed.
 /// This means that each node property is an element in this list, even inner
 /// class properties.
@@ -398,10 +398,10 @@ List<NodeViewModelState> _flattenArray(List<NodeViewModelState> objects) {
 ///         "innerClassField": "value"
 ///         }
 ///     }
-///     "arrayField": [0, 1]
+///     "arrayField": `0, 1`
 /// }
 ///
-/// The [displayNodes] representation is going to look like this:
+/// The `displayNodes` representation is going to look like this:
 /// [
 ///   node {"someClass": ...},
 ///   node {"classField": ...},
@@ -416,7 +416,7 @@ List<NodeViewModelState> _flattenArray(List<NodeViewModelState> objects) {
 /// {@end-tool}
 ///
 /// This data structure allows us to render the nodes easily using a
-/// [ListView.builder] for example, or any other kind of list rendering widget.
+/// `ListView.builder` for example, or any other kind of list rendering widget.
 ///
 class JsonExplorerStore extends ChangeNotifier {
   List<NodeViewModelState> _displayNodes = [];
@@ -428,52 +428,52 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Gets the list of nodes to be displayed.
   ///
-  /// [notifyListeners] is called whenever this value changes.
-  /// The returned [Iterable] is closed for modification.
+  /// `notifyListeners` is called whenever this value changes.
+  /// The returned `Iterable` is closed for modification.
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
       UnmodifiableListView(_displayNodes);
 
   /// Gets the current search term.
   ///
-  /// [notifyListeners] is called whenever this value changes.
+  /// `notifyListeners` is called whenever this value changes.
   String get searchTerm => _searchTerm;
 
   /// Gets a list containing the nodes found by the current search term.
   ///
-  /// [notifyListeners] is called whenever this value changes.
-  /// The returned [Iterable] is closed for modification.
+  /// `notifyListeners` is called whenever this value changes.
+  /// The returned `Iterable` is closed for modification.
   UnmodifiableListView<SearchResult> get searchResults =>
       UnmodifiableListView(_searchResults);
 
   /// Gets the current focused search node index.
   /// If there are search results, this is going to be an index of
-  /// [searchResults] list. It always going to be 0 by default.
+  /// `searchResults` list. It always going to be 0 by default.
   ///
-  /// Use [focusNextSearchResult] and [focusPreviousSearchResult] to change the
+  /// Use `focusNextSearchResult` and [focusPreviousSearchResult] to change the
   /// current focused search node.
   ///
-  /// [notifyListeners] is called whenever this value changes.
+  /// `notifyListeners` is called whenever this value changes.
   int get focusedSearchResultIndex => _focusedSearchResultIndex;
 
   /// Gets the current focused search result.
   ///
-  /// Use [focusNextSearchResult] and [focusPreviousSearchResult] to change the
+  /// Use `focusNextSearchResult` and [focusPreviousSearchResult] to change the
   /// current focused search node.
   ///
-  /// [notifyListeners] is called whenever this value changes.
+  /// `notifyListeners` is called whenever this value changes.
   SearchResult get focusedSearchResult =>
       _searchResults[_focusedSearchResultIndex];
 
-  /// Collapses the given [node] so its children won't be visible.
+  /// Collapses the given `node` so its children won't be visible.
   ///
-  /// This will change the [node] [NodeViewModelState.isCollapsed] property to
+  /// This will change the `node` [NodeViewModelState.isCollapsed] property to
   /// true. But its children won't change states, so when the node is expanded
   /// its children states are unchanged.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   ///
   /// See also:
-  /// * [expandNode]
+  /// * `expandNode`
   void collapseNode(NodeViewModelState node) {
     if (node.isCollapsed || !node.isRoot) {
       return;
@@ -489,12 +489,12 @@ class JsonExplorerStore extends ChangeNotifier {
   /// Collapses all nodes.
   ///
   /// This collapses every single node of the data structure, meaning that only
-  /// the upper root nodes will be in the [displayNodes] list.
+  /// the upper root nodes will be in the `displayNodes` list.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   ///
   /// See also:
-  /// * [expandAll]
+  /// * `expandAll`
   void collapseAll() {
     final rootNodes =
         _displayNodes.where((node) => node.treeDepth == 0 && !node.isCollapsed);
@@ -512,16 +512,16 @@ class JsonExplorerStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Expands the given [node] so its children become visible.
+  /// Expands the given `node` so its children become visible.
   ///
-  /// This will change the [node] [NodeViewModelState.isCollapsed] property to
+  /// This will change the `node` [NodeViewModelState.isCollapsed] property to
   /// false. But its children won't change states, so when the node is expanded
   /// its children states are unchanged.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   ///
   /// See also:
-  /// * [collapseNode]
+  /// * `collapseNode`
   void expandNode(NodeViewModelState node) {
     if (!node.isCollapsed || !node.isRoot) {
       return;
@@ -537,12 +537,12 @@ class JsonExplorerStore extends ChangeNotifier {
   /// Expands all nodes.
   ///
   /// This expands every single node of the data structure, meaning that all
-  /// nodes will be in the [displayNodes] list.
+  /// nodes will be in the `displayNodes` list.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   ///
   /// See also:
-  /// * [collapseAll]
+  /// * `collapseAll`
   void expandAll() {
     for (final node in _allNodes) {
       node.expand();
@@ -566,12 +566,12 @@ class JsonExplorerStore extends ChangeNotifier {
   }
 
   /// Executes a search in the current data structure looking for the given
-  /// search [term].
+  /// search `term`.
   ///
   /// The search looks for matching terms in both key and values from all nodes.
-  /// The results can be retrieved in the [searchResults] lists.
+  /// The results can be retrieved in the `searchResults` lists.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   void search(String term) {
     _searchTerm = term.toLowerCase();
     _searchResults.clear();
@@ -587,12 +587,12 @@ class JsonExplorerStore extends ChangeNotifier {
   ///
   /// Does nothing if there are no results or the last node is already focused.
   ///
-  /// If [loop] is `true` and the current focused search result is the last
-  /// element of [searchResults], the first element of [searchResults] is
+  /// If `loop` is `true` and the current focused search result is the last
+  /// element of `searchResults`, the first element of [searchResults] is
   /// focused.
   ///
   /// See also:
-  /// * [focusPreviousSearchResult]
+  /// * `focusPreviousSearchResult`
   void focusNextSearchResult({bool loop = false}) {
     if (searchResults.isEmpty) {
       return;
@@ -611,12 +611,12 @@ class JsonExplorerStore extends ChangeNotifier {
   ///
   /// Does nothing if there are no results or the first node is already focused.
   ///
-  /// If [loop] is `true` and the current focused search result is the first
-  /// element of [searchResults], the last element of [searchResults] is
+  /// If `loop` is `true` and the current focused search result is the first
+  /// element of `searchResults`, the last element of [searchResults] is
   /// focused.
   ///
   /// See also:
-  /// * [focusNextSearchResult]
+  /// * `focusNextSearchResult`
   void focusPreviousSearchResult({bool loop = false}) {
     if (searchResults.isEmpty) {
       return;
@@ -631,12 +631,12 @@ class JsonExplorerStore extends ChangeNotifier {
     }
   }
 
-  /// Uses the given [jsonObject] to build the [displayNodes] list.
+  /// Uses the given `jsonObject` to build the [displayNodes] list.
   ///
-  /// If [areAllCollapsed] is true, then all nodes will be collapsed, and
+  /// If `areAllCollapsed` is true, then all nodes will be collapsed, and
   /// initially only upper root nodes will be in the list.
   ///
-  /// [notifyListeners] is called to notify all registered listeners.
+  /// `notifyListeners` is called to notify all registered listeners.
   Future<void> buildNodes(
     Object? jsonObject, {
     bool areAllCollapsed = false,
@@ -696,7 +696,7 @@ class JsonExplorerStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Finds all occurences of [searchTerm] in [victim] and retrieves all their
+  /// Finds all occurences of `searchTerm` in [victim] and retrieves all their
   /// indexes.
   Iterable<int> _getSearchTermMatchesIndexes(String victim) {
     final pattern = RegExp(searchTerm, caseSensitive: false);
@@ -706,15 +706,15 @@ class JsonExplorerStore extends ChangeNotifier {
     return matches;
   }
 
-  /// Expands all the parent nodes of each [SearchResult.node] in
-  /// [searchResults].
+  /// Expands all the parent nodes of each `SearchResult.node` in
+  /// `searchResults`.
   void expandSearchResults() {
     for (final searchResult in searchResults) {
       expandParentNodes(searchResult.node);
     }
   }
 
-  /// Expands all the parent nodes of the given [node].
+  /// Expands all the parent nodes of the given `node`.
   void expandParentNodes(NodeViewModelState node) {
     final parent = node.parent;
 
@@ -728,13 +728,13 @@ class JsonExplorerStore extends ChangeNotifier {
   }
 }
 
-/// A matched search in the given [node].
+/// A matched search in the given `node`.
 ///
-/// If the match is registered in the node's key, then [matchLocation] is going
-/// to be [SearchMatchLocation.key].
+/// If the match is registered in the node's key, then `matchLocation` is going
+/// to be `SearchMatchLocation.key`.
 ///
-/// If the match is in the value, then [matchLocation] is
-/// [SearchMatchLocation.value].
+/// If the match is in the value, then `matchLocation` is
+/// `SearchMatchLocation.value`.
 class SearchResult {
   const SearchResult(
     this.node, {

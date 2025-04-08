@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 /// A widget that displays a custom performance overlay showing frame timing stats
-/// (UI, Raster, and High Latency) based on [FrameTiming].
+/// (UI, Raster, and High Latency) based on `FrameTiming`.
 ///
-/// Unlike Flutter's native [PerformanceOverlay], this works across all platforms
+/// Unlike Flutter's native `PerformanceOverlay`, this works across all platforms
 /// including web and desktop, and provides more granular, opinionated visual feedback.
 ///
 /// The overlay displays charts for:
@@ -14,13 +14,13 @@ import 'package:flutter/scheduler.dart';
 /// - Total frame latencies
 ///
 /// Each bar represents a recent frame, with red bars indicating frame times
-/// that exceed the [targetFrameTime].
+/// that exceed the `targetFrameTime`.
 ///
 /// Can be aligned and scaled, and provides customizable styling options.
 class CustomPerformanceOverlay extends StatelessWidget {
   /// Creates a performance overlay widget.
   ///
-  /// The [child] is the main content; the overlay renders on top of it when [enabled].
+  /// The `child` is the main content; the overlay renders on top of it when [enabled].
   const CustomPerformanceOverlay({
     required this.child,
     super.key,
@@ -156,9 +156,9 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
 
   /// Callback that collects frame timing samples from the engine.
   ///
-  /// This is invoked by [SchedulerBinding.addTimingsCallback] whenever new frame
+  /// This is invoked by `SchedulerBinding.addTimingsCallback` whenever new frame
   /// timings are available. It stores a rolling window of the most recent
-  /// [widget.sampleSize] entries.
+  /// `widget.sampleSize` entries.
   void _timingsCallback(List<FrameTiming> frameTimings) {
     // Prevent updating state if widget is already disposed.
     if (!mounted) return;
@@ -340,7 +340,7 @@ class _PerformanceChart extends StatelessWidget {
 /// - A horizontal black line representing the target frame duration.
 /// - A series of vertical bars (one per sampled frame duration) showing how
 ///   each frame compares to the target and maximum frame duration.
-///   - Bars under the target duration are colored with [color].
+///   - Bars under the target duration are colored with `color`.
 ///   - Bars exceeding the target are colored red.
 ///
 /// Used in performance overlays to provide visual feedback on frame rendering
@@ -368,7 +368,7 @@ class _OverlayPainter extends CustomPainter {
   /// Any durations above this value will be capped visually at full height.
   final Duration barRangeMax;
 
-  /// Color for bars that are within or below [targetFrameTime].
+  /// Color for bars that are within or below `targetFrameTime`.
   ///
   /// Frames exceeding the target will be rendered in red.
   final Color color;
@@ -378,20 +378,20 @@ class _OverlayPainter extends CustomPainter {
   /// This method visualizes:
   /// - A horizontal line at the target frame duration to indicate the performance threshold.
   /// - A sequence of vertical bars for each frame timing sample:
-  ///   - Bars are scaled relative to [barRangeMax].
-  ///   - Bars with duration above [targetFrameTime] are colored red.
-  ///   - Bars below or equal to [targetFrameTime] use the configured [color].
+  ///   - Bars are scaled relative to `barRangeMax`.
+  ///   - Bars with duration above `targetFrameTime` are colored red.
+  ///   - Bars below or equal to `targetFrameTime` use the configured [color].
   ///
   /// Parameters:
-  /// - [canvas]: The canvas to draw onto.
-  /// - [size]: The size of the available drawing area.
+  /// - `canvas`: The canvas to draw onto.
+  /// - `size`: The size of the available drawing area.
   ///
   /// Example visualization behavior:
   /// - If `targetFrameTime` is 16ms, and a bar represents 24ms, it will be colored red and capped
-  ///   to full chart height if it exceeds [barRangeMax].
+  ///   to full chart height if it exceeds `barRangeMax`.
   ///
   /// Edge cases:
-  /// - If there are fewer samples than [sampleSize], only the available samples are drawn.
+  /// - If there are fewer samples than `sampleSize`, only the available samples are drawn.
   /// - Samples are rendered from oldest (left) to newest (right).
   @override
   void paint(Canvas canvas, Size size) {
@@ -432,12 +432,12 @@ class _OverlayPainter extends CustomPainter {
       oldDelegate.samples != samples;
 }
 
-/// Extension on [Duration] to provide convenience methods for
+/// Extension on `Duration` to provide convenience methods for
 /// division and formatted millisecond representation.
 ///
 /// Useful for performance monitoring and frame timing calculations.
 extension on Duration {
-  /// Divides this [Duration] by another [Duration] and returns the result as a [double].
+  /// Divides this `Duration` by another [Duration] and returns the result as a [double].
   ///
   /// For example:
   /// ```dart
@@ -447,7 +447,7 @@ extension on Duration {
   /// ```
   ///
   /// Edge cases:
-  /// - Returns `infinity` if [other] is zero.
+  /// - Returns `infinity` if `other` is zero.
   /// - Returns `NaN` if both are zero.
   double operator /(Duration other) => inMicroseconds / other.inMicroseconds;
 

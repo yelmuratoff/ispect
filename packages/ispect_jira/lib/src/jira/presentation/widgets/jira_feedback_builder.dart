@@ -31,9 +31,9 @@ class JiraFeedbackBuilder extends StatelessWidget {
 }
 
 /// A form that prompts the user for feedback with a single text field.
-/// This is the default feedback widget used by [BetterFeedback].
+/// This is the default feedback widget used by `BetterFeedback`.
 class StringFeedback extends StatefulWidget {
-  /// Create a [StringFeedback].
+  /// Create a `StringFeedback`.
   /// This is the default feedback bottom sheet, which is presented to the user.
   const StringFeedback({
     required this.onSubmit,
@@ -49,7 +49,7 @@ class StringFeedback extends StatefulWidget {
   /// scrollable widget and that widget is scrolled.
   ///
   /// Non null if the sheet is draggable.
-  /// See: [FeedbackThemeData.sheetIsDraggable].
+  /// See: `FeedbackThemeData.sheetIsDraggable`.
   final ScrollController? scrollController;
   final ThemeData theme;
 

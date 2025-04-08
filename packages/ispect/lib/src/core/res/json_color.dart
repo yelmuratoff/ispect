@@ -37,7 +37,7 @@ class JsonColors {
   /// Color used for date-time values in JSON.
   static const dateTimeColor = Colors.teal;
 
-  /// Returns a color based on the provided HTTP [statusCode].
+  /// Returns a color based on the provided HTTP `statusCode`.
   ///
   /// - `2xx` (Success) → Green
   /// - `4xx` (Client Errors) → Red

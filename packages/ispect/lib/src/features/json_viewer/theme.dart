@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Theme used to display the [JsonExplorer].
+/// Theme used to display the `JsonExplorer`.
 @immutable
 class JsonExplorerTheme {
   JsonExplorerTheme({
@@ -53,7 +53,7 @@ class JsonExplorerTheme {
 
   /// Text style used to display json class/arrays key attributes.
   ///
-  /// Defaults to [propertyKeyTextStyle] if not set.
+  /// Defaults to `propertyKeyTextStyle` if not set.
   final TextStyle rootKeyTextStyle;
 
   /// Text style used to display json property key attributes.
@@ -71,12 +71,12 @@ class JsonExplorerTheme {
 
   /// Text style used to highlight the current focused search result node key.
   ///
-  /// If not set falls back to [keySearchHighlightTextStyle].
+  /// If not set falls back to `keySearchHighlightTextStyle`.
   final TextStyle focusedKeySearchNodeHighlightTextStyle;
 
   /// Text style used to highlight the current focused search result node value.
   ///
-  /// If not set falls back to [valueSearchHighlightTextStyle].
+  /// If not set falls back to `valueSearchHighlightTextStyle`.
   final TextStyle focusedValueSearchHighlightTextStyle;
 
   /// Indentation lines color.
@@ -85,7 +85,7 @@ class JsonExplorerTheme {
   /// Padding used to indent nodes.
   final double indentationPadding;
 
-  /// An extra factor applied on [indentationPadding] used when rendering
+  /// An extra factor applied on `indentationPadding` used when rendering
   /// properties.
   final double propertyIndentationPaddingFactor;
 

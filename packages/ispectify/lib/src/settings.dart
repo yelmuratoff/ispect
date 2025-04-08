@@ -6,15 +6,15 @@ import 'package:ispectify/src/utils/console_utils.dart';
 ///
 /// This class defines how logs are formatted, colored, and displayed.
 class LoggerSettings {
-  /// Creates an instance of [LoggerSettings] with customizable options.
+  /// Creates an instance of `LoggerSettings` with customizable options.
   ///
-  /// - [colors]: Custom ANSI colors for different log levels.
-  /// - [enable]: Enables or disables logging (default: `true`).
-  /// - [defaultTitle]: Default title for logs (default: `'Log'`).
-  /// - [level]: Minimum log level to be recorded (default: `LogLevel.verbose`).
-  /// - [lineSymbol]: The symbol used for log separators (default: `'─'`).
-  /// - [maxLineWidth]: Maximum width for log lines (default: `110`).
-  /// - [enableColors]: Enables ANSI colors in console output (default: `true`).
+  /// - `colors`: Custom ANSI colors for different log levels.
+  /// - `enable`: Enables or disables logging (default: `true`).
+  /// - `defaultTitle`: Default title for logs (default: `'Log'`).
+  /// - `level`: Minimum log level to be recorded (default: `LogLevel.verbose`).
+  /// - `lineSymbol`: The symbol used for log separators (default: `'─'`).
+  /// - `maxLineWidth`: Maximum width for log lines (default: `110`).
+  /// - `enableColors`: Enables ANSI colors in console output (default: `true`).
   LoggerSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enable = true,
@@ -46,7 +46,7 @@ class LoggerSettings {
   /// Whether ANSI colors are enabled in logs.
   final bool enableColors;
 
-  /// Creates a new instance of [LoggerSettings] with modified properties.
+  /// Creates a new instance of `LoggerSettings` with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
   LoggerSettings copyWith({

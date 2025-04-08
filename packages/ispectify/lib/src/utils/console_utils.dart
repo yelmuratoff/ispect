@@ -2,19 +2,19 @@ import 'package:ispectify/ispectify.dart';
 
 /// A utility class for console output formatting.
 ///
-/// The [ConsoleUtils] class provides static methods for generating
+/// The `ConsoleUtils` class provides static methods for generating
 /// top and bottom border lines, as well as ANSI color mappings
 /// for log levels. This class is non-instantiable.
 abstract class ConsoleUtils {
-  /// Prevents instantiation of [ConsoleUtils].
+  /// Prevents instantiation of `ConsoleUtils`.
   /// This is a utility class with only static methods.
   ConsoleUtils._();
 
   /// Generates a bottom border line for console messages.
   ///
-  /// This method returns a string consisting of a repeated [lineSymbol]
-  /// for the specified [length]. Optionally, a bottom-left corner ('└')
-  /// can be added if [withCorner] is `true`.
+  /// This method returns a string consisting of a repeated `lineSymbol`
+  /// for the specified `length`. Optionally, a bottom-left corner ('└')
+  /// can be added if `withCorner` is `true`.
   ///
   /// ### Example:
   /// ```dart
@@ -22,9 +22,9 @@ abstract class ConsoleUtils {
   /// print(ConsoleUtils.bottomLine(5, withCorner: true)); // Output: └─────
   /// ```
   ///
-  /// - [length]: The number of [lineSymbol] characters in the line.
-  /// - [lineSymbol]: The character used to construct the line. Defaults to '─'.
-  /// - [withCorner]: If `true`, adds a bottom-left corner symbol. Defaults to `false`.
+  /// - `length`: The number of `lineSymbol` characters in the line.
+  /// - `lineSymbol`: The character used to construct the line. Defaults to '─'.
+  /// - `withCorner`: If `true`, adds a bottom-left corner symbol. Defaults to `false`.
   ///
   /// Returns:
   /// A formatted string representing the bottom border line.
@@ -40,9 +40,9 @@ abstract class ConsoleUtils {
 
   /// Generates a top border line for console messages.
   ///
-  /// This method returns a string consisting of a repeated [lineSymbol]
-  /// for the specified [length]. Optionally, a top-left corner ('┌')
-  /// can be added if [withCorner] is `true`.
+  /// This method returns a string consisting of a repeated `lineSymbol`
+  /// for the specified `length`. Optionally, a top-left corner ('┌')
+  /// can be added if `withCorner` is `true`.
   ///
   /// ### Example:
   /// ```dart
@@ -50,9 +50,9 @@ abstract class ConsoleUtils {
   /// print(ConsoleUtils.topLine(5, withCorner: true)); // Output: ┌─────
   /// ```
   ///
-  /// - [length]: The number of [lineSymbol] characters in the line.
-  /// - [lineSymbol]: The character used to construct the line. Defaults to '─'.
-  /// - [withCorner]: If `true`, adds a top-left corner symbol. Defaults to `false`.
+  /// - `length`: The number of `lineSymbol` characters in the line.
+  /// - `lineSymbol`: The character used to construct the line. Defaults to '─'.
+  /// - `withCorner`: If `true`, adds a top-left corner symbol. Defaults to `false`.
   ///
   /// Returns:
   /// A formatted string representing the top border line.
@@ -68,7 +68,7 @@ abstract class ConsoleUtils {
 
   /// ANSI color mapping for different log levels.
   ///
-  /// This map associates each [LogLevel] with a corresponding ANSI color.
+  /// This map associates each `LogLevel` with a corresponding ANSI color.
   static final Map<LogLevel, AnsiPen> ansiColors = {
     LogLevel.critical: AnsiPen()..red(),
     LogLevel.error: AnsiPen()..red(),

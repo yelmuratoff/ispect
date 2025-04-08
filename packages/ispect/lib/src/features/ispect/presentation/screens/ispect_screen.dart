@@ -20,7 +20,7 @@ class ISpectScreen extends StatefulWidget {
     this.itemsBuilder,
   });
 
-  /// Screen [AppBar] title
+  /// Screen `AppBar` title
   final String? appBarTitle;
 
   /// Optional Builder to customize
@@ -67,7 +67,7 @@ class ISpectScreenView extends StatefulWidget {
   /// ISpectify implementation
   final ISpectify iSpectify;
 
-  /// Screen [AppBar] title
+  /// Screen `AppBar` title
   final String? appBarTitle;
 
   /// Optional Builder to customize

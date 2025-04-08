@@ -7,11 +7,11 @@ const _defaultDrawColors = [
   Colors.yellow,
 ];
 
-/// This is the same as `Colors.grey[50]`
+/// This is the same as `Colors.grey`50``
 /// or the default value of ThemeData.canvasColor for light theme
 const _lightGrey = Color(0xFFFAFAFA);
 
-/// This is the same as `Colors.grey[850],
+/// This is the same as `Colors.grey`850`,
 /// or default value of ThemeData.canvasColor for dark theme
 const _darkGrey = Color(0xFF303030);
 
@@ -28,10 +28,10 @@ const _defaultBottomSheetTextInputStyle = TextStyle(
 );
 
 /// See the following image to get a better understanding of the properties.
-/// ![Theme](https://raw.githubusercontent.com/ueman/feedback/master/img/theme_description.png "Theme")
+/// !`Theme`(https://raw.githubusercontent.com/ueman/feedback/master/img/theme_description.png "Theme")
 class FeedbackThemeData {
-  /// Creates a [FeedbackThemeData].
-  /// ![Theme](https://raw.githubusercontent.com/ueman/feedback/master/img/theme_description.png "Theme")
+  /// Creates a `FeedbackThemeData`.
+  /// !`Theme`(https://raw.githubusercontent.com/ueman/feedback/master/img/theme_description.png "Theme")
   FeedbackThemeData({
     this.background = Colors.grey,
     this.feedbackSheetColor = _lightGrey,
@@ -59,7 +59,7 @@ class FeedbackThemeData {
         dragHandleColor ?? (isDark ? Colors.black26 : Colors.white38);
   }
 
-  /// Create a dark version of the [FeedbackThemeData]
+  /// Create a dark version of the `FeedbackThemeData`
   factory FeedbackThemeData.dark({bool sheetIsDraggable = true}) =>
       FeedbackThemeData(
         background: Colors.grey.shade700,
@@ -71,14 +71,14 @@ class FeedbackThemeData {
         sheetIsDraggable: sheetIsDraggable,
       );
 
-  /// Create a light version of the [FeedbackThemeData]
+  /// Create a light version of the `FeedbackThemeData`
   factory FeedbackThemeData.light({bool sheetIsDraggable = true}) =>
       FeedbackThemeData(
         dragHandleColor: Colors.black26,
         sheetIsDraggable: sheetIsDraggable,
       );
 
-  /// Brightness of the theme based on the [background] color
+  /// Brightness of the theme based on the `background` color
   final Brightness brightness;
 
   /// The background of the feedback view.
@@ -108,14 +108,14 @@ class FeedbackThemeData {
   /// Whether or not the bottom sheet is draggable.
   ///
   /// If this is set to true, the user feedback form will be wrapped in a
-  /// [DraggableScrollableSheet] that will expand when the user drags upward on
+  /// `DraggableScrollableSheet` that will expand when the user drags upward on
   /// it. This is useful for large feedback forms.
   final bool sheetIsDraggable;
 
   /// Color of the drag handle on the feedback sheet
   late final Color dragHandleColor;
 
-  /// [ThemeData] on the feedback UI
+  /// `ThemeData` on the feedback UI
   late final ThemeData themeData;
 
   /// The color of the card in the feedback view.
@@ -128,19 +128,19 @@ class FeedbackThemeData {
   final Color inactiveColor;
 }
 
-/// Provides an instance of [FeedbackThemeData] for all descendants.
+/// Provides an instance of `FeedbackThemeData` for all descendants.
 class FeedbackTheme extends InheritedTheme {
   /// Creates a feedback theme that controls the color, opacity, and size of
   /// descendant widgets.
   ///
-  /// Both [data] and [child] arguments must not be null.
+  /// Both `data` and [child] arguments must not be null.
   const FeedbackTheme({
     required this.data,
     required super.child,
     super.key,
   });
 
-  /// This [FeedbackThemeData] can be obtained by calling
+  /// This `FeedbackThemeData` can be obtained by calling
   /// `FeedbackTheme.of(context)`.
   final FeedbackThemeData data;
 

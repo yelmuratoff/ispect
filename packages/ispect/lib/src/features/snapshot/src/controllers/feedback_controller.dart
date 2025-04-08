@@ -12,8 +12,8 @@ class FeedbackController extends ChangeNotifier {
   OnFeedbackCallback? onFeedback;
 
   /// Open the feedback ui.
-  /// After the user submitted his feedback [onFeedback] is called.
-  /// If the user aborts the process of giving feedback, [onFeedback] is
+  /// After the user submitted his feedback `onFeedback` is called.
+  /// If the user aborts the process of giving feedback, `onFeedback` is
   /// not called.
   void show(OnFeedbackCallback onFeedback) {
     _isVisible = true;
@@ -30,7 +30,7 @@ class FeedbackController extends ChangeNotifier {
 
   /// The draggable scrollable sheet controller used by better feedback.
   ///
-  /// The controller is only attached if [FeedbackThemeData.sheetIsDraggable] is
+  /// The controller is only attached if `FeedbackThemeData.sheetIsDraggable` is
   /// true and feedback is currently displayed.
   final DraggableScrollableController sheetController =
       DraggableScrollableController();

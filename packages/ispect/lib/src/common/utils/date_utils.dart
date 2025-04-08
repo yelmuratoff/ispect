@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-/// Generates a text file containing the provided [logs] and saves it in the temporary directory.
+/// Generates a text file containing the provided `logs` and saves it in the temporary directory.
 ///
 /// This function creates a file in the system's temporary directory and writes the given
-/// [logs] into it. The file is named using an optional [name] prefix (default: `'ispect'`),
+/// `logs` into it. The file is named using an optional [name] prefix (default: `'ispect'`),
 /// followed by a timestamp to ensure uniqueness.
 ///
 /// ### Parameters:
-/// - [logs]: The content to be written to the file (required).
-/// - [name]: An optional prefix for the file name (default: `'ispect'`).
+/// - `logs`: The content to be written to the file (required).
+/// - `name`: An optional prefix for the file name (default: `'ispect'`).
 ///
 /// ### File Naming Convention:
 /// The generated file name follows this format:
@@ -28,7 +28,7 @@ import 'package:path_provider/path_provider.dart';
 /// - Retrieves the system's temporary directory.
 /// - Generates a timestamped file name.
 /// - Creates the file (including parent directories if needed).
-/// - Writes the given [logs] to the file.
+/// - Writes the given `logs` to the file.
 /// - Returns the created `File` instance.
 ///
 /// **Note:**

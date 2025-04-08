@@ -4,22 +4,22 @@ import 'package:flutter/widgets.dart';
 /// A widget that takes a fixed amount of space in the direction of its parent.
 ///
 /// It only works in the following cases:
-/// - It is a descendant of a [Row], [Column], or [Flex],
-/// and the path from the [Gap] widget to its enclosing [Row], [Column], or
-/// [Flex] must contain only [StatelessWidget]s or [StatefulWidget]s (not other
-/// kinds of widgets, like [RenderObjectWidget]s).
-/// - It is a descendant of a [Scrollable].
+/// - It is a descendant of a `Row`, [Column], or [Flex],
+/// and the path from the `Gap` widget to its enclosing [Row], [Column], or
+/// `Flex` must contain only [StatelessWidget]s or [StatefulWidget]s (not other
+/// kinds of widgets, like `RenderObjectWidget`s).
+/// - It is a descendant of a `Scrollable`.
 ///
 /// See also:
 ///
-///  * [MaxGap], a gap that can take, at most, the amount of space specified.
-///  * [SliverGap], the sliver version of this widget.
+///  * `MaxGap`, a gap that can take, at most, the amount of space specified.
+///  * `SliverGap`, the sliver version of this widget.
 class Gap extends StatelessWidget {
-  /// Creates a widget that takes a fixed [mainAxisExtent] of space in the
+  /// Creates a widget that takes a fixed `mainAxisExtent` of space in the
   /// direction of its parent.
   ///
-  /// The [mainAxisExtent] must not be null and must be positive.
-  /// The [crossAxisExtent] must be either null or positive.
+  /// The `mainAxisExtent` must not be null and must be positive.
+  /// The `crossAxisExtent` must be either null or positive.
   const Gap(
     this.mainAxisExtent, {
     super.key,
@@ -28,10 +28,10 @@ class Gap extends StatelessWidget {
   })  : assert(mainAxisExtent >= 0 && mainAxisExtent < double.infinity),
         assert(crossAxisExtent == null || crossAxisExtent >= 0);
 
-  /// Creates a widget that takes a fixed [mainAxisExtent] of space in the
+  /// Creates a widget that takes a fixed `mainAxisExtent` of space in the
   /// direction of its parent and expands in the cross axis direction.
   ///
-  /// The [mainAxisExtent] must not be null and must be positive.
+  /// The `mainAxisExtent` must not be null and must be positive.
   const Gap.expand(
     double mainAxisExtent, {
     Key? key,
@@ -46,8 +46,8 @@ class Gap extends StatelessWidget {
   /// The amount of space this widget takes in the direction of its parent.
   ///
   /// For example:
-  /// - If the parent is a [Column] this is the height of this widget.
-  /// - If the parent is a [Row] this is the width of this widget.
+  /// - If the parent is a `Column` this is the height of this widget.
+  /// - If the parent is a `Row` this is the width of this widget.
   ///
   /// Must not be null and must be positive.
   final double mainAxisExtent;
@@ -56,8 +56,8 @@ class Gap extends StatelessWidget {
   /// parent.
   ///
   /// For example:
-  /// - If the parent is a [Column] this is the width of this widget.
-  /// - If the parent is a [Row] this is the height of this widget.
+  /// - If the parent is a `Column` this is the width of this widget.
+  /// - If the parent is a `Row` this is the height of this widget.
   ///
   /// Must be positive or null. If it's null (the default) the cross axis extent
   /// will be the same as the constraints of the parent in the opposite
@@ -83,23 +83,23 @@ class Gap extends StatelessWidget {
   }
 }
 
-/// A widget that takes, at most, an amount of space in a [Row], [Column],
-/// or [Flex] widget.
+/// A widget that takes, at most, an amount of space in a `Row`, [Column],
+/// or `Flex` widget.
 ///
-/// A [MaxGap] widget must be a descendant of a [Row], [Column], or [Flex],
-/// and the path from the [MaxGap] widget to its enclosing [Row], [Column], or
-/// [Flex] must contain only [StatelessWidget]s or [StatefulWidget]s (not other
-/// kinds of widgets, like [RenderObjectWidget]s).
+/// A `MaxGap` widget must be a descendant of a [Row], [Column], or [Flex],
+/// and the path from the `MaxGap` widget to its enclosing [Row], [Column], or
+/// `Flex` must contain only [StatelessWidget]s or [StatefulWidget]s (not other
+/// kinds of widgets, like `RenderObjectWidget`s).
 ///
 /// See also:
 ///
-///  * [Gap], the unflexible version of this widget.
+///  * `Gap`, the unflexible version of this widget.
 class MaxGap extends StatelessWidget {
-  /// Creates a widget that takes, at most, the specified [mainAxisExtent] of
-  /// space in a [Row], [Column], or [Flex] widget.
+  /// Creates a widget that takes, at most, the specified `mainAxisExtent` of
+  /// space in a `Row`, [Column], or [Flex] widget.
   ///
-  /// The [mainAxisExtent] must not be null and must be positive.
-  /// The [crossAxisExtent] must be either null or positive.
+  /// The `mainAxisExtent` must not be null and must be positive.
+  /// The `crossAxisExtent` must be either null or positive.
   const MaxGap(
     this.mainAxisExtent, {
     super.key,
@@ -107,12 +107,12 @@ class MaxGap extends StatelessWidget {
     this.color,
   });
 
-  /// Creates a widget that takes, at most, the specified [mainAxisExtent] of
-  /// space in a [Row], [Column], or [Flex] widget and expands in the cross axis
+  /// Creates a widget that takes, at most, the specified `mainAxisExtent` of
+  /// space in a `Row`, [Column], or [Flex] widget and expands in the cross axis
   /// direction.
   ///
-  /// The [mainAxisExtent] must not be null and must be positive.
-  /// The [crossAxisExtent] must be either null or positive.
+  /// The `mainAxisExtent` must not be null and must be positive.
+  /// The `crossAxisExtent` must be either null or positive.
   const MaxGap.expand(
     double mainAxisExtent, {
     Key? key,
@@ -126,8 +126,8 @@ class MaxGap extends StatelessWidget {
 
   /// The amount of space this widget takes in the direction of the parent.
   ///
-  /// If the parent is a [Column] this is the height of this widget.
-  /// If the parent is a [Row] this is the width of this widget.
+  /// If the parent is a `Column` this is the height of this widget.
+  /// If the parent is a `Row` this is the width of this widget.
   ///
   /// Must not be null and must be positive.
   final double mainAxisExtent;
@@ -135,8 +135,8 @@ class MaxGap extends StatelessWidget {
   /// The amount of space this widget takes in the opposite direction of the
   /// parent.
   ///
-  /// If the parent is a [Column] this is the width of this widget.
-  /// If the parent is a [Row] this is the height of this widget.
+  /// If the parent is a `Column` this is the width of this widget.
+  /// If the parent is a `Row` this is the height of this widget.
   ///
   /// Must be positive or null. If it's null (the default) the cross axis extent
   /// will be the same as the constraints of the parent in the opposite

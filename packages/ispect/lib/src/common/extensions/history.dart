@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Extension on [List<ISpectifyData>] to format history text output.
+/// Extension on `List<ISpectifyData>` to format history text output.
 ///
 /// This extension provides a formatted string representation of the list,
 /// where each message is followed by a separator line.

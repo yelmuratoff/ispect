@@ -14,11 +14,11 @@ final class ISpectFileUtils {
   /// Private constructor to prevent instantiation.
   const ISpectFileUtils._();
 
-  /// Writes the given [feedbackScreenshot] (as `Uint8List`) to a temporary storage location
+  /// Writes the given `feedbackScreenshot` (as `Uint8List`) to a temporary storage location
   /// and returns an `XFile` instance pointing to the stored file.
   ///
   /// ### Parameters:
-  /// - [feedbackScreenshot]: The raw image bytes to be saved as a file.
+  /// - `feedbackScreenshot`: The raw image bytes to be saved as a file.
   ///
   /// ### Behavior:
   /// - Retrieves the system's temporary directory.

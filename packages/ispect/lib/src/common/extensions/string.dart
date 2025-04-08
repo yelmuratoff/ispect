@@ -1,4 +1,4 @@
-/// An extension on nullable [String] to provide additional utility methods.
+/// An extension on nullable `String` to provide additional utility methods.
 extension ISpectStringExtension on String? {
   /// Capitalizes the first letter of the string.
   ///

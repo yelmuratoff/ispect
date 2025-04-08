@@ -5,7 +5,7 @@ import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
 
 /// Signature for a function that creates a widget based on a
-/// [NodeViewModelState] state.
+/// `NodeViewModelState` state.
 typedef NodeBuilder = Widget Function(
   BuildContext context,
   NodeViewModelState node,
@@ -16,11 +16,11 @@ typedef NodeBuilder = Widget Function(
 typedef Formatter = String Function(Object? value);
 
 /// Signature for a function that takes a generic value and the current theme
-/// property value style and returns a [StyleBuilder] that allows the style
+/// property value style and returns a `StyleBuilder` that allows the style
 /// and interaction to be changed dynamically.
 ///
 /// See also:
-/// * [PropertyStyle]
+/// * `PropertyStyle`
 typedef StyleBuilder = PropertyOverrides Function(
   Object? value,
   TextStyle style,
@@ -35,8 +35,8 @@ class PropertyOverrides {
 
 /// A widget to display a list of Json nodes.
 ///
-/// The [JsonExplorerStore] handles the state of the data structure, so a
-/// [JsonExplorerStore] must be available through a [Provider] for this widget
+/// The `JsonExplorerStore` handles the state of the data structure, so a
+/// `JsonExplorerStore` must be available through a [Provider] for this widget
 /// to fully function, without it, expand and collapse will not work properly.
 ///
 /// {@tool snippet}
@@ -50,7 +50,7 @@ class PropertyOverrides {
 /// ```
 /// {@end-tool}
 ///
-/// And then a [JsonExplorer] can be built using the store data structure:
+/// And then a `JsonExplorer` can be built using the store data structure:
 /// {@tool snippet}
 /// ```dart
 /// Widget build(BuildContext context) {
@@ -95,7 +95,7 @@ class JsonExplorer extends StatelessWidget {
   /// Nodes to be displayed.
   ///
   /// See also:
-  /// * [JsonExplorerStore]
+  /// * `JsonExplorerStore`
   final Iterable<NodeViewModelState> nodes;
 
   // /// Use to control the scroll.
@@ -120,8 +120,8 @@ class JsonExplorer extends StatelessWidget {
 
   /// Build the expand/collapse icons in root nodes.
   ///
-  /// If this builder is null, a material [Icons.arrow_right] is displayed for
-  /// collapsed nodes and [Icons.arrow_drop_down] for expanded nodes.
+  /// If this builder is null, a material `Icons.arrow_right` is displayed for
+  /// collapsed nodes and `Icons.arrow_drop_down` for expanded nodes.
   final NodeBuilder? collapsableToggleBuilder;
 
   /// A builder to add a trailing widget in each node.
@@ -148,7 +148,7 @@ class JsonExplorer extends StatelessWidget {
   /// Customizes a property style and interaction based on its value.
   ///
   /// See also:
-  /// * [StyleBuilder]
+  /// * `StyleBuilder`
   final StyleBuilder? valueStyleBuilder;
 
   /// Sets the spacing between each list item.

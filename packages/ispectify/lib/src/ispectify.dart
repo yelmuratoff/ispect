@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
-/// [ISpectify] provides a comprehensive logging system with features such as:
+/// `ISpectify` provides a comprehensive logging system with features such as:
 /// - Multiple log levels (debug, info, warning, error, critical, verbose)
 /// - Custom log filtering
 /// - Error and exception handling
@@ -25,16 +25,16 @@ import 'package:ispectify/ispectify.dart';
 /// });
 /// ```
 class ISpectify {
-  /// Creates an instance of [ISpectify] with optional components.
+  /// Creates an instance of `ISpectify` with optional components.
   ///
   /// All parameters are optional and will be initialized with defaults if not provided.
   ///
-  /// - [logger]: Custom implementation of the logging mechanism.
-  /// - [observer]: For observing and reacting to log events.
-  /// - [options]: Configuration options for the inspector.
-  /// - [filter]: For filtering which logs should be processed.
-  /// - [errorHandler]: Custom error handling logic.
-  /// - [history]: Custom implementation for storing log history.
+  /// - `logger`: Custom implementation of the logging mechanism.
+  /// - `observer`: For observing and reacting to log events.
+  /// - `options`: Configuration options for the inspector.
+  /// - `filter`: For filtering which logs should be processed.
+  /// - `errorHandler`: Custom error handling logic.
+  /// - `history`: Custom implementation for storing log history.
   ISpectify({
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
@@ -83,12 +83,12 @@ class ISpectify {
   /// instance. Only the provided parameters will be updated; others will
   /// retain their current values.
   ///
-  /// - [logger]: New logger implementation.
-  /// - [options]: New configuration options.
-  /// - [observer]: New observer for log events.
-  /// - [filter]: New filter for log processing.
-  /// - [errorHandler]: New error handler implementation.
-  /// - [history]: New history storage implementation.
+  /// - `logger`: New logger implementation.
+  /// - `options`: New configuration options.
+  /// - `observer`: New observer for log events.
+  /// - `filter`: New filter for log processing.
+  /// - `errorHandler`: New error handler implementation.
+  /// - `history`: New history storage implementation.
   void configure({
     ISpectifyLogger? logger,
     ISpectifyOptions? options,
@@ -148,9 +148,9 @@ class ISpectify {
   /// The type of log created depends on the exception and the configured
   /// error handler.
   ///
-  /// - [exception]: The exception or error to handle.
-  /// - [stackTrace]: Optional stack trace associated with the exception.
-  /// - [msg]: Optional message to include with the exception.
+  /// - `exception`: The exception or error to handle.
+  /// - `stackTrace`: Optional stack trace associated with the exception.
+  /// - `msg`: Optional message to include with the exception.
   void handle({
     required Object exception,
     StackTrace? stackTrace,
@@ -175,11 +175,11 @@ class ISpectify {
   ///
   /// This is the primary logging method that other specialized methods use.
   ///
-  /// - [message]: The main log message.
-  /// - [logLevel]: The severity level of the log.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
-  /// - [pen]: Optional styling for console output.
+  /// - `message`: The main log message.
+  /// - `logLevel`: The severity level of the log.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
+  /// - `pen`: Optional styling for console output.
   void log(
     Object? message, {
     LogLevel logLevel = LogLevel.debug,
@@ -196,20 +196,20 @@ class ISpectify {
     );
   }
 
-  /// Logs a custom [ISpectifyData] instance directly.
+  /// Logs a custom `ISpectifyData` instance directly.
   ///
   /// This allows for creating fully customized log entries.
   ///
-  /// - [log]: The custom log data to process.
+  /// - `log`: The custom log data to process.
   void logCustom(ISpectifyData log) => _processLog(log);
 
   /// Creates a critical level log entry.
   ///
   /// Critical logs indicate severe issues that require immediate attention.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void critical(
     Object? msg, {
     Object? exception,
@@ -227,9 +227,9 @@ class ISpectify {
   ///
   /// Debug logs are for detailed information useful during development.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void debug(
     Object? msg,
   ) {
@@ -242,9 +242,9 @@ class ISpectify {
   ///
   /// Error logs indicate failure of some operation.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void error(
     Object? msg, {
     Object? exception,
@@ -262,9 +262,9 @@ class ISpectify {
   ///
   /// Info logs are for general information about system operation.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void info(
     Object? msg,
   ) {
@@ -278,9 +278,9 @@ class ISpectify {
   ///
   /// Verbose logs contain the most detailed information.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void verbose(
     Object? msg,
   ) {
@@ -294,9 +294,9 @@ class ISpectify {
   ///
   /// Warning logs indicate potential issues that aren't errors.
   ///
-  /// - [msg]: The log message.
-  /// - [exception]: Optional exception associated with the log.
-  /// - [stackTrace]: Optional stack trace for the log.
+  /// - `msg`: The log message.
+  /// - `exception`: Optional exception associated with the log.
+  /// - `stackTrace`: Optional stack trace for the log.
   void warning(
     Object? msg,
   ) {
@@ -310,7 +310,7 @@ class ISpectify {
   ///
   /// Good logs indicate successful operations or positive outcomes.
   ///
-  /// - [message]: The log message.
+  /// - `message`: The log message.
   void good(String message) {
     _processLog(
       GoodLog(message),
@@ -321,10 +321,10 @@ class ISpectify {
   ///
   /// These logs are used for tracking events that might be sent to analytics services.
   ///
-  /// - [message]: The log message.
-  /// - [event]: Optional event name.
-  /// - [analytics]: Optional analytics service identifier.
-  /// - [parameters]: Optional parameters associated with the event.
+  /// - `message`: The log message.
+  /// - `event`: Optional event name.
+  /// - `analytics`: Optional analytics service identifier.
+  /// - `parameters`: Optional parameters associated with the event.
   void track(
     String message, {
     String? event,
@@ -341,7 +341,7 @@ class ISpectify {
 
   /// Creates a basic print log entry.
   ///
-  /// - [message]: The log message.
+  /// - `message`: The log message.
   void print(String message) {
     _processLog(PrintLog(message));
   }
@@ -350,7 +350,7 @@ class ISpectify {
   ///
   /// These logs are used for tracking navigation events in the application.
   ///
-  /// - [message]: The log message, typically a route name or path.
+  /// - `message`: The log message, typically a route name or path.
   void route(String message) {
     _processLog(RouteLog(message));
   }
@@ -359,15 +359,15 @@ class ISpectify {
   ///
   /// These logs are used for tracking state management or dependency injection events.
   ///
-  /// - [message]: The log message.
+  /// - `message`: The log message.
   void provider(String message) {
     _processLog(ProviderLog(message));
   }
 
   /// Internal method to handle basic log creation.
   ///
-  /// This method creates a standard [ISpectifyData] instance and passes it
-  /// to [_handleLogData] for processing.
+  /// This method creates a standard `ISpectifyData` instance and passes it
+  /// to `_handleLogData` for processing.
   void _handleLog({
     Object? message,
     Object? exception,
@@ -388,7 +388,7 @@ class ISpectify {
     _processLog(data);
   }
 
-  /// Processes a log entry based on the provided [ISpectifyData].
+  /// Processes a log entry based on the provided `ISpectifyData`.
   ///
   /// This method performs the following steps:
   /// 1. Checks if logging is enabled via the `_options.enabled` flag.
@@ -401,8 +401,8 @@ class ISpectify {
   ///    to the console using `_logger.log` with the appropriate log level and pen.
   ///
   /// Parameters:
-  /// - [data]: The log entry to process, encapsulated in an [ISpectifyData] object.
-  /// - [isError]: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
+  /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
+  /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
   void _processLog(ISpectifyData data, {bool isError = false}) {
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;

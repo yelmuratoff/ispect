@@ -1,10 +1,10 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Extension on [ISpectifyData] for additional functionalities.
+/// Extension on `ISpectifyData` for additional functionalities.
 ///
 /// Provides utility methods to manipulate and format log data efficiently.
 extension ISpectDataX on ISpectifyData {
-  /// Returns a copy of this [ISpectifyData] with optional new values.
+  /// Returns a copy of this `ISpectifyData` with optional new values.
   ///
   /// If no parameters are provided, the original values are retained.
   ISpectifyData copyWith({
@@ -30,7 +30,7 @@ extension ISpectDataX on ISpectifyData {
         key: key ?? this.key,
       );
 
-  /// Creates an exact duplicate of this [ISpectifyData] instance.
+  /// Creates an exact duplicate of this `ISpectifyData` instance.
   ISpectifyData copy() => copyWith();
 
   /// Generates a formatted summary text for logging.

@@ -23,28 +23,28 @@ import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_scr
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// [Inspector] can wrap any [child], and will display its control panel and
-/// information overlay on top of that [child].
+/// `Inspector` can wrap any [child], and will display its control panel and
+/// information overlay on top of that `child`.
 ///
-/// You should use [Inspector] as a wrapper to [WidgetsApp.builder] or
-/// [MaterialApp.builder].
+/// You should use `Inspector` as a wrapper to [WidgetsApp.builder] or
+/// `MaterialApp.builder`.
 ///
-/// If [isEnabled] is `null`, then [Inspector] is automatically disabled on
-/// production builds (i.e. [kReleaseMode] is `true`).
+/// If `isEnabled` is `null`, then [Inspector] is automatically disabled on
+/// production builds (i.e. `kReleaseMode` is `true`).
 ///
 /// You can disable the widget inspector or the color picker by passing `false`
-/// to either [isWidgetInspectorEnabled] or [isColorPickerEnabled].
+/// to either `isWidgetInspectorEnabled` or [isColorPickerEnabled].
 ///
 /// There are also keyboard shortcuts for the widget inspector and the color
 /// picker. By default, pressing **Shift** will enable the color picker, and
 /// pressing **Command** or **Alt** will enable the widget inspector. Those
-/// shortcuts can be changed through [widgetInspectorShortcuts] and
-/// [colorPickerShortcuts].
+/// shortcuts can be changed through `widgetInspectorShortcuts` and
+/// `colorPickerShortcuts`.
 ///
-/// [isPanelVisible] controls the visibility of the control panel - setting it
+/// `isPanelVisible` controls the visibility of the control panel - setting it
 /// to `false` will hide the panel, but the other functionality can still be
 /// accessed through keyboard shortcuts. If you want to disable the inspector
-/// entirely, use [isEnabled].
+/// entirely, use `isEnabled`.
 class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,

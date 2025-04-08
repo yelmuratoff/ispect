@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// [ISpectifyDioLogger] settings and customization
+/// `ISpectifyDioLogger` settings and customization
 class ISpectifyDioLoggerSettings {
   const ISpectifyDioLoggerSettings({
     this.enabled = true,
@@ -24,28 +24,28 @@ class ISpectifyDioLoggerSettings {
   // Print Dio logger if true
   final bool enabled;
 
-  /// Print [response.data] if true
+  /// Print `response.data` if true
   final bool printResponseData;
 
-  /// Print [response.headers] if true
+  /// Print `response.headers` if true
   final bool printResponseHeaders;
 
-  /// Print [response.statusMessage] if true
+  /// Print `response.statusMessage` if true
   final bool printResponseMessage;
 
-  /// Print [error.response.data] if true
+  /// Print `error.response.data` if true
   final bool printErrorData;
 
-  /// Print [error.response.headers] if true
+  /// Print `error.response.headers` if true
   final bool printErrorHeaders;
 
-  /// Print [error.message] if true
+  /// Print `error.message` if true
   final bool printErrorMessage;
 
-  /// Print [request.data] if true
+  /// Print `request.data` if true
   final bool printRequestData;
 
-  /// Print [request.headers] if true
+  /// Print `request.headers` if true
   final bool printRequestHeaders;
 
   /// Field to set custom http request console logs color
@@ -56,7 +56,7 @@ class ISpectifyDioLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? requestPen;
 
   /// Field to set custom http response console logs color
@@ -67,7 +67,7 @@ class ISpectifyDioLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? responsePen;
 
   /// Field to set custom http error console logs color
@@ -78,19 +78,19 @@ class ISpectifyDioLoggerSettings {
   ///// Blue color
   ///final redPen = AnsiPen()..blue();
   ///```
-  /// More details in [AnsiPen] docs
+  /// More details in `AnsiPen` docs
   final AnsiPen? errorPen;
 
   /// For request filtering.
-  /// You can add your custom logic to log only specific HTTP requests [RequestOptions].
+  /// You can add your custom logic to log only specific HTTP requests `RequestOptions`.
   final bool Function(RequestOptions requestOptions)? requestFilter;
 
   /// For response filtering.
-  /// You can add your custom logic to log only specific HTTP responses [Response].
+  /// You can add your custom logic to log only specific HTTP responses `Response`.
   final bool Function(Response<dynamic> response)? responseFilter;
 
   /// For error filtering.
-  /// You can add your custom logic to log only specific Dio error [DioException].
+  /// You can add your custom logic to log only specific Dio error `DioException`.
   final bool Function(DioException response)? errorFilter;
 
   ISpectifyDioLoggerSettings copyWith({

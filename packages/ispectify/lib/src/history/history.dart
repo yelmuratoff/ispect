@@ -14,14 +14,14 @@ abstract class LogHistory {
   void add(ISpectifyData data);
 }
 
-/// The default implementation of [LogHistory] for managing log history.
+/// The default implementation of `LogHistory` for managing log history.
 ///
 /// This class stores log entries in-memory and follows the configuration
-/// defined in [ISpectifyOptions].
+/// defined in `ISpectifyOptions`.
 class DefaultISpectifyHistory implements LogHistory {
-  /// Creates a log history manager with the given [settings].
+  /// Creates a log history manager with the given `settings`.
   ///
-  /// Optionally, an initial [history] list can be provided.
+  /// Optionally, an initial `history` list can be provided.
   DefaultISpectifyHistory(
     this.settings, {
     List<ISpectifyData>? history,

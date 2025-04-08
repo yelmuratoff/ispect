@@ -16,7 +16,7 @@ import 'package:ispect/src/common/models/action_item.dart';
 /// ```dart
 /// final options = ISpectOptions(
 ///   locale: Locale('en'),
-///   actionItems: [ISpectifyActionItem(name: 'Log', onTap: () {})],
+///   actionItems: `ISpectifyActionItem(name: 'Log', onTap: () {})`,
 ///   panelItems: [
 ///     (icon: Icons.bug_report, enableBadge: true, onTap: (context) => showBugReport(context)),
 ///   ],
@@ -28,10 +28,10 @@ import 'package:ispect/src/common/models/action_item.dart';
 final class ISpectOptions {
   /// Creates an instance of `ISpectOptions` with customizable settings.
   ///
-  /// - [locale]: The language setting for the application. Defaults to `'en'` (English).
-  /// - [actionItems]: A list of actions that can be triggered within `ISpect`.
-  /// - [panelItems]: A list of interactive items to be displayed in the panel.
-  /// - [panelButtons]: A list of buttons for additional panel controls.
+  /// - `locale`: The language setting for the application. Defaults to `'en'` (English).
+  /// - `actionItems`: A list of actions that can be triggered within `ISpect`.
+  /// - `panelItems`: A list of interactive items to be displayed in the panel.
+  /// - `panelButtons`: A list of buttons for additional panel controls.
   const ISpectOptions({
     this.locale = const Locale('en'),
     this.actionItems = const [],
@@ -94,10 +94,10 @@ final class ISpectOptions {
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
-  /// - [locale]: The updated locale (if provided).
-  /// - [actionItems]: A new list of action items (if provided).
-  /// - [panelItems]: A new list of panel items (if provided).
-  /// - [panelButtons]: A new list of panel buttons (if provided).
+  /// - `locale`: The updated locale (if provided).
+  /// - `actionItems`: A new list of action items (if provided).
+  /// - `panelItems`: A new list of panel items (if provided).
+  /// - `panelButtons`: A new list of panel buttons (if provided).
   ///
   /// ### Example Usage:
   /// ```dart
