@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:ispect/src/features/snapshot/src/better_feedback.dart';
 
 /// Container for the feedback of the user.
 class UserFeedback {

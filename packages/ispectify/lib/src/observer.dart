@@ -1,6 +1,4 @@
 import 'package:ispectify/src/models/data.dart';
-import 'package:ispectify/src/models/error.dart';
-import 'package:ispectify/src/models/exception.dart';
 
 /// An abstract observer class for monitoring ISpectify events.
 ///
