@@ -11,7 +11,7 @@ class JsonExplorerTheme {
     TextStyle? valueSearchHighlightTextStyle,
     TextStyle? focusedKeySearchHighlightTextStyle,
     TextStyle? focusedValueSearchHighlightTextStyle,
-    this.indentationLineColor = Colors.grey,
+    this.indentationLineColor = const Color.fromARGB(126, 158, 158, 158),
     this.highlightColor,
     this.indentationPadding = 8.0,
     this.propertyIndentationPaddingFactor = 2,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:ispect/src/features/json_viewer/dot_painter.dart';
 import 'package:ispect/src/features/json_viewer/explorer.dart';
+
 import 'package:ispect/src/features/json_viewer/json_item_card.dart';
 import 'package:ispect/src/features/json_viewer/store.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -167,7 +168,6 @@ class JsonAttribute extends StatelessWidget {
   Widget _buildIndentation() {
     final double indentation;
 
-    // Memoize calculation for better performance and readability
     if (node.treeDepth > 0) {
       indentation =
           ((node.treeDepth + 1) * theme.indentationPadding).clamp(0, 100);
@@ -175,7 +175,19 @@ class JsonAttribute extends StatelessWidget {
       indentation = theme.indentationPadding;
     }
 
-    return Gap(indentation);
+    return Padding(
+      padding: const EdgeInsets.only(right: 4, left: 4),
+      child: CustomPaint(
+        painter: DotPainter(
+          count: (indentation / 5).clamp(0, double.infinity),
+          color: theme.indentationLineColor,
+        ),
+        size: Size(
+          indentation,
+          20,
+        ),
+      ),
+    );
   }
 
   Widget _buildNodeKey(BuildContext context, String searchTerm) {
