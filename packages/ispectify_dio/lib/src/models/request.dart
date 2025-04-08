@@ -31,22 +31,18 @@ class DioRequestLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message');
 
-    final data = body;
-
-    try {
-      if (settings.printRequestData && data != null) {
-        final prettyData = encoder.convert(data);
-        msg += '\nData: $prettyData';
-      }
-      if (settings.printRequestHeaders && headers.isNotEmpty) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
-    } catch (_) {
-      return msg;
+    if (settings.printRequestData && body != null) {
+      final prettyData = JsonTruncatorService.pretty(body);
+      buffer.writeln('Data: $prettyData');
     }
-    return msg;
+
+    if (settings.printRequestHeaders && headers.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(headers);
+      buffer.writeln('Headers: $prettyHeaders');
+    }
+
+    return buffer.toString().truncated!;
   }
 }

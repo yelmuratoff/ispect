@@ -33,18 +33,19 @@ class HttpErrorLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message')
+      ..writeln('\nStatus: $statusCode');
 
-    msg += '\nStatus: $statusCode';
-
-    try {
-      if (headers?.isNotEmpty ?? false) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
-    } catch (_) {
-      return msg;
+    if (body != null && body!.isNotEmpty) {
+      final prettyBody = JsonTruncatorService.pretty(body);
+      buffer.writeln('Body: $prettyBody');
     }
-    return msg;
+
+    if (headers != null && headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(headers);
+      buffer.writeln('Headers: $prettyHeaders');
+    }
+
+    return buffer.toString().truncated!;
   }
 }

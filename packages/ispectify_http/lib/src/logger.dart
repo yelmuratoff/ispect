@@ -161,6 +161,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
           headers: settings.printResponseHeaders ? response.headers : null,
           requestBody: settings.printRequestData ? body : null,
           responseBody: settings.printResponseData ? response : null,
+          settings: settings,
           responseData: HttpResponseData(
             baseResponse: response,
             requestData: HttpRequestData(response.request),

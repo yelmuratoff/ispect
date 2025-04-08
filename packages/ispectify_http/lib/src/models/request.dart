@@ -31,16 +31,15 @@ class HttpRequestLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message');
 
-    try {
-      if (headers?.isNotEmpty ?? false) {
-        final prettyHeaders = encoder.convert(headers);
-        msg += '\nHeaders: $prettyHeaders';
-      }
-    } catch (_) {
-      return msg;
+    if (headers != null && headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(
+        headers,
+      );
+      buffer.writeln('Headers: $prettyHeaders');
     }
-    return msg;
+
+    return buffer.toString().truncated!;
   }
 }

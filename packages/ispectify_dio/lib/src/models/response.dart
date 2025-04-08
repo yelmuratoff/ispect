@@ -39,33 +39,29 @@ class DioResponseLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    var msg = '[$method] $message';
+    final buffer = StringBuffer('[$method] $message')
+      ..writeln('\nStatus: $statusCode');
 
-    final responseMessage = statusMessage;
-    final data = responseBody;
-    final headers = this.headers ?? {};
-
-    msg += '\nStatus: $statusCode';
-
-    if (settings.printResponseMessage && responseMessage != null) {
-      msg += '\nMessage: $responseMessage';
+    if (settings.printResponseMessage && statusMessage != null) {
+      buffer.writeln('Message: $statusMessage');
     }
 
-    try {
-      // if (settings.printResponseData && data != null) {
-      //   final prettyData = encoder.convert(data).truncate(
-      //         maxLength: 1000,
-      //       );
-      //   msg += '\nData: $prettyData';
-      // }
-      // if (settings.printResponseHeaders && headers.isNotEmpty) {
-      //   final prettyHeaders =
-      //       encoder.convert(headers).truncate(maxLength: 1000);
-      //   msg += '\nHeaders: $prettyHeaders';
-      // }
-    } catch (_) {
-      return msg;
+    if (settings.printResponseData && responseBody != null) {
+      final prettyData = JsonTruncatorService.pretty(
+        responseBody,
+      );
+      buffer.writeln('Data: $prettyData');
     }
-    return msg;
+
+    if (settings.printResponseHeaders &&
+        headers != null &&
+        headers!.isNotEmpty) {
+      final prettyHeaders = JsonTruncatorService.pretty(
+        headers,
+      );
+      buffer.writeln('Headers:$prettyHeaders');
+    }
+
+    return buffer.toString().truncated!;
   }
 }

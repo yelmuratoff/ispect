@@ -298,6 +298,41 @@ class _HomeState extends State<_Home> {
               ),
               FilledButton(
                 onPressed: () {
+                  const depth = 10000;
+
+                  Map<String, dynamic> nested = {
+                    'id': depth,
+                    'value': 'Item $depth',
+                  };
+
+                  for (int i = depth - 1; i >= 0; i--) {
+                    nested = {
+                      'id': i,
+                      'value': 'Item $i',
+                      'nested': nested,
+                    };
+                  }
+
+                  final largeList = List.generate(
+                      10000, (index) => {'id': index, 'value': 'Item $index'});
+
+                  final response = Response(
+                    requestOptions: RequestOptions(path: '/mock-nested-id'),
+                    data: largeList,
+                    statusCode: 200,
+                  );
+
+                  for (var interceptor in dio.interceptors) {
+                    if (interceptor is ISpectifyDioLogger) {
+                      interceptor.onResponse(
+                          response, ResponseInterceptorHandler());
+                    }
+                  }
+                },
+                child: const Text('Mock Nested List with Depth IDs'),
+              ),
+              FilledButton(
+                onPressed: () {
                   // Print large JSON response
                   final largeList = List.generate(
                       10000, (index) => {'id': index, 'value': 'Item $index'});
