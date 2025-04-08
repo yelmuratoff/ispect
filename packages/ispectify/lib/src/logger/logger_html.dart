@@ -15,7 +15,7 @@ import 'dart:html';
 /// // Logs "Line 1" and "Line 2" separately to the console.
 /// ```
 ///
-/// [message`: The log message to be output to the console.
+/// `message`: The log message to be output to the console.
 void outputLog(String message) => message.split('\n').forEach(
       window.console.log,
     );
