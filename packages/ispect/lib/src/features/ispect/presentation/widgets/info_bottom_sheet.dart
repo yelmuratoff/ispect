@@ -1,39 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 class ISpectLogsInfoBottomSheet extends StatelessWidget {
   const ISpectLogsInfoBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) {
-          final theme = context.ispectTheme;
-
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: _InfoDescription(
-                  iSpect: ISpect.read(context),
-                  scrollController: scrollController,
-                ),
-              ),
-            ),
-          );
-        },
+  Widget build(BuildContext context) => context.screenSizeMaybeWhen(
+        phone: () => DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) => _Body(
+            scrollController: scrollController,
+          ),
+        ),
+        orElse: () => AlertDialog(
+          contentPadding: EdgeInsets.zero,
+          backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
+          content: SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.7,
+            width: MediaQuery.sizeOf(context).width * 0.8,
+            child: const _Body(scrollController: null),
+          ),
+        ),
       );
+}
+
+class _Body extends StatelessWidget {
+  const _Body({
+    required this.scrollController,
+  });
+
+  final ScrollController? scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.ispectTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.all(
+          Radius.circular(16),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: _InfoDescription(
+            iSpect: ISpect.read(context),
+            scrollController: scrollController ?? ScrollController(),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _InfoDescription extends StatelessWidget {
@@ -54,18 +78,23 @@ class _InfoDescription extends StatelessWidget {
         _Header(title: context.ispectL10n.iSpectifyLogsInfo),
         const Gap(16),
         Expanded(
-          child: ListView.separated(
+          child: Scrollbar(
             controller: scrollController,
-            itemCount: logCategories.length,
-            separatorBuilder: (_, __) => const Gap(16),
-            itemBuilder: (context, index) {
-              final category = logCategories.entries.elementAt(index);
-              return _CategorySection(
-                title: category.key,
-                logs: category.value,
-                iSpect: iSpect,
-              );
-            },
+            interactive: true,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: scrollController,
+              itemCount: logCategories.length,
+              separatorBuilder: (_, __) => const Gap(16),
+              itemBuilder: (context, index) {
+                final category = logCategories.entries.elementAt(index);
+                return _CategorySection(
+                  title: category.key,
+                  logs: category.value,
+                  iSpect: iSpect,
+                );
+              },
+            ),
           ),
         ),
       ],

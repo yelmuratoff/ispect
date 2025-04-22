@@ -573,7 +573,7 @@ class _HighlightedText extends StatelessWidget {
 
     var lastEnd = 0;
     for (final position in matchPositions) {
-      final style = position == focusedSearchMatchIndex
+      final highlightStyle = position == focusedSearchMatchIndex
           ? primaryMatchStyle
           : secondaryMatchStyle;
 
@@ -589,10 +589,10 @@ class _HighlightedText extends StatelessWidget {
       spans.add(
         TextSpan(
           text: text.substring(position, position + queryLength),
-          style: style.copyWith(
-            color: style.color,
-            backgroundColor: style.backgroundColor,
-            fontWeight: style.fontWeight,
+          style: highlightStyle.copyWith(
+            color: highlightStyle.color,
+            backgroundColor: highlightStyle.backgroundColor,
+            fontWeight: highlightStyle.fontWeight,
           ),
         ),
       );

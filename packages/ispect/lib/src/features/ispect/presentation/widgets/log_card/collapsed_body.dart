@@ -24,68 +24,64 @@ class _CollapsedBody extends StatelessWidget {
   final bool expanded;
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          icon,
-                          color: color,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            '$title | $dateTime',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Icon(
+                      icon,
+                      color: color,
+                      size: 20,
                     ),
-                    if (!expanded) ..._buildMessageSection(),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '$title | $dateTime',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+                if (!expanded) ..._buildMessageSection(),
+              ],
+            ),
+          ),
+          SizedBox.square(
+            dimension: 24,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              iconSize: 18,
+              icon: Icon(
+                Icons.copy_rounded,
+                color: color,
               ),
-              SizedBox.square(
-                dimension: 18,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 18,
-                  icon: Icon(
-                    Icons.copy_rounded,
-                    color: color,
-                  ),
-                  onPressed: onCopyTap,
-                ),
+              onPressed: onCopyTap,
+            ),
+          ),
+          const Gap(4),
+          SizedBox.square(
+            dimension: 24,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              iconSize: 18,
+              icon: Icon(
+                Icons.zoom_out_map_rounded,
+                color: color,
               ),
-              const Gap(8),
-              SizedBox.square(
-                dimension: 18,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 18,
-                  icon: Icon(
-                    Icons.zoom_out_map_rounded,
-                    color: color,
-                  ),
-                  onPressed: onHttpTap,
-                ),
-              ),
-            ],
+              onPressed: onHttpTap,
+            ),
           ),
         ],
       );
