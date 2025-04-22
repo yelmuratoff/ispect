@@ -556,6 +556,7 @@ class _HighlightedText extends StatelessWidget {
 
     // Pre-calculate all match positions for better performance
     final matchPositions = <int>[];
+
     var pos = 0;
     while (true) {
       pos = lowerCaseText.indexOf(lowerCaseQuery, pos);
@@ -572,6 +573,10 @@ class _HighlightedText extends StatelessWidget {
 
     var lastEnd = 0;
     for (final position in matchPositions) {
+      final style = position == focusedSearchMatchIndex
+          ? primaryMatchStyle
+          : secondaryMatchStyle;
+
       if (position > lastEnd) {
         spans.add(
           TextSpan(
@@ -585,9 +590,9 @@ class _HighlightedText extends StatelessWidget {
         TextSpan(
           text: text.substring(position, position + queryLength),
           style: style.copyWith(
-            color: primaryMatchStyle.color,
-            backgroundColor: primaryMatchStyle.backgroundColor,
-            fontWeight: primaryMatchStyle.fontWeight,
+            color: style.color,
+            backgroundColor: style.backgroundColor,
+            fontWeight: style.fontWeight,
           ),
         ),
       );
