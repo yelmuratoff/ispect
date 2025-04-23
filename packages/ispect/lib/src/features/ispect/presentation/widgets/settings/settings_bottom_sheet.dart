@@ -31,11 +31,19 @@ class ISpectifySettingsBottomSheets extends StatefulWidget {
 
 class _ISpectifySettingsBottomSheetState
     extends State<ISpectifySettingsBottomSheets> {
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     // ignore: avoid_empty_blocks
     widget.iSpectify.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -106,7 +114,7 @@ class _ISpectifySettingsBottomSheetState
           child: _SettingsBody(
             iSpect: iSpect,
             settings: settings,
-            scrollController: ScrollController(),
+            scrollController: _scrollController,
             actions: widget.actions,
           ),
         ),
@@ -125,7 +133,7 @@ class _SettingsBody extends StatelessWidget {
 
   final ISpectScopeModel iSpect;
   final List<Widget> settings;
-  final ScrollController? scrollController;
+  final ScrollController scrollController;
   final List<ISpectifyActionItem> actions;
 
   @override

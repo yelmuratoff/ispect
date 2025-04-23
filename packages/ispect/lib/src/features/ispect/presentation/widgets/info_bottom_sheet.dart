@@ -4,8 +4,22 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
-class ISpectLogsInfoBottomSheet extends StatelessWidget {
+class ISpectLogsInfoBottomSheet extends StatefulWidget {
   const ISpectLogsInfoBottomSheet({super.key});
+
+  @override
+  State<ISpectLogsInfoBottomSheet> createState() =>
+      _ISpectLogsInfoBottomSheetState();
+}
+
+class _ISpectLogsInfoBottomSheetState extends State<ISpectLogsInfoBottomSheet> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
@@ -24,7 +38,9 @@ class ISpectLogsInfoBottomSheet extends StatelessWidget {
           content: SizedBox(
             height: MediaQuery.sizeOf(context).height * 0.7,
             width: MediaQuery.sizeOf(context).width * 0.8,
-            child: const _Body(scrollController: null),
+            child: _Body(
+              scrollController: _scrollController,
+            ),
           ),
         ),
       );
@@ -35,7 +51,7 @@ class _Body extends StatelessWidget {
     required this.scrollController,
   });
 
-  final ScrollController? scrollController;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +68,7 @@ class _Body extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: _InfoDescription(
             iSpect: ISpect.read(context),
-            scrollController: scrollController ?? ScrollController(),
+            scrollController: scrollController,
           ),
         ),
       ),
