@@ -58,7 +58,7 @@ class DioErrorLog extends ISpectifyData {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('Headers: $prettyHeaders');
+      buffer.writeln('\nHeaders: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

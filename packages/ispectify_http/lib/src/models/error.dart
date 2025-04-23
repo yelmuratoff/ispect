@@ -50,7 +50,7 @@ class HttpErrorLog extends ISpectifyData {
 
     if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
       final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.writeln('Headers: $prettyHeaders');
+      buffer.writeln('\nHeaders: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;
