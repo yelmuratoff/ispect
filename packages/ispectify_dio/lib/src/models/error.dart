@@ -44,14 +44,14 @@ class DioErrorLog extends ISpectifyData {
     }
 
     if (settings.printErrorMessage && statusMessage != null) {
-      buffer.writeln('Message: $statusMessage');
+      buffer.writeln('\nMessage: $statusMessage');
     }
 
     if (settings.printErrorData && body != null) {
       final prettyData = JsonTruncatorService.pretty(
         body,
       );
-      buffer.writeln('Data: $prettyData');
+      buffer.writeln('\nData: $prettyData');
     }
 
     if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
