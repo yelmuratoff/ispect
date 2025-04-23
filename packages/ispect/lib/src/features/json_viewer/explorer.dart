@@ -3,6 +3,7 @@ import 'package:ispect/src/features/json_viewer/json_attribute.dart';
 import 'package:ispect/src/features/json_viewer/store.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 /// Signature for a function that creates a widget based on a
 /// `NodeViewModelState` state.
@@ -77,8 +78,8 @@ class JsonExplorer extends StatelessWidget {
   const JsonExplorer({
     required this.nodes,
     super.key,
-    // this.itemScrollController,
-    // this.itemPositionsListener,
+    this.itemScrollController,
+    this.itemPositionsListener,
     this.rootInformationBuilder,
     this.collapsableToggleBuilder,
     this.trailingBuilder,
@@ -98,13 +99,13 @@ class JsonExplorer extends StatelessWidget {
   /// * `JsonExplorerStore`
   final Iterable<NodeViewModelState> nodes;
 
-  // /// Use to control the scroll.
-  // ///
-  // /// Used to jump or scroll to a particular position.
-  // final ItemScrollController? itemScrollController;
+  /// Use to control the scroll.
+  ///
+  /// Used to jump or scroll to a particular position.
+  final ItemScrollController? itemScrollController;
 
-  // /// Use to listen to scroll position changes.
-  // final ItemPositionsListener? itemPositionsListener;
+  /// Use to listen to scroll position changes.
+  final ItemPositionsListener? itemPositionsListener;
 
   /// Theme used to render the widgets.
   ///
@@ -161,8 +162,10 @@ class JsonExplorer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SelectionArea(
-        child: ListView.builder(
+        child: ScrollablePositionedList.builder(
           itemCount: nodes.length,
+          itemScrollController: itemScrollController,
+          itemPositionsListener: itemPositionsListener,
           itemBuilder: (context, index) => AnimatedBuilder(
             animation: nodes.elementAt(index),
             builder: (context, child) => DecoratedBox(

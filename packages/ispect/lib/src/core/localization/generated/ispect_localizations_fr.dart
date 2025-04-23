@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Tous les journaux copiés dans le tampon';
 
   @override
-  String get analyticsLogDesc =>
-      'Le journal d\'envoi d\'événements au service d\'analyse';
+  String get analyticsLogDesc => 'Le journal d\'envoi d\'événements au service d\'analyse';
 
   @override
   String get apiToken => 'Jeton API';
@@ -55,24 +54,19 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get basicSettings => 'Paramètres de base';
 
   @override
-  String get blocCloseLogDesc =>
-      'Étiquette utilisée pour enregistrer la fermeture d\'un BLoC';
+  String get blocCloseLogDesc => 'Étiquette utilisée pour enregistrer la fermeture d\'un BLoC';
 
   @override
-  String get blocCreateLogDesc =>
-      'Étiquette utilisée pour enregistrer la création d\'un BLoC';
+  String get blocCreateLogDesc => 'Étiquette utilisée pour enregistrer la création d\'un BLoC';
 
   @override
-  String get blocEventLogDesc =>
-      'Étiquette utilisée pour enregistrer le traitement d\'un événement dans un BLoC';
+  String get blocEventLogDesc => 'Étiquette utilisée pour enregistrer le traitement d\'un événement dans un BLoC';
 
   @override
-  String get blocTransitionLogDesc =>
-      'Étiquette utilisée pour enregistrer les transitions d\'état dans un BLoC';
+  String get blocTransitionLogDesc => 'Étiquette utilisée pour enregistrer les transitions d\'état dans un BLoC';
 
   @override
-  String get blocStateLogDesc =>
-      'Étiquette utilisée pour enregistrer l\'état actuel dans un BLoC';
+  String get blocStateLogDesc => 'Étiquette utilisée pour enregistrer l\'état actuel dans un BLoC';
 
   @override
   String get buildVersion => 'Version de construction';
@@ -130,15 +124,13 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Création d\'un problème';
 
   @override
-  String get criticalLogDesc =>
-      'Étiquette utilisée pour enregistrer les erreurs critiques ou les événements nécessitant une attention immédiate';
+  String get criticalLogDesc => 'Étiquette utilisée pour enregistrer les erreurs critiques ou les événements nécessitant une attention immédiate';
 
   @override
   String get data => 'Données';
 
   @override
-  String get debugLogDesc =>
-      'Étiquette utilisée pour enregistrer des informations de débogage afin d\'analyser le comportement de l\'application';
+  String get debugLogDesc => 'Étiquette utilisée pour enregistrer des informations de débogage afin d\'analyser le comportement de l\'application';
 
   @override
   String get description => 'Description';
@@ -158,8 +150,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Erreur lors de la suppression du cache';
 
   @override
-  String get errorLogDesc =>
-      'Étiquette utilisée pour enregistrer les erreurs survenant dans l\'application';
+  String get errorLogDesc => 'Étiquette utilisée pour enregistrer les erreurs survenant dans l\'application';
 
   @override
   String get errorMessage => 'Message d\'erreur';
@@ -168,8 +159,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get errorType => 'Type d\'erreur';
 
   @override
-  String get exceptionLogDesc =>
-      'Étiquette utilisée pour enregistrer les exceptions survenant dans l\'application';
+  String get exceptionLogDesc => 'Étiquette utilisée pour enregistrer les exceptions survenant dans l\'application';
 
   @override
   String get expandLogs => 'Développer les journaux';
@@ -196,8 +186,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get goToLogger => 'Aller au journaliseur';
 
   @override
-  String get goodLogDesc =>
-      'Étiquette utilisée pour enregistrer les opérations réussies ou les événements positifs dans l\'application';
+  String get goodLogDesc => 'Étiquette utilisée pour enregistrer les opérations réussies ou les événements positifs dans l\'application';
 
   @override
   String get headers => 'En-têtes';
@@ -215,8 +204,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Journal des réponses du serveur';
 
   @override
-  String get infoLogDesc =>
-      'Étiquette utilisée pour enregistrer des messages informatifs sur le fonctionnement de l\'application';
+  String get infoLogDesc => 'Étiquette utilisée pour enregistrer des messages informatifs sur le fonctionnement de l\'application';
 
   @override
   String get initializationFailed => 'Échec de l\'initialisation';
@@ -225,8 +213,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get issueCreated => 'Problème créé avec succès';
 
   @override
-  String get jiraInstruction =>
-      '1. Rendez-vous sur votre site Jira.\n2. Cliquez sur votre avatar de profil dans le coin inférieur gauche.\n3. Cliquez sur Profil.\n4. Cliquez sur Gérer votre compte.\n5. Sélectionnez Sécurité.\n6. Faites défiler jusqu\'à Créer et gérer des jetons API et cliquez dessus.\n7. Créez un jeton, puis copiez-le et collez-le.';
+  String get jiraInstruction => '1. Rendez-vous sur votre site Jira.\n2. Cliquez sur votre avatar de profil dans le coin inférieur gauche.\n3. Cliquez sur Profil.\n4. Cliquez sur Gérer votre compte.\n5. Sélectionnez Sécurité.\n6. Faites défiler jusqu\'à Créer et gérer des jetons API et cliquez dessus.\n7. Créez un jeton, puis copiez-le et collez-le.';
 
   @override
   String get logItemCopied => 'Élément de journal copié dans le presse-papiers';
@@ -250,8 +237,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get notFound => 'Non trouvé';
 
   @override
-  String get otherLogsForDevelopers =>
-      'D\'autres journaux sont déjà utilisés par les développeurs';
+  String get otherLogsForDevelopers => 'D\'autres journaux sont déjà utilisés par les développeurs';
 
   @override
   String get pageNotFound => 'Oups, la page sur ce chemin';
@@ -269,16 +255,13 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Veuillez vous authentifier sur Jira';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'Une erreur s\'est produite. Veuillez vérifier les données d\'authentification.';
+  String get pleaseCheckAuthCred => 'Une erreur s\'est produite. Veuillez vérifier les données d\'authentification.';
 
   @override
-  String get pleaseSelectYourProject =>
-      'Maintenant, veuillez sélectionner un projet';
+  String get pleaseSelectYourProject => 'Maintenant, veuillez sélectionner un projet';
 
   @override
-  String get printLogDesc =>
-      'Journal de la méthode d\'impression standard dans Flutter';
+  String get printLogDesc => 'Journal de la méthode d\'impression standard dans Flutter';
 
   @override
   String get projectDomain => 'Domaine du projet';
@@ -420,8 +403,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypeAnalytics =>
-      'Méthode d\'enregistrement d\'événements';
+  String get iSpectifyTypeAnalytics => 'Méthode d\'enregistrement d\'événements';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
@@ -502,8 +484,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc =>
-      'Ces journaux seront utiles aux testeurs pour en savoir plus';
+  String get testerLogDesc => 'Ces journaux seront utiles aux testeurs pour en savoir plus';
 
   @override
   String totalFilesCount(Object number) {
@@ -532,16 +513,13 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get userEmail => 'Email de l\'utilisateur';
 
   @override
-  String get verboseLogDesc =>
-      'Étiquette utilisée pour enregistrer des informations détaillées pour une analyse approfondie de l\'application';
+  String get verboseLogDesc => 'Étiquette utilisée pour enregistrer des informations détaillées pour une analyse approfondie de l\'application';
 
   @override
-  String get viewAndManageData =>
-      'Visualisation et gestion des données de l\'application';
+  String get viewAndManageData => 'Visualisation et gestion des données de l\'application';
 
   @override
-  String get warningLogDesc =>
-      'Étiquette utilisée pour enregistrer des messages d\'avertissement sur des problèmes potentiels dans l\'application';
+  String get warningLogDesc => 'Étiquette utilisée pour enregistrer des messages d\'avertissement sur des problèmes potentiels dans l\'application';
 
   @override
   String get you => 'Vous';

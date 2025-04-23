@@ -4,6 +4,7 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
@@ -46,11 +47,6 @@ class _ISpectScreenState extends State<ISpectScreen> {
         options: widget.options,
         itemsBuilder: widget.itemsBuilder,
       );
-
-  // @override
-  // Widget build(BuildContext context) => Scaffold(
-  //       body: SizedBox(),
-  //     );
 }
 
 class ISpectScreenView extends StatefulWidget {
@@ -134,11 +130,17 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       _openISpectifySettings(context);
                     },
                     onInfoTap: () async {
-                      await showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const ISpectLogsInfoBottomSheet(),
+                      await context.screenSizeMaybeWhen(
+                        phone: () => showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => const ISpectLogsInfoBottomSheet(),
+                        ),
+                        orElse: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => const ISpectLogsInfoBottomSheet(),
+                        ),
                       );
                     },
                     onToggleTitle: _onToggleTitle,
@@ -152,11 +154,6 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       thickness: 1,
                       height: 0,
                     ),
-                    // itemBuilder: (context, index) => ListTile(
-                    //   title: Text(
-                    //     _getListItem(filteredElements, index).textMessage,
-                    //   ),
-                    // ),
                     itemBuilder: (context, index) {
                       final data = _getListItem(filteredElements, index);
                       if (widget.itemsBuilder != null) {
@@ -207,11 +204,26 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   ) {
     final iSpectify = ValueNotifier(widget.iSpectify);
 
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ISpectifySettingsBottomSheets(
+    context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _settingsBody(iSpectify, context),
+      ),
+      orElse: () => showDialog<void>(
+        context: context,
+        useRootNavigator: false,
+        builder: (_) => _settingsBody(iSpectify, context),
+      ),
+    );
+  }
+
+  ISpectifySettingsBottomSheets _settingsBody(
+    ValueNotifier<ISpectify> iSpectify,
+    BuildContext context,
+  ) =>
+      ISpectifySettingsBottomSheets(
         options: widget.options,
         iSpectify: iSpectify,
         actions: [
@@ -246,9 +258,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
           ),
           ...widget.options.actionItems,
         ],
-      ),
-    );
-  }
+      );
 
   void _copyISpectifyDataItemText(ISpectifyData data) {
     final text = data.toJson(truncated: true).toString();

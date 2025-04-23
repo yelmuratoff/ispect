@@ -43,14 +43,14 @@ class DioResponseLog extends ISpectifyData {
       ..writeln('\nStatus: $statusCode');
 
     if (settings.printResponseMessage && statusMessage != null) {
-      buffer.writeln('Message: $statusMessage');
+      buffer.writeln('\nMessage: $statusMessage');
     }
 
     if (settings.printResponseData && responseBody != null) {
       final prettyData = JsonTruncatorService.pretty(
         responseBody,
       );
-      buffer.writeln('Data: $prettyData');
+      buffer.writeln('\nData: $prettyData');
     }
 
     if (settings.printResponseHeaders &&
@@ -59,7 +59,7 @@ class DioResponseLog extends ISpectifyData {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('Headers:$prettyHeaders');
+      buffer.writeln('\nHeaders: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

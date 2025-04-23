@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.1.1
+
+### Added
+- Add screen size utility to detect and adapt UI based on device screen  
+- Implement alternative dialog-based UI for larger screen sizes  
+
+### Fixed
+- Fix issue displaying API fields correctly in the console
+
+### Enhancements
+- Implement responsive design for settings bottom sheet and log screens using screen size detection  
+- Improve search functionality in JSON viewer, added scrolling to the found element
+
+### Changes
+- Remove platform-specific configurations for Android and iOS in the example project  
+- Add macOS support for the example project  
+
 ## 4.1.0
 
 ### Fixed

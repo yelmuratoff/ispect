@@ -52,14 +52,15 @@ void main() {
         ISpectifyDioLogger(
           iSpectify: iSpectify,
           settings: ISpectifyDioLoggerSettings(
-              // requestFilter: (requestOptions) =>
-              //     requestOptions.path != '/post3s/1',
-              // responseFilter: (response) => response.statusCode != 404,
-              // errorFilter: (response) => response.response?.statusCode != 404,
-              // errorFilter: (response) {
-              //   return (response.message?.contains('This exception was thrown because')) == false;
-              // },
-              ),
+            printRequestHeaders: true,
+            // requestFilter: (requestOptions) =>
+            //     requestOptions.path != '/post3s/1',
+            // responseFilter: (response) => response.statusCode != 404,
+            // errorFilter: (response) => response.response?.statusCode != 404,
+            // errorFilter: (response) {
+            //   return (response.message?.contains('This exception was thrown because')) == false;
+            // },
+          ),
         ),
       );
       dummyDio.interceptors.add(
@@ -389,7 +390,9 @@ class _HomeState extends State<_Home> {
               ),
               FilledButton(
                 onPressed: () {
-                  dio.get('/posts/143340290-3924-29-19083439');
+                  dio.get(
+                    '/posts/1',
+                  );
                 },
                 child: const Text('Send HTTP request'),
               ),

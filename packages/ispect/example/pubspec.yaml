@@ -30,7 +30,7 @@ dependencies:
   flutter_bloc: ^9.1.0
   http_interceptor: ^2.0.0
 
-  ispect: ^4.1.0
+  ispect: ^4.1.1
   ispectify_dio: ^4.0.4
   ispectify_http: ^4.0.4
   ispectify_bloc: ^4.0.4

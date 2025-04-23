@@ -30,7 +30,7 @@ class ISpectifyDateTimeFormatter {
   /// Returns the default formatted date-time representation.
   ///
   /// Uses `fullTime` as the standard format.
-  String get format => date == null ? '' : fullTime;
+  String get format => date == null ? '' : timeAndSeconds;
 
   /// Pads single-digit values with a leading zero.
   ///
