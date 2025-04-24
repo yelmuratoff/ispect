@@ -29,11 +29,11 @@ extension HistoryListFlutterText on List<ISpectifyData> {
     for (final data in this) {
       sb
         ..writeln(
-          JsonTruncatorService.pretty(
+          '\n${JsonTruncatorService.pretty(
             data.toJson(truncated: true),
-          ).truncated,
+          ).truncated}',
         ) // Ensures newline after text.
-        ..writeln(ConsoleUtils.bottomLine(30)); // Separator line.
+        ..writeln('\n${ConsoleUtils.bottomLine(100)}'); // Separator line.
     }
     return sb.toString().trim(); // Trim trailing newline for cleaner output.
   }
