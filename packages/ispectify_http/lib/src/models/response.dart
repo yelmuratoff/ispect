@@ -43,14 +43,14 @@ class HttpResponseLog extends ISpectifyData {
       ..writeln('\nStatus: $statusCode');
 
     if (settings.printResponseMessage && statusMessage != null) {
-      buffer.writeln('\nMessage: $statusMessage');
+      buffer.writeln('Message: $statusMessage');
     }
 
     if (settings.printResponseData && requestBody != null) {
       final prettyData = JsonTruncatorService.pretty(
         requestBody,
       );
-      buffer.writeln('\nData: $prettyData');
+      buffer.writeln('Data: $prettyData');
     }
 
     if (settings.printResponseHeaders &&
@@ -59,7 +59,7 @@ class HttpResponseLog extends ISpectifyData {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('\nHeaders: $prettyHeaders');
+      buffer.writeln('Headers: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

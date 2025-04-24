@@ -43,14 +43,14 @@ class DioResponseLog extends ISpectifyData {
       ..writeln('\nStatus: $statusCode');
 
     if (settings.printResponseMessage && statusMessage != null) {
-      buffer.writeln('\nMessage: $statusMessage');
+      buffer.writeln('Message: $statusMessage');
     }
 
     if (settings.printResponseData && responseBody != null) {
       final prettyData = JsonTruncatorService.pretty(
         responseBody,
       );
-      buffer.writeln('\nData: $prettyData');
+      buffer.writeln('Data: $prettyData');
     }
 
     if (settings.printResponseHeaders &&

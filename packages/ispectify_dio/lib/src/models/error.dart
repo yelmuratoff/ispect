@@ -44,21 +44,21 @@ class DioErrorLog extends ISpectifyData {
     }
 
     if (settings.printErrorMessage && statusMessage != null) {
-      buffer.writeln('\nMessage: $statusMessage');
+      buffer.writeln('Message: $statusMessage');
     }
 
     if (settings.printErrorData && body != null) {
       final prettyData = JsonTruncatorService.pretty(
         body,
       );
-      buffer.writeln('\nData: $prettyData');
+      buffer.writeln('Data: $prettyData');
     }
 
     if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('\nHeaders: $prettyHeaders');
+      buffer.writeln('Headers: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

@@ -40,17 +40,17 @@ class HttpErrorLog extends ISpectifyData {
       ..writeln('\nStatus: $statusCode');
 
     if (settings.printErrorMessage && statusMessage != null) {
-      buffer.writeln('\nMessage: $statusMessage');
+      buffer.writeln('Message: $statusMessage');
     }
 
     if (settings.printErrorData && body != null && body!.isNotEmpty) {
       final prettyBody = JsonTruncatorService.pretty(body);
-      buffer.writeln('\nData: $prettyBody');
+      buffer.writeln('Data: $prettyBody');
     }
 
     if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
       final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.writeln('\nHeaders: $prettyHeaders');
+      buffer.writeln('Headers: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

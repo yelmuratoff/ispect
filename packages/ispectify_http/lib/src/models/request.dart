@@ -42,7 +42,7 @@ class HttpRequestLog extends ISpectifyData {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('\nHeaders: $prettyHeaders');
+      buffer.writeln('Headers: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;
