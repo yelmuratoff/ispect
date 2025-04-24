@@ -123,6 +123,7 @@ class _AppState extends State<App> {
         child = ISpectBuilder(
           options: ISpectOptions(
             locale: locale,
+            isColorPickerEnabled: false,
             panelButtons: [
               (
                 icon: Icons.copy_rounded,
