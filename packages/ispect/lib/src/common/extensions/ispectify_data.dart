@@ -125,8 +125,6 @@ StackTrace: $stackTraceText]''';
           'stack-trace': truncated
               ? stackTrace.toString().truncated
               : stackTrace.toString(),
-        if (additionalData != null)
-          'additional-data':
-              truncated ? additionalData.toString().truncated : additionalData,
+        if (additionalData != null) 'additional-data': additionalData,
       };
 }

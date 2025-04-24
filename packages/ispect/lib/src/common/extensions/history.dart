@@ -1,4 +1,4 @@
-import 'package:ispectify/ispectify.dart';
+import 'package:ispect/ispect.dart';
 
 /// Extension on `List<ISpectifyData>` to format history text output.
 ///
@@ -28,7 +28,11 @@ extension HistoryListFlutterText on List<ISpectifyData> {
     final sb = StringBuffer();
     for (final data in this) {
       sb
-        ..writeln(data.textMessage.truncated) // Ensures newline after text.
+        ..writeln(
+          JsonTruncatorService.pretty(
+            data.toJson(truncated: true),
+          ).truncated,
+        ) // Ensures newline after text.
         ..writeln(ConsoleUtils.bottomLine(30)); // Separator line.
     }
     return sb.toString().trim(); // Trim trailing newline for cleaner output.
