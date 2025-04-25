@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// A CustomPainter that draws a series of dots in a horizontal line.
+///
+/// This painter is designed to create a row of evenly spaced circles (dots)
+/// at a specified y-coordinate. It is useful for creating visual indicators,
+/// dots leaders, or decorative elements.
 class DotPainter extends CustomPainter {
   DotPainter({
     required this.count,
