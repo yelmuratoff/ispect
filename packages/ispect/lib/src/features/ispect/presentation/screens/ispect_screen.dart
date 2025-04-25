@@ -7,6 +7,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
@@ -161,6 +162,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       }
 
                       return ISpectLogCard(
+                        key: ValueKey(data.hashCode),
                         data: data,
                         backgroundColor: context.ispectTheme.cardColor,
                         onCopyTap: () => _copyISpectifyDataItemText(data),
@@ -172,7 +174,9 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       );
                     },
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  const SliverToBoxAdapter(
+                    child: Gap(8),
+                  ),
                 ],
               );
             },
