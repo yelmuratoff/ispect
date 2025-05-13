@@ -9,6 +9,9 @@
 - Some other minor updates in the `ISpect` screen.
 - Removed `ispect_device` additional package. Now it uses directly.
 
+### Fixed
+- Fixed some issues during clearing the cache.
+
 ## 4.1.1
 
 ### Added
