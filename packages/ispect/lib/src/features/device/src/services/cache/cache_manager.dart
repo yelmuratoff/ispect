@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/painting.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_device/src/services/cache/base.dart';
+import 'package:ispect/src/features/device/src/services/cache/base.dart';
+import 'package:ispect/src/features/device/src/services/file/file_service.dart';
 
 import 'package:path_provider/path_provider.dart';
 
@@ -92,7 +93,8 @@ final class AppCacheManager implements BaseCacheService {
   Future<double> _getDirSize(Directory dir) async {
     var size = 0.0;
     await for (final entity in dir.list(recursive: true, followLinks: false)) {
-      if (entity is File) {
+      final isValid = await isValidFile(entity);
+      if (entity is File && isValid) {
         size += await entity.length();
       }
     }

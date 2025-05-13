@@ -1,4 +1,4 @@
-part of '../app_data.dart';
+part of '../app_data_screen.dart';
 
 class _AppDataView extends StatelessWidget {
   const _AppDataView({
@@ -50,7 +50,7 @@ class _AppDataView extends StatelessWidget {
                           ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const Gap(20),
                   if (cacheSizeNotifier.value != '0.00 B' &&
                       controller.files.isNotEmpty)
                     ElevatedButton(
@@ -63,7 +63,7 @@ class _AppDataView extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const Gap(10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -86,11 +86,10 @@ class _AppDataView extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView.separated(
+              child: ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.only(top: 10),
                 itemCount: controller.files.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 0),
                 itemBuilder: (_, i) {
                   final f = controller.files[i];
                   return Padding(
@@ -106,6 +105,12 @@ class _AppDataView extends StatelessWidget {
                               '$i. File:\n ${f.path}',
                               style: Theme.of(context).textTheme.labelMedium,
                             ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              deleteFile(i);
+                            },
+                            icon: const Icon(Icons.delete_rounded),
                           ),
                         ],
                       ),

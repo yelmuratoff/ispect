@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Alle Protokolle in den Puffer kopiert';
 
   @override
-  String get analyticsLogDesc =>
-      'Das Protokoll des Sendens von Ereignissen an den Analysedienst';
+  String get analyticsLogDesc => 'Das Protokoll des Sendens von Ereignissen an den Analysedienst';
 
   @override
   String get apiToken => 'API-Token';
@@ -55,24 +54,19 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get basicSettings => 'Grundeinstellungen';
 
   @override
-  String get blocCloseLogDesc =>
-      'Ein Tag, das zum Protokollieren des Schließens eines BLoC verwendet wird';
+  String get blocCloseLogDesc => 'Ein Tag, das zum Protokollieren des Schließens eines BLoC verwendet wird';
 
   @override
-  String get blocCreateLogDesc =>
-      'Ein Tag, das zum Protokollieren der Erstellung eines BLoC verwendet wird';
+  String get blocCreateLogDesc => 'Ein Tag, das zum Protokollieren der Erstellung eines BLoC verwendet wird';
 
   @override
-  String get blocEventLogDesc =>
-      'Ein Tag, das zum Protokollieren der Verarbeitung eines Ereignisses in einem BLoC verwendet wird';
+  String get blocEventLogDesc => 'Ein Tag, das zum Protokollieren der Verarbeitung eines Ereignisses in einem BLoC verwendet wird';
 
   @override
-  String get blocTransitionLogDesc =>
-      'Ein Tag, das zum Protokollieren von Zustandsübergängen in einem BLoC verwendet wird';
+  String get blocTransitionLogDesc => 'Ein Tag, das zum Protokollieren von Zustandsübergängen in einem BLoC verwendet wird';
 
   @override
-  String get blocStateLogDesc =>
-      'Ein Tag, das zum Protokollieren des aktuellen Zustands in einem BLoC verwendet wird';
+  String get blocStateLogDesc => 'Ein Tag, das zum Protokollieren des aktuellen Zustands in einem BLoC verwendet wird';
 
   @override
   String get buildVersion => 'Build-Version';
@@ -130,15 +124,13 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Problem wird erstellt';
 
   @override
-  String get criticalLogDesc =>
-      'Ein Tag, das zum Protokollieren kritischer Fehler oder Ereignisse verwendet wird, die sofortige Aufmerksamkeit erfordern';
+  String get criticalLogDesc => 'Ein Tag, das zum Protokollieren kritischer Fehler oder Ereignisse verwendet wird, die sofortige Aufmerksamkeit erfordern';
 
   @override
   String get data => 'Daten';
 
   @override
-  String get debugLogDesc =>
-      'Ein Tag, das zum Protokollieren von Debug-Informationen verwendet wird, um das Verhalten der Anwendung zu analysieren';
+  String get debugLogDesc => 'Ein Tag, das zum Protokollieren von Debug-Informationen verwendet wird, um das Verhalten der Anwendung zu analysieren';
 
   @override
   String get description => 'Beschreibung';
@@ -158,8 +150,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Fehler beim Leeren des Caches';
 
   @override
-  String get errorLogDesc =>
-      'Ein Tag, das zum Protokollieren von Fehlern verwendet wird, die in der Anwendung auftreten';
+  String get errorLogDesc => 'Ein Tag, das zum Protokollieren von Fehlern verwendet wird, die in der Anwendung auftreten';
 
   @override
   String get errorMessage => 'Fehlermeldung';
@@ -168,8 +159,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get errorType => 'Fehlertyp';
 
   @override
-  String get exceptionLogDesc =>
-      'Ein Tag, das zum Protokollieren von Ausnahmen verwendet wird, die in der Anwendung auftreten';
+  String get exceptionLogDesc => 'Ein Tag, das zum Protokollieren von Ausnahmen verwendet wird, die in der Anwendung auftreten';
 
   @override
   String get expandLogs => 'Protokolle ausklappen';
@@ -196,8 +186,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get goToLogger => 'Zum Logger gehen';
 
   @override
-  String get goodLogDesc =>
-      'Ein Tag, das zum Protokollieren erfolgreicher Operationen oder positiver Ereignisse in der Anwendung verwendet wird';
+  String get goodLogDesc => 'Ein Tag, das zum Protokollieren erfolgreicher Operationen oder positiver Ereignisse in der Anwendung verwendet wird';
 
   @override
   String get headers => 'Header';
@@ -215,8 +204,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Serverantwort-Protokoll';
 
   @override
-  String get infoLogDesc =>
-      'Ein Tag, das zum Protokollieren informativer Nachrichten über den Betrieb der Anwendung verwendet wird';
+  String get infoLogDesc => 'Ein Tag, das zum Protokollieren informativer Nachrichten über den Betrieb der Anwendung verwendet wird';
 
   @override
   String get initializationFailed => 'Initialisierung fehlgeschlagen';
@@ -225,8 +213,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get issueCreated => 'Problem erfolgreich erstellt';
 
   @override
-  String get jiraInstruction =>
-      '1. Gehen Sie auf Ihre Jira-Website.\n2. Klicken Sie auf Ihr Profil-Avatar in der unteren linken Ecke.\n3. Klicken Sie auf Profil.\n4. Klicken Sie auf Ihr Konto verwalten.\n5. Wählen Sie Sicherheit.\n6. Scrollen Sie nach unten zu API-Token erstellen und verwalten und klicken Sie darauf.\n7. Erstellen Sie ein Token, dann kopieren und fügen Sie es ein.';
+  String get jiraInstruction => '1. Gehen Sie auf Ihre Jira-Website.\n2. Klicken Sie auf Ihr Profil-Avatar in der unteren linken Ecke.\n3. Klicken Sie auf Profil.\n4. Klicken Sie auf Ihr Konto verwalten.\n5. Wählen Sie Sicherheit.\n6. Scrollen Sie nach unten zu API-Token erstellen und verwalten und klicken Sie darauf.\n7. Erstellen Sie ein Token, dann kopieren und fügen Sie es ein.';
 
   @override
   String get logItemCopied => 'Protokollelement in die Zwischenablage kopiert';
@@ -250,8 +237,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get notFound => 'Nicht gefunden';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Andere Protokolle werden bereits von Entwicklern verwendet';
+  String get otherLogsForDevelopers => 'Andere Protokolle werden bereits von Entwicklern verwendet';
 
   @override
   String get pageNotFound => 'Oops, die Seite auf diesem Pfad';
@@ -269,16 +255,13 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Bitte autorisieren Sie sich bei Jira';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'Ein Fehler ist aufgetreten. Bitte überprüfen Sie die Autorisierungsdaten.';
+  String get pleaseCheckAuthCred => 'Ein Fehler ist aufgetreten. Bitte überprüfen Sie die Autorisierungsdaten.';
 
   @override
-  String get pleaseSelectYourProject =>
-      'Bitte wählen Sie jetzt ein Projekt aus';
+  String get pleaseSelectYourProject => 'Bitte wählen Sie jetzt ein Projekt aus';
 
   @override
-  String get printLogDesc =>
-      'Das Protokoll der standardmäßigen Druckmethode in Flutter';
+  String get printLogDesc => 'Das Protokoll der standardmäßigen Druckmethode in Flutter';
 
   @override
   String get projectDomain => 'Projektdomäne';
@@ -420,8 +403,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypeAnalytics =>
-      'Methode zum Protokollieren von Ereignissen';
+  String get iSpectifyTypeAnalytics => 'Methode zum Protokollieren von Ereignissen';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
@@ -502,8 +484,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc =>
-      'Es wird für Tester nützlich sein, über diese Protokolle Bescheid zu wissen';
+  String get testerLogDesc => 'Es wird für Tester nützlich sein, über diese Protokolle Bescheid zu wissen';
 
   @override
   String totalFilesCount(Object number) {
@@ -532,22 +513,19 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get userEmail => 'Benutzer-E-Mail';
 
   @override
-  String get verboseLogDesc =>
-      'Ein Tag, das zum Protokollieren detaillierter Informationen für eine tiefgehende Analyse der Anwendung verwendet wird';
+  String get verboseLogDesc => 'Ein Tag, das zum Protokollieren detaillierter Informationen für eine tiefgehende Analyse der Anwendung verwendet wird';
 
   @override
   String get viewAndManageData => 'Anzeigen und Verwalten von Anwendungsdaten';
 
   @override
-  String get warningLogDesc =>
-      'Ein Tag, das zum Protokollieren von Warnmeldungen über potenzielle Probleme in der Anwendung verwendet wird';
+  String get warningLogDesc => 'Ein Tag, das zum Protokollieren von Warnmeldungen über potenzielle Probleme in der Anwendung verwendet wird';
 
   @override
   String get you => 'Sie';
 
   @override
-  String get youAlreadyInLogger =>
-      'Sie befinden sich bereits auf der Logger-Seite';
+  String get youAlreadyInLogger => 'Sie befinden sich bereits auf der Logger-Seite';
 
   @override
   String get noData => 'Keine Daten';

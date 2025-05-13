@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_device/src/core/localization/generated/ispect_localizations.dart';
-import 'package:ispect_device/src/features/app_info/utils/copy.dart';
-import 'package:ispect_device/src/services/cache/cache_manager.dart';
-import 'package:ispect_device/src/services/file/src/file_service.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/device/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/features/device/src/services/cache/cache_manager.dart';
+import 'package:ispect/src/features/device/src/services/file/file_service.dart';
 
 part 'view/view.dart';
 part 'controller/controller.dart';
 
 class AppDataScreen extends StatefulWidget {
-  const AppDataScreen({required this.iSpectify, super.key});
-  final ISpectify iSpectify;
+  const AppDataScreen({super.key});
 
   @override
   State<AppDataScreen> createState() => _AppDataScreenState();

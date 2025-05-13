@@ -17,6 +17,7 @@ export 'src/common/observers/route_observer.dart';
 export 'src/common/utils/file_utils.dart';
 export 'src/common/widgets/builder/data_builder.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
+export 'src/features/device/ispect_device.dart';
 export 'src/features/ispect/models/log_description.dart';
 export 'src/features/ispect/options.dart';
 export 'src/features/ispect/presentation/screens/ispect_screen.dart';

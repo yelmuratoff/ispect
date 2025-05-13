@@ -203,8 +203,26 @@ final class ISpectToaster {
     required bool showValue,
     String? title,
   }) async {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+
+    final copiedText = title ?? '✅ ${context.ispectL10n.logItemCopied}';
+
+    const titleStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+    );
+
+    const valueStyle = TextStyle(
+      color: Colors.grey,
+    );
+
+    final textSpans = <TextSpan>[
+      TextSpan(text: copiedText, style: titleStyle),
+      if (showValue) TextSpan(text: '\n\n"$value"', style: valueStyle),
+    ];
+
+    messenger.showSnackBar(
       SnackBar(
         backgroundColor: const Color.fromARGB(255, 49, 49, 49),
         elevation: 0,
@@ -217,25 +235,7 @@ final class ISpectToaster {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: title ?? '✅ ${context.ispectL10n.logItemCopied}: ',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (showValue)
-                    TextSpan(
-                      text: '\n\n"$value"',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-                ],
-              ),
+              TextSpan(children: textSpans),
               maxLines: 30,
               softWrap: true,
               overflow: TextOverflow.ellipsis,

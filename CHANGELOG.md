@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.1.2
+
+### Added
+- `itemsBuilder` to `ISpectOptions` for customizing the items in the `ISpect` screen.
+
+### Changes
+- Some other minor updates in the `ISpect` screen.
+
 ## 4.1.1
 
 ### Added

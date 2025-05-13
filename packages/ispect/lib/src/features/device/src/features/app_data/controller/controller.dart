@@ -1,4 +1,4 @@
-part of '../app_data.dart';
+part of '../app_data_screen.dart';
 
 class AppDataController extends ChangeNotifier {
   var _files = <File>[];

@@ -150,7 +150,10 @@ class _AppState extends State<App> {
                 onTap: (context) {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const Scaffold(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(
+                          title: Text('Test'),
+                        ),
                         body: Center(
                           child: Text('Test'),
                         ),

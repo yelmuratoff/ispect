@@ -227,6 +227,28 @@ class _ISpectScreenState extends State<ISpectScreen> {
             title: context.ispectL10n.shareLogsFile,
             icon: Icons.ios_share_outlined,
           ),
+          ISpectifyActionItem(
+            title: context.ispectL10n.appInfo,
+            icon: Icons.info_rounded,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const AppInfoScreen(),
+                ),
+              );
+            },
+          ),
+          ISpectifyActionItem(
+            title: context.ispectL10n.appData,
+            icon: Icons.data_usage_rounded,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const AppDataScreen(),
+                ),
+              );
+            },
+          ),
           ...widget.options.actionItems,
         ],
       );

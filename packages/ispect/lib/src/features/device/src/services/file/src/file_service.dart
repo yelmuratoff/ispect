@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:ispect_device/src/services/file/file_service.dart';
+import 'package:ispect/src/features/device/src/services/file/file_service.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class AppFileService implements BaseFileService {
@@ -40,8 +41,20 @@ class AppFileService implements BaseFileService {
     final files = cacheDir.listSync();
     for (final file in files) {
       final fileModel = File(file.path);
-      fileModels.add(fileModel);
+      final isValid = await isValidFile(fileModel);
+      if (isValid) {
+        fileModels.add(fileModel);
+      }
     }
     return fileModels;
   }
+}
+
+Future<bool> isValidFile(FileSystemEntity entity) async {
+  if (entity is! File) return false;
+  final file = entity;
+  final exists = await file.exists();
+  final isDir = await FileSystemEntity.isDirectory(file.path);
+
+  return exists && !isDir && p.extension(file.path).isNotEmpty;
 }
