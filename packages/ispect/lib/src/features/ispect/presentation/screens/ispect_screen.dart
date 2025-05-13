@@ -8,6 +8,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
@@ -141,9 +142,7 @@ class _ISpectScreenState extends State<ISpectScreen> {
                       );
                     },
                   ),
-                  const SliverToBoxAdapter(
-                    child: Gap(8),
-                  ),
+                  const SliverGap(8),
                 ],
               );
             },

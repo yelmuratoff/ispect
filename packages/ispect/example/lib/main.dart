@@ -166,7 +166,6 @@ class _AppState extends State<App> {
           ),
           theme: ISpectTheme(
             pageTitle: 'Custom Name',
-            darkBackgroundColor: Colors.black,
             logDescriptions: [
               LogDescription(
                 key: 'bloc-event',

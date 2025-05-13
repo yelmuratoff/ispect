@@ -17,7 +17,7 @@ class KeyValueLine extends StatelessWidget {
       color: adjustColor(
         color: theme.colorScheme.primary,
         value: 0.8,
-        isDark: theme.colorScheme.brightness == Brightness.dark,
+        isDark: context.isDarkMode,
       ),
       borderRadius: const BorderRadius.all(
         Radius.circular(8),
