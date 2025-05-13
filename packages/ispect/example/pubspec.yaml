@@ -17,8 +17,6 @@ dependency_overrides:
     path: ../../ispectify_bloc
   ispectify_dio:
     path: ../../ispectify_dio
-  ispect_device:
-    path: ../../ispect_device
   ispect_jira:
     path: ../../ispect_jira
 
@@ -35,11 +33,10 @@ dependencies:
   http_interceptor: ^2.0.0
 
   ispect: ^4.1.2-dev01
-  ispectify_dio: ^4.0.4
-  ispectify_http: ^4.0.4
-  ispectify_bloc: ^4.0.4
-  ispect_device: ^4.0.4
-  ispect_jira: ^4.0.4
+  ispectify_dio: ^4.1.2-dev01
+  ispectify_http: ^4.1.2-dev01
+  ispectify_bloc: ^4.1.2-dev01
+  ispect_jira: ^4.1.2-dev01
 
   provider: ^6.1.2
 

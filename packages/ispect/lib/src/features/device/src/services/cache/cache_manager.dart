@@ -14,42 +14,47 @@ final class AppCacheManager implements BaseCacheService {
   }) async {
     try {
       final cacheDir = await getTemporaryDirectory();
-      final appDir = await getApplicationSupportDirectory();
       final appCacheDir = await getApplicationCacheDirectory();
 
-      if (cacheDir.existsSync()) {
+      if (await cacheDir.exists()) {
         await cacheDir.delete(recursive: true);
         ISpect.logger.info('Cleared: cacheDir: ${cacheDir.path}');
       }
 
-      if (appDir.existsSync()) {
-        await appDir.delete(recursive: true);
-        ISpect.logger.info('Cleared: appDir: ${appDir.path}');
-      }
-
-      if (appCacheDir.existsSync()) {
+      if (await appCacheDir.exists()) {
         await appCacheDir.delete(recursive: true);
         ISpect.logger.info('Cleared: appCacheDir: ${appCacheDir.path}');
       }
 
       if (isAndroid) {
-        final list = await getExternalCacheDirectories();
-        if (list != null) {
-          for (final dir in list) {
-            if (dir.existsSync()) {
-              await dir.delete(recursive: true);
-              ISpect.logger.info('Cleared: ${dir.path}');
+        final externalDirs = await getExternalCacheDirectories();
+        if (externalDirs != null) {
+          for (final dir in externalDirs) {
+            try {
+              if (await dir.exists()) {
+                await dir.delete(recursive: true);
+                ISpect.logger.info('Cleared: ${dir.path}');
+              }
+            } catch (e, st) {
+              ISpect.logger.handle(
+                exception: e,
+                stackTrace: st,
+                message: 'Failed to delete external dir: ${dir.path}',
+              );
             }
           }
         }
       }
 
-      PaintingBinding.instance.imageCache.clear();
-      PaintingBinding.instance.imageCache.clearLiveImages();
+      final imageCache = PaintingBinding.instance.imageCache
+        ..clear()
+        ..clearLiveImages();
+
       ISpect.logger.info(
-        'Cleared: imageCache: ${PaintingBinding.instance.imageCache.currentSize}, clearLiveImages: ${PaintingBinding.instance.imageCache.liveImageCount}',
+        'Cleared: imageCache: ${imageCache.currentSize}, '
+        'clearLiveImages: ${imageCache.liveImageCount}',
       );
-    } on Exception catch (e, st) {
+    } catch (e, st) {
       ISpect.logger.handle(
         exception: e,
         stackTrace: st,
@@ -62,25 +67,20 @@ final class AppCacheManager implements BaseCacheService {
   Future<double> getCacheSize() async {
     try {
       final cacheDir = await getTemporaryDirectory();
-      final appDir = await getApplicationSupportDirectory();
       final appCacheDir = await getApplicationCacheDirectory();
 
-      var size = 0.0;
+      double size = 0;
 
-      if (cacheDir.existsSync()) {
+      if (await cacheDir.exists()) {
         size += await _getDirSize(cacheDir);
       }
 
-      if (appDir.existsSync()) {
-        size += await _getDirSize(appDir);
-      }
-
-      if (appCacheDir.existsSync()) {
+      if (await appCacheDir.exists()) {
         size += await _getDirSize(appCacheDir);
       }
 
       return size;
-    } on Exception catch (e, st) {
+    } catch (e, st) {
       ISpect.logger.handle(
         exception: e,
         stackTrace: st,

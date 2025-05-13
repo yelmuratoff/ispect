@@ -51,7 +51,7 @@ class _AppDataView extends StatelessWidget {
                     ),
                   ),
                   const Gap(20),
-                  if (cacheSizeNotifier.value != '0.00 B')
+                  if (cacheSizeNotifier.value != '0.00 MB')
                     ElevatedButton(
                       onPressed: clearCache,
                       child: Text(
