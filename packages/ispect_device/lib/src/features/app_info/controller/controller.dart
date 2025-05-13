@@ -13,12 +13,10 @@ class AppInfoController extends ChangeNotifier {
 
   Future<void> loadAll({
     required BuildContext context,
-    required ISpectify iSpectify,
   }) async {
     try {
       await _loadPackageInfo(
         context: context,
-        iSpectify: iSpectify,
       );
       if (Platform.isIOS) {
         _iosDeviceInfo = await _deviceInfo.iosInfo;
@@ -26,7 +24,7 @@ class AppInfoController extends ChangeNotifier {
         _androidDeviceInfo = await _deviceInfo.androidInfo;
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(exception: e, stackTrace: st);
+      ISpect.logger.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
@@ -39,13 +37,12 @@ class AppInfoController extends ChangeNotifier {
 
   Future<void> _loadPackageInfo({
     required BuildContext context,
-    required ISpectify iSpectify,
   }) async {
     try {
       _packageInfo = await PackageInfo.fromPlatform();
       notifyListeners();
     } on Exception catch (e, st) {
-      iSpectify.handle(exception: e, stackTrace: st);
+      ISpect.logger.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,

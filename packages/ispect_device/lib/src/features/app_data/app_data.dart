@@ -24,7 +24,7 @@ class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.loadFilesList(context: context, iSpectify: widget.iSpectify);
+      _controller.loadFilesList(context: context);
     });
   }
 
@@ -40,14 +40,12 @@ class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
         deleteFile: (value) {
           _controller.deleteFile(
             context: context,
-            iSpectify: widget.iSpectify,
             index: value,
           );
         },
         deleteFiles: () {
           _controller.deleteFiles(
             context: context,
-            iSpectify: widget.iSpectify,
           );
         },
         cacheSizeNotifier: cacheSizeNotifier,
@@ -59,7 +57,6 @@ class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
           if (context.mounted) {
             await _controller.loadFilesList(
               context: context,
-              iSpectify: widget.iSpectify,
             );
           }
           if (context.mounted) {

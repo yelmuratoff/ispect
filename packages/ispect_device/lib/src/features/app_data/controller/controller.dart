@@ -6,7 +6,6 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> loadFilesList({
     required BuildContext context,
-    required ISpectify iSpectify,
   }) async {
     try {
       final f = await AppFileService.instance.getFiles();
@@ -17,7 +16,7 @@ class AppDataController extends ChangeNotifier {
     } catch (e, st) {
       if (context.mounted &&
           !e.toString().contains('No such file or directory')) {
-        iSpectify.handle(exception: e, stackTrace: st);
+        ISpect.logger.handle(exception: e, stackTrace: st);
         await ISpectToaster.showErrorToast(
           context,
           title: e.toString(),
@@ -33,7 +32,6 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFile({
     required BuildContext context,
-    required ISpectify iSpectify,
     required int index,
   }) async {
     try {
@@ -41,11 +39,10 @@ class AppDataController extends ChangeNotifier {
       if (context.mounted) {
         await loadFilesList(
           context: context,
-          iSpectify: iSpectify,
         );
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(exception: e, stackTrace: st);
+      ISpect.logger.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
@@ -57,7 +54,6 @@ class AppDataController extends ChangeNotifier {
 
   Future<void> deleteFiles({
     required BuildContext context,
-    required ISpectify iSpectify,
   }) async {
     try {
       for (final file in _files) {
@@ -66,11 +62,10 @@ class AppDataController extends ChangeNotifier {
       if (context.mounted) {
         await loadFilesList(
           context: context,
-          iSpectify: iSpectify,
         );
       }
     } on Exception catch (e, st) {
-      iSpectify.handle(exception: e, stackTrace: st);
+      ISpect.logger.handle(exception: e, stackTrace: st);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,

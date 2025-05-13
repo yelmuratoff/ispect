@@ -600,6 +600,7 @@ class InspectorState extends State<Inspector> {
       builder: (_) => ISpectScreen(
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
+        itemsBuilder: widget.options.itemsBuilder,
       ),
       settings: const RouteSettings(
         name: 'ISpectScreen',

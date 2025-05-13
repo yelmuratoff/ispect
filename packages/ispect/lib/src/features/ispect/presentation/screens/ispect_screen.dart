@@ -3,22 +3,24 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/extensions/string.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
-import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
+
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 
-/// UI view for output of all ISpectify logs and errors
+part '../widgets/not_found_widget.dart';
+
 class ISpectScreen extends StatefulWidget {
   const ISpectScreen({
     required this.options,
-    this.appBarTitle,
     super.key,
+    this.appBarTitle,
     this.itemsBuilder,
   });
 
@@ -36,55 +38,9 @@ class ISpectScreen extends StatefulWidget {
 }
 
 class _ISpectScreenState extends State<ISpectScreen> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) => ISpectScreenView(
-        iSpectify: ISpect.logger,
-        appBarTitle: widget.appBarTitle,
-        options: widget.options,
-        itemsBuilder: widget.itemsBuilder,
-      );
-}
-
-class ISpectScreenView extends StatefulWidget {
-  const ISpectScreenView({
-    required this.iSpectify,
-    required this.options,
-    super.key,
-    this.controller,
-    this.scrollController,
-    this.appBarTitle,
-    this.itemsBuilder,
-  });
-
-  /// ISpectify implementation
-  final ISpectify iSpectify;
-
-  /// Screen `AppBar` title
-  final String? appBarTitle;
-
-  /// Optional Builder to customize
-  /// log items cards in list
-  final ISpectifyDataBuilder? itemsBuilder;
-
-  final ISpectifyViewController? controller;
-
-  final ScrollController? scrollController;
-
-  final ISpectOptions options;
-
-  @override
-  State<ISpectScreenView> createState() => _ISpectScreenViewState();
-}
-
-class _ISpectScreenViewState extends State<ISpectScreenView> {
   final _titlesController = GroupButtonController();
   final _focusNode = FocusNode();
-  late final _controller = widget.controller ?? ISpectifyViewController();
+  late final _controller = ISpectifyViewController();
 
   @override
   void initState() {
@@ -104,12 +60,13 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
+      backgroundColor: iSpect.theme.backgroundColor(context),
       body: GestureDetector(
         onTap: _focusNode.unfocus,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (_, __) => ISpectifyBuilder(
-            iSpectify: widget.iSpectify,
+            iSpectify: ISpect.logger,
             builder: (context, data) {
               final filteredElements =
                   data.where((e) => _controller.filter.apply(e)).toList();
@@ -117,12 +74,10 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
               final uniqTitles = titles.toSet().toList();
 
               return CustomScrollView(
-                controller: widget.scrollController,
                 slivers: [
                   ISpectAppBar(
                     focusNode: _focusNode,
                     title: widget.appBarTitle,
-                    iSpectify: widget.iSpectify,
                     titlesController: _titlesController,
                     titles: titles,
                     uniqTitles: uniqTitles,
@@ -147,6 +102,16 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                     onToggleTitle: _onToggleTitle,
                     backgroundColor: iSpect.theme.backgroundColor(context),
                   ),
+                  if (filteredElements.isEmpty)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: 24,
+                          left: 16,
+                        ),
+                        child: _NotFoundWidget(),
+                      ),
+                    ),
                   SliverList.separated(
                     itemCount: filteredElements.length,
                     separatorBuilder: (_, __) => Divider(
@@ -164,7 +129,9 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
                       return ISpectLogCard(
                         key: ValueKey(data.hashCode),
                         data: data,
-                        backgroundColor: context.ispectTheme.cardColor,
+                        backgroundColor:
+                            iSpect.theme.backgroundColor(context) ??
+                                context.ispectTheme.cardColor,
                         onCopyTap: () => _copyISpectifyDataItemText(data),
                         expanded: _controller.expandedLogs,
                         color: iSpect.theme.getTypeColor(
@@ -206,7 +173,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   void _openISpectifySettings(
     BuildContext context,
   ) {
-    final iSpectify = ValueNotifier(widget.iSpectify);
+    final iSpectify = ValueNotifier(ISpect.logger);
 
     context.screenSizeMaybeWhen(
       phone: () => showModalBottomSheet<void>(
@@ -271,12 +238,12 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
 
   Future<void> _shareLogsInFile() async {
     await _controller.downloadLogsFile(
-      widget.iSpectify.history.formattedText,
+      ISpect.logger.history.formattedText,
     );
   }
 
   void _cleanHistory() {
-    widget.iSpectify.clearHistory();
+    ISpect.logger.clearHistory();
     _controller.update();
   }
 
@@ -287,7 +254,7 @@ class _ISpectScreenViewState extends State<ISpectScreenView> {
   void _copyAllLogs(BuildContext context) {
     copyClipboard(
       context,
-      value: widget.iSpectify.history.formattedText,
+      value: ISpect.logger.history.formattedText,
       title: '✅ ${context.ispectL10n.allLogsCopied}',
       showValue: false,
     );

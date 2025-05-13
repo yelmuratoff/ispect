@@ -28,8 +28,7 @@ class _AppInfoScreenState extends State<AppInfoScreen> {
     super.initState();
     _contorller.loadAll(
       context: context,
-      iSpectify: widget.iSpectify,
-    );
+      );
   }
 
   @override

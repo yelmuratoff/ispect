@@ -9,17 +9,17 @@ import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class DetailedLogScreen extends StatefulWidget {
-  const DetailedLogScreen({required this.data, super.key});
+class LogScreen extends StatefulWidget {
+  const LogScreen({required this.data, super.key});
   final ISpectifyData data;
 
   @override
-  State<DetailedLogScreen> createState() => _DetailedLogScreenState();
+  State<LogScreen> createState() => _LogScreenState();
 }
 
-class _DetailedLogScreenState extends State<DetailedLogScreen> {
+class _LogScreenState extends State<LogScreen> {
   late final ISpectifyData _data;
-  final JsonExplorerStore _store = JsonExplorerStore();
+  final _store = JsonExplorerStore();
   final _searchController = TextEditingController();
   final _itemScrollController = ItemScrollController();
 

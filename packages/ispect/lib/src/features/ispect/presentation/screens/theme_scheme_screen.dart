@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 
@@ -8,9 +9,12 @@ class ThemeSchemeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final iSpect = ISpect.read(context);
 
     return Scaffold(
+      backgroundColor: iSpect.theme.backgroundColor(context),
       appBar: AppBar(
+        backgroundColor: iSpect.theme.backgroundColor(context),
         title: const Text('Theme Scheme'),
         leading: IconButton(
           onPressed: () {

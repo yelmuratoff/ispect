@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
+import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// action items, and panel configurations.
@@ -43,6 +44,7 @@ final class ISpectOptions {
     this.isFeedbackEnabled = true,
     this.isColorPickerEnabled = true,
     this.isThemeSchemaEnabled = true,
+    this.itemsBuilder,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -114,6 +116,9 @@ final class ISpectOptions {
         String label,
         void Function(BuildContext context) onTap,
       })> panelButtons;
+
+  /// A builder for customizing the data displayed in the `ISpect` screen.
+  final ISpectifyDataBuilder? itemsBuilder;
 
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
