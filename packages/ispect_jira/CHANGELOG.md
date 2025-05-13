@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.1.2
+
+### Added
+- `itemsBuilder` to `ISpectOptions` for customizing the items in the `ISpect` screen.
+
+### Changes
+- Some other minor updates in the `ISpect` screen.
+- Removed `ispect_device` additional package. Now it uses directly.
+
 ## 4.1.1
 
 ### Added

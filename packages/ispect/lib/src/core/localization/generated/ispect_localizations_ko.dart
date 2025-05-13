@@ -213,7 +213,8 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get issueCreated => '문제가 성공적으로 생성됨';
 
   @override
-  String get jiraInstruction => '1. Jira 웹사이트로 이동하세요.\n2. 좌측 하단의 프로필 아바타를 클릭하세요.\n3. 프로필을 클릭하세요.\n4. 계정 관리를 클릭하세요.\n5. 보안을 선택하세요.\n6. API 토큰 생성 및 관리로 스크롤한 후 클릭하세요.\n7. 토큰을 생성한 다음 복사하여 붙여넣으세요.';
+  String get jiraInstruction =>
+      '1. Jira 웹사이트로 이동하세요.\n2. 좌측 하단의 프로필 아바타를 클릭하세요.\n3. 프로필을 클릭하세요.\n4. 계정 관리를 클릭하세요.\n5. 보안을 선택하세요.\n6. API 토큰 생성 및 관리로 스크롤한 후 클릭하세요.\n7. 토큰을 생성한 다음 복사하여 붙여넣으세요.';
 
   @override
   String get logItemCopied => '로그 항목이 클립보드에 복사됨';

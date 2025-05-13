@@ -12,7 +12,7 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-  ispect: ^4.1.1
+  ispect: ^4.1.2-dev01
   ispect_jira: ^1.0.0-dev
 
 dev_dependencies:
