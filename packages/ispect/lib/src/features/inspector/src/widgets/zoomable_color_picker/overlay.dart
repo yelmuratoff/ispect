@@ -27,23 +27,25 @@ class CombinedOverlayWidget extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: overlaySize,
-        height: overlaySize,
+  Widget build(BuildContext context) {
+    final borderColor =
+        context.ispectTheme.colorScheme.inverseSurface.withValues(alpha: 0.2);
+    final textColor = getTextColorOnBackground(color);
+    return SizedBox(
+      width: overlaySize,
+      height: overlaySize,
+      child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.fromBorderSide(
             BorderSide(
-              color: context.ispectTheme.colorScheme.inverseSurface
-                  .withValues(alpha: 0.2),
+              color: borderColor,
               width: 20,
               strokeAlign: BorderSide.strokeAlignOutside,
             ),
           ),
         ),
-        child: Container(
-          width: overlaySize,
-          height: overlaySize,
+        child: DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.fromBorderSide(
@@ -54,13 +56,12 @@ class CombinedOverlayWidget extends StatelessWidget {
               ),
             ),
           ),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.fromBorderSide(
                 BorderSide(
-                  color: context.ispectTheme.colorScheme.inverseSurface
-                      .withValues(alpha: 0.2),
+                  color: borderColor,
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignOutside,
                 ),
@@ -73,82 +74,99 @@ class CombinedOverlayWidget extends StatelessWidget {
                 ),
               ],
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    isComplex: true,
-                    willChange: true,
-                    painter: _ZoomPainter(
-                      image: image,
-                      imageOffset: imageOffset,
-                      overlayOffset: overlayOffset,
-                      overlaySize: overlaySize,
-                      zoomScale: zoomScale,
-                      pixelRatio: pixelRatio,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: const Alignment(0, -0.8),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Material(
-                      color: color,
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(4)),
-                        side: BorderSide(
-                          color: getTextColorOnBackground(color)
-                              .withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          '#${colorToHexString(color)}',
-                          style: TextStyle(
-                            color: getTextColorOnBackground(color)
-                                .withValues(alpha: 0.5),
-                            fontSize: 12,
-                          ),
-                        ),
+            child: ClipOval(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      isComplex: true,
+                      willChange: true,
+                      painter: _ZoomPainter(
+                        image: image,
+                        imageOffset: imageOffset,
+                        overlayOffset: overlayOffset,
+                        overlaySize: overlaySize,
+                        zoomScale: zoomScale,
+                        pixelRatio: pixelRatio,
                       ),
                     ),
                   ),
-                ),
-                Align(
-                  alignment: const Alignment(0, -0.8),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _ZoomLevelDisplay(zoomScale: zoomScale),
-                  ),
-                ),
-                Center(
-                  child: SizedBox.square(
-                    dimension: 10,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
+                  // Color hex display
+                  Align(
+                    alignment: const Alignment(0, -0.8),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Material(
                         color: color,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(4)),
-                        border: Border.fromBorderSide(
-                          BorderSide(
-                            color: getTextColorOnBackground(color)
-                                .withValues(alpha: 0.2),
-                            width: 2,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: textColor.withValues(alpha: 0.2),
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(4)),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            '#${colorToHexString(color)}',
+                            style: TextStyle(
+                              color: textColor.withValues(alpha: 0.5),
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  // Zoom level display
+                  Align(
+                    alignment: const Alignment(0, -0.8),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _ZoomLevelDisplay(zoomScale: zoomScale),
+                    ),
+                  ),
+                  // Centered color indicator
+                  const _CenterColorIndicator(),
+                ],
+              ),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
+}
+
+class _CenterColorIndicator extends StatelessWidget {
+  const _CenterColorIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    final parent =
+        context.findAncestorWidgetOfExactType<CombinedOverlayWidget>();
+    if (parent == null) return const SizedBox.shrink();
+    final color = parent.color;
+    final borderColor = getTextColorOnBackground(color).withValues(alpha: 0.2);
+    return Center(
+      child: SizedBox.square(
+        dimension: 10,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            border: Border.all(
+              color: borderColor,
+              width: 2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ZoomPainter extends CustomPainter {
@@ -170,14 +188,11 @@ class _ZoomPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // ignore: no_leading_underscores_for_local_identifiers
-    final _imageOffset = -imageOffset;
-
     canvas
       ..clipRect(Offset.zero & size)
       ..translate(overlaySize / 2.0, overlaySize / 2.0)
       ..scale((1 / pixelRatio) * zoomScale)
-      ..drawImage(image, _imageOffset, Paint());
+      ..drawImage(image, -imageOffset, Paint());
   }
 
   @override
@@ -211,20 +226,20 @@ class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
   }
 
   Future<void> _showZoomScale() async {
-    setState(() => _isZoomScaleVisible = true);
-
+    if (mounted) {
+      setState(() => _isZoomScaleVisible = true);
+    }
     _zoomHideTimer?.cancel();
-
     _zoomHideTimer = Timer(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() => _isZoomScaleVisible = false);
+      if (mounted) {
+        setState(() => _isZoomScaleVisible = false);
+      }
     });
   }
 
   @override
   void didUpdateWidget(covariant _ZoomLevelDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.zoomScale != oldWidget.zoomScale) {
       _showZoomScale();
     }
