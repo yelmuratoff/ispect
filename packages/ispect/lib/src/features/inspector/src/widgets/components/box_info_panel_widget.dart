@@ -207,40 +207,93 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final renderDecoratedBox = boxInfo.targetRenderBox as RenderDecoratedBox;
 
-    final decoration = renderDecoratedBox.decoration;
+    final decoration = boxInfo.decoration;
+    if (decoration == null) return const SizedBox.shrink();
 
-    if (decoration is! BoxDecoration) return const SizedBox.shrink();
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: [
-        _InfoRow(
-          icon: Icons.rounded_corner,
-          subtitle: 'border radius',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(decoration.borderRadius.toString()),
-        ),
-        _InfoRow(
-          icon: Icons.circle_outlined,
-          subtitle: 'shape',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(decoration.shape.toString()),
-        ),
-        _InfoRow(
-          icon: Icons.palette,
-          subtitle: 'color',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          iconColor: decoration.color,
-          child: Text(
-            decoration.color != null
-                ? '#${colorToHexString(decoration.color!, withAlpha: true)}'
-                : 'n/a',
-            style: TextStyle(color: decoration.color),
-          ),
-        ),
-      ],
+    if (decoration is BoxDecoration) {
+      final border = boxInfo.getDecoratedBoxBorder();
+      final borderRadius = boxInfo.getDecoratedBoxBorderRadius();
+      final shape = boxInfo.getDecoratedBoxShape();
+      final color = boxInfo.getDecoratedBoxColor();
+      final boxShadow = boxInfo.getDecoratedBoxShadow();
+      final gradient = boxInfo.getDecoratedBoxGradient();
+      final blendMode = boxInfo.getDecoratedBoxBackgroundBlendMode();
+      final image = boxInfo.getDecoratedBoxImage();
+
+      return Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          if (borderRadius != null)
+            _InfoRow(
+              icon: Icons.rounded_corner,
+              subtitle: 'border radius',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(borderRadius.toString()),
+            ),
+          if (shape != null)
+            _InfoRow(
+              icon: Icons.circle_outlined,
+              subtitle: 'shape',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(shape.toString()),
+            ),
+          if (color != null)
+            _InfoRow(
+              icon: Icons.palette,
+              subtitle: 'color',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              iconColor: color,
+              child: Text(
+                '#${colorToHexString(color, withAlpha: true)}',
+                style: TextStyle(color: color),
+              ),
+            ),
+          if (border != null)
+            _InfoRow(
+              icon: Icons.border_all,
+              subtitle: 'border',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(border.toString()),
+            ),
+          if (boxShadow != null && boxShadow.isNotEmpty)
+            _InfoRow(
+              icon: Icons.blur_on,
+              subtitle: 'boxShadow',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(boxShadow.map((e) => e.toString()).join(',\n')),
+            ),
+          if (gradient != null)
+            _InfoRow(
+              icon: Icons.gradient,
+              subtitle: 'gradient',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(gradient.toString()),
+            ),
+          if (blendMode != null)
+            _InfoRow(
+              icon: Icons.layers,
+              subtitle: 'backgroundBlendMode',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(blendMode.toString()),
+            ),
+          if (image != null)
+            _InfoRow(
+              icon: Icons.image,
+              subtitle: 'image',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              child: Text(image.toString()),
+            ),
+        ],
+      );
+    }
+
+    return _InfoRow(
+      icon: Icons.info_outline,
+      subtitle: 'decoration',
+      backgroundColor: theme.chipTheme.backgroundColor,
+      child: Text(decoration.toString()),
     );
   }
 }
