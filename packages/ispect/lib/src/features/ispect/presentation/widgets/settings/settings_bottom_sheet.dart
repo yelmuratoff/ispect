@@ -140,7 +140,9 @@ class _SettingsBody extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: context.ispectTheme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(16),
+          ),
         ),
         child: Scrollbar(
           thumbVisibility: true,
@@ -150,8 +152,10 @@ class _SettingsBody extends StatelessWidget {
             controller: scrollController,
             slivers: [
               SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: _Header(title: context.ispectL10n.settings),
                 ),
@@ -163,7 +167,9 @@ class _SettingsBody extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.ispectTheme.cardColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(16),
+                      ),
                       border: Border.fromBorderSide(
                         BorderSide(
                           color: iSpect.theme.dividerColor(context) ??

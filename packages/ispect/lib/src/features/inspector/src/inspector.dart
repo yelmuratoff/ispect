@@ -59,8 +59,6 @@ class Inspector extends StatefulWidget {
     this.alignment = Alignment.center,
     this.areKeyboardShortcutsEnabled = true,
     this.isPanelVisible = true,
-    this.isWidgetInspectorEnabled = true,
-    this.isColorPickerEnabled = true,
     this.controller,
     this.widgetInspectorShortcuts = const [
       LogicalKeyboardKey.alt,
@@ -84,8 +82,6 @@ class Inspector extends StatefulWidget {
   final Widget child;
   final bool areKeyboardShortcutsEnabled;
   final bool isPanelVisible;
-  final bool isWidgetInspectorEnabled;
-  final bool isColorPickerEnabled;
 
   final Alignment alignment;
   final List<LogicalKeyboardKey> widgetInspectorShortcuts;
@@ -231,7 +227,7 @@ class InspectorState extends State<Inspector> {
   // Inspector
 
   void _onInspectorStateChanged(bool isEnabled) {
-    if (!widget.isWidgetInspectorEnabled) {
+    if (!widget.options.isInspectorEnabled) {
       _inspectorStateNotifier.value = false;
       return;
     }
@@ -248,7 +244,7 @@ class InspectorState extends State<Inspector> {
   // Zoom
 
   void _onZoomStateChanged(bool isEnabled) {
-    if (!widget.isColorPickerEnabled) {
+    if (!widget.options.isColorPickerEnabled) {
       _zoomStateNotifier.value = false;
       return;
     }
@@ -426,7 +422,7 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
-        if (widget.isWidgetInspectorEnabled)
+        if (widget.options.isInspectorEnabled)
           MultiValueListenableBuilder(
             valueListenables: [
               _currentRenderBoxNotifier,
@@ -443,7 +439,7 @@ class InspectorState extends State<Inspector> {
                   : const SizedBox.shrink(),
             ),
           ),
-        if (widget.isColorPickerEnabled)
+        if (widget.options.isColorPickerEnabled)
           MultiValueListenableBuilder(
             valueListenables: [
               _zoomImageOffsetNotifier,
@@ -510,57 +506,65 @@ class InspectorState extends State<Inspector> {
                 onPositionChanged: (x, y) =>
                     widget.onPositionChanged?.call(x, y),
                 items: [
-                  (
-                    icon: _controller.inLoggerPage
-                        ? Icons.undo_rounded
-                        : Icons.reorder_rounded,
-                    enableBadge: _controller.inLoggerPage,
-                    onTap: (_) {
-                      _launchInfospect(context);
-                    },
-                  ),
-                  (
-                    icon: Icons.monitor_heart_outlined,
-                    enableBadge: iSpect.isPerformanceTrackingEnabled,
-                    onTap: (_) {
-                      iSpect.togglePerformanceTracking();
-                    },
-                  ),
-                  (
-                    icon: Icons.format_shapes_rounded,
-                    enableBadge: _inspectorStateNotifier.value,
-                    onTap: (_) {
-                      _onInspectorStateChanged(!_inspectorStateNotifier.value);
-                    },
-                  ),
-                  (
-                    icon: Icons.colorize_rounded,
-                    enableBadge: _zoomStateNotifier.value,
-                    onTap: (_) {
-                      _onZoomStateChanged(!_zoomStateNotifier.value);
-                    },
-                  ),
-                  (
-                    icon: Icons.camera_alt_rounded,
-                    enableBadge: feedback.isVisible,
-                    onTap: (_) {
-                      _toggleFeedback(feedback, context);
-                    },
-                  ),
-                  (
-                    icon: Icons.color_lens_rounded,
-                    enableBadge: false,
-                    onTap: (_) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const ThemeSchemeScreen(),
-                          settings: const RouteSettings(
-                            name: 'Theme Scheme Screen',
+                  if (widget.options.isLogPageEnabled)
+                    (
+                      icon: _controller.inLoggerPage
+                          ? Icons.undo_rounded
+                          : Icons.reorder_rounded,
+                      enableBadge: _controller.inLoggerPage,
+                      onTap: (_) {
+                        _launchInfospect(context);
+                      },
+                    ),
+                  if (widget.options.isPerformanceEnabled)
+                    (
+                      icon: Icons.monitor_heart_outlined,
+                      enableBadge: iSpect.isPerformanceTrackingEnabled,
+                      onTap: (_) {
+                        iSpect.togglePerformanceTracking();
+                      },
+                    ),
+                  if (widget.options.isInspectorEnabled)
+                    (
+                      icon: Icons.format_shapes_rounded,
+                      enableBadge: _inspectorStateNotifier.value,
+                      onTap: (_) {
+                        _onInspectorStateChanged(
+                          !_inspectorStateNotifier.value,
+                        );
+                      },
+                    ),
+                  if (widget.options.isColorPickerEnabled)
+                    (
+                      icon: Icons.colorize_rounded,
+                      enableBadge: _zoomStateNotifier.value,
+                      onTap: (_) {
+                        _onZoomStateChanged(!_zoomStateNotifier.value);
+                      },
+                    ),
+                  if (widget.options.isFeedbackEnabled)
+                    (
+                      icon: Icons.camera_alt_rounded,
+                      enableBadge: feedback.isVisible,
+                      onTap: (_) {
+                        _toggleFeedback(feedback, context);
+                      },
+                    ),
+                  if (widget.options.isThemeSchemaEnabled)
+                    (
+                      icon: Icons.color_lens_rounded,
+                      enableBadge: false,
+                      onTap: (_) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ThemeSchemeScreen(),
+                            settings: const RouteSettings(
+                              name: 'Theme Scheme Screen',
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
                   ...widget.options.panelItems,
                 ],
                 buttons: widget.options.panelButtons,
@@ -596,6 +600,7 @@ class InspectorState extends State<Inspector> {
       builder: (_) => ISpectScreen(
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
+        itemsBuilder: widget.options.itemsBuilder,
       ),
       settings: const RouteSettings(
         name: 'ISpectScreen',

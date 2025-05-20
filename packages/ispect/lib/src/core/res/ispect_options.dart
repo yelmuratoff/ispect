@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
+import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// action items, and panel configurations.
@@ -37,12 +38,37 @@ final class ISpectOptions {
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
+    this.isLogPageEnabled = true,
+    this.isPerformanceEnabled = true,
+    this.isInspectorEnabled = true,
+    this.isFeedbackEnabled = true,
+    this.isColorPickerEnabled = true,
+    this.isThemeSchemaEnabled = true,
+    this.itemsBuilder,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
   ///
   /// Defaults to `Locale('en')`.
   final Locale locale;
+
+  /// [isLogPageEnabled] - Controls visibility of the log viewer page.
+  final bool isLogPageEnabled;
+
+  /// [isPerformanceEnabled] - Controls visibility of performance monitoring tools.
+  final bool isPerformanceEnabled;
+
+  /// [isInspectorEnabled] - Controls visibility of the widget inspector.
+  final bool isInspectorEnabled;
+
+  /// [isFeedbackEnabled] - Controls visibility of the feedback reporting tool.
+  final bool isFeedbackEnabled;
+
+  /// [isColorPickerEnabled] - Controls visibility of the color picker tool.
+  final bool isColorPickerEnabled;
+
+  /// [isThemeSchemaEnabled] - Controls visibility of the theme schema inspector.
+  final bool isThemeSchemaEnabled;
 
   /// A list of action items that can be triggered in `ISpect`.
   ///
@@ -90,6 +116,9 @@ final class ISpectOptions {
         String label,
         void Function(BuildContext context) onTap,
       })> panelButtons;
+
+  /// A builder for customizing the data displayed in the `ISpect` screen.
+  final ISpectifyDataBuilder? itemsBuilder;
 
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.

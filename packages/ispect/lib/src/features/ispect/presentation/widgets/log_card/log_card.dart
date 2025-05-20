@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/detailed_log_screen.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/custom_expansion_tile.dart';
 
 part 'collapsed_body.dart';
@@ -55,6 +55,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
       showTrailingIcon: false,
       visualDensity: VisualDensity.compact,
       tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+      collapsedBackgroundColor: widget.backgroundColor,
       backgroundColor: widget.color.withValues(alpha: 0.1),
       shape: const RoundedRectangleBorder(),
       collapsedShape: const RoundedRectangleBorder(),
@@ -69,7 +70,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
         onCopyTap: widget.onCopyTap,
         onHttpTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => DetailedLogScreen(data: data),
+            builder: (_) => LogScreen(data: data),
             settings: const RouteSettings(
               name: 'Detailed Log Screen',
             ),

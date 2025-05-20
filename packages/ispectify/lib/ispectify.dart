@@ -11,6 +11,7 @@ export 'src/models/exception.dart';
 export 'src/models/models.dart';
 export 'src/observer.dart';
 export 'src/options.dart';
+export 'src/settings.dart';
 export 'src/truncator.dart';
 export 'src/utils/console_utils.dart';
 export 'src/utils/error_handler.dart';
