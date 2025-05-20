@@ -32,6 +32,7 @@ void main() {
       logTruncateLength: 500,
     ),
   );
+  // debugRepaintRainbowEnabled = true;
 
   ISpect.run(
     () => runApp(

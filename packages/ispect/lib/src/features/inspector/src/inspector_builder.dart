@@ -89,7 +89,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           // Add performance overlay to the widget tree.
           currentChild = PerformanceOverlayBuilder(
             isPerformanceTrackingEnabled: model.isPerformanceTrackingEnabled,
-            theme: theme,
             child: currentChild,
           );
 
