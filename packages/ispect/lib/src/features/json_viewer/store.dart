@@ -122,11 +122,13 @@ class NodeViewModelState extends ChangeNotifier {
   NodeViewModelState? get parent => _parent;
 
   dynamic _value;
+  int? _childrenCount;
 
   /// Updates the `value` of this node.
   @visibleForTesting
   set value(Object? value) {
     _value = value;
+    _childrenCount = null; // Reset cache when value changes
   }
 
   /// This attribute value, it may be one of the following:
@@ -134,19 +136,21 @@ class NodeViewModelState extends ChangeNotifier {
   /// `List<NodeViewModelState>`.
   dynamic get value => _value;
 
-  late int childrenCount = () {
+  /// Cached children count for performance
+  int get childrenCount {
+    if (_childrenCount != null) return _childrenCount!;
+
     final dynamic currentValue = value;
-
     if (currentValue is Map<String, dynamic>) {
-      return currentValue.keys.length;
+      _childrenCount = currentValue.keys.length;
+    } else if (currentValue is List) {
+      _childrenCount = currentValue.length;
+    } else {
+      _childrenCount = 0;
     }
 
-    if (currentValue is List) {
-      return currentValue.length;
-    }
-
-    return 0;
-  }();
+    return _childrenCount!;
+  }
 
   /// Returns `true` if this node is highlighted.
   ///
@@ -177,17 +181,18 @@ class NodeViewModelState extends ChangeNotifier {
     //   return true;
     // }
     final children = parent?.children;
-    return children?.last == this;
+    return children?.lastOrNull == this;
   }
 
   /// Returns a list of this node's children.
+  /// Cached for performance to avoid repeated iterations.
   Iterable<NodeViewModelState> get children {
     if (isClass) {
       return (value as Map<String, NodeViewModelState>).values;
     } else if (isArray) {
       return value as List<NodeViewModelState>;
     }
-    return [];
+    return const <NodeViewModelState>[];
   }
 
   /// Sets the highlight property of this node and all of its children.
@@ -335,41 +340,88 @@ List<NodeViewModelState> flatten(Object? object) {
     return _flattenArray(object as List<NodeViewModelState>);
   }
   if (object == null) {
-    return [];
+    return const <NodeViewModelState>[];
   }
   return _flattenClass(object as Map<String, NodeViewModelState>);
 }
 
 List<NodeViewModelState> _flattenClass(Map<String, NodeViewModelState> object) {
   final flatList = <NodeViewModelState>[];
+
   object.forEach((key, value) {
     flatList.add(value);
 
     if (!value.isCollapsed) {
       if (value.value is Map) {
-        flatList.addAll(
-          _flattenClass(value.value as Map<String, NodeViewModelState>),
+        // Avoid unnecessary allocations by directly adding to the list
+        _addFlattenedClassToList(
+          value.value as Map<String, NodeViewModelState>,
+          flatList,
         );
       } else if (value.value is List) {
-        flatList.addAll(_flattenArray(value.value as List<NodeViewModelState>));
+        _addFlattenedArrayToList(
+          value.value as List<NodeViewModelState>,
+          flatList,
+        );
       }
     }
   });
   return flatList;
 }
 
+void _addFlattenedClassToList(
+  Map<String, NodeViewModelState> object,
+  List<NodeViewModelState> flatList,
+) {
+  object.forEach((key, value) {
+    flatList.add(value);
+
+    if (!value.isCollapsed) {
+      if (value.value is Map) {
+        _addFlattenedClassToList(
+          value.value as Map<String, NodeViewModelState>,
+          flatList,
+        );
+      } else if (value.value is List) {
+        _addFlattenedArrayToList(
+          value.value as List<NodeViewModelState>,
+          flatList,
+        );
+      }
+    }
+  });
+}
+
 List<NodeViewModelState> _flattenArray(List<NodeViewModelState> objects) {
   final flatList = <NodeViewModelState>[];
+
   for (final object in objects) {
     flatList.add(object);
     if (!object.isCollapsed &&
         object.value is Map<String, NodeViewModelState>) {
-      flatList.addAll(
-        _flattenClass(object.value as Map<String, NodeViewModelState>),
+      _addFlattenedClassToList(
+        object.value as Map<String, NodeViewModelState>,
+        flatList,
       );
     }
   }
   return flatList;
+}
+
+void _addFlattenedArrayToList(
+  List<NodeViewModelState> objects,
+  List<NodeViewModelState> flatList,
+) {
+  for (final object in objects) {
+    flatList.add(object);
+    if (!object.isCollapsed &&
+        object.value is Map<String, NodeViewModelState>) {
+      _addFlattenedClassToList(
+        object.value as Map<String, NodeViewModelState>,
+        flatList,
+      );
+    }
+  }
 }
 
 /// Handles the data and manages the state of a json explorer.
@@ -422,7 +474,7 @@ class JsonExplorerStore extends ChangeNotifier {
   List<NodeViewModelState> _displayNodes = [];
   UnmodifiableListView<NodeViewModelState> _allNodes = UnmodifiableListView([]);
 
-  final _searchResults = <SearchResult>[];
+  final List<SearchResult> _searchResults = <SearchResult>[];
   String _searchTerm = '';
   var _focusedSearchResultIndex = 0;
 
@@ -483,6 +535,7 @@ class JsonExplorerStore extends ChangeNotifier {
     final children = _visibleChildrenCount(node) - 1;
     _displayNodes.removeRange(nodeIndex, nodeIndex + children);
     node.collapse();
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после изменения состояния
     notifyListeners();
   }
 
@@ -509,6 +562,7 @@ class JsonExplorerStore extends ChangeNotifier {
       node.collapse();
     }
     _displayNodes = collapsedNodes;
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после массового изменения
     notifyListeners();
   }
 
@@ -531,6 +585,7 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodes = flatten(node.value);
     _displayNodes.insertAll(nodeIndex, nodes);
     node.expand();
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после изменения состояния
     notifyListeners();
   }
 
@@ -548,7 +603,21 @@ class JsonExplorerStore extends ChangeNotifier {
       node.expand();
     }
     _displayNodes = List.from(_allNodes);
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после массового изменения
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    // Clear caches when disposing the store
+    _visibleChildrenCountCache.clear();
+
+    // Dispose all nodes to free up resources
+    for (final node in _allNodes) {
+      node.dispose();
+    }
+
+    super.dispose();
   }
 
   /// Returns true if all nodes are expanded, otherwise returns false.
@@ -556,8 +625,15 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Returns true if all nodes are collapsed, otherwise returns false.
   bool areAllCollapsed() {
-    for (final node in _displayNodes) {
-      if (node.childrenCount > 0 && !node._isCollapsed) {
+    // Быстрый выход: если длина _displayNodes равна длине _allNodes, значит есть раскрытые узлы
+    if (_displayNodes.length >
+        _allNodes.where((node) => node.treeDepth == 0).length) {
+      return false;
+    }
+
+    // Проверяем только корневые узлы для оптимизации
+    for (final node in _displayNodes.where((node) => node.childrenCount > 0)) {
+      if (!node.isCollapsed) {
         return false;
       }
     }
@@ -641,6 +717,18 @@ class JsonExplorerStore extends ChangeNotifier {
     Object? jsonObject, {
     bool areAllCollapsed = false,
   }) async {
+    // Clear caches first to avoid memory leaks
+    _visibleChildrenCountCache.clear();
+
+    // For large JSON objects, process asynchronously
+    final isLargeJson = (jsonObject is Map && jsonObject.length > 1000) ||
+        (jsonObject is List && jsonObject.length > 1000);
+
+    if (isLargeJson) {
+      // Give UI thread a chance to update before heavy processing
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+
     final builtNodes = buildViewModelNodes(jsonObject);
     final flatList = flatten(builtNodes);
 
@@ -653,42 +741,68 @@ class JsonExplorerStore extends ChangeNotifier {
     }
   }
 
+  // Cache for visible children count to avoid recalculating
+  final Map<NodeViewModelState, int> _visibleChildrenCountCache = {};
+
   int _visibleChildrenCount(NodeViewModelState node) {
+    // Check if the result is already cached
+    if (_visibleChildrenCountCache.containsKey(node)) {
+      return _visibleChildrenCountCache[node]!;
+    }
+
     final children = node.children;
     var count = 1;
     for (final child in children) {
       count =
           child.isCollapsed ? count + 1 : count + _visibleChildrenCount(child);
     }
+
+    // Save result to cache
+    _visibleChildrenCountCache[node] = count;
     return count;
   }
 
   void _doSearch() {
+    // Clear existing results
+    _searchResults.clear();
+
+    // Use isolate for search if node count is very high
+    if (_allNodes.length > 1000) {
+      // For large datasets, process in batches to avoid UI jank
+      _batchProcessSearch();
+      return;
+    }
+
+    // Process nodes in a single batch for smaller datasets
     for (final node in _allNodes) {
-      final matchesIndexes = _getSearchTermMatchesIndexes(node.key);
-
-      for (final matchIndex in matchesIndexes) {
-        _searchResults.add(
-          SearchResult(
-            node,
-            matchLocation: SearchMatchLocation.key,
-            matchIndex: matchIndex,
-          ),
-        );
-      }
-
-      if (!node.isRoot) {
-        final matchesIndexes =
-            _getSearchTermMatchesIndexes(node.value.toString());
-
-        for (final matchIndex in matchesIndexes) {
+      // Process key matches
+      final keyMatches = _getSearchTermMatchesIndexes(node.key);
+      if (keyMatches.isNotEmpty) {
+        for (final matchIndex in keyMatches) {
           _searchResults.add(
             SearchResult(
               node,
-              matchLocation: SearchMatchLocation.value,
+              matchLocation: SearchMatchLocation.key,
               matchIndex: matchIndex,
             ),
           );
+        }
+      }
+
+      // Only process values for non-root nodes (optimization)
+      if (!node.isRoot) {
+        final valueStr = node.value.toString();
+        final valueMatches = _getSearchTermMatchesIndexes(valueStr);
+        if (valueMatches.isNotEmpty) {
+          for (final matchIndex in valueMatches) {
+            _searchResults.add(
+              SearchResult(
+                node,
+                matchLocation: SearchMatchLocation.value,
+                matchIndex: matchIndex,
+              ),
+            );
+          }
         }
       }
     }
@@ -696,14 +810,82 @@ class JsonExplorerStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Process search in batches to avoid UI jank for large datasets
+  void _batchProcessSearch() {
+    var processedCount = 0;
+    const batchSize = 200;
+
+    Future<void> processBatch() async {
+      if (processedCount >= _allNodes.length) {
+        notifyListeners();
+        return;
+      }
+
+      final end = (processedCount + batchSize).clamp(0, _allNodes.length);
+      final batch = _allNodes.sublist(processedCount, end);
+
+      for (final node in batch) {
+        // Process key matches - use fast path checks
+        final nodeKey = node.key;
+        if (nodeKey.isNotEmpty && nodeKey.toLowerCase().contains(searchTerm)) {
+          final keyMatches = _getSearchTermMatchesIndexes(nodeKey);
+          for (final matchIndex in keyMatches) {
+            _searchResults.add(
+              SearchResult(
+                node,
+                matchLocation: SearchMatchLocation.key,
+                matchIndex: matchIndex,
+              ),
+            );
+          }
+        }
+
+        // Process value matches for non-root nodes with fast path check
+        if (!node.isRoot) {
+          final valueStr = node.value.toString();
+          if (valueStr.isNotEmpty &&
+              valueStr.toLowerCase().contains(searchTerm)) {
+            final valueMatches = _getSearchTermMatchesIndexes(valueStr);
+            for (final matchIndex in valueMatches) {
+              _searchResults.add(
+                SearchResult(
+                  node,
+                  matchLocation: SearchMatchLocation.value,
+                  matchIndex: matchIndex,
+                ),
+              );
+            }
+          }
+        }
+      }
+
+      processedCount = end;
+
+      // Allow UI to update between batches and yield to event loop
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      await processBatch();
+    }
+
+    // Start batch processing
+    processBatch();
+  }
+
   /// Finds all occurences of `searchTerm` in [victim] and retrieves all their
   /// indexes.
   Iterable<int> _getSearchTermMatchesIndexes(String victim) {
+    // Early return for empty strings to avoid unnecessary regex creation
+    if (victim.isEmpty || searchTerm.isEmpty) {
+      return const <int>[];
+    }
+
+    // Fast path: if searchTerm isn't in victim, return early
+    if (!victim.toLowerCase().contains(searchTerm)) {
+      return const <int>[];
+    }
+
+    // Create RegExp only if we know there might be matches
     final pattern = RegExp(searchTerm, caseSensitive: false);
-
-    final matches = pattern.allMatches(victim).map((match) => match.start);
-
-    return matches;
+    return pattern.allMatches(victim).map((match) => match.start);
   }
 
   /// Expands all the parent nodes of each `SearchResult.node` in

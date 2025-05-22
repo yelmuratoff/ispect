@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -19,23 +21,75 @@ class LogScreen extends StatefulWidget {
 
 class _LogScreenState extends State<LogScreen> {
   late final ISpectifyData _data;
-  final _store = JsonExplorerStore();
-  final _searchController = TextEditingController();
-  final _itemScrollController = ItemScrollController();
+  final JsonExplorerStore _store = JsonExplorerStore();
+  final TextEditingController _searchController = TextEditingController();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+
+  late final JsonExplorerTheme _jsonTheme;
+  late final String _screenTitle;
+
+  // Debounce timer for search
+  Timer? _searchDebounceTimer;
 
   @override
   void initState() {
     super.initState();
     _data = widget.data;
-    _store.buildNodes(
-      _data.toJson(),
+    _store.buildNodes(_data.toJson());
+    _screenTitle = _title(_data.key ?? '');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache theme computation since it involves context lookups
+    _jsonTheme = JsonExplorerTheme(
+      propertyKeyTextStyle: TextStyle(
+        color: context.ispectTheme.colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
+      rootKeyTextStyle: TextStyle(
+        color: context.ispectTheme.colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
+      valueSearchHighlightTextStyle: const TextStyle(
+        color: Colors.black87,
+        backgroundColor: Color.fromARGB(228, 255, 235, 59),
+      ),
+      focusedValueSearchHighlightTextStyle: const TextStyle(
+        color: Colors.black,
+        backgroundColor: Colors.yellow,
+        fontWeight: FontWeight.bold,
+      ),
+      keySearchHighlightTextStyle: const TextStyle(
+        color: Colors.black87,
+        backgroundColor: Color.fromARGB(228, 255, 235, 59),
+      ),
+      focusedKeySearchHighlightTextStyle: const TextStyle(
+        color: Colors.black,
+        backgroundColor: Colors.yellow,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
   @override
   void dispose() {
-    super.dispose();
     _searchController.dispose();
+    _searchDebounceTimer?.cancel();
+    _store.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _store
+          ..search(value)
+          ..expandSearchResults();
+      }
+    });
   }
 
   @override
@@ -51,7 +105,7 @@ class _LogScreenState extends State<LogScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Text(_title(_data.key ?? '')),
+          title: Text(_screenTitle),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 4),
@@ -79,123 +133,61 @@ class _LogScreenState extends State<LogScreen> {
             ),
           ],
         ),
-        body: Consumer<JsonExplorerStore>(
-          builder: (context, model, child) => Column(
-            children: [
-              //
-              // <--- Search bar --->
-              //
-              const Gap(12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SearchBar(
-                        constraints: const BoxConstraints(
-                          minHeight: 45,
+        body: Column(
+          children: [
+            const Gap(12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SearchBar(
+                      constraints: const BoxConstraints(minHeight: 45),
+                      shape: const WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
                         ),
-                        shape: const WidgetStatePropertyAll(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(12),
-                            ),
-                          ),
-                        ),
-                        leading: const Icon(Icons.search),
-                        onChanged: (value) {
-                          model
-                            ..search(value)
-                            ..expandSearchResults();
-                        },
-                        hintText: context.ispectL10n.search,
-                        controller: _searchController,
-                        elevation: WidgetStateProperty.all(0),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (model.searchResults.isNotEmpty) ...[
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _searchFocusText(),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  model.focusPreviousSearchResult();
-                                  _scrollToSearchMatch(
-                                    model,
-                                  );
-                                },
-                                visualDensity: VisualDensity.compact,
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.arrow_drop_up_rounded),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                onPressed: () {
-                                  model.focusNextSearchResult();
-                                  _scrollToSearchMatch(
-                                    model,
-                                  );
-                                },
-                                visualDensity: VisualDensity.compact,
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.arrow_drop_down_rounded),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const Gap(12),
-              //
-              // <--- Json Tree --->
-              //
-              Expanded(
-                child: JsonExplorer(
-                  nodes: model.displayNodes,
-                  itemScrollController: _itemScrollController,
-                  theme: JsonExplorerTheme(
-                    propertyKeyTextStyle: TextStyle(
-                      color: context.ispectTheme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    rootKeyTextStyle: TextStyle(
-                      color: context.ispectTheme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    valueSearchHighlightTextStyle: const TextStyle(
-                      color: Colors.black87,
-                      backgroundColor: Color.fromARGB(228, 255, 235, 59),
-                    ),
-                    focusedValueSearchHighlightTextStyle: const TextStyle(
-                      color: Colors.black,
-                      backgroundColor: Colors.yellow,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    keySearchHighlightTextStyle: const TextStyle(
-                      color: Colors.black87,
-                      backgroundColor: Color.fromARGB(228, 255, 235, 59),
-                    ),
-                    focusedKeySearchHighlightTextStyle: const TextStyle(
-                      color: Colors.black,
-                      backgroundColor: Colors.yellow,
-                      fontWeight: FontWeight.bold,
+                      leading: const Icon(Icons.search),
+                      onChanged: _onSearchChanged,
+                      hintText: context.ispectL10n.search,
+                      controller: _searchController,
+                      elevation: WidgetStateProperty.all(0),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Selector<JsonExplorerStore, ({int count, int focusedIndex})>(
+                    selector: (_, store) => (
+                      count: store.searchResults.length,
+                      focusedIndex: store.focusedSearchResultIndex,
+                    ),
+                    builder: (context, searchData, child) {
+                      if (searchData.count == 0) {
+                        return const SizedBox.shrink();
+                      }
+                      return _SearchNavigationPanel(
+                        store: _store,
+                        scrollToSearchMatch: _scrollToSearchMatch,
+                        searchFocusText:
+                            '${searchData.focusedIndex + 1} of ${searchData.count}',
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Gap(12),
+            Expanded(
+              child: Consumer<JsonExplorerStore>(
+                builder: (context, model, child) => JsonExplorer(
+                  nodes: model.displayNodes,
+                  itemScrollController: _itemScrollController,
+                  theme: _jsonTheme,
                 ),
               ),
-              const Gap(32),
-            ],
-          ),
+            ),
+            const Gap(32),
+          ],
         ),
       ),
     );
@@ -208,34 +200,78 @@ class _LogScreenState extends State<LogScreen> {
         _ => 'Detailed log: $key',
       };
 
-  String _searchFocusText() =>
-      '${_store.focusedSearchResultIndex + 1} of ${_store.searchResults.length}';
-
   Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
-    final index = store.focusedSearchResultIndex;
-    final parent = store.focusedSearchResult.node.parent;
-    final parentIndex = _store.displayNodes.indexOf(parent);
+    final searchResult = store.focusedSearchResult;
+    final parent = searchResult.node.parent;
 
     if (parent != null) {
-      _store.expandParentNodes(
-        store.focusedSearchResult.node,
-      );
+      _store.expandParentNodes(searchResult.node);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
 
-      await Future<void>.delayed(
-        const Duration(milliseconds: 300),
-      );
-
+      final parentIndex = _store.displayNodes.indexOf(parent);
       if (parentIndex != -1) {
         await _itemScrollController.scrollTo(
           index: parentIndex,
           duration: const Duration(milliseconds: 300),
         );
       }
-    } else if (index != -1) {
-      await _itemScrollController.scrollTo(
-        index: index,
-        duration: const Duration(milliseconds: 300),
-      );
+    } else {
+      final nodeIndex = _store.displayNodes.indexOf(searchResult.node);
+      if (nodeIndex != -1) {
+        await _itemScrollController.scrollTo(
+          index: nodeIndex,
+          duration: const Duration(milliseconds: 300),
+        );
+      }
     }
   }
+}
+
+class _SearchNavigationPanel extends StatelessWidget {
+  const _SearchNavigationPanel({
+    required this.store,
+    required this.scrollToSearchMatch,
+    required this.searchFocusText,
+  });
+
+  final JsonExplorerStore store;
+  final Future<void> Function(JsonExplorerStore) scrollToSearchMatch;
+  final String searchFocusText;
+
+  void _onPreviousPressed() {
+    store.focusPreviousSearchResult();
+    scrollToSearchMatch(store);
+  }
+
+  void _onNextPressed() {
+    store.focusNextSearchResult();
+    scrollToSearchMatch(store);
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(searchFocusText),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: _onPreviousPressed,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.arrow_drop_up_rounded),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _onNextPressed,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.arrow_drop_down_rounded),
+              ),
+            ],
+          ),
+        ],
+      );
 }
