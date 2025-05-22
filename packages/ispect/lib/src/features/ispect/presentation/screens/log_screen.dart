@@ -114,30 +114,44 @@ class _LogScreenState extends State<LogScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (model.searchResults.isNotEmpty)
-                      Text(
-                        _searchFocusText(),
+                    if (model.searchResults.isNotEmpty) ...[
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _searchFocusText(),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  model.focusPreviousSearchResult();
+                                  _scrollToSearchMatch(
+                                    model,
+                                  );
+                                },
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.arrow_drop_up_rounded),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                onPressed: () {
+                                  model.focusNextSearchResult();
+                                  _scrollToSearchMatch(
+                                    model,
+                                  );
+                                },
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.arrow_drop_down_rounded),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    if (model.searchResults.isNotEmpty)
-                      IconButton(
-                        onPressed: () {
-                          model.focusPreviousSearchResult();
-                          _scrollToSearchMatch(
-                            model,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_drop_up),
-                      ),
-                    if (model.searchResults.isNotEmpty)
-                      IconButton(
-                        onPressed: () {
-                          model.focusNextSearchResult();
-                          _scrollToSearchMatch(
-                            model,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_drop_down),
-                      ),
+                    ],
                   ],
                 ),
               ),
@@ -208,7 +222,7 @@ class _LogScreenState extends State<LogScreen> {
       );
 
       await Future<void>.delayed(
-        const Duration(milliseconds: 100),
+        const Duration(milliseconds: 300),
       );
 
       if (parentIndex != -1) {

@@ -84,13 +84,9 @@ class JsonAttribute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Combine provider lookups to reduce rebuilds
-    final storeData = context.select<JsonExplorerStore, ({String searchTerm})>(
-      (store) => (searchTerm: store.searchTerm),
-    );
-    final searchTerm = storeData.searchTerm;
+    final searchTerm =
+        context.select<JsonExplorerStore, String>((store) => store.searchTerm);
 
-    // Memoize style calculation
     final valueStyle = valueStyleBuilder?.call(
           node.value,
           theme.valueTextStyle,
@@ -110,27 +106,37 @@ class JsonAttribute extends StatelessWidget {
           animation: node,
           builder: (context, _) => RepaintBoundary(
             child: Padding(
-              padding: JsonAttribute._kBottomPadding,
+              padding: _kBottomPadding,
               child: Row(
                 crossAxisAlignment: node.isRoot
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
                 children: [
-                  _buildIndentation(),
+                  _IndentationWidget(
+                    depth: node.treeDepth,
+                    indentationPadding: theme.indentationPadding,
+                    color: theme.indentationLineColor,
+                  ),
                   if (node.isRoot)
                     const SizedBox(
                       width: 24,
                       child: _ToggleButton(),
                     ),
                   _buildNodeKey(context, searchTerm),
-                  const Flexible(
-                    child: SizedBox(
-                      width: 8,
-                      child: _KeySeparatorText(),
-                    ),
+                  const SizedBox(
+                    width: 8,
+                    child: _KeySeparatorText(),
                   ),
-                  if (node.value is List) _buildArraySuffix(),
-                  if (node.value is Map) _buildMapSuffix(),
+                  if (node.value is List)
+                    _ArraySuffixWidget(
+                      length: node.children.length,
+                      style: theme.rootKeyTextStyle,
+                    ),
+                  if (node.value is Map)
+                    _MapSuffixWidget(
+                      length: node.children.length,
+                      style: theme.rootKeyTextStyle,
+                    ),
                   if (node.isRoot)
                     _buildRootInformation(context)
                   else
@@ -165,33 +171,8 @@ class JsonAttribute extends StatelessWidget {
     }
   }
 
-  Widget _buildIndentation() {
-    final double indentation;
-
-    if (node.treeDepth > 0) {
-      indentation =
-          ((node.treeDepth + 1) * theme.indentationPadding).clamp(0, 100);
-    } else {
-      indentation = theme.indentationPadding;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 4, left: 4),
-      child: CustomPaint(
-        painter: DotPainter(
-          count: (indentation / 5).clamp(0, double.infinity),
-          color: theme.indentationLineColor,
-        ),
-        size: Size(
-          indentation,
-          20,
-        ),
-      ),
-    );
-  }
-
   Widget _buildNodeKey(BuildContext context, String searchTerm) {
-    final Widget nodeKey = _RootNodeWidget(
+    final nodeKey = _RootNodeWidget(
       key: ValueKey('${node.key}-${node.isRoot}'),
       node: node,
       rootNameFormatter: rootNameFormatter,
@@ -218,30 +199,6 @@ class JsonAttribute extends StatelessWidget {
 
     return jsonCard;
   }
-
-  Widget _buildArraySuffix() => Flexible(
-        child: Padding(
-          padding: _kLeftPadding,
-          child: Text(
-            '[${node.children.length}]',
-            style: theme.rootKeyTextStyle.copyWith(
-              color: JsonColors.arrayColor,
-            ),
-          ),
-        ),
-      );
-
-  Widget _buildMapSuffix() => Flexible(
-        child: Padding(
-          padding: _kLeftPadding,
-          child: Text(
-            '{${node.children.length}}',
-            style: theme.rootKeyTextStyle.copyWith(
-              color: JsonColors.objectColor,
-            ),
-          ),
-        ),
-      );
 
   Widget _buildRootInformation(BuildContext context) => Padding(
         padding: _kLeftPadding,
@@ -281,6 +238,76 @@ class JsonAttribute extends StatelessWidget {
       jsonExplorerStore.collapseNode(node);
     }
   }
+}
+
+class _IndentationWidget extends StatelessWidget {
+  const _IndentationWidget({
+    required this.depth,
+    required this.indentationPadding,
+    required this.color,
+  });
+
+  final int depth;
+  final double indentationPadding;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final indentation = depth > 0
+        ? ((depth + 1) * indentationPadding).clamp(0, 100)
+        : indentationPadding;
+    return Padding(
+      padding: const EdgeInsets.only(right: 4, left: 4),
+      child: CustomPaint(
+        painter: DotPainter(
+          count: (indentation / 5).clamp(0, double.infinity),
+          color: color,
+        ),
+        size: Size(
+          indentation.toDouble(),
+          20,
+        ),
+      ),
+    );
+  }
+}
+
+class _ArraySuffixWidget extends StatelessWidget {
+  const _ArraySuffixWidget({required this.length, required this.style});
+  final int length;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => Flexible(
+        child: Padding(
+          padding: JsonAttribute._kLeftPadding,
+          child: Text(
+            '[$length]',
+            style: style.copyWith(
+              color: JsonColors.arrayColor,
+            ),
+          ),
+        ),
+      );
+}
+
+class _MapSuffixWidget extends StatelessWidget {
+  const _MapSuffixWidget({required this.length, required this.style});
+  final int length;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => Flexible(
+        child: Padding(
+          padding: JsonAttribute._kLeftPadding,
+          child: Text(
+            '{$length}',
+            style: style.copyWith(
+              color: JsonColors.objectColor,
+            ),
+          ),
+        ),
+      );
 }
 
 /// Toggle button for expanding/collapsing nodes
@@ -554,7 +581,7 @@ class _HighlightedText extends StatelessWidget {
     final spans = <InlineSpan>[];
     final queryLength = highlightedText.length;
 
-    // Pre-calculate all match positions for better performance
+    // Pre-calculate all match positions
     final matchPositions = <int>[];
 
     var pos = 0;
@@ -565,7 +592,7 @@ class _HighlightedText extends StatelessWidget {
       pos += queryLength;
     }
 
-    // Process each position more efficiently
+    // Process each position
     if (matchPositions.isEmpty) {
       spans.add(TextSpan(text: text, style: style));
       return spans;
