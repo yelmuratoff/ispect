@@ -479,8 +479,11 @@ class JsonExplorerStore extends ChangeNotifier {
   var _focusedSearchResultIndex = 0;
   Future<void>? _currentSearchOperation;
   DateTime? _lastSearchTime;
-  final _searchDebounceTime = const Duration(milliseconds: 300);
+  static const _searchDebounceTime = Duration(milliseconds: 300);
   bool _mounted = true;
+
+  // Cache for search term results to avoid recomputing on navigation
+  final Map<String, List<int>> _searchMatchesCache = {};
 
   bool get mounted => _mounted;
 
@@ -617,6 +620,7 @@ class JsonExplorerStore extends ChangeNotifier {
   void dispose() {
     // Clear caches when disposing the store
     _visibleChildrenCountCache.clear();
+    _searchMatchesCache.clear();
 
     // Cancel any ongoing search
     _currentSearchOperation?.ignore();
@@ -659,7 +663,13 @@ class JsonExplorerStore extends ChangeNotifier {
   ///
   /// `notifyListeners` is called to notify all registered listeners.
   void search(String term) {
-    _searchTerm = term.toLowerCase();
+    // Skip work if the term is the same
+    final normalizedTerm = term.toLowerCase();
+    if (_searchTerm == normalizedTerm) {
+      return;
+    }
+
+    _searchTerm = normalizedTerm;
     _searchResults.clear();
     _focusedSearchResultIndex = 0;
 
@@ -667,7 +677,7 @@ class JsonExplorerStore extends ChangeNotifier {
     _currentSearchOperation?.ignore();
 
     // Always notify to show search is in progress
-    notifyListeners();
+    if (mounted) notifyListeners();
 
     if (term.isEmpty) {
       return;
@@ -677,11 +687,16 @@ class JsonExplorerStore extends ChangeNotifier {
     final now = DateTime.now();
     if (_lastSearchTime != null) {
       final timeSinceLastSearch = now.difference(_lastSearchTime!);
-      if (timeSinceLastSearch < _searchDebounceTime) {
-        Future<void>.delayed(_searchDebounceTime - timeSinceLastSearch)
+      // Adjust debounce time based on term length and dataset size
+      final adjustedDebounceTime = _allNodes.length > 10000 && term.length < 3
+          ? _searchDebounceTime + const Duration(milliseconds: 50)
+          : _searchDebounceTime;
+
+      if (timeSinceLastSearch < adjustedDebounceTime) {
+        Future<void>.delayed(adjustedDebounceTime - timeSinceLastSearch)
             .then((_) {
           // Only proceed if another search hasn't been triggered in the meantime
-          if (_searchTerm == term.toLowerCase()) {
+          if (_searchTerm == normalizedTerm && mounted) {
             _currentSearchOperation = _doSearch();
           }
         });
@@ -753,6 +768,13 @@ class JsonExplorerStore extends ChangeNotifier {
   }) async {
     // Clear caches first to avoid memory leaks
     _visibleChildrenCountCache.clear();
+    _searchMatchesCache.clear();
+
+    // Cancel any ongoing search
+    _currentSearchOperation?.ignore();
+    _searchResults.clear();
+    _searchTerm = '';
+    _focusedSearchResultIndex = 0;
 
     // For large JSON objects, process asynchronously
     final isLargeJson = (jsonObject is Map && jsonObject.length > 1000) ||
@@ -771,7 +793,7 @@ class JsonExplorerStore extends ChangeNotifier {
     if (areAllCollapsed) {
       collapseAll();
     } else {
-      notifyListeners();
+      if (mounted) notifyListeners();
     }
   }
 
@@ -800,21 +822,136 @@ class JsonExplorerStore extends ChangeNotifier {
     // Clear existing results (should already be cleared in search())
     _searchResults.clear();
 
-    // Always process in batches to avoid UI jank
-    await _processSearchInBatches();
+    // For very small search terms, optimize for speed
+    if (_searchTerm.length < 2 && _allNodes.length > 5000) {
+      // Prioritize the search to handle large datasets more efficiently
+      await _optimizedSearchForShortTerms();
+    } else {
+      // Standard batch processing for normal cases
+      await _processSearchInBatches();
+    }
+  }
+
+  // Optimized search for short search terms in large datasets
+  Future<void> _optimizedSearchForShortTerms() async {
+    // Use a larger batch size for short terms since each comparison is faster
+    const batchSize = 300;
+    final totalNodes = _allNodes.length;
+    var processedCount = 0;
+
+    // Cache the search term for faster comparison
+    final searchTerm = _searchTerm;
+
+    // Use a more aggressive UI update strategy for short terms
+    var nextUIUpdateTime =
+        DateTime.now().add(const Duration(milliseconds: 150));
+    var resultsFoundSinceLastUpdate = 0;
+
+    while (processedCount < totalNodes && mounted) {
+      final end = (processedCount + batchSize).clamp(0, totalNodes);
+      final batch = _allNodes.sublist(processedCount, end);
+
+      for (final node in batch) {
+        if (!mounted) return;
+
+        // Process key first (most likely to match)
+        final nodeKey = node.key;
+        if (nodeKey.isNotEmpty) {
+          final keyLower = nodeKey.toLowerCase();
+          if (keyLower.contains(searchTerm)) {
+            _addKeyMatches(node, nodeKey, keyLower);
+          }
+        }
+
+        // Process value only for leaf nodes
+        if (!node.isRoot) {
+          final dynamic nodeValue = node.value;
+          // Skip null values
+          if (nodeValue != null) {
+            final valueStr = nodeValue.toString();
+            if (valueStr.isNotEmpty) {
+              final valueLower = valueStr.toLowerCase();
+              if (valueLower.contains(searchTerm)) {
+                _addValueMatches(node, valueStr, valueLower);
+              }
+            }
+          }
+        }
+      }
+
+      processedCount = end;
+      resultsFoundSinceLastUpdate = _searchResults.length;
+
+      // Update UI less frequently for short terms (smoother performance)
+      final now = DateTime.now();
+      if (now.isAfter(nextUIUpdateTime) ||
+          resultsFoundSinceLastUpdate >= 20 ||
+          processedCount >= totalNodes) {
+        if (mounted) notifyListeners();
+
+        // Schedule next update with slightly longer interval
+        nextUIUpdateTime = now.add(const Duration(milliseconds: 150));
+        resultsFoundSinceLastUpdate = 0;
+
+        // Minimal yield to UI thread
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+  }
+
+  // Add key matches with optimized approach
+  void _addKeyMatches(
+    NodeViewModelState node,
+    String originalKey,
+    String lowerKey,
+  ) {
+    final indices = _fastFindAllOccurrences(lowerKey, _searchTerm);
+    for (final index in indices) {
+      _searchResults.add(
+        SearchResult(
+          node,
+          matchLocation: SearchMatchLocation.key,
+          matchIndex: index,
+        ),
+      );
+    }
+  }
+
+  // Add value matches with optimized approach
+  void _addValueMatches(
+    NodeViewModelState node,
+    String originalValue,
+    String lowerValue,
+  ) {
+    final indices = _fastFindAllOccurrences(lowerValue, _searchTerm);
+    for (final index in indices) {
+      _searchResults.add(
+        SearchResult(
+          node,
+          matchLocation: SearchMatchLocation.value,
+          matchIndex: index,
+        ),
+      );
+    }
   }
 
   // Process search in batches to avoid UI jank
   Future<void> _processSearchInBatches() async {
     var processedCount = 0;
-    // Adjust batch size based on node complexity
-    final batchSize = _allNodes.length > 5000 ? 100 : 150;
+    // Adjust batch size based on node complexity and term length
+    final batchSize = _allNodes.length > 10000
+        ? 80
+        : _allNodes.length > 5000
+            ? 120
+            : 200;
     final totalNodes = _allNodes.length;
 
     // Schedule when we'll update the UI
-    var nextUIUpdateTime =
-        DateTime.now().add(const Duration(milliseconds: 100));
+    var nextUIUpdateTime = DateTime.now().add(const Duration(milliseconds: 80));
     var resultsFoundSinceLastUpdate = 0;
+
+    // Cache the search term to avoid repeated access
+    final searchTerm = _searchTerm;
 
     while (processedCount < totalNodes && mounted) {
       final end = (processedCount + batchSize).clamp(0, totalNodes);
@@ -823,37 +960,47 @@ class JsonExplorerStore extends ChangeNotifier {
 
       // Process this batch
       for (final node in batch) {
-        if (!mounted) return; // Check if this widget is still active
+        if (!mounted) return;
 
         // Fast path check for the key
         final nodeKey = node.key;
-        if (nodeKey.isNotEmpty && nodeKey.toLowerCase().contains(_searchTerm)) {
-          final keyMatches = _getSearchTermMatchesIndexes(nodeKey);
-          for (final matchIndex in keyMatches) {
-            _searchResults.add(
-              SearchResult(
-                node,
-                matchLocation: SearchMatchLocation.key,
-                matchIndex: matchIndex,
-              ),
-            );
+        if (nodeKey.isNotEmpty) {
+          final keyLower = nodeKey.toLowerCase();
+          if (keyLower.contains(searchTerm)) {
+            final keyMatches = _getSearchTermMatchesIndexes(nodeKey, keyLower);
+            for (final matchIndex in keyMatches) {
+              _searchResults.add(
+                SearchResult(
+                  node,
+                  matchLocation: SearchMatchLocation.key,
+                  matchIndex: matchIndex,
+                ),
+              );
+            }
           }
         }
 
         // Only process values for non-root nodes (optimization)
         if (!node.isRoot) {
-          final valueStr = node.value.toString();
-          if (valueStr.isNotEmpty &&
-              valueStr.toLowerCase().contains(_searchTerm)) {
-            final valueMatches = _getSearchTermMatchesIndexes(valueStr);
-            for (final matchIndex in valueMatches) {
-              _searchResults.add(
-                SearchResult(
-                  node,
-                  matchLocation: SearchMatchLocation.value,
-                  matchIndex: matchIndex,
-                ),
-              );
+          final dynamic nodeValue = node.value;
+          if (nodeValue != null) {
+            final valueStr = nodeValue.toString();
+            if (valueStr.isNotEmpty) {
+              // Cache the lowercase version
+              final valueLower = valueStr.toLowerCase();
+              if (valueLower.contains(searchTerm)) {
+                final valueMatches =
+                    _getSearchTermMatchesIndexes(valueStr, valueLower);
+                for (final matchIndex in valueMatches) {
+                  _searchResults.add(
+                    SearchResult(
+                      node,
+                      matchLocation: SearchMatchLocation.value,
+                      matchIndex: matchIndex,
+                    ),
+                  );
+                }
+              }
             }
           }
         }
@@ -863,53 +1010,61 @@ class JsonExplorerStore extends ChangeNotifier {
       resultsFoundSinceLastUpdate +=
           _searchResults.length - initialResultsCount;
 
-      // Check if we should update the UI based on time or results
+      // Check if we should update the UI based on time or results count
       final now = DateTime.now();
       if (now.isAfter(nextUIUpdateTime) ||
-          resultsFoundSinceLastUpdate >= 10 ||
+          resultsFoundSinceLastUpdate >= 15 ||
           processedCount >= totalNodes) {
         if (mounted) notifyListeners();
 
         // Schedule next update
-        nextUIUpdateTime = now.add(const Duration(milliseconds: 100));
+        nextUIUpdateTime = now.add(const Duration(milliseconds: 80));
         resultsFoundSinceLastUpdate = 0;
 
         // Yield to UI thread with minimal delay
-        await Future<void>.delayed(const Duration(milliseconds: 1));
+        // Use Duration.zero which is more efficient than a 1ms delay
+        await Future<void>.delayed(Duration.zero);
       }
     }
   }
 
-  /// Finds all occurences of `searchTerm` in [victim] and retrieves all their
-  /// indexes.
-  Iterable<int> _getSearchTermMatchesIndexes(String victim) {
+  // Fast algorithm to find all occurrences without using RegExp
+  List<int> _fastFindAllOccurrences(String text, String pattern) {
+    if (text.isEmpty || pattern.isEmpty) {
+      return const <int>[];
+    }
+
+    final indices = <int>[];
+    var startIndex = 0;
+
+    while (true) {
+      final index = text.indexOf(pattern, startIndex);
+      if (index == -1) break;
+      indices.add(index);
+      startIndex =
+          index + 1; // Move just one character to find overlapping matches
+    }
+
+    return indices;
+  }
+
+  /// Finds all occurrences of `searchTerm` in [victim] and retrieves all their
+  /// indexes. Takes an optional pre-computed lowercase version of the string.
+  List<int> _getSearchTermMatchesIndexes(String victim, [String? victimLower]) {
     // Early return for empty strings to avoid unnecessary work
     if (victim.isEmpty || _searchTerm.isEmpty) {
       return const <int>[];
     }
 
+    // Use provided lowercase or compute it
+    final lowerVictim = victimLower ?? victim.toLowerCase();
+
     // Fast path: if searchTerm isn't in victim, return early
-    final victimLower = victim.toLowerCase();
-    if (!victimLower.contains(_searchTerm)) {
+    if (!lowerVictim.contains(_searchTerm)) {
       return const <int>[];
     }
 
-    // For short strings or simple cases, use string-based search which is faster
-    if (_searchTerm.length < 3 || victimLower.length < 50) {
-      final indices = <int>[];
-      var startIndex = 0;
-      while (true) {
-        final index = victimLower.indexOf(_searchTerm, startIndex);
-        if (index == -1) break;
-        indices.add(index);
-        startIndex = index + 1;
-      }
-      return indices;
-    }
-
-    // For more complex patterns, still use RegExp but only after we know there are matches
-    final pattern = RegExp(_searchTerm, caseSensitive: false);
-    return pattern.allMatches(victim).map((match) => match.start);
+    return _fastFindAllOccurrences(lowerVictim, _searchTerm);
   }
 
   /// Expands all the parent nodes of each `SearchResult.node` in
