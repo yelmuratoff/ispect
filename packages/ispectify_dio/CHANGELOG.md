@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.1.3-dev01
+## 4.1.3-dev03
 
 - Refactor and improve optimization during handle very large JSON in the detailed log screen.
 - Improve search and scroll to matched item functionality in the detailed log screen.

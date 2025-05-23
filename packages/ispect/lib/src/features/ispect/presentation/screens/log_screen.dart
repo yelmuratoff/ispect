@@ -276,7 +276,7 @@ class _SearchNavigationPanel extends StatelessWidget {
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w200,
-              color: Colors.white60,
+              color: Colors.grey,
             ),
           ),
           Row(
