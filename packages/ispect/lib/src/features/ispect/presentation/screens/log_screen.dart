@@ -202,30 +202,46 @@ class _LogScreenState extends State<LogScreen> {
 
   Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
     final searchResult = store.focusedSearchResult;
-    final parent = searchResult.node.parent;
+    if (!mounted) return;
 
-    if (parent != null) {
-      _store.expandParentNodes(searchResult.node);
-      await Future<void>.delayed(const Duration(milliseconds: 300));
-      if (!mounted) return;
+    // Expand the node and all its parents to ensure it's visible
+    // We want to handle the nodes in a single batch operation
+    _store.expandParentNodes(searchResult.node);
 
-      final parentIndex = _store.displayNodes.indexOf(parent);
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
+
+    final displayNodes = _store.displayNodes;
+
+    // First check if the exact node is visible
+    final nodeIndex = displayNodes.indexOf(searchResult.node);
+    if (nodeIndex != -1) {
+      await _scrollToIndex(nodeIndex);
+      return;
+    }
+
+    // Find the closest parent that's visible
+    var currentNode = searchResult.node.parent;
+    while (currentNode != null) {
+      final parentIndex = displayNodes.indexOf(currentNode);
       if (parentIndex != -1) {
-        await _itemScrollController.scrollTo(
-          index: parentIndex,
-          duration: const Duration(milliseconds: 300),
-        );
+        await _scrollToIndex(parentIndex);
+        return;
       }
-    } else {
-      final nodeIndex = _store.displayNodes.indexOf(searchResult.node);
-      if (nodeIndex != -1) {
-        await _itemScrollController.scrollTo(
-          index: nodeIndex,
-          duration: const Duration(milliseconds: 300),
-        );
-      }
+      currentNode = currentNode.parent;
+    }
+
+    // Last resort: scroll to first item if available
+    if (displayNodes.isNotEmpty) {
+      await _scrollToIndex(0);
     }
   }
+
+  Future<void> _scrollToIndex(int index) => _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
 }
 
 class _SearchNavigationPanel extends StatelessWidget {
@@ -253,7 +269,16 @@ class _SearchNavigationPanel extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(searchFocusText),
+          Text(
+            searchFocusText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w200,
+              color: Colors.white60,
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -261,13 +286,21 @@ class _SearchNavigationPanel extends StatelessWidget {
                 onPressed: _onPreviousPressed,
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minHeight: 36,
+                  minWidth: 36,
+                ),
                 icon: const Icon(Icons.arrow_drop_up_rounded),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               IconButton(
                 onPressed: _onNextPressed,
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minHeight: 36,
+                  minWidth: 36,
+                ),
                 icon: const Icon(Icons.arrow_drop_down_rounded),
               ),
             ],

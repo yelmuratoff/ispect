@@ -377,7 +377,7 @@ void _addFlattenedClassToList(
     flatList.add(value);
 
     if (!value.isCollapsed) {
-      if (value.value is Map) {
+      if (value.value is Map<String, NodeViewModelState>) {
         _addFlattenedClassToList(
           value.value as Map<String, NodeViewModelState>,
           flatList,
