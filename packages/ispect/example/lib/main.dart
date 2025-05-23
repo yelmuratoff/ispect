@@ -12,22 +12,23 @@ import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
 
-final dio = Dio(
+final Dio dio = Dio(
   BaseOptions(
     baseUrl: 'https://jsonplaceholder.typicode.com',
   ),
 );
 
-final client = http_interceptor.InterceptedClient.build(interceptors: []);
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
 
-final dummyDio = Dio(
+final Dio dummyDio = Dio(
   BaseOptions(
     baseUrl: 'https://api.escuelajs.co',
   ),
 );
 
 void main() {
-  final iSpectify = ISpectifyFlutter.init(
+  final ISpectify iSpectify = ISpectifyFlutter.init(
     options: ISpectifyOptions(
       logTruncateLength: 500,
     ),
@@ -52,7 +53,7 @@ void main() {
       dio.interceptors.add(
         ISpectifyDioLogger(
           iSpectify: iSpectify,
-          settings: ISpectifyDioLoggerSettings(
+          settings: const ISpectifyDioLoggerSettings(
             printRequestHeaders: true,
             // requestFilter: (requestOptions) =>
             //     requestOptions.path != '/post3s/1',
@@ -83,22 +84,22 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final _controller = DraggablePanelController();
-  final _observer = ISpectNavigatorObserver(
+  final DraggablePanelController _controller = DraggablePanelController();
+  final ISpectNavigatorObserver _observer = ISpectNavigatorObserver(
     isLogModals: false,
   );
 
-  static const locale = Locale('uz');
+  static const Locale locale = Locale('uz');
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ThemeProvider.themeMode(context);
+    final ThemeMode themeMode = ThemeProvider.themeMode(context);
 
     return MaterialApp(
       navigatorObservers: [_observer],
@@ -153,9 +154,9 @@ class _AppState extends State<App> {
                     MaterialPageRoute(
                       builder: (context) => Scaffold(
                         appBar: AppBar(
-                          title: Text('Test'),
+                          title: const Text('Test'),
                         ),
-                        body: Center(
+                        body: const Center(
                           child: Text('Test'),
                         ),
                       ),
@@ -165,7 +166,7 @@ class _AppState extends State<App> {
               ),
             ],
           ),
-          theme: ISpectTheme(
+          theme: const ISpectTheme(
             pageTitle: 'Custom Name',
             logDescriptions: [
               LogDescription(
@@ -228,11 +229,254 @@ class _Home extends StatefulWidget {
   State<_Home> createState() => _HomeState();
 }
 
+typedef _ButtonConfig = ({String label, VoidCallback onPressed});
+
 class _HomeState extends State<_Home> {
-  final _testBloc = TestCubit();
+  final TestCubit _testBloc = TestCubit();
+
+  @override
+  void dispose() {
+    _testBloc.close();
+    super.dispose();
+  }
+
+  List<_ButtonConfig> _buildButtonConfigs(
+    BuildContext context,
+    ISpectScopeModel iSpect,
+  ) {
+    return <_ButtonConfig>[
+      (
+        label: 'Mock Nested Map with Depth IDs',
+        onPressed: () {
+          const int depth = 5000;
+          Map<String, dynamic> nested = {
+            'id': depth,
+            'value': 'Item $depth',
+          };
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {'id': i, 'value': 'Item $i', 'nested': nested};
+          }
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: nested,
+            statusCode: 200,
+          );
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectifyDioLogger) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Mock Nested List with Depth IDs',
+        onPressed: () {
+          const int depth = 10000;
+
+          Map<String, dynamic> nested = {
+            'id': depth,
+            'value': 'Item $depth',
+          };
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {
+              'id': i,
+              'value': 'Item $i',
+              'nested': nested,
+            };
+          }
+
+          final List<Map<String, dynamic>> largeList = List.generate(
+              10000, (index) => {'id': index, 'value': 'Item $index'});
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: largeList,
+            statusCode: 200,
+          );
+
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectifyDioLogger) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Mock Large JSON Response',
+        onPressed: () {
+          final List<Map<String, dynamic>> largeList = List.generate(
+              10000, (index) => {'id': index, 'value': 'Item $index'});
+          ISpect.logger.print(largeList.toString());
+        },
+      ),
+      (
+        label: 'Test Cubit',
+        onPressed: () {
+          _testBloc.load(
+            data: 'Test data',
+          );
+        },
+      ),
+      (
+        label: 'Send HTTP request (http package)',
+        onPressed: () async {
+          await client
+              .get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+        },
+      ),
+      (
+        label: 'Send error HTTP request (http package)',
+        onPressed: () async {
+          await client.get(
+              Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'));
+        },
+      ),
+      (
+        label: 'Toggle theme',
+        onPressed: () {
+          ThemeProvider.toggleTheme(context);
+        },
+      ),
+      (
+        label: 'Toggle ISpect',
+        onPressed: () {
+          ISpect.logger.track(
+            'Toggle',
+            analytics: 'amplitude',
+            event: 'ISpect',
+            parameters: {
+              'isISpectEnabled': iSpect.isISpectEnabled,
+            },
+          );
+          iSpect.toggleISpect();
+        },
+      ),
+      (
+        label: 'Send HTTP request',
+        onPressed: () {
+          dio.get<dynamic>(
+            '/posts/1',
+          );
+        },
+      ),
+      (
+        label: 'Send HTTP request with error',
+        onPressed: () {
+          dio.get<dynamic>('/post3s/1');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token',
+        onPressed: () {
+          dio.options.headers.addAll({
+            'Authorization': 'Bearer token',
+          });
+          dio.get<dynamic>('/posts/1');
+          dio.options.headers.remove('Authorization');
+        },
+      ),
+      (
+        label: 'Upload file to dummy server',
+        onPressed: () {
+          final FormData formData = FormData();
+          formData.files.add(MapEntry(
+            'file',
+            MultipartFile.fromBytes(
+              [1, 2, 3],
+              filename: 'file.txt',
+            ),
+          ));
+
+          dummyDio.post<dynamic>(
+            '/api/v1/files/upload',
+            data: formData,
+          );
+        },
+      ),
+      (
+        label: 'Upload file to dummy server (http)',
+        onPressed: () {
+          final List<int> bytes = [1, 2, 3]; // File data as bytes
+          const String filename = 'file.txt';
+
+          final http_interceptor.MultipartRequest request =
+              http_interceptor.MultipartRequest(
+            'POST',
+            Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
+          );
+
+          request.files.add(http_interceptor.MultipartFile.fromBytes(
+            'file', // Field name
+            bytes,
+            filename: filename,
+          ));
+
+          client.send(request);
+        },
+      ),
+      (
+        label: 'Throw exception',
+        onPressed: () {
+          throw Exception('Test exception');
+        },
+      ),
+      (
+        label: 'Throw Large exception',
+        onPressed: () {
+          throw Exception('Test large exception ' * 1000);
+        },
+      ),
+      (
+        label: 'Pring Large text',
+        onPressed: () {
+          debugPrint('Print message' * 10000);
+        },
+      ),
+      (
+        label: 'Send print message',
+        onPressed: () {
+          debugPrint('Send print message');
+        },
+      ),
+      (
+        label: 'Go to second page',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const _SecondPage(),
+              settings: const RouteSettings(name: 'SecondPage'),
+            ),
+          );
+        },
+      ),
+      (
+        label: 'Replace with second page',
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const _SecondPage(),
+            ),
+          );
+        },
+      ),
+      (
+        label: 'Success log',
+        onPressed: () {
+          //  ISpect.logTyped(SuccessLog('Success log'));
+        },
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
+    final ISpectScopeModel iSpect = ISpect.read(context);
+    final List<_ButtonConfig> buttonConfigs =
+        _buildButtonConfigs(context, iSpect);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -241,259 +485,34 @@ class _HomeState extends State<_Home> {
       ),
       body: Center(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 10,
-            children: [
-              FilledButton(
-                onPressed: () {
-                  const depth = 5000;
-                  Map<String, dynamic> nested = {
-                    'id': depth,
-                    'value': 'Item $depth'
-                  };
-
-                  for (int i = depth - 1; i >= 0; i--) {
-                    nested = {'id': i, 'value': 'Item $i', 'nested': nested};
-                  }
-
-                  final response = Response(
-                    requestOptions: RequestOptions(path: '/mock-nested-id'),
-                    data: nested,
-                    statusCode: 200,
-                  );
-                  for (var interceptor in dio.interceptors) {
-                    if (interceptor is ISpectifyDioLogger) {
-                      interceptor.onResponse(
-                          response, ResponseInterceptorHandler());
-                    }
-                  }
-                },
-                child: const Text('Mock Nested Map with Depth IDs'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  const depth = 10000;
-
-                  Map<String, dynamic> nested = {
-                    'id': depth,
-                    'value': 'Item $depth',
-                  };
-
-                  for (int i = depth - 1; i >= 0; i--) {
-                    nested = {
-                      'id': i,
-                      'value': 'Item $i',
-                      'nested': nested,
-                    };
-                  }
-
-                  final largeList = List.generate(
-                      10000, (index) => {'id': index, 'value': 'Item $index'});
-
-                  final response = Response(
-                    requestOptions: RequestOptions(path: '/mock-nested-id'),
-                    data: largeList,
-                    statusCode: 200,
-                  );
-
-                  for (var interceptor in dio.interceptors) {
-                    if (interceptor is ISpectifyDioLogger) {
-                      interceptor.onResponse(
-                          response, ResponseInterceptorHandler());
-                    }
-                  }
-                },
-                child: const Text('Mock Nested List with Depth IDs'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  // Print large JSON response
-                  final largeList = List.generate(
-                      10000, (index) => {'id': index, 'value': 'Item $index'});
-                  ISpect.logger.print(largeList.toString());
-                },
-                child: const Text('Mock Large JSON Response'),
-              ),
-              BlocBuilder<TestCubit, TestState>(
-                bloc: _testBloc,
-                builder: (context, state) {
-                  return FilledButton(
-                    onPressed: () {
-                      _testBloc.load(
-                        data: 'Test data',
-                      );
-                    },
-                    child: const Text('Test Cubit'),
-                  );
-                },
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await client.get(Uri.parse(
-                      'https://jsonplaceholder.typicode.com/posts/1'));
-                },
-                child: const Text('Send HTTP request (http package)'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await client.get(Uri.parse(
-                      'https://jsonplaceholder.typicode.com/po2323sts/1'));
-                },
-                child: const Text('Send error HTTP request (http package)'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  ThemeProvider.toggleTheme(context);
-                },
-                child: const Text('Toggle theme'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  ISpect.logger.track(
-                    'Toggle',
-                    analytics: 'amplitude',
-                    event: 'ISpect',
-                    parameters: {
-                      'isISpectEnabled': iSpect.isISpectEnabled,
-                    },
-                  );
-                  iSpect.toggleISpect();
-                },
-                child: const Text('Toggle ISpect'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  dio.get(
-                    '/posts/1',
-                  );
-                },
-                child: const Text('Send HTTP request'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  dio.get('/post3s/1');
-                },
-                child: const Text('Send HTTP request with error'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  dio.options.headers.addAll({
-                    'Authorization': 'Bearer token',
-                  });
-                  dio.get('/posts/1');
-                  dio.options.headers.remove('Authorization');
-                },
-                child: const Text('Send HTTP request with Token'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  final formData = FormData();
-                  formData.files.add(MapEntry(
-                    'file',
-                    MultipartFile.fromBytes(
-                      [1, 2, 3],
-                      filename: 'file.txt',
+            children: buttonConfigs.expand(
+              (config) {
+                final Widget button = FilledButton(
+                  onPressed: config.onPressed,
+                  child: Text(config.label),
+                );
+                if (config.label == 'Test Cubit') {
+                  return [
+                    BlocBuilder<TestCubit, TestState>(
+                      bloc: _testBloc,
+                      builder: (context, state) => FilledButton(
+                        onPressed: config.onPressed,
+                        child: Text(config.label),
+                      ),
                     ),
-                  ));
-
-                  dummyDio.post(
-                    '/api/v1/files/upload',
-                    data: formData,
-                  );
-                },
-                child: const Text('Upload file to dummy server'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  // final formData = FormData();
-                  // formData.files.add(MapEntry(
-                  //   'file',
-                  //   MultipartFile.fromBytes(
-                  //     [1, 2, 3],
-                  //     filename: 'file.txt',
-                  //   ),
-                  // ));
-
-                  // dummyDio.post(
-                  //   '/api/v1/files/upload',
-                  //   data: formData,
-                  // );
-
-                  // Prepare the file data
-                  final bytes = [1, 2, 3]; // File data as bytes
-                  const filename = 'file.txt';
-
-                  // Create the multipart request
-                  var request = http_interceptor.MultipartRequest(
-                    'POST',
-                    Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
-                  );
-
-                  // Add the file to the request
-                  request.files.add(http_interceptor.MultipartFile.fromBytes(
-                    'file', // Field name
-                    bytes,
-                    filename: filename,
-                  ));
-
-                  // Send the request
-                  client.send(request);
-                },
-                child: const Text('Upload file to dummy server (http)'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  throw Exception('Test exception');
-                },
-                child: const Text('Throw exception'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  throw Exception('Test large exception ' * 1000);
-                },
-                child: const Text('Throw Large exception'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  debugPrint('Print message' * 10000);
-                },
-                child: const Text('Pring Large text'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  debugPrint('Send print message');
-                },
-                child: const Text('Send print message'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const _SecondPage(),
-                      settings: const RouteSettings(name: 'SecondPage'),
-                    ),
-                  );
-                },
-                child: const Text('Go to second page'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const _SecondPage(),
-                    ),
-                  );
-                },
-                child: const Text('Replace with second page'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  //  ISpect.logTyped(SuccessLog('Success log'));
-                },
-                child: const Text('Success log'),
-              ),
-            ],
+                    const SizedBox(height: 10),
+                  ];
+                }
+                return [
+                  button,
+                  const SizedBox(height: 10),
+                ];
+              },
+            ).toList()
+              ..removeLast(),
           ),
         ),
       ),
@@ -507,6 +526,9 @@ class _SecondPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Second Page'),
+      ),
       body: Center(
         child: FilledButton(
           onPressed: () {

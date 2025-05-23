@@ -582,9 +582,11 @@ class InspectorState extends State<Inspector> {
         final screenshotFilePath =
             await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
 
-        await Share.shareXFiles(
-          [screenshotFilePath],
-          text: feedback.text,
+        await SharePlus.instance.share(
+          ShareParams(
+            text: feedback.text,
+            files: [screenshotFilePath],
+          ),
         );
       });
     } else {

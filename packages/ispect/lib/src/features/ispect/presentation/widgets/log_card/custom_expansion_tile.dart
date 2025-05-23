@@ -250,6 +250,7 @@ class ISpectExpansionTile extends StatefulWidget {
     this.expansionAnimationStyle,
     this.internalAddSemanticForOnTap = false,
     this.dividerColor,
+    this.onLongPress,
   }) : assert(
           expandedCrossAxisAlignment != CrossAxisAlignment.baseline,
           'CrossAxisAlignment.baseline is not supported since the expanded children '
@@ -555,6 +556,8 @@ class ISpectExpansionTile extends StatefulWidget {
 
   final Color? dividerColor;
 
+  final void Function()? onLongPress;
+
   @override
   State<ISpectExpansionTile> createState() => _ISpectExpansionTileState();
 }
@@ -763,6 +766,7 @@ class _ISpectExpansionTileState extends State<ISpectExpansionTile>
                   textColor: _headerColor.value,
                   child: ListTile(
                     enabled: widget.enabled,
+                    onLongPress: widget.onLongPress,
                     onTap: _handleTap,
                     dense: widget.dense,
                     visualDensity: widget.visualDensity,

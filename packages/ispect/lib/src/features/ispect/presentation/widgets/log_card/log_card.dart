@@ -61,6 +61,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
       collapsedShape: const RoundedRectangleBorder(),
       childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       onExpansionChanged: (value) => setState(() => _isExpanded = value),
+      onLongPress: widget.onCopyTap,
       dividerColor: widget.color.withValues(alpha: 0.2),
       title: _CollapsedBody(
         icon: iSpect.theme.logIcons[data.key] ?? Icons.bug_report_outlined,
