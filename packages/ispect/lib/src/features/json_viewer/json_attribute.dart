@@ -117,7 +117,7 @@ class JsonAttribute extends StatelessWidget {
                     indentationPadding: theme.indentationPadding,
                     color: theme.indentationLineColor,
                   ),
-                  if (node.isRoot)
+                  if (node.isRoot && node.children.isNotEmpty)
                     const SizedBox(
                       width: 24,
                       child: _ToggleButton(),
@@ -321,10 +321,25 @@ class _ToggleButton extends StatelessWidget {
     final node = jsonAttribute.node;
     final toggle = jsonAttribute.collapsableToggleBuilder;
 
-    return toggle?.call(context, node) ??
-        (node.isCollapsed
-            ? const Icon(Icons.arrow_right)
-            : const Icon(Icons.arrow_drop_down));
+    return ListenableBuilder(
+      listenable: node,
+      builder: (context, child) =>
+          toggle?.call(context, node) ??
+          (AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: child,
+            ),
+            child: Icon(
+              node.isCollapsed
+                  ? Icons.arrow_right_rounded
+                  : Icons.arrow_drop_down_rounded,
+              key: ValueKey(node.isCollapsed),
+              color: jsonAttribute.theme.rootKeyTextStyle.color,
+            ),
+          )),
+    );
   }
 }
 
