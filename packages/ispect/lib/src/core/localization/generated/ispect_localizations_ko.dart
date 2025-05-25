@@ -529,4 +529,10 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get noData => '데이터 없음';
+
+  @override
+  String get shareLogFull => '로그 공유 (전체)';
+
+  @override
+  String get copyToClipboardTruncated => '클립보드에 복사 (잘린 형태)';
 }

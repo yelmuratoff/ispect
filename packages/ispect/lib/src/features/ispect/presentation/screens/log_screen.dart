@@ -26,7 +26,7 @@ class _LogScreenState extends State<LogScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
 
-  late final JsonExplorerTheme _jsonTheme;
+  late JsonExplorerTheme _jsonTheme;
   late final String _screenTitle;
 
   // Debounce timer for search

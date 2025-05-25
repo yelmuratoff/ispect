@@ -43,8 +43,8 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
           contentPadding: EdgeInsets.zero,
           backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
           content: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.7,
-            width: MediaQuery.sizeOf(context).width * 0.8,
+            height: MediaQuery.sizeOf(context).height * 0.2,
+            width: 500,
             child: _Body(
               value: widget.value,
             ),
@@ -94,49 +94,60 @@ class _InfoDescription extends StatelessWidget {
         children: [
           _Header(title: context.ispectL10n.share),
           const Gap(16),
-          Row(
-            spacing: 16,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  final text = value.toJson();
-                  final valueToShare = JsonTruncatorService.pretty(
-                    text,
-                    maxDepth: 150,
-                  );
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final text = value.toJson();
+                    final valueToShare = JsonTruncatorService.pretty(
+                      text,
+                      maxDepth: 150,
+                    );
 
-                  downloadFile(valueToShare);
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.share_rounded,
-                    ),
-                    const Gap(8),
-                    Text('${context.ispectL10n.share} (full)'),
-                  ],
+                    Navigator.of(context).pop();
+
+                    downloadFile(valueToShare);
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.share_rounded,
+                      ),
+                      const Gap(8),
+                      Text(context.ispectL10n.shareLogFull),
+                    ],
+                  ),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  final text = value.toJson(truncated: true);
-                  final valueToShare = JsonTruncatorService.pretty(
-                    text,
-                  );
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final text = value.toJson(truncated: true);
+                    final valueToShare = JsonTruncatorService.pretty(
+                      text,
+                    );
 
-                  copyClipboard(
-                    context,
-                    value: valueToShare,
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.copy_rounded,
-                    ),
-                    const Gap(8),
-                    Text('${context.ispectL10n.copy} (truncated)'),
-                  ],
+                    Navigator.of(context).pop();
+
+                    copyClipboard(
+                      context,
+                      value: valueToShare,
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.copy_rounded,
+                      ),
+                      const Gap(8),
+                      Text(context.ispectL10n.copyToClipboardTruncated),
+                    ],
+                  ),
                 ),
               ),
             ],

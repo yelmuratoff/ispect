@@ -157,5 +157,7 @@
    "warningLogDesc": "Ein Tag, das zum Protokollieren von Warnmeldungen über potenzielle Probleme in der Anwendung verwendet wird",
    "you": "Sie",
    "youAlreadyInLogger": "Sie befinden sich bereits auf der Logger-Seite",
-   "noData": "Keine Daten"
+   "noData": "Keine Daten",
+   "shareLogFull": "Protokoll teilen (vollständig)",
+   "copyToClipboardTruncated": "In die Zwischenablage kopieren (gekürzt)"
 }

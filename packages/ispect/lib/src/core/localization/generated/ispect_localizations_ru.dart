@@ -529,4 +529,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'Нет данных';
+
+  @override
+  String get shareLogFull => 'Поделиться логом (полностью)';
+
+  @override
+  String get copyToClipboardTruncated => 'Скопировать в буфер обмена (сокращенно)';
 }

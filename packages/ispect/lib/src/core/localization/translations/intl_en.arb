@@ -157,5 +157,7 @@
    "warningLogDesc": "A tag used for logging warning messages about potential issues in the application",
    "you": "You",
    "youAlreadyInLogger": "You are already in the logger page",
-   "noData": "No data"
+   "noData": "No data",
+   "shareLogFull": "Share log (full)",
+   "copyToClipboardTruncated": "Copy to clipboard (truncated)"
 }

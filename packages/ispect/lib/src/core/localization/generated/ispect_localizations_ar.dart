@@ -529,4 +529,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'لا توجد بيانات';
+
+  @override
+  String get shareLogFull => 'مشاركة السجل (كامل)';
+
+  @override
+  String get copyToClipboardTruncated => 'نسخ إلى الحافظة (مختصر)';
 }
