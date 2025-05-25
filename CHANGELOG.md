@@ -4,6 +4,8 @@
 
 - Refactor and improve optimization during handle very large JSON in the detailed log screen.
 - Improve search and scroll to matched item functionality in the detailed log screen.
+- Added a button for copying next to the JSON item inside the detailed log screen.
+- Inside the detailed log screen added the ability to share the full log as a file .txt or quickly copy the truncated log to the clipboard.
 
 ## 4.1.2
 
