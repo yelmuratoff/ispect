@@ -105,12 +105,15 @@ class _InfoDescription extends StatelessWidget {
                     final text = value.toJson();
                     final valueToShare = JsonTruncatorService.pretty(
                       text,
-                      maxDepth: 150,
+                      maxDepth: 250,
                     );
 
                     Navigator.of(context).pop();
 
-                    downloadFile(valueToShare);
+                    downloadFile(
+                      valueToShare,
+                      fileName: 'ispect_log',
+                    );
                   },
                   child: Row(
                     children: [
