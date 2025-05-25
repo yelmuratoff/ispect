@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/dot_painter.dart';
 import 'package:ispect/src/features/json_viewer/explorer.dart';
@@ -116,6 +118,22 @@ class JsonAttribute extends StatelessWidget {
                     depth: node.treeDepth,
                     indentationPadding: theme.indentationPadding,
                     color: theme.indentationLineColor,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      copyClipboard(
+                        context,
+                        value:
+                            '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
+                      );
+                    },
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      size: 16,
+                      color: theme.rootKeyTextStyle.color,
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    constraints: const BoxConstraints(),
                   ),
                   if (node.isRoot && node.children.isNotEmpty)
                     const SizedBox(

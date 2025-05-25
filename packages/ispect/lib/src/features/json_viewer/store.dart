@@ -41,12 +41,14 @@ class NodeViewModelState extends ChangeNotifier {
     required String key,
     required Object? value,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         key: key,
         value: value,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
 
   /// Build a `NodeViewModelState` as a class.
@@ -60,12 +62,14 @@ class NodeViewModelState extends ChangeNotifier {
     required int treeDepth,
     required String key,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         isClass: true,
         key: key,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
 
   /// Build a `NodeViewModelState` as an array.
@@ -80,16 +84,19 @@ class NodeViewModelState extends ChangeNotifier {
     required int treeDepth,
     required String key,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         isArray: true,
         key: key,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
   NodeViewModelState._({
     required this.treeDepth,
     required this.key,
+    required this.rawValue,
     this.isClass = false,
     this.isArray = false,
     Object? value,
@@ -111,6 +118,8 @@ class NodeViewModelState extends ChangeNotifier {
   /// Flags if this node is an array, if `true`, then [value] is a
   /// `List<NodeViewModelState>`.
   final bool isArray;
+
+  final dynamic rawValue;
 
   bool _isHighlighted = false;
   bool _isFocused = false;
@@ -256,6 +265,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         treeDepth: treeDepth,
         key: key,
         parent: parent,
+        rawValue: value,
       );
 
       final children = _buildClassNodes(
@@ -272,6 +282,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         treeDepth: treeDepth,
         key: key,
         parent: parent,
+        rawValue: value,
       );
 
       final children = _buildArrayNodes(
@@ -289,6 +300,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         value: value,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: value,
       );
     }
   });
@@ -309,6 +321,7 @@ List<NodeViewModelState> _buildArrayNodes({
         key: i.toString(),
         treeDepth: treeDepth + 1,
         parent: parent,
+        rawValue: arrayValue,
       );
 
       final children = _buildClassNodes(
@@ -327,6 +340,7 @@ List<NodeViewModelState> _buildArrayNodes({
           value: arrayValue,
           treeDepth: treeDepth + 1,
           parent: parent,
+          rawValue: arrayValue,
         ),
       );
     }

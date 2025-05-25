@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:ispect/src/features/json_viewer/explorer.dart';
 import 'package:ispect/src/features/json_viewer/store.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -120,14 +121,78 @@ class _LogScreenState extends State<LogScreen> {
                     onPressed: _store.collapseAll,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.copy_rounded),
-                    onPressed: () {
-                      copyClipboard(
-                        context,
-                        value: _data.toJson(truncated: true).toString(),
+                    icon: const Icon(Icons.share_rounded),
+                    onPressed: () async {
+                      await context.screenSizeMaybeWhen(
+                        phone: () => showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => ISpectShareLogBottomSheet(
+                            value: _data,
+                          ),
+                        ),
+                        orElse: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => ISpectShareLogBottomSheet(
+                            value: _data,
+                          ),
+                        ),
                       );
+                      // showModalBottomSheet<void>(
+                      //   context: context,
+                      //   isScrollControlled: true,
+                      //   builder: (_) => Container(
+                      //     padding: const EdgeInsets.all(16),
+                      //     decoration: BoxDecoration(
+                      //       color: iSpect.theme.backgroundColor(context),
+                      //       borderRadius: BorderRadius.circular(12),
+                      //     ),
+                      //     child: SizedBox(
+                      //       width: double.infinity,
+                      //       child: Column(
+                      //         mainAxisSize: MainAxisSize.min,
+                      //         children: [
+                      //           Text(
+                      //             context.ispectL10n.share,
+                      //             style: const TextStyle(
+                      //               fontSize: 18,
+                      //               fontWeight: FontWeight.bold,
+                      //             ),
+                      //           ),
+                      //           const Gap(12),
+                      //           ElevatedButton(
+                      //             onPressed: () {
+                      //               copyClipboard(
+                      //                 context,
+                      //                 value: JsonTruncatorService.pretty(
+                      //                   _data.toJson(truncated: true),
+                      //                   maxDepth: 100,
+                      //                 ),
+                      //               );
+                      //               Navigator.of(context).pop();
+                      //             },
+                      //             child: const Text('Copy to Clipboard'),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // );
                     },
                   ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.copy_rounded),
+                  //   onPressed: () {
+                  // copyClipboard(
+                  //   context,
+                  //   value: JsonTruncatorService.pretty(
+                  //     _data.toJson(truncated: true),
+                  //     maxDepth: 100,
+                  //   ),
+                  // );
+                  //   },
+                  // ),
                 ],
               ),
             ),
