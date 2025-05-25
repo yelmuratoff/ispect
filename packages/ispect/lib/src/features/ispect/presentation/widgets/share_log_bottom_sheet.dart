@@ -105,7 +105,7 @@ class _InfoDescription extends StatelessWidget {
                     final text = value.toJson();
                     final valueToShare = JsonTruncatorService.pretty(
                       text,
-                      maxDepth: 250,
+                      maxDepth: 500,
                     );
 
                     Navigator.of(context).pop();
