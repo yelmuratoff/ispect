@@ -121,12 +121,6 @@ class JsonAttribute extends StatelessWidget {
                       color: theme.indentationLineColor,
                     ),
                   ),
-                  SelectionContainer.disabled(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4, left: 4),
-                      child: _CopyButton(node: node, theme: theme),
-                    ),
-                  ),
                   if (node.isRoot && node.children.isNotEmpty)
                     const SelectionContainer.disabled(
                       child: SizedBox(
@@ -148,6 +142,13 @@ class JsonAttribute extends StatelessWidget {
                     _MapSuffixWidget(
                       length: node.children.length,
                       style: theme.rootKeyTextStyle,
+                    ),
+                  if (node.isRoot)
+                    SelectionContainer.disabled(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: _CopyButton(node: node, theme: theme),
+                      ),
                     ),
                   if (node.isRoot)
                     _buildRootInformation(context)
@@ -270,10 +271,13 @@ class _CopyButton extends StatelessWidget {
             value: '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
           );
         },
-        child: Icon(
-          Icons.copy_rounded,
-          size: 16,
-          color: theme.rootKeyTextStyle.color,
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: Icon(
+            Icons.copy_rounded,
+            size: 14,
+            color: theme.rootKeyTextStyle.color,
+          ),
         ),
       );
 }
