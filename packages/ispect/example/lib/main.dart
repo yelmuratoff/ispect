@@ -90,7 +90,7 @@ class _AppState extends State<App> {
     isLogModals: false,
   );
 
-  static const Locale locale = Locale('uz');
+  static const Locale locale = Locale('ru');
 
   @override
   void dispose() {

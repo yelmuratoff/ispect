@@ -31,9 +31,9 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
         phone: () => DraggableScrollableSheet(
-          initialChildSize: 0.2,
+          initialChildSize: 0.3,
           minChildSize: 0.2,
-          maxChildSize: 0.4,
+          maxChildSize: 0.5,
           expand: false,
           builder: (context, scrollController) => _Body(
             value: widget.value,
@@ -122,7 +122,7 @@ class _InfoDescription extends StatelessWidget {
                         Icons.share_rounded,
                       ),
                       const Gap(8),
-                      Text(context.ispectL10n.shareLogFull),
+                      Flexible(child: Text(context.ispectL10n.shareLogFull)),
                     ],
                   ),
                 ),
@@ -149,7 +149,11 @@ class _InfoDescription extends StatelessWidget {
                         Icons.copy_rounded,
                       ),
                       const Gap(8),
-                      Text(context.ispectL10n.copyToClipboardTruncated),
+                      Flexible(
+                        child: Text(
+                          context.ispectL10n.copyToClipboardTruncated,
+                        ),
+                      ),
                     ],
                   ),
                 ),

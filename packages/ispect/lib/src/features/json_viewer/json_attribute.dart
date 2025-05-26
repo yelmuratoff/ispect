@@ -114,31 +114,25 @@ class JsonAttribute extends StatelessWidget {
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
                 children: [
-                  _IndentationWidget(
-                    depth: node.treeDepth,
-                    indentationPadding: theme.indentationPadding,
-                    color: theme.indentationLineColor,
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      copyClipboard(
-                        context,
-                        value:
-                            '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
-                      );
-                    },
-                    icon: Icon(
-                      Icons.copy_rounded,
-                      size: 16,
-                      color: theme.rootKeyTextStyle.color,
+                  SelectionContainer.disabled(
+                    child: _IndentationWidget(
+                      depth: node.treeDepth,
+                      indentationPadding: theme.indentationPadding,
+                      color: theme.indentationLineColor,
                     ),
-                    padding: const EdgeInsets.all(2),
-                    constraints: const BoxConstraints(),
+                  ),
+                  SelectionContainer.disabled(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4, left: 4),
+                      child: _CopyButton(node: node, theme: theme),
+                    ),
                   ),
                   if (node.isRoot && node.children.isNotEmpty)
-                    const SizedBox(
-                      width: 24,
-                      child: _ToggleButton(),
+                    const SelectionContainer.disabled(
+                      child: SizedBox(
+                        width: 24,
+                        child: _ToggleButton(),
+                      ),
                     ),
                   _buildNodeKey(context, searchTerm),
                   const SizedBox(
@@ -256,6 +250,32 @@ class JsonAttribute extends StatelessWidget {
       jsonExplorerStore.collapseNode(node);
     }
   }
+}
+
+class _CopyButton extends StatelessWidget {
+  const _CopyButton({
+    required this.node,
+    required this.theme,
+  });
+
+  final NodeViewModelState node;
+  final JsonExplorerTheme theme;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+        onTap: () {
+          copyClipboard(
+            context,
+            value: '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
+          );
+        },
+        child: Icon(
+          Icons.copy_rounded,
+          size: 16,
+          color: theme.rootKeyTextStyle.color,
+        ),
+      );
 }
 
 class _IndentationWidget extends StatelessWidget {
