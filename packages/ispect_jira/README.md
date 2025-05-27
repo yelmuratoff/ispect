@@ -200,12 +200,6 @@ child = ISpectBuilder(
 
 Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
 
->[!NOTE]
->
-> - To `platform & device` tools follow the instructions provided here [ispect_device](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device).
->
-> You can also check out an example of usage directly in [ispect_device/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device/example).
-
 <!----------------------------
 ------Referenced packages-----
 ------------------------------>

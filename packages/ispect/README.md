@@ -126,10 +126,6 @@ Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/pack
 > - To add `ISpect Jira`, follow the instructions provided here [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira).
 >
 > You can also check out an example of usage directly in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example).
->
-> - To `platform & device` tools follow the instructions provided here [ispect_device](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device).
->
-> You can also check out an example of usage directly in [ispect_device/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_device/example).
 
 ### For handle routing (GoRouter)
 You can use `ISpectNavigatorObserver`, but in practice it does not always work correctly with the `GoRouter` package. You need add observer in each GoRoute.
