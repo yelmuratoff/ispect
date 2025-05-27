@@ -68,7 +68,7 @@ You can also use it separately: https://pub.dev/packages/draggable_panel
    - Detailed `HTTP` logs: `request`, `response`, `error`
    - Debug tools
    - Cache manager
-   - Device and app info *([ispect_device](https://pub.dev/packages/ispect_device))*
+   - Device and app info
 - ✅ Feedback builder from [pub.dev/feedback](https://pub.dev/packages/feedback)
 - ✅ Performance tracker
 
