@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.1.3-dev07
+## 4.1.3-dev08
 
 ### Enhanced
 - Refactored and improved optimization for handling very large JSON in the detailed log screen.
