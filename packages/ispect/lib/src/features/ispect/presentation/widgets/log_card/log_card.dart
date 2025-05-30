@@ -86,7 +86,7 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
         if (_isExpanded)
           _ExpandedBody(
             stackTrace: stackTrace,
-            widget: widget,
+            owner: widget,
             expanded: _isExpanded,
             type: type,
             message: widget.data.textMessage,

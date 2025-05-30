@@ -10,23 +10,31 @@ class _StrackTraceBody extends StatelessWidget {
   final String? _stackTrace;
 
   @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(top: 8),
-        padding: const EdgeInsets.all(6),
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.fromBorderSide(
-            BorderSide(color: widget.color),
-          ),
-        ),
-        child: Text(
-          _stackTrace!,
-          maxLines: 100,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: widget.color,
-            fontSize: 12,
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: SizedBox(
+          width: double.maxFinite,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
+              border: Border.fromBorderSide(
+                BorderSide(color: widget.color),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: SelectableText(
+                _stackTrace!,
+                maxLines: 100,
+                minLines: 1,
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           ),
         ),
       );

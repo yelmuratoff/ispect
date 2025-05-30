@@ -4,7 +4,7 @@ part of 'log_card.dart';
 class _ExpandedBody extends StatelessWidget {
   const _ExpandedBody({
     required this.stackTrace,
-    required this.widget,
+    required this.owner,
     required this.expanded,
     required this.type,
     required this.message,
@@ -13,7 +13,7 @@ class _ExpandedBody extends StatelessWidget {
   });
 
   final String? stackTrace;
-  final ISpectLogCard widget;
+  final ISpectLogCard owner;
   final bool expanded;
   final String? message;
   final String? type;
@@ -26,21 +26,19 @@ class _ExpandedBody extends StatelessWidget {
 
     return _LogContentContainer(
       hasStackTrace: stackTrace != null,
-      color: widget.color,
+      color: owner.color,
       child: _LogTextContent(
         message: message,
         type: type,
         errorMessage: errorMessage,
         isHTTP: isHTTP,
-        textStyle: _createTextStyle(),
+        textStyle: TextStyle(
+          color: owner.color,
+          fontSize: 12,
+        ),
       ),
     );
   }
-
-  TextStyle _createTextStyle() => TextStyle(
-        color: widget.color,
-        fontSize: 12,
-      );
 }
 
 /// Container widget that handles decoration based on stack trace presence
@@ -56,16 +54,20 @@ class _LogContentContainer extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SizedBox(
         width: double.maxFinite,
-        padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,
-        decoration: hasStackTrace ? _createDecoration() : null,
-        child: child,
-      );
-
-  BoxDecoration _createDecoration() => BoxDecoration(
-        border: Border.all(color: color),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: DecoratedBox(
+          decoration: hasStackTrace
+              ? BoxDecoration(
+                  border: Border.all(color: color),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                )
+              : const BoxDecoration(),
+          child: Padding(
+            padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,
+            child: child,
+          ),
+        ),
       );
 }
 
@@ -87,36 +89,21 @@ class _LogTextContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textWidgets = _buildTextWidgets();
+    final widgets = <Widget>[];
+
+    if (message != null && !isHTTP && errorMessage == null) {
+      widgets.add(SelectableText(message!, style: textStyle));
+    }
+    if (type != null) {
+      widgets.add(SelectableText(type!, style: textStyle));
+    }
+    if (errorMessage != null) {
+      widgets.add(SelectableText(errorMessage!, style: textStyle));
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: textWidgets,
+      children: widgets,
     );
-  }
-
-  List<Widget> _buildTextWidgets() {
-    final widgets = <Widget>[];
-
-    _addMessageIfApplicable(widgets);
-    _addTextIfNotNull(widgets, type);
-    _addTextIfNotNull(widgets, errorMessage);
-
-    return widgets;
-  }
-
-  void _addMessageIfApplicable(List<Widget> widgets) {
-    if (_shouldShowMessage()) {
-      _addTextIfNotNull(widgets, message);
-    }
-  }
-
-  bool _shouldShowMessage() =>
-      message != null && !isHTTP && errorMessage == null;
-
-  void _addTextIfNotNull(List<Widget> widgets, String? text) {
-    if (text != null) {
-      widgets.add(SelectableText(text, style: textStyle));
-    }
   }
 }
