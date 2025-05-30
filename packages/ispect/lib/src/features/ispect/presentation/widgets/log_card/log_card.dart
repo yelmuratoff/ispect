@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/custom_expansion_tile.dart';
