@@ -38,7 +38,7 @@ class _CollapsedBody extends StatelessWidget {
                     const Gap(6),
                     Flexible(
                       child: Text(
-                        '${title ?? ''} | $dateTime',
+                        '$title | $dateTime',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
