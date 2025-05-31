@@ -63,8 +63,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get blocEventLogDesc => 'علامة تُستخدم لتسجيل معالجة حدث في BLoC';
 
   @override
-  String get blocTransitionLogDesc =>
-      'علامة تُستخدم لتسجيل الانتقالات الحالية في BLoC';
+  String get blocTransitionLogDesc => 'علامة تُستخدم لتسجيل الانتقالات الحالية في BLoC';
 
   @override
   String get blocStateLogDesc => 'علامة تُستخدم لتسجيل الحالة الحالية في BLoC';
@@ -125,15 +124,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get creatingIssue => 'جارٍ إنشاء المشكلة';
 
   @override
-  String get criticalLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء الحرجة أو الأحداث التي تتطلب اهتمامًا فوريًا';
+  String get criticalLogDesc => 'علامة تُستخدم لتسجيل الأخطاء الحرجة أو الأحداث التي تتطلب اهتمامًا فوريًا';
 
   @override
   String get data => 'بيانات';
 
   @override
-  String get debugLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات التصحيح لتحليل سلوك التطبيق';
+  String get debugLogDesc => 'علامة تُستخدم لتسجيل معلومات التصحيح لتحليل سلوك التطبيق';
 
   @override
   String get description => 'الوصف';
@@ -153,8 +150,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'خطأ أثناء مسح الذاكرة المؤقتة';
 
   @override
-  String get errorLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء التي تحدث في التطبيق';
+  String get errorLogDesc => 'علامة تُستخدم لتسجيل الأخطاء التي تحدث في التطبيق';
 
   @override
   String get errorMessage => 'رسالة الخطأ';
@@ -163,8 +159,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorType => 'نوع الخطأ';
 
   @override
-  String get exceptionLogDesc =>
-      'علامة تُستخدم لتسجيل الاستثناءات التي تحدث في التطبيق';
+  String get exceptionLogDesc => 'علامة تُستخدم لتسجيل الاستثناءات التي تحدث في التطبيق';
 
   @override
   String get expandLogs => 'توسيع السجلات';
@@ -191,8 +186,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get goToLogger => 'الذهاب إلى المسجل';
 
   @override
-  String get goodLogDesc =>
-      'علامة تُستخدم لتسجيل العمليات الناجحة أو الأحداث الإيجابية في التطبيق';
+  String get goodLogDesc => 'علامة تُستخدم لتسجيل العمليات الناجحة أو الأحداث الإيجابية في التطبيق';
 
   @override
   String get headers => 'الرؤوس';
@@ -210,8 +204,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'سجل استجابة الخادم';
 
   @override
-  String get infoLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل معلوماتية حول تشغيل التطبيق';
+  String get infoLogDesc => 'علامة تُستخدم لتسجيل رسائل معلوماتية حول تشغيل التطبيق';
 
   @override
   String get initializationFailed => 'فشل التهيئة';
@@ -220,8 +213,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get issueCreated => 'تم إنشاء المشكلة بنجاح';
 
   @override
-  String get jiraInstruction =>
-      '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إنشاء وإدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
+  String get jiraInstruction => '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إنشاء وإدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
 
   @override
   String get logItemCopied => 'تم نسخ عنصر السجل في الحافظة';
@@ -245,8 +237,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get notFound => 'غير موجود';
 
   @override
-  String get otherLogsForDevelopers =>
-      'السجلات الأخرى تُستخدم بالفعل من قِبل المطورين';
+  String get otherLogsForDevelopers => 'السجلات الأخرى تُستخدم بالفعل من قِبل المطورين';
 
   @override
   String get pageNotFound => 'عفوًا، الصفحة على هذا المسار';
@@ -522,15 +513,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get userEmail => 'البريد الإلكتروني للمستخدم';
 
   @override
-  String get verboseLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات مفصلة لتحليل التطبيق بعمق';
+  String get verboseLogDesc => 'علامة تُستخدم لتسجيل معلومات مفصلة لتحليل التطبيق بعمق';
 
   @override
   String get viewAndManageData => 'عرض وإدارة بيانات التطبيق';
 
   @override
-  String get warningLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل تحذير حول مشكلات محتملة في التطبيق';
+  String get warningLogDesc => 'علامة تُستخدم لتسجيل رسائل تحذير حول مشكلات محتملة في التطبيق';
 
   @override
   String get you => 'أنت';

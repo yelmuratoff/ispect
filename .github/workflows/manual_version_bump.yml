@@ -38,15 +38,21 @@ jobs:
         id: determine_version
         run: |
           if [ -n "${{ github.event.inputs.specific_version }}" ]; then
+            echo "BUMP_ARG=${{ github.event.inputs.specific_version }}" >> $GITHUB_OUTPUT
             echo "BUMP_ARG=${{ github.event.inputs.specific_version }}" >> $GITHUB_ENV
           else
+            echo "BUMP_ARG=${{ github.event.inputs.bump_type }}" >> $GITHUB_OUTPUT
             echo "BUMP_ARG=${{ github.event.inputs.bump_type }}" >> $GITHUB_ENV
           fi
       
       - name: Bump Version
         run: |
           chmod +x bash/bump_version.sh
-          ./bash/bump_version.sh ${{ env.BUMP_ARG }}
+          BUMP_TYPE="${{ steps.determine_version.outputs.BUMP_ARG }}"
+          if [ -z "$BUMP_TYPE" ]; then
+            BUMP_TYPE="$BUMP_ARG"
+          fi
+          ./bash/bump_version.sh "$BUMP_TYPE"
       
       - name: Verify Dependencies
         run: |
@@ -61,6 +67,15 @@ jobs:
             git commit -m "chore: bump version to $NEW_VERSION"
             git push
             echo "Version bumped successfully to $NEW_VERSION!"
+            
+            # Final verification
+            echo "Running final version verification..."
+            ./bash/check_version_sync.sh && ./bash/check_dependencies.sh
+            if [ $? -eq 0 ]; then
+              echo "✅ All versions and dependencies are now consistent!"
+            else
+              echo "⚠️ Warning: Some inconsistencies remain after version bump. Please check manually."
+            fi
           else
             echo "No changes to commit."
           fi

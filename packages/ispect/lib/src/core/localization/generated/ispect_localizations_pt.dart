@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Todos os logs copiados no buffer';
 
   @override
-  String get analyticsLogDesc =>
-      'O log de envio de eventos para o serviço de análise';
+  String get analyticsLogDesc => 'O log de envio de eventos para o serviço de análise';
 
   @override
   String get apiToken => 'Token de API';
@@ -55,24 +54,19 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get basicSettings => 'Configurações básicas';
 
   @override
-  String get blocCloseLogDesc =>
-      'Uma tag usada para registrar o fechamento de um BLoC';
+  String get blocCloseLogDesc => 'Uma tag usada para registrar o fechamento de um BLoC';
 
   @override
-  String get blocCreateLogDesc =>
-      'Uma tag usada para registrar a criação de um BLoC';
+  String get blocCreateLogDesc => 'Uma tag usada para registrar a criação de um BLoC';
 
   @override
-  String get blocEventLogDesc =>
-      'Uma tag usada para registrar o processamento de um evento em um BLoC';
+  String get blocEventLogDesc => 'Uma tag usada para registrar o processamento de um evento em um BLoC';
 
   @override
-  String get blocTransitionLogDesc =>
-      'Uma tag usada para registrar transições de estado em um BLoC';
+  String get blocTransitionLogDesc => 'Uma tag usada para registrar transições de estado em um BLoC';
 
   @override
-  String get blocStateLogDesc =>
-      'Uma tag usada para registrar o estado atual em um BLoC';
+  String get blocStateLogDesc => 'Uma tag usada para registrar o estado atual em um BLoC';
 
   @override
   String get buildVersion => 'Versão de compilação';
@@ -130,15 +124,13 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Criando problema';
 
   @override
-  String get criticalLogDesc =>
-      'Uma tag usada para registrar erros críticos ou eventos que requerem atenção imediata';
+  String get criticalLogDesc => 'Uma tag usada para registrar erros críticos ou eventos que requerem atenção imediata';
 
   @override
   String get data => 'Dados';
 
   @override
-  String get debugLogDesc =>
-      'Uma tag usada para registrar informações de depuração para analisar o comportamento do aplicativo';
+  String get debugLogDesc => 'Uma tag usada para registrar informações de depuração para analisar o comportamento do aplicativo';
 
   @override
   String get description => 'Descrição';
@@ -158,8 +150,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Erro ao limpar o cache';
 
   @override
-  String get errorLogDesc =>
-      'Uma tag usada para registrar erros que ocorrem no aplicativo';
+  String get errorLogDesc => 'Uma tag usada para registrar erros que ocorrem no aplicativo';
 
   @override
   String get errorMessage => 'Mensagem de erro';
@@ -168,8 +159,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get errorType => 'Tipo de erro';
 
   @override
-  String get exceptionLogDesc =>
-      'Uma tag usada para registrar exceções que ocorrem no aplicativo';
+  String get exceptionLogDesc => 'Uma tag usada para registrar exceções que ocorrem no aplicativo';
 
   @override
   String get expandLogs => 'Expandir logs';
@@ -196,8 +186,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get goToLogger => 'Ir para o logger';
 
   @override
-  String get goodLogDesc =>
-      'Uma tag usada para registrar operações bem-sucedidas ou eventos positivos no aplicativo';
+  String get goodLogDesc => 'Uma tag usada para registrar operações bem-sucedidas ou eventos positivos no aplicativo';
 
   @override
   String get headers => 'Cabeçalhos';
@@ -215,8 +204,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Log de resposta do servidor';
 
   @override
-  String get infoLogDesc =>
-      'Uma tag usada para registrar mensagens informativas sobre o funcionamento do aplicativo';
+  String get infoLogDesc => 'Uma tag usada para registrar mensagens informativas sobre o funcionamento do aplicativo';
 
   @override
   String get initializationFailed => 'Falha na inicialização';
@@ -225,12 +213,10 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get issueCreated => 'Problema criado com sucesso';
 
   @override
-  String get jiraInstruction =>
-      '1. Acesse o site do Jira.\n2. Clique no seu avatar de perfil no canto inferior esquerdo.\n3. Clique em Perfil.\n4. Clique em Gerenciar sua conta.\n5. Selecione Segurança.\n6. Role para baixo até Criar e gerenciar tokens de API e clique nisso.\n7. Crie um token, depois copie e cole-o.';
+  String get jiraInstruction => '1. Acesse o site do Jira.\n2. Clique no seu avatar de perfil no canto inferior esquerdo.\n3. Clique em Perfil.\n4. Clique em Gerenciar sua conta.\n5. Selecione Segurança.\n6. Role para baixo até Criar e gerenciar tokens de API e clique nisso.\n7. Crie um token, depois copie e cole-o.';
 
   @override
-  String get logItemCopied =>
-      'Item de log copiado para a área de transferência';
+  String get logItemCopied => 'Item de log copiado para a área de transferência';
 
   @override
   String get login => 'Entrar';
@@ -251,8 +237,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get notFound => 'Não encontrado';
 
   @override
-  String get otherLogsForDevelopers =>
-      'Outros logs já estão sendo usados por desenvolvedores';
+  String get otherLogsForDevelopers => 'Outros logs já estão sendo usados por desenvolvedores';
 
   @override
   String get pageNotFound => 'Ops, a página neste caminho';
@@ -270,12 +255,10 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Por favor, autorize no Jira';
 
   @override
-  String get pleaseCheckAuthCred =>
-      'Ocorreu um erro. Por favor, verifique os dados de autorização.';
+  String get pleaseCheckAuthCred => 'Ocorreu um erro. Por favor, verifique os dados de autorização.';
 
   @override
-  String get pleaseSelectYourProject =>
-      'Agora, por favor, selecione um projeto';
+  String get pleaseSelectYourProject => 'Agora, por favor, selecione um projeto';
 
   @override
   String get printLogDesc => 'O log do método de impressão padrão no Flutter';
@@ -501,8 +484,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc =>
-      'Será útil para os testadores saberem sobre esses logs';
+  String get testerLogDesc => 'Será útil para os testadores saberem sobre esses logs';
 
   @override
   String totalFilesCount(Object number) {
@@ -531,16 +513,13 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get userEmail => 'Email do usuário';
 
   @override
-  String get verboseLogDesc =>
-      'Uma tag usada para registrar informações detalhadas para análise aprofundada do aplicativo';
+  String get verboseLogDesc => 'Uma tag usada para registrar informações detalhadas para análise aprofundada do aplicativo';
 
   @override
-  String get viewAndManageData =>
-      'Visualização e gerenciamento de dados do aplicativo';
+  String get viewAndManageData => 'Visualização e gerenciamento de dados do aplicativo';
 
   @override
-  String get warningLogDesc =>
-      'Uma tag usada para registrar mensagens de aviso sobre possíveis problemas no aplicativo';
+  String get warningLogDesc => 'Uma tag usada para registrar mensagens de aviso sobre possíveis problemas no aplicativo';
 
   @override
   String get you => 'Você';
@@ -555,6 +534,5 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get shareLogFull => 'Compartilhar log (completo)';
 
   @override
-  String get copyToClipboardTruncated =>
-      'Copiar para a área de transferência (truncado)';
+  String get copyToClipboardTruncated => 'Copiar para a área de transferência (truncado)';
 }
