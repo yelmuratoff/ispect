@@ -464,9 +464,19 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
-        label: 'Success log',
+        label: 'Log 10000 items',
         onPressed: () {
-          //  ISpect.logTyped(SuccessLog('Success log'));
+          for (int i = 0; i < 10000; i++) {
+            ISpect.logger.info('Item $i');
+          }
+        },
+      ),
+      (
+        label: 'Good log',
+        onPressed: () {
+          ISpect.logger.good(
+            'This is a good log',
+          );
         },
       ),
     ];

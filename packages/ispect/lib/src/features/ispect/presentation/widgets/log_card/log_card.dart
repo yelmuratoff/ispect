@@ -54,13 +54,17 @@ class LogCard extends StatelessWidget {
               ),
               onTap: onTap,
             ),
+            if (isExpanded)
+              Divider(
+                height: 1,
+                color: context.ispectTheme.dividerColor,
+              ),
             AnimatedCrossFade(
               firstChild: const SizedBox.shrink(),
               secondChild: Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  bottom: 8,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 child: Column(
                   children: [
