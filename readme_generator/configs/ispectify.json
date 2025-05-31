@@ -1,0 +1,22 @@
+{
+   "package_name": "ispectify",
+   "title": "ISpectify",
+   "description": "Foundation logging system for ISpect toolkit (based on Talker)",
+   "overview": "is the foundation logging system that powers the ISpect debugging toolkit.",
+   "version": "4.1.3",
+   "features": [
+      "📝 **Structured Logging**: Advanced logging with categorization and filtering",
+      "🎨 **Custom Log Types**: Define your own log types with custom colors and icons",
+      "🔍 **Real-time Filtering**: Filter logs by type, level, and custom criteria",
+      "📊 **Performance Monitoring**: Track application performance metrics",
+      "💾 **Export Functionality**: Export logs for analysis and debugging",
+      "🔧 **Easy Integration**: Simple setup with minimal configuration"
+   ],
+   "custom_overview_section": "<div align=\"center\">\n\n📝 **Logging** • 🔍 **Filtering** • 📊 **Monitoring** • 💾 **Export**\n\n</div>\n\nISpectify provides a robust logging foundation that integrates seamlessly with the ISpect ecosystem. Built on top of the proven Talker logging library, it offers advanced features for debugging and monitoring Flutter applications.",
+   "usage_example": "```dart\nimport 'package:ispectify/ispectify.dart';\n\nvoid main() {\n  // Initialize ISpectify\n  final ispectify = ISpectify(\n    settings: ISpectifySettings(\n      enabled: true,\n      useConsoleLogs: true,\n      useHistory: true,\n    ),\n  );\n\n  // Log different types of messages\n  ispectify.info('Application started');\n  ispectify.debug('Debug information');\n  ispectify.warning('Warning message');\n  ispectify.error('Error occurred');\n  \n  // Custom log types\n  ispectify.log('Custom message', logLevel: LogLevel.verbose);\n  \n  runApp(MyApp());\n}\n```",
+   "architecture_note": "ISpectify serves as the logging foundation for the ISpect ecosystem:\n\n| Component | Description |\n|-----------|-----------|\n| **Core Logger** | Based on Talker with enhanced features |\n| **Log Filtering** | Advanced filtering and search capabilities |\n| **Performance Tracking** | Built-in performance monitoring |\n| **Export System** | Log export and analysis tools |\n| **Integration Layer** | Seamless integration with ISpect toolkit |",
+   "custom_sections": "## 🔧 Configuration\n\n### Settings\n\n```dart\nfinal ispectify = ISpectify(\n  settings: ISpectifySettings(\n    enabled: true,\n    useConsoleLogs: true,\n    useHistory: true,\n    maxHistoryItems: 1000,\n    colors: {\n      LogLevel.info: Colors.blue,\n      LogLevel.warning: Colors.orange,\n      LogLevel.error: Colors.red,\n    },\n  ),\n);\n```\n\n### Custom Log Types\n\n```dart\n// Define custom log types\nispectify.registerLogType(\n  'network',\n  color: Colors.green,\n  icon: Icons.network_check,\n);\n\n// Use custom log type\nispectify.logCustom('network', 'HTTP request completed');\n```\n\n### Performance Monitoring\n\n```dart\n// Track performance\nispectify.trackPerformance('api_call', () async {\n  // Your async operation\n  await api.fetchData();\n});\n```",
+   "advanced_configuration": "## ⚙️ Advanced Features\n\n### Log Filtering\n\n```dart\n// Filter logs by level\nfinal errorLogs = ispectify.getLogsByLevel(LogLevel.error);\n\n// Filter logs by custom criteria\nfinal networkLogs = ispectify.getLogsByType('network');\n\n// Search logs\nfinal searchResults = ispectify.searchLogs('HTTP');\n```\n\n### Export Functionality\n\n```dart\n// Export logs to file\nawait ispectify.exportLogs('/path/to/logs.txt');\n\n// Export specific log types\nawait ispectify.exportLogsByType('error', '/path/to/errors.txt');\n```",
+   "examples_section": "## 📚 Examples\n\nSee the [example/](example/) directory for usage examples and integration patterns.",
+   "related_packages": "## 🔗 Related Packages\n\n- [ispect](../ispect) - Main debugging interface\n- [ispectify_dio](../ispectify_dio) - Dio HTTP client integration\n- [ispectify_http](../ispectify_http) - Standard HTTP client integration\n- [ispectify_bloc](../ispectify_bloc) - BLoC state management integration"
+}

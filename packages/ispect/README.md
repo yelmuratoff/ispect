@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Logging and inspection tool for Flutter development and testing</strong></p>
+  <p><strong>Core debugging interface and inspection toolkit for Flutter development</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispect">
@@ -27,7 +27,7 @@
 
 ## 🔍 Overview
 
-> **ISpect** is a debugging and inspection toolkit designed specifically for Flutter applications. 
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
 
 <div align="center">
 
@@ -37,28 +37,15 @@
 
 ISpect empowers Flutter developers with a suite of debugging tools that seamlessly integrate into your development workflow. From monitoring HTTP requests in real-time to tracking performance metrics and managing application state, ISpect provides an intuitive interface that makes debugging efficient and insightful.
 
-### 🎯 Key Capabilities
+### 🎯 Key Features
 
 - 🌐 **Network Monitoring**: Detailed HTTP request/response inspection with error tracking
 - 📝 **Comprehensive Logging**: Advanced logging system with categorization and filtering
 - ⚡ **Performance Analysis**: Real-time performance metrics and monitoring
-- 🔍 **UI Inspector**: Widget hierarchy inspection with color picker and layout analysis  
+- 🔍 **UI Inspector**: Widget hierarchy inspection with color picker and layout analysis
 - 📱 **Device Information**: System and app metadata collection
 - 🐛 **Bug Reporting**: Integrated feedback system with screenshot capture
 - 🗄️ **Cache Management**: Application cache inspection and management
-
-## 🏗️ Architecture
-
-ISpect is built as a modular system with specialized packages:
-
-| Package | Purpose | Version |
-|---------|---------|---------|
-| [ispect](packages/ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
-| [ispectify](packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
-| [ispectify_dio](packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
-| [ispectify_http](packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
-| [ispectify_bloc](packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
-| [ispect_jira](packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## ✨ Features
 
@@ -99,7 +86,6 @@ ISpect is built as a modular system with specialized packages:
 - Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
 - Extensible localization system
 
-
 ## 📱 Interface Preview
 
 <div align="center">
@@ -118,27 +104,16 @@ ISpect is built as a modular system with specialized packages:
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="160" />
 </div>
 
-## 🚀 Quick Start
+## 📦 Installation
 
-### 📦 Installation
-
-Add ISpect to your `pubspec.yaml`:
+Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   ispect: ^4.1.3
-
-dev_dependencies:
-  # For HTTP logging (choose one)
-  ispectify_dio: ^4.1.3      # For Dio
-  ispectify_http: ^4.1.3     # For standard HTTP
-  
-  # Optional integrations
-  ispectify_bloc: ^4.1.3     # For BLoC logging
-  ispect_jira: ^4.1.3        # For Jira integration
 ```
 
-### ⚙️ Basic Setup
+## 🚀 Quick Start
 
 ```dart
 import 'package:ispect/ispect.dart';
@@ -170,60 +145,10 @@ class MyApp extends StatelessWidget {
           ISpectNavigatorObserver(),
         ],
         
-        // Add localizations
-        localizationsDelegates: [
-          ...ISpectLocalizations.localizationDelegates([
-            // Your existing delegates
-          ]),
-        ],
-        
         home: HomePage(),
       ),
     );
   }
-}
-```
-
-### 🌐 HTTP Integration
-
-#### 🔧 For Dio:
-```dart
-import 'package:ispectify_dio/ispectify_dio.dart';
-
-final dio = Dio()
-  ..interceptors.add(
-    ISpectifyDioInterceptor(ispectify: ISpect.read(context).ispectify),
-  );
-```
-
-#### 📡 For standard HTTP:
-```dart
-import 'package:ispectify_http/ispectify_http.dart';
-
-final client = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpLogger(
-      ispectify: ISpect.read(context).ispectify,
-    ),
-  ],
-);
-```
-
-### 🧊 BLoC Integration
-
-```dart
-import 'package:ispectify_bloc/ispectify_bloc.dart';
-
-void main() {
-  // Initialize BLoC observer
-  Bloc.observer = ISpectifyBlocObserver(
-    ispectify: ISpectify(),
-  );
-  
-  ISpect.run(
-    () => runApp(MyApp()),
-    ispectify: ispectify,
-  );
 }
 ```
 
@@ -271,30 +196,40 @@ _router.routerDelegate.addListener(() {
     .currentConfiguration.last.matchedLocation;
   ISpect.route(location);
 });
-``` 
+```
 
 ## 📚 Examples
 
-Complete example applications are available in each package's `example/` directory:
+Complete example applications are available in the [example/](example/) directory demonstrating core functionality.
 
-- 📖 [Basic Example](packages/ispect/example/) - Core functionality demonstration
-- 🎫 [Jira Integration Example](packages/ispect_jira/example/) - Bug reporting workflow
-- 🌐 [HTTP Logging Examples](packages/ispectify_http/example/) - Network monitoring setup
+## 🏗️ Architecture
+
+ISpect is built as a modular system with specialized packages:
+
+| Package | Purpose | Version |
+|---------|---------|---------|
+| [ispect](../ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](../ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](../ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](../ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_bloc](../ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
+| [ispect_jira](../ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) and submit pull requests to the main branch.
+Contributions are welcome! Please read our [contributing guidelines](../../CONTRIBUTING.md) and submit pull requests to the main branch.
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🔗 Related Packages
 
-ISpect builds upon several excellent open-source packages:
-- [Talker](https://pub.dev/packages/talker) - Logging foundation
-- [Feedback](https://pub.dev/packages/feedback) - User feedback system
-- [Inspector](https://pub.dev/packages/inspector) - Widget inspection
+- [ispectify](../ispectify) - Foundation logging system
+- [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
+- [ispectify_http](../ispectify_http) - Standard HTTP client integration
+- [ispectify_bloc](../ispectify_bloc) - BLoC state management integration
+- [ispect_jira](../ispect_jira) - Jira ticket creation integration
 
 ---
 
