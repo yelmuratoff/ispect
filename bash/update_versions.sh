@@ -62,36 +62,61 @@ for package_dir in packages/*/; do
     # Now update all internal package dependencies
     for pkg_name in "${package_names[@]}"; do
       # Check if we're inside the dependencies section (not dependency_overrides)
-      # Look for dependencies on internal packages - handle comments and whitespace better
-      if grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
+      # Extract dependencies section first
+      deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file")
+      
+      if echo "$deps_section" | grep -q "^  $pkg_name: \^"; then
         echo "Updating dependency on $pkg_name in $pubspec_file to version $VERSION"
         
         if [[ "$OSTYPE" == "darwin"* ]]; then
           # macOS requires a different sed syntax
           # Use awk to only replace in dependencies section, not in dependency_overrides
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            /^dependencies:/,/^[a-z]/ {
-              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                # Keep the original indentation and any spaces around the colon
-                match($0, /^[ ]*'pkg'[ ]*:/)
-                prefix = substr($0, 1, RLENGTH)
-                print prefix" ^"ver
-                next
-              }
+            BEGIN { in_deps = 0 }
+            /^dependencies:/ { in_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+            in_deps && $0 ~ "^  "pkg": \\^" {
+              print "  "pkg": ^"ver
+              next
             }
             { print }
           ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
         else
           # Linux/Unix 
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            /^dependencies:/,/^[a-z]/ {
-              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                # Keep the original indentation and any spaces around the colon
-                match($0, /^[ ]*'pkg'[ ]*:/)
-                prefix = substr($0, 1, RLENGTH)
-                print prefix" ^"ver
-                next
-              }
+            BEGIN { in_deps = 0 }
+            /^dependencies:/ { in_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+            in_deps && $0 ~ "^  "pkg": \\^" {
+                        ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
+        fi
+      fi
+      
+      # Also check dev_dependencies section
+      dev_deps_section=$(awk '/^dev_dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file")
+      
+      if echo "$dev_deps_section" | grep -q "^  $pkg_name: \^"; then
+        echo "Updating dev dependency on $pkg_name in $pubspec_file to version $VERSION"
+        
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          awk -v pkg="$pkg_name" -v ver="$VERSION" '
+            BEGIN { in_dev_deps = 0 }
+            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
+            in_dev_deps && $0 ~ "^  "pkg": \\^" {
+              print "  "pkg": ^"ver
+              next
+            }
+            { print }
+          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
+        else
+          awk -v pkg="$pkg_name" -v ver="$VERSION" '
+            BEGIN { in_dev_deps = 0 }
+            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
+            in_dev_deps && $0 ~ "^  "pkg": \\^" {
+              print "  "pkg": ^"ver
+              next
             }
             { print }
           ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
@@ -113,32 +138,32 @@ for package_dir in packages/*/; do
     echo "Checking example project for $package_name..."
     
     # Update the parent package dependency in the example only in dependencies section
-    if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$package_name:[ ]*\^"; then
+    deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$example_pubspec")
+    
+    if echo "$deps_section" | grep -q "^  $package_name: \^"; then
       echo "Updating $package_name dependency in example to $VERSION"
       
       if [[ "$OSTYPE" == "darwin"* ]]; then
         # Use awk to only replace in dependencies section, not in dependency_overrides
         awk -v pkg="$package_name" -v ver="$VERSION" '
-          /^dependencies:/,/^[a-z]/ {
-            if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-              match($0, /^[ ]*'pkg'[ ]*:/)
-              prefix = substr($0, 1, RLENGTH)
-              print prefix" ^"ver
-              next
-            }
+          BEGIN { in_deps = 0 }
+          /^dependencies:/ { in_deps = 1; print; next }
+          /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+          in_deps && $0 ~ "^  "pkg": \\^" {
+            print "  "pkg": ^"ver
+            next
           }
           { print }
         ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
       else
         # Linux/Unix approach
         awk -v pkg="$package_name" -v ver="$VERSION" '
-          /^dependencies:/,/^[a-z]/ {
-            if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-              match($0, /^[ ]*'pkg'[ ]*:/)
-              prefix = substr($0, 1, RLENGTH)
-              print prefix" ^"ver
-              next
-            }
+          BEGIN { in_deps = 0 }
+          /^dependencies:/ { in_deps = 1; print; next }
+          /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+          in_deps && $0 ~ "^  "pkg": \\^" {
+            print "  "pkg": ^"ver
+            next
           }
           { print }
         ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
@@ -149,30 +174,28 @@ for package_dir in packages/*/; do
     for pkg_name in "${package_names[@]}"; do
       if [[ "$pkg_name" != "$package_name" ]]; then
         # Only match in the dependencies section
-        if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
+        if echo "$deps_section" | grep -q "^  $pkg_name: \^"; then
           echo "Updating dependency on $pkg_name in example to version $VERSION"
           
           if [[ "$OSTYPE" == "darwin"* ]]; then
             awk -v pkg="$pkg_name" -v ver="$VERSION" '
-              /^dependencies:/,/^[a-z]/ {
-                if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                  match($0, /^[ ]*'pkg'[ ]*:/)
-                  prefix = substr($0, 1, RLENGTH)
-                  print prefix" ^"ver
-                  next
-                }
+              BEGIN { in_deps = 0 }
+              /^dependencies:/ { in_deps = 1; print; next }
+              /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+              in_deps && $0 ~ "^  "pkg": \\^" {
+                print "  "pkg": ^"ver
+                next
               }
               { print }
             ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
           else
             awk -v pkg="$pkg_name" -v ver="$VERSION" '
-              /^dependencies:/,/^[a-z]/ {
-                if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                  match($0, /^[ ]*'pkg'[ ]*:/)
-                  prefix = substr($0, 1, RLENGTH)
-                  print prefix" ^"ver
-                  next
-                }
+              BEGIN { in_deps = 0 }
+              /^dependencies:/ { in_deps = 1; print; next }
+              /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
+              in_deps && $0 ~ "^  "pkg": \\^" {
+                print "  "pkg": ^"ver
+                next
               }
               { print }
             ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
@@ -182,34 +205,33 @@ for package_dir in packages/*/; do
     done
     
     # Also check dev_dependencies section
+    dev_deps_section=$(awk '/^dev_dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$example_pubspec")
+    
     for pkg_name in "${package_names[@]}"; do
-      if grep -q "[ ]*$pkg_name:[ ]*\^" "$example_pubspec" && \
-         grep -A 50 "^dev_dependencies:" "$example_pubspec" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
+      if echo "$dev_deps_section" | grep -q "^  $pkg_name: \^"; then
         echo "Updating dev dependency on $pkg_name in example to version $VERSION"
         
         if [[ "$OSTYPE" == "darwin"* ]]; then
           # This sed command looks for the package in dev_dependencies section and updates it
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            /^dev_dependencies:/,/^[a-z]/ {
-              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                match($0, /^[ ]*'pkg'[ ]*:/)
-                prefix = substr($0, 1, RLENGTH)
-                print prefix" ^"ver
-                next
-              }
+            BEGIN { in_dev_deps = 0 }
+            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
+            in_dev_deps && $0 ~ "^  "pkg": \\^" {
+              print "  "pkg": ^"ver
+              next
             }
             { print }
           ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
         else
           # For Linux we use a similar approach
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            /^dev_dependencies:/,/^[a-z]/ {
-              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
-                match($0, /^[ ]*'pkg'[ ]*:/)
-                prefix = substr($0, 1, RLENGTH)
-                print prefix" ^"ver
-                next
-              }
+            BEGIN { in_dev_deps = 0 }
+            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
+            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
+            in_dev_deps && $0 ~ "^  "pkg": \\^" {
+              print "  "pkg": ^"ver
+              next
             }
             { print }
           ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"

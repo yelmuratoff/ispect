@@ -2,18 +2,6 @@
 
 ## 4.1.3-dev11
 
-### Added
-- Initial release of version 4.1.3-dev11
-
-
-## 4.1.3-dev10
-
-### Added
-- Initial release of version 4.1.3-dev10
-
-
-## 4.1.3-dev09
-
 ### Infrastructure
 - Added comprehensive version management system:
   - Created `version.config` as single source of truth for package versions

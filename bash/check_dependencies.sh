@@ -45,7 +45,7 @@ for package_dir in packages/*/; do
   for dep_pkg in "${package_names[@]}"; do
     if [[ "$dep_pkg" != "$package_name" ]]; then
       # Extract the dependencies section and check for the package
-      deps_section=$(grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" || echo "")
+      deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file" || echo "")
       dep_line=$(echo "$deps_section" | grep -E "^  $dep_pkg: \^" || echo "")
       
       if [[ -n "$dep_line" ]]; then
@@ -60,22 +60,34 @@ for package_dir in packages/*/; do
       fi
     fi
   done
+  
+  # Also check dev_dependencies section
+  for dep_pkg in "${package_names[@]}"; do
+    if [[ "$dep_pkg" != "$package_name" ]]; then
+      # Extract the dev_dependencies section and check for the package
+      dev_deps_section=$(awk '/^dev_dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file" || echo "")
+      dev_dep_line=$(echo "$dev_deps_section" | grep -E "^  $dep_pkg: \^" || echo "")
+      
+      if [[ -n "$dev_dep_line" ]]; then
+        dev_dep_version=$(echo "$dev_dep_line" | sed -E 's/^  [^:]+: \^([0-9]+\.[0-9]+\.[0-9]+(-.+)?)/\1/')
+        
+        if [[ "$dev_dep_version" != "$VERSION" ]]; then
+          echo "  ⚠️  Dev dependency inconsistency in $package_name: depends on $dep_pkg version ^$dev_dep_version, should be ^$VERSION"
+          has_inconsistency=1
+        else
+          echo "  ✅ $package_name dev depends on $dep_pkg version ^$VERSION"
+        fi
+      fi
+    fi
+  done
 
   # Check example folders
   example_pubspec="${package_dir}example/pubspec.yaml"
   if [[ -f "$example_pubspec" ]]; then
     echo "  Checking example project for $package_name..."
     
-    # Skip checking examples with dependency_overrides as they use local paths
-    if grep -q "dependency_overrides:" "$example_pubspec"; then
-      if grep -q "  $package_name:" "$example_pubspec" | grep -q "path:"; then
-        echo "  ✅ Example uses local path override for $package_name"
-        continue
-      fi
-    fi
-    
     # Extract the dependencies section
-    deps_section=$(grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" || echo "")
+    deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$example_pubspec" || echo "")
     
     # Check parent package dependency in example - but only in the dependencies section
     parent_dep_line=$(echo "$deps_section" | grep -E "^  $package_name: \^" || echo "")
@@ -101,6 +113,17 @@ for package_dir in packages/*/; do
         fi
       fi
     done
+    
+    # If there are dependency_overrides with local paths, note that but still check versions
+    if grep -q "dependency_overrides:" "$example_pubspec"; then
+      local_override_found=false
+      for dep_pkg in "${package_names[@]}"; do
+        if grep -A10 "dependency_overrides:" "$example_pubspec" | grep -q "  $dep_pkg:" && grep -A10 "dependency_overrides:" "$example_pubspec" | grep -A1 "  $dep_pkg:" | grep -q "path:"; then
+          echo "  📝 Example uses local path override for $dep_pkg"
+          local_override_found=true
+        fi
+      done
+    fi
   fi
 done
 
