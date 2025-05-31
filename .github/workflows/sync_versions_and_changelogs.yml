@@ -40,11 +40,22 @@ jobs:
       
       - name: Commit and push changes
         run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            git add packages/*/CHANGELOG.md packages/*/pubspec.yaml packages/*/example/pubspec.yaml version.config
-            git commit -m "chore: sync package versions and changelogs with dependencies"
-            git push
-            echo "Package versions, dependencies, and changelogs updated and pushed successfully!"
+          # Clean up any temporary files
+          find packages -name "*.tmp" -type f -delete || true
+          
+          # Check for actual changes to tracked files
+          if [[ -n $(git status --porcelain | grep -E '^\s*(M|A|D|R)') ]]; then
+            # Add only existing files that we care about
+            git add packages/*/CHANGELOG.md packages/*/pubspec.yaml packages/*/example/pubspec.yaml version.config 2>/dev/null || true
+            
+            # Only commit if there are staged changes
+            if [[ -n $(git diff --cached --name-only) ]]; then
+              git commit -m "chore: sync package versions and changelogs with dependencies"
+              git push
+              echo "Package versions, dependencies, and changelogs updated and pushed successfully!"
+            else
+              echo "No staged changes to commit after adding files."
+            fi
           else
             echo "No changes to commit."
           fi
