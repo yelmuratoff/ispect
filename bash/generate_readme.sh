@@ -1,5 +1,5 @@
 #!/bin/bash
-# chmod +x bash/generate_readme.sh
+# ./bash/generate_readme.sh generate all
 
 # Colors for output
 RED='\033[0;31m'
