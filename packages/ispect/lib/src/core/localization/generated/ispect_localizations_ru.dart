@@ -54,19 +54,24 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get basicSettings => 'Основные настройки';
 
   @override
-  String get blocCloseLogDesc => 'Тег для логирования события, связанного с моментом закрытия BLoC';
+  String get blocCloseLogDesc =>
+      'Тег для логирования события, связанного с моментом закрытия BLoC';
 
   @override
-  String get blocCreateLogDesc => 'Тег для логирования события, связанного с моментом создания BLoC';
+  String get blocCreateLogDesc =>
+      'Тег для логирования события, связанного с моментом создания BLoC';
 
   @override
-  String get blocEventLogDesc => 'Тег для логирования события, связанного с обработкой события в BLoC';
+  String get blocEventLogDesc =>
+      'Тег для логирования события, связанного с обработкой события в BLoC';
 
   @override
-  String get blocTransitionLogDesc => 'Тег для логирования переходов между состояниями в BLoC';
+  String get blocTransitionLogDesc =>
+      'Тег для логирования переходов между состояниями в BLoC';
 
   @override
-  String get blocStateLogDesc => 'Тег для логирования текущего состояния в BLoC';
+  String get blocStateLogDesc =>
+      'Тег для логирования текущего состояния в BLoC';
 
   @override
   String get buildVersion => 'Версия сборки';
@@ -124,13 +129,15 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Создание задачи';
 
   @override
-  String get criticalLogDesc => 'Тег для логирования критических ошибок или событий, требующих немедленного внимания';
+  String get criticalLogDesc =>
+      'Тег для логирования критических ошибок или событий, требующих немедленного внимания';
 
   @override
   String get data => 'Данные';
 
   @override
-  String get debugLogDesc => 'Тег для логирования отладочной информации для анализа работы приложения';
+  String get debugLogDesc =>
+      'Тег для логирования отладочной информации для анализа работы приложения';
 
   @override
   String get description => 'Описание';
@@ -150,7 +157,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Ошибка при очистке кэша';
 
   @override
-  String get errorLogDesc => 'Тег для логирования ошибок, возникших в приложении';
+  String get errorLogDesc =>
+      'Тег для логирования ошибок, возникших в приложении';
 
   @override
   String get errorMessage => 'Текст ошибки';
@@ -159,7 +167,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorType => 'Тип ошибки';
 
   @override
-  String get exceptionLogDesc => 'Тег для логирования исключений, возникающих в приложении';
+  String get exceptionLogDesc =>
+      'Тег для логирования исключений, возникающих в приложении';
 
   @override
   String get expandLogs => 'Развернуть журнал';
@@ -186,7 +195,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get goToLogger => 'Перейти к журналу';
 
   @override
-  String get goodLogDesc => 'Тег для логирования успешных операций или позитивных событий в приложении';
+  String get goodLogDesc =>
+      'Тег для логирования успешных операций или позитивных событий в приложении';
 
   @override
   String get headers => 'Headers';
@@ -204,7 +214,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Лог ответа сервера на отправленный запрос';
 
   @override
-  String get infoLogDesc => 'Тег для логирования информационных сообщений о работе приложения';
+  String get infoLogDesc =>
+      'Тег для логирования информационных сообщений о работе приложения';
 
   @override
   String get initializationFailed => 'Ошибка инициализации';
@@ -213,7 +224,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get issueCreated => 'Задача успешно создана';
 
   @override
-  String get jiraInstruction => '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
+  String get jiraInstruction =>
+      '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
   String get logItemCopied => 'Запись скопирована в буфер обмена';
@@ -237,7 +249,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get notFound => 'не найдена';
 
   @override
-  String get otherLogsForDevelopers => 'Другие логи уже используют разработчики';
+  String get otherLogsForDevelopers =>
+      'Другие логи уже используют разработчики';
 
   @override
   String get pageNotFound => 'Ой, страница по этому пути';
@@ -255,7 +268,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Пожалуйста, авторизуйтесь в Jira';
 
   @override
-  String get pleaseCheckAuthCred => 'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+  String get pleaseCheckAuthCred =>
+      'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
 
   @override
   String get pleaseSelectYourProject => 'Теперь, пожалуйста выберите проект';
@@ -484,7 +498,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'Для тестировщиков будет полезно знать про эти логи';
+  String get testerLogDesc =>
+      'Для тестировщиков будет полезно знать про эти логи';
 
   @override
   String totalFilesCount(Object number) {
@@ -513,13 +528,15 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get userEmail => 'Электронная почта';
 
   @override
-  String get verboseLogDesc => 'Тег для логирования детализированной информации для глубокого анализа приложения';
+  String get verboseLogDesc =>
+      'Тег для логирования детализированной информации для глубокого анализа приложения';
 
   @override
   String get viewAndManageData => 'Просмотр и управление данными приложения';
 
   @override
-  String get warningLogDesc => 'Тег для логирования предупреждающих сообщений о потенциальных проблемах в приложении';
+  String get warningLogDesc =>
+      'Тег для логирования предупреждающих сообщений о потенциальных проблемах в приложении';
 
   @override
   String get you => 'Вы';
@@ -534,5 +551,6 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get shareLogFull => 'Поделиться логом (полностью)';
 
   @override
-  String get copyToClipboardTruncated => 'Скопировать в буфер обмена (сокращенно)';
+  String get copyToClipboardTruncated =>
+      'Скопировать в буфер обмена (сокращенно)';
 }
