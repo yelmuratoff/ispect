@@ -3,7 +3,6 @@
    "title": "ISpect Jira",
    "description": "Jira ticket creation integration for ISpect debugging toolkit",
    "overview": "provides seamless integration between ISpect debugging toolkit and Jira for automated bug reporting and ticket creation.",
-   "version": "4.1.3",
    "features": [
       "🎫 **Automated Ticket Creation**: Create Jira tickets directly from the debugging interface",
       "📸 **Screenshot Attachment**: Automatically attach screenshots to tickets",

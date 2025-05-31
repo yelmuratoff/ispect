@@ -3,7 +3,6 @@
    "title": "ISpectify BLoC",
    "description": "BLoC state management integration for ISpectify logging system",
    "overview": "provides seamless integration between BLoC state management and the ISpectify logging system.",
-   "version": "4.1.3",
    "features": [
       "🔄 **State Change Logging**: Automatic logging of all BLoC state changes",
       "📝 **Event Tracking**: Detailed event logging with parameters",

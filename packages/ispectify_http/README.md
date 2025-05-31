@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispectify_http.png?raw=true" width="400">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
   <p><strong>Standard HTTP client integration for ISpectify logging system</strong></p>
   
@@ -111,7 +111,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.1.3
+  ispectify_http: ^4.1.3-dev12
 ```
 
 ## 🚀 Quick Start

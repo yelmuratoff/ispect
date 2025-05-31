@@ -3,7 +3,6 @@
    "title": "ISpectify",
    "description": "Foundation logging system for ISpect toolkit (based on Talker)",
    "overview": "is the foundation logging system that powers the ISpect debugging toolkit.",
-   "version": "4.1.3",
    "features": [
       "📝 **Structured Logging**: Advanced logging with categorization and filtering",
       "🎨 **Custom Log Types**: Define your own log types with custom colors and icons",

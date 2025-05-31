@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Core debugging interface and inspection toolkit for Flutter development</strong></p>
+  <p><strong>Logging and inspection tool for Flutter development and testing</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispect">
@@ -110,7 +110,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.1.3
+  ispect: ^4.1.3-dev12
 ```
 
 ## 🚀 Quick Start

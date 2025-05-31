@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispectify_dio.png?raw=true" width="400">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
   <p><strong>Dio HTTP client integration for ISpectify logging system</strong></p>
   
@@ -102,7 +102,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.1.3
+  ispectify_dio: ^4.1.3-dev12
 ```
 
 ## 🚀 Quick Start

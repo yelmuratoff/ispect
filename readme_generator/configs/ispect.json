@@ -1,9 +1,8 @@
 {
    "package_name": "ispect",
    "title": "ISpect",
-   "description": "Core debugging interface and inspection toolkit for Flutter development",
+   "description": "Logging and inspection tool for Flutter development and testing",
    "overview": "is the main debugging and inspection toolkit designed specifically for Flutter applications.",
-   "version": "4.1.3",
    "features": [
       "🌐 **Network Monitoring**: Detailed HTTP request/response inspection with error tracking",
       "📝 **Comprehensive Logging**: Advanced logging system with categorization and filtering",

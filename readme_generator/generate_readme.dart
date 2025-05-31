@@ -6,6 +6,7 @@ import 'dart:io';
 const String configDir = 'readme_generator/configs';
 const String templateFile = 'readme_generator/template.md';
 const String packagesDir = 'packages';
+const String versionConfigFile = 'version.config';
 
 void main(List<String> args) {
   if (args.isEmpty) {
@@ -22,6 +23,27 @@ void main(List<String> args) {
     generateAllReadmes();
   } else {
     generateReadme(command);
+  }
+}
+
+String readVersionFromConfig() {
+  try {
+    final versionFile = File(versionConfigFile);
+    if (!versionFile.existsSync()) {
+      print('⚠️  Version config file not found: $versionConfigFile');
+      return '0.0.0';
+    }
+
+    final content = versionFile.readAsStringSync();
+    final versionLine = content.split('\n').firstWhere(
+          (line) => line.trim().startsWith('VERSION='),
+          orElse: () => 'VERSION=0.0.0',
+        );
+
+    return versionLine.split('=')[1].trim();
+  } catch (e) {
+    print('⚠️  Error reading version: $e');
+    return '0.0.0';
   }
 }
 
@@ -60,11 +82,19 @@ void generateReadme(String packageName) {
     final configJson =
         json.decode(configFile.readAsStringSync()) as Map<String, dynamic>;
 
+    // Read version from config file
+    final version = readVersionFromConfig();
+    print('📦 Using version: $version');
+
     // Generate README content
     String readme = template;
 
+    // Add version to config data
+    final configWithVersion = Map<String, dynamic>.from(configJson);
+    configWithVersion['version'] = version;
+
     // Replace simple placeholders
-    configJson.forEach((key, value) {
+    configWithVersion.forEach((key, value) {
       if (value is String) {
         readme = readme.replaceAll('{{$key}}', value);
       } else if (value is List) {

@@ -3,7 +3,6 @@
    "title": "ISpectify HTTP",
    "description": "Standard HTTP client integration for ISpectify logging system",
    "overview": "provides seamless integration between Dart's standard HTTP client and the ISpectify logging system.",
-   "version": "4.1.3",
    "features": [
       "🌐 **HTTP Request Logging**: Automatic logging of all HTTP requests",
       "📊 **Response Tracking**: Detailed response logging with timing information",

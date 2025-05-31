@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispectify.png?raw=true" width="400">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
   <p><strong>Foundation logging system for ISpect toolkit (based on Talker)</strong></p>
   
@@ -96,7 +96,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.1.3
+  ispectify: ^4.1.3-dev12
 ```
 
 ## 🚀 Quick Start

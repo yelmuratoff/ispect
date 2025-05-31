@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect_jira.png?raw=true" width="400">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
   <p><strong>Jira ticket creation integration for ISpect debugging toolkit</strong></p>
   
@@ -141,7 +141,7 @@ Add ispect_jira to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect_jira: ^4.1.3
+  ispect_jira: ^4.1.3-dev12
 ```
 
 ## 🚀 Quick Start

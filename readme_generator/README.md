@@ -56,7 +56,6 @@ Each package requires a JSON configuration file in `readme_generator/configs/`:
   "title": "ISpect",
   "description": "Core debugging interface and inspection toolkit",
   "overview": "is the main debugging toolkit...",
-  "version": "4.1.3",
   "features": [
     "🌐 **Network Monitoring**: Detailed HTTP request/response inspection",
     "📝 **Comprehensive Logging**: Advanced logging system"
@@ -76,7 +75,6 @@ Each package requires a JSON configuration file in `readme_generator/configs/`:
 - `package_name` - Package identifier
 - `title` - Display name
 - `description` - Brief description
-- `version` - Package version
 
 ### Optional Fields
 
@@ -90,6 +88,10 @@ Each package requires a JSON configuration file in `readme_generator/configs/`:
 - `examples_section` - Examples documentation
 - `related_packages` - Related packages links
 
+### Version Management
+
+Package versions are automatically read from `version.config` file in the workspace root. This ensures all packages use the same version number and eliminates the need to maintain version information in individual JSON configuration files.
+
 ## Template System
 
 The base template `template.md` uses `{{placeholder_name}}` syntax for variable replacement from package configurations.
@@ -97,10 +99,10 @@ The base template `template.md` uses `{{placeholder_name}}` syntax for variable 
 ### Available Placeholders
 
 - `{{package_name}}` - Package name
-- `{{title}}` - Package title
+- `{{title}}` - Package title  
 - `{{description}}` - Package description
 - `{{overview}}` - Overview text
-- `{{version}}` - Version number
+- `{{version}}` - Version number (automatically read from version.config)
 - `{{features}}` - Features list
 - `{{usage_example}}` - Usage examples
 - `{{architecture_note}}` - Architecture notes
