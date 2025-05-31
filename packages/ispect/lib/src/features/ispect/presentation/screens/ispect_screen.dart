@@ -13,7 +13,6 @@ import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart'
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
-
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 
 part '../widgets/not_found_widget.dart';
@@ -77,6 +76,7 @@ class _ISpectScreenState extends State<ISpectScreen> {
                   final uniqTitles = titles.toSet().toList();
 
                   return CustomScrollView(
+                    cacheExtent: 2000,
                     slivers: [
                       ISpectAppBar(
                         focusNode: _focusNode,
@@ -115,30 +115,27 @@ class _ISpectScreenState extends State<ISpectScreen> {
                             child: _NotFoundWidget(),
                           ),
                         ),
-                      SliverList.separated(
+                      // Optimized SliverList with better performance characteristics
+                      SliverList.builder(
                         itemCount: filteredElements.length,
-                        separatorBuilder: (_, __) => Divider(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
-                          thickness: 1,
-                          height: 0,
-                        ),
                         itemBuilder: (context, index) {
                           final data = _getListItem(filteredElements, index);
-                          if (widget.itemsBuilder != null) {
-                            return widget.itemsBuilder!.call(context, data);
-                          }
 
-                          return LogCard(
-                            key: ValueKey(data.hashCode),
+                          // Custom item builder with divider integrated
+                          return _OptimizedLogListItem(
+                            key: ValueKey('${data.hashCode}_$index'),
+                            data: data,
+                            index: index,
                             icon: iSpect.theme.logIcons[data.key] ??
                                 Icons.bug_report_outlined,
                             color: iSpect.theme
                                 .getTypeColor(context, key: data.key),
-                            data: data,
-                            index: index,
                             isExpanded: _controller.activeData?.hashCode ==
                                 data.hashCode,
+                            isLast: index == filteredElements.length - 1,
+                            dividerColor: iSpect.theme.dividerColor(context) ??
+                                context.ispectTheme.dividerColor,
+                            itemsBuilder: widget.itemsBuilder,
                             onCopyTap: () => _copyISpectifyDataItemText(data),
                             onTap: () {
                               if (_controller.activeData?.hashCode ==
@@ -311,6 +308,69 @@ class _ISpectScreenState extends State<ISpectScreen> {
       value: ISpect.logger.history.formattedText,
       title: '✅ ${context.ispectL10n.allLogsCopied}',
       showValue: false,
+    );
+  }
+}
+
+/// Optimized list item widget with integrated divider for better performance
+class _OptimizedLogListItem extends StatelessWidget {
+  const _OptimizedLogListItem({
+    required this.data,
+    required this.index,
+    required this.icon,
+    required this.color,
+    required this.isExpanded,
+    required this.isLast,
+    required this.dividerColor,
+    required this.onTap,
+    required this.onCopyTap,
+    this.itemsBuilder,
+    super.key,
+  });
+
+  final ISpectifyData data;
+  final int index;
+  final IconData icon;
+  final Color color;
+  final bool isExpanded;
+  final bool isLast;
+  final Color dividerColor;
+  final VoidCallback onTap;
+  final VoidCallback onCopyTap;
+  final ISpectifyDataBuilder? itemsBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget child;
+
+    if (itemsBuilder != null) {
+      child = itemsBuilder!.call(context, data);
+    } else {
+      child = LogCard(
+        icon: icon,
+        color: color,
+        data: data,
+        index: index,
+        isExpanded: isExpanded,
+        onCopyTap: onCopyTap,
+        onTap: onTap,
+      );
+    }
+
+    // Only add divider if not the last item
+    if (isLast) {
+      return child;
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        child,
+        Container(
+          height: 1,
+          color: dividerColor,
+        ),
+      ],
     );
   }
 }

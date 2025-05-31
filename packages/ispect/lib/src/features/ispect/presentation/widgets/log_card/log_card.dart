@@ -6,6 +6,7 @@ import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart'
 
 part 'collapsed_body.dart';
 
+/// Optimized LogCard widget for high-performance rendering with up to 10k items
 class LogCard extends StatelessWidget {
   const LogCard({
     required this.icon,
@@ -17,6 +18,7 @@ class LogCard extends StatelessWidget {
     this.onCopyTap,
     super.key,
   });
+
   final ISpectifyData data;
   final IconData icon;
   final Color color;
@@ -26,118 +28,186 @@ class LogCard extends StatelessWidget {
   final VoidCallback? onCopyTap;
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-        color: isExpanded ? color.withValues(alpha: 0.1) : Colors.transparent,
-        child: Column(
-          children: [
-            ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-              visualDensity: VisualDensity.compact,
-              title: CollapsedBody(
+  Widget build(BuildContext context) => RepaintBoundary(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          color:
+              isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LogCardHeader(
                 icon: icon,
                 color: color,
-                title: data.key,
-                dateTime: data.formattedTime,
+                data: data,
+                isExpanded: isExpanded,
+                onTap: onTap,
                 onCopyTap: onCopyTap,
-                onHttpTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => LogScreen(data: data),
-                    settings: const RouteSettings(
-                      name: 'Detailed Log Screen',
-                    ),
-                  ),
-                ),
-                message: data.textMessage,
-                errorMessage: data.httpLogText,
-                expanded: isExpanded,
               ),
-              onTap: onTap,
-            ),
-            if (isExpanded)
-              Divider(
-                height: 1,
-                color: context.ispectTheme.dividerColor,
-              ),
-            AnimatedCrossFade(
-              firstChild: const SizedBox.shrink(),
-              secondChild: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+              if (isExpanded) ...[
+                _ExpandedContent(
+                  data: data,
+                  color: color,
                 ),
-                child: Column(
-                  children: [
-                    if (isExpanded)
-                      _ExpandedBody(
-                        stackTrace: data.stackTraceLogText,
-                        expanded: isExpanded,
-                        type: data.typeText,
-                        color: color,
-                        message: data.textMessage,
-                        errorMessage: data.httpLogText,
-                        isHTTP: data.isHttpLog,
-                      ),
-                    if (isExpanded &&
-                        data.stackTraceLogText != null &&
-                        data.stackTraceLogText!.isNotEmpty)
-                      _StrackTraceBody(
-                        color: color,
-                        stackTrace: data.stackTraceLogText,
-                      ),
-                  ],
-                ),
-              ),
-              crossFadeState: isExpanded
-                  ? CrossFadeState.showSecond
-                  : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 200),
-              reverseDuration: const Duration(milliseconds: 200),
-            ),
-          ],
+              ],
+            ],
+          ),
         ),
       );
 }
 
-/// Displays expanded content for log entries with conditional styling and text sections
-class _ExpandedBody extends StatelessWidget {
-  const _ExpandedBody({
-    required this.stackTrace,
+/// Optimized header that doesn't rebuild when expansion state changes
+class _LogCardHeader extends StatelessWidget {
+  const _LogCardHeader({
+    required this.icon,
     required this.color,
-    required this.expanded,
-    required this.type,
-    required this.message,
-    required this.errorMessage,
-    required this.isHTTP,
+    required this.data,
+    required this.isExpanded,
+    required this.onTap,
+    this.onCopyTap,
   });
 
-  final String? stackTrace;
+  final IconData icon;
   final Color color;
-  final bool expanded;
-  final String? message;
-  final String? type;
-  final String? errorMessage;
-  final bool isHTTP;
+  final ISpectifyData data;
+  final bool isExpanded;
+  final VoidCallback onTap;
+  final VoidCallback? onCopyTap;
 
   @override
-  Widget build(BuildContext context) {
-    if (!expanded) return const SizedBox.shrink();
-
-    return _LogContentContainer(
-      hasStackTrace: stackTrace != null,
-      color: color,
-      child: _LogTextContent(
-        message: message,
-        type: type,
-        errorMessage: errorMessage,
-        isHTTP: isHTTP,
-        textStyle: TextStyle(
-          color: color,
-          fontSize: 12,
+  Widget build(BuildContext context) => Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: CollapsedBody(
+              icon: icon,
+              color: color,
+              title: data.key,
+              dateTime: data.formattedTime,
+              onCopyTap: onCopyTap,
+              onHttpTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => LogScreen(data: data),
+                  settings: const RouteSettings(
+                    name: 'Detailed Log Screen',
+                  ),
+                ),
+              ),
+              message: data.textMessage,
+              errorMessage: data.httpLogText,
+              expanded: isExpanded,
+            ),
+          ),
         ),
-      ),
-    );
-  }
+      );
+}
+
+/// Lazy-built expanded content that only creates widgets when needed
+class _ExpandedContent extends StatelessWidget {
+  const _ExpandedContent({
+    required this.data,
+    required this.color,
+  });
+
+  final ISpectifyData data;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 1,
+            color: context.ispectTheme.dividerColor,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _LazyExpandedBody(
+                  data: data,
+                  color: color,
+                ),
+                if (data.stackTraceLogText?.isNotEmpty ?? false)
+                  _LazyStackTraceBody(
+                    color: color,
+                    stackTrace: data.stackTraceLogText!,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      );
+}
+
+/// Displays expanded content for log entries with conditional styling and text sections
+class _LazyExpandedBody extends StatelessWidget {
+  const _LazyExpandedBody({
+    required this.data,
+    required this.color,
+  });
+
+  final ISpectifyData data;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => _LogContentContainer(
+        hasStackTrace: data.stackTraceLogText?.isNotEmpty ?? false,
+        color: color,
+        child: _LogTextContent(
+          message: data.textMessage,
+          type: data.typeText,
+          errorMessage: data.httpLogText,
+          isHTTP: data.isHttpLog,
+          textStyle: TextStyle(
+            color: color,
+            fontSize: 12,
+          ),
+        ),
+      );
+}
+
+class _LazyStackTraceBody extends StatelessWidget {
+  const _LazyStackTraceBody({
+    required this.color,
+    required this.stackTrace,
+  });
+
+  final String stackTrace;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: SizedBox(
+          width: double.maxFinite,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
+              border: Border.fromBorderSide(
+                BorderSide(color: color),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: SelectableText(
+                stackTrace,
+                maxLines: 50,
+                minLines: 1,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 /// Container widget that handles decoration based on stack trace presence
@@ -170,7 +240,6 @@ class _LogContentContainer extends StatelessWidget {
       );
 }
 
-/// Handles the display logic for different types of log text content
 class _LogTextContent extends StatelessWidget {
   const _LogTextContent({
     required this.message,
@@ -205,44 +274,4 @@ class _LogTextContent extends StatelessWidget {
       children: widgets,
     );
   }
-}
-
-class _StrackTraceBody extends StatelessWidget {
-  const _StrackTraceBody({
-    required this.color,
-    required String? stackTrace,
-  }) : _stackTrace = stackTrace;
-
-  final String? _stackTrace;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SizedBox(
-          width: double.maxFinite,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              border: Border.fromBorderSide(
-                BorderSide(color: color),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: SelectableText(
-                _stackTrace!,
-                maxLines: 100,
-                minLines: 1,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
 }

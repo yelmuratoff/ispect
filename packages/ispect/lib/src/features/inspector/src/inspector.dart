@@ -19,6 +19,7 @@ import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dar
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_screen.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -599,7 +600,7 @@ class InspectorState extends State<Inspector> {
   Future<void> _launchInfospect(BuildContext context) async {
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
-      builder: (_) => ISpectScreen(
+      builder: (_) => LogsScreen(
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
         itemsBuilder: widget.options.itemsBuilder,
