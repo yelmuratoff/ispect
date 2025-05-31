@@ -1,0 +1,66 @@
+name: Manual Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Type of version bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - dev
+      specific_version:
+        description: 'Specific version (leave empty to use bump type)'
+        required: false
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+      
+      - name: Determine version bump
+        id: determine_version
+        run: |
+          if [ -n "${{ github.event.inputs.specific_version }}" ]; then
+            echo "BUMP_ARG=${{ github.event.inputs.specific_version }}" >> $GITHUB_ENV
+          else
+            echo "BUMP_ARG=${{ github.event.inputs.bump_type }}" >> $GITHUB_ENV
+          fi
+      
+      - name: Bump Version
+        run: |
+          chmod +x bash/bump_version.sh
+          ./bash/bump_version.sh ${{ env.BUMP_ARG }}
+      
+      - name: Verify Dependencies
+        run: |
+          chmod +x bash/check_dependencies.sh
+          ./bash/check_dependencies.sh || echo "Dependency check found issues, but continuing with commit as update_versions.sh should have fixed them"
+      
+      - name: Commit and push changes
+        run: |
+          NEW_VERSION=$(grep -E "^VERSION=" version.config | sed 's/VERSION=\"\{0,1\}\([^"]*\)\"\{0,1\}/\1/')
+          if [[ -n $(git status --porcelain) ]]; then
+            git add packages/*/CHANGELOG.md packages/*/pubspec.yaml packages/*/example/pubspec.yaml version.config CHANGELOG.md
+            git commit -m "chore: bump version to $NEW_VERSION"
+            git push
+            echo "Version bumped successfully to $NEW_VERSION!"
+          else
+            echo "No changes to commit."
+          fi

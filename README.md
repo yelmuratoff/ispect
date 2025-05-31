@@ -1,4 +1,3 @@
-
 <!----------------------------
 ----------Logo & Title--------
 ------------------------------>
@@ -149,6 +148,27 @@ A list of great packages I've used in ISpect and modified for my needs:
 [feedback](https://pub.dev/packages/feedback), 
 [inspector](https://pub.dev/packages/inspector), 
 [performance](https://pub.dev/packages/performance), 
+
+## Version Management
+
+This project uses an automated version management system to ensure all packages maintain consistent versioning:
+
+- **Single Source of Truth**: Version is defined in `version.config`
+- **Automated Updates**: When version changes, all packages are updated automatically
+- **Dependency Consistency**: Internal package dependencies are kept in sync
+- **Documentation**: See [VERSION.md](VERSION.md) for quick reference or [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) for details
+
+To bump versions:
+```bash
+# Bump patch version (e.g., 4.1.2 -> 4.1.3)
+./bash/bump_version.sh patch
+
+# Bump minor version (e.g., 4.1.2 -> 4.2.0)
+./bash/bump_version.sh minor
+
+# Bump major version (e.g., 4.1.2 -> 5.0.0)
+./bash/bump_version.sh major
+```
 
 <br>
 <div align="center" >

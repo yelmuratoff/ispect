@@ -1,0 +1,58 @@
+name: Version Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - 'packages/*/pubspec.yaml'
+      - 'version.config'
+      - 'CHANGELOG.md'
+
+jobs:
+  validate-versions:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Check Version Sync
+        id: check_versions
+        run: |
+          chmod +x bash/check_version_sync.sh
+          if ! ./bash/check_version_sync.sh; then
+            echo "Version check failed. Please run './bash/update_versions.sh' to sync all package versions."
+            exit 1
+          fi
+          
+      - name: Check Dependencies Consistency
+        id: check_dependencies
+        run: |
+          chmod +x bash/check_dependencies.sh
+          if ! ./bash/check_dependencies.sh; then
+            echo "Dependency version check failed. Please run './bash/update_versions.sh' to sync all package dependencies."
+            exit 1
+          fi
+      
+      - name: Validate CHANGELOG
+        id: validate_changelog
+        run: |
+          # Source the version config
+          source version.config
+          
+          # Check for proper CHANGELOG format
+          if ! grep -q "^# Changelog" CHANGELOG.md; then
+            echo "CHANGELOG.md does not start with '# Changelog'. Please fix the format."
+            exit 1
+          fi
+          
+          # Check if current version exists in CHANGELOG
+          if ! grep -q "^## $VERSION" CHANGELOG.md; then
+            echo "Current version $VERSION is not documented in CHANGELOG.md. Please update the changelog."
+            exit 1
+          fi
+          
+          echo "CHANGELOG validation passed!"

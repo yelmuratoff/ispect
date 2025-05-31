@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.4
+
+### Added
+- Initial release of version 4.1.4
+
+
 ## 4.1.3-dev09
 
 ### Enhanced
@@ -11,7 +17,7 @@
 - Added the ability to share the full log as a file .txt or quickly copy the truncated log to the clipboard.
 
 ### Changes
-- UI changes in main and log screens for better usability.
+- UI changes in ISpect and log screens for better usability.
 - Bumped dependencies to the latest versions.
 
 ## 4.1.2
