@@ -129,23 +129,23 @@ class _ISpectScreenState extends State<ISpectScreen> {
                             return widget.itemsBuilder!.call(context, data);
                           }
 
-                          return ISpectLogCard(
+                          return LogCard(
                             key: ValueKey(data.hashCode),
+                            icon: iSpect.theme.logIcons[data.key] ??
+                                Icons.bug_report_outlined,
+                            color: iSpect.theme
+                                .getTypeColor(context, key: data.key),
                             data: data,
-                            backgroundColor:
-                                iSpect.theme.backgroundColor(context) ??
-                                    context.ispectTheme.cardColor,
+                            index: index,
+                            isExpanded: _controller.activeData?.hashCode ==
+                                data.hashCode,
                             onCopyTap: () => _copyISpectifyDataItemText(data),
-                            expanded: _controller.expandedLogs,
-                            color: iSpect.theme.getTypeColor(
-                              context,
-                              key: data.key ?? data.title,
-                            ),
-                            onTap: ({required value}) {
-                              if (value) {
-                                _controller.activeData = data;
-                              } else {
+                            onTap: () {
+                              if (_controller.activeData?.hashCode ==
+                                  data.hashCode) {
                                 _controller.activeData = null;
+                              } else {
+                                _controller.activeData = data;
                               }
                             },
                           );

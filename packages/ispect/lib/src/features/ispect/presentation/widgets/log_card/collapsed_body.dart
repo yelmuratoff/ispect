@@ -1,7 +1,7 @@
 part of 'log_card.dart';
 
-class _CollapsedBody extends StatelessWidget {
-  const _CollapsedBody({
+class CollapsedBody extends StatelessWidget {
+  const CollapsedBody({
     required this.icon,
     required this.color,
     required this.title,

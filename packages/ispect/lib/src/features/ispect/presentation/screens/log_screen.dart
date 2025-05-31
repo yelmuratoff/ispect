@@ -102,6 +102,7 @@ class _LogScreenState extends State<LogScreen> {
       child: Scaffold(
         backgroundColor: iSpect.theme.backgroundColor(context),
         appBar: AppBar(
+          scrolledUnderElevation: 0,
           backgroundColor: iSpect.theme.backgroundColor(context),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -211,7 +212,7 @@ class _LogScreenState extends State<LogScreen> {
         'http-request' => 'HTTP Request',
         'http-response' => 'HTTP Response',
         'http-error' => 'HTTP Error',
-        _ => 'Detailed log: $key',
+        _ => '',
       };
 
   Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
