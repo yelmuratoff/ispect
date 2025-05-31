@@ -85,8 +85,8 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final DraggablePanelController _controller = DraggablePanelController();
-  final ISpectNavigatorObserver _observer = ISpectNavigatorObserver(
+  final _controller = DraggablePanelController();
+  final _observer = ISpectNavigatorObserver(
     isLogModals: false,
   );
 
