@@ -1,11 +1,5 @@
 # Changelog
 
-## 4.1.5
-
-### Added
-- Initial release of version 4.1.5
-
-
 ## 4.1.4
 
 ### Infrastructure
