@@ -1,0 +1,42 @@
+name: Update Changelogs
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'CHANGELOG.md'
+      - '.github/workflows/update_changelogs.yml'
+
+jobs:
+  update-changelogs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+      
+      - name: Update package CHANGELOGs
+        run: |
+          chmod +x bash/update_changelog.sh
+          ./bash/update_changelog.sh
+      
+      - name: Commit and push changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git add packages/*/CHANGELOG.md
+            git commit -m "chore: sync package changelogs with main CHANGELOG.md"
+            git push
+            echo "CHANGELOGs updated and pushed successfully!"
+          else
+            echo "No changes to commit."
+          fi
