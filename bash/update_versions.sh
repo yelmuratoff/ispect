@@ -62,8 +62,8 @@ for package_dir in packages/*/; do
     # Now update all internal package dependencies
     for pkg_name in "${package_names[@]}"; do
       # Check if we're inside the dependencies section (not dependency_overrides)
-      # Look for dependencies on internal packages 
-      if grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $pkg_name: \^"; then
+      # Look for dependencies on internal packages - handle comments and whitespace better
+      if grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
         echo "Updating dependency on $pkg_name in $pubspec_file to version $VERSION"
         
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -71,8 +71,11 @@ for package_dir in packages/*/; do
           # Use awk to only replace in dependencies section, not in dependency_overrides
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
             /^dependencies:/,/^[a-z]/ {
-              if ($0 ~ "^  "pkg": \\^") {
-                print "  "pkg": ^"ver
+              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                # Keep the original indentation and any spaces around the colon
+                match($0, /^[ ]*'pkg'[ ]*:/)
+                prefix = substr($0, 1, RLENGTH)
+                print prefix" ^"ver
                 next
               }
             }
@@ -82,8 +85,11 @@ for package_dir in packages/*/; do
           # Linux/Unix 
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
             /^dependencies:/,/^[a-z]/ {
-              if ($0 ~ "^  "pkg": \\^") {
-                print "  "pkg": ^"ver
+              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                # Keep the original indentation and any spaces around the colon
+                match($0, /^[ ]*'pkg'[ ]*:/)
+                prefix = substr($0, 1, RLENGTH)
+                print prefix" ^"ver
                 next
               }
             }
@@ -107,15 +113,17 @@ for package_dir in packages/*/; do
     echo "Checking example project for $package_name..."
     
     # Update the parent package dependency in the example only in dependencies section
-    if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $package_name: \^"; then
+    if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$package_name:[ ]*\^"; then
       echo "Updating $package_name dependency in example to $VERSION"
       
       if [[ "$OSTYPE" == "darwin"* ]]; then
         # Use awk to only replace in dependencies section, not in dependency_overrides
         awk -v pkg="$package_name" -v ver="$VERSION" '
           /^dependencies:/,/^[a-z]/ {
-            if ($0 ~ "^  "pkg": \\^") {
-              print "  "pkg": ^"ver
+            if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+              match($0, /^[ ]*'pkg'[ ]*:/)
+              prefix = substr($0, 1, RLENGTH)
+              print prefix" ^"ver
               next
             }
           }
@@ -125,8 +133,10 @@ for package_dir in packages/*/; do
         # Linux/Unix approach
         awk -v pkg="$package_name" -v ver="$VERSION" '
           /^dependencies:/,/^[a-z]/ {
-            if ($0 ~ "^  "pkg": \\^") {
-              print "  "pkg": ^"ver
+            if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+              match($0, /^[ ]*'pkg'[ ]*:/)
+              prefix = substr($0, 1, RLENGTH)
+              print prefix" ^"ver
               next
             }
           }
@@ -139,14 +149,16 @@ for package_dir in packages/*/; do
     for pkg_name in "${package_names[@]}"; do
       if [[ "$pkg_name" != "$package_name" ]]; then
         # Only match in the dependencies section
-        if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $pkg_name: \^"; then
+        if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
           echo "Updating dependency on $pkg_name in example to version $VERSION"
           
           if [[ "$OSTYPE" == "darwin"* ]]; then
             awk -v pkg="$pkg_name" -v ver="$VERSION" '
               /^dependencies:/,/^[a-z]/ {
-                if ($0 ~ "^  "pkg": \\^") {
-                  print "  "pkg": ^"ver
+                if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                  match($0, /^[ ]*'pkg'[ ]*:/)
+                  prefix = substr($0, 1, RLENGTH)
+                  print prefix" ^"ver
                   next
                 }
               }
@@ -155,8 +167,10 @@ for package_dir in packages/*/; do
           else
             awk -v pkg="$pkg_name" -v ver="$VERSION" '
               /^dependencies:/,/^[a-z]/ {
-                if ($0 ~ "^  "pkg": \\^") {
-                  print "  "pkg": ^"ver
+                if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                  match($0, /^[ ]*'pkg'[ ]*:/)
+                  prefix = substr($0, 1, RLENGTH)
+                  print prefix" ^"ver
                   next
                 }
               }
@@ -169,16 +183,18 @@ for package_dir in packages/*/; do
     
     # Also check dev_dependencies section
     for pkg_name in "${package_names[@]}"; do
-      if grep -q "^  $pkg_name: \^" "$example_pubspec" && \
-         grep -A 50 "^dev_dependencies:" "$example_pubspec" | grep -q "^  $pkg_name: \^"; then
+      if grep -q "[ ]*$pkg_name:[ ]*\^" "$example_pubspec" && \
+         grep -A 50 "^dev_dependencies:" "$example_pubspec" | grep -q "[ ]*$pkg_name:[ ]*\^"; then
         echo "Updating dev dependency on $pkg_name in example to version $VERSION"
         
         if [[ "$OSTYPE" == "darwin"* ]]; then
           # This sed command looks for the package in dev_dependencies section and updates it
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
             /^dev_dependencies:/,/^[a-z]/ {
-              if ($0 ~ "^  "pkg": \\^") {
-                print "  "pkg": ^"ver
+              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                match($0, /^[ ]*'pkg'[ ]*:/)
+                prefix = substr($0, 1, RLENGTH)
+                print prefix" ^"ver
                 next
               }
             }
@@ -188,8 +204,10 @@ for package_dir in packages/*/; do
           # For Linux we use a similar approach
           awk -v pkg="$pkg_name" -v ver="$VERSION" '
             /^dev_dependencies:/,/^[a-z]/ {
-              if ($0 ~ "^  "pkg": \\^") {
-                print "  "pkg": ^"ver
+              if ($0 ~ "[ ]*"pkg":[ ]*\\^") {
+                match($0, /^[ ]*'pkg'[ ]*:/)
+                prefix = substr($0, 1, RLENGTH)
+                print prefix" ^"ver
                 next
               }
             }

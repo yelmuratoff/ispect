@@ -29,7 +29,7 @@ dependencies:
     any
 
     # Logging
-  ispectify: ^4.1.3-dev09
+  ispectify: ^4.1.3-dev10
 
   # Utils
   path_provider: ^2.1.5
