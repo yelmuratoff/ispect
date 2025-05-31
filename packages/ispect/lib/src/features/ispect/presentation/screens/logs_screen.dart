@@ -1,27 +1,3 @@
-// Copyright (c) 2024 ISpect Team. All rights reserved.
-// Use of this source code is governed by a MIT license that can be
-// found in the LICENSE file.
-
-/// High-performance logs viewer screen for the ISpect logging system.
-///
-/// This file contains the main logs screen implementation optimized for
-/// handling large datasets (10k+ entries) with advanced filtering,
-/// searching, and expansion capabilities.
-///
-/// Key components:
-/// - [LogsScreen]: Main screen widget with performance optimizations
-/// - [_LogsScreenState]: State management with intelligent caching
-/// - [_LogListItem]: Optimized list item with integrated dividers
-/// - [_EmptyLogsWidget]: Empty state widget for filtered results
-///
-/// Performance features:
-/// - Virtual scrolling with SliverList.builder
-/// - Smart filtering cache to avoid redundant computations
-/// - Single-item expansion for better UX
-/// - RepaintBoundary optimization for smooth scrolling
-/// - Memory-efficient widget tree structure
-library;
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
@@ -39,32 +15,8 @@ import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_shee
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 
-/// High-performance logs viewer screen optimized for handling large datasets (10k+ entries).
-///
 /// This screen provides an efficient interface for browsing, searching, and filtering
 /// application logs with the following key features:
-///
-/// ## Performance Optimizations
-/// - **Virtual Scrolling**: Uses `SliverList.builder` with intelligent viewport management
-/// - **Smart Caching**: Implements filtering cache to avoid redundant computations
-/// - **Memory Efficient**: Optimized widget tree with `RepaintBoundary` usage
-/// - **Single Expansion**: Only one log item can be expanded at a time
-///
-/// ## Features
-/// - **Real-time Search**: Instant log filtering by content
-/// - **Title-based Filtering**: Filter logs by their titles/categories
-/// - **Log Expansion**: Detailed view of individual log entries
-/// - **Settings Management**: Access to logging preferences and actions
-/// - **Cross-platform Support**: Responsive design for mobile and desktop
-///
-/// ## Usage
-/// ```dart
-/// LogsScreen(
-///   options: ISpectOptions(),
-///   appBarTitle: 'Application Logs',
-///   itemsBuilder: (context, data) => CustomLogCard(data: data),
-/// )
-/// ```
 class LogsScreen extends StatefulWidget {
   /// Creates a high-performance logs viewer screen.
   const LogsScreen({
@@ -211,7 +163,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
     return CustomScrollView(
       controller: _logsScrollController,
-      cacheExtent: 1000, // Optimize scrolling performance for large lists
+      cacheExtent: 1000,
       slivers: [
         ISpectAppBar(
           focusNode: _searchFocusNode,
