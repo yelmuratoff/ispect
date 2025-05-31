@@ -13,8 +13,9 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class LogScreen extends StatefulWidget {
-  const LogScreen({required this.data, super.key});
+  const LogScreen({required this.data, this.onClose, super.key});
   final ISpectifyData data;
+  final VoidCallback? onClose;
 
   @override
   State<LogScreen> createState() => _LogScreenState();
@@ -104,7 +105,7 @@ class _LogScreenState extends State<LogScreen> {
           backgroundColor: iSpect.theme.backgroundColor(context),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
           ),
           title: Text(_screenTitle),
           actions: [
@@ -139,60 +140,8 @@ class _LogScreenState extends State<LogScreen> {
                           ),
                         ),
                       );
-                      // showModalBottomSheet<void>(
-                      //   context: context,
-                      //   isScrollControlled: true,
-                      //   builder: (_) => Container(
-                      //     padding: const EdgeInsets.all(16),
-                      //     decoration: BoxDecoration(
-                      //       color: iSpect.theme.backgroundColor(context),
-                      //       borderRadius: BorderRadius.circular(12),
-                      //     ),
-                      //     child: SizedBox(
-                      //       width: double.infinity,
-                      //       child: Column(
-                      //         mainAxisSize: MainAxisSize.min,
-                      //         children: [
-                      //           Text(
-                      //             context.ispectL10n.share,
-                      //             style: const TextStyle(
-                      //               fontSize: 18,
-                      //               fontWeight: FontWeight.bold,
-                      //             ),
-                      //           ),
-                      //           const Gap(12),
-                      //           ElevatedButton(
-                      //             onPressed: () {
-                      //               copyClipboard(
-                      //                 context,
-                      //                 value: JsonTruncatorService.pretty(
-                      //                   _data.toJson(truncated: true),
-                      //                   maxDepth: 100,
-                      //                 ),
-                      //               );
-                      //               Navigator.of(context).pop();
-                      //             },
-                      //             child: const Text('Copy to Clipboard'),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // );
                     },
                   ),
-                  // IconButton(
-                  //   icon: const Icon(Icons.copy_rounded),
-                  //   onPressed: () {
-                  // copyClipboard(
-                  //   context,
-                  //   value: JsonTruncatorService.pretty(
-                  //     _data.toJson(truncated: true),
-                  //     maxDepth: 100,
-                  //   ),
-                  // );
-                  //   },
-                  // ),
                 ],
               ),
             ),

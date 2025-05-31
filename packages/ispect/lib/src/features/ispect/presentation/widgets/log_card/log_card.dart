@@ -23,7 +23,7 @@ class ISpectLogCard extends StatefulWidget {
 
   final ISpectifyData data;
   final VoidCallback? onCopyTap;
-  final VoidCallback? onTap;
+  final void Function({required bool value})? onTap;
   final bool expanded;
   final EdgeInsets? margin;
   final Color color;
@@ -61,7 +61,10 @@ class _ISpectLogCardState extends State<ISpectLogCard> {
       shape: const RoundedRectangleBorder(),
       collapsedShape: const RoundedRectangleBorder(),
       childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      onExpansionChanged: (value) => setState(() => _isExpanded = value),
+      onExpansionChanged: (value) {
+        setState(() => _isExpanded = value);
+        widget.onTap?.call(value: value);
+      },
       onLongPress: widget.onCopyTap,
       dividerColor: widget.color.withValues(alpha: 0.2),
       title: _CollapsedBody(

@@ -10,6 +10,7 @@ class ISpectifyViewController extends ChangeNotifier {
   ISpectifyFilter _filter = ISpectifyFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
+  ISpectifyData? _activeData;
 
   /// Retrieves the current log filter.
   ISpectifyFilter get filter => _filter;
@@ -22,8 +23,15 @@ class ISpectifyViewController extends ChangeNotifier {
     }
   }
 
+  set activeData(ISpectifyData? data) {
+    _activeData = data;
+    notifyListeners();
+  }
+
   /// Indicates whether logs are expanded.
   bool get expandedLogs => _expandedLogs;
+
+  ISpectifyData? get activeData => _activeData;
 
   /// Toggles the expanded logs state and notifies listeners.
   void toggleExpandedLogs() {
