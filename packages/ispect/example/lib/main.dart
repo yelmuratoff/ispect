@@ -90,7 +90,7 @@ class _AppState extends State<App> {
     isLogModals: false,
   );
 
-  static const Locale locale = Locale('ru');
+  static const Locale locale = Locale('en');
 
   @override
   void dispose() {
@@ -168,7 +168,7 @@ class _AppState extends State<App> {
             ],
           ),
           theme: const ISpectTheme(
-            pageTitle: 'Custom Name',
+            pageTitle: 'ISpect',
             logDescriptions: [
               LogDescription(
                 key: 'bloc-event',
