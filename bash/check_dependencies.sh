@@ -41,11 +41,13 @@ for package_dir in packages/*/; do
   
   echo "Checking $package_name..."
   
-  # Check for dependencies on other internal packages
+  # Check for dependencies on other internal packages, but only in dependencies section
   for dep_pkg in "${package_names[@]}"; do
     if [[ "$dep_pkg" != "$package_name" ]]; then
-      # Check regular dependencies
-      dep_line=$(grep -E "^  $dep_pkg: \^" "$pubspec_file" || echo "")
+      # Extract the dependencies section and check for the package
+      deps_section=$(grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" || echo "")
+      dep_line=$(echo "$deps_section" | grep -E "^  $dep_pkg: \^" || echo "")
+      
       if [[ -n "$dep_line" ]]; then
         dep_version=$(echo "$dep_line" | sed -E 's/^  [^:]+: \^([0-9]+\.[0-9]+\.[0-9]+(-.+)?)/\1/')
         
@@ -72,19 +74,23 @@ for package_dir in packages/*/; do
       fi
     fi
     
-    # Check parent package dependency in example - but only if not using overrides
-    if grep -q "^  $package_name: \^" "$example_pubspec"; then
-      parent_dep_version=$(grep -E "^  $package_name: \^" "$example_pubspec" | sed -E 's/^  [^:]+: \^([0-9]+\.[0-9]+\.[0-9]+(-.+)?)/\1/')
+    # Extract the dependencies section
+    deps_section=$(grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" || echo "")
+    
+    # Check parent package dependency in example - but only in the dependencies section
+    parent_dep_line=$(echo "$deps_section" | grep -E "^  $package_name: \^" || echo "")
+    if [[ -n "$parent_dep_line" ]]; then
+      parent_dep_version=$(echo "$parent_dep_line" | sed -E 's/^  [^:]+: \^([0-9]+\.[0-9]+\.[0-9]+(-.+)?)/\1/')
       if [[ "$parent_dep_version" != "$VERSION" && "$parent_dep_version" != "" ]]; then
         echo "  ⚠️  Example inconsistency: depends on $package_name version ^$parent_dep_version, should be ^$VERSION"
         has_inconsistency=1
       fi
     fi
     
-    # Check other internal dependencies in example
+    # Check other internal dependencies in example - only in the dependencies section
     for dep_pkg in "${package_names[@]}"; do
       if [[ "$dep_pkg" != "$package_name" ]]; then
-        dep_line=$(grep -E "^  $dep_pkg: \^" "$example_pubspec" || echo "")
+        dep_line=$(echo "$deps_section" | grep -E "^  $dep_pkg: \^" || echo "")
         if [[ -n "$dep_line" ]]; then
           dep_version=$(echo "$dep_line" | sed -E 's/^  [^:]+: \^([0-9]+\.[0-9]+\.[0-9]+(-.+)?)/\1/')
           

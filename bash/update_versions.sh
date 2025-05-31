@@ -61,16 +61,34 @@ for package_dir in packages/*/; do
     
     # Now update all internal package dependencies
     for pkg_name in "${package_names[@]}"; do
-      # Look for dependencies on internal packages (ignoring path-based dependency_overrides)
-      if grep -q "^  $pkg_name: \^" "$pubspec_file"; then
+      # Check if we're inside the dependencies section (not dependency_overrides)
+      # Look for dependencies on internal packages 
+      if grep -A1000 "^dependencies:" "$pubspec_file" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $pkg_name: \^"; then
         echo "Updating dependency on $pkg_name in $pubspec_file to version $VERSION"
         
         if [[ "$OSTYPE" == "darwin"* ]]; then
           # macOS requires a different sed syntax
-          sed -i '' "s/^  $pkg_name: \^.*$/  $pkg_name: ^$VERSION/" "$pubspec_file"
+          # Use awk to only replace in dependencies section, not in dependency_overrides
+          awk -v pkg="$pkg_name" -v ver="$VERSION" '
+            /^dependencies:/,/^[a-z]/ {
+              if ($0 ~ "^  "pkg": \\^") {
+                print "  "pkg": ^"ver
+                next
+              }
+            }
+            { print }
+          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
         else
-          # Linux/Unix sed syntax
-          sed -i "s/^  $pkg_name: \^.*$/  $pkg_name: ^$VERSION/" "$pubspec_file"
+          # Linux/Unix 
+          awk -v pkg="$pkg_name" -v ver="$VERSION" '
+            /^dependencies:/,/^[a-z]/ {
+              if ($0 ~ "^  "pkg": \\^") {
+                print "  "pkg": ^"ver
+                next
+              }
+            }
+            { print }
+          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
         fi
       fi
     done
@@ -88,26 +106,63 @@ for package_dir in packages/*/; do
     package_name=$(grep -E "^name:" "${package_dir}pubspec.yaml" | sed 's/name: //' | tr -d ' ')
     echo "Checking example project for $package_name..."
     
-    # Update the parent package dependency in the example
-    if grep -q "^  $package_name:" "$example_pubspec"; then
+    # Update the parent package dependency in the example only in dependencies section
+    if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $package_name: \^"; then
       echo "Updating $package_name dependency in example to $VERSION"
       
       if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s/^  $package_name:.*$/  $package_name: ^$VERSION/" "$example_pubspec"
+        # Use awk to only replace in dependencies section, not in dependency_overrides
+        awk -v pkg="$package_name" -v ver="$VERSION" '
+          /^dependencies:/,/^[a-z]/ {
+            if ($0 ~ "^  "pkg": \\^") {
+              print "  "pkg": ^"ver
+              next
+            }
+          }
+          { print }
+        ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
       else
-        sed -i "s/^  $package_name:.*$/  $package_name: ^$VERSION/" "$example_pubspec"
+        # Linux/Unix approach
+        awk -v pkg="$package_name" -v ver="$VERSION" '
+          /^dependencies:/,/^[a-z]/ {
+            if ($0 ~ "^  "pkg": \\^") {
+              print "  "pkg": ^"ver
+              next
+            }
+          }
+          { print }
+        ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
       fi
     fi
     
-    # Update other internal dependencies in example projects
+    # Update other internal dependencies in example projects, but only in dependencies section
     for pkg_name in "${package_names[@]}"; do
-      if [[ "$pkg_name" != "$package_name" ]] && grep -q "^  $pkg_name: \^" "$example_pubspec"; then
-        echo "Updating dependency on $pkg_name in example to version $VERSION"
-        
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          sed -i '' "s/^  $pkg_name: \^.*$/  $pkg_name: ^$VERSION/" "$example_pubspec"
-        else
-          sed -i "s/^  $pkg_name: \^.*$/  $pkg_name: ^$VERSION/" "$example_pubspec"
+      if [[ "$pkg_name" != "$package_name" ]]; then
+        # Only match in the dependencies section
+        if grep -A1000 "^dependencies:" "$example_pubspec" | grep -B1000 -m1 "^[a-z]" | grep -q "^  $pkg_name: \^"; then
+          echo "Updating dependency on $pkg_name in example to version $VERSION"
+          
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            awk -v pkg="$pkg_name" -v ver="$VERSION" '
+              /^dependencies:/,/^[a-z]/ {
+                if ($0 ~ "^  "pkg": \\^") {
+                  print "  "pkg": ^"ver
+                  next
+                }
+              }
+              { print }
+            ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
+          else
+            awk -v pkg="$pkg_name" -v ver="$VERSION" '
+              /^dependencies:/,/^[a-z]/ {
+                if ($0 ~ "^  "pkg": \\^") {
+                  print "  "pkg": ^"ver
+                  next
+                }
+              }
+              { print }
+            ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
+          fi
         fi
       fi
     done

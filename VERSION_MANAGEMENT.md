@@ -12,7 +12,6 @@ This document explains how the version management system works for this Flutter 
 - `bash/check_dependencies.sh` - Script to validate internal package dependencies are consistent
 - `bash/pre-commit.sh` - Git hook to ensure versions are in sync before commits
 - `.github/workflows/sync_versions_and_changelogs.yml` - CI/CD workflow for automatic version and changelog sync
-- `.github/workflows/manual_version_bump.yml` - GitHub Actions workflow for manual version bumping
 - `.github/workflows/validate_versions.yml` - CI/CD workflow to validate versions in Pull Requests
 
 ## Usage
