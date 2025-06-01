@@ -47,42 +47,20 @@ ISpect empowers Flutter developers with a suite of debugging tools that seamless
 - 🐛 **Bug Reporting**: Integrated feedback system with screenshot capture
 - 🗄️ **Cache Management**: Application cache inspection and management
 
-## ✨ Features
+## 🏗️ Architecture
 
-### 🔍 Network Inspection
-- Real-time HTTP request/response monitoring
-- Detailed request headers, body, and parameters
-- Response data with status codes and timing
-- Error logging with stack traces
-- Support for both Dio and standard HTTP clients
+ISpect is built as a modular system with specialized packages:
 
-### 📊 Advanced Logging
-- Structured log categorization (info, debug, warning, error)
-- Custom log types with color coding
-- Real-time log filtering and search
-- Export functionality for logs
-- BLoC event and state change tracking
+| Package | Purpose | Version |
+|---------|---------|---------|
+| [ispect](packages/ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_bloc](packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
+| [ispect_jira](packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
-### 🎯 UI Development Tools
-- Widget inspector with hierarchy visualization
-- Color picker for design consistency
-- Layout analysis and debugging
-- Performance overlay with FPS monitoring
-- Screenshot capture with annotation tools
-
-### 📱 Device & Environment Info
-- Device specifications and capabilities
-- Application metadata and build information
-- Cache usage monitoring and management
-- System resource utilization
-
-### 🐛 Bug Reporting
-- Integrated feedback system
-- Screenshot capture with drawing tools
-- Automatic device and app context collection
-- Jira integration for ticket creation
-
-### 🌐 Internationalization
+## 🌐 Internationalization
 - Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
 - Extensible localization system
 
