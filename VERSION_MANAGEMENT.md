@@ -51,12 +51,6 @@ The GitHub Actions workflows provide several automation features:
 - Syncs the main changelog to all package changelogs
 - Commits and pushes the changes back to the repository
 
-#### Manual Version Bump
-- Can be triggered manually through GitHub Actions interface
-- Allows selecting the type of version bump (patch, minor, major, dev)
-- Option to provide a specific version
-- Automatically updates all related files
-
 #### Version Validation
 - Runs on pull requests to main branches
 - Validates that all package versions are in sync

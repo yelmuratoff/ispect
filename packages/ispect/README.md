@@ -40,7 +40,7 @@ ISpect empowers Flutter developers with a suite of debugging tools that seamless
 ### 🎯 Key Features
 
 - 🌐 **Network Monitoring**: Detailed HTTP request/response inspection with error tracking
-- 📝 **Comprehensive Logging**: Advanced logging system with categorization and filtering
+- 📝 **Logging**: Advanced logging system with categorization and filtering
 - ⚡ **Performance Analysis**: Real-time performance metrics and monitoring
 - 🔍 **UI Inspector**: Widget hierarchy inspection with color picker and layout analysis
 - 📱 **Device Information**: System and app metadata collection

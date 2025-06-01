@@ -58,7 +58,7 @@ Each package requires a JSON configuration file in `readme_generator/configs/`:
   "overview": "is the main debugging toolkit...",
   "features": [
     "🌐 **Network Monitoring**: Detailed HTTP request/response inspection",
-    "📝 **Comprehensive Logging**: Advanced logging system"
+    "📝 **Logging**: Advanced logging system"
   ],
   "custom_overview_section": "HTML/Markdown content for overview",
   "usage_example": "```dart\n// Code example\n```",

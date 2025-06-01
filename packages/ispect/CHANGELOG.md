@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.1.3-dev13
+## 4.1.3
 
 ### Infrastructure
 - Added comprehensive version management system:
