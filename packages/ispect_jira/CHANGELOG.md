@@ -3,14 +3,15 @@
 ## 4.1.4
 
 ### Enhancements:
-- Improve `JSON` truncator to avoid expensive length calls on iterables and use the correct recursion depth for nested entries
-- Include map keys alongside values when expanding the filter stack
-- Prevent the painter from drawing dots that exceed the container width
+- Optimize `JSON` truncator to avoid expensive length calls, use correct recursion depth, and handle truncations efficiently
+- Extend filter search to include map keys, prevent circular loops, and streamline filter combination logic
+- Refine dotted separator painter to distribute dots evenly within container bounds
 
 ### CI:
-- Add checks for `version.config` existence, sourcing errors, and missing `VERSION` variable in the `validate_versions` workflow
-- Switch grep to fixed-string mode in changelog validation and update path in `sync_versions_and_changelogs` workflow
-- Remove the obsolete `update_changelogs.yml` workflow file
+- Upgrade `actions/checkout` to v4 with full fetch depth
+- Harden validate_versions workflow with strict error handling, `version.config` and `VERSION` checks
+- Switch grep to fixed-string mode and update workflow paths in `sync_versions_and_changelogs`
+- Remove obsolete `update_changelogs.yml` file
 
 ## 4.1.3
 
