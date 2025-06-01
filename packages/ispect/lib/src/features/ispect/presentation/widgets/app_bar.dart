@@ -85,7 +85,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               child: IconButton(
                 onPressed: widget.onSettingsTap,
                 icon: const Icon(
-                  Icons.menu_rounded,
+                  Icons.settings_rounded,
                 ),
               ),
             ),

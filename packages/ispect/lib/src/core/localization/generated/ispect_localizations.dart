@@ -1066,6 +1066,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'No data'**
   String get noData;
+
+  /// No description provided for @shareLogFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Share log (full)'**
+  String get shareLogFull;
+
+  /// No description provided for @copyToClipboardTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to clipboard (truncated)'**
+  String get copyToClipboardTruncated;
 }
 
 class _ISpectGeneratedLocalizationDelegate

@@ -311,9 +311,8 @@ final class ISpectJiraClient {
 
     final list = response['values'] as List<Object?>;
 
-    final boards = list
-        .map((e) => JiraBoard.fromJson(e! as Map<String, Object?>))
-        .toList();
+    final boards =
+        list.map((e) => JiraBoard.fromMap(e! as Map<String, Object?>)).toList();
 
     return boards;
   }
@@ -332,7 +331,7 @@ final class ISpectJiraClient {
     final list = response['values'] as List<Object?>;
 
     final sprints = list
-        .map((e) => JiraSprint.fromJson(e! as Map<String, Object?>))
+        .map((e) => JiraSprint.fromMap(e! as Map<String, Object?>))
         .toList();
 
     return sprints.where((sprint) => sprint.state == 'active').toList();

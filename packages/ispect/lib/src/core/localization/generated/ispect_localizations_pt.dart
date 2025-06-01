@@ -550,4 +550,11 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'Sem dados';
+
+  @override
+  String get shareLogFull => 'Compartilhar log (completo)';
+
+  @override
+  String get copyToClipboardTruncated =>
+      'Copiar para a área de transferência (truncado)';
 }

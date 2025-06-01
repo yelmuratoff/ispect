@@ -3,9 +3,11 @@ import 'package:ispectify/ispectify.dart';
 /// An abstract class defining a filter interface.
 ///
 /// A generic filter that checks whether a given item satisfies
-/// certain conditions.
+/// certain conditions. Used as a building block for more specific filter types.
 abstract class Filter<T> {
   /// Determines if the provided `item` passes the filter criteria.
+  ///
+  /// Returns `true` if the item matches the filter condition, `false` otherwise.
   bool apply(T item);
 }
 
@@ -13,19 +15,24 @@ abstract class Filter<T> {
 /// any of the specified titles.
 class TitleFilter implements Filter<ISpectifyData> {
   /// Creates a filter with a set of titles.
+  ///
+  /// Converts the list to a Set for O(1) lookups.
   TitleFilter(List<String> titles) : titles = titles.toSet();
 
   /// Set of titles used for filtering.
   final Set<String> titles;
 
   @override
-  bool apply(ISpectifyData item) => titles.contains(item.title);
+  bool apply(ISpectifyData item) =>
+      item.title != null && titles.contains(item.title);
 }
 
 /// A filter that checks whether an `ISpectifyData` item matches
 /// any of the specified runtime types.
 class TypeFilter implements Filter<ISpectifyData> {
   /// Creates a filter with a set of types.
+  ///
+  /// Converts the list to a Set for O(1) lookups.
   TypeFilter(List<Type> types) : types = types.toSet();
 
   /// Set of types used for filtering.
@@ -49,31 +56,52 @@ class SearchFilter implements Filter<ISpectifyData> {
 
   @override
   bool apply(ISpectifyData item) {
+    // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
     // Check if the query is in message or textMessage
-    final message = item.message ?? item.textMessage;
-    if (message.toLowerCase().contains(_lowerQuery)) return true;
+    final message = item.message;
+    if (message != null && message.toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
 
-    // Check in additional data recursively
+    // Check in textMessage if available
+    final textMessage = item.textMessage;
+    if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
+
+    // Check in additional data recursively only if data exists
     return item.additionalData != null &&
         _deepSearchIterative(item.additionalData, _lowerQuery);
   }
 
   /// Iteratively searches through nested structures (Map/List)
   /// for a matching string containing the query.
+  ///
+  /// Uses a stack-based approach to prevent stack overflow on deeply
+  /// nested structures.
   bool _deepSearchIterative(Object? value, String query) {
-    final stack = [value];
+    if (value == null) return false;
+
+    // Use a growable list for the stack with initial capacity
+    final stack = <Object?>[value];
 
     while (stack.isNotEmpty) {
       final current = stack.removeLast();
 
-      if (current is String && current.toLowerCase().contains(query)) {
-        return true;
+      // Check if current value is a string containing the query
+      if (current is String) {
+        if (current.toLowerCase().contains(query)) {
+          return true;
+        }
+        continue;
       }
-      if (current is Map) {
+
+      // Add map values to stack
+      if (current is Map<dynamic, dynamic>) {
         stack.addAll(current.values);
-      } else if (current is Iterable) {
+      }
+      // Add iterable elements to stack
+      else if (current is Iterable<dynamic>) {
         stack.addAll(current);
       }
     }
@@ -83,7 +111,8 @@ class SearchFilter implements Filter<ISpectifyData> {
 
 /// A composite filter that combines multiple filtering criteria.
 ///
-/// It allows filtering based on `titles`, [types], and a [searchQuery].
+/// It allows filtering based on `titles`, `types`, and a `searchQuery`.
+/// All filters are combined with a logical OR operation.
 class ISpectifyFilter implements Filter<ISpectifyData> {
   /// Creates an `ISpectifyFilter` that combines title, type, and search filters.
   ISpectifyFilter({
@@ -98,7 +127,7 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
   final List<Filter<ISpectifyData>> _filters;
 
   /// Getter for filters to provide read-only access.
-  List<Filter<ISpectifyData>> get filters => _filters;
+  List<Filter<ISpectifyData>> get filters => List.unmodifiable(_filters);
 
   /// Indicates whether any filter is active.
   final bool _isEmpty;
@@ -122,9 +151,10 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
 
   @override
   bool apply(ISpectifyData item) {
+    // Skip filtering if no filters are active
     if (_isEmpty) return true;
 
-    // Returns true if any filter matches the item.
+    // Returns true if any filter matches the item
     return _filters.any((filter) => filter.apply(item));
   }
 

@@ -166,18 +166,12 @@ class JsonExplorer extends StatelessWidget {
           itemCount: nodes.length,
           itemScrollController: itemScrollController,
           itemPositionsListener: itemPositionsListener,
-          itemBuilder: (context, index) => AnimatedBuilder(
-            animation: nodes.elementAt(index),
-            builder: (context, child) => DecoratedBox(
-              decoration: BoxDecoration(
-                color: nodes.elementAt(index).isHighlighted
-                    ? theme.highlightColor
-                    : null,
-              ),
-              child: child,
-            ),
-            child: JsonAttribute(
-              node: nodes.elementAt(index),
+          itemBuilder: (context, index) {
+            // Cache node reference to avoid multiple calls to elementAt
+            final node = nodes.elementAt(index);
+            return _JsonAttributeItem(
+              node: node,
+              theme: theme,
               rootInformationBuilder: rootInformationBuilder,
               collapsableToggleBuilder: collapsableToggleBuilder,
               trailingBuilder: trailingBuilder,
@@ -186,11 +180,69 @@ class JsonExplorer extends StatelessWidget {
               valueFormatter: valueFormatter,
               valueStyleBuilder: valueStyleBuilder,
               itemSpacing: itemSpacing,
-              theme: theme,
               maxRootNodeWidth: maxRootNodeWidth,
-            ),
-          ),
+            );
+          },
           physics: physics,
         ),
       );
+}
+
+/// A wrapper widget that caches the JsonAttribute widget inside an AnimatedBuilder
+/// This reduces unnecessary rebuilds of the JsonAttribute widget
+class _JsonAttributeItem extends StatelessWidget {
+  const _JsonAttributeItem({
+    required this.node,
+    required this.theme,
+    this.rootInformationBuilder,
+    this.collapsableToggleBuilder,
+    this.trailingBuilder,
+    this.rootNameFormatter,
+    this.propertyNameFormatter,
+    this.valueFormatter,
+    this.valueStyleBuilder,
+    this.itemSpacing = 4,
+    this.maxRootNodeWidth,
+  });
+
+  final NodeViewModelState node;
+  final JsonExplorerTheme theme;
+  final NodeBuilder? rootInformationBuilder;
+  final NodeBuilder? collapsableToggleBuilder;
+  final NodeBuilder? trailingBuilder;
+  final Formatter? rootNameFormatter;
+  final Formatter? propertyNameFormatter;
+  final Formatter? valueFormatter;
+  final StyleBuilder? valueStyleBuilder;
+  final double itemSpacing;
+  final double? maxRootNodeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    // Create the JsonAttribute once and reuse it
+    final jsonAttr = JsonAttribute(
+      node: node,
+      rootInformationBuilder: rootInformationBuilder,
+      collapsableToggleBuilder: collapsableToggleBuilder,
+      trailingBuilder: trailingBuilder,
+      rootNameFormatter: rootNameFormatter,
+      propertyNameFormatter: propertyNameFormatter,
+      valueFormatter: valueFormatter,
+      valueStyleBuilder: valueStyleBuilder,
+      itemSpacing: itemSpacing,
+      theme: theme,
+      maxRootNodeWidth: maxRootNodeWidth,
+    );
+
+    return AnimatedBuilder(
+      animation: node,
+      builder: (context, child) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: node.isHighlighted ? theme.highlightColor : null,
+        ),
+        child: child,
+      ),
+      child: jsonAttr,
+    );
+  }
 }

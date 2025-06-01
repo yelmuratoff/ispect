@@ -157,5 +157,7 @@
    "warningLogDesc": "Étiquette utilisée pour enregistrer des messages d'avertissement sur des problèmes potentiels dans l'application",
    "you": "Vous",
    "youAlreadyInLogger": "Vous êtes déjà sur la page du journaliseur",
-   "noData": "Aucune donnée"
+   "noData": "Aucune donnée",
+   "shareLogFull": "Partager le journal (complet)",
+   "copyToClipboardTruncated": "Copier dans le presse-papiers (tronqué)"
 }

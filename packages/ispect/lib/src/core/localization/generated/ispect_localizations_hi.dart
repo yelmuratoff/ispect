@@ -546,4 +546,10 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'कोई डेटा नहीं';
+
+  @override
+  String get shareLogFull => 'लॉग साझा करें (पूर्ण)';
+
+  @override
+  String get copyToClipboardTruncated => 'क्लिपबोर्ड में कॉपी करें (संक्षिप्त)';
 }

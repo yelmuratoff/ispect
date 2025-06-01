@@ -41,12 +41,14 @@ class NodeViewModelState extends ChangeNotifier {
     required String key,
     required Object? value,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         key: key,
         value: value,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
 
   /// Build a `NodeViewModelState` as a class.
@@ -60,12 +62,14 @@ class NodeViewModelState extends ChangeNotifier {
     required int treeDepth,
     required String key,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         isClass: true,
         key: key,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
 
   /// Build a `NodeViewModelState` as an array.
@@ -80,16 +84,19 @@ class NodeViewModelState extends ChangeNotifier {
     required int treeDepth,
     required String key,
     required NodeViewModelState? parent,
+    required Object? rawValue,
   }) =>
       NodeViewModelState._(
         isArray: true,
         key: key,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: rawValue,
       );
   NodeViewModelState._({
     required this.treeDepth,
     required this.key,
+    required this.rawValue,
     this.isClass = false,
     this.isArray = false,
     Object? value,
@@ -112,6 +119,8 @@ class NodeViewModelState extends ChangeNotifier {
   /// `List<NodeViewModelState>`.
   final bool isArray;
 
+  final dynamic rawValue;
+
   bool _isHighlighted = false;
   bool _isFocused = false;
   bool _isCollapsed;
@@ -122,11 +131,13 @@ class NodeViewModelState extends ChangeNotifier {
   NodeViewModelState? get parent => _parent;
 
   dynamic _value;
+  int? _childrenCount;
 
   /// Updates the `value` of this node.
   @visibleForTesting
   set value(Object? value) {
     _value = value;
+    _childrenCount = null; // Reset cache when value changes
   }
 
   /// This attribute value, it may be one of the following:
@@ -134,19 +145,21 @@ class NodeViewModelState extends ChangeNotifier {
   /// `List<NodeViewModelState>`.
   dynamic get value => _value;
 
-  late int childrenCount = () {
+  /// Cached children count for performance
+  int get childrenCount {
+    if (_childrenCount != null) return _childrenCount!;
+
     final dynamic currentValue = value;
-
     if (currentValue is Map<String, dynamic>) {
-      return currentValue.keys.length;
+      _childrenCount = currentValue.keys.length;
+    } else if (currentValue is List) {
+      _childrenCount = currentValue.length;
+    } else {
+      _childrenCount = 0;
     }
 
-    if (currentValue is List) {
-      return currentValue.length;
-    }
-
-    return 0;
-  }();
+    return _childrenCount!;
+  }
 
   /// Returns `true` if this node is highlighted.
   ///
@@ -177,17 +190,18 @@ class NodeViewModelState extends ChangeNotifier {
     //   return true;
     // }
     final children = parent?.children;
-    return children?.last == this;
+    return children?.lastOrNull == this;
   }
 
   /// Returns a list of this node's children.
+  /// Cached for performance to avoid repeated iterations.
   Iterable<NodeViewModelState> get children {
     if (isClass) {
       return (value as Map<String, NodeViewModelState>).values;
     } else if (isArray) {
       return value as List<NodeViewModelState>;
     }
-    return [];
+    return const <NodeViewModelState>[];
   }
 
   /// Sets the highlight property of this node and all of its children.
@@ -251,6 +265,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         treeDepth: treeDepth,
         key: key,
         parent: parent,
+        rawValue: value,
       );
 
       final children = _buildClassNodes(
@@ -267,6 +282,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         treeDepth: treeDepth,
         key: key,
         parent: parent,
+        rawValue: value,
       );
 
       final children = _buildArrayNodes(
@@ -284,6 +300,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
         value: value,
         treeDepth: treeDepth,
         parent: parent,
+        rawValue: value,
       );
     }
   });
@@ -304,6 +321,7 @@ List<NodeViewModelState> _buildArrayNodes({
         key: i.toString(),
         treeDepth: treeDepth + 1,
         parent: parent,
+        rawValue: arrayValue,
       );
 
       final children = _buildClassNodes(
@@ -322,6 +340,7 @@ List<NodeViewModelState> _buildArrayNodes({
           value: arrayValue,
           treeDepth: treeDepth + 1,
           parent: parent,
+          rawValue: arrayValue,
         ),
       );
     }
@@ -335,41 +354,88 @@ List<NodeViewModelState> flatten(Object? object) {
     return _flattenArray(object as List<NodeViewModelState>);
   }
   if (object == null) {
-    return [];
+    return const <NodeViewModelState>[];
   }
   return _flattenClass(object as Map<String, NodeViewModelState>);
 }
 
 List<NodeViewModelState> _flattenClass(Map<String, NodeViewModelState> object) {
   final flatList = <NodeViewModelState>[];
+
   object.forEach((key, value) {
     flatList.add(value);
 
     if (!value.isCollapsed) {
       if (value.value is Map) {
-        flatList.addAll(
-          _flattenClass(value.value as Map<String, NodeViewModelState>),
+        // Avoid unnecessary allocations by directly adding to the list
+        _addFlattenedClassToList(
+          value.value as Map<String, NodeViewModelState>,
+          flatList,
         );
       } else if (value.value is List) {
-        flatList.addAll(_flattenArray(value.value as List<NodeViewModelState>));
+        _addFlattenedArrayToList(
+          value.value as List<NodeViewModelState>,
+          flatList,
+        );
       }
     }
   });
   return flatList;
 }
 
+void _addFlattenedClassToList(
+  Map<String, NodeViewModelState> object,
+  List<NodeViewModelState> flatList,
+) {
+  object.forEach((key, value) {
+    flatList.add(value);
+
+    if (!value.isCollapsed) {
+      if (value.value is Map<String, NodeViewModelState>) {
+        _addFlattenedClassToList(
+          value.value as Map<String, NodeViewModelState>,
+          flatList,
+        );
+      } else if (value.value is List) {
+        _addFlattenedArrayToList(
+          value.value as List<NodeViewModelState>,
+          flatList,
+        );
+      }
+    }
+  });
+}
+
 List<NodeViewModelState> _flattenArray(List<NodeViewModelState> objects) {
   final flatList = <NodeViewModelState>[];
+
   for (final object in objects) {
     flatList.add(object);
     if (!object.isCollapsed &&
         object.value is Map<String, NodeViewModelState>) {
-      flatList.addAll(
-        _flattenClass(object.value as Map<String, NodeViewModelState>),
+      _addFlattenedClassToList(
+        object.value as Map<String, NodeViewModelState>,
+        flatList,
       );
     }
   }
   return flatList;
+}
+
+void _addFlattenedArrayToList(
+  List<NodeViewModelState> objects,
+  List<NodeViewModelState> flatList,
+) {
+  for (final object in objects) {
+    flatList.add(object);
+    if (!object.isCollapsed &&
+        object.value is Map<String, NodeViewModelState>) {
+      _addFlattenedClassToList(
+        object.value as Map<String, NodeViewModelState>,
+        flatList,
+      );
+    }
+  }
 }
 
 /// Handles the data and manages the state of a json explorer.
@@ -422,9 +488,18 @@ class JsonExplorerStore extends ChangeNotifier {
   List<NodeViewModelState> _displayNodes = [];
   UnmodifiableListView<NodeViewModelState> _allNodes = UnmodifiableListView([]);
 
-  final _searchResults = <SearchResult>[];
+  final List<SearchResult> _searchResults = <SearchResult>[];
   String _searchTerm = '';
   var _focusedSearchResultIndex = 0;
+  Future<void>? _currentSearchOperation;
+  DateTime? _lastSearchTime;
+  static const _searchDebounceTime = Duration(milliseconds: 300);
+  bool _mounted = true;
+
+  // Cache for search term results to avoid recomputing on navigation
+  final Map<String, List<int>> _searchMatchesCache = {};
+
+  bool get mounted => _mounted;
 
   /// Gets the list of nodes to be displayed.
   ///
@@ -483,6 +558,7 @@ class JsonExplorerStore extends ChangeNotifier {
     final children = _visibleChildrenCount(node) - 1;
     _displayNodes.removeRange(nodeIndex, nodeIndex + children);
     node.collapse();
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после изменения состояния
     notifyListeners();
   }
 
@@ -509,6 +585,7 @@ class JsonExplorerStore extends ChangeNotifier {
       node.collapse();
     }
     _displayNodes = collapsedNodes;
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после массового изменения
     notifyListeners();
   }
 
@@ -531,6 +608,7 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodes = flatten(node.value);
     _displayNodes.insertAll(nodeIndex, nodes);
     node.expand();
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после изменения состояния
     notifyListeners();
   }
 
@@ -548,7 +626,26 @@ class JsonExplorerStore extends ChangeNotifier {
       node.expand();
     }
     _displayNodes = List.from(_allNodes);
+    _visibleChildrenCountCache.clear(); // Очищаем кэш после массового изменения
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    // Clear caches when disposing the store
+    _visibleChildrenCountCache.clear();
+    _searchMatchesCache.clear();
+
+    // Cancel any ongoing search
+    _currentSearchOperation?.ignore();
+    _mounted = false;
+
+    // Dispose all nodes to free up resources
+    for (final node in _allNodes) {
+      node.dispose();
+    }
+
+    super.dispose();
   }
 
   /// Returns true if all nodes are expanded, otherwise returns false.
@@ -556,8 +653,15 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Returns true if all nodes are collapsed, otherwise returns false.
   bool areAllCollapsed() {
-    for (final node in _displayNodes) {
-      if (node.childrenCount > 0 && !node._isCollapsed) {
+    // Быстрый выход: если длина _displayNodes равна длине _allNodes, значит есть раскрытые узлы
+    if (_displayNodes.length >
+        _allNodes.where((node) => node.treeDepth == 0).length) {
+      return false;
+    }
+
+    // Проверяем только корневые узлы для оптимизации
+    for (final node in _displayNodes.where((node) => node.childrenCount > 0)) {
+      if (!node.isCollapsed) {
         return false;
       }
     }
@@ -573,14 +677,49 @@ class JsonExplorerStore extends ChangeNotifier {
   ///
   /// `notifyListeners` is called to notify all registered listeners.
   void search(String term) {
-    _searchTerm = term.toLowerCase();
+    // Skip work if the term is the same
+    final normalizedTerm = term.toLowerCase();
+    if (_searchTerm == normalizedTerm) {
+      return;
+    }
+
+    _searchTerm = normalizedTerm;
     _searchResults.clear();
     _focusedSearchResultIndex = 0;
-    notifyListeners();
 
-    if (term.isNotEmpty) {
-      _doSearch();
+    // Cancel any ongoing search operation
+    _currentSearchOperation?.ignore();
+
+    // Always notify to show search is in progress
+    if (mounted) notifyListeners();
+
+    if (term.isEmpty) {
+      return;
     }
+
+    // Debounce search operations
+    final now = DateTime.now();
+    if (_lastSearchTime != null) {
+      final timeSinceLastSearch = now.difference(_lastSearchTime!);
+      // Adjust debounce time based on term length and dataset size
+      final adjustedDebounceTime = _allNodes.length > 10000 && term.length < 3
+          ? _searchDebounceTime + const Duration(milliseconds: 50)
+          : _searchDebounceTime;
+
+      if (timeSinceLastSearch < adjustedDebounceTime) {
+        Future<void>.delayed(adjustedDebounceTime - timeSinceLastSearch)
+            .then((_) {
+          // Only proceed if another search hasn't been triggered in the meantime
+          if (_searchTerm == normalizedTerm && mounted) {
+            _currentSearchOperation = _doSearch();
+          }
+        });
+        return;
+      }
+    }
+
+    _lastSearchTime = now;
+    _currentSearchOperation = _doSearch();
   }
 
   /// Sets the focus on the next search result.
@@ -641,6 +780,25 @@ class JsonExplorerStore extends ChangeNotifier {
     Object? jsonObject, {
     bool areAllCollapsed = false,
   }) async {
+    // Clear caches first to avoid memory leaks
+    _visibleChildrenCountCache.clear();
+    _searchMatchesCache.clear();
+
+    // Cancel any ongoing search
+    _currentSearchOperation?.ignore();
+    _searchResults.clear();
+    _searchTerm = '';
+    _focusedSearchResultIndex = 0;
+
+    // For large JSON objects, process asynchronously
+    final isLargeJson = (jsonObject is Map && jsonObject.length > 1000) ||
+        (jsonObject is List && jsonObject.length > 1000);
+
+    if (isLargeJson) {
+      // Give UI thread a chance to update before heavy processing
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+
     final builtNodes = buildViewModelNodes(jsonObject);
     final flatList = flatten(builtNodes);
 
@@ -649,61 +807,278 @@ class JsonExplorerStore extends ChangeNotifier {
     if (areAllCollapsed) {
       collapseAll();
     } else {
-      notifyListeners();
+      if (mounted) notifyListeners();
     }
   }
 
+  // Cache for visible children count to avoid recalculating
+  final Map<NodeViewModelState, int> _visibleChildrenCountCache = {};
+
   int _visibleChildrenCount(NodeViewModelState node) {
+    // Check if the result is already cached
+    if (_visibleChildrenCountCache.containsKey(node)) {
+      return _visibleChildrenCountCache[node]!;
+    }
+
     final children = node.children;
     var count = 1;
     for (final child in children) {
       count =
           child.isCollapsed ? count + 1 : count + _visibleChildrenCount(child);
     }
+
+    // Save result to cache
+    _visibleChildrenCountCache[node] = count;
     return count;
   }
 
-  void _doSearch() {
-    for (final node in _allNodes) {
-      final matchesIndexes = _getSearchTermMatchesIndexes(node.key);
+  Future<void> _doSearch() async {
+    // Clear existing results (should already be cleared in search())
+    _searchResults.clear();
 
-      for (final matchIndex in matchesIndexes) {
-        _searchResults.add(
-          SearchResult(
-            node,
-            matchLocation: SearchMatchLocation.key,
-            matchIndex: matchIndex,
-          ),
-        );
-      }
-
-      if (!node.isRoot) {
-        final matchesIndexes =
-            _getSearchTermMatchesIndexes(node.value.toString());
-
-        for (final matchIndex in matchesIndexes) {
-          _searchResults.add(
-            SearchResult(
-              node,
-              matchLocation: SearchMatchLocation.value,
-              matchIndex: matchIndex,
-            ),
-          );
-        }
-      }
+    // For very small search terms, optimize for speed
+    if (_searchTerm.length < 2 && _allNodes.length > 5000) {
+      // Prioritize the search to handle large datasets more efficiently
+      await _optimizedSearchForShortTerms();
+    } else {
+      // Standard batch processing for normal cases
+      await _processSearchInBatches();
     }
-
-    notifyListeners();
   }
 
-  /// Finds all occurences of `searchTerm` in [victim] and retrieves all their
-  /// indexes.
-  Iterable<int> _getSearchTermMatchesIndexes(String victim) {
-    final pattern = RegExp(searchTerm, caseSensitive: false);
+  // Optimized search for short search terms in large datasets
+  Future<void> _optimizedSearchForShortTerms() async {
+    // Use a larger batch size for short terms since each comparison is faster
+    const batchSize = 300;
+    final totalNodes = _allNodes.length;
+    var processedCount = 0;
 
-    final matches = pattern.allMatches(victim).map((match) => match.start);
+    // Cache the search term for faster comparison
+    final searchTerm = _searchTerm;
 
-    return matches;
+    // Use a more aggressive UI update strategy for short terms
+    var nextUIUpdateTime =
+        DateTime.now().add(const Duration(milliseconds: 150));
+    var resultsFoundSinceLastUpdate = 0;
+
+    while (processedCount < totalNodes && mounted) {
+      final end = (processedCount + batchSize).clamp(0, totalNodes);
+      final batch = _allNodes.sublist(processedCount, end);
+
+      for (final node in batch) {
+        if (!mounted) return;
+
+        // Process key first (most likely to match)
+        final nodeKey = node.key;
+        if (nodeKey.isNotEmpty) {
+          final keyLower = nodeKey.toLowerCase();
+          if (keyLower.contains(searchTerm)) {
+            _addKeyMatches(node, nodeKey, keyLower);
+          }
+        }
+
+        // Process value only for leaf nodes
+        if (!node.isRoot) {
+          final dynamic nodeValue = node.value;
+          // Skip null values
+          if (nodeValue != null) {
+            final valueStr = nodeValue.toString();
+            if (valueStr.isNotEmpty) {
+              final valueLower = valueStr.toLowerCase();
+              if (valueLower.contains(searchTerm)) {
+                _addValueMatches(node, valueStr, valueLower);
+              }
+            }
+          }
+        }
+      }
+
+      processedCount = end;
+      resultsFoundSinceLastUpdate = _searchResults.length;
+
+      // Update UI less frequently for short terms (smoother performance)
+      final now = DateTime.now();
+      if (now.isAfter(nextUIUpdateTime) ||
+          resultsFoundSinceLastUpdate >= 20 ||
+          processedCount >= totalNodes) {
+        if (mounted) notifyListeners();
+
+        // Schedule next update with slightly longer interval
+        nextUIUpdateTime = now.add(const Duration(milliseconds: 150));
+        resultsFoundSinceLastUpdate = 0;
+
+        // Minimal yield to UI thread
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+  }
+
+  // Add key matches with optimized approach
+  void _addKeyMatches(
+    NodeViewModelState node,
+    String originalKey,
+    String lowerKey,
+  ) {
+    final indices = _fastFindAllOccurrences(lowerKey, _searchTerm);
+    for (final index in indices) {
+      _searchResults.add(
+        SearchResult(
+          node,
+          matchLocation: SearchMatchLocation.key,
+          matchIndex: index,
+        ),
+      );
+    }
+  }
+
+  // Add value matches with optimized approach
+  void _addValueMatches(
+    NodeViewModelState node,
+    String originalValue,
+    String lowerValue,
+  ) {
+    final indices = _fastFindAllOccurrences(lowerValue, _searchTerm);
+    for (final index in indices) {
+      _searchResults.add(
+        SearchResult(
+          node,
+          matchLocation: SearchMatchLocation.value,
+          matchIndex: index,
+        ),
+      );
+    }
+  }
+
+  // Process search in batches to avoid UI jank
+  Future<void> _processSearchInBatches() async {
+    var processedCount = 0;
+    // Adjust batch size based on node complexity and term length
+    final batchSize = _allNodes.length > 10000
+        ? 80
+        : _allNodes.length > 5000
+            ? 120
+            : 200;
+    final totalNodes = _allNodes.length;
+
+    // Schedule when we'll update the UI
+    var nextUIUpdateTime = DateTime.now().add(const Duration(milliseconds: 80));
+    var resultsFoundSinceLastUpdate = 0;
+
+    // Cache the search term to avoid repeated access
+    final searchTerm = _searchTerm;
+
+    while (processedCount < totalNodes && mounted) {
+      final end = (processedCount + batchSize).clamp(0, totalNodes);
+      final batch = _allNodes.sublist(processedCount, end);
+      final initialResultsCount = _searchResults.length;
+
+      // Process this batch
+      for (final node in batch) {
+        if (!mounted) return;
+
+        // Fast path check for the key
+        final nodeKey = node.key;
+        if (nodeKey.isNotEmpty) {
+          final keyLower = nodeKey.toLowerCase();
+          if (keyLower.contains(searchTerm)) {
+            final keyMatches = _getSearchTermMatchesIndexes(nodeKey, keyLower);
+            for (final matchIndex in keyMatches) {
+              _searchResults.add(
+                SearchResult(
+                  node,
+                  matchLocation: SearchMatchLocation.key,
+                  matchIndex: matchIndex,
+                ),
+              );
+            }
+          }
+        }
+
+        // Only process values for non-root nodes (optimization)
+        if (!node.isRoot) {
+          final dynamic nodeValue = node.value;
+          if (nodeValue != null) {
+            final valueStr = nodeValue.toString();
+            if (valueStr.isNotEmpty) {
+              // Cache the lowercase version
+              final valueLower = valueStr.toLowerCase();
+              if (valueLower.contains(searchTerm)) {
+                final valueMatches =
+                    _getSearchTermMatchesIndexes(valueStr, valueLower);
+                for (final matchIndex in valueMatches) {
+                  _searchResults.add(
+                    SearchResult(
+                      node,
+                      matchLocation: SearchMatchLocation.value,
+                      matchIndex: matchIndex,
+                    ),
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+
+      processedCount = end;
+      resultsFoundSinceLastUpdate +=
+          _searchResults.length - initialResultsCount;
+
+      // Check if we should update the UI based on time or results count
+      final now = DateTime.now();
+      if (now.isAfter(nextUIUpdateTime) ||
+          resultsFoundSinceLastUpdate >= 15 ||
+          processedCount >= totalNodes) {
+        if (mounted) notifyListeners();
+
+        // Schedule next update
+        nextUIUpdateTime = now.add(const Duration(milliseconds: 80));
+        resultsFoundSinceLastUpdate = 0;
+
+        // Yield to UI thread with minimal delay
+        // Use Duration.zero which is more efficient than a 1ms delay
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+  }
+
+  // Fast algorithm to find all occurrences without using RegExp
+  List<int> _fastFindAllOccurrences(String text, String pattern) {
+    if (text.isEmpty || pattern.isEmpty) {
+      return const <int>[];
+    }
+
+    final indices = <int>[];
+    var startIndex = 0;
+
+    while (true) {
+      final index = text.indexOf(pattern, startIndex);
+      if (index == -1) break;
+      indices.add(index);
+      startIndex =
+          index + 1; // Move just one character to find overlapping matches
+    }
+
+    return indices;
+  }
+
+  /// Finds all occurrences of `searchTerm` in [victim] and retrieves all their
+  /// indexes. Takes an optional pre-computed lowercase version of the string.
+  List<int> _getSearchTermMatchesIndexes(String victim, [String? victimLower]) {
+    // Early return for empty strings to avoid unnecessary work
+    if (victim.isEmpty || _searchTerm.isEmpty) {
+      return const <int>[];
+    }
+
+    // Use provided lowercase or compute it
+    final lowerVictim = victimLower ?? victim.toLowerCase();
+
+    // Fast path: if searchTerm isn't in victim, return early
+    if (!lowerVictim.contains(_searchTerm)) {
+      return const <int>[];
+    }
+
+    return _fastFindAllOccurrences(lowerVictim, _searchTerm);
   }
 
   /// Expands all the parent nodes of each `SearchResult.node` in

@@ -157,5 +157,7 @@
    "warningLogDesc": "앱에서 잠재적인 문제에 대한 경고 메시지를 기록하는 데 사용되는 태그",
    "you": "당신",
    "youAlreadyInLogger": "이미 로거 페이지에 있습니다",
-   "noData": "데이터 없음"
+   "noData": "데이터 없음",
+   "shareLogFull": "로그 공유 (전체)",
+   "copyToClipboardTruncated": "클립보드에 복사 (잘린 형태)"
 }

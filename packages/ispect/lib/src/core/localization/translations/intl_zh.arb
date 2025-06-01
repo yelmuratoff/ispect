@@ -124,5 +124,7 @@
    "warningLogDesc": "用于记录潜在问题的警告消息的日志标签",
    "you": "你",
    "youAlreadyInLogger": "您已在日志记录页面",
-   "noData": "无数据"
+   "noData": "无数据",
+   "shareLogFull": "分享日志（完整）",
+   "copyToClipboardTruncated": "复制到剪贴板（截断）"
 }

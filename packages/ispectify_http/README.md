@@ -1,140 +1,247 @@
-Documentation will be updated soon
-<!----------------------------
-----------Logo & Title--------
------------------------------->
 <div align="center">
-<p align="center">
-    <a href="https://github.com/yelmuratoff/ispect" align="center">
-        <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400px">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
+  
+  <p><strong>Standard HTTP client integration for ISpectify logging system</strong></p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify_http">
+      <img src="https://img.shields.io/pub/v/ispectify_http.svg" alt="pub version">
     </a>
-</p>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
+    </a>
+    <a href="https://github.com/yelmuratoff/ispect">
+      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="GitHub stars">
+    </a>
+  </p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify_http/score">
+      <img src="https://img.shields.io/pub/likes/ispectify_http?logo=flutter" alt="Pub likes">
+    </a>
+    <a href="https://pub.dev/packages/ispectify_http/score">
+      <img src="https://img.shields.io/pub/points/ispectify_http?logo=flutter" alt="Pub points">
+    </a>
+  </p>
 </div>
 
-<h2 align="center"> A Handy Toolkit for Mobile App Debugging 🚀 </h2>
+## 🔍 Overview
 
-<p align="center">
-ISpect is a simple yet versatile library inspired by web inspectors, tailored for mobile application development.
-An additional package for logging and handling Dio.
-
-   <br>
-   <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/yelmuratoff/ispect.git">star the repo</a> to support the project! </span>
-</p>
-
-<!----------------------------
--------------Badges-----------
------------------------------->
-
-<p align="center">
-  <a href="https://pub.dev/packages/ispect"><img src="https://img.shields.io/pub/v/ispect.svg" alt="Pub"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/yelmuratoff/ispect"><img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="Pub"></a>
-</p>
-<p align="center">
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points"></a>
-</p>
-
-<br>
-
-<!----------------------------
---------Other packages--------
------------------------------->
-
-## Packages
-ISpect can be extended using other parts of this package <br>
-
-| Package | Version | Description | 
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
-| [ispectify](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify) | [![Pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) | An additional package for logging and handling. Based on `Talker`. |
-| [ispectify_bloc](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_bloc) | [![Pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) | An additional package for logging and handling `BLoC`. |
-| [ispectify_dio](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_dio) | [![Pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) | An additional package for logging and handling `Dio`. |
-| [ispectify_http](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_http) | [![Pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) | An additional package for logging and handling `http`. |
-
-<!----------------------------
------------Features-----------
------------------------------->
-
-## 📌 Features
-
-- ✅ Draggable panel for route to ISpect page and manage Inspector tools
-You can also use it separately: https://pub.dev/packages/draggable_panel
-- ✅ Localizations: kk, en, zh, ru, es, fr, de, pt, ar, ko, ja, hi. *(I will add more translations in the future.)*
-- ✅ `ISpectify` logger *(inspired on `Talker`)* implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
-- ✅ You can customize more options during initialization of ISpect like BLoC, Dispatcher error and etc.
-- ✅ Updated ISpect page: added more options.
-   - Detailed `HTTP` logs: `request`, `response`, `error`
-   - Debug tools
-   - Cache manager
-   - Device and app info *([ispect_device](https://pub.dev/packages/ispect_device))*
-- ✅ Feedback builder from [pub.dev/feedback](https://pub.dev/packages/feedback)
-- ✅ Performance tracker
-
-
-<!----------------------------
---------Showcase images-------
------------------------------->
-
-## 📜 Showcase
+> **ISpectify HTTP** provides seamless integration between Dart's standard HTTP client and the ISpectify logging system.
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/draggable.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/feedback.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="200" style="margin: 5px;" />
 
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="200" style="margin: 5px;" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/inspector.png?raw=true" width="200" style="margin: 5px;" />
+🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+
 </div>
 
-<!----------------------------
---------Getting Started-------
------------------------------->
+Enhance your HTTP debugging workflow by automatically capturing and logging all standard HTTP client interactions. Ideal for applications using Dart's built-in HTTP client or when you need a lightweight HTTP logging solution.
 
-## 📌 Getting Started
-Follow these steps to use this package
+### 🎯 Key Features
 
-<!----------------------------
----------Instructions---------
------------------------------->
+- 🌐 **HTTP Request Logging**: Automatic logging of all HTTP requests
+- 📊 **Response Tracking**: Detailed response logging with timing information
+- ❌ **Error Handling**: Comprehensive error logging with stack traces
+- 🔍 **Request Inspection**: Headers, body, and parameter logging
+- ⚡ **Performance Metrics**: Request/response timing and size tracking
+- 🎛️ **Lightweight**: Minimal overhead with the standard HTTP client
 
-## Easy to use
-Simple example of use `ISpect`<br>
-You can manage ISpect using `ISpect.read(context)`.
-Put this code in your project at an screen and learn how it works. 😊
+## 🔧 Configuration Options
 
+### Basic Configuration
 
-### Instructions for use:
-
-1. Wrap `runApp` with `ISpect.run` method and pass `ISpectify` instance to it.
-2. Wrap your root widget with `ISpectScopeWrapper` widget to enable `ISpect` where you can pass theme and options.
-3. Add `ISpectBuilder` widget to your material app's builder and put `NavigatorObserver`.
-4. Add `ISpectLocalizations` to your `localizationsDelegates` in `MaterialApp`.
 ```dart
-localizationsDelegates: ISpectLocalizations.localizationDelegates([ // ISpect localization delegates
-          ExampleGeneratedLocalization.delegate, // Your localization delegate
-        ]),
+final client = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      settings: ISpectifyHttpSettings(
+        // Request logging
+        printRequestHeaders: true,
+        printRequestBody: true,
+        
+        // Response logging
+        printResponseHeaders: true,
+        printResponseBody: true,
+        
+        // Error handling
+        printErrorDetails: true,
+        
+        // Performance
+        trackRequestTime: true,
+      ),
+    ),
+  ],
+);
 ```
-5. Add `ISpectifyHttpLogger` to the [`InterceptedClient`](https://pub.dev/packages/http_interceptor) instance form interceptors in the `onInit` method of `ISpect.run`.
+
+### Advanced Filtering
+
 ```dart
-onInit: (iSpectify) {
-      client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: ISpect.iSpectify),
-      );
-    },
+final client = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      settings: ISpectifyHttpSettings(
+        // Filter sensitive headers
+        headerFilter: (headers) => Map.from(headers)
+          ..remove('authorization'),
+        
+        // Filter request bodies
+        requestBodyFilter: (body) {
+          if (body.contains('password')) {
+            return body.replaceAll(RegExp(r'"password":"[^"]*"'), '"password":"***"');
+          }
+          return body;
+        },
+        
+        // Custom log levels
+        requestLogLevel: LogLevel.debug,
+        responseLogLevel: LogLevel.info,
+        errorLogLevel: LogLevel.error,
+      ),
+    ),
+  ],
+);
 ```
 
-Please, check the [example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for more details.
+## 📦 Installation
 
-<br>
-<div align="center" >
-  <p>Thanks to all contributors of this package</p>
+Add ispectify_http to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  ispectify_http: ^4.1.3-dev13
+```
+
+## 🚀 Quick Start
+
+```dart
+import 'package:http/http.dart' as http;
+import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify/ispectify.dart';
+
+void main() {
+  final ispectify = ISpectify();
+  
+  // Create HTTP client with ISpectify interceptor
+  final client = InterceptedClient.build(
+    interceptors: [
+      ISpectifyHttpInterceptor(
+        ispectify: ispectify,
+        settings: ISpectifyHttpSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printRequestBody: true,
+          printResponseBody: true,
+        ),
+      ),
+    ],
+  );
+  
+  // All HTTP requests will be automatically logged
+  final response = await client.get(
+    Uri.parse('https://api.example.com/data'),
+  );
+  
+  // Don't forget to close the client
+  client.close();
+}
+```
+
+## ⚙️ Advanced Features
+
+### Custom Log Formatting
+
+```dart
+final client = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      settings: ISpectifyHttpSettings(
+        requestFormatter: (request) => 'HTTP ${request.method} ${request.url}',
+        responseFormatter: (response) => 'Response ${response.statusCode} (${response.body.length} bytes)',
+      ),
+    ),
+  ],
+);
+```
+
+### Environment-based Configuration
+
+```dart
+final client = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      settings: kDebugMode 
+        ? ISpectifyHttpSettings.debug() // Full logging in debug
+        : ISpectifyHttpSettings.production(), // Minimal logging in production
+    ),
+  ],
+);
+```
+
+### Multiple HTTP Clients
+
+```dart
+// API client
+final apiClient = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      tag: 'API',
+    ),
+  ],
+);
+
+// Analytics client
+final analyticsClient = InterceptedClient.build(
+  interceptors: [
+    ISpectifyHttpInterceptor(
+      ispectify: ispectify,
+      tag: 'Analytics',
+    ),
+  ],
+);
+```
+
+## 📚 Examples
+
+See the [example/](example/) directory for complete integration examples with different HTTP client configurations.
+
+## 🏗️ Architecture
+
+ISpectifyHttp integrates with the standard HTTP client through interceptors:
+
+| Component | Description |
+|-----------|-----------|
+| **HTTP Interceptor** | Captures HTTP requests and responses |
+| **Request Logger** | Logs request details (headers, body, params) |
+| **Response Logger** | Logs response data and timing |
+| **Error Handler** | Captures and logs HTTP errors |
+| **Performance Tracker** | Measures request/response times |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [contributing guidelines](../../CONTRIBUTING.md) and submit pull requests to the main branch.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Related Packages
+
+- [ispectify](../ispectify) - Foundation logging system
+- [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
+- [ispect](../ispect) - Main debugging interface
+- [http](https://pub.dev/packages/http) - Standard HTTP client for Dart
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for the Flutter community</p>
   <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
+    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
   </a>
 </div>
-<br>

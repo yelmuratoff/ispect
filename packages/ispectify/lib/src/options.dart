@@ -78,7 +78,7 @@ class ISpectifyOptions {
     this.enabled = true,
     bool useHistory = true,
     bool useConsoleLogs = true,
-    int maxHistoryItems = 1000,
+    int maxHistoryItems = 10000,
     int logTruncateLength = 10000,
     Map<String, String>? titles,
     Map<String, AnsiPen>? colors,

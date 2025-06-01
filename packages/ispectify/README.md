@@ -1,83 +1,193 @@
-
-<!----------------------------
-----------Logo & Title--------
------------------------------->
 <div align="center">
-<p align="center">
-    <a href="https://github.com/yelmuratoff/ispect" align="center">
-        <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400px">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
+  
+  <p><strong>Foundation logging system for ISpect toolkit (based on Talker)</strong></p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify">
+      <img src="https://img.shields.io/pub/v/ispectify.svg" alt="pub version">
     </a>
-</p>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
+    </a>
+    <a href="https://github.com/yelmuratoff/ispect">
+      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="GitHub stars">
+    </a>
+  </p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify/score">
+      <img src="https://img.shields.io/pub/likes/ispectify?logo=flutter" alt="Pub likes">
+    </a>
+    <a href="https://pub.dev/packages/ispectify/score">
+      <img src="https://img.shields.io/pub/points/ispectify?logo=flutter" alt="Pub points">
+    </a>
+  </p>
 </div>
 
-<h2 align="center"> A Handy Toolkit for Mobile App Debugging 🚀 </h2>
+## 🔍 Overview
 
-<p align="center">
-This package is an additional package of ISpect for logging.
-See more: https://pub.dev/packages/ispect
+> **ISpectify** is the foundation logging system that powers the ISpect debugging toolkit.
 
-   <br>
-   <span style="font-size: 0.9em"> Show some ❤️ and <a href="https://github.com/yelmuratoff/ispect.git">star the repo</a> to support the project! </span>
-</p>
+<div align="center">
 
-<!----------------------------
--------------Badges-----------
------------------------------->
+📝 **Logging** • 🔍 **Filtering** • 📊 **Monitoring** • 💾 **Export**
 
-<p align="center">
-  <a href="https://pub.dev/packages/ispect"><img src="https://img.shields.io/pub/v/ispect.svg" alt="Pub"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/yelmuratoff/ispect"><img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="Pub"></a>
-</p>
-<p align="center">
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes"></a>
-  <a href="https://pub.dev/packages/ispect/score"><img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points"></a>
-</p>
+</div>
 
-<br>
+ISpectify provides a robust logging foundation that integrates seamlessly with the ISpect ecosystem. Built on top of the proven Talker logging library, it offers advanced features for debugging and monitoring Flutter applications.
 
-<!----------------------------
---------Other packages--------
------------------------------->
+### 🎯 Key Features
 
-## Packages
-ISpect can be extended using other parts of this package <br>
+- 📝 **Structured Logging**: Advanced logging with categorization and filtering
+- 🎨 **Custom Log Types**: Define your own log types with custom colors and icons
+- 🔍 **Real-time Filtering**: Filter logs by type, level, and custom criteria
+- 📊 **Performance Monitoring**: Track application performance metrics
+- 💾 **Export Functionality**: Export logs for analysis and debugging
+- 🔧 **Easy Integration**: Simple setup with minimal configuration
 
-| Package | Version | Description | 
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | [![Pub](https://img.shields.io/pub/v/ispect.svg?style=flat-square)](https://pub.dev/packages/ispect) | **Main** package of ISpect |
-| [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | [![Pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) | An add-on package to use the **Jira Atlassian Api** to create issue tickets immediately via `Feedback` |
-| [ispectify](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify) | [![Pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) | An additional package for logging and handling. Based on `Talker`. |
-| [ispectify_bloc](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_bloc) | [![Pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) | An additional package for logging and handling `BLoC`. |
-| [ispectify_dio](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_dio) | [![Pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) | An additional package for logging and handling `Dio`. |
-| [ispectify_http](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_http) | [![Pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) | An additional package for logging and handling `http`. |
+## 🔧 Configuration
 
-<!----------------------------
------------Features-----------
------------------------------->
+### Settings
 
-## 📌 Features
+```dart
+final ispectify = ISpectify(
+  settings: ISpectifySettings(
+    enabled: true,
+    useConsoleLogs: true,
+    useHistory: true,
+    maxHistoryItems: 1000,
+    colors: {
+      LogLevel.info: Colors.blue,
+      LogLevel.warning: Colors.orange,
+      LogLevel.error: Colors.red,
+    },
+  ),
+);
+```
 
-- ✅ Draggable panel for route to ISpect page and manage Inspector tools
-You can also use it separately: https://pub.dev/packages/draggable_panel
-- ✅ Localizations: kk, en, zh, ru, es, fr, de, pt, ar, ko, ja, hi. *(I will add more translations in the future.)*
-- ✅ `ISpectify` logger *(inspired on `Talker`)* implementation: **BLoC**, **Dio**, **http**, **Routing**, **Provider**
-- ✅ You can customize more options during initialization of ISpect like BLoC, Dispatcher error and etc.
-- ✅ Updated ISpect page: added more options.
-   - Detailed `HTTP` logs: `request`, `response`, `error`
-   - Debug tools
-   - Cache manager
-   - Device and app info *([ispect_device](https://pub.dev/packages/ispect_device))*
-- ✅ Feedback builder from [pub.dev/feedback](https://pub.dev/packages/feedback)
-- ✅ Performance tracker
+### Custom Log Types
 
+```dart
+// Define custom log types
+ispectify.registerLogType(
+  'network',
+  color: Colors.green,
+  icon: Icons.network_check,
+);
 
+// Use custom log type
+ispectify.logCustom('network', 'HTTP request completed');
+```
 
-<br>
-<div align="center" >
-  <p>Thanks to all contributors of this package</p>
+### Performance Monitoring
+
+```dart
+// Track performance
+ispectify.trackPerformance('api_call', () async {
+  // Your async operation
+  await api.fetchData();
+});
+```
+
+## 📦 Installation
+
+Add ispectify to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  ispectify: ^4.1.3-dev13
+```
+
+## 🚀 Quick Start
+
+```dart
+import 'package:ispectify/ispectify.dart';
+
+void main() {
+  // Initialize ISpectify
+  final ispectify = ISpectify(
+    settings: ISpectifySettings(
+      enabled: true,
+      useConsoleLogs: true,
+      useHistory: true,
+    ),
+  );
+
+  // Log different types of messages
+  ispectify.info('Application started');
+  ispectify.debug('Debug information');
+  ispectify.warning('Warning message');
+  ispectify.error('Error occurred');
+  
+  // Custom log types
+  ispectify.log('Custom message', logLevel: LogLevel.verbose);
+  
+  runApp(MyApp());
+}
+```
+
+## ⚙️ Advanced Features
+
+### Log Filtering
+
+```dart
+// Filter logs by level
+final errorLogs = ispectify.getLogsByLevel(LogLevel.error);
+
+// Filter logs by custom criteria
+final networkLogs = ispectify.getLogsByType('network');
+
+// Search logs
+final searchResults = ispectify.searchLogs('HTTP');
+```
+
+### Export Functionality
+
+```dart
+// Export logs to file
+await ispectify.exportLogs('/path/to/logs.txt');
+
+// Export specific log types
+await ispectify.exportLogsByType('error', '/path/to/errors.txt');
+```
+
+## 📚 Examples
+
+See the [example/](example/) directory for usage examples and integration patterns.
+
+## 🏗️ Architecture
+
+ISpectify serves as the logging foundation for the ISpect ecosystem:
+
+| Component | Description |
+|-----------|-----------|
+| **Core Logger** | Based on Talker with enhanced features |
+| **Log Filtering** | Advanced filtering and search capabilities |
+| **Performance Tracking** | Built-in performance monitoring |
+| **Export System** | Log export and analysis tools |
+| **Integration Layer** | Seamless integration with ISpect toolkit |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [contributing guidelines](../../CONTRIBUTING.md) and submit pull requests to the main branch.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Related Packages
+
+- [ispect](../ispect) - Main debugging interface
+- [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
+- [ispectify_http](../ispectify_http) - Standard HTTP client integration
+- [ispectify_bloc](../ispectify_bloc) - BLoC state management integration
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for the Flutter community</p>
   <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
+    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
   </a>
 </div>
-<br>

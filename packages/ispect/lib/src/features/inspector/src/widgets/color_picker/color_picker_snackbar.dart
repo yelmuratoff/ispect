@@ -57,9 +57,8 @@ void showColorPickerResultSnackbar({
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                width: 16,
-                height: 16,
+              SizedBox.square(
+                dimension: 16,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: color,

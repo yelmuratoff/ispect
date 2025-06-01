@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/performance/performance.dart';
 
 /// A widget that wraps a `child` with a [CustomPerformanceOverlay]
@@ -34,7 +35,6 @@ class PerformanceOverlayBuilder extends StatelessWidget {
   const PerformanceOverlayBuilder({
     required this.child,
     required this.isPerformanceTrackingEnabled,
-    required this.theme,
     super.key,
   });
 
@@ -44,19 +44,17 @@ class PerformanceOverlayBuilder extends StatelessWidget {
   /// Whether performance tracking and overlay display is enabled.
   final bool isPerformanceTrackingEnabled;
 
-  /// The theme used to style overlay elements.
-  final ThemeData theme;
-
   @override
   Widget build(BuildContext context) => Directionality(
         textDirection: TextDirection.ltr,
         child: CustomPerformanceOverlay(
           enabled: isPerformanceTrackingEnabled,
           alignment: Alignment.topCenter,
-          backgroundColor: theme.colorScheme.surface,
-          textColor: theme.colorScheme.onSurface,
+          backgroundColor:
+              context.ispectTheme.colorScheme.surface.withAlpha(100),
+          textColor: context.ispectTheme.colorScheme.onSurface,
           textBackgroundColor:
-              theme.colorScheme.surface.withAlpha(0x80), // 50% opacity
+              context.ispectTheme.colorScheme.surface.withAlpha(0x80),
           child: child,
         ),
       );

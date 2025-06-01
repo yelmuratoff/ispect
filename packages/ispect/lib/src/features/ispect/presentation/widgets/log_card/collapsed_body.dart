@@ -1,7 +1,7 @@
 part of 'log_card.dart';
 
-class _CollapsedBody extends StatelessWidget {
-  const _CollapsedBody({
+class CollapsedBody extends StatelessWidget {
+  const CollapsedBody({
     required this.icon,
     required this.color,
     required this.title,
@@ -34,12 +34,8 @@ class _CollapsedBody extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      icon,
-                      color: color,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
+                    DecoratedLeadingIcon(icon: icon, color: color),
+                    const Gap(6),
                     Flexible(
                       child: Text(
                         '$title | $dateTime',
@@ -47,71 +43,131 @@ class _CollapsedBody extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: color,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
                         ),
                       ),
                     ),
                   ],
                 ),
-                if (!expanded) ..._buildMessageSection(),
+                if (!expanded)
+                  _CollapsedMessage(
+                    color: color,
+                    message: message,
+                    errorMessage: errorMessage,
+                  ),
               ],
             ),
           ),
-          SizedBox.square(
-            dimension: 24,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              iconSize: 18,
-              icon: Icon(
-                Icons.copy_rounded,
-                color: color,
-              ),
-              onPressed: onCopyTap,
-            ),
+          SquareIconButton(
+            icon: Icons.copy_rounded,
+            color: color,
+            onPressed: onCopyTap,
           ),
           const Gap(4),
-          SizedBox.square(
-            dimension: 24,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              iconSize: 18,
-              icon: Icon(
-                Icons.zoom_out_map_rounded,
-                color: color,
-              ),
-              onPressed: onHttpTap,
-            ),
+          SquareIconButton(
+            icon: Icons.zoom_out_map_rounded,
+            color: color,
+            onPressed: onHttpTap,
           ),
         ],
       );
+}
 
-  List<Widget> _buildMessageSection() {
-    if (message != null && message != 'FlutterErrorDetails') {
-      return [
-        const Gap(2),
-        Text(
-          message!,
-          maxLines: 2,
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-          ),
+class _CollapsedMessage extends StatelessWidget {
+  const _CollapsedMessage({
+    required this.color,
+    required this.message,
+    required this.errorMessage,
+  });
+
+  final Color color;
+  final String? message;
+  final String? errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayMessage = (message == 'FlutterErrorDetails')
+        ? errorMessage
+        : (message != null && message != 'FlutterErrorDetails')
+            ? message
+            : null;
+
+    if (displayMessage == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Text(
+        displayMessage,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color.withValues(alpha: 0.8),
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
         ),
-      ];
-    } else if (message == 'FlutterErrorDetails') {
-      return [
-        const Gap(2),
-        Text(
-          errorMessage ?? '',
-          maxLines: 2,
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-          ),
-        ),
-      ];
-    }
-    return const [];
+      ),
+    );
   }
+}
+
+class SquareIconButton extends StatelessWidget {
+  const SquareIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    super.key,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+        dimension: 24,
+        child: IconButton(
+          iconSize: 16,
+          style: IconButton.styleFrom(
+            padding: const EdgeInsets.all(4),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            backgroundColor: color.withValues(alpha: 0.1),
+          ),
+          icon: Icon(
+            icon,
+            color: context.ispectTheme.colorScheme.onSurface
+                .withValues(alpha: 0.5),
+          ),
+          onPressed: onPressed,
+        ),
+      );
+}
+
+class DecoratedLeadingIcon extends StatelessWidget {
+  const DecoratedLeadingIcon({
+    required this.icon,
+    required this.color,
+    super.key,
+  });
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(
+            icon,
+            color: color,
+            size: 16,
+          ),
+        ),
+      );
 }

@@ -1,5 +1,31 @@
 # Changelog
 
+## 4.1.3
+
+### Infrastructure
+- Added comprehensive version management system:
+  - Created `version.config` as single source of truth for package versions
+  - Added automated dependency synchronization between internal packages
+  - Implemented CI/CD workflows for automatic version sync on changes
+  - Added scripts for easy version bumping: patch, minor, major, dev versions
+  - Created comprehensive documentation in VERSION_MANAGEMENT.md and VERSION.md
+- Added validation for package versions:
+  - Pre-commit hooks to prevent inconsistent versions
+  - Automated checks for internal dependency consistency
+  - Pull request validation for versions and changelogs
+
+### Enhanced
+- Refactored and improved optimization for handling very large JSON in the detailed log screen.
+- Improved search and scroll to matched item functionality in the detailed log screen.
+
+### Added
+- Added a button for copying next to the JSON item (map/iterable) inside the detailed log screen.
+- Added the ability to share the full log as a file .txt or quickly copy the truncated log to the clipboard.
+
+### Changes
+- UI changes in ISpect and log screens for better usability.
+- Bumped dependencies to the latest versions.
+
 ## 4.1.2
 
 ### Added

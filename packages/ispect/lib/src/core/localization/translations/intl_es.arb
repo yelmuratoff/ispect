@@ -157,5 +157,7 @@
    "warningLogDesc": "Etiqueta usada para registrar mensajes de advertencia sobre posibles problemas en la aplicación",
    "you": "Tú",
    "youAlreadyInLogger": "Ya estás en la página del registrador",
-   "noData": "Sin datos"
+   "noData": "Sin datos",
+   "shareLogFull": "Compartir registro (completo)",
+   "copyToClipboardTruncated": "Copiar al portapapeles (truncado)"
 }

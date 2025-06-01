@@ -17,11 +17,6 @@ class AppInfoController extends ChangeNotifier {
         context: context,
       );
       _baseDeviceInfo = await _deviceInfo.deviceInfo;
-      // if (Platform.isIOS) {
-      //   _iosDeviceInfo = await _deviceInfo.iosInfo;
-      // } else if (Platform.isAndroid) {
-      //   _androidDeviceInfo = await _deviceInfo.androidInfo;
-      // }
     } on Exception catch (e, st) {
       ISpect.logger.handle(exception: e, stackTrace: st);
       if (context.mounted) {

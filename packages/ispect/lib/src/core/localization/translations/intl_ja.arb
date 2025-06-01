@@ -157,5 +157,7 @@
    "warningLogDesc": "アプリでの潜在的な問題に関する警告メッセージを記録するタグ",
    "you": "あなた",
    "youAlreadyInLogger": "すでにロガーページにいます",
-   "noData": "データなし"
+   "noData": "データなし",
+   "shareLogFull": "ログを共有（完全）",
+   "copyToClipboardTruncated": "クリップボードにコピー（省略）"
 }

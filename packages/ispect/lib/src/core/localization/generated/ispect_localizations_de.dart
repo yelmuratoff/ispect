@@ -551,4 +551,11 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'Keine Daten';
+
+  @override
+  String get shareLogFull => 'Protokoll teilen (vollständig)';
+
+  @override
+  String get copyToClipboardTruncated =>
+      'In die Zwischenablage kopieren (gekürzt)';
 }

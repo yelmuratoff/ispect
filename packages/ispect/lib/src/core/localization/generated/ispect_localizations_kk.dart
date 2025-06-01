@@ -549,4 +549,11 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'Деректер жоқ';
+
+  @override
+  String get shareLogFull => 'Логты бөлісу (толық)';
+
+  @override
+  String get copyToClipboardTruncated =>
+      'Алмасу буферіне көшіру (қысқартылған)';
 }

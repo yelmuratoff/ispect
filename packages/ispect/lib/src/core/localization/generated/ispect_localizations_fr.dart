@@ -551,4 +551,11 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get noData => 'Aucune donnée';
+
+  @override
+  String get shareLogFull => 'Partager le journal (complet)';
+
+  @override
+  String get copyToClipboardTruncated =>
+      'Copier dans le presse-papiers (tronqué)';
 }
