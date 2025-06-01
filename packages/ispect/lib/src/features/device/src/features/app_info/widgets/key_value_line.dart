@@ -155,7 +155,10 @@ class _DotSeparatorPainter extends CustomPainter {
     final dotsCount = (size.width / dotSpacing).ceil();
     for (var i = 0; i < dotsCount; i++) {
       final x = i * dotSpacing;
-      canvas.drawCircle(Offset(x, centerY), dotRadius, paint);
+      // Ensure dot (including its radius) doesn't exceed container width
+      if (x + dotRadius <= size.width) {
+        canvas.drawCircle(Offset(x, centerY), dotRadius, paint);
+      }
     }
   }
 

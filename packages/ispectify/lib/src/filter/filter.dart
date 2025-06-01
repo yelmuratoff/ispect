@@ -96,9 +96,11 @@ class SearchFilter implements Filter<ISpectifyData> {
         continue;
       }
 
-      // Add map values to stack
+      // Add map keys and values to stack
       if (current is Map<dynamic, dynamic>) {
-        stack.addAll(current.values);
+        stack
+          ..addAll(current.values)
+          ..addAll(current.keys.map((k) => k.toString()));
       }
       // Add iterable elements to stack
       else if (current is Iterable<dynamic>) {

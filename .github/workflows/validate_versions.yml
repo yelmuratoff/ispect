@@ -40,17 +40,32 @@ jobs:
       - name: Validate CHANGELOG
         id: validate_changelog
         run: |
+          # Check if version.config exists
+          if [ ! -f version.config ]; then
+            echo "Error: version.config file not found. Please create it with VERSION=x.y.z format."
+            exit 1
+          fi
+          
           # Source the version config
-          source version.config
+          if ! source version.config; then
+            echo "Error: Failed to source version.config. Please check the file format."
+            exit 1
+          fi
+          
+          # Validate that VERSION variable is set
+          if [ -z "$VERSION" ]; then
+            echo "Error: VERSION variable is not set in version.config. Expected format: VERSION=x.y.z"
+            exit 1
+          fi
           
           # Check for proper CHANGELOG format
-          if ! grep -q "^# Changelog" CHANGELOG.md; then
+          if ! grep -qF "# Changelog" CHANGELOG.md; then
             echo "CHANGELOG.md does not start with '# Changelog'. Please fix the format."
             exit 1
           fi
           
           # Check if current version exists in CHANGELOG
-          if ! grep -q "^## $VERSION" CHANGELOG.md; then
+          if ! grep -qF "## $VERSION" CHANGELOG.md; then
             echo "Current version $VERSION is not documented in CHANGELOG.md. Please update the changelog."
             exit 1
           fi

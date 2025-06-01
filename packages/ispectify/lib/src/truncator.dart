@@ -115,13 +115,13 @@ class JsonTruncatorService {
       return MapEntry(
         _truncateJson(
           value.key,
-          currentDepth,
+          nextDepth,
           maxDepth: maxDepth,
           maxIterableSize: maxIterableSize,
         ),
         _truncateJson(
           value.value,
-          currentDepth,
+          nextDepth,
           maxDepth: maxDepth,
           maxIterableSize: maxIterableSize,
         ),
@@ -160,11 +160,29 @@ class JsonTruncatorService {
     int maxIterableSize,
   ) {
     // Truncate large iterables when maxIterableSize is not _unlimitedIterableSize (-1)
-    if (maxIterableSize != _unlimitedIterableSize &&
-        value.length > maxIterableSize) {
-      // Take only the first maxIterableSize elements and process them
-      return value
-          .take(maxIterableSize)
+    if (maxIterableSize != _unlimitedIterableSize) {
+      // Check if iterable exceeds limit by trying to take maxIterableSize + 1 elements
+      // This avoids expensive .length calls on non-list collections
+      final limitedItems = value.take(maxIterableSize + 1).toList();
+
+      if (limitedItems.length > maxIterableSize) {
+        // Remove the extra element and process only the first maxIterableSize elements
+        return limitedItems
+            .take(maxIterableSize)
+            .map(
+              (item) => _truncateJson(
+                item,
+                nextDepth,
+                maxDepth: maxDepth,
+                maxIterableSize: maxIterableSize,
+              ),
+            )
+            .toList()
+          ..add(_truncationMarker);
+      }
+
+      // Process the already-taken limited items if they don't exceed the limit
+      return limitedItems
           .map(
             (item) => _truncateJson(
               item,
@@ -173,8 +191,7 @@ class JsonTruncatorService {
               maxIterableSize: maxIterableSize,
             ),
           )
-          .toList()
-        ..add(_truncationMarker);
+          .toList();
     }
 
     // Process full iterable without truncation
