@@ -2,6 +2,16 @@
 
 ## 4.1.4
 
+### Enhancements:
+- Improve `JSON` truncator to avoid expensive length calls on iterables and use the correct recursion depth for nested entries
+- Include map keys alongside values when expanding the filter stack
+- Prevent the painter from drawing dots that exceed the container width
+
+### CI:
+- Add checks for `version.config` existence, sourcing errors, and missing `VERSION` variable in the `validate_versions` workflow
+- Switch grep to fixed-string mode in changelog validation and update path in `sync_versions_and_changelogs` workflow
+- Remove the obsolete `update_changelogs.yml` workflow file
+
 ## 4.1.3
 
 ### Infrastructure
