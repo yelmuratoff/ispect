@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.4
+
+### Enhancements:
+- Optimize `JSON` truncator to avoid expensive length calls, use correct recursion depth, and handle truncations efficiently
+- Extend filter search to include map keys, prevent circular loops, and streamline filter combination logic
+- Refine dotted separator painter to distribute dots evenly within container bounds
+
+### CI:
+- Upgrade `actions/checkout` to v4 with full fetch depth
+- Harden validate_versions workflow with strict error handling, `version.config` and `VERSION` checks
+- Switch grep to fixed-string mode and update workflow paths in `sync_versions_and_changelogs`
+- Remove obsolete `update_changelogs.yml` file
+
 ## 4.1.3
 
 ### Infrastructure

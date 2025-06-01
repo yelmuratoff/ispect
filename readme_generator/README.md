@@ -99,7 +99,7 @@ The base template `template.md` uses `{{placeholder_name}}` syntax for variable 
 ### Available Placeholders
 
 - `{{package_name}}` - Package name
-- `{{title}}` - Package title  
+- `{{title}}` - Package title
 - `{{description}}` - Package description
 - `{{overview}}` - Overview text
 - `{{version}}` - Version number (automatically read from version.config)

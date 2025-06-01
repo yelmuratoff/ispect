@@ -116,11 +116,11 @@ class _DottedSeparator extends StatelessWidget {
   Widget build(BuildContext context) => Align(
         child: SizedBox(
           width: double.infinity,
-          height: 1,
+          height: 2, // Increase height to accommodate larger dots
           child: CustomPaint(
             painter: _DotSeparatorPainter(
-              dotSpacing: 4,
-              dotRadius: 1,
+              dotSpacing: 6, // Increase spacing for better visual separation
+              dotRadius: 0.8, // Slightly smaller radius for better fit
               color: color,
             ),
           ),
@@ -151,17 +151,35 @@ class _DotSeparatorPainter extends CustomPainter {
     final paint = Paint()
       ..color = color ?? const Color(0xFF000000)
       ..style = PaintingStyle.fill;
+
     final centerY = size.height / 2;
-    final dotsCount = (size.width / dotSpacing).ceil();
-    for (var i = 0; i < dotsCount; i++) {
-      final x = i * dotSpacing;
+    final availableWidth =
+        size.width - (2 * dotRadius); // Account for dot radius on both edges
+
+    if (availableWidth <= 0) return; // Not enough space for even one dot
+
+    // Calculate optimal number of dots that can fit with proper spacing
+    final maxDotsWithSpacing = (availableWidth / dotSpacing).floor() + 1;
+
+    if (maxDotsWithSpacing <= 1) {
+      // Only one dot fits, center it
+      canvas.drawCircle(Offset(size.width / 2, centerY), dotRadius, paint);
+      return;
+    }
+
+    // Distribute dots evenly across available width
+    final actualSpacing = availableWidth / (maxDotsWithSpacing - 1);
+    final startX = dotRadius; // Start from radius to prevent left clipping
+
+    for (var i = 0; i < maxDotsWithSpacing; i++) {
+      final x = startX + (i * actualSpacing);
       canvas.drawCircle(Offset(x, centerY), dotRadius, paint);
     }
   }
 
   @override
   bool shouldRepaint(covariant _DotSeparatorPainter oldDelegate) =>
-      oldDelegate.dotSpacing != dotSpacing ||
-      oldDelegate.dotRadius != dotRadius ||
-      oldDelegate.color != color;
+      dotSpacing != oldDelegate.dotSpacing ||
+      dotRadius != oldDelegate.dotRadius ||
+      color != oldDelegate.color;
 }

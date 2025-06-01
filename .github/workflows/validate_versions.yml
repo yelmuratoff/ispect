@@ -17,42 +17,105 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
         
       - name: Check Version Sync
         id: check_versions
         run: |
-          chmod +x bash/check_version_sync.sh
+          set -euo pipefail
+          
+          # Ensure script is executable
+          if [[ ! -x bash/check_version_sync.sh ]]; then
+            chmod +x bash/check_version_sync.sh
+          fi
+          
+          echo "🔍 Checking version synchronization across packages..."
           if ! ./bash/check_version_sync.sh; then
-            echo "Version check failed. Please run './bash/update_versions.sh' to sync all package versions."
+            echo "❌ Version check failed. Please run './bash/update_versions.sh' to sync all package versions."
             exit 1
           fi
+          echo "✅ Version synchronization check passed!"
           
       - name: Check Dependencies Consistency
         id: check_dependencies
         run: |
-          chmod +x bash/check_dependencies.sh
+          set -euo pipefail
+          
+          # Ensure script is executable
+          if [[ ! -x bash/check_dependencies.sh ]]; then
+            chmod +x bash/check_dependencies.sh
+          fi
+          
+          echo "🔍 Checking dependency version consistency..."
           if ! ./bash/check_dependencies.sh; then
-            echo "Dependency version check failed. Please run './bash/update_versions.sh' to sync all package dependencies."
+            echo "❌ Dependency version check failed. Please run './bash/update_versions.sh' to sync all package dependencies."
             exit 1
           fi
+          echo "✅ Dependency consistency check passed!"
       
       - name: Validate CHANGELOG
         id: validate_changelog
         run: |
-          # Source the version config
-          source version.config
+          set -euo pipefail  # Enable strict error handling
           
-          # Check for proper CHANGELOG format
-          if ! grep -q "^# Changelog" CHANGELOG.md; then
-            echo "CHANGELOG.md does not start with '# Changelog'. Please fix the format."
+          # Check if version.config exists
+          if [[ ! -f version.config ]]; then
+            echo "❌ Error: version.config file not found. Please create it with VERSION=x.y.z format."
             exit 1
           fi
           
-          # Check if current version exists in CHANGELOG
-          if ! grep -q "^## $VERSION" CHANGELOG.md; then
-            echo "Current version $VERSION is not documented in CHANGELOG.md. Please update the changelog."
+          # Source the version config with error handling
+          if ! source version.config 2>/dev/null; then
+            echo "❌ Error: Failed to source version.config. Please check the file format."
             exit 1
           fi
           
-          echo "CHANGELOG validation passed!"
+          # Validate that VERSION variable is set and not empty
+          if [[ -z "${VERSION:-}" ]]; then
+            echo "❌ Error: VERSION variable is not set in version.config. Expected format: VERSION=x.y.z"
+            exit 1
+          fi
+          
+          # Validate version format (semantic versioning)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9\.-]+)?(\+[a-zA-Z0-9\.-]+)?$'; then
+            echo "❌ Error: VERSION '$VERSION' is not in valid semantic version format (x.y.z)"
+            exit 1
+          fi
+          
+          # Check if CHANGELOG.md exists
+          if [[ ! -f CHANGELOG.md ]]; then
+            echo "❌ Error: CHANGELOG.md file not found."
+            exit 1
+          fi
+          
+          # Check that CHANGELOG starts with proper header (first non-empty line)
+          if ! head -n 10 CHANGELOG.md | grep -m1 "^[[:space:]]*#" | grep -q "^# Changelog"; then
+            echo "❌ Error: CHANGELOG.md must start with '# Changelog' as the first header."
+            echo "ℹ️  Current first header: $(head -n 10 CHANGELOG.md | grep -m1 "^[[:space:]]*#" || echo "None found")"
+            exit 1
+          fi
+          
+          # Check if current version exists as a proper section header
+          if ! grep -q "^## \[${VERSION}\]" CHANGELOG.md && ! grep -q "^## ${VERSION}" CHANGELOG.md; then
+            echo "❌ Error: Current version '$VERSION' is not documented in CHANGELOG.md."
+            echo "ℹ️  Expected format: '## $VERSION' or '## [$VERSION]'"
+            echo "ℹ️  Available versions in CHANGELOG:"
+            grep "^## " CHANGELOG.md | head -5 || echo "  No version sections found"
+            exit 1
+          fi
+          
+          # Validate that the version section has content
+          version_line_num=$(grep -n "^## \[\?${VERSION}\]\?" CHANGELOG.md | head -1 | cut -d: -f1)
+          if [[ -n "$version_line_num" ]]; then
+            # Get content between this version and next version (or end of file)
+            version_content=$(sed -n "${version_line_num},\$p" CHANGELOG.md | sed '/^## /q' | tail -n +2)
+            # Remove empty lines and check if there's actual content
+            if [[ -z "$(echo "$version_content" | grep -v "^[[:space:]]*$")" ]]; then
+              echo "⚠️  Warning: Version '$VERSION' section appears to be empty. Consider adding release notes."
+            fi
+          fi
+          
+          echo "✅ CHANGELOG validation passed!"
+          echo "ℹ️  Validated version: $VERSION"

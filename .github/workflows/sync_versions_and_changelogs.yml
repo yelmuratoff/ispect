@@ -7,7 +7,7 @@ on:
     paths:
       - 'CHANGELOG.md'
       - 'version.config'
-      - '.github/workflows/update_changelogs.yml'
+      - '.github/workflows/sync_versions_and_changelogs.yml'
       - 'bash/update_versions.sh'
       - 'bash/update_changelog.sh'
 

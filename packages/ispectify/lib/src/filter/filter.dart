@@ -19,12 +19,17 @@ class TitleFilter implements Filter<ISpectifyData> {
   /// Converts the list to a Set for O(1) lookups.
   TitleFilter(List<String> titles) : titles = titles.toSet();
 
+  /// Creates a filter from a set of titles.
+  const TitleFilter.fromSet(this.titles);
+
   /// Set of titles used for filtering.
   final Set<String> titles;
 
   @override
-  bool apply(ISpectifyData item) =>
-      item.title != null && titles.contains(item.title);
+  bool apply(ISpectifyData item) {
+    final title = item.title;
+    return title != null && titles.contains(title);
+  }
 }
 
 /// A filter that checks whether an `ISpectifyData` item matches
@@ -34,6 +39,9 @@ class TypeFilter implements Filter<ISpectifyData> {
   ///
   /// Converts the list to a Set for O(1) lookups.
   TypeFilter(List<Type> types) : types = types.toSet();
+
+  /// Creates a filter from a set of types.
+  const TypeFilter.fromSet(this.types);
 
   /// Set of types used for filtering.
   final Set<Type> types;
@@ -70,25 +78,32 @@ class SearchFilter implements Filter<ISpectifyData> {
     if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
 
     // Check in additional data recursively only if data exists
-    return item.additionalData != null &&
-        _deepSearchIterative(item.additionalData, _lowerQuery);
+    final additionalData = item.additionalData;
+    return additionalData != null &&
+        _deepSearchIterative(additionalData, _lowerQuery);
   }
 
   /// Iteratively searches through nested structures (Map/List)
   /// for a matching string containing the query.
   ///
   /// Uses a stack-based approach to prevent stack overflow on deeply
-  /// nested structures.
+  /// nested structures with visited tracking to avoid infinite loops.
   bool _deepSearchIterative(Object? value, String query) {
     if (value == null) return false;
 
-    // Use a growable list for the stack with initial capacity
+    // Use a set to track visited objects to prevent infinite loops
+    final visited = <Object>{};
+    // Pre-allocate stack with reasonable initial capacity
     final stack = <Object?>[value];
 
     while (stack.isNotEmpty) {
       final current = stack.removeLast();
+      if (current == null) continue;
 
-      // Check if current value is a string containing the query
+      // Prevent infinite loops with circular references
+      if (!visited.add(current)) continue;
+
+      // Check if current value contains the query
       if (current is String) {
         if (current.toLowerCase().contains(query)) {
           return true;
@@ -96,13 +111,24 @@ class SearchFilter implements Filter<ISpectifyData> {
         continue;
       }
 
-      // Add map values to stack
+      // Handle Map structures
       if (current is Map<dynamic, dynamic>) {
-        stack.addAll(current.values);
+        stack
+          ..addAll(current.values)
+          ..addAll(current.keys);
+        continue;
       }
-      // Add iterable elements to stack
-      else if (current is Iterable<dynamic>) {
+
+      // Handle Iterable structures (but not Strings which are also Iterable)
+      if (current is Iterable<dynamic>) {
         stack.addAll(current);
+        continue;
+      }
+
+      // Check primitive values' string representation
+      final stringRepresentation = current.toString();
+      if (stringRepresentation.toLowerCase().contains(query)) {
+        return true;
       }
     }
     return false;
@@ -155,7 +181,11 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     if (_isEmpty) return true;
 
     // Returns true if any filter matches the item
-    return _filters.any((filter) => filter.apply(item));
+    // Using for loop for better performance than .any()
+    for (final filter in _filters) {
+      if (filter.apply(item)) return true;
+    }
+    return false;
   }
 
   /// Returns a new instance of `ISpectifyFilter` with updated filtering criteria.
@@ -165,26 +195,45 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
-  }) =>
-      ISpectifyFilter(
-        titles: titles ??
-            _getExistingFilterValues<TitleFilter, String>((f) => f.titles),
-        types:
-            types ?? _getExistingFilterValues<TypeFilter, Type>((f) => f.types),
-        searchQuery: searchQuery ?? _getExistingSearchQuery(),
-      );
+  }) {
+    final newTitles = titles ?? _getExistingTitles();
+    final newTypes = types ?? _getExistingTypes();
+    final newSearchQuery = searchQuery ?? _getExistingSearchQuery();
 
-  /// Retrieves existing values from a specific filter type.
-  List<T> _getExistingFilterValues<F extends Filter<ISpectifyData>, T>(
-    Set<T> Function(F filter) extractor,
-  ) {
-    final filter = _filters.whereType<F>().firstOrNull;
-    return filter != null ? extractor(filter).toList() : [];
+    return ISpectifyFilter(
+      titles: newTitles,
+      types: newTypes,
+      searchQuery: newSearchQuery,
+    );
+  }
+
+  /// Retrieves existing titles from TitleFilter if present.
+  List<String> _getExistingTitles() {
+    for (final filter in _filters) {
+      if (filter is TitleFilter) {
+        return filter.titles.toList();
+      }
+    }
+    return const [];
+  }
+
+  /// Retrieves existing types from TypeFilter if present.
+  List<Type> _getExistingTypes() {
+    for (final filter in _filters) {
+      if (filter is TypeFilter) {
+        return filter.types.toList();
+      }
+    }
+    return const [];
   }
 
   /// Retrieves the existing search query if a `SearchFilter` exists.
   String? _getExistingSearchQuery() {
-    final filter = _filters.whereType<SearchFilter>().firstOrNull;
-    return filter?.query;
+    for (final filter in _filters) {
+      if (filter is SearchFilter) {
+        return filter.query;
+      }
+    }
+    return null;
   }
 }
