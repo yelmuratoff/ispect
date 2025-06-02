@@ -2,6 +2,10 @@
 
 ## 4.1.5
 
+### Enhancements:
+- Refactor InspectorState to modularize main child, overlay builders, and zoom state handling
+- Expose new zoom configuration constants and helper methods in InspectorState for enhanced zoom and overlay management
+
 ### Changes:
 - Revise README instructions across all packages to showcase new initialization patterns (e.g. ISpectifyFlutter.init, ISpectJiraClient.initialize)
 - Rename ISpectifyActionItem to ISpectActionItem and update references in docs and examples
