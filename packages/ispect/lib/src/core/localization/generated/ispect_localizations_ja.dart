@@ -213,8 +213,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get issueCreated => '問題が正常に作成されました';
 
   @override
-  String get jiraInstruction =>
-      '1. Jiraウェブサイトにアクセスしてください。\n2. 左下のプロフィールアバターをクリックしてください。\n3. プロフィールをクリックしてください。\n4. アカウントの管理をクリックしてください。\n5. セキュリティを選択してください。\n6. APIトークンの作成と管理までスクロールしてクリックしてください。\n7. トークンを作成し、コピーして貼り付けてください。';
+  String get jiraInstruction => '1. Jiraウェブサイトにアクセスしてください。\n2. 左下のプロフィールアバターをクリックしてください。\n3. プロフィールをクリックしてください。\n4. アカウントの管理をクリックしてください。\n5. セキュリティを選択してください。\n6. APIトークンの作成と管理までスクロールしてクリックしてください。\n7. トークンを作成し、コピーして貼り付けてください。';
 
   @override
   String get logItemCopied => 'ログ項目がクリップボードにコピーされました';
