@@ -3,7 +3,11 @@
 ## 4.1.5
 
 ### Changes:
-- Updated documentation for all packages to reflect the latest changes and features
+- Revise README instructions across all packages to showcase new initialization patterns (e.g. ISpectifyFlutter.init, ISpectJiraClient.initialize)
+- Rename ISpectifyActionItem to ISpectActionItem and update references in docs and examples
+- Add ISpectPanelItem and ISpectPanelButtonItem models and corresponding usage samples. Records -> Models
+- Refresh quick start and advanced feature code snippets to illustrate updated APIs and options
+- Unify headings (Basic Setup, Custom Issue Creation, etc.) and standardize sample app flows
 
 ## 4.1.4
 
