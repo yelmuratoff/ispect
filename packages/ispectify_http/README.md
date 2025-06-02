@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Standard HTTP client integration for ISpectify logging system</strong></p>
+  <p><strong>HTTP interceptor integration for ISpectify logging system using http_interceptor package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_http">
@@ -27,7 +27,7 @@
 
 ## 🔍 Overview
 
-> **ISpectify HTTP** provides seamless integration between Dart's standard HTTP client and the ISpectify logging system.
+> **ISpectify HTTP** provides seamless integration between the http_interceptor package and the ISpectify logging system.
 
 <div align="center">
 
@@ -35,7 +35,7 @@
 
 </div>
 
-Enhance your HTTP debugging workflow by automatically capturing and logging all standard HTTP client interactions. Ideal for applications using Dart's built-in HTTP client or when you need a lightweight HTTP logging solution.
+Enhance your HTTP debugging workflow by automatically capturing and logging all HTTP client interactions using the http_interceptor package. Provides seamless integration with Dart's HTTP package through interceptors for comprehensive request and response monitoring.
 
 ### 🎯 Key Features
 
@@ -44,65 +44,49 @@ Enhance your HTTP debugging workflow by automatically capturing and logging all 
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
 - 🔍 **Request Inspection**: Headers, body, and parameter logging
 - ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Lightweight**: Minimal overhead with the standard HTTP client
+- 🎛️ **Lightweight**: Minimal overhead using http_interceptor package
 
 ## 🔧 Configuration Options
 
-### Basic Configuration
+### Basic Setup
 
 ```dart
-final client = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      settings: ISpectifyHttpSettings(
-        // Request logging
-        printRequestHeaders: true,
-        printRequestBody: true,
-        
-        // Response logging
-        printResponseHeaders: true,
-        printResponseBody: true,
-        
-        // Error handling
-        printErrorDetails: true,
-        
-        // Performance
-        trackRequestTime: true,
-      ),
-    ),
-  ],
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
+
+// Initialize in ISpect.run onInit callback
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    client.interceptors.add(
+      ISpectifyHttpLogger(iSpectify: iSpectify),
+    );
+  },
 );
 ```
 
-### Advanced Filtering
+### File Upload Example
 
 ```dart
-final client = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      settings: ISpectifyHttpSettings(
-        // Filter sensitive headers
-        headerFilter: (headers) => Map.from(headers)
-          ..remove('authorization'),
-        
-        // Filter request bodies
-        requestBodyFilter: (body) {
-          if (body.contains('password')) {
-            return body.replaceAll(RegExp(r'"password":"[^"]*"'), '"password":"***"');
-          }
-          return body;
-        },
-        
-        // Custom log levels
-        requestLogLevel: LogLevel.debug,
-        responseLogLevel: LogLevel.info,
-        errorLogLevel: LogLevel.error,
-      ),
-    ),
-  ],
+// Upload file using MultipartRequest
+final List<int> bytes = [1, 2, 3]; // File data
+const String filename = 'file.txt';
+
+final http_interceptor.MultipartRequest request =
+    http_interceptor.MultipartRequest(
+  'POST',
+  Uri.parse('https://api.example.com/upload'),
 );
+
+request.files.add(http_interceptor.MultipartFile.fromBytes(
+  'file', // Field name
+  bytes,
+  filename: filename,
+));
+
+// Send request - will be automatically logged
+client.send(request);
 ```
 
 ## 📦 Installation
@@ -117,93 +101,67 @@ dependencies:
 ## 🚀 Quick Start
 
 ```dart
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
-import 'package:ispectify/ispectify.dart';
+
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
 
 void main() {
-  final ispectify = ISpectify();
-  
-  // Create HTTP client with ISpectify interceptor
-  final client = InterceptedClient.build(
-    interceptors: [
-      ISpectifyHttpInterceptor(
-        ispectify: ispectify,
-        settings: ISpectifyHttpSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestBody: true,
-          printResponseBody: true,
+  final ISpectify iSpectify = ISpectifyFlutter.init();
+
+  ISpect.run(
+    () => runApp(MyApp()),
+    logger: iSpectify,
+    onInit: () {
+      // Add ISpectify HTTP interceptor
+      client.interceptors.add(
+        ISpectifyHttpLogger(iSpectify: iSpectify),
+      );
+    },
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('ISpectify HTTP Example')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  // All HTTP requests will be automatically logged
+                  await client.get(
+                    Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+                  );
+                },
+                child: const Text('Send HTTP Request'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  // Error requests are also logged
+                  await client.get(
+                    Uri.parse('https://jsonplaceholder.typicode.com/invalid'),
+                  );
+                },
+                child: const Text('Send Error Request'),
+              ),
+            ],
+          ),
         ),
       ),
-    ],
-  );
-  
-  // All HTTP requests will be automatically logged
-  final response = await client.get(
-    Uri.parse('https://api.example.com/data'),
-  );
-  
-  // Don't forget to close the client
-  client.close();
+    );
+  }
 }
-```
-
-## ⚙️ Advanced Features
-
-### Custom Log Formatting
-
-```dart
-final client = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      settings: ISpectifyHttpSettings(
-        requestFormatter: (request) => 'HTTP ${request.method} ${request.url}',
-        responseFormatter: (response) => 'Response ${response.statusCode} (${response.body.length} bytes)',
-      ),
-    ),
-  ],
-);
-```
-
-### Environment-based Configuration
-
-```dart
-final client = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      settings: kDebugMode 
-        ? ISpectifyHttpSettings.debug() // Full logging in debug
-        : ISpectifyHttpSettings.production(), // Minimal logging in production
-    ),
-  ],
-);
-```
-
-### Multiple HTTP Clients
-
-```dart
-// API client
-final apiClient = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      tag: 'API',
-    ),
-  ],
-);
-
-// Analytics client
-final analyticsClient = InterceptedClient.build(
-  interceptors: [
-    ISpectifyHttpInterceptor(
-      ispectify: ispectify,
-      tag: 'Analytics',
-    ),
-  ],
-);
 ```
 
 ## 📚 Examples
@@ -235,7 +193,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
 - [ispect](../ispect) - Main debugging interface
-- [http](https://pub.dev/packages/http) - Standard HTTP client for Dart
+- [http_interceptor](https://pub.dev/packages/http_interceptor) - HTTP interceptor package for Dart
 
 ---
 
