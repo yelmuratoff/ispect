@@ -170,6 +170,13 @@ class InspectorState extends State<Inspector> {
   void initState() {
     super.initState();
 
+    // Validate zoom scale boundaries
+    assert(
+      _minZoomScale <= _defaultZoomScale && _defaultZoomScale <= _maxZoomScale,
+      'Invalid zoom scale configuration: '
+      'minZoom ($_minZoomScale) <= defaultZoom ($_defaultZoomScale) <= maxZoom ($_maxZoomScale)',
+    );
+
     _draggablePanelController = widget.controller ?? DraggablePanelController();
     _isPanelVisible = widget.isPanelVisible;
 
