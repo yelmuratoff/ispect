@@ -48,51 +48,72 @@ Streamline your HTTP debugging workflow by automatically capturing and logging a
 
 ## 🔧 Configuration Options
 
-### Basic Configuration
+### Basic Setup
 
 ```dart
-final interceptor = ISpectifyDioInterceptor(
-  ispectify: ispectify,
-  settings: ISpectifyDioSettings(
-    // Request logging
-    printRequestHeaders: true,
-    printRequestBody: true,
-    
-    // Response logging
-    printResponseHeaders: true,
-    printResponseBody: true,
-    
-    // Error handling
-    printErrorDetails: true,
-    
-    // Performance
-    trackRequestTime: true,
+final Dio dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.example.com',
+  ),
+);
+
+// Initialize in ISpect.run onInit callback
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    dio.interceptors.add(
+      ISpectifyDioLogger(
+        iSpectify: iSpectify,
+        settings: const ISpectifyDioLoggerSettings(
+          printRequestHeaders: true,
+        ),
+      ),
+    );
+  },
+);
+```
+
+### Advanced Configuration with Filters
+
+```dart
+dio.interceptors.add(
+  ISpectifyDioLogger(
+    iSpectify: iSpectify,
+    settings: const ISpectifyDioLoggerSettings(
+      printRequestHeaders: true,
+      // Filter specific requests
+      // requestFilter: (requestOptions) =>
+      //     requestOptions.path != '/sensitive-endpoint',
+      // Filter specific responses
+      // responseFilter: (response) => response.statusCode != 404,
+      // Filter specific errors
+      // errorFilter: (error) => error.response?.statusCode != 404,
+    ),
   ),
 );
 ```
 
-### Advanced Filtering
+### Multiple Dio Instances
 
 ```dart
-final interceptor = ISpectifyDioInterceptor(
-  ispectify: ispectify,
-  settings: ISpectifyDioSettings(
-    // Filter sensitive headers
-    headerFilter: (headers) => headers..remove('Authorization'),
-    
-    // Filter request bodies
-    requestBodyFilter: (body) {
-      if (body is Map) {
-        return Map.from(body)..remove('password');
-      }
-      return body;
-    },
-    
-    // Custom log levels
-    requestLogLevel: LogLevel.debug,
-    responseLogLevel: LogLevel.info,
-    errorLogLevel: LogLevel.error,
-  ),
+// Main API client
+final Dio mainDio = Dio(
+  BaseOptions(baseUrl: 'https://api.example.com'),
+);
+
+// File upload client
+final Dio uploadDio = Dio(
+  BaseOptions(baseUrl: 'https://upload.example.com'),
+);
+
+// Add interceptors to both
+mainDio.interceptors.add(
+  ISpectifyDioLogger(iSpectify: iSpectify),
+);
+
+uploadDio.interceptors.add(
+  ISpectifyDioLogger(iSpectify: iSpectify),
 );
 ```
 
@@ -109,76 +130,86 @@ dependencies:
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
-import 'package:ispectify/ispectify.dart';
+
+final Dio dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://jsonplaceholder.typicode.com',
+  ),
+);
 
 void main() {
-  final ispectify = ISpectify();
-  
-  // Create Dio instance with ISpectify interceptor
-  final dio = Dio()
-    ..interceptors.add(
-      ISpectifyDioInterceptor(
-        ispectify: ispectify,
-        settings: ISpectifyDioSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestBody: true,
-          printResponseBody: true,
+  final ISpectify iSpectify = ISpectifyFlutter.init();
+
+  ISpect.run(
+    () => runApp(MyApp()),
+    logger: iSpectify,
+    onInit: () {
+      // Add ISpectify Dio interceptor
+      dio.interceptors.add(
+        ISpectifyDioLogger(
+          iSpectify: iSpectify,
+          settings: const ISpectifyDioLoggerSettings(
+            printRequestHeaders: true,
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('ISpectify Dio Example')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // All Dio requests will be automatically logged
+                  dio.get<dynamic>('/posts/1');
+                },
+                child: const Text('Send GET Request'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // Error requests are also logged
+                  dio.get<dynamic>('/invalid-endpoint');
+                },
+                child: const Text('Send Error Request'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // Upload file with FormData
+                  final FormData formData = FormData();
+                  formData.files.add(MapEntry(
+                    'file',
+                    MultipartFile.fromBytes(
+                      [1, 2, 3],
+                      filename: 'file.txt',
+                    ),
+                  ));
+                  dio.post<dynamic>('/upload', data: formData);
+                },
+                child: const Text('Upload File'),
+              ),
+            ],
+          ),
         ),
       ),
     );
-  
-  // All HTTP requests will be automatically logged
-  final response = await dio.get('https://api.example.com/data');
+  }
 }
-```
-
-## ⚙️ Advanced Features
-
-### Custom Log Formatting
-
-```dart
-final interceptor = ISpectifyDioInterceptor(
-  ispectify: ispectify,
-  settings: ISpectifyDioSettings(
-    requestFormatter: (request) => 'API Call: ${request.method} ${request.uri}',
-    responseFormatter: (response) => 'Response: ${response.statusCode} (${response.data?.length ?? 0} bytes)',
-  ),
-);
-```
-
-### Environment-based Configuration
-
-```dart
-final interceptor = ISpectifyDioInterceptor(
-  ispectify: ispectify,
-  settings: kDebugMode 
-    ? ISpectifyDioSettings.debug() // Full logging in debug
-    : ISpectifyDioSettings.production(), // Minimal logging in production
-);
-```
-
-### Multiple Dio Instances
-
-```dart
-// API client
-final apiDio = Dio()
-  ..interceptors.add(
-    ISpectifyDioInterceptor(
-      ispectify: ispectify,
-      tag: 'API',
-    ),
-  );
-
-// Analytics client
-final analyticsDio = Dio()
-  ..interceptors.add(
-    ISpectifyDioInterceptor(
-      ispectify: ispectify,
-      tag: 'Analytics',
-    ),
-  );
 ```
 
 ## 📚 Examples
