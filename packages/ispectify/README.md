@@ -51,43 +51,44 @@ ISpectify provides a robust logging foundation that integrates seamlessly with t
 ### Settings
 
 ```dart
-final ispectify = ISpectify(
-  settings: ISpectifySettings(
-    enabled: true,
-    useConsoleLogs: true,
-    useHistory: true,
-    maxHistoryItems: 1000,
-    colors: {
-      LogLevel.info: Colors.blue,
-      LogLevel.warning: Colors.orange,
-      LogLevel.error: Colors.red,
-    },
-  ),
-);
+final logger = ISpectify(
+    logger: ISpectifyLogger(
+        settings: LoggerSettings(
+      enableColors: false,
+    )),
+    options: ISpectifyOptions(
+      enabled: true,
+      useHistory: true,
+      useConsoleLogs: true,
+      maxHistoryItems: 10000,
+      logTruncateLength: 10000,
+      titles: {
+        'error': 'Error Logs',
+        'info': 'Info Logs',
+        'debug': 'Debug Logs',
+      },
+      colors: {
+        'error': AnsiPen()..red(),
+        'info': AnsiPen()..blue(),
+        'debug': AnsiPen()..white(),
+      },
+    ),
+  );
 ```
 
 ### Custom Log Types
 
 ```dart
-// Define custom log types
-ispectify.registerLogType(
-  'network',
-  color: Colors.green,
-  icon: Icons.network_check,
-);
+class CustomLog extends ISpectifyData {
+  CustomLog(
+    String super.message,
+  ) : super(
+          key: 'custom_log',
+          title: 'Custom Log',
+        );
+}
 
-// Use custom log type
-ispectify.logCustom('network', 'HTTP request completed');
-```
-
-### Performance Monitoring
-
-```dart
-// Track performance
-ispectify.trackPerformance('api_call', () async {
-  // Your async operation
-  await api.fetchData();
-});
+logger.logCustom(CustomLog('This is a custom log message'));
 ```
 
 ## 📦 Installation
@@ -102,54 +103,84 @@ dependencies:
 ## 🚀 Quick Start
 
 ```dart
-import 'package:ispectify/ispectify.dart';
+import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+
+class CustomLog extends ISpectifyData {
+  CustomLog(
+    String super.message,
+  ) : super(
+          key: 'custom_log',
+          title: 'Custom Log',
+        );
+}
 
 void main() {
-  // Initialize ISpectify
-  final ispectify = ISpectify(
-    settings: ISpectifySettings(
+  // Initialize ISpectify for logging
+  final ISpectify logger = ISpectify(
+    logger: ISpectifyLogger(
+        settings: LoggerSettings(
+      enableColors: false,
+    )),
+    options: ISpectifyOptions(
       enabled: true,
-      useConsoleLogs: true,
       useHistory: true,
+      useConsoleLogs: true,
+      maxHistoryItems: 10000,
+      logTruncateLength: 10000,
+      titles: {
+        'error': 'Error Logs',
+        'info': 'Info Logs',
+        'debug': 'Debug Logs',
+      },
+      colors: {
+        'error': AnsiPen()..red(),
+        'info': AnsiPen()..blue(),
+        'debug': AnsiPen()..white(),
+      },
     ),
   );
 
-  // Log different types of messages
-  ispectify.info('Application started');
-  ispectify.debug('Debug information');
-  ispectify.warning('Warning message');
-  ispectify.error('Error occurred');
-  
-  // Custom log types
-  ispectify.log('Custom message', logLevel: LogLevel.verbose);
-  
-  runApp(MyApp());
+  logger.info('ISpectify initialized successfully');
+
+  // Wrap your app with ISpect
+  ISpect.run(
+    () => runApp(MyApp()),
+    logger: logger,
+  );
 }
-```
 
-## ⚙️ Advanced Features
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-### Log Filtering
-
-```dart
-// Filter logs by level
-final errorLogs = ispectify.getLogsByLevel(LogLevel.error);
-
-// Filter logs by custom criteria
-final networkLogs = ispectify.getLogsByType('network');
-
-// Search logs
-final searchResults = ispectify.searchLogs('HTTP');
-```
-
-### Export Functionality
-
-```dart
-// Export logs to file
-await ispectify.exportLogs('/path/to/logs.txt');
-
-// Export specific log types
-await ispectify.exportLogsByType('error', '/path/to/errors.txt');
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('ISpectify Example')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.info('Info log message');
+                },
+                child: const Text('Log Info'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.logCustom(CustomLog('Custom log message'));
+                },
+                child: const Text('Log Custom'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ## 📚 Examples
