@@ -536,4 +536,25 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => 'クリップボードにコピー（省略）';
+
+  @override
+  String get viewThemeScheme => 'テーマスキーマ画面を表示';
+
+  @override
+  String get takeScreenshotFeedback => 'スクリーンショットを撮ってフィードバックを送信';
+
+  @override
+  String get zoomPickColor => 'ズームインして色を選択';
+
+  @override
+  String get inspectWidgets => '画面上のウィジェットを検査';
+
+  @override
+  String get togglePerformanceTracking => 'パフォーマンス追跡を切り替え';
+
+  @override
+  String get openLogViewer => 'ログビューアを開く';
+
+  @override
+  String get backToMainScreen => 'メイン画面に戻る';
 }

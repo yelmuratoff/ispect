@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Vous êtes déjà sur la page du journaliseur",
    "noData": "Aucune donnée",
    "shareLogFull": "Partager le journal (complet)",
-   "copyToClipboardTruncated": "Copier dans le presse-papiers (tronqué)"
+   "copyToClipboardTruncated": "Copier dans le presse-papiers (tronqué)",
+   "viewThemeScheme": "Voir l'écran du schéma de thème",
+   "takeScreenshotFeedback": "Prendre une capture d'écran et envoyer un retour",
+   "zoomPickColor": "Zoomer et choisir une couleur",
+   "inspectWidgets": "Inspecter les widgets à l'écran",
+   "togglePerformanceTracking": "Basculer le suivi des performances",
+   "openLogViewer": "Ouvrir le visualiseur de journaux",
+   "backToMainScreen": "Retour à l'écran principal"
 }

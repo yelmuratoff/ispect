@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Sie befinden sich bereits auf der Logger-Seite",
    "noData": "Keine Daten",
    "shareLogFull": "Protokoll teilen (vollständig)",
-   "copyToClipboardTruncated": "In die Zwischenablage kopieren (gekürzt)"
+   "copyToClipboardTruncated": "In die Zwischenablage kopieren (gekürzt)",
+   "viewThemeScheme": "Theme-Schema-Bildschirm anzeigen",
+   "takeScreenshotFeedback": "Screenshot machen und Feedback senden",
+   "zoomPickColor": "Hineinzoomen und Farbe auswählen",
+   "inspectWidgets": "Widgets auf dem Bildschirm überprüfen",
+   "togglePerformanceTracking": "Leistungsverfolgung umschalten",
+   "openLogViewer": "Protokoll-Viewer öffnen",
+   "backToMainScreen": "Zurück zum Hauptbildschirm"
 }

@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Você já está na página do logger",
    "noData": "Sem dados",
    "shareLogFull": "Compartilhar log (completo)",
-   "copyToClipboardTruncated": "Copiar para a área de transferência (truncado)"
+   "copyToClipboardTruncated": "Copiar para a área de transferência (truncado)",
+   "viewThemeScheme": "Ver tela de esquema de tema",
+   "takeScreenshotFeedback": "Tirar captura de tela e enviar feedback",
+   "zoomPickColor": "Ampliar e escolher cor",
+   "inspectWidgets": "Inspecionar widgets na tela",
+   "togglePerformanceTracking": "Alternar rastreamento de desempenho",
+   "openLogViewer": "Abrir visualizador de logs",
+   "backToMainScreen": "Voltar à tela principal"
 }

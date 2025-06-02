@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
                 icon: Icons.add),
           ],
           panelItems: [
-            ISpectPanelItem(
+            DraggablePanelItem(
               enableBadge: false,
               icon: Icons.settings,
               onTap: (context) {
@@ -41,12 +41,13 @@ class MyApp extends StatelessWidget {
             ),
           ],
           panelButtons: [
-            ISpectPanelButtonItem(
-                icon: Icons.info,
-                label: 'Info',
-                onTap: (context) {
-                  // Handle info tap
-                }),
+            DraggablePanelButtonItem(
+              icon: Icons.info,
+              label: 'Info',
+              onTap: (context) {
+                // Handle info tap
+              },
+            ),
           ],
         ),
         theme: ISpectTheme(

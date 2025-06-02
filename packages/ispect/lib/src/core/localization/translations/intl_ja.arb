@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "すでにロガーページにいます",
    "noData": "データなし",
    "shareLogFull": "ログを共有（完全）",
-   "copyToClipboardTruncated": "クリップボードにコピー（省略）"
+   "copyToClipboardTruncated": "クリップボードにコピー（省略）",
+   "viewThemeScheme": "テーマスキーマ画面を表示",
+   "takeScreenshotFeedback": "スクリーンショットを撮ってフィードバックを送信",
+   "zoomPickColor": "ズームインして色を選択",
+   "inspectWidgets": "画面上のウィジェットを検査",
+   "togglePerformanceTracking": "パフォーマンス追跡を切り替え",
+   "openLogViewer": "ログビューアを開く",
+   "backToMainScreen": "メイン画面に戻る"
 }

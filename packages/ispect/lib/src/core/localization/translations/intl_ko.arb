@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "이미 로거 페이지에 있습니다",
    "noData": "데이터 없음",
    "shareLogFull": "로그 공유 (전체)",
-   "copyToClipboardTruncated": "클립보드에 복사 (잘린 형태)"
+   "copyToClipboardTruncated": "클립보드에 복사 (잘린 형태)",
+   "viewThemeScheme": "테마 스키마 화면 보기",
+   "takeScreenshotFeedback": "스크린샷 찍고 피드백 보내기",
+   "zoomPickColor": "확대하고 색상 선택",
+   "inspectWidgets": "화면의 위젯 검사",
+   "togglePerformanceTracking": "성능 추적 전환",
+   "openLogViewer": "로그 뷰어 열기",
+   "backToMainScreen": "메인 화면으로 돌아가기"
 }

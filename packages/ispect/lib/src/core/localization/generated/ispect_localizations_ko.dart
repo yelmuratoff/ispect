@@ -536,4 +536,25 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => '클립보드에 복사 (잘린 형태)';
+
+  @override
+  String get viewThemeScheme => '테마 스키마 화면 보기';
+
+  @override
+  String get takeScreenshotFeedback => '스크린샷 찍고 피드백 보내기';
+
+  @override
+  String get zoomPickColor => '확대하고 색상 선택';
+
+  @override
+  String get inspectWidgets => '화면의 위젯 검사';
+
+  @override
+  String get togglePerformanceTracking => '성능 추적 전환';
+
+  @override
+  String get openLogViewer => '로그 뷰어 열기';
+
+  @override
+  String get backToMainScreen => '메인 화면으로 돌아가기';
 }

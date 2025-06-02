@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Вы уже на странице ISpect",
    "noData": "Нет данных",
    "shareLogFull": "Поделиться логом (полностью)",
-   "copyToClipboardTruncated": "Скопировать в буфер обмена (сокращенно)"
+   "copyToClipboardTruncated": "Скопировать в буфер обмена (сокращенно)",
+   "viewThemeScheme": "Просмотр экрана схемы темы",
+   "takeScreenshotFeedback": "Сделать скриншот и отправить отзыв",
+   "zoomPickColor": "Увеличить и выбрать цвет",
+   "inspectWidgets": "Проверить виджеты на экране",
+   "togglePerformanceTracking": "Переключить отслеживание производительности",
+   "openLogViewer": "Открыть просмотрщик логов",
+   "backToMainScreen": "Вернуться на главный экран"
 }

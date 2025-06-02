@@ -556,4 +556,26 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => 'Copiar al portapapeles (truncado)';
+
+  @override
+  String get viewThemeScheme => 'Ver pantalla de esquema de tema';
+
+  @override
+  String get takeScreenshotFeedback =>
+      'Tomar captura de pantalla y enviar comentarios';
+
+  @override
+  String get zoomPickColor => 'Acercar y elegir color';
+
+  @override
+  String get inspectWidgets => 'Inspeccionar widgets en pantalla';
+
+  @override
+  String get togglePerformanceTracking => 'Alternar seguimiento de rendimiento';
+
+  @override
+  String get openLogViewer => 'Abrir visor de registros';
+
+  @override
+  String get backToMainScreen => 'Volver a la pantalla principal';
 }

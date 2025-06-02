@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Сіз ISpect бетінде тұрсыз",
    "noData": "Деректер жоқ",
    "shareLogFull": "Логты бөлісу (толық)",
-   "copyToClipboardTruncated": "Алмасу буферіне көшіру (қысқартылған)"
+   "copyToClipboardTruncated": "Алмасу буферіне көшіру (қысқартылған)",
+   "viewThemeScheme": "Тема схемасы экранын көру",
+   "takeScreenshotFeedback": "Скриншот түсіру және пікір жіберу",
+   "zoomPickColor": "Үлкейту және түс таңдау",
+   "inspectWidgets": "Экрандағы виджеттерді тексеру",
+   "togglePerformanceTracking": "Өнімділік қадағалауын ауыстыру",
+   "openLogViewer": "Лог көрушісін ашу",
+   "backToMainScreen": "Негізгі экранға оралу"
 }

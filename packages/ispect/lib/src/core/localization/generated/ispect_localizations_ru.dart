@@ -553,4 +553,26 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   @override
   String get copyToClipboardTruncated =>
       'Скопировать в буфер обмена (сокращенно)';
+
+  @override
+  String get viewThemeScheme => 'Просмотр экрана схемы темы';
+
+  @override
+  String get takeScreenshotFeedback => 'Сделать скриншот и отправить отзыв';
+
+  @override
+  String get zoomPickColor => 'Увеличить и выбрать цвет';
+
+  @override
+  String get inspectWidgets => 'Проверить виджеты на экране';
+
+  @override
+  String get togglePerformanceTracking =>
+      'Переключить отслеживание производительности';
+
+  @override
+  String get openLogViewer => 'Открыть просмотрщик логов';
+
+  @override
+  String get backToMainScreen => 'Вернуться на главный экран';
 }

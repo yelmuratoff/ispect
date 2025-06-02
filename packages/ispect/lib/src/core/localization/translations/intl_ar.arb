@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "أنت بالفعل في صفحة المسجل",
    "noData": "لا توجد بيانات",
    "shareLogFull": "مشاركة السجل (كامل)",
-   "copyToClipboardTruncated": "نسخ إلى الحافظة (مختصر)"
+   "copyToClipboardTruncated": "نسخ إلى الحافظة (مختصر)",
+   "viewThemeScheme": "عرض شاشة مخطط الموضوع",
+   "takeScreenshotFeedback": "التقط لقطة شاشة وأرسل تعليقاً",
+   "zoomPickColor": "تكبير واختيار لون",
+   "inspectWidgets": "فحص العناصر على الشاشة",
+   "togglePerformanceTracking": "تبديل تتبع الأداء",
+   "openLogViewer": "فتح عارض السجلات",
+   "backToMainScreen": "العودة إلى الشاشة الرئيسية"
 }

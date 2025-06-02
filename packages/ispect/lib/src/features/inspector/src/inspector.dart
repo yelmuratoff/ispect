@@ -149,15 +149,6 @@ class InspectorState extends State<Inspector> {
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
   final _zoomScaleNotifier = ValueNotifier<double>(_defaultZoomScale);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
-  late List<
-      ({
-        bool enableBadge,
-        IconData icon,
-        void Function(BuildContext) onTap
-      })> _otherPanelItems;
-
-  late List<({IconData icon, String label, void Function(BuildContext) onTap})>
-      _otherPanelButtons;
 
   late final KeyboardHandler _keyboardHandler;
 
@@ -180,9 +171,6 @@ class InspectorState extends State<Inspector> {
     _draggablePanelController = widget.controller ?? DraggablePanelController();
     _isPanelVisible = widget.isPanelVisible;
 
-    // Initialize panel items once
-    _initializePanelItems();
-
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
@@ -204,28 +192,6 @@ class InspectorState extends State<Inspector> {
         ISpect.read(context).observer = widget.observer;
       }
     });
-  }
-
-  void _initializePanelItems() {
-    _otherPanelItems = widget.options.panelItems
-        .map(
-          (item) => (
-            enableBadge: item.enableBadge,
-            icon: item.icon,
-            onTap: item.onTap,
-          ),
-        )
-        .toList();
-
-    _otherPanelButtons = widget.options.panelButtons
-        .map(
-          (button) => (
-            icon: button.icon,
-            label: button.label,
-            onTap: button.onTap,
-          ),
-        )
-        .toList();
   }
 
   // Gestures
@@ -403,11 +369,6 @@ class InspectorState extends State<Inspector> {
       }
     }
 
-    // Re-initialize panel items if options changed
-    if (oldWidget.options != widget.options) {
-      _initializePanelItems();
-    }
-
     super.didUpdateWidget(oldWidget);
 
     if (widget.isPanelVisible != oldWidget.isPanelVisible) {
@@ -475,7 +436,7 @@ class InspectorState extends State<Inspector> {
                     widget.onPositionChanged?.call(x, y),
                 items: [
                   if (widget.options.isLogPageEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: _controller.inLoggerPage
                           ? Icons.undo_rounded
                           : Icons.reorder_rounded,
@@ -483,17 +444,21 @@ class InspectorState extends State<Inspector> {
                       onTap: (_) {
                         _launchInfospect(context);
                       },
+                      description: _controller.inLoggerPage
+                          ? context.ispectL10n.backToMainScreen
+                          : context.ispectL10n.openLogViewer,
                     ),
                   if (widget.options.isPerformanceEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: Icons.monitor_heart_outlined,
                       enableBadge: iSpect.isPerformanceTrackingEnabled,
                       onTap: (_) {
                         iSpect.togglePerformanceTracking();
                       },
+                      description: context.ispectL10n.togglePerformanceTracking,
                     ),
                   if (widget.options.isInspectorEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: Icons.format_shapes_rounded,
                       enableBadge: _inspectorStateNotifier.value,
                       onTap: (_) {
@@ -501,25 +466,28 @@ class InspectorState extends State<Inspector> {
                           !_inspectorStateNotifier.value,
                         );
                       },
+                      description: context.ispectL10n.inspectWidgets,
                     ),
                   if (widget.options.isColorPickerEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: Icons.colorize_rounded,
                       enableBadge: _zoomStateNotifier.value,
                       onTap: (_) {
                         _onZoomStateChanged(!_zoomStateNotifier.value);
                       },
+                      description: context.ispectL10n.zoomPickColor,
                     ),
                   if (widget.options.isFeedbackEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: Icons.camera_alt_rounded,
                       enableBadge: feedback.isVisible,
                       onTap: (_) {
                         _toggleFeedback(feedback, context);
                       },
+                      description: context.ispectL10n.takeScreenshotFeedback,
                     ),
                   if (widget.options.isThemeSchemaEnabled)
-                    (
+                    DraggablePanelItem(
                       icon: Icons.color_lens_rounded,
                       enableBadge: false,
                       onTap: (_) {
@@ -532,10 +500,11 @@ class InspectorState extends State<Inspector> {
                           ),
                         );
                       },
+                      description: context.ispectL10n.viewThemeScheme,
                     ),
-                  ..._otherPanelItems,
+                  ...widget.options.panelItems,
                 ],
-                buttons: _otherPanelButtons,
+                buttons: widget.options.panelButtons,
                 child: null,
               ),
             ),

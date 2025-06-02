@@ -39,7 +39,7 @@ dependencies:
   web: ^1.1.1
 
   # UI
-  draggable_panel: ^1.0.3
+  draggable_panel: ^1.0.4
   provider: ^6.1.5
   scrollable_positioned_list: ^0.3.8
 

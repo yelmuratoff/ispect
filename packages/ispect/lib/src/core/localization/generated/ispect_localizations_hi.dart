@@ -552,4 +552,25 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => 'क्लिपबोर्ड में कॉपी करें (संक्षिप्त)';
+
+  @override
+  String get viewThemeScheme => 'थीम स्कीम स्क्रीन देखें';
+
+  @override
+  String get takeScreenshotFeedback => 'स्क्रीनशॉट लें और फीडबैक भेजें';
+
+  @override
+  String get zoomPickColor => 'ज़ूम इन करें और रंग चुनें';
+
+  @override
+  String get inspectWidgets => 'स्क्रीन पर विजेट्स का निरीक्षण करें';
+
+  @override
+  String get togglePerformanceTracking => 'प्रदर्शन ट्रैकिंग टॉगल करें';
+
+  @override
+  String get openLogViewer => 'लॉग व्यूअर खोलें';
+
+  @override
+  String get backToMainScreen => 'मुख्य स्क्रीन पर वापस जाएं';
 }

@@ -128,9 +128,10 @@ class _AppState extends State<App> {
             locale: locale,
             // isThemeSchemaEnabled: false,
             panelButtons: [
-              ISpectPanelButtonItem(
+              DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,
                 label: 'Token',
+                description: 'Copy token to clipboard',
                 onTap: (context) {
                   _controller.toggle(context);
                   debugPrint('Token copied');
@@ -138,9 +139,10 @@ class _AppState extends State<App> {
               ),
             ],
             panelItems: [
-              ISpectPanelItem(
+              DraggablePanelItem(
                 icon: Icons.home,
                 enableBadge: false,
+                description: 'Print home',
                 onTap: (context) {
                   debugPrint('Home');
                 },

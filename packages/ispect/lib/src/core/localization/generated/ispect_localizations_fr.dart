@@ -558,4 +558,26 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   @override
   String get copyToClipboardTruncated =>
       'Copier dans le presse-papiers (tronqué)';
+
+  @override
+  String get viewThemeScheme => 'Voir l\'écran du schéma de thème';
+
+  @override
+  String get takeScreenshotFeedback =>
+      'Prendre une capture d\'écran et envoyer un retour';
+
+  @override
+  String get zoomPickColor => 'Zoomer et choisir une couleur';
+
+  @override
+  String get inspectWidgets => 'Inspecter les widgets à l\'écran';
+
+  @override
+  String get togglePerformanceTracking => 'Basculer le suivi des performances';
+
+  @override
+  String get openLogViewer => 'Ouvrir le visualiseur de journaux';
+
+  @override
+  String get backToMainScreen => 'Retour à l\'écran principal';
 }

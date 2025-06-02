@@ -126,5 +126,12 @@
    "youAlreadyInLogger": "您已在日志记录页面",
    "noData": "无数据",
    "shareLogFull": "分享日志（完整）",
-   "copyToClipboardTruncated": "复制到剪贴板（截断）"
+   "copyToClipboardTruncated": "复制到剪贴板（截断）",
+   "viewThemeScheme": "查看主题方案屏幕",
+   "takeScreenshotFeedback": "截屏并发送反馈",
+   "zoomPickColor": "放大并选择颜色",
+   "inspectWidgets": "检查屏幕上的组件",
+   "togglePerformanceTracking": "切换性能跟踪",
+   "openLogViewer": "打开日志查看器",
+   "backToMainScreen": "返回主屏幕"
 }

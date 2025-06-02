@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "Ya estás en la página del registrador",
    "noData": "Sin datos",
    "shareLogFull": "Compartir registro (completo)",
-   "copyToClipboardTruncated": "Copiar al portapapeles (truncado)"
+   "copyToClipboardTruncated": "Copiar al portapapeles (truncado)",
+   "viewThemeScheme": "Ver pantalla de esquema de tema",
+   "takeScreenshotFeedback": "Tomar captura de pantalla y enviar comentarios",
+   "zoomPickColor": "Acercar y elegir color",
+   "inspectWidgets": "Inspeccionar widgets en pantalla",
+   "togglePerformanceTracking": "Alternar seguimiento de rendimiento",
+   "openLogViewer": "Abrir visor de registros",
+   "backToMainScreen": "Volver a la pantalla principal"
 }

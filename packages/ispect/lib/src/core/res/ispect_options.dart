@@ -1,9 +1,8 @@
 // ignore_for_file: use_if_null_to_convert_nulls_to_bools
 
+import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
-import 'package:ispect/src/common/models/panel_button.dart';
-import 'package:ispect/src/common/models/panel_item.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
@@ -132,7 +131,7 @@ final class ISpectOptions {
   /// - `icon`: The icon representing the panel item
   /// - `enableBadge`: A flag to determine if a notification badge should be shown
   /// - `onTap`: A callback function triggered when the item is tapped
-  final List<ISpectPanelItem> panelItems;
+  final List<DraggablePanelItem> panelItems;
 
   /// A list of panel buttons for additional controls in the `ISpect` interface.
   ///
@@ -140,7 +139,7 @@ final class ISpectOptions {
   /// - `icon`: The button's icon
   /// - `label`: The text label displayed for the button
   /// - `onTap`: A callback function triggered when the button is tapped
-  final List<ISpectPanelButtonItem> panelButtons;
+  final List<DraggablePanelButtonItem> panelButtons;
 
   /// A builder for customizing the data displayed in the `ISpect` screen.
   ///
@@ -164,8 +163,8 @@ final class ISpectOptions {
   ISpectOptions copyWith({
     Locale? locale,
     List<ISpectActionItem>? actionItems,
-    List<ISpectPanelItem>? panelItems,
-    List<ISpectPanelButtonItem>? panelButtons,
+    List<DraggablePanelItem>? panelItems,
+    List<DraggablePanelButtonItem>? panelButtons,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,

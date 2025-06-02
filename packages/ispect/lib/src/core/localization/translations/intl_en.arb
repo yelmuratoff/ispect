@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "You are already in the logger page",
    "noData": "No data",
    "shareLogFull": "Share log (full)",
-   "copyToClipboardTruncated": "Copy to clipboard (truncated)"
+   "copyToClipboardTruncated": "Copy to clipboard (truncated)",
+   "viewThemeScheme": "View Theme Scheme screen",
+   "takeScreenshotFeedback": "Take a screenshot and send feedback",
+   "zoomPickColor": "Zoom in and pick a color",
+   "inspectWidgets": "Inspect widgets on the screen",
+   "togglePerformanceTracking": "Toggle performance tracking",
+   "openLogViewer": "Open the log viewer",
+   "backToMainScreen": "Back to the main screen"
 }

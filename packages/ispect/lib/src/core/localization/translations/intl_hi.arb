@@ -159,5 +159,12 @@
    "youAlreadyInLogger": "आप पहले से ही लॉगर पेज पर हैं",
    "noData": "कोई डेटा नहीं",
    "shareLogFull": "लॉग साझा करें (पूर्ण)",
-   "copyToClipboardTruncated": "क्लिपबोर्ड में कॉपी करें (संक्षिप्त)"
+   "copyToClipboardTruncated": "क्लिपबोर्ड में कॉपी करें (संक्षिप्त)",
+   "viewThemeScheme": "थीम स्कीम स्क्रीन देखें",
+   "takeScreenshotFeedback": "स्क्रीनशॉट लें और फीडबैक भेजें",
+   "zoomPickColor": "ज़ूम इन करें और रंग चुनें",
+   "inspectWidgets": "स्क्रीन पर विजेट्स का निरीक्षण करें",
+   "togglePerformanceTracking": "प्रदर्शन ट्रैकिंग टॉगल करें",
+   "openLogViewer": "लॉग व्यूअर खोलें",
+   "backToMainScreen": "मुख्य स्क्रीन पर वापस जाएं"
 }

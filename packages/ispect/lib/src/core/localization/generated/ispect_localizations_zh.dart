@@ -536,4 +536,25 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => '复制到剪贴板（截断）';
+
+  @override
+  String get viewThemeScheme => '查看主题方案屏幕';
+
+  @override
+  String get takeScreenshotFeedback => '截屏并发送反馈';
+
+  @override
+  String get zoomPickColor => '放大并选择颜色';
+
+  @override
+  String get inspectWidgets => '检查屏幕上的组件';
+
+  @override
+  String get togglePerformanceTracking => '切换性能跟踪';
+
+  @override
+  String get openLogViewer => '打开日志查看器';
+
+  @override
+  String get backToMainScreen => '返回主屏幕';
 }

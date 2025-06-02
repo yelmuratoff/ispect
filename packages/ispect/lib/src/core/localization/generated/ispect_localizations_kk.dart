@@ -556,4 +556,25 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   @override
   String get copyToClipboardTruncated =>
       'Алмасу буферіне көшіру (қысқартылған)';
+
+  @override
+  String get viewThemeScheme => 'Тема схемасы экранын көру';
+
+  @override
+  String get takeScreenshotFeedback => 'Скриншот түсіру және пікір жіберу';
+
+  @override
+  String get zoomPickColor => 'Үлкейту және түс таңдау';
+
+  @override
+  String get inspectWidgets => 'Экрандағы виджеттерді тексеру';
+
+  @override
+  String get togglePerformanceTracking => 'Өнімділік қадағалауын ауыстыру';
+
+  @override
+  String get openLogViewer => 'Лог көрушісін ашу';
+
+  @override
+  String get backToMainScreen => 'Негізгі экранға оралу';
 }

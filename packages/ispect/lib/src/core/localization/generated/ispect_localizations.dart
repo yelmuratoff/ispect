@@ -1078,6 +1078,48 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Copy to clipboard (truncated)'**
   String get copyToClipboardTruncated;
+
+  /// No description provided for @viewThemeScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'View Theme Scheme screen'**
+  String get viewThemeScheme;
+
+  /// No description provided for @takeScreenshotFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a screenshot and send feedback'**
+  String get takeScreenshotFeedback;
+
+  /// No description provided for @zoomPickColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in and pick a color'**
+  String get zoomPickColor;
+
+  /// No description provided for @inspectWidgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect widgets on the screen'**
+  String get inspectWidgets;
+
+  /// No description provided for @togglePerformanceTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle performance tracking'**
+  String get togglePerformanceTracking;
+
+  /// No description provided for @openLogViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the log viewer'**
+  String get openLogViewer;
+
+  /// No description provided for @backToMainScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the main screen'**
+  String get backToMainScreen;
 }
 
 class _ISpectGeneratedLocalizationDelegate

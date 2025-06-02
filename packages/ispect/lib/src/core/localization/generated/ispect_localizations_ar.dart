@@ -546,4 +546,25 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get copyToClipboardTruncated => 'نسخ إلى الحافظة (مختصر)';
+
+  @override
+  String get viewThemeScheme => 'عرض شاشة مخطط الموضوع';
+
+  @override
+  String get takeScreenshotFeedback => 'التقط لقطة شاشة وأرسل تعليقاً';
+
+  @override
+  String get zoomPickColor => 'تكبير واختيار لون';
+
+  @override
+  String get inspectWidgets => 'فحص العناصر على الشاشة';
+
+  @override
+  String get togglePerformanceTracking => 'تبديل تتبع الأداء';
+
+  @override
+  String get openLogViewer => 'فتح عارض السجلات';
+
+  @override
+  String get backToMainScreen => 'العودة إلى الشاشة الرئيسية';
 }
