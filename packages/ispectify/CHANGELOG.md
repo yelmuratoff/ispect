@@ -1,17 +1,24 @@
 # Changelog
 
+## 4.1.6
+
+### Changes:
+- `ISpectPanelItem` -> `DraggablePanelItem`; `ISpectPanelButtonItem` -> `DraggablePanelButtonItem`.
+- Added tooltip snackbar when long press on the panel buttons and items.
+Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButtonItem` to show the tooltip.
+
 ## 4.1.5
 
 ### Enhancements:
-- Refactor InspectorState to modularize main child, overlay builders, and zoom state handling
-- Expose new zoom configuration constants and helper methods in InspectorState for enhanced zoom and overlay management
+- Refactor `InspectorState` to modularize main child, overlay builders, and zoom state handling
+- Expose new zoom configuration constants and helper methods in `InspectorState` for enhanced zoom and overlay management
 
 ### Changes:
-- Revise README instructions across all packages to showcase new initialization patterns (e.g. ISpectifyFlutter.init, ISpectJiraClient.initialize)
-- Rename ISpectifyActionItem to ISpectActionItem and update references in docs and examples
-- Add ISpectPanelItem and ISpectPanelButtonItem models and corresponding usage samples. Records -> Models
+- Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectifyFlutter.init, `ISpectJiraClient.initialize`)*
+- Rename `ISpectifyActionItem` to `ISpectActionItem` and update references in docs and examples
+- Add `ISpectPanelItem` and `ISpectPanelButtonItem` models and corresponding usage samples. `Records` -> `Models`
 - Refresh quick start and advanced feature code snippets to illustrate updated APIs and options
-- Unify headings (Basic Setup, Custom Issue Creation, etc.) and standardize sample app flows
+- Unify headings *(Basic Setup, Custom Issue Creation, etc.)* and standardize sample app flows
 
 ## 4.1.4
 
