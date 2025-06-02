@@ -62,18 +62,15 @@ import 'app_localizations_ru.dart';
 /// be consistent with the languages listed in the ExampleGeneratedLocalization.supportedLocales
 /// property.
 abstract class ExampleGeneratedLocalization {
-  ExampleGeneratedLocalization(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  ExampleGeneratedLocalization(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ExampleGeneratedLocalization? of(BuildContext context) {
-    return Localizations.of<ExampleGeneratedLocalization>(
-        context, ExampleGeneratedLocalization);
+    return Localizations.of<ExampleGeneratedLocalization>(context, ExampleGeneratedLocalization);
   }
 
-  static const LocalizationsDelegate<ExampleGeneratedLocalization> delegate =
-      _ExampleGeneratedLocalizationDelegate();
+  static const LocalizationsDelegate<ExampleGeneratedLocalization> delegate = _ExampleGeneratedLocalizationDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,8 +82,7 @@ abstract class ExampleGeneratedLocalization {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -106,36 +102,34 @@ abstract class ExampleGeneratedLocalization {
   String get app_title;
 }
 
-class _ExampleGeneratedLocalizationDelegate
-    extends LocalizationsDelegate<ExampleGeneratedLocalization> {
+class _ExampleGeneratedLocalizationDelegate extends LocalizationsDelegate<ExampleGeneratedLocalization> {
   const _ExampleGeneratedLocalizationDelegate();
 
   @override
   Future<ExampleGeneratedLocalization> load(Locale locale) {
-    return SynchronousFuture<ExampleGeneratedLocalization>(
-        lookupExampleGeneratedLocalization(locale));
+    return SynchronousFuture<ExampleGeneratedLocalization>(lookupExampleGeneratedLocalization(locale));
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'ru'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ExampleGeneratedLocalizationDelegate old) => false;
 }
 
 ExampleGeneratedLocalization lookupExampleGeneratedLocalization(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return ExampleGeneratedLocalizationEn();
-    case 'ru':
-      return ExampleGeneratedLocalizationRu();
+    case 'en': return ExampleGeneratedLocalizationEn();
+    case 'ru': return ExampleGeneratedLocalizationRu();
   }
 
   throw FlutterError(
-      'ExampleGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'ExampleGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
 }

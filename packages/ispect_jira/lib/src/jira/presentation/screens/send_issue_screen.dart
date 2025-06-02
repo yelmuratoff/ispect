@@ -39,13 +39,13 @@ class JiraSendIssueScreen extends StatefulWidget {
 class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
   // <-- BLoCs -->
 
-  final StatusCubit _statusCubit = StatusCubit();
-  final LabelsCubit _labelsCubit = LabelsCubit();
-  final UsersCubit _usersCubit = UsersCubit();
-  final BoardsCubit _boardsCubit = BoardsCubit();
-  final SprintCubit _sprintCubit = SprintCubit();
-  final PriorityCubit _priorityCubit = PriorityCubit();
-  final CreateIssueCubit _createIssueCubit = CreateIssueCubit();
+  final _statusCubit = StatusCubit();
+  final _labelsCubit = LabelsCubit();
+  final _usersCubit = UsersCubit();
+  final _boardsCubit = BoardsCubit();
+  final _sprintCubit = SprintCubit();
+  final _priorityCubit = PriorityCubit();
+  final _createIssueCubit = CreateIssueCubit();
 
   // <-- Fields -->
 
@@ -78,6 +78,9 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
 
   @override
   void dispose() {
+    // Clean up overlay before disposing
+    _removeOverlay();
+
     _descriptionController.dispose();
     _summaryController.dispose();
     _statusCubit.close();
@@ -92,34 +95,48 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
   void _createOverlay({
     required String message,
   }) {
+    // Remove existing overlay if present to prevent stacking
+    _removeOverlay();
+
     _overlayEntry = OverlayEntry(
-      builder: (_) => GestureDetector(
-        onTap: () {
-          _overlayEntry?.remove();
-        },
-        behavior: HitTestBehavior.translucent,
-        child: ColoredBox(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(
-                  message,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
+      builder: (_) => Material(
+        color: Colors.transparent,
+        child: GestureDetector(
+          onTap: () {
+            _removeOverlay();
+          },
+          behavior: HitTestBehavior.translucent,
+          child: ColoredBox(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-    Overlay.of(context).insert(_overlayEntry!);
+
+    if (mounted) {
+      Overlay.of(context).insert(_overlayEntry!);
+    }
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 
   @override
@@ -229,14 +246,11 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
           listener: (_, state) {
             state.maybeWhen(
               loading: (type, _) {
-                _overlayEntry?.remove();
-                _overlayEntry = null;
-
+                _removeOverlay();
                 _createOverlay(message: _getMessageFromType(type));
               },
               loaded: (issueUrl) async {
-                _overlayEntry?.remove();
-                _overlayEntry = null;
+                _removeOverlay();
 
                 await ISpectToaster.hideToast(context);
                 if (context.mounted) {
@@ -258,6 +272,9 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                 if (context.mounted) {
                   Navigator.of(context).pop();
                 }
+              },
+              error: (error, stackTrace) {
+                _removeOverlay();
               },
               orElse: () {},
             );

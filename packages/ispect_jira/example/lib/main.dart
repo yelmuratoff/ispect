@@ -30,13 +30,13 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    ISpectJiraClient.initialize(
-      projectDomain: 'domain',
-      userEmail: 'example@example.com',
-      apiToken: 'token',
-      projectId: '10007',
-      projectKey: 'GTMS4',
-    );
+    // ISpectJiraClient.initialize(
+    //   projectDomain: 'domain',
+    //   userEmail: 'example@example.com',
+    //   apiToken: 'token',
+    //   projectId: '10007',
+    //   projectKey: 'GTMS4',
+    // );
   }
 
   @override
