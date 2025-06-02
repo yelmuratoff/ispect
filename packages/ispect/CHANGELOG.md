@@ -409,7 +409,7 @@
 ## 1.5.9
 
 ### Added
-- Context to `onTap` option for ISpectifyActionItem for routing to specific pages
+- Context to `onTap` option for ISpectActionItem for routing to specific pages
 
 ## 1.5.7
 

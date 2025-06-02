@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
+import 'package:ispect/src/common/models/panel_button.dart';
+import 'package:ispect/src/common/models/panel_item.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
@@ -17,7 +19,7 @@ import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 /// ```dart
 /// final options = ISpectOptions(
 ///   locale: Locale('en'),
-///   actionItems: `ISpectifyActionItem(name: 'Log', onTap: () {})`,
+///   actionItems: `ISpectActionItem(name: 'Log', onTap: () {})`,
 ///   panelItems: [
 ///     (icon: Icons.bug_report, enableBadge: true, onTap: (context) => showBugReport(context)),
 ///   ],
@@ -73,7 +75,7 @@ final class ISpectOptions {
   /// A list of action items that can be triggered in `ISpect`.
   ///
   /// This typically includes debugging, logging, or inspection actions.
-  final List<ISpectifyActionItem> actionItems;
+  final List<ISpectActionItem> actionItems;
 
   /// A list of panel items, each containing an icon, badge visibility, and a tap handler.
   ///
@@ -89,12 +91,7 @@ final class ISpectOptions {
   /// - `icon`: The icon representing the panel item.
   /// - `enableBadge`: A flag to determine if a notification badge should be shown.
   /// - `onTap`: A callback function triggered when the item is tapped.
-  final List<
-      ({
-        IconData icon,
-        bool enableBadge,
-        void Function(BuildContext context) onTap,
-      })> panelItems;
+  final List<ISpectPanelItem> panelItems;
 
   /// A list of panel buttons, each containing an icon, label, and a tap handler.
   ///
@@ -110,12 +107,7 @@ final class ISpectOptions {
   /// - `icon`: The button's icon.
   /// - `label`: The text label displayed for the button.
   /// - `onTap`: A callback function triggered when the button is tapped.
-  final List<
-      ({
-        IconData icon,
-        String label,
-        void Function(BuildContext context) onTap,
-      })> panelButtons;
+  final List<ISpectPanelButtonItem> panelButtons;
 
   /// A builder for customizing the data displayed in the `ISpect` screen.
   final ISpectifyDataBuilder? itemsBuilder;
@@ -134,21 +126,9 @@ final class ISpectOptions {
   /// ```
   ISpectOptions copyWith({
     Locale? locale,
-    List<ISpectifyActionItem>? actionItems,
-    List<
-            ({
-              IconData icon,
-              bool enableBadge,
-              void Function(BuildContext context) onTap,
-            })>?
-        panelItems,
-    List<
-            ({
-              IconData icon,
-              String label,
-              void Function(BuildContext context) onTap,
-            })>?
-        panelButtons,
+    List<ISpectActionItem>? actionItems,
+    List<ISpectPanelItem>? panelItems,
+    List<ISpectPanelButtonItem>? panelButtons,
   }) =>
       ISpectOptions(
         locale: locale ?? this.locale,

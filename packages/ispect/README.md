@@ -88,42 +88,48 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.1.3-dev13
+  ispect: ^4.1.4
 ```
 
 ## 🚀 Quick Start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispectify/ispectify.dart';
 
 void main() {
   // Initialize ISpectify for logging
-  final ispectify = ISpectify();
-  
+  final ISpectify logger = ISpectifyFlutter.init();
+
   // Wrap your app with ISpect
   ISpect.run(
     () => runApp(MyApp()),
-    ispectify: ispectify,
+    logger: logger,
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return ISpectScopeWrapper(
-      child: MaterialApp(
-        // Add ISpect to your app
-        builder: (context, child) => ISpectBuilder(
-          child: child ?? const SizedBox.shrink(),
+    return MaterialApp(
+      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+        // Add your localization delegates here
+      ]),
+      builder: (context, child) => ISpectBuilder(
+        child: child ?? const SizedBox.shrink(),
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('ISpect Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              ISpect.logger.info('Button pressed!');
+            },
+            child: const Text('Press me'),
+          ),
         ),
-        
-        // Add navigation observer
-        navigatorObservers: [
-          ISpectNavigatorObserver(),
-        ],
-        
-        home: HomePage(),
       ),
     );
   }
@@ -135,45 +141,83 @@ class MyApp extends StatelessWidget {
 ### 🎨 Custom Theming
 
 ```dart
-ISpectScopeWrapper(
-  theme: ISpectTheme(
-    logColors: {
-      'custom-log': Colors.purple,
-    },
-    logIcons: {
-      'http-request': Icons.send,
-      'http-response': Icons.receipt,
-    },
+MaterialApp(
+  builder: (context, child) => ISpectBuilder(
+    theme: ISpectTheme(
+      pageTitle: 'Your name here',
+      lightBackgroundColor: Colors.white,
+      darkBackgroundColor: Colors.black,
+      lightDividerColor: Colors.grey.shade300,
+      darkDividerColor: Colors.grey.shade800,
+      logColors: {
+        'error': Colors.red,
+        'info': Colors.blue,
+      },
+      logIcons: {
+        'error': Icons.error,
+        'info': Icons.info,
+      },
+      logDescriptions: [
+        LogDescription(
+          key: 'riverpod-add',
+          isDisabled: true,
+        ),
+        LogDescription(
+          key: 'riverpod-update',
+          isDisabled: true,
+        ),
+        LogDescription(
+          key: 'riverpod-dispose',
+          isDisabled: true,
+        ),
+        LogDescription(
+          key: 'riverpod-fail',
+          isDisabled: true,
+        ),
+      ],
+    ),
+    child: child ?? const SizedBox.shrink(),
   ),
-  child: MaterialApp(/* ... */),
+  /* ... */
 )
 ```
 
 ### 🎛️ Panel Customization
 
 ```dart
-ISpectScopeWrapper(
-  options: ISpectOptions(
-    panelButtons: [
-      ('Custom Action', Icons.star, () {
-        // Custom action
-      }),
-    ],
+MaterialApp(
+  builder: (context, child) => ISpectBuilder(
+    options: ISpectOptions(
+      locale: const Locale('your_locale'),
+      isFeedbackEnabled: true,
+      actionItems: [
+        ISpectActionItem(
+            onTap: (BuildContext context) {},
+            title: 'Some title here',
+            icon: Icons.add),
+      ],
+      panelItems: [
+        ISpectPanelItem(
+          enableBadge: false,
+          icon: Icons.settings,
+          onTap: (context) {
+            // Handle settings tap
+          },
+        ),
+      ],
+      panelButtons: [
+        ISpectPanelButtonItem(
+            icon: Icons.info,
+            label: 'Info',
+            onTap: (context) {
+              // Handle info tap
+            }),
+      ],
+    ),
+    child: child ?? const SizedBox.shrink(),
   ),
-  child: MaterialApp(/* ... */),
+  /* ... */
 )
-```
-
-### 🗺️ Router Integration (GoRouter)
-
-For GoRouter, add a listener to track route changes:
-
-```dart
-_router.routerDelegate.addListener(() {
-  final location = _router.routerDelegate
-    .currentConfiguration.last.matchedLocation;
-  ISpect.route(location);
-});
 ```
 
 ## 📚 Examples

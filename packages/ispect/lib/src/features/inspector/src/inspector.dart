@@ -141,6 +141,15 @@ class InspectorState extends State<Inspector> {
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
   final _zoomScaleNotifier = ValueNotifier<double>(3);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
+  final List<
+      ({
+        bool enableBadge,
+        IconData icon,
+        void Function(BuildContext) onTap
+      })> _otherPanelItems = [];
+
+  final List<({IconData icon, String label, void Function(BuildContext) onTap})>
+      _otherPanelButtons = [];
 
   late final KeyboardHandler _keyboardHandler;
 
@@ -176,6 +185,24 @@ class InspectorState extends State<Inspector> {
       if (widget.observer != null) {
         ISpect.read(context).observer = widget.observer;
       }
+      _otherPanelItems.addAll(
+        widget.options.panelItems.map(
+          (item) => (
+            enableBadge: item.enableBadge,
+            icon: item.icon,
+            onTap: item.onTap,
+          ),
+        ),
+      );
+      _otherPanelButtons.addAll(
+        widget.options.panelButtons.map(
+          (button) => (
+            icon: button.icon,
+            label: button.label,
+            onTap: button.onTap,
+          ),
+        ),
+      );
     });
   }
 
@@ -566,9 +593,9 @@ class InspectorState extends State<Inspector> {
                         );
                       },
                     ),
-                  ...widget.options.panelItems,
+                  ..._otherPanelItems,
                 ],
-                buttons: widget.options.panelButtons,
+                buttons: _otherPanelButtons,
                 child: null,
               ),
             ),

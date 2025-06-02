@@ -332,17 +332,17 @@ class _LogsScreenState extends State<LogsScreen> {
         options: widget.options,
         iSpectify: iSpectify,
         actions: [
-          ISpectifyActionItem(
+          ISpectActionItem(
             onTap: (_) => _logsViewController.toggleLogOrder(),
             title: context.ispectL10n.reverseLogs,
             icon: Icons.swap_vert,
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             onTap: _copyAllLogsToClipboard,
             title: context.ispectL10n.copyAllLogs,
             icon: Icons.copy,
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             onTap: (_) => _toggleLogsExpansion(),
             title: _logsViewController.expandedLogs
                 ? context.ispectL10n.collapseLogs
@@ -351,17 +351,17 @@ class _LogsScreenState extends State<LogsScreen> {
                 ? Icons.visibility_outlined
                 : Icons.visibility_off_outlined,
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             onTap: (_) => _clearLogsHistory(),
             title: context.ispectL10n.clearHistory,
             icon: Icons.delete_outline,
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             onTap: (_) => _shareLogsAsFile(),
             title: context.ispectL10n.shareLogsFile,
             icon: Icons.ios_share_outlined,
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             title: context.ispectL10n.appInfo,
             icon: Icons.info_rounded,
             onTap: (context) {
@@ -372,7 +372,7 @@ class _LogsScreenState extends State<LogsScreen> {
               );
             },
           ),
-          ISpectifyActionItem(
+          ISpectActionItem(
             title: context.ispectL10n.appData,
             icon: Icons.data_usage_rounded,
             onTap: (context) {

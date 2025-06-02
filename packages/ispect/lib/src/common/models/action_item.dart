@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ISpectifyActionItem {
-  const ISpectifyActionItem({
+class ISpectActionItem {
+  const ISpectActionItem({
     required this.onTap,
     required this.title,
     required this.icon,

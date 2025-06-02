@@ -13,6 +13,8 @@ export 'package:ispectify/ispectify.dart';
 export 'src/common/extensions/history.dart';
 export 'src/common/extensions/init.dart';
 export 'src/common/extensions/ispectify_data.dart';
+export 'src/common/models/panel_button.dart';
+export 'src/common/models/panel_item.dart';
 export 'src/common/observers/route_observer.dart';
 export 'src/common/utils/file_utils.dart';
 export 'src/common/widgets/builder/data_builder.dart';
