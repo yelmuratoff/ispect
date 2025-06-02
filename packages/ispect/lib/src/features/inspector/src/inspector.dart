@@ -381,7 +381,9 @@ class InspectorState extends State<Inspector> {
     final newValue = (_zoomScaleNotifier.value + _zoomStep * scrollDirection)
         .clamp(_minZoomScale, _maxZoomScale);
 
-    _zoomScaleNotifier.value = newValue;
+    if (newValue != _zoomScaleNotifier.value) {
+      _zoomScaleNotifier.value = newValue;
+    }
   }
 
   @override
