@@ -128,7 +128,7 @@ class _AppState extends State<App> {
             locale: locale,
             // isThemeSchemaEnabled: false,
             panelButtons: [
-              (
+              ISpectPanelButtonItem(
                 icon: Icons.copy_rounded,
                 label: 'Token',
                 onTap: (context) {
@@ -138,7 +138,7 @@ class _AppState extends State<App> {
               ),
             ],
             panelItems: [
-              (
+              ISpectPanelItem(
                 icon: Icons.home,
                 enableBadge: false,
                 onTap: (context) {
@@ -147,7 +147,7 @@ class _AppState extends State<App> {
               ),
             ],
             actionItems: [
-              ISpectifyActionItem(
+              ISpectActionItem(
                 title: 'Test',
                 icon: Icons.account_tree_rounded,
                 onTap: (context) {

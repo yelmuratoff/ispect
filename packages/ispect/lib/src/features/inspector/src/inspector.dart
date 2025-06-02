@@ -120,6 +120,14 @@ class Inspector extends StatefulWidget {
 }
 
 class InspectorState extends State<Inspector> {
+  static const double _defaultZoomScale = 3;
+  static const double _minZoomScale = 1;
+  static const double _maxZoomScale = 20;
+  static const double _zoomStep = 1;
+  static const double _overlayMinSize = 128;
+  static const double _overlayMaxSize = 246;
+  static const double _overlayOffsetY = 16;
+
   bool _isPanelVisible = false;
   bool get isPanelVisible => _isPanelVisible;
 
@@ -139,8 +147,17 @@ class InspectorState extends State<Inspector> {
   final _zoomStateNotifier = ValueNotifier<bool>(false);
 
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
-  final _zoomScaleNotifier = ValueNotifier<double>(3);
+  final _zoomScaleNotifier = ValueNotifier<double>(_defaultZoomScale);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
+  late List<
+      ({
+        bool enableBadge,
+        IconData icon,
+        void Function(BuildContext) onTap
+      })> _otherPanelItems;
+
+  late List<({IconData icon, String label, void Function(BuildContext) onTap})>
+      _otherPanelButtons;
 
   late final KeyboardHandler _keyboardHandler;
 
@@ -153,8 +170,18 @@ class InspectorState extends State<Inspector> {
   void initState() {
     super.initState();
 
+    // Validate zoom scale boundaries
+    assert(
+      _minZoomScale <= _defaultZoomScale && _defaultZoomScale <= _maxZoomScale,
+      'Invalid zoom scale configuration: '
+      'minZoom ($_minZoomScale) <= defaultZoom ($_defaultZoomScale) <= maxZoom ($_maxZoomScale)',
+    );
+
     _draggablePanelController = widget.controller ?? DraggablePanelController();
     _isPanelVisible = widget.isPanelVisible;
+
+    // Initialize panel items once
+    _initializePanelItems();
 
     _keyboardHandler = KeyboardHandler(
       onInspectorStateChanged: ({required value}) {
@@ -177,6 +204,28 @@ class InspectorState extends State<Inspector> {
         ISpect.read(context).observer = widget.observer;
       }
     });
+  }
+
+  void _initializePanelItems() {
+    _otherPanelItems = widget.options.panelItems
+        .map(
+          (item) => (
+            enableBadge: item.enableBadge,
+            icon: item.icon,
+            onTap: item.onTap,
+          ),
+        )
+        .toList();
+
+    _otherPanelButtons = widget.options.panelButtons
+        .map(
+          (button) => (
+            icon: button.icon,
+            label: button.label,
+            onTap: button.onTap,
+          ),
+        )
+        .toList();
   }
 
   // Gestures
@@ -211,14 +260,14 @@ class InspectorState extends State<Inspector> {
   }
 
   void _onPointerMove(Offset pointerOffset) {
-    _pointerHoverPosition = pointerOffset;
-
-    if (_zoomStateNotifier.value) {
-      _onZoomHover(pointerOffset);
-    }
+    _updatePointerPosition(pointerOffset);
   }
 
   void _onPointerHover(Offset pointerOffset) {
+    _updatePointerPosition(pointerOffset);
+  }
+
+  void _updatePointerPosition(Offset pointerOffset) {
     _pointerHoverPosition = pointerOffset;
     if (_zoomStateNotifier.value) {
       _onZoomHover(pointerOffset);
@@ -254,7 +303,7 @@ class InspectorState extends State<Inspector> {
 
     if (isEnabled) {
       _onInspectorStateChanged(false);
-      _zoomScaleNotifier.value = 3.0;
+      _zoomScaleNotifier.value = _defaultZoomScale;
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await _extractByteData();
@@ -264,28 +313,35 @@ class InspectorState extends State<Inspector> {
         }
       });
     } else {
-      if (_byteDataStateNotifier.value != null) {
-        final color = getPixelFromByteData(
-          _byteDataStateNotifier.value!,
-          width: _image!.width,
-          x: _zoomImageOffsetNotifier.value!.dx.round(),
-          y: _zoomImageOffsetNotifier.value!.dy.round(),
-        );
-
-        showColorPickerResultSnackbar(
-          context: context,
-          color: color,
-        );
-      }
-
-      _image?.dispose();
-      _image = null;
-      _byteDataStateNotifier.value = null;
-
-      _zoomImageOffsetNotifier.value = null;
-      _zoomOverlayOffsetNotifier.value = null;
-      _zoomScaleNotifier.value = 3.0;
+      _handleZoomDisabled();
     }
+  }
+
+  void _handleZoomDisabled() {
+    if (_byteDataStateNotifier.value != null) {
+      final color = getPixelFromByteData(
+        _byteDataStateNotifier.value!,
+        width: _image!.width,
+        x: _zoomImageOffsetNotifier.value!.dx.round(),
+        y: _zoomImageOffsetNotifier.value!.dy.round(),
+      );
+
+      showColorPickerResultSnackbar(
+        context: context,
+        color: color,
+      );
+    }
+
+    _resetZoomState();
+  }
+
+  void _resetZoomState() {
+    _image?.dispose();
+    _image = null;
+    _byteDataStateNotifier.value = null;
+    _zoomImageOffsetNotifier.value = null;
+    _zoomOverlayOffsetNotifier.value = null;
+    _zoomScaleNotifier.value = _defaultZoomScale;
   }
 
   Future<void> _extractByteData() async {
@@ -326,14 +382,13 @@ class InspectorState extends State<Inspector> {
   }
 
   void _onPointerScroll(PointerScrollEvent scrollEvent) {
-    if (_zoomStateNotifier.value) {
-      final newValue =
-          _zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
+    if (!_zoomStateNotifier.value) return;
 
-      if (newValue < 1.0) {
-        return;
-      }
+    final scrollDirection = -scrollEvent.scrollDelta.dy.sign;
+    final newValue = (_zoomScaleNotifier.value + _zoomStep * scrollDirection)
+        .clamp(_minZoomScale, _maxZoomScale);
 
+    if (newValue != _zoomScaleNotifier.value) {
       _zoomScaleNotifier.value = newValue;
     }
   }
@@ -346,6 +401,11 @@ class InspectorState extends State<Inspector> {
       } else {
         _keyboardHandler.dispose();
       }
+    }
+
+    // Re-initialize panel items if options changed
+    if (oldWidget.options != widget.options) {
+      _initializePanelItems();
     }
 
     super.didUpdateWidget(oldWidget);
@@ -389,103 +449,10 @@ class InspectorState extends State<Inspector> {
       children: [
         Align(
           alignment: widget.alignment,
-          child: MultiValueListenableBuilder(
-            valueListenables: [
-              _inspectorStateNotifier,
-              _zoomStateNotifier,
-            ],
-            builder: (_) {
-              final child = widget.child;
-
-              final isAbsorbingPointer =
-                  _inspectorStateNotifier.value || _zoomStateNotifier.value;
-
-              return Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerUp: (e) => _onTap(e.position),
-                onPointerMove: (e) => _onPointerMove(e.position),
-                onPointerDown: (e) => _onPointerMove(e.position),
-                onPointerHover: (e) => _onPointerHover(e.position),
-                onPointerSignal: (event) {
-                  if (event is PointerScrollEvent) {
-                    _onPointerScroll(event);
-                  }
-                },
-                child: RepaintBoundary(
-                  key: _repaintBoundaryKey,
-                  child: AbsorbPointer(
-                    key: _absorbPointerKey,
-                    absorbing: isAbsorbingPointer,
-                    child: child,
-                  ),
-                ),
-              );
-            },
-          ),
+          child: _buildMainChild(),
         ),
-        if (widget.options.isInspectorEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _currentRenderBoxNotifier,
-              _inspectorStateNotifier,
-              _zoomStateNotifier,
-            ],
-            builder: (_) => LayoutBuilder(
-              key: const ValueKey('inspector_overlay_layout_builder'),
-              builder: (_, constraints) => _inspectorStateNotifier.value
-                  ? InspectorOverlay(
-                      size: constraints.biggest,
-                      boxInfo: _currentRenderBoxNotifier.value,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ),
-        if (widget.options.isColorPickerEnabled)
-          MultiValueListenableBuilder(
-            valueListenables: [
-              _zoomImageOffsetNotifier,
-              _zoomOverlayOffsetNotifier,
-              _byteDataStateNotifier,
-              _zoomScaleNotifier,
-            ],
-            builder: (context) {
-              final offset = _zoomOverlayOffsetNotifier.value;
-              final imageOffset = _zoomImageOffsetNotifier.value;
-              final byteData = _byteDataStateNotifier.value;
-              final zoomScale = _zoomScaleNotifier.value;
-
-              if (offset == null || byteData == null || imageOffset == null) {
-                return const SizedBox.shrink();
-              }
-
-              final overlaySize = ui.lerpDouble(
-                128.0,
-                246.0,
-                ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-              )!;
-
-              return Positioned(
-                left: offset.dx.clamp(0, screenSize.width - overlaySize),
-                top: (offset.dy - overlaySize - 16).clamp(0, screenSize.height),
-                child: IgnorePointer(
-                  child: CombinedOverlayWidget(
-                    image: _image!,
-                    overlayOffset: offset,
-                    imageOffset: imageOffset,
-                    overlaySize: overlaySize,
-                    zoomScale: zoomScale,
-                    pixelRatio: MediaQuery.devicePixelRatioOf(context),
-                    color: getPixelFromByteData(
-                      byteData,
-                      width: _image!.width,
-                      x: imageOffset.dx.round(),
-                      y: imageOffset.dy.round(),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        _buildInspectorOverlay(),
+        _buildColorPickerOverlay(screenSize),
         if (_isPanelVisible)
           AnimatedBuilder(
             animation: Listenable.merge([
@@ -566,14 +533,122 @@ class InspectorState extends State<Inspector> {
                         );
                       },
                     ),
-                  ...widget.options.panelItems,
+                  ..._otherPanelItems,
                 ],
-                buttons: widget.options.panelButtons,
+                buttons: _otherPanelButtons,
                 child: null,
               ),
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildMainChild() => MultiValueListenableBuilder(
+        valueListenables: [
+          _inspectorStateNotifier,
+          _zoomStateNotifier,
+        ],
+        builder: (_) {
+          final isAbsorbingPointer =
+              _inspectorStateNotifier.value || _zoomStateNotifier.value;
+
+          return Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerUp: (e) => _onTap(e.position),
+            onPointerMove: (e) => _onPointerMove(e.position),
+            onPointerDown: (e) => _onPointerMove(e.position),
+            onPointerHover: (e) => _onPointerHover(e.position),
+            onPointerSignal: (event) {
+              if (event is PointerScrollEvent) {
+                _onPointerScroll(event);
+              }
+            },
+            child: RepaintBoundary(
+              key: _repaintBoundaryKey,
+              child: AbsorbPointer(
+                key: _absorbPointerKey,
+                absorbing: isAbsorbingPointer,
+                child: widget.child,
+              ),
+            ),
+          );
+        },
+      );
+
+  Widget _buildInspectorOverlay() {
+    if (!widget.options.isInspectorEnabled) {
+      return const SizedBox.shrink();
+    }
+
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        _currentRenderBoxNotifier,
+        _inspectorStateNotifier,
+        _zoomStateNotifier,
+      ],
+      builder: (_) => LayoutBuilder(
+        key: const ValueKey('inspector_overlay_layout_builder'),
+        builder: (_, constraints) => _inspectorStateNotifier.value
+            ? InspectorOverlay(
+                size: constraints.biggest,
+                boxInfo: _currentRenderBoxNotifier.value,
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildColorPickerOverlay(Size screenSize) {
+    if (!widget.options.isColorPickerEnabled) {
+      return const SizedBox.shrink();
+    }
+
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        _zoomImageOffsetNotifier,
+        _zoomOverlayOffsetNotifier,
+        _byteDataStateNotifier,
+        _zoomScaleNotifier,
+      ],
+      builder: (context) {
+        final offset = _zoomOverlayOffsetNotifier.value;
+        final imageOffset = _zoomImageOffsetNotifier.value;
+        final byteData = _byteDataStateNotifier.value;
+        final zoomScale = _zoomScaleNotifier.value;
+
+        if (offset == null || byteData == null || imageOffset == null) {
+          return const SizedBox.shrink();
+        }
+
+        final overlaySize = ui.lerpDouble(
+          _overlayMinSize,
+          _overlayMaxSize,
+          ((zoomScale - 2.0) / 10.0).clamp(0, 1),
+        )!;
+
+        return Positioned(
+          left: offset.dx.clamp(0, screenSize.width - overlaySize),
+          top: (offset.dy - overlaySize - _overlayOffsetY)
+              .clamp(0, screenSize.height),
+          child: IgnorePointer(
+            child: CombinedOverlayWidget(
+              image: _image!,
+              overlayOffset: offset,
+              imageOffset: imageOffset,
+              overlaySize: overlaySize,
+              zoomScale: zoomScale,
+              pixelRatio: MediaQuery.devicePixelRatioOf(context),
+              color: getPixelFromByteData(
+                byteData,
+                width: _image!.width,
+                x: imageOffset.dx.round(),
+                y: imageOffset.dy.round(),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

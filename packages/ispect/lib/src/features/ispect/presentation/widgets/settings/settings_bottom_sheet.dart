@@ -22,7 +22,7 @@ class ISpectifySettingsBottomSheets extends StatefulWidget {
   /// Options for `ISpect`
   final ISpectOptions options;
 
-  final List<ISpectifyActionItem> actions;
+  final List<ISpectActionItem> actions;
 
   @override
   State<ISpectifySettingsBottomSheets> createState() =>
@@ -134,7 +134,7 @@ class _SettingsBody extends StatelessWidget {
   final ISpectScopeModel iSpect;
   final List<Widget> settings;
   final ScrollController scrollController;
-  final List<ISpectifyActionItem> actions;
+  final List<ISpectActionItem> actions;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -293,7 +293,7 @@ class _ActionTile extends StatelessWidget {
     this.showDivider = true,
   });
 
-  final ISpectifyActionItem action;
+  final ISpectActionItem action;
   final bool showDivider;
 
   @override

@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
 @immutable
-class ISpectActionItem {
-  const ISpectActionItem({
+class ISpectPanelButtonItem {
+  const ISpectPanelButtonItem({
     required this.onTap,
-    required this.title,
+    required this.label,
     required this.icon,
   });
 
-  final void Function(BuildContext context)? onTap;
-  final String title;
   final IconData icon;
+  final String label;
+  final void Function(BuildContext context) onTap;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ISpectActionItem &&
-        other.title == title &&
+    return other is ISpectPanelButtonItem &&
         other.icon == icon &&
+        other.label == label &&
         other.onTap == onTap;
   }
 
   @override
-  int get hashCode => Object.hash(title, icon, onTap);
+  int get hashCode => Object.hash(icon, label, onTap);
 }

@@ -48,61 +48,74 @@ Enhance your BLoC debugging workflow by automatically capturing and logging all 
 
 ## 🔧 Configuration Options
 
-### Basic Configuration
+### Basic Setup
 
 ```dart
-Bloc.observer = ISpectifyBlocObserver(
-  ispectify: ispectify,
-  settings: ISpectifyBlocSettings(
-    // Event logging
-    printEvents: true,
-    
-    // State logging
-    printStates: true,
-    
-    // Transition logging
-    printTransitions: true,
-    
-    // Change logging
-    printChanges: true,
-    
-    // Error handling
-    printErrors: true,
-  ),
+// Initialize in ISpect.run onInit callback
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    // Set up BLoC observer for automatic logging
+    Bloc.observer = ISpectifyBlocObserver(
+      iSpectify: iSpectify,
+    );
+  },
 );
 ```
 
-### Advanced Filtering
+### Filtering BLoC Logs
 
 ```dart
-Bloc.observer = ISpectifyBlocObserver(
-  ispectify: ispectify,
-  settings: ISpectifyBlocSettings(
-    // Filter specific BLoCs
-    blocFilter: (bloc) => bloc.runtimeType != NavigationBloc,
-    
-    // Filter sensitive events
-    eventFilter: (event) {
-      if (event is AuthEvent) {
-        return event.copyWith(password: '***');
-      }
-      return event;
-    },
-    
-    // Filter states
-    stateFilter: (state) {
-      if (state is UserState) {
-        return state.copyWith(sensitiveData: null);
-      }
-      return state;
-    },
-    
-    // Custom log levels
-    eventLogLevel: LogLevel.debug,
-    stateLogLevel: LogLevel.info,
-    errorLogLevel: LogLevel.error,
+// You can disable specific BLoC logs in ISpectTheme
+ISpectBuilder(
+  theme: const ISpectTheme(
+    logDescriptions: [
+      LogDescription(
+        key: 'bloc-event',
+        isDisabled: true, // Disable event logs
+      ),
+      LogDescription(
+        key: 'bloc-transition',
+        isDisabled: true, // Disable transition logs
+      ),
+      LogDescription(
+        key: 'bloc-close',
+        isDisabled: true, // Disable close logs
+      ),
+      LogDescription(
+        key: 'bloc-create',
+        isDisabled: true, // Disable create logs
+      ),
+      LogDescription(
+        key: 'bloc-state',
+        isDisabled: true, // Disable state logs
+      ),
+    ],
   ),
-);
+  child: child,
+)
+```
+
+### Using with Different BLoC Types
+
+```dart
+// Works with Cubit
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+  void increment() => emit(state + 1);
+}
+
+// Works with BLoC
+class CounterBloc extends Bloc<CounterEvent, int> {
+  CounterBloc() : super(0) {
+    on<CounterIncremented>((event, emit) {
+      emit(state + 1);
+    });
+  }
+}
+
+// All state changes will be automatically logged
 ```
 
 ## 📦 Installation
@@ -111,94 +124,97 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.1.3-dev13
+  ispectify_bloc: ^4.1.4
 ```
 
 ## 🚀 Quick Start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
-import 'package:ispectify/ispectify.dart';
 
 void main() {
-  final ispectify = ISpectify();
-  
-  // Set up BLoC observer
-  Bloc.observer = ISpectifyBlocObserver(
-    ispectify: ispectify,
-    settings: ISpectifyBlocSettings(
-      printEvents: true,
-      printStates: true,
-      printTransitions: true,
-      printChanges: true,
-    ),
+  final ISpectify iSpectify = ISpectifyFlutter.init();
+
+  ISpect.run(
+    () => runApp(MyApp()),
+    logger: iSpectify,
+    onInit: () {
+      // Set up BLoC observer for automatic state tracking
+      Bloc.observer = ISpectifyBlocObserver(
+        iSpectify: iSpectify,
+      );
+    },
   );
-  
-  runApp(MyApp());
 }
 
-// Your BLoC will be automatically logged
-class CounterBloc extends Bloc<CounterEvent, int> {
-  CounterBloc() : super(0) {
-    on<CounterIncremented>((event, emit) {
-      emit(state + 1);
-    });
-  }
-}
-```
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-## ⚙️ Advanced Features
-
-### Custom Log Formatting
-
-```dart
-Bloc.observer = ISpectifyBlocObserver(
-  ispectify: ispectify,
-  settings: ISpectifyBlocSettings(
-    eventFormatter: (bloc, event) => '${bloc.runtimeType}: ${event.runtimeType}',
-    stateFormatter: (bloc, state) => '${bloc.runtimeType} -> ${state.runtimeType}',
-    transitionFormatter: (bloc, transition) => 
-      '${bloc.runtimeType}: ${transition.event.runtimeType} -> ${transition.nextState.runtimeType}',
-  ),
-);
-```
-
-### Performance Monitoring
-
-```dart
-Bloc.observer = ISpectifyBlocObserver(
-  ispectify: ispectify,
-  settings: ISpectifyBlocSettings(
-    trackPerformance: true,
-    performanceThreshold: Duration(milliseconds: 100), // Log slow transitions
-  ),
-);
-```
-
-### Multiple Observers
-
-```dart
-// Combine with other observers
-class MultiBlocObserver extends BlocObserver {
-  final List<BlocObserver> _observers;
-  
-  MultiBlocObserver(this._observers);
-  
   @override
-  void onChange(BlocBase bloc, Change change) {
-    for (final observer in _observers) {
-      observer.onChange(bloc, change);
-    }
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: BlocProvider(
+        create: (context) => CounterCubit(),
+        child: const CounterPage(),
+      ),
+    );
   }
-  
-  // Implement other methods...
 }
 
-Bloc.observer = MultiBlocObserver([
-  ISpectifyBlocObserver(ispectify: ispectify),
-  CustomBlocObserver(),
-]);
+// Your Cubit/BLoC will be automatically logged
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+
+  void increment() => emit(state + 1);
+  void decrement() => emit(state - 1);
+  
+  void load({required String data}) {
+    // All state changes will be automatically logged
+    emit(state + 1);
+  }
+}
+
+class CounterPage extends StatelessWidget {
+  const CounterPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ISpectify BLoC Example')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            BlocBuilder<CounterCubit, int>(
+              builder: (context, state) {
+                return Text('Count: $state');
+              },
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // This state change will be logged
+                context.read<CounterCubit>().increment();
+              },
+              child: const Text('Increment'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                // This state change will also be logged
+                context.read<CounterCubit>().load(data: 'Test data');
+              },
+              child: const Text('Load Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ## 📚 Examples

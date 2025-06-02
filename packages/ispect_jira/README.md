@@ -48,91 +48,111 @@ Streamline your bug reporting workflow by automatically creating detailed Jira t
 
 ## 🔧 Configuration Options
 
-### Basic Configuration
+### Basic Setup
 
 ```dart
-final jiraService = ISpectJiraService(
-  config: JiraConfig(
-    baseUrl: 'https://your-domain.atlassian.net',
-    username: 'your-email@domain.com',
-    apiToken: 'your-api-token',
-    projectKey: 'MOBILE',
-    
-    // Default ticket settings
-    issueType: 'Bug',
-    priority: 'Medium',
-    labels: ['mobile-app', 'flutter'],
-  ),
-);
-```
+void main() {
+  final iSpectify = ISpectifyFlutter.init();
 
-### Advanced Configuration
+  ISpect.run(
+    () => runApp(MyApp()),
+    logger: iSpectify,
+  );
+}
 
-```dart
-final jiraService = ISpectJiraService(
-  config: JiraConfig(
-    baseUrl: 'https://your-domain.atlassian.net',
-    username: 'your-email@domain.com',
-    apiToken: 'your-api-token',
-    projectKey: 'MOBILE',
-    
-    // Custom fields
-    customFields: {
-      'customfield_10001': 'Mobile App',
-      'customfield_10002': 'Flutter',
-    },
-    
-    // Ticket template
-    titleTemplate: '[MOBILE] {summary}',
-    descriptionTemplate: '''
-*Device Info:*
-{device_info}
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
 
-*App Version:*
-{app_version}
-
-*Description:*
-{description}
-
-*Steps to Reproduce:*
-{steps}
-
-*Logs:*
-{logs}
-''',
-  ),
-);
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with your Jira credentials
+    ISpectJiraClient.initialize(
+      projectDomain: 'your-company',  // your-company.atlassian.net
+      userEmail: 'developer@company.com',
+      apiToken: 'ATATT3xFfGF0...', // Generate from Jira API tokens
+      projectId: '10007',
+      projectKey: 'MOBILE',
+    );
+  }
+}
 ```
 
 ### Authentication Methods
 
 ```dart
-// API Token (recommended)
-final config = JiraConfig(
-  baseUrl: 'https://your-domain.atlassian.net',
-  username: 'your-email@domain.com',
+// Method 1: Direct initialization in code
+ISpectJiraClient.initialize(
+  projectDomain: 'your-domain',
+  userEmail: 'your-email@domain.com',
   apiToken: 'your-api-token',
+  projectId: '10007',
   projectKey: 'PROJECT',
 );
 
-// Basic Auth
-final config = JiraConfig(
-  baseUrl: 'https://your-domain.atlassian.net',
-  username: 'your-username',
-  password: 'your-password',
-  projectKey: 'PROJECT',
-);
-
-// OAuth (for self-hosted Jira)
-final config = JiraConfig(
-  baseUrl: 'https://your-jira-instance.com',
-  oauthConfig: OAuthConfig(
-    consumerKey: 'your-consumer-key',
-    privateKey: 'your-private-key',
-    accessToken: 'your-access-token',
+// Method 2: Runtime authentication with UI
+Navigator.push(
+  context,
+  MaterialPageRoute<void>(
+    builder: (_) => JiraAuthScreen(
+      onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+        // Credentials saved automatically to ISpectJiraClient
+        ISpect.logger.good('Jira authenticated successfully');
+      },
+    ),
   ),
-  projectKey: 'PROJECT',
 );
+```
+
+### Custom Feedback Integration
+
+```dart
+ISpectBuilder(
+  feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
+    onSubmit: onSubmit,
+    theme: Theme.of(context),
+    scrollController: controller,
+  ),
+  child: child,
+)
+```
+
+### Jira Action Items
+
+```dart
+ISpectOptions(
+  actionItems: [
+    ISpectActionItem(
+      title: 'Report Bug',
+      icon: Icons.bug_report_outlined,
+      onTap: (context) {
+        if (ISpectJiraClient.isInitialized) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const JiraSendIssueScreen(),
+            ),
+          );
+        } else {
+          // Show authentication screen
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => JiraAuthScreen(
+                onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                  // Handle successful authentication
+                },
+              ),
+            ),
+          );
+        }
+      },
+    ),
+  ],
+),
 ```
 
 ## 📦 Installation
@@ -141,44 +161,91 @@ Add ispect_jira to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect_jira: ^4.1.3-dev13
+  ispect_jira: ^4.1.4
 ```
 
 ## 🚀 Quick Start
 
 ```dart
-import 'package:ispect_jira/ispect_jira.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect_jira/ispect_jira.dart';
 
 void main() {
-  // Configure Jira integration
-  final jiraService = ISpectJiraService(
-    config: JiraConfig(
-      baseUrl: 'https://your-domain.atlassian.net',
-      username: 'your-email@domain.com',
-      apiToken: 'your-api-token',
-      projectKey: 'PROJECT',
-    ),
-  );
-  
+  final iSpectify = ISpectifyFlutter.init();
+
   ISpect.run(
-    () => runApp(MyApp()),
-    ispectify: ISpectify(),
-    jiraService: jiraService,
+    () => runApp(MyApp(iSpectify: iSpectify)),
+    logger: iSpectify,
+    isPrintLoggingEnabled: true,
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  final ISpectify iSpectify;
+  const MyApp({super.key, required this.iSpectify});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Jira client
+    ISpectJiraClient.initialize(
+      projectDomain: 'your-domain',
+      userEmail: 'your-email@domain.com',
+      apiToken: 'your-api-token',
+      projectId: '10007',
+      projectKey: 'PROJECT',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ISpectScopeWrapper(
-      // Jira integration is automatically available in feedback system
-      child: MaterialApp(
-        builder: (context, child) => ISpectBuilder(
-          child: child ?? const SizedBox.shrink(),
+    return MaterialApp(
+      builder: (context, child) => ISpectBuilder(
+        options: ISpectOptions(
+          actionItems: [
+            ISpectActionItem(
+              title: 'ISpect',
+              icon: Icons.bug_report_outlined,
+              onTap: (context) {
+                if (ISpectJiraClient.isInitialized) {
+                  // Navigate to create issue screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const JiraSendIssueScreen(),
+                    ),
+                  );
+                } else {
+                  // Navigate to auth screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => JiraAuthScreen(
+                        onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                          ISpect.logger.good('✅ Jira authorized');
+                        },
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
         ),
-        home: HomePage(),
+        feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
+          onSubmit: onSubmit,
+          theme: Theme.of(context),
+          scrollController: controller,
+        ),
+        child: child ?? const SizedBox.shrink(),
       ),
+      home: const HomePage(),
     );
   }
 }
@@ -186,67 +253,93 @@ class MyApp extends StatelessWidget {
 
 ## ⚙️ Advanced Features
 
-### Custom Ticket Builder
+### Custom Issue Creation
 
 ```dart
-final jiraService = ISpectJiraService(
-  config: config,
-  ticketBuilder: CustomTicketBuilder(),
+// Create issues programmatically
+final issue = await ISpectJiraClient.createIssue(
+  assigneeId: 'user-id',
+  description: 'Bug description with context',
+  issueTypeId: '10001', // Bug type ID
+  label: 'mobile-app',
+  summary: 'App crashes on startup',
+  priorityId: '3', // Medium priority
 );
 
-class CustomTicketBuilder implements JiraTicketBuilder {
-  @override
-  Future<JiraTicket> buildTicket(
-    String summary,
-    String description,
-    FeedbackData feedbackData,
-  ) async {
-    return JiraTicket(
-      summary: '[MOBILE] $summary',
-      description: await _buildDescription(description, feedbackData),
-      priority: _determinePriority(feedbackData),
-      labels: _generateLabels(feedbackData),
-      attachments: await _collectAttachments(feedbackData),
-    );
-  }
+// Add attachments to existing issue
+final attachments = [File('screenshot.png')];
+await ISpectJiraClient.addAttachmentsToIssue(
+  issue: issue,
+  attachments: attachments,
+);
+```
+
+### Client State Management
+
+```dart
+// Check client initialization state
+if (ISpectJiraClient.isInitialized) {
+  print('Jira client is fully configured');
+  print('Project: ${ISpectJiraClient.projectKey}');
+  print('Domain: ${ISpectJiraClient.projectDomain}');
 }
+
+if (ISpectJiraClient.isClientInitialized) {
+  print('Jira API client is ready');
+}
+
+// Restart client with new credentials
+ISpectJiraClient.restart();
 ```
 
-### Conditional Ticket Creation
+### Fetching Jira Data
 
 ```dart
-final jiraService = ISpectJiraService(
-  config: config,
-  shouldCreateTicket: (feedbackData) {
-    // Only create tickets for errors or specific conditions
-    return feedbackData.hasErrors || feedbackData.severity == 'high';
-  },
+// Get available projects
+final projects = await ISpectJiraClient.getProjects();
+
+// Get current user
+final user = await ISpectJiraClient.getCurrentUser();
+
+// Get issue types and statuses
+final statuses = await ISpectJiraClient.getStatuses();
+
+// Get available labels
+final labels = await ISpectJiraClient.getLabels();
+
+// Get project users
+final users = await ISpectJiraClient.getUsers();
+
+// Get boards and sprints
+final boards = await ISpectJiraClient.getBoards();
+final sprints = await ISpectJiraClient.getSprints(boardId: 123);
+```
+
+### Custom Send Issue Screen
+
+```dart
+// Navigate with pre-filled data
+Navigator.push(
+  context,
+  MaterialPageRoute<void>(
+    builder: (_) => JiraSendIssueScreen(
+      initialDescription: 'Pre-filled bug description',
+      initialAttachmentPath: '/path/to/screenshot.png',
+    ),
+  ),
 );
 ```
 
-### Multiple Jira Instances
+### Localization Support
 
 ```dart
-// Production Jira
-final prodJira = ISpectJiraService(
-  config: JiraConfig(
-    baseUrl: 'https://prod.atlassian.net',
-    projectKey: 'PROD',
-    // ...
-  ),
-);
-
-// Development Jira
-final devJira = ISpectJiraService(
-  config: JiraConfig(
-    baseUrl: 'https://dev.atlassian.net',
-    projectKey: 'DEV',
-    // ...
-  ),
-);
-
-// Use different services based on environment
-final jiraService = kDebugMode ? devJira : prodJira;
+MaterialApp(
+  localizationsDelegates: ISpectLocalizations.localizationDelegates([
+    AppLocalizations.delegate,
+    ISpectJiraLocalization.delegate, // Add Jira localizations
+  ]),
+  // ... rest of app configuration
+)
 ```
 
 ## 📚 Examples
@@ -259,15 +352,15 @@ See the [example/](example/) directory for complete integration examples includi
 
 ## 🏗️ Architecture
 
-ISpectJira integrates with Jira through REST API:
+ISpectJira integrates with Atlassian Jira Cloud through REST API:
 
 | Component | Description |
 |-----------|-----------|
-| **Jira Client** | REST API client for Jira communication |
-| **Ticket Builder** | Creates tickets with debugging context |
-| **Attachment Handler** | Manages screenshot and log attachments |
-| **Auth Manager** | Handles various authentication methods |
-| **Context Collector** | Gathers device and app information |
+| **ISpectJiraClient** | Singleton client managing Jira API communication |
+| **JiraFeedbackBuilder** | Custom feedback widget with Jira integration |
+| **JiraAuthScreen** | Authentication and project selection interface |
+| **JiraSendIssueScreen** | Complete issue creation with attachments |
+| **Screenshot Capture** | Automatic screenshot attachment system |
 
 ## 🤝 Contributing
 
@@ -281,7 +374,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [ispect](../ispect) - Main debugging interface
 - [ispectify](../ispectify) - Foundation logging system
-- [http](https://pub.dev/packages/http) - HTTP client for API communication
+- [atlassian_apis](https://pub.dev/packages/atlassian_apis) - Jira REST API client
 - [feedback](https://pub.dev/packages/feedback) - User feedback system
 
 ---
