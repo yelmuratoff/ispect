@@ -21,13 +21,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get aiChat => 'ЖИ (AI) чат';
 
   @override
-  String get aiWelcomeMessage => 'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
+  String get aiWelcomeMessage =>
+      'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
 
   @override
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
-  String get analyticsLogDesc => 'Журнал оқиғаларды талдау қызметіне жіберу логы';
+  String get analyticsLogDesc =>
+      'Журнал оқиғаларды талдау қызметіне жіберу логы';
 
   @override
   String get apiToken => 'API токен';
@@ -54,19 +56,24 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get basicSettings => 'Негізгі баптаулар';
 
   @override
-  String get blocCloseLogDesc => 'BLoC жабылу сәтін логтау үшін қолданылатын тег';
+  String get blocCloseLogDesc =>
+      'BLoC жабылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocCreateLogDesc => 'BLoC құрылу сәтін логтау үшін қолданылатын тег';
+  String get blocCreateLogDesc =>
+      'BLoC құрылу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocEventLogDesc => 'BLoC-тағы оқиғаны өңдеу сәтін логтау үшін қолданылатын тег';
+  String get blocEventLogDesc =>
+      'BLoC-тағы оқиғаны өңдеу сәтін логтау үшін қолданылатын тег';
 
   @override
-  String get blocTransitionLogDesc => 'BLoC-тағы күйлер арасындағы ауысуларды логтау үшін қолданылатын тег';
+  String get blocTransitionLogDesc =>
+      'BLoC-тағы күйлер арасындағы ауысуларды логтау үшін қолданылатын тег';
 
   @override
-  String get blocStateLogDesc => 'BLoC-тағы ағымдағы күйді логтау үшін қолданылатын тег';
+  String get blocStateLogDesc =>
+      'BLoC-тағы ағымдағы күйді логтау үшін қолданылатын тег';
 
   @override
   String get buildVersion => 'Құрастыру нұсқасы';
@@ -124,13 +131,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Мәселе құрылуда';
 
   @override
-  String get criticalLogDesc => 'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
+  String get criticalLogDesc =>
+      'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get data => 'Деректер';
 
   @override
-  String get debugLogDesc => 'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
+  String get debugLogDesc =>
+      'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
 
   @override
   String get description => 'Сипаттама';
@@ -150,7 +159,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Кэш тазарту қатесі';
 
   @override
-  String get errorLogDesc => 'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
+  String get errorLogDesc =>
+      'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
 
   @override
   String get errorMessage => 'Қате туралы хабар';
@@ -159,7 +169,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorType => 'Қате түрі';
 
   @override
-  String get exceptionLogDesc => 'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
+  String get exceptionLogDesc =>
+      'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
 
   @override
   String get expandLogs => 'Журналды ашу';
@@ -186,7 +197,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get goToLogger => 'Журналға өту';
 
   @override
-  String get goodLogDesc => 'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
+  String get goodLogDesc =>
+      'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
 
   @override
   String get headers => 'Headers';
@@ -201,10 +213,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get httpRequestLogDesc => 'Серверге жіберілген сұраныс журналы';
 
   @override
-  String get httpResponseLogDesc => 'Жіберілген сұранысқа серверден жауап журналы';
+  String get httpResponseLogDesc =>
+      'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
-  String get infoLogDesc => 'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
+  String get infoLogDesc =>
+      'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
 
   @override
   String get initializationFailed => 'Бастапқы жүктеу қатесі';
@@ -213,7 +227,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get issueCreated => 'Мәселе құрылды';
 
   @override
-  String get jiraInstruction => '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
+  String get jiraInstruction =>
+      '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
 
   @override
   String get logItemCopied => 'Жазба алмасу буферіне көшірілді';
@@ -237,7 +252,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get notFound => 'табылған жоқ';
 
   @override
-  String get otherLogsForDevelopers => 'Басқа журналдарды әзірлеушілер қолданады';
+  String get otherLogsForDevelopers =>
+      'Басқа журналдарды әзірлеушілер қолданады';
 
   @override
   String get pageNotFound => 'Ой, бұл жолдағы бет';
@@ -255,7 +271,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
 
   @override
-  String get pleaseCheckAuthCred => 'Қате. Авторизация деректерін тексеріп көріңіз.';
+  String get pleaseCheckAuthCred =>
+      'Қате. Авторизация деректерін тексеріп көріңіз.';
 
   @override
   String get pleaseSelectYourProject => 'Енді жобаны таңдаңыз';
@@ -484,7 +501,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
+  String get testerLogDesc =>
+      'Тестерлер үшін бұл журналдар туралы білу пайдалы болады';
 
   @override
   String totalFilesCount(Object number) {
@@ -513,13 +531,15 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get userEmail => 'Электрондық пошта';
 
   @override
-  String get verboseLogDesc => 'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
+  String get verboseLogDesc =>
+      'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
 
   @override
   String get viewAndManageData => 'Қолданба мәліметтерін қарау және басқару';
 
   @override
-  String get warningLogDesc => 'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
+  String get warningLogDesc =>
+      'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
 
   @override
   String get you => 'Сіз';
@@ -534,7 +554,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get shareLogFull => 'Логты бөлісу (толық)';
 
   @override
-  String get copyToClipboardTruncated => 'Алмасу буферіне көшіру (қысқартылған)';
+  String get copyToClipboardTruncated =>
+      'Алмасу буферіне көшіру (қысқартылған)';
 
   @override
   String get viewThemeScheme => 'Тема схемасы экранын көру';

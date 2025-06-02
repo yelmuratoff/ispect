@@ -54,19 +54,24 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get basicSettings => 'मूल सेटिंग्स';
 
   @override
-  String get blocCloseLogDesc => 'BLoC बंद करने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocCloseLogDesc =>
+      'BLoC बंद करने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
-  String get blocCreateLogDesc => 'BLoC बनाने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocCreateLogDesc =>
+      'BLoC बनाने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
-  String get blocEventLogDesc => 'BLoC में ईवेंट प्रोसेसिंग को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocEventLogDesc =>
+      'BLoC में ईवेंट प्रोसेसिंग को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
-  String get blocTransitionLogDesc => 'BLoC में स्थिति परिवर्तन को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocTransitionLogDesc =>
+      'BLoC में स्थिति परिवर्तन को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
-  String get blocStateLogDesc => 'BLoC में वर्तमान स्थिति को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocStateLogDesc =>
+      'BLoC में वर्तमान स्थिति को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get buildVersion => 'बिल्ड संस्करण';
@@ -124,13 +129,15 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get creatingIssue => 'मुद्दा बनाया जा रहा है';
 
   @override
-  String get criticalLogDesc => 'तत्काल ध्यान देने योग्य गंभीर त्रुटियों या घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get criticalLogDesc =>
+      'तत्काल ध्यान देने योग्य गंभीर त्रुटियों या घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get data => 'डेटा';
 
   @override
-  String get debugLogDesc => 'ऐप के व्यवहार का विश्लेषण करने के लिए डिबग जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get debugLogDesc =>
+      'ऐप के व्यवहार का विश्लेषण करने के लिए डिबग जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get description => 'विवरण';
@@ -150,7 +157,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'कैश साफ करने में त्रुटि';
 
   @override
-  String get errorLogDesc => 'ऐप में होने वाली त्रुटियों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get errorLogDesc =>
+      'ऐप में होने वाली त्रुटियों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get errorMessage => 'त्रुटि संदेश';
@@ -159,7 +167,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get errorType => 'त्रुटि प्रकार';
 
   @override
-  String get exceptionLogDesc => 'ऐप में होने वाली अपवादों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get exceptionLogDesc =>
+      'ऐप में होने वाली अपवादों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get expandLogs => 'लॉग विस्तार करें';
@@ -186,7 +195,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get goToLogger => 'लॉगर पर जाएँ';
 
   @override
-  String get goodLogDesc => 'ऐप में सफल संचालन या सकारात्मक घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get goodLogDesc =>
+      'ऐप में सफल संचालन या सकारात्मक घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get headers => 'हेडर';
@@ -204,7 +214,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'सर्वर प्रतिक्रिया लॉग';
 
   @override
-  String get infoLogDesc => 'ऐप के संचालन के बारे में सूचनात्मक संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get infoLogDesc =>
+      'ऐप के संचालन के बारे में सूचनात्मक संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get initializationFailed => 'प्रारंभिकरण विफल';
@@ -213,7 +224,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get issueCreated => 'मुद्दा सफलतापूर्वक बनाया गया';
 
   @override
-  String get jiraInstruction => '1. अपनी Jira वेबसाइट पर जाएँ।\n2. निचले बाएँ कोने में अपने प्रोफाइल अवतार पर क्लिक करें।\n3. प्रोफाइल पर क्लिक करें।\n4. अपने खाते का प्रबंधन करें पर क्लिक करें।\n5. सुरक्षा चुनें।\n6. API टोकन बनाएँ और प्रबंधित करें तक स्क्रॉल करें और उस पर क्लिक करें।\n7. एक टोकन बनाएँ, फिर उसे कॉपी और पेस्ट करें।';
+  String get jiraInstruction =>
+      '1. अपनी Jira वेबसाइट पर जाएँ।\n2. निचले बाएँ कोने में अपने प्रोफाइल अवतार पर क्लिक करें।\n3. प्रोफाइल पर क्लिक करें।\n4. अपने खाते का प्रबंधन करें पर क्लिक करें।\n5. सुरक्षा चुनें।\n6. API टोकन बनाएँ और प्रबंधित करें तक स्क्रॉल करें और उस पर क्लिक करें।\n7. एक टोकन बनाएँ, फिर उसे कॉपी और पेस्ट करें।';
 
   @override
   String get logItemCopied => 'लॉग आइटम क्लिपबोर्ड में कॉपी किया गया';
@@ -237,7 +249,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get notFound => 'नहीं मिला';
 
   @override
-  String get otherLogsForDevelopers => 'अन्य लॉग पहले से ही डेवलपर्स द्वारा उपयोग में हैं';
+  String get otherLogsForDevelopers =>
+      'अन्य लॉग पहले से ही डेवलपर्स द्वारा उपयोग में हैं';
 
   @override
   String get pageNotFound => 'ओह, इस पथ पर पेज';
@@ -255,7 +268,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get pleaseAuthToJira => 'कृपया Jira में प्रमाणित करें';
 
   @override
-  String get pleaseCheckAuthCred => 'एक त्रुटि हुई है। कृपया प्रमाणीकरण डेटा जांचें।';
+  String get pleaseCheckAuthCred =>
+      'एक त्रुटि हुई है। कृपया प्रमाणीकरण डेटा जांचें।';
 
   @override
   String get pleaseSelectYourProject => 'अब, कृपया एक प्रोजेक्ट चुनें';
@@ -484,7 +498,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get testerLogDesc => 'इन लॉग के बारे में जानना टेस्टर के लिए उपयोगी होगा';
+  String get testerLogDesc =>
+      'इन लॉग के बारे में जानना टेस्टर के लिए उपयोगी होगा';
 
   @override
   String totalFilesCount(Object number) {
@@ -513,13 +528,15 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get userEmail => 'उपयोगकर्ता ईमेल';
 
   @override
-  String get verboseLogDesc => 'ऐप के गहन विश्लेषण के लिए विस्तृत जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get verboseLogDesc =>
+      'ऐप के गहन विश्लेषण के लिए विस्तृत जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get viewAndManageData => 'ऐप डेटा देखना और प्रबंधन करना';
 
   @override
-  String get warningLogDesc => 'ऐप में संभावित समस्याओं के बारे में चेतावनी संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get warningLogDesc =>
+      'ऐप में संभावित समस्याओं के बारे में चेतावनी संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
 
   @override
   String get you => 'आप';
