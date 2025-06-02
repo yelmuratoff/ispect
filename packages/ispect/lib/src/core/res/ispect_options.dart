@@ -46,6 +46,7 @@ import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 ///   ],
 /// );
 /// ```
+@immutable
 final class ISpectOptions {
   /// Creates an instance of `ISpectOptions` with customizable settings.
   ///
@@ -186,4 +187,47 @@ final class ISpectOptions {
         isThemeSchemaEnabled: isThemeSchemaEnabled ?? this.isThemeSchemaEnabled,
         itemsBuilder: itemsBuilder ?? this.itemsBuilder,
       );
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is ISpectOptions &&
+        other.locale == locale &&
+        other.isLogPageEnabled == isLogPageEnabled &&
+        other.isPerformanceEnabled == isPerformanceEnabled &&
+        other.isInspectorEnabled == isInspectorEnabled &&
+        other.isFeedbackEnabled == isFeedbackEnabled &&
+        other.isColorPickerEnabled == isColorPickerEnabled &&
+        other.isThemeSchemaEnabled == isThemeSchemaEnabled &&
+        other.itemsBuilder == itemsBuilder &&
+        _listEquals(other.actionItems, actionItems) &&
+        _listEquals(other.panelItems, panelItems) &&
+        _listEquals(other.panelButtons, panelButtons);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        locale,
+        isLogPageEnabled,
+        isPerformanceEnabled,
+        isInspectorEnabled,
+        isFeedbackEnabled,
+        isColorPickerEnabled,
+        isThemeSchemaEnabled,
+        itemsBuilder,
+        Object.hashAll(actionItems),
+        Object.hashAll(panelItems),
+        Object.hashAll(panelButtons),
+      );
+
+  // Helper method for list equality comparison
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

@@ -395,6 +395,11 @@ class InspectorState extends State<Inspector> {
       }
     }
 
+    // Re-initialize panel items if options changed
+    if (oldWidget.options != widget.options) {
+      _initializePanelItems();
+    }
+
     super.didUpdateWidget(oldWidget);
 
     if (widget.isPanelVisible != oldWidget.isPanelVisible) {
