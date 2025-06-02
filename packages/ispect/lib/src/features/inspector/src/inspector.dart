@@ -149,15 +149,14 @@ class InspectorState extends State<Inspector> {
   final _zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
   final _zoomScaleNotifier = ValueNotifier<double>(_defaultZoomScale);
   final _zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
-  late final List<
+  late List<
       ({
         bool enableBadge,
         IconData icon,
         void Function(BuildContext) onTap
       })> _otherPanelItems;
 
-  late final List<
-          ({IconData icon, String label, void Function(BuildContext) onTap})>
+  late List<({IconData icon, String label, void Function(BuildContext) onTap})>
       _otherPanelButtons;
 
   late final KeyboardHandler _keyboardHandler;
