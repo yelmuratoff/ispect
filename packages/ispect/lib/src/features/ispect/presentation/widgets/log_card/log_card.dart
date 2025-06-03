@@ -6,7 +6,6 @@ import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart'
 
 part 'collapsed_body.dart';
 
-/// Optimized LogCard widget for high-performance rendering with up to 10k items
 class LogCard extends StatelessWidget {
   const LogCard({
     required this.icon,

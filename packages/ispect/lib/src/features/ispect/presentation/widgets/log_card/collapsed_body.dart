@@ -102,7 +102,7 @@ class _CollapsedMessage extends StatelessWidget {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: color.withValues(alpha: 0.8),
+          color: color,
           fontSize: 11,
           fontWeight: FontWeight.w400,
         ),

@@ -190,12 +190,6 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  /// Builds the virtualized logs list using SliverList.builder for optimal performance.
-  ///
-  /// This method creates a high-performance scrollable list that:
-  /// - Only renders visible items plus a small buffer
-  /// - Handles single-item expansion efficiently
-  /// - Provides smooth scrolling for large datasets
   Widget _buildVirtualizedLogsList(
     List<ISpectifyData> filteredLogEntries,
     ISpectScopeModel iSpectTheme,
