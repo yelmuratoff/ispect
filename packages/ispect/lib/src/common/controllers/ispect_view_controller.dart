@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/download_logs/download_logs.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Optimized controller for managing the state of ISpectify views.
+/// Controller for managing the state of ISpectify views.
 ///
 /// This class extends `ChangeNotifier` to provide state updates
 /// when filters, log visibility, or log order change.
-/// Optimized for handling large datasets (10k+ items) efficiently.
 class ISpectifyViewController extends ChangeNotifier {
   ISpectifyFilter _filter = ISpectifyFilter();
   bool _expandedLogs = true;

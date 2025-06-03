@@ -6,12 +6,7 @@ typedef ISpectifyWidgetBuilder = Widget Function(
   List<ISpectifyData> data,
 );
 
-/// Optimized builder widget for ISpectify data streams.
-///
-/// Implements performance optimizations for handling large datasets:
-/// - Stream debouncing to prevent excessive rebuilds
-/// - Equality checking to avoid unnecessary widget rebuilds
-/// - Memory-efficient data handling
+/// Builder widget for ISpectify data streams.
 class ISpectifyBuilder extends StatefulWidget {
   const ISpectifyBuilder({
     required this.iSpectify,

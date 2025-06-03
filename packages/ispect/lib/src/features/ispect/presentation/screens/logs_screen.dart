@@ -146,12 +146,6 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  /// Builds the main logs list view with filtering and search capabilities.
-  ///
-  /// This method creates a CustomScrollView containing:
-  /// - App bar with search and filter controls
-  /// - Optimized logs list with virtual scrolling
-  /// - Empty state when no logs match current filters
   Widget _buildMainLogsList(
     BuildContext context,
     List<ISpectifyData> logsData,

@@ -846,7 +846,7 @@ class JsonExplorerStore extends ChangeNotifier {
     }
   }
 
-  // Optimized search for short search terms in large datasets
+  // Search for short search terms in large datasets
   Future<void> _optimizedSearchForShortTerms() async {
     // Use a larger batch size for short terms since each comparison is faster
     const batchSize = 300;

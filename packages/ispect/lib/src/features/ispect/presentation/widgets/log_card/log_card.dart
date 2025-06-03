@@ -55,7 +55,6 @@ class LogCard extends StatelessWidget {
       );
 }
 
-/// Optimized header that doesn't rebuild when expansion state changes
 class _LogCardHeader extends StatelessWidget {
   const _LogCardHeader({
     required this.icon,
