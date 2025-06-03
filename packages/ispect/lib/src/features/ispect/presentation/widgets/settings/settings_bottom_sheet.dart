@@ -8,8 +8,8 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
-class ISpectifySettingsBottomSheets extends StatefulWidget {
-  const ISpectifySettingsBottomSheets({
+class ISpectSettingsBottomSheet extends StatefulWidget {
+  const ISpectSettingsBottomSheet({
     required this.iSpectify,
     required this.options,
     required this.actions,
@@ -25,12 +25,12 @@ class ISpectifySettingsBottomSheets extends StatefulWidget {
   final List<ISpectActionItem> actions;
 
   @override
-  State<ISpectifySettingsBottomSheets> createState() =>
+  State<ISpectSettingsBottomSheet> createState() =>
       _ISpectifySettingsBottomSheetState();
 }
 
 class _ISpectifySettingsBottomSheetState
-    extends State<ISpectifySettingsBottomSheets> {
+    extends State<ISpectSettingsBottomSheet> {
   final _scrollController = ScrollController();
 
   @override
@@ -50,7 +50,7 @@ class _ISpectifySettingsBottomSheetState
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     final settings = <Widget>[
-      ISpectifySettingsCardItem(
+      ISpectSettingsCardItem(
         title: context.ispectL10n.enabled,
         enabled: widget.iSpectify.value.options.enabled,
         backgroundColor: context.ispectTheme.cardColor,
@@ -62,7 +62,7 @@ class _ISpectifySettingsBottomSheetState
           widget.iSpectify.notifyListeners();
         },
       ),
-      ISpectifySettingsCardItem(
+      ISpectSettingsCardItem(
         canEdit: widget.iSpectify.value.options.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
@@ -76,7 +76,7 @@ class _ISpectifySettingsBottomSheetState
           widget.iSpectify.notifyListeners();
         },
       ),
-      ISpectifySettingsCardItem(
+      ISpectSettingsCardItem(
         canEdit: widget.iSpectify.value.options.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,

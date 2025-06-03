@@ -312,11 +312,11 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   /// Builds the settings bottom sheet with available actions.
-  ISpectifySettingsBottomSheets _buildSettingsSheet(
+  ISpectSettingsBottomSheet _buildSettingsSheet(
     ValueNotifier<ISpectify> iSpectify,
     BuildContext context,
   ) =>
-      ISpectifySettingsBottomSheets(
+      ISpectSettingsBottomSheet(
         options: widget.options,
         iSpectify: iSpectify,
         actions: [
