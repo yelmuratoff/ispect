@@ -40,25 +40,25 @@ class DioErrorLog extends ISpectifyData {
     final buffer = StringBuffer('[$method] $message');
 
     if (statusCode != null) {
-      buffer.writeln('\nStatus: $statusCode');
+      buffer.write('\nStatus: $statusCode');
     }
 
     if (settings.printErrorMessage && statusMessage != null) {
-      buffer.writeln('Message: $statusMessage');
+      buffer.write('\nMessage: $statusMessage');
     }
 
     if (settings.printErrorData && body != null) {
       final prettyData = JsonTruncatorService.pretty(
         body,
       );
-      buffer.writeln('Data: $prettyData');
+      buffer.write('\nData: $prettyData');
     }
 
     if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
       final prettyHeaders = JsonTruncatorService.pretty(
         headers,
       );
-      buffer.writeln('Headers: $prettyHeaders');
+      buffer.write('\nHeaders: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;

@@ -35,12 +35,12 @@ class DioRequestLog extends ISpectifyData {
 
     if (settings.printRequestData && body != null) {
       final prettyData = JsonTruncatorService.pretty(body);
-      buffer.writeln('\nData: $prettyData');
+      buffer.write('\nData: $prettyData');
     }
 
     if (settings.printRequestHeaders && headers.isNotEmpty) {
       final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.writeln('\nHeaders: $prettyHeaders');
+      buffer.write('\nHeaders: $prettyHeaders');
     }
 
     return buffer.toString().truncated!;
