@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
+import 'package:ispect_example/src/logs_file_example.dart';
 import 'package:ispect_example/src/theme_manager.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
@@ -171,44 +172,6 @@ class _AppState extends State<App> {
           ),
           theme: const ISpectTheme(
             pageTitle: 'ISpect',
-            logDescriptions: [
-              LogDescription(
-                key: 'bloc-event',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'bloc-transition',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'bloc-close',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'bloc-create',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'bloc-state',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'riverpod-add',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'riverpod-update',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'riverpod-dispose',
-                isDisabled: true,
-              ),
-              LogDescription(
-                key: 'riverpod-fail',
-                isDisabled: true,
-              ),
-            ],
           ),
           observer: _observer,
           controller: _controller,
@@ -427,40 +390,12 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
-        label: 'Throw Large exception',
-        onPressed: () {
-          throw Exception('Test large exception ' * 1000);
-        },
-      ),
-      (
-        label: 'Pring Large text',
-        onPressed: () {
-          debugPrint('Print message' * 10000);
-        },
-      ),
-      (
-        label: 'Send print message',
-        onPressed: () {
-          debugPrint('Send print message');
-        },
-      ),
-      (
         label: 'Go to second page',
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => const _SecondPage(),
               settings: const RouteSettings(name: 'SecondPage'),
-            ),
-          );
-        },
-      ),
-      (
-        label: 'Replace with second page',
-        onPressed: () {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const _SecondPage(),
             ),
           );
         },
@@ -474,11 +409,11 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
-        label: 'Good log',
-        onPressed: () {
-          ISpect.logger.good(
-            'This is a good log',
-          );
+        label: 'Logs File',
+        onPressed: () async {
+          await LogsFileExample.createAndHandleLogsFile();
+          await LogsFileExample.createMultipleLogsFiles();
+          await LogsFileExample.demonstrateCleanup();
         },
       ),
     ];
@@ -499,8 +434,9 @@ class _HomeState extends State<_Home> {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: buttonConfigs.expand(
               (config) {
                 final Widget button = FilledButton(

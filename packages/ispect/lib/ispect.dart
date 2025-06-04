@@ -17,6 +17,7 @@ export 'src/common/models/panel_button.dart';
 export 'src/common/models/panel_item.dart';
 export 'src/common/observers/route_observer.dart';
 export 'src/common/utils/file_utils.dart';
+export 'src/common/utils/logs_file/logs_file.dart';
 export 'src/common/widgets/builder/data_builder.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/features/device/ispect_device.dart';

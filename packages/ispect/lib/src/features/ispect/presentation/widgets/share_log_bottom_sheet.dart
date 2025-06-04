@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/common/utils/download_logs/download_logs.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
@@ -111,7 +110,7 @@ class _InfoDescription extends StatelessWidget {
 
                     Navigator.of(context).pop();
 
-                    downloadFile(
+                    LogsFileFactory.downloadFile(
                       valueToShare,
                       fileName: 'ispect_log',
                     );

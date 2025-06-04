@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/utils/download_logs/download_logs.dart';
+import 'package:ispect/src/common/utils/logs_file/logs_file_factory.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Controller for managing the state of ISpectify views.
@@ -121,7 +121,8 @@ class ISpectifyViewController extends ChangeNotifier {
   }
 
   /// Downloads logs as a file.
-  Future<void> downloadLogsFile(String logs) async => downloadFile(logs);
+  Future<void> downloadLogsFile(String logs) async =>
+      LogsFileFactory.downloadFile(logs);
 
   /// Forces a UI update.
   void update() => notifyListeners();

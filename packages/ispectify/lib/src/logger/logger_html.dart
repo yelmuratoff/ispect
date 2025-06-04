@@ -1,12 +1,12 @@
-// ignore: deprecated_member_use
-import 'dart:html';
+import 'dart:js_interop';
+import 'package:web/web.dart';
 
 /// Outputs a log message to the browser's console.
 ///
 /// Splits the provided `message` by newline characters (`\n`) and logs each
-/// line individually to the browser's console using `window.console.log`.
+/// line individually to the browser's console using `console.log`.
 ///
-/// This function is intended for use in web environments where `window.console`
+/// This function is intended for use in web environments where `console`
 /// is available.
 ///
 /// Example:
@@ -17,5 +17,5 @@ import 'dart:html';
 ///
 /// `message`: The log message to be output to the console.
 void outputLog(String message) => message.split('\n').forEach(
-      window.console.log,
+      (line) => console.log(line.toJS),
     );
