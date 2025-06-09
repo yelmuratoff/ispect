@@ -73,7 +73,7 @@ class _AppState extends State<App> {
           options: ISpectOptions(
             locale: locale,
             panelButtons: [
-              ISpectPanelButtonItem(
+              DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,
                 label: 'Token',
                 onTap: (context) {
@@ -82,7 +82,7 @@ class _AppState extends State<App> {
               ),
             ],
             panelItems: [
-              ISpectPanelItem(
+              DraggablePanelItem(
                 icon: Icons.home,
                 enableBadge: false,
                 onTap: (context) {
