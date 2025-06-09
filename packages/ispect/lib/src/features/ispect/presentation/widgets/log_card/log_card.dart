@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/log_screen.dart';
+import 'package:ispect/src/features/json_viewer/log_screen.dart';
 
 part 'collapsed_body.dart';
 

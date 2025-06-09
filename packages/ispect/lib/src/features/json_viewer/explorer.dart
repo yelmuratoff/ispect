@@ -167,7 +167,6 @@ class JsonExplorer extends StatelessWidget {
           itemScrollController: itemScrollController,
           itemPositionsListener: itemPositionsListener,
           itemBuilder: (context, index) {
-            // Cache node reference to avoid multiple calls to elementAt
             final node = nodes.elementAt(index);
             return _JsonAttributeItem(
               node: node,

@@ -170,7 +170,7 @@ class _LogScreenState extends State<LogScreen> {
                       elevation: WidgetStateProperty.all(0),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const Gap(8),
                   Selector<JsonExplorerStore, ({int count, int focusedIndex})>(
                     selector: (_, store) => (
                       count: store.searchResults.length,
