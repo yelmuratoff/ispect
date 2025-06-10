@@ -11,6 +11,7 @@ class CollapsedBody extends StatelessWidget {
     required this.message,
     required this.errorMessage,
     required this.expanded,
+    super.key,
   });
 
   final IconData icon;
@@ -87,13 +88,12 @@ class _CollapsedMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayMessage = (message == 'FlutterErrorDetails')
-        ? errorMessage
-        : (message != null && message != 'FlutterErrorDetails')
-            ? message
-            : null;
+    final displayMessage =
+        (message == 'FlutterErrorDetails') ? errorMessage : message;
 
-    if (displayMessage == null) return const SizedBox.shrink();
+    if (displayMessage == null || displayMessage.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: 2),
@@ -159,7 +159,7 @@ class DecoratedLeadingIcon extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(4),

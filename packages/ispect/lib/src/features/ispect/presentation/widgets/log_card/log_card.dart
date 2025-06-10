@@ -102,7 +102,6 @@ class _LogCardHeader extends StatelessWidget {
       );
 }
 
-/// Lazy-built expanded content that only creates widgets when needed
 class _ExpandedContent extends StatelessWidget {
   const _ExpandedContent({
     required this.data,
@@ -113,32 +112,37 @@ class _ExpandedContent extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 1,
-            color: context.ispectTheme.dividerColor,
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _LazyExpandedBody(
-                  data: data,
+  Widget build(BuildContext context) {
+    final hasStackTrace = data.stackTraceLogText?.isNotEmpty ?? false;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 1,
+          color: context.ispectTheme.dividerColor,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LazyExpandedBody(
+                data: data,
+                color: color,
+                hasStackTrace: hasStackTrace,
+              ),
+              if (hasStackTrace)
+                _LazyStackTraceBody(
                   color: color,
+                  stackTrace: data.stackTraceLogText!,
                 ),
-                if (data.stackTraceLogText?.isNotEmpty ?? false)
-                  _LazyStackTraceBody(
-                    color: color,
-                    stackTrace: data.stackTraceLogText!,
-                  ),
-              ],
-            ),
+            ],
           ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 }
 
 /// Displays expanded content for log entries with conditional styling and text sections
@@ -146,14 +150,16 @@ class _LazyExpandedBody extends StatelessWidget {
   const _LazyExpandedBody({
     required this.data,
     required this.color,
+    required this.hasStackTrace,
   });
 
   final ISpectifyData data;
   final Color color;
+  final bool hasStackTrace;
 
   @override
   Widget build(BuildContext context) => _LogContentContainer(
-        hasStackTrace: data.stackTraceLogText?.isNotEmpty ?? false,
+        hasStackTrace: hasStackTrace,
         color: color,
         child: _LogTextContent(
           message: data.textMessage,
@@ -184,12 +190,8 @@ class _LazyStackTraceBody extends StatelessWidget {
           width: double.maxFinite,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              border: Border.fromBorderSide(
-                BorderSide(color: color),
-              ),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              border: Border.all(color: color),
             ),
             child: Padding(
               padding: const EdgeInsets.all(6),
@@ -254,22 +256,19 @@ class _LogTextContent extends StatelessWidget {
   final TextStyle textStyle;
 
   @override
-  Widget build(BuildContext context) {
-    final widgets = <Widget>[];
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Show message only if conditions are met
+          if (message != null && !isHTTP && errorMessage == null)
+            SelectableText(message!, style: textStyle),
 
-    if (message != null && !isHTTP && errorMessage == null) {
-      widgets.add(SelectableText(message!, style: textStyle));
-    }
-    if (type != null) {
-      widgets.add(SelectableText(type!, style: textStyle));
-    }
-    if (errorMessage != null) {
-      widgets.add(SelectableText(errorMessage!, style: textStyle));
-    }
+          // Show type if available
+          if (type != null) SelectableText(type!, style: textStyle),
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
-    );
-  }
+          // Show error message if available
+          if (errorMessage != null)
+            SelectableText(errorMessage!, style: textStyle),
+        ],
+      );
 }

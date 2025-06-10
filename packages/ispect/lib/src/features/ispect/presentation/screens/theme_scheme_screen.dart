@@ -10,11 +10,12 @@ class ThemeSchemeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.backgroundColor(context);
 
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(context),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: iSpect.theme.backgroundColor(context),
+        backgroundColor: backgroundColor,
         title: const Text('Theme Scheme'),
         leading: IconButton(
           onPressed: () {
@@ -77,65 +78,59 @@ class ThemeSection extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(
-          top: 16,
-          bottom: 16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 4,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(4),
-                          bottomLeft: Radius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(4),
-                    ),
-                  ),
-                  child: Text(
-                    '  $title  ',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: SizedBox(
-                    height: 4,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(4),
-                          bottomRight: Radius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildDivider(primaryColor, left: true)),
+              _buildTitleContainer(primaryColor),
+              Expanded(child: _buildDivider(primaryColor, right: true)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider(Color color, {bool left = false, bool right = false}) =>
+      SizedBox(
+        height: 4,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.only(
+              topLeft: left ? const Radius.circular(4) : Radius.zero,
+              bottomLeft: left ? const Radius.circular(4) : Radius.zero,
+              topRight: right ? const Radius.circular(4) : Radius.zero,
+              bottomRight: right ? const Radius.circular(4) : Radius.zero,
             ),
-            const SizedBox(height: 8),
-            child,
-          ],
+          ),
+        ),
+      );
+
+  Widget _buildTitleContainer(Color color) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
         ),
       );
 }
@@ -156,78 +151,100 @@ class DebugFloatingActionButton extends StatelessWidget {
 class TextStylesDisplay extends StatelessWidget {
   const TextStylesDisplay({super.key});
 
+  static const _textStyleEntries = [
+    ('Display Large', 'displayLarge'),
+    ('Display Medium', 'displayMedium'),
+    ('Display Small', 'displaySmall'),
+    ('Headline Large', 'headlineLarge'),
+    ('Headline Medium', 'headlineMedium'),
+    ('Headline Small', 'headlineSmall'),
+    ('Title Large', 'titleLarge'),
+    ('Title Medium', 'titleMedium'),
+    ('Title Small', 'titleSmall'),
+    ('Body Large', 'bodyLarge'),
+    ('Body Medium', 'bodyMedium'),
+    ('Body Small', 'bodySmall'),
+    ('Label Large', 'labelLarge'),
+    ('Label Medium', 'labelMedium'),
+    ('Label Small', 'labelSmall'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Display Large', style: textTheme.displayLarge),
-        Text('Display Medium', style: textTheme.displayMedium),
-        Text('Display Small', style: textTheme.displaySmall),
-        Text('Headline Large', style: textTheme.headlineLarge),
-        Text('Headline Medium', style: textTheme.headlineMedium),
-        Text('Headline Small', style: textTheme.headlineSmall),
-        Text('Title Large', style: textTheme.titleLarge),
-        Text('Title Medium', style: textTheme.titleMedium),
-        Text('Title Small', style: textTheme.titleSmall),
-        Text('Body Large', style: textTheme.bodyLarge),
-        Text('Body Medium', style: textTheme.bodyMedium),
-        Text('Body Small', style: textTheme.bodySmall),
-        Text('Label Large', style: textTheme.labelLarge),
-        Text('Label Medium', style: textTheme.labelMedium),
-        Text('Label Small', style: textTheme.labelSmall),
-      ],
+      children: _textStyleEntries.map((entry) {
+        final style = _getTextStyle(textTheme, entry.$2);
+        return Text(entry.$1, style: style);
+      }).toList(),
     );
   }
+
+  TextStyle? _getTextStyle(TextTheme textTheme, String styleName) =>
+      switch (styleName) {
+        'displayLarge' => textTheme.displayLarge,
+        'displayMedium' => textTheme.displayMedium,
+        'displaySmall' => textTheme.displaySmall,
+        'headlineLarge' => textTheme.headlineLarge,
+        'headlineMedium' => textTheme.headlineMedium,
+        'headlineSmall' => textTheme.headlineSmall,
+        'titleLarge' => textTheme.titleLarge,
+        'titleMedium' => textTheme.titleMedium,
+        'titleSmall' => textTheme.titleSmall,
+        'bodyLarge' => textTheme.bodyLarge,
+        'bodyMedium' => textTheme.bodyMedium,
+        'bodySmall' => textTheme.bodySmall,
+        'labelLarge' => textTheme.labelLarge,
+        'labelMedium' => textTheme.labelMedium,
+        'labelSmall' => textTheme.labelSmall,
+        _ => null,
+      };
 }
 
 // Buttons Component
-class ButtonDisplay extends StatefulWidget {
+class ButtonDisplay extends StatelessWidget {
   const ButtonDisplay({super.key});
 
-  @override
-  State<ButtonDisplay> createState() => _ButtonDisplayState();
-}
+  static void _emptyCallback() {}
 
-class _ButtonDisplayState extends State<ButtonDisplay> {
   @override
   Widget build(BuildContext context) => Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text('Elevated Button'),
+          const ElevatedButton(
+            onPressed: _emptyCallback,
+            child: Text('Elevated Button'),
           ),
-          FilledButton(
-            onPressed: () {},
-            child: const Text('Filled Button'),
+          const FilledButton(
+            onPressed: _emptyCallback,
+            child: Text('Filled Button'),
           ),
-          FilledButton.tonal(
-            onPressed: () {},
-            child: const Text('Filled Tonal Button'),
+          const FilledButton.tonal(
+            onPressed: _emptyCallback,
+            child: Text('Filled Tonal Button'),
           ),
-          OutlinedButton(
-            onPressed: () {},
-            child: const Text('Outlined Button'),
+          const OutlinedButton(
+            onPressed: _emptyCallback,
+            child: Text('Outlined Button'),
           ),
-          TextButton(
-            onPressed: () {},
-            child: const Text('Text Button'),
+          const TextButton(
+            onPressed: _emptyCallback,
+            child: Text('Text Button'),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.star),
+          const IconButton(
+            onPressed: _emptyCallback,
+            icon: Icon(Icons.star),
           ),
           ToggleButtons(
             isSelected: const [true, false, false],
+            onPressed: (_) {},
             children: const [
               Icon(Icons.format_bold),
               Icon(Icons.format_italic),
               Icon(Icons.format_underline),
             ],
-            onPressed: (_) {},
           ),
           SegmentedButton(
             segments: const [
@@ -250,83 +267,75 @@ class _ButtonDisplayState extends State<ButtonDisplay> {
 class InputDisplay extends StatelessWidget {
   const InputDisplay({super.key});
 
+  static void _dismissKeyboard(PointerDownEvent event) {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  static List<PopupMenuEntry<String>> _buildPopupMenuItems(
+    BuildContext context,
+  ) =>
+      const [
+        PopupMenuItem(value: 'Option 1', child: Text('Option 1')),
+        PopupMenuItem(value: 'Option 2', child: Text('Option 2')),
+      ];
+
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          TextField(
-            decoration: const InputDecoration(
-              labelText: 'TextField',
-            ),
-            onTapOutside: (event) {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
+          const TextField(
+            decoration: InputDecoration(labelText: 'TextField'),
+            onTapOutside: _dismissKeyboard,
           ),
           const Gap(8),
-          SearchBar(
-            onChanged: (_) {},
+          const SearchBar(
             hintText: 'SearchBar',
-            onTapOutside: (event) {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
+            onTapOutside: _dismissKeyboard,
           ),
           const Gap(8),
           ElevatedButton(
-            onPressed: () {
-              showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
-              );
-            },
+            onPressed: () => _showDatePicker(context),
             child: const Text('Date Picker'),
           ),
           const Gap(8),
           DropdownButton<String>(
             value: 'Option 1',
             items: const [
-              DropdownMenuItem(
-                value: 'Option 1',
-                child: Text('Option 1'),
-              ),
-              DropdownMenuItem(
-                value: 'Option 2',
-                child: Text('Option 2'),
-              ),
+              DropdownMenuItem(value: 'Option 1', child: Text('Option 1')),
+              DropdownMenuItem(value: 'Option 2', child: Text('Option 2')),
             ],
             onChanged: (_) {},
           ),
           const Gap(8),
           ElevatedButton(
-            onPressed: () {
-              showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.now(),
-              );
-            },
+            onPressed: () => _showTimePicker(context),
             child: const Text('Time Picker'),
           ),
           const Gap(8),
-          PopupMenuButton<String>(
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'Option 1',
-                child: Text('Option 1'),
-              ),
-              const PopupMenuItem(
-                value: 'Option 2',
-                child: Text('Option 2'),
-              ),
-            ],
-          ),
-          RadioMenuButton<String>(
-            onChanged: (_) {},
+          const PopupMenuButton<String>(itemBuilder: _buildPopupMenuItems),
+          const RadioMenuButton<String>(
+            onChanged: null,
             value: '',
             groupValue: '',
-            child: const Text('Radio Button'),
+            child: Text('Radio Button'),
           ),
         ],
       );
+
+  void _showDatePicker(BuildContext context) {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+  }
+
+  void _showTimePicker(BuildContext context) {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+  }
 }
 
 // Selection Controls Component
@@ -334,24 +343,24 @@ class SelectionControlsDisplay extends StatelessWidget {
   const SelectionControlsDisplay({super.key});
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => const Column(
         children: [
           Row(
             children: [
-              Checkbox(value: true, onChanged: (_) {}),
-              const Text('Checkbox'),
+              Checkbox(value: true, onChanged: null),
+              Text('Checkbox'),
             ],
           ),
           Row(
             children: [
-              Radio(value: true, groupValue: true, onChanged: (_) {}),
-              const Text('Radio'),
+              Radio(value: true, groupValue: true, onChanged: null),
+              Text('Radio'),
             ],
           ),
           Row(
             children: [
-              Switch(value: true, onChanged: (_) {}),
-              const Text('Switch'),
+              Switch(value: true, onChanged: null),
+              Text('Switch'),
             ],
           ),
         ],
@@ -393,6 +402,53 @@ class ProgressSlidersDisplay extends StatelessWidget {
       );
 }
 
+/// Color scheme data for display
+final List<(String, Color Function(ColorScheme))> _colorSchemeEntries = [
+  ('Primary', (s) => s.primary),
+  ('On Primary', (s) => s.onPrimary),
+  ('Primary Container', (s) => s.primaryContainer),
+  ('On Primary Container', (s) => s.onPrimaryContainer),
+  ('Primary Fixed', (s) => s.primaryFixed),
+  ('Primary Fixed Dim', (s) => s.primaryFixedDim),
+  ('On Primary Fixed', (s) => s.onPrimaryFixed),
+  ('On Primary Fixed Variant', (s) => s.onPrimaryFixedVariant),
+  ('Secondary', (s) => s.secondary),
+  ('On Secondary', (s) => s.onSecondary),
+  ('Secondary Container', (s) => s.secondaryContainer),
+  ('On Secondary Container', (s) => s.onSecondaryContainer),
+  ('Secondary Fixed', (s) => s.secondaryFixed),
+  ('Secondary Fixed Dim', (s) => s.secondaryFixedDim),
+  ('On Secondary Fixed', (s) => s.onSecondaryFixed),
+  ('On Secondary Fixed Variant', (s) => s.onSecondaryFixedVariant),
+  ('Tertiary', (s) => s.tertiary),
+  ('On Tertiary', (s) => s.onTertiary),
+  ('Tertiary Container', (s) => s.tertiaryContainer),
+  ('On Tertiary Container', (s) => s.onTertiaryContainer),
+  ('Tertiary Fixed', (s) => s.tertiaryFixed),
+  ('Tertiary Fixed Dim', (s) => s.tertiaryFixedDim),
+  ('On Tertiary Fixed', (s) => s.onTertiaryFixed),
+  ('On Tertiary Fixed Variant', (s) => s.onTertiaryFixedVariant),
+  ('Error', (s) => s.error),
+  ('On Error', (s) => s.onError),
+  ('Error Container', (s) => s.errorContainer),
+  ('On Error Container', (s) => s.onErrorContainer),
+  ('Surface', (s) => s.surface),
+  ('On Surface', (s) => s.onSurface),
+  ('Surface Dim', (s) => s.surfaceDim),
+  ('Surface Bright', (s) => s.surfaceBright),
+  ('Surface Container', (s) => s.surfaceContainer),
+  ('Surface Container High', (s) => s.surfaceContainerHigh),
+  ('Surface Container Highest', (s) => s.surfaceContainerHighest),
+  ('Inverse Surface', (s) => s.inverseSurface),
+  ('On Inverse Surface', (s) => s.onInverseSurface),
+  ('Inverse Primary', (s) => s.inversePrimary),
+  ('Surface Tint', (s) => s.surfaceTint),
+  ('Outline', (s) => s.outline),
+  ('Outline Variant', (s) => s.outlineVariant),
+  ('Shadow', (s) => s.shadow),
+  ('Scrim', (s) => s.scrim),
+];
+
 // Color Scheme Component
 class ColorSchemeDisplay extends StatelessWidget {
   const ColorSchemeDisplay({required this.colorScheme, super.key});
@@ -402,56 +458,10 @@ class ColorSchemeDisplay extends StatelessWidget {
   Widget build(BuildContext context) => Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: _colorMap.entries
-            .map((e) => ColorBox(label: e.key, color: e.value(colorScheme)))
+        children: _colorSchemeEntries
+            .map((e) => ColorBox(label: e.$1, color: e.$2(colorScheme)))
             .toList(),
       );
-
-  static final _colorMap = {
-    'Primary': (ColorScheme s) => s.primary,
-    'On Primary': (ColorScheme s) => s.onPrimary,
-    'Primary Container': (ColorScheme s) => s.primaryContainer,
-    'On Primary Container': (ColorScheme s) => s.onPrimaryContainer,
-    'Primary Fixed': (ColorScheme s) => s.primaryFixed,
-    'Primary Fixed Dim': (ColorScheme s) => s.primaryFixedDim,
-    'On Primary Fixed': (ColorScheme s) => s.onPrimaryFixed,
-    'On Primary Fixed Variant': (ColorScheme s) => s.onPrimaryFixedVariant,
-    'Secondary': (ColorScheme s) => s.secondary,
-    'On Secondary': (ColorScheme s) => s.onSecondary,
-    'Secondary Container': (ColorScheme s) => s.secondaryContainer,
-    'On Secondary Container': (ColorScheme s) => s.onSecondaryContainer,
-    'Secondary Fixed': (ColorScheme s) => s.secondaryFixed,
-    'Secondary Fixed Dim': (ColorScheme s) => s.secondaryFixedDim,
-    'On Secondary Fixed': (ColorScheme s) => s.onSecondaryFixed,
-    'On Secondary Fixed Variant': (ColorScheme s) => s.onSecondaryFixedVariant,
-    'Tertiary': (ColorScheme s) => s.tertiary,
-    'On Tertiary': (ColorScheme s) => s.onTertiary,
-    'Tertiary Container': (ColorScheme s) => s.tertiaryContainer,
-    'On Tertiary Container': (ColorScheme s) => s.onTertiaryContainer,
-    'Tertiary Fixed': (ColorScheme s) => s.tertiaryFixed,
-    'Tertiary Fixed Dim': (ColorScheme s) => s.tertiaryFixedDim,
-    'On Tertiary Fixed': (ColorScheme s) => s.onTertiaryFixed,
-    'On Tertiary Fixed Variant': (ColorScheme s) => s.onTertiaryFixedVariant,
-    'Error': (ColorScheme s) => s.error,
-    'On Error': (ColorScheme s) => s.onError,
-    'Error Container': (ColorScheme s) => s.errorContainer,
-    'On Error Container': (ColorScheme s) => s.onErrorContainer,
-    'Surface': (ColorScheme s) => s.surface,
-    'On Surface': (ColorScheme s) => s.onSurface,
-    'Surface Dim': (ColorScheme s) => s.surfaceDim,
-    'Surface Bright': (ColorScheme s) => s.surfaceBright,
-    'Surface Container': (ColorScheme s) => s.surfaceContainer,
-    'Surface Container High': (ColorScheme s) => s.surfaceContainerHigh,
-    'Surface Container Highest': (ColorScheme s) => s.surfaceContainerHighest,
-    'Inverse Surface': (ColorScheme s) => s.inverseSurface,
-    'On Inverse Surface': (ColorScheme s) => s.onInverseSurface,
-    'Inverse Primary': (ColorScheme s) => s.inversePrimary,
-    'Surface Tint': (ColorScheme s) => s.surfaceTint,
-    'Outline': (ColorScheme s) => s.outline,
-    'Outline Variant': (ColorScheme s) => s.outlineVariant,
-    'Shadow': (ColorScheme s) => s.shadow,
-    'Scrim': (ColorScheme s) => s.scrim,
-  };
 }
 
 // Color Box Component
@@ -461,26 +471,25 @@ class ColorBox extends StatelessWidget {
   final Color? color;
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Card(
-            color: color ?? Colors.grey,
-            child: SizedBox.square(
-              dimension: 80,
-              child: Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: getTextColorOnBackground(color ?? Colors.grey),
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+  Widget build(BuildContext context) {
+    final displayColor = color ?? Colors.grey;
+    return Card(
+      color: displayColor,
+      child: SizedBox.square(
+        dimension: 80,
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: getTextColorOnBackground(displayColor),
+              fontSize: 12,
             ),
           ),
-        ],
-      );
+        ),
+      ),
+    );
+  }
 }
 
 // Dialogs and Snackbars Component
@@ -491,44 +500,55 @@ class DialogsSnackbarsDisplay extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         children: [
           ElevatedButton(
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
-              builder: (context) => Column(
-                children: [
-                  const ListTile(
-                    title: Text('Bottom Sheet'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            ),
+            onPressed: () => _showBottomSheet(context),
             child: const Text('Show Bottom Sheet'),
           ),
           ElevatedButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Dialog'),
-                content: const Text('This is a dialog'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            ),
+            onPressed: () => _showDialog(context),
             child: const Text('Show Dialog'),
           ),
           ElevatedButton(
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('This is a snackbar')),
-            ),
+            onPressed: () => _showSnackbar(context),
             child: const Text('Show Snackbar'),
           ),
         ],
       );
+
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ListTile(title: Text('Bottom Sheet')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Dialog'),
+        content: const Text('This is a dialog'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('This is a snackbar')),
+    );
+  }
 }
