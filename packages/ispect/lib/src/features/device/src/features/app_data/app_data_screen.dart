@@ -50,9 +50,7 @@ class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
         },
         cacheSizeNotifier: cacheSizeNotifier,
         clearCache: () async {
-          await appCacheManager.deleteCacheDir(
-            isAndroid: Theme.of(context).platform == TargetPlatform.android,
-          );
+          await appCacheManager.deleteCacheDir();
           await updateCacheSize();
           if (context.mounted) {
             await _controller.loadFilesList(
@@ -70,14 +68,14 @@ class _AppDataScreenState extends State<AppDataScreen> with CacheMixin {
 }
 
 mixin CacheMixin on State<AppDataScreen> {
-  late final AppCacheManager appCacheManager;
+  late final BaseCacheService appCacheManager;
 
   late ValueNotifier<String> cacheSizeNotifier = ValueNotifier<String>('');
 
   @override
   void initState() {
     super.initState();
-    appCacheManager = AppCacheManager();
+    appCacheManager = const AppCacheManager();
     updateCacheSize();
   }
 
