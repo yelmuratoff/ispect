@@ -11,13 +11,13 @@ import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/builder/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
 import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_picker_snackbar.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/overlay.dart';
-import 'package:ispect/src/features/inspector/src/widgets/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_screen.dart';
@@ -172,13 +172,13 @@ class InspectorState extends State<Inspector> {
     _isPanelVisible = widget.isPanelVisible;
 
     _keyboardHandler = KeyboardHandler(
+
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
       },
       onZoomStateChanged: ({required value}) {
         _onZoomStateChanged(value);
       },
-      colorPickerStateKeys: widget.colorPickerShortcuts,
       inspectorStateKeys: widget.widgetInspectorShortcuts,
       zoomStateKeys: widget.zoomShortcuts,
     );

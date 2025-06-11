@@ -24,7 +24,6 @@ class _MultiValueListenableBuilderState
   }
 
   void _onUpdated() {
-    // ignore: avoid_empty_blocks
     setState(() {});
   }
 

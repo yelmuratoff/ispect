@@ -20,6 +20,6 @@ export 'src/common/utils/file_utils.dart';
 export 'src/common/utils/logs_file/logs_file.dart';
 export 'src/common/widgets/builder/data_builder.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
-export 'src/features/device/ispect_device.dart';
+export 'src/features/device/device.dart';
 export 'src/features/ispect/models/log_description.dart';
 export 'src/features/ispect/options.dart';

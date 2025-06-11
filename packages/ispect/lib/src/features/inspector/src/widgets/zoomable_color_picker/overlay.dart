@@ -6,6 +6,15 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/components/information_box_widget.dart';
 
+/// A combined overlay widget for zoomable color picker with color display
+/// and zoom level indicators.
+///
+/// Features:
+/// - Triple-layer circular border design
+/// - Zoomed image preview with custom painter
+/// - Color hex code display
+/// - Auto-hiding zoom level indicator
+/// - Center color indicator dot
 class CombinedOverlayWidget extends StatelessWidget {
   const CombinedOverlayWidget({
     required this.image,
@@ -28,12 +37,12 @@ class CombinedOverlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor =
-        context.ispectTheme.colorScheme.inverseSurface.withValues(alpha: 0.2);
+    final colorScheme = context.ispectTheme.colorScheme;
+    final borderColor = colorScheme.inverseSurface.withValues(alpha: 0.2);
     final textColor = getTextColorOnBackground(color);
-    return SizedBox(
-      width: overlaySize,
-      height: overlaySize,
+
+    return SizedBox.square(
+      dimension: overlaySize,
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -91,24 +100,19 @@ class CombinedOverlayWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Color hex display
                   Align(
                     alignment: const Alignment(0, -0.8),
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Material(
-                        color: color,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4)),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: textColor.withValues(alpha: 0.2),
-                            ),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(4)),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: color,
+                          border: Border.all(
+                            color: textColor.withValues(alpha: 0.2),
                           ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
                             '#${colorToHexString(color)}',
@@ -121,7 +125,6 @@ class CombinedOverlayWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Zoom level display
                   Align(
                     alignment: const Alignment(0, -0.8),
                     child: Padding(
@@ -129,8 +132,21 @@ class CombinedOverlayWidget extends StatelessWidget {
                       child: _ZoomLevelDisplay(zoomScale: zoomScale),
                     ),
                   ),
-                  // Centered color indicator
-                  const _CenterColorIndicator(),
+                  Center(
+                    child: SizedBox.square(
+                      dimension: 10,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: textColor.withValues(alpha: 0.2),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -141,34 +157,10 @@ class CombinedOverlayWidget extends StatelessWidget {
   }
 }
 
-class _CenterColorIndicator extends StatelessWidget {
-  const _CenterColorIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    final parent =
-        context.findAncestorWidgetOfExactType<CombinedOverlayWidget>();
-    if (parent == null) return const SizedBox.shrink();
-    final color = parent.color;
-    final borderColor = getTextColorOnBackground(color).withValues(alpha: 0.2);
-    return Center(
-      child: SizedBox.square(
-        dimension: 10,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: const BorderRadius.all(Radius.circular(4)),
-            border: Border.all(
-              color: borderColor,
-              width: 2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+/// Custom painter for rendering zoomed image content in the overlay.
+///
+/// Optimizes performance with proper shouldRepaint implementation
+/// and efficient canvas operations.
 class _ZoomPainter extends CustomPainter {
   const _ZoomPainter({
     required this.image,
@@ -188,22 +180,30 @@ class _ZoomPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final halfSize = overlaySize / 2.0;
+    final scale = (1 / pixelRatio) * zoomScale;
+
     canvas
       ..clipRect(Offset.zero & size)
-      ..translate(overlaySize / 2.0, overlaySize / 2.0)
-      ..scale((1 / pixelRatio) * zoomScale)
+      ..translate(halfSize, halfSize)
+      ..scale(scale)
       ..drawImage(image, -imageOffset, Paint());
   }
 
   @override
-  bool shouldRepaint(_ZoomPainter oldDelegate) =>
-      oldDelegate.image != image ||
-      oldDelegate.imageOffset != imageOffset ||
-      oldDelegate.overlayOffset != overlayOffset ||
-      oldDelegate.overlaySize != overlaySize ||
-      oldDelegate.zoomScale != zoomScale;
+  bool shouldRepaint(covariant _ZoomPainter oldDelegate) =>
+      image != oldDelegate.image ||
+      imageOffset != oldDelegate.imageOffset ||
+      overlayOffset != oldDelegate.overlayOffset ||
+      overlaySize != oldDelegate.overlaySize ||
+      zoomScale != oldDelegate.zoomScale ||
+      pixelRatio != oldDelegate.pixelRatio;
 }
 
+/// Auto-hiding zoom level display widget with smooth fade animation.
+///
+/// Shows zoom scale for 1 second after changes, then fades out.
+/// Properly manages timer lifecycle and mounted state checks.
 class _ZoomLevelDisplay extends StatefulWidget {
   const _ZoomLevelDisplay({
     required this.zoomScale,
@@ -212,29 +212,20 @@ class _ZoomLevelDisplay extends StatefulWidget {
   final double zoomScale;
 
   @override
-  State<_ZoomLevelDisplay> createState() => __ZoomLevelDisplayState();
+  State<_ZoomLevelDisplay> createState() => _ZoomLevelDisplayState();
 }
 
-class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
-  Timer? _zoomHideTimer;
-  bool _isZoomScaleVisible = false;
+class _ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
+  static const _visibilityDuration = Duration(seconds: 1);
+  static const _animationDuration = Duration(milliseconds: 200);
+
+  Timer? _hideTimer;
+  bool _isVisible = false;
 
   @override
   void initState() {
     super.initState();
     _showZoomScale();
-  }
-
-  Future<void> _showZoomScale() async {
-    if (mounted) {
-      setState(() => _isZoomScaleVisible = true);
-    }
-    _zoomHideTimer?.cancel();
-    _zoomHideTimer = Timer(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isZoomScaleVisible = false);
-      }
-    });
   }
 
   @override
@@ -247,14 +238,27 @@ class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
 
   @override
   void dispose() {
-    _zoomHideTimer?.cancel();
+    _hideTimer?.cancel();
     super.dispose();
+  }
+
+  void _showZoomScale() {
+    if (!mounted) return;
+
+    setState(() => _isVisible = true);
+
+    _hideTimer?.cancel();
+    _hideTimer = Timer(_visibilityDuration, () {
+      if (mounted) {
+        setState(() => _isVisible = false);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) => AnimatedOpacity(
-        opacity: _isZoomScaleVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
+        opacity: _isVisible ? 1.0 : 0.0,
+        duration: _animationDuration,
         child: InformationBoxWidget(
           color: context.ispectTheme.colorScheme.primary,
           child: Text('x${widget.zoomScale}'),
