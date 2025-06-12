@@ -172,7 +172,6 @@ class InspectorState extends State<Inspector> {
     _isPanelVisible = widget.isPanelVisible;
 
     _keyboardHandler = KeyboardHandler(
-
       onInspectorStateChanged: ({required value}) {
         _onInspectorStateChanged(value);
       },

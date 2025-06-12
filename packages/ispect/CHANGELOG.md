@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.7
+
+### Changes:
+- Minor updates and improvements.
+
 ## 4.1.6
 
 ### Changes:
