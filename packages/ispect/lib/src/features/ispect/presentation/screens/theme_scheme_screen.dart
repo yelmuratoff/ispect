@@ -353,7 +353,8 @@ class SelectionControlsDisplay extends StatelessWidget {
           ),
           Row(
             children: [
-              Radio(value: true, groupValue: true, onChanged: null),
+              // ignore: deprecated_member_use
+              Radio(value: true, groupValue: true),
               Text('Radio'),
             ],
           ),

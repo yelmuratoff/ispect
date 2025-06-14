@@ -1,14 +1,13 @@
 import 'package:flutter/rendering.dart';
 
-/// Contains information about the currently selected `RenderBox`.
+/// Contains information about the currently selected [RenderBox].
 ///
-/// `containerRect` may be `null`.
+/// [containerRect] may be [null].
 class BoxInfo {
-  const BoxInfo({
+  BoxInfo({
     required this.targetRenderBox,
     this.containerRenderBox,
     this.overlayOffset = Offset.zero,
-    this.decorationRenderBox,
   });
 
   factory BoxInfo.fromHitTestResults(
@@ -17,47 +16,30 @@ class BoxInfo {
   }) {
     RenderBox? targetRenderBox;
     RenderBox? containerRenderBox;
-    RenderDecoratedBox? decorationRenderBox;
 
     for (final box in boxes) {
       targetRenderBox ??= box;
+
       if (targetRenderBox.size < box.size) {
         containerRenderBox = box;
         break;
       }
     }
 
-    decorationRenderBox = boxes.firstWhere(
-      (box) => box is RenderDecoratedBox && (box.decoration is BoxDecoration),
-      orElse: () => RenderDecoratedBox(
-        decoration: const BoxDecoration(),
-      ),
-    ) as RenderDecoratedBox?;
-
     return BoxInfo(
       targetRenderBox: targetRenderBox!,
       containerRenderBox: containerRenderBox,
       overlayOffset: overlayOffset,
-      decorationRenderBox: decorationRenderBox,
     );
   }
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;
+
   final Offset overlayOffset;
-  final RenderDecoratedBox? decorationRenderBox;
 
-  // --- Decoration logic ---
-
-  BoxDecoration? get boxDecoration =>
-      decorationRenderBox?.decoration is BoxDecoration
-          ? decorationRenderBox!.decoration as BoxDecoration
-          : null;
-
-  Decoration? get decoration => decorationRenderBox?.decoration;
-
-  // --- Padding/margin logic (unchanged) ---
   Rect get targetRect => getRectFromRenderBox(targetRenderBox)!;
+
   Rect get targetRectShifted => targetRect.shift(-overlayOffset);
 
   Rect? get containerRect => containerRenderBox != null
@@ -118,42 +100,96 @@ class BoxInfo {
     return '$left, $top, $right, $bottom';
   }
 
-  // --- BoxDecoration info getters ---
-  Color? getDecoratedBoxColor() => boxDecoration?.color;
-  BorderRadiusGeometry? getDecoratedBoxBorderRadius() =>
-      boxDecoration?.borderRadius;
-  BoxBorder? getDecoratedBoxBorder() => boxDecoration?.border;
-  BoxShape? getDecoratedBoxShape() => boxDecoration?.shape;
-  List<BoxShadow>? getDecoratedBoxShadow() => boxDecoration?.boxShadow;
-  Gradient? getDecoratedBoxGradient() => boxDecoration?.gradient;
-  BlendMode? getDecoratedBoxBackgroundBlendMode() =>
-      boxDecoration?.backgroundBlendMode;
-  DecorationImage? getDecoratedBoxImage() => boxDecoration?.image;
+  bool get isDecoratedBox =>
+      targetRenderBox is RenderDecoratedBox &&
+      (targetRenderBox as RenderDecoratedBox).decoration is BoxDecoration;
 
-  Map<String, dynamic>? getBoxDecorationInfo() {
-    final decoration = boxDecoration;
-    if (decoration == null) return null;
-    return {
-      'color': decoration.color,
-      'borderRadius': decoration.borderRadius,
-      'border': decoration.border,
-      'shape': decoration.shape,
-      'boxShadow': decoration.boxShadow,
-      'gradient': decoration.gradient,
-      'backgroundBlendMode': decoration.backgroundBlendMode,
-      'image': decoration.image,
-    };
+  BoxDecoration get _decoration =>
+      (targetRenderBox as RenderDecoratedBox).decoration as BoxDecoration;
+
+  Color? getDecoratedBoxColor() {
+    assert(isDecoratedBox);
+    return _decoration.color;
   }
 
-  Map<String, dynamic>? getDecorationInfo() {
-    final dec = decoration;
-    if (dec == null) return null;
-    if (dec is BoxDecoration) {
-      return getBoxDecorationInfo();
+  BorderRadiusGeometry? getDecoratedBoxBorderRadius() {
+    assert(isDecoratedBox);
+    return _decoration.borderRadius;
+  }
+
+  /// Gets detailed properties of the target RenderBox
+  ///
+  /// - Return: Map of property names to their string representations
+  /// - Usage: Programmatic access to widget properties for custom analysis
+  Map<String, String> getProperties() {
+    final properties = <String, String>{};
+
+    // Basic properties
+    properties['type'] = targetRenderBox.runtimeType.toString();
+    properties['size'] = targetRenderBox.size.toString();
+    properties['hasSize'] = targetRenderBox.hasSize.toString();
+    properties['attached'] = targetRenderBox.attached.toString();
+
+    if (targetRenderBox.hasSize) {
+      properties['constraints'] = targetRenderBox.constraints.toString();
     }
-    return {
-      'type': dec.runtimeType.toString(),
-    };
+
+    if (targetRenderBox.attached) {
+      try {
+        final position = targetRenderBox.localToGlobal(Offset.zero);
+        properties['globalPosition'] = position.toString();
+      } catch (e) {
+        properties['globalPosition'] = 'Unable to calculate';
+      }
+    }
+
+    // Container properties if available
+    if (containerRenderBox != null) {
+      properties['containerType'] = containerRenderBox!.runtimeType.toString();
+      properties['containerSize'] = containerRenderBox!.size.toString();
+      properties['padding'] = describePadding();
+    }
+
+    // Decoration properties
+    if (isDecoratedBox) {
+      final color = getDecoratedBoxColor();
+      if (color != null) {
+        properties['decorationColor'] = color.toString();
+      }
+
+      final borderRadius = getDecoratedBoxBorderRadius();
+      if (borderRadius != null) {
+        properties['borderRadius'] = borderRadius.toString();
+      }
+    }
+
+    return properties;
+  }
+
+  /// Gets a human-readable summary of the widget
+  ///
+  /// - Return: Brief, one-line description of the widget
+  /// - Usage: Quick identification of widgets in lists or logs
+  String getSummary() {
+    final type = targetRenderBox.runtimeType.toString();
+    final size = targetRenderBox.size;
+
+    final parts = <String>[type];
+
+    if (targetRenderBox.hasSize) {
+      parts.add(
+        '${size.width.toStringAsFixed(1)}×${size.height.toStringAsFixed(1)}',
+      );
+    }
+
+    if (isDecoratedBox) {
+      final color = getDecoratedBoxColor();
+      if (color != null) {
+        parts.add('color: $color');
+      }
+    }
+
+    return parts.join(' ');
   }
 }
 
@@ -183,7 +219,7 @@ double calculateBoxPosition({
   final isInsideContainer = rect.height > minHeightToBeInsideContainer;
 
   if (isInsideContainer) {
-    return (insideTopEdge >= padding) ? insideTopEdge : insideBottomEdge;
+    return (insideTopEdge > padding) ? insideTopEdge : insideBottomEdge;
   } else {
     return (aboveTopEdge > padding) ? aboveTopEdge : belowTopEdge;
   }
