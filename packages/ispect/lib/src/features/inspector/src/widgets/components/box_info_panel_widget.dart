@@ -4,9 +4,9 @@ import 'package:flutter/rendering.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-
+import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
+import 'package:ispect/src/features/inspector/src/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
-import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 
 class BoxInfoPanelWidget extends StatelessWidget {
   const BoxInfoPanelWidget({
@@ -28,7 +28,9 @@ class BoxInfoPanelWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final iSpect = ISpect.read(context);
-
+    final element = InspectorUtils.getElementFromRenderBox(
+      boxInfo.containerRenderBox ?? boxInfo.targetRenderBox,
+    );
     return Card(
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
@@ -41,7 +43,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    describeIdentity(boxInfo.targetRenderBox),
+                    "${element?.widget.toString() ?? 'Unknown'} | ${describeIdentity(boxInfo.targetRenderBox)}",
                     style: theme.textTheme.bodySmall,
                   ),
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
+import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 
 class OverlayPainter extends CustomPainter {
   const OverlayPainter({
