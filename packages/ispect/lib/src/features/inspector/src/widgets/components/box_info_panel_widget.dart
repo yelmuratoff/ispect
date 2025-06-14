@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/features/inspector/src/screens/diagnostic_screen.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
@@ -102,15 +103,36 @@ class BoxInfoPanelWidget extends StatelessWidget {
                       iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
               ],
+              Divider(
+                height: 16,
+                color: iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+              ),
               TextButton(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  backgroundColor:
+                      theme.colorScheme.primary.withValues(alpha: .1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: () {
-                
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      settings: const RouteSettings(name: 'Diagnostic Screen'),
+                      builder: (context) => InspectorDiagnosticScreen(
+                        info: boxInfo,
+                      ),
+                    ),
+                  );
                 },
-                child: Text(
-                  'Diagnostic information',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontSize: 10,
+                child: Center(
+                  child: Text(
+                    'Diagnostic information',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ),

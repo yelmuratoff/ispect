@@ -413,6 +413,7 @@ class _LogsScreenState extends State<LogsScreen> {
           onTap: (context) {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
+                settings: const RouteSettings(name: 'App Info Screen'),
                 builder: (context) => const AppInfoScreen(),
               ),
             );
@@ -424,6 +425,7 @@ class _LogsScreenState extends State<LogsScreen> {
           onTap: (context) {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
+                settings: const RouteSettings(name: 'App Data Screen'),
                 builder: (context) => const AppDataScreen(),
               ),
             );
