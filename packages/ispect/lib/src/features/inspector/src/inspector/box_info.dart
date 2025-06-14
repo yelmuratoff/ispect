@@ -83,8 +83,6 @@ class BoxInfo {
       : null;
 
   /// Container rectangle shifted by overlay offset for positioning
-  ///
-  /// 🚧 Fixed: Was incorrectly using targetRect instead of containerRect
   Rect? get containerRectShifted => containerRect?.shift(-overlayOffset);
 
   // Padding calculations - optimized for performance and null safety
