@@ -102,6 +102,18 @@ class BoxInfoPanelWidget extends StatelessWidget {
                       iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
               ],
+              TextButton(
+                onPressed: () {
+                
+                },
+                child: Text(
+                  'Diagnostic information',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

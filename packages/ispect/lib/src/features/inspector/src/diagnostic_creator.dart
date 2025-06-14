@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:flutter/rendering.dart';
-import 'package:ispect/src/features/inspector/inspector.dart';
+import 'package:ispect/src/features/inspector/src/widgets/inspector/box_info.dart';
 
 /// Recreates Flutter's diagnostic information for release mode
 ///
