@@ -353,7 +353,7 @@ class SelectionControlsDisplay extends StatelessWidget {
           ),
           Row(
             children: [
-              Radio(value: true, groupValue: true),
+              Radio(value: true),
               Text('Radio'),
             ],
           ),
