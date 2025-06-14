@@ -1,14 +1,13 @@
 import 'package:flutter/rendering.dart';
 
-/// Contains information about the currently selected `RenderBox`.
+/// Contains information about the currently selected [RenderBox].
 ///
-/// `containerRect` may be `null`.
+/// [containerRect] may be [null].
 class BoxInfo {
-  const BoxInfo({
+  BoxInfo({
     required this.targetRenderBox,
     this.containerRenderBox,
     this.overlayOffset = Offset.zero,
-    this.decorationRenderBox,
   });
 
   factory BoxInfo.fromHitTestResults(
@@ -17,47 +16,30 @@ class BoxInfo {
   }) {
     RenderBox? targetRenderBox;
     RenderBox? containerRenderBox;
-    RenderDecoratedBox? decorationRenderBox;
 
     for (final box in boxes) {
       targetRenderBox ??= box;
+
       if (targetRenderBox.size < box.size) {
         containerRenderBox = box;
         break;
       }
     }
 
-    decorationRenderBox = boxes.firstWhere(
-      (box) => box is RenderDecoratedBox && (box.decoration is BoxDecoration),
-      orElse: () => RenderDecoratedBox(
-        decoration: const BoxDecoration(),
-      ),
-    ) as RenderDecoratedBox?;
-
     return BoxInfo(
       targetRenderBox: targetRenderBox!,
       containerRenderBox: containerRenderBox,
       overlayOffset: overlayOffset,
-      decorationRenderBox: decorationRenderBox,
     );
   }
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;
+
   final Offset overlayOffset;
-  final RenderDecoratedBox? decorationRenderBox;
 
-  // --- Decoration logic ---
-
-  BoxDecoration? get boxDecoration =>
-      decorationRenderBox?.decoration is BoxDecoration
-          ? decorationRenderBox!.decoration as BoxDecoration
-          : null;
-
-  Decoration? get decoration => decorationRenderBox?.decoration;
-
-  // --- Padding/margin logic (unchanged) ---
   Rect get targetRect => getRectFromRenderBox(targetRenderBox)!;
+
   Rect get targetRectShifted => targetRect.shift(-overlayOffset);
 
   Rect? get containerRect => containerRenderBox != null
@@ -118,42 +100,21 @@ class BoxInfo {
     return '$left, $top, $right, $bottom';
   }
 
-  // --- BoxDecoration info getters ---
-  Color? getDecoratedBoxColor() => boxDecoration?.color;
-  BorderRadiusGeometry? getDecoratedBoxBorderRadius() =>
-      boxDecoration?.borderRadius;
-  BoxBorder? getDecoratedBoxBorder() => boxDecoration?.border;
-  BoxShape? getDecoratedBoxShape() => boxDecoration?.shape;
-  List<BoxShadow>? getDecoratedBoxShadow() => boxDecoration?.boxShadow;
-  Gradient? getDecoratedBoxGradient() => boxDecoration?.gradient;
-  BlendMode? getDecoratedBoxBackgroundBlendMode() =>
-      boxDecoration?.backgroundBlendMode;
-  DecorationImage? getDecoratedBoxImage() => boxDecoration?.image;
+  bool get isDecoratedBox =>
+      targetRenderBox is RenderDecoratedBox &&
+      (targetRenderBox as RenderDecoratedBox).decoration is BoxDecoration;
 
-  Map<String, dynamic>? getBoxDecorationInfo() {
-    final decoration = boxDecoration;
-    if (decoration == null) return null;
-    return {
-      'color': decoration.color,
-      'borderRadius': decoration.borderRadius,
-      'border': decoration.border,
-      'shape': decoration.shape,
-      'boxShadow': decoration.boxShadow,
-      'gradient': decoration.gradient,
-      'backgroundBlendMode': decoration.backgroundBlendMode,
-      'image': decoration.image,
-    };
+  BoxDecoration get _decoration =>
+      (targetRenderBox as RenderDecoratedBox).decoration as BoxDecoration;
+
+  Color? getDecoratedBoxColor() {
+    assert(isDecoratedBox);
+    return _decoration.color;
   }
 
-  Map<String, dynamic>? getDecorationInfo() {
-    final dec = decoration;
-    if (dec == null) return null;
-    if (dec is BoxDecoration) {
-      return getBoxDecorationInfo();
-    }
-    return {
-      'type': dec.runtimeType.toString(),
-    };
+  BorderRadiusGeometry? getDecoratedBoxBorderRadius() {
+    assert(isDecoratedBox);
+    return _decoration.borderRadius;
   }
 }
 
@@ -183,7 +144,7 @@ double calculateBoxPosition({
   final isInsideContainer = rect.height > minHeightToBeInsideContainer;
 
   if (isInsideContainer) {
-    return (insideTopEdge >= padding) ? insideTopEdge : insideBottomEdge;
+    return (insideTopEdge > padding) ? insideTopEdge : insideBottomEdge;
   } else {
     return (aboveTopEdge > padding) ? aboveTopEdge : belowTopEdge;
   }

@@ -101,7 +101,6 @@ class BoxInfoPanelWidget extends StatelessWidget {
                   color:
                       iSpect.theme.dividerColor(context) ?? theme.dividerColor,
                 ),
-                _RenderDecoratedBoxInfo(boxInfo: boxInfo),
               ],
             ],
           ),
@@ -186,7 +185,7 @@ class _MainRow extends StatelessWidget {
           subtitle: 'size',
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
-            '${boxInfo.targetRect.width} × ${boxInfo.targetRect.height}',
+            '${boxInfo.targetRect.width.toStringAsFixed(1)} × ${boxInfo.targetRect.height}',
           ),
         ),
         _InfoRow(
@@ -196,104 +195,6 @@ class _MainRow extends StatelessWidget {
           child: Text(boxInfo.describePadding()),
         ),
       ],
-    );
-  }
-}
-
-class _RenderDecoratedBoxInfo extends StatelessWidget {
-  const _RenderDecoratedBoxInfo({required this.boxInfo});
-  final BoxInfo boxInfo;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final decoration = boxInfo.decoration;
-    if (decoration == null) return const SizedBox.shrink();
-
-    if (decoration is BoxDecoration) {
-      final border = boxInfo.getDecoratedBoxBorder();
-      final borderRadius = boxInfo.getDecoratedBoxBorderRadius();
-      final shape = boxInfo.getDecoratedBoxShape();
-      final color = boxInfo.getDecoratedBoxColor();
-      final boxShadow = boxInfo.getDecoratedBoxShadow();
-      final gradient = boxInfo.getDecoratedBoxGradient();
-      final blendMode = boxInfo.getDecoratedBoxBackgroundBlendMode();
-      final image = boxInfo.getDecoratedBoxImage();
-
-      return Wrap(
-        spacing: 12,
-        runSpacing: 8,
-        children: [
-          if (borderRadius != null)
-            _InfoRow(
-              icon: Icons.rounded_corner,
-              subtitle: 'border radius',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(borderRadius.toString()),
-            ),
-          if (shape != null)
-            _InfoRow(
-              icon: Icons.circle_outlined,
-              subtitle: 'shape',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(shape.toString()),
-            ),
-          if (color != null)
-            _InfoRow(
-              icon: Icons.palette,
-              subtitle: 'color',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              iconColor: color,
-              child: Text(
-                '#${colorToHexString(color, withAlpha: true)}',
-                style: TextStyle(color: color),
-              ),
-            ),
-          if (border != null)
-            _InfoRow(
-              icon: Icons.border_all,
-              subtitle: 'border',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(border.toString()),
-            ),
-          if (boxShadow != null && boxShadow.isNotEmpty)
-            _InfoRow(
-              icon: Icons.blur_on,
-              subtitle: 'boxShadow',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(boxShadow.map((e) => e.toString()).join(',\n')),
-            ),
-          if (gradient != null)
-            _InfoRow(
-              icon: Icons.gradient,
-              subtitle: 'gradient',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(gradient.toString()),
-            ),
-          if (blendMode != null)
-            _InfoRow(
-              icon: Icons.layers,
-              subtitle: 'backgroundBlendMode',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(blendMode.toString()),
-            ),
-          if (image != null)
-            _InfoRow(
-              icon: Icons.image,
-              subtitle: 'image',
-              backgroundColor: theme.chipTheme.backgroundColor,
-              child: Text(image.toString()),
-            ),
-        ],
-      );
-    }
-
-    return _InfoRow(
-      icon: Icons.info_outline,
-      subtitle: 'decoration',
-      backgroundColor: theme.chipTheme.backgroundColor,
-      child: Text(decoration.toString()),
     );
   }
 }
