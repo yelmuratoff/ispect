@@ -343,9 +343,9 @@ class SelectionControlsDisplay extends StatelessWidget {
   const SelectionControlsDisplay({super.key});
 
   @override
-  Widget build(BuildContext context) => const Column(
+  Widget build(BuildContext context) => Column(
         children: [
-          Row(
+          const Row(
             children: [
               Checkbox(value: true, onChanged: null),
               Text('Checkbox'),
@@ -353,11 +353,15 @@ class SelectionControlsDisplay extends StatelessWidget {
           ),
           Row(
             children: [
-              Radio(value: true),
-              Text('Radio'),
+              Radio(
+                value: true,
+                groupValue: null,
+                onChanged: (value) {},
+              ),
+              const Text('Radio'),
             ],
           ),
-          Row(
+          const Row(
             children: [
               Switch(value: true, onChanged: null),
               Text('Switch'),
