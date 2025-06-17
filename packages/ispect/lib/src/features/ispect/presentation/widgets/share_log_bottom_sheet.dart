@@ -7,7 +7,8 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 class ISpectShareLogBottomSheet extends StatefulWidget {
   const ISpectShareLogBottomSheet({
-    required this.value,
+    required this.data,
+    required this.truncatedData,
     super.key,
   });
 
@@ -15,7 +16,8 @@ class ISpectShareLogBottomSheet extends StatefulWidget {
   State<ISpectShareLogBottomSheet> createState() =>
       _ISpectShareLogBottomSheetState();
 
-  final ISpectifyData value;
+  final Map<String, dynamic> data;
+  final Map<String, dynamic> truncatedData;
 }
 
 class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
@@ -35,7 +37,8 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
           maxChildSize: 0.5,
           expand: false,
           builder: (context, scrollController) => _Body(
-            value: widget.value,
+            data: widget.data,
+            truncatedData: widget.truncatedData,
           ),
         ),
         orElse: () => AlertDialog(
@@ -45,7 +48,8 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
             height: MediaQuery.sizeOf(context).height * 0.2,
             width: 500,
             child: _Body(
-              value: widget.value,
+              data: widget.data,
+              truncatedData: widget.truncatedData,
             ),
           ),
         ),
@@ -54,10 +58,12 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
 
 class _Body extends StatelessWidget {
   const _Body({
-    required this.value,
+    required this.data,
+    required this.truncatedData,
   });
 
-  final ISpectifyData value;
+  final Map<String, dynamic> data;
+  final Map<String, dynamic> truncatedData;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +79,8 @@ class _Body extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: _InfoDescription(
-            value: value,
+            data: data,
+            truncatedData: truncatedData,
           ),
         ),
       ),
@@ -83,10 +90,12 @@ class _Body extends StatelessWidget {
 
 class _InfoDescription extends StatelessWidget {
   const _InfoDescription({
-    required this.value,
+    required this.data,
+    required this.truncatedData,
   });
 
-  final ISpectifyData value;
+  final Map<String, dynamic> data;
+  final Map<String, dynamic> truncatedData;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -101,9 +110,8 @@ class _InfoDescription extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    final text = value.toJson();
                     final valueToShare = JsonTruncatorService.pretty(
-                      text,
+                      data,
                       maxDepth: 500,
                       maxIterableSize: 10000,
                     );
@@ -130,9 +138,8 @@ class _InfoDescription extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    final text = value.toJson(truncated: true);
                     final valueToShare = JsonTruncatorService.pretty(
-                      text,
+                      truncatedData,
                     );
 
                     Navigator.of(context).pop();

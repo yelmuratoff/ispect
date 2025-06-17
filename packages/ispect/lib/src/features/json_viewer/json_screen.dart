@@ -12,23 +12,27 @@ import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class LogScreen extends StatefulWidget {
-  const LogScreen({required this.data, this.onClose, super.key});
-  final ISpectifyData data;
+class JsonScreen extends StatefulWidget {
+  const JsonScreen({
+    required this.data,
+    required this.truncatedData,
+    this.onClose,
+    super.key,
+  });
+  final Map<String, dynamic> data;
+  final Map<String, dynamic> truncatedData;
   final VoidCallback? onClose;
 
   @override
-  State<LogScreen> createState() => _LogScreenState();
+  State<JsonScreen> createState() => _JsonScreenState();
 }
 
-class _LogScreenState extends State<LogScreen> {
-  late final ISpectifyData _data;
+class _JsonScreenState extends State<JsonScreen> {
   final _store = JsonExplorerStore();
   final _searchController = TextEditingController();
   final _itemScrollController = ItemScrollController();
 
   late JsonExplorerTheme _jsonTheme;
-  late final String _screenTitle;
 
   // Debounce timer for search
   Timer? _searchDebounceTimer;
@@ -36,9 +40,8 @@ class _LogScreenState extends State<LogScreen> {
   @override
   void initState() {
     super.initState();
-    _data = widget.data;
-    _store.buildNodes(_data.toJson());
-    _screenTitle = _title(_data.key ?? '');
+
+    _store.buildNodes(widget.data);
   }
 
   @override
@@ -108,7 +111,6 @@ class _LogScreenState extends State<LogScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
           ),
-          title: Text(_screenTitle),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 4),
@@ -131,15 +133,15 @@ class _LogScreenState extends State<LogScreen> {
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           builder: (_) => ISpectShareLogBottomSheet(
-                            data: _data.toJson(),
-                            truncatedData: _data.toJson(truncated: true),
+                            data: widget.data,
+                            truncatedData: widget.truncatedData,
                           ),
                         ),
                         orElse: () => showDialog<void>(
                           context: context,
                           builder: (_) => ISpectShareLogBottomSheet(
-                            data: _data.toJson(),
-                            truncatedData: _data.toJson(truncated: true),
+                            data: widget.data,
+                            truncatedData: widget.truncatedData,
                           ),
                         ),
                       );
@@ -212,13 +214,6 @@ class _LogScreenState extends State<LogScreen> {
       ),
     );
   }
-
-  String _title(String key) => switch (key) {
-        'http-request' => 'HTTP Request',
-        'http-response' => 'HTTP Response',
-        'http-error' => 'HTTP Error',
-        _ => '',
-      };
 
   Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
     final searchResult = store.focusedSearchResult;

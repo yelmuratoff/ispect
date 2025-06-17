@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/json_viewer/log_screen.dart';
+import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 part 'collapsed_body.dart';
 
@@ -87,7 +87,10 @@ class _LogCardHeader extends StatelessWidget {
               onCopyTap: onCopyTap,
               onHttpTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => LogScreen(data: data),
+                  builder: (_) => JsonScreen(
+                    data: data.toJson(),
+                    truncatedData: data.toJson(truncated: true),
+                  ),
                   settings: const RouteSettings(
                     name: 'Detailed Log Screen',
                   ),
