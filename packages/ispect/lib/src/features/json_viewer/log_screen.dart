@@ -194,10 +194,13 @@ class _LogScreenState extends State<LogScreen> {
             const Gap(12),
             Expanded(
               child: Consumer<JsonExplorerStore>(
-                builder: (context, model, child) => JsonExplorer(
-                  nodes: model.displayNodes,
-                  itemScrollController: _itemScrollController,
-                  theme: _jsonTheme,
+                builder: (context, model, child) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: JsonExplorer(
+                    nodes: model.displayNodes,
+                    itemScrollController: _itemScrollController,
+                    theme: _jsonTheme,
+                  ),
                 ),
               ),
             ),
