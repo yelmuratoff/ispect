@@ -115,7 +115,7 @@ class CombinedOverlayWidget extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
-                            '#${colorToHexString(color)}',
+                            colorToHexString(color),
                             style: TextStyle(
                               color: textColor.withValues(alpha: 0.5),
                               fontSize: 12,

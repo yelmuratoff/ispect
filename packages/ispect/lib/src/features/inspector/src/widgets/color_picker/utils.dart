@@ -51,16 +51,20 @@ Color getPixelFromByteData(
 /// Returns:
 /// A string representing the color in hexadecimal format.
 String colorToHexString(Color color, {bool withAlpha = false}) {
-  final a = color.a.round().toRadixString(16).padLeft(2, '0');
-  final r = color.r.round().toRadixString(16).padLeft(2, '0');
-  final g = color.g.round().toRadixString(16).padLeft(2, '0');
-  final b = color.b.round().toRadixString(16).padLeft(2, '0');
+  final a =
+      ((color.a * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+  final r =
+      ((color.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+  final g =
+      ((color.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+  final b =
+      ((color.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
 
   if (withAlpha) {
-    return '$a$r$g$b';
+    return '#$a$r$g$b';
   }
 
-  return '$r$g$b';
+  return '#$r$g$b';
 }
 
 /// Determines the appropriate text color (black or white) to ensure

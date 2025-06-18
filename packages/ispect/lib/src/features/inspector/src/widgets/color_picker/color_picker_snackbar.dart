@@ -33,7 +33,7 @@ void showColorPickerResultSnackbar({
   required BuildContext context,
   required Color color,
 }) {
-  final colorString = '#${colorToHexString(color)}';
+  final colorString = colorToHexString(color);
   final iSpect = ISpect.read(context);
 
   ScaffoldMessenger.of(context).clearSnackBars();

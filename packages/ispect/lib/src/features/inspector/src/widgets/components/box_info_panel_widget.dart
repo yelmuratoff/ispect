@@ -29,7 +29,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final iSpect = ISpect.read(context);
     final element = InspectorUtils.getElementFromRenderBox(
-      boxInfo.containerRenderBox ?? boxInfo.targetRenderBox,
+      boxInfo.targetRenderBox,
     );
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -242,7 +242,7 @@ class _RenderParagraphInfo extends StatelessWidget {
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
             renderParagraph.text.style?.color != null
-                ? '#${colorToHexString(style.color!, withAlpha: true)}'
+                ? colorToHexString(style.color!, withAlpha: true)
                 : 'n/a',
             style: TextStyle(
               color: style.color,
