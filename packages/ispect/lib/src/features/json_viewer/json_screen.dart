@@ -15,12 +15,12 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 class JsonScreen extends StatefulWidget {
   const JsonScreen({
     required this.data,
-    required this.truncatedData,
+    this.truncatedData,
     this.onClose,
     super.key,
   });
   final Map<String, dynamic> data;
-  final Map<String, dynamic> truncatedData;
+  final Map<String, dynamic>? truncatedData;
   final VoidCallback? onClose;
 
   @override
@@ -134,14 +134,14 @@ class _JsonScreenState extends State<JsonScreen> {
                           backgroundColor: Colors.transparent,
                           builder: (_) => ISpectShareLogBottomSheet(
                             data: widget.data,
-                            truncatedData: widget.truncatedData,
+                            truncatedData: widget.truncatedData ?? widget.data,
                           ),
                         ),
                         orElse: () => showDialog<void>(
                           context: context,
                           builder: (_) => ISpectShareLogBottomSheet(
                             data: widget.data,
-                            truncatedData: widget.truncatedData,
+                            truncatedData: widget.truncatedData ?? widget.data,
                           ),
                         ),
                       );

@@ -13,7 +13,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
-import 'package:ispect/src/features/json_viewer/log_screen.dart';
+import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 /// Extension for enhanced log data operations.
 extension _LogDataExtensions on List<ISpectifyData> {
@@ -339,12 +339,16 @@ class _LogsScreenState extends State<LogsScreen> {
 
   /// Builds the detail view for the selected log entry.
   Widget _buildDetailView() => Flexible(
-        child: LogScreen(
-          key: ValueKey(_logsViewController.activeData!.hashCode),
-          data: _logsViewController.activeData!,
-          onClose: () {
-            _logsViewController.activeData = null;
-          },
+        child: RepaintBoundary(
+          child: JsonScreen(
+            key: ValueKey(_logsViewController.activeData!.hashCode),
+            data: _logsViewController.activeData!.toJson(),
+            truncatedData:
+                _logsViewController.activeData!.toJson(truncated: true),
+            onClose: () {
+              _logsViewController.activeData = null;
+            },
+          ),
         ),
       );
 
