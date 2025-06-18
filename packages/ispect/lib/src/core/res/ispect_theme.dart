@@ -157,6 +157,12 @@ class ISpectTheme {
         ...ISpectConstants.typeIcons,
       };
 
+  IconData getTypeIcon(BuildContext context, {required String? key}) {
+    if (key == null) return Icons.bug_report_outlined;
+    final iconData = icons(context)[key];
+    return iconData ?? Icons.bug_report_outlined;
+  }
+
   /// Returns a filtered list of enabled log descriptions.
   ///
   /// - Merges default descriptions from `ISpectConstants`.

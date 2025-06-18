@@ -218,7 +218,6 @@ class _JsonAttributeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create the JsonAttribute once and reuse it
     final jsonAttr = JsonAttribute(
       node: node,
       rootInformationBuilder: rootInformationBuilder,

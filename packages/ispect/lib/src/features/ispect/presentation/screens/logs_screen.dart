@@ -204,8 +204,8 @@ class _LogsScreenState extends State<LogsScreen> {
             key: ValueKey('${logEntry.hashCode}_$index'),
             logData: logEntry,
             itemIndex: index,
-            statusIcon: iSpectTheme.theme.logIcons[logEntry.key] ??
-                Icons.bug_report_outlined,
+            statusIcon:
+                iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
             statusColor:
                 iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
             isExpanded:
