@@ -1,6 +1,6 @@
 name: ispect
 description: "Logging and inspection tool for development and testing. ISpect provides an intuitive interface that makes debugging efficient and insightful."
-version: 4.1.7
+version: 4.1.8
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -28,7 +28,7 @@ dependencies:
   meta: any
 
   # Logging
-  ispectify: ^4.1.7
+  ispectify: ^4.1.8
 
   # Utils
   path_provider: ^2.1.5
