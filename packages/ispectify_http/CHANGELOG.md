@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.1.8
+
+### Changes:
+- Replaced `LogScreen` with a generalized `ISpectJsonScreen`, which now accepts a `Map<String, dynamic>` `JSON` input directly instead of extracting it from an object.
+- Refactored and migrated the `Color` to `hex` string conversion utility.
+- Performed minor improvements and code cleanups.
+
 ## 4.1.7
 
 ### Changes:
