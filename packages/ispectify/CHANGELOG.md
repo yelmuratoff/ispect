@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.1.8
+## 4.1.9
 
 ### Changes:
 - Replaced `LogScreen` with a generalized `ISpectJsonScreen`, which now accepts a `Map<String, dynamic>` `JSON` input directly instead of extracting it from an object.
