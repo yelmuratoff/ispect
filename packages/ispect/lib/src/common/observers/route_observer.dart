@@ -4,6 +4,7 @@
 // ignore_for_file: type=lint
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/observers/route_extension.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 
 /// Extension on `StringBuffer` to conditionally write a line.
@@ -176,9 +177,9 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? previousRoute,
   ) {
     final buffer = StringBuffer();
-    final routeName = _routeName(route);
+    final routeName = route.routeName;
     final routeType = _getRouteType(route);
-    final previousRouteName = _routeName(previousRoute);
+    final previousRouteName = previousRoute.routeName;
     final previousRouteType = _getRouteType(previousRoute);
 
     // Primary transition info
@@ -247,21 +248,5 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     // At this point, routes are neither PageRoutes nor ModalRoutes
     return isLogOtherTypes;
-  }
-
-  /// Retrieves the route name with proper fallback handling.
-  ///
-  /// Returns the route name or a meaningful default based on route type.
-  String _routeName(Route<dynamic>? route) {
-    if (route == null) return 'Unknown';
-
-    final name = route.settings.name;
-    if (name != null && name.isNotEmpty) return name;
-
-    // Provide meaningful defaults based on route type
-    if (route is PageRoute) return 'UnnamedPage';
-    if (route is ModalRoute) return 'UnnamedModal';
-
-    return 'Unknown';
   }
 }

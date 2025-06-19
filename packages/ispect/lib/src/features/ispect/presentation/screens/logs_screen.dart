@@ -9,6 +9,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
@@ -36,6 +37,7 @@ class LogsScreen extends StatefulWidget {
     super.key,
     this.appBarTitle,
     this.itemsBuilder,
+    this.navigatorObserver,
   });
 
   /// Custom title for the screen's app bar.
@@ -61,6 +63,9 @@ class LogsScreen extends StatefulWidget {
   ///
   /// Contains settings for theming, behavior, and additional action items.
   final ISpectOptions options;
+
+  /// Optional observer for navigation events.
+  final ISpectNavigatorObserver? navigatorObserver;
 
   @override
   State<LogsScreen> createState() => _LogsScreenState();
@@ -422,6 +427,23 @@ class _LogsScreenState extends State<LogsScreen> {
             );
           },
         ),
+        if (widget.navigatorObserver != null)
+          ISpectActionItem(
+            title: 'Navigation flow',
+            icon: Icons.route_rounded,
+            onTap: (context) {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  settings: const RouteSettings(
+                    name: 'Navigation Flow',
+                  ),
+                  builder: (context) => ISpectNavigationFlowScreen(
+                    observer: widget.navigatorObserver!,
+                  ),
+                ),
+              );
+            },
+          ),
         ISpectActionItem(
           title: context.ispectL10n.appData,
           icon: Icons.data_usage_rounded,

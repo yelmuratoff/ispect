@@ -125,9 +125,19 @@ class _AppState extends State<App> {
       themeMode: themeMode,
       builder: (context, child) {
         child = ISpectBuilder(
+          theme: const ISpectTheme(
+            pageTitle: 'ISpect',
+          ),
+          observer: _observer,
+          controller: _controller,
+          initialPosition: (x: 0, y: 200),
+          onPositionChanged: (x, y) {
+            debugPrint('x: $x, y: $y');
+          },
           options: ISpectOptions(
             locale: locale,
             // isThemeSchemaEnabled: false,
+
             panelButtons: [
               DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,
@@ -170,15 +180,6 @@ class _AppState extends State<App> {
               ),
             ],
           ),
-          theme: const ISpectTheme(
-            pageTitle: 'ISpect',
-          ),
-          observer: _observer,
-          controller: _controller,
-          initialPosition: (x: 0, y: 200),
-          onPositionChanged: (x, y) {
-            debugPrint('x: $x, y: $y');
-          },
           child: child ?? const SizedBox(),
         );
         return child;
