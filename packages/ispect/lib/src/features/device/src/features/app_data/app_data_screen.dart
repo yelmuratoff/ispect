@@ -13,6 +13,15 @@ part 'controller/controller.dart';
 class AppDataScreen extends StatefulWidget {
   const AppDataScreen({super.key});
 
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: const RouteSettings(name: 'ISpect App Data Screen'),
+      ),
+    );
+  }
+
   @override
   State<AppDataScreen> createState() => _AppDataScreenState();
 }

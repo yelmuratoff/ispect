@@ -40,6 +40,15 @@ class LogsScreen extends StatefulWidget {
     this.navigatorObserver,
   });
 
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: const RouteSettings(name: 'ISpect Screen'),
+      ),
+    );
+  }
+
   /// Custom title for the screen's app bar.
   ///
   /// If not provided, a default title will be used based on the current locale.
@@ -421,11 +430,7 @@ class _LogsScreenState extends State<LogsScreen> {
           title: context.ispectL10n.appInfo,
           icon: Icons.info_rounded,
           onTap: (context) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const AppInfoScreen(),
-              ),
-            );
+            const AppInfoScreen().push(context);
           },
         ),
         if (widget.navigatorObserver != null)
@@ -433,27 +438,16 @@ class _LogsScreenState extends State<LogsScreen> {
             title: 'Navigation Flow',
             icon: Icons.route_rounded,
             onTap: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  settings: const RouteSettings(
-                    name: 'Navigation Flow Screen',
-                  ),
-                  builder: (context) => ISpectNavigationFlowScreen(
-                    observer: widget.navigatorObserver!,
-                  ),
-                ),
-              );
+              ISpectNavigationFlowScreen(
+                observer: widget.navigatorObserver!,
+              ).push(context);
             },
           ),
         ISpectActionItem(
           title: context.ispectL10n.appData,
           icon: Icons.data_usage_rounded,
           onTap: (context) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const AppDataScreen(),
-              ),
-            );
+            const AppDataScreen().push(context);
           },
         ),
         ...widget.options.actionItems,

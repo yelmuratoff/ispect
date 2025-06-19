@@ -23,6 +23,15 @@ class JsonScreen extends StatefulWidget {
   final Map<String, dynamic>? truncatedData;
   final VoidCallback? onClose;
 
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: const RouteSettings(name: 'ISpect Log Screen'),
+      ),
+    );
+  }
+
   @override
   State<JsonScreen> createState() => _JsonScreenState();
 }

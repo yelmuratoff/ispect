@@ -92,32 +92,15 @@ class _LogCardHeader extends StatelessWidget {
               dateTime: data.formattedTime,
               onCopyTap: onCopyTap,
               onRouteTap: data.isRouteLog && observer != null
-                  ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ISpectNavigationFlowScreen(
-                            observer: observer!,
-                            log: data as RouteLog,
-                          ),
-                          settings: RouteSettings(
-                            name: 'Navigation Flow Screen',
-                            arguments: {
-                              'id': (data as RouteLog).transitionId,
-                            },
-                          ),
-                        ),
-                      )
+                  ? () => ISpectNavigationFlowScreen(
+                        observer: observer!,
+                        log: data as RouteLog,
+                      ).push(context)
                   : null,
-              onHttpTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => JsonScreen(
-                    data: data.toJson(),
-                    truncatedData: data.toJson(truncated: true),
-                  ),
-                  settings: const RouteSettings(
-                    name: 'Detailed Log Screen',
-                  ),
-                ),
-              ),
+              onHttpTap: () => JsonScreen(
+                data: data.toJson(),
+                truncatedData: data.toJson(truncated: true),
+              ).push(context),
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,

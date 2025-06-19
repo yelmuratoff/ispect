@@ -18,6 +18,22 @@ class ISpectNavigationFlowScreen extends StatefulWidget {
   final ISpectNavigatorObserver observer;
   final RouteLog? log;
 
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: RouteSettings(
+          name: 'ISpect Navigation Flow Screen',
+          arguments: log != null
+              ? {
+                  'id': log?.transitionId,
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+
   @override
   State<ISpectNavigationFlowScreen> createState() =>
       _ISpectNavigationFlowScreenState();
@@ -181,13 +197,9 @@ class _NavigationTransitionCard extends StatelessWidget {
                       icon: Icons.zoom_out_map_rounded,
                       color: theme.colorScheme.primary,
                       onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (context) => JsonScreen(
-                              data: log!.toJson(),
-                            ),
-                          ),
-                        );
+                        JsonScreen(
+                          data: log!.toJson(),
+                        ).push(context);
                       },
                     ),
                 ],
@@ -211,13 +223,9 @@ class _NavigationTransitionCard extends StatelessWidget {
                     icon: Icons.zoom_out_map_rounded,
                     color: theme.colorScheme.primary,
                     onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => JsonScreen(
-                            data: log!.toJson(),
-                          ),
-                        ),
-                      );
+                      JsonScreen(
+                        data: log!.toJson(),
+                      ).push(context);
                     },
                   ),
               ],

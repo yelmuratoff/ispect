@@ -16,6 +16,15 @@ part 'widgets/package_info_body.dart';
 class AppInfoScreen extends StatefulWidget {
   const AppInfoScreen({super.key});
 
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: const RouteSettings(name: 'ISpect App Info Screen'),
+      ),
+    );
+  }
+
   @override
   State<AppInfoScreen> createState() => _AppInfoScreenState();
 }
