@@ -95,6 +95,8 @@ StackTrace: $stackTraceText]''';
         ISpectifyLogType.httpError.key,
       ].contains(key);
 
+  bool get isRouteLog => key == ISpectifyLogType.route.key;
+
   /// Retrieves the type of exception or error, if applicable.
   ///
   /// Returns `null` for non-error logs.

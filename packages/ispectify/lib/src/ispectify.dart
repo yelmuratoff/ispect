@@ -352,9 +352,10 @@ class ISpectify {
   ///
   /// - `message`: The log message, typically a route name or path.
   void route(
-    String message,
-  ) {
-    _processLog(RouteLog(message));
+    String message, {
+    int? transitionId,
+  }) {
+    _processLog(RouteLog(message, transitionId: transitionId));
   }
 
   /// Creates a provider log entry.

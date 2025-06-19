@@ -8,6 +8,7 @@ class CollapsedBody extends StatelessWidget {
     required this.dateTime,
     required this.onCopyTap,
     required this.onHttpTap,
+    required this.onRouteTap,
     required this.message,
     required this.errorMessage,
     required this.expanded,
@@ -20,6 +21,8 @@ class CollapsedBody extends StatelessWidget {
   final String dateTime;
   final VoidCallback? onCopyTap;
   final VoidCallback? onHttpTap;
+  final VoidCallback? onRouteTap;
+
   final String? message;
   final String? errorMessage;
   final bool expanded;
@@ -60,6 +63,14 @@ class CollapsedBody extends StatelessWidget {
               ],
             ),
           ),
+          if (onRouteTap != null) ...[
+            SquareIconButton(
+              icon: Icons.compare_arrows_rounded,
+              color: color,
+              onPressed: onRouteTap,
+            ),
+            const Gap(4),
+          ],
           SquareIconButton(
             icon: Icons.copy_rounded,
             color: color,

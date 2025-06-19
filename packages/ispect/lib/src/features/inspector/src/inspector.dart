@@ -652,7 +652,7 @@ class InspectorState extends State<Inspector> {
             : null),
       ),
       settings: const RouteSettings(
-        name: 'ISpectScreen',
+        name: 'ISpect Screen',
       ),
     );
     if (_controller.inLoggerPage) {

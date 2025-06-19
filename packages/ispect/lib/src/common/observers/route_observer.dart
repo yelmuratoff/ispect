@@ -134,7 +134,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     addTransition(transition);
 
     final logMessage = _buildLogMessage(type, route, previousRoute);
-    ISpect.logger.route(logMessage);
+    ISpect.logger.route(logMessage, transitionId: transition.id);
   }
 
   /// Generates a unique ID for route transitions using timestamp and hashCode.
@@ -194,7 +194,12 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     // Arguments info (only if present)
     final arguments = route?.settings.arguments;
     if (arguments != null) {
-      buffer.writeln('Arguments: $arguments');
+      if (arguments is Map<String, dynamic>) {
+        final formattedArgs = JsonTruncatorService.pretty(arguments);
+        buffer.writeln('Arguments: ${formattedArgs}');
+      } else {
+        buffer.writeln('Arguments: $arguments');
+      }
     }
 
     // Transition summary

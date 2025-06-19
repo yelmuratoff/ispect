@@ -220,6 +220,7 @@ class _LogsScreenState extends State<LogsScreen> {
             customItemBuilder: widget.itemsBuilder,
             onCopyPressed: () => _copyLogEntryText(logEntry),
             onItemTapped: () => _handleLogItemTap(logEntry),
+            observer: widget.navigatorObserver,
           );
         },
       );
@@ -429,13 +430,13 @@ class _LogsScreenState extends State<LogsScreen> {
         ),
         if (widget.navigatorObserver != null)
           ISpectActionItem(
-            title: 'Navigation flow',
+            title: 'Navigation Flow',
             icon: Icons.route_rounded,
             onTap: (context) {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   settings: const RouteSettings(
-                    name: 'Navigation Flow',
+                    name: 'Navigation Flow Screen',
                   ),
                   builder: (context) => ISpectNavigationFlowScreen(
                     observer: widget.navigatorObserver!,
@@ -513,6 +514,7 @@ class _LogListItem extends StatelessWidget {
     required this.dividerColor,
     required this.onItemTapped,
     required this.onCopyPressed,
+    this.observer,
     this.customItemBuilder,
     super.key,
   });
@@ -547,6 +549,8 @@ class _LogListItem extends StatelessWidget {
   /// Optional custom builder for the item content
   final ISpectifyDataBuilder? customItemBuilder;
 
+  final ISpectNavigatorObserver? observer;
+
   @override
   Widget build(BuildContext context) {
     Widget itemContent;
@@ -563,6 +567,7 @@ class _LogListItem extends StatelessWidget {
           isExpanded: isExpanded,
           onCopyTap: onCopyPressed,
           onTap: onItemTapped,
+          observer: observer,
         ),
       );
     }
