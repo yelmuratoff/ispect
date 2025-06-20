@@ -17,9 +17,9 @@ extension ISpectRouteExtension on Route<dynamic>? {
     final name = route.settings.name?.trim();
     if (name != null && name.isNotEmpty) return name;
 
+    if (route is ModalRoute) return 'Unnamed Modal';
     if (route is PageRoute) return 'Unnamed Page';
     if (route is PopupRoute) return 'Unnamed Popup';
-    if (route is ModalRoute) return 'Unnamed Modal';
 
     return route.runtimeType.toString();
   }
@@ -85,6 +85,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
   String _truncatedTransitionsToId(int id) {
     final list = reversed.toList(growable: false);
     final routeNames = <String>[];
+    var found = false;
     for (final transition in list) {
       final fromName = transition.from.routeName;
       final toName = transition.to.routeName;
@@ -95,8 +96,12 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
         routeNames.add(toName);
       }
       if (transition.id == id) {
+        found = true;
         break;
       }
+    }
+    if (!found) {
+      return '';
     }
     return routeNames.join(' → ');
   }

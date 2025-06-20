@@ -197,19 +197,19 @@ final class ISpectOptions {
   }
 
   @override
-  int get hashCode {
-    return locale.hashCode ^
-        isLogPageEnabled.hashCode ^
-        isPerformanceEnabled.hashCode ^
-        isInspectorEnabled.hashCode ^
-        isFeedbackEnabled.hashCode ^
-        isColorPickerEnabled.hashCode ^
-        isThemeSchemaEnabled.hashCode ^
-        actionItems.hashCode ^
-        panelItems.hashCode ^
-        panelButtons.hashCode ^
-        itemsBuilder.hashCode;
-  }
+  int get hashCode => Object.hash(
+        locale,
+        isLogPageEnabled,
+        isPerformanceEnabled,
+        isInspectorEnabled,
+        isFeedbackEnabled,
+        isColorPickerEnabled,
+        isThemeSchemaEnabled,
+        const DeepCollectionEquality().hash(actionItems),
+        const DeepCollectionEquality().hash(panelItems),
+        const DeepCollectionEquality().hash(panelButtons),
+        itemsBuilder,
+      );
 
   @override
   String toString() {
