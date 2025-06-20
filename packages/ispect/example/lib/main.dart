@@ -88,7 +88,7 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final _controller = DraggablePanelController();
   final _observer = ISpectNavigatorObserver(
-    isLogModals: false,
+    isLogModals: true,
   );
 
   static const Locale locale = Locale('en');

@@ -30,7 +30,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   ISpectNavigatorObserver({
     this.isLogGestures = false,
     this.isLogPages = true,
-    this.isLogModals = true,
+    this.isLogModals = false,
     this.isLogOtherTypes = true,
     this.onPush,
     this.onReplace,
@@ -64,13 +64,6 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onStartUserGesture;
   final VoidCallback? onStopUserGesture;
-
-  /// Determines the type of a given `route`.
-  String _getRouteType(Route<dynamic>? route) {
-    if (route is PageRoute) return 'Page';
-    if (route is ModalRoute) return 'Modal';
-    return route.runtimeType.toString();
-  }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -178,9 +171,9 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   ) {
     final buffer = StringBuffer();
     final routeName = route.routeName;
-    final routeType = _getRouteType(route);
+    final routeType = route.routeType;
     final previousRouteName = previousRoute.routeName;
-    final previousRouteType = _getRouteType(previousRoute);
+    final previousRouteType = previousRoute.routeType;
 
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
@@ -220,12 +213,11 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     // If both routes are PageRoutes
     if (routeIsPage && prevRouteIsPage) {
+      // // If one route is PageRoute and the other is not, don't log
+      // if (routeIsPage != prevRouteIsPage) {
+      //   return false;
+      // }
       return isLogPages;
-    }
-
-    // If one route is PageRoute and the other is not, don't log
-    if (routeIsPage != prevRouteIsPage) {
-      return false;
     }
 
     // At this point, neither route is a PageRoute

@@ -339,10 +339,12 @@ class _LogsScreenState extends State<LogsScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        // routeSettings: const RouteSettings(name: 'ISpect Logs Info Sheet'),
         builder: (_) => const ISpectLogsInfoBottomSheet(),
       ),
       orElse: () => showDialog<void>(
         context: context,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Info Dialog'),
         builder: (_) => const ISpectLogsInfoBottomSheet(),
       ),
     );
@@ -374,11 +376,13 @@ class _LogsScreenState extends State<LogsScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
         builder: (_) => _buildSettingsSheet(context),
       ),
       orElse: () => showDialog<void>(
         context: context,
         useRootNavigator: false,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
         builder: (_) => _buildSettingsSheet(context),
       ),
     );
