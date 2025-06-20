@@ -9,6 +9,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
@@ -36,7 +37,17 @@ class LogsScreen extends StatefulWidget {
     super.key,
     this.appBarTitle,
     this.itemsBuilder,
+    this.navigatorObserver,
   });
+
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => this,
+        settings: const RouteSettings(name: 'ISpect Screen'),
+      ),
+    );
+  }
 
   /// Custom title for the screen's app bar.
   ///
@@ -61,6 +72,9 @@ class LogsScreen extends StatefulWidget {
   ///
   /// Contains settings for theming, behavior, and additional action items.
   final ISpectOptions options;
+
+  /// Optional observer for navigation events.
+  final ISpectNavigatorObserver? navigatorObserver;
 
   @override
   State<LogsScreen> createState() => _LogsScreenState();
@@ -215,6 +229,7 @@ class _LogsScreenState extends State<LogsScreen> {
             customItemBuilder: widget.itemsBuilder,
             onCopyPressed: () => _copyLogEntryText(logEntry),
             onItemTapped: () => _handleLogItemTap(logEntry),
+            observer: widget.navigatorObserver,
           );
         },
       );
@@ -324,10 +339,12 @@ class _LogsScreenState extends State<LogsScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        // routeSettings: const RouteSettings(name: 'ISpect Logs Info Sheet'),
         builder: (_) => const ISpectLogsInfoBottomSheet(),
       ),
       orElse: () => showDialog<void>(
         context: context,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Info Dialog'),
         builder: (_) => const ISpectLogsInfoBottomSheet(),
       ),
     );
@@ -359,11 +376,13 @@ class _LogsScreenState extends State<LogsScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
         builder: (_) => _buildSettingsSheet(context),
       ),
       orElse: () => showDialog<void>(
         context: context,
         useRootNavigator: false,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
         builder: (_) => _buildSettingsSheet(context),
       ),
     );
@@ -415,22 +434,24 @@ class _LogsScreenState extends State<LogsScreen> {
           title: context.ispectL10n.appInfo,
           icon: Icons.info_rounded,
           onTap: (context) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const AppInfoScreen(),
-              ),
-            );
+            const AppInfoScreen().push(context);
           },
         ),
+        if (widget.navigatorObserver != null)
+          ISpectActionItem(
+            title: 'Navigation Flow',
+            icon: Icons.route_rounded,
+            onTap: (context) {
+              ISpectNavigationFlowScreen(
+                observer: widget.navigatorObserver!,
+              ).push(context);
+            },
+          ),
         ISpectActionItem(
           title: context.ispectL10n.appData,
           icon: Icons.data_usage_rounded,
           onTap: (context) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const AppDataScreen(),
-              ),
-            );
+            const AppDataScreen().push(context);
           },
         ),
         ...widget.options.actionItems,
@@ -491,6 +512,7 @@ class _LogListItem extends StatelessWidget {
     required this.dividerColor,
     required this.onItemTapped,
     required this.onCopyPressed,
+    this.observer,
     this.customItemBuilder,
     super.key,
   });
@@ -525,6 +547,8 @@ class _LogListItem extends StatelessWidget {
   /// Optional custom builder for the item content
   final ISpectifyDataBuilder? customItemBuilder;
 
+  final ISpectNavigatorObserver? observer;
+
   @override
   Widget build(BuildContext context) {
     Widget itemContent;
@@ -541,6 +565,7 @@ class _LogListItem extends StatelessWidget {
           isExpanded: isExpanded,
           onCopyTap: onCopyPressed,
           onTap: onItemTapped,
+          observer: observer,
         ),
       );
     }

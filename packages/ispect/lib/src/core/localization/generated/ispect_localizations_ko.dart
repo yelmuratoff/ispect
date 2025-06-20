@@ -557,4 +557,19 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => '메인 화면으로 돌아가기';
+
+  @override
+  String get navigationFlow => '네비게이션 플로우';
+
+  @override
+  String get noNavigationTransitions => '네비게이션 전환이 기록되지 않음';
+
+  @override
+  String get current => '현재';
+
+  @override
+  String get start => '시작';
+
+  @override
+  String get selectedTransition => '선택된 전환';
 }

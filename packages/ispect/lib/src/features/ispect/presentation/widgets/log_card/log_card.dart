@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 part 'collapsed_body.dart';
@@ -14,6 +15,7 @@ class LogCard extends StatelessWidget {
     required this.index,
     required this.isExpanded,
     required this.onTap,
+    this.observer,
     this.onCopyTap,
     super.key,
   });
@@ -25,6 +27,7 @@ class LogCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onTap;
   final VoidCallback? onCopyTap;
+  final ISpectNavigatorObserver? observer;
 
   @override
   Widget build(BuildContext context) => RepaintBoundary(
@@ -42,6 +45,7 @@ class LogCard extends StatelessWidget {
                 isExpanded: isExpanded,
                 onTap: onTap,
                 onCopyTap: onCopyTap,
+                observer: observer,
               ),
               if (isExpanded) ...[
                 _ExpandedContent(
@@ -62,6 +66,7 @@ class _LogCardHeader extends StatelessWidget {
     required this.data,
     required this.isExpanded,
     required this.onTap,
+    required this.observer,
     this.onCopyTap,
   });
 
@@ -71,6 +76,7 @@ class _LogCardHeader extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onTap;
   final VoidCallback? onCopyTap;
+  final ISpectNavigatorObserver? observer;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -85,17 +91,16 @@ class _LogCardHeader extends StatelessWidget {
               title: data.key,
               dateTime: data.formattedTime,
               onCopyTap: onCopyTap,
-              onHttpTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => JsonScreen(
-                    data: data.toJson(),
-                    truncatedData: data.toJson(truncated: true),
-                  ),
-                  settings: const RouteSettings(
-                    name: 'Detailed Log Screen',
-                  ),
-                ),
-              ),
+              onRouteTap: data.isRouteLog && observer != null
+                  ? () => ISpectNavigationFlowScreen(
+                        observer: observer!,
+                        log: data as RouteLog,
+                      ).push(context)
+                  : null,
+              onHttpTap: () => JsonScreen(
+                data: data.toJson(),
+                truncatedData: data.toJson(truncated: true),
+              ).push(context),
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,

@@ -24,11 +24,14 @@ class AnalyticsLog extends ISpectifyData {
 /// `RouteLog` - This class contains the route log.
 class RouteLog extends ISpectifyData {
   RouteLog(
-    String super.message,
-  ) : super(
+    String super.message, {
+    this.transitionId,
+  }) : super(
           key: ISpectifyLogType.route.key,
           title: ISpectifyLogType.route.key,
         );
+
+  final String? transitionId;
 }
 
 /// `ProviderLog` - This class contains the provider log.

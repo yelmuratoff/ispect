@@ -1120,6 +1120,36 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Back to the main screen'**
   String get backToMainScreen;
+
+  /// No description provided for @navigationFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation Flow'**
+  String get navigationFlow;
+
+  /// No description provided for @noNavigationTransitions.
+  ///
+  /// In en, this message translates to:
+  /// **'No navigation transitions recorded'**
+  String get noNavigationTransitions;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get current;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @selectedTransition.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Transition'**
+  String get selectedTransition;
 }
 
 class _ISpectGeneratedLocalizationDelegate

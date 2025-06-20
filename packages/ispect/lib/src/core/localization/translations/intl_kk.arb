@@ -166,5 +166,10 @@
    "inspectWidgets": "Экрандағы виджеттерді тексеру",
    "togglePerformanceTracking": "Өнімділік қадағалауын ауыстыру",
    "openLogViewer": "Лог көрушісін ашу",
-   "backToMainScreen": "Негізгі экранға оралу"
+   "backToMainScreen": "Негізгі экранға оралу",
+   "navigationFlow": "Навигация ағыны",
+   "noNavigationTransitions": "Навигациялық ауысулар тіркелмеген",
+   "current": "Ағымдағы",
+   "start": "Бастау",
+   "selectedTransition": "Таңдалған ауысу"
 }

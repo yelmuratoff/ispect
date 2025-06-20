@@ -133,5 +133,10 @@
    "inspectWidgets": "检查屏幕上的组件",
    "togglePerformanceTracking": "切换性能跟踪",
    "openLogViewer": "打开日志查看器",
-   "backToMainScreen": "返回主屏幕"
+   "backToMainScreen": "返回主屏幕",
+   "navigationFlow": "导航流程",
+   "noNavigationTransitions": "未记录导航转换",
+   "current": "当前",
+   "start": "开始",
+   "selectedTransition": "已选转换"
 }

@@ -351,8 +351,11 @@ class ISpectify {
   /// These logs are used for tracking navigation events in the application.
   ///
   /// - `message`: The log message, typically a route name or path.
-  void route(String message) {
-    _processLog(RouteLog(message));
+  void route(
+    String message, {
+    String? transitionId,
+  }) {
+    _processLog(RouteLog(message, transitionId: transitionId));
   }
 
   /// Creates a provider log entry.

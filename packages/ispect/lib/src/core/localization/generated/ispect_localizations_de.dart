@@ -579,4 +579,20 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Zurück zum Hauptbildschirm';
+
+  @override
+  String get navigationFlow => 'Navigationsfluss';
+
+  @override
+  String get noNavigationTransitions =>
+      'Keine Navigationstransitionen aufgezeichnet';
+
+  @override
+  String get current => 'Aktuell';
+
+  @override
+  String get start => 'Start';
+
+  @override
+  String get selectedTransition => 'Ausgewählter Übergang';
 }

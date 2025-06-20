@@ -166,5 +166,10 @@
    "inspectWidgets": "Inspect widgets on the screen",
    "togglePerformanceTracking": "Toggle performance tracking",
    "openLogViewer": "Open the log viewer",
-   "backToMainScreen": "Back to the main screen"
+   "backToMainScreen": "Back to the main screen",
+   "navigationFlow": "Navigation Flow",
+   "noNavigationTransitions": "No navigation transitions recorded",
+   "current": "Current",
+   "start": "Start",
+   "selectedTransition": "Selected Transition"
 }

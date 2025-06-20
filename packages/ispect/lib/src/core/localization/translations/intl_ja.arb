@@ -166,5 +166,10 @@
    "inspectWidgets": "画面上のウィジェットを検査",
    "togglePerformanceTracking": "パフォーマンス追跡を切り替え",
    "openLogViewer": "ログビューアを開く",
-   "backToMainScreen": "メイン画面に戻る"
+   "backToMainScreen": "メイン画面に戻る",
+   "navigationFlow": "ナビゲーションフロー",
+   "noNavigationTransitions": "ナビゲーションの遷移は記録されていません",
+   "current": "現在",
+   "start": "開始",
+   "selectedTransition": "選択された遷移"
 }

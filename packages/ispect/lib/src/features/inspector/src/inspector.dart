@@ -647,9 +647,12 @@ class InspectorState extends State<Inspector> {
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
         itemsBuilder: widget.options.itemsBuilder,
+        navigatorObserver: (widget.observer is ISpectNavigatorObserver
+            ? widget.observer as ISpectNavigatorObserver?
+            : null),
       ),
       settings: const RouteSettings(
-        name: 'ISpectScreen',
+        name: 'ISpect Screen',
       ),
     );
     if (_controller.inLoggerPage) {

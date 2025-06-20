@@ -166,5 +166,10 @@
    "inspectWidgets": "Inspeccionar widgets en pantalla",
    "togglePerformanceTracking": "Alternar seguimiento de rendimiento",
    "openLogViewer": "Abrir visor de registros",
-   "backToMainScreen": "Volver a la pantalla principal"
+   "backToMainScreen": "Volver a la pantalla principal",
+   "navigationFlow": "Flujo de navegación",
+   "noNavigationTransitions": "No se registraron transiciones de navegación",
+   "current": "Actual",
+   "start": "Inicio",
+   "selectedTransition": "Transición seleccionada"
 }
