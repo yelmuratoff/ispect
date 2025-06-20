@@ -137,14 +137,17 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     ISpect.logger.route(logMessage, transitionId: transition.id);
   }
 
-  /// Generates a string ID for route transitions using timestamp, isolate hash, route hash, and a static counter.
-  static int _transitionCounter = 0;
   String _generateTransitionId(DateTime timestamp, Route<dynamic>? route) {
-    final int time = timestamp.microsecondsSinceEpoch;
-    final int isolate = Isolate.current.hashCode;
-    final int routeHash = route?.hashCode ?? 0;
-    final int counter = _transitionCounter++;
-    return '$time-$isolate-$routeHash-$counter';
+    final micro = timestamp.microsecondsSinceEpoch;
+    final isolateId = Isolate.current.hashCode;
+    final routeId = route?.hashCode ?? 0;
+    final instanceId = identityHashCode(this);
+
+    final String raw = '$micro-$isolateId-$routeId-$instanceId';
+
+    final int hash = raw.codeUnits.fold(0, (prev, e) => 31 * prev + e);
+
+    return hash.toUnsigned(64).toRadixString(36);
   }
 
   /// Creates a RouteTransition instance with proper ID generation.
