@@ -40,12 +40,16 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.onStopUserGesture,
   });
 
+  static const int _maxTransitions = 100;
   final List<RouteTransition> _transitions = [];
 
   List<RouteTransition> get transitions => List.unmodifiable(_transitions);
 
   void addTransition(RouteTransition transition) {
     _transitions.add(transition);
+    if (_transitions.length > _maxTransitions) {
+      _transitions.removeAt(0);
+    }
   }
 
   final bool isLogGestures;
