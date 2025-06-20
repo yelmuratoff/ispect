@@ -101,7 +101,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
       }
     }
     if (!found) {
-      return '';
+      return 'Transition with id $id not found';
     }
     return routeNames.join(' → ');
   }
