@@ -17,8 +17,8 @@ extension ISpectRouteExtension on Route<dynamic>? {
     final name = route.settings.name?.trim();
     if (name != null && name.isNotEmpty) return name;
 
-    if (route is ModalRoute) return 'Unnamed Modal';
     if (route is PageRoute) return 'Unnamed Page';
+    if (route is ModalRoute) return 'Unnamed Modal';
     if (route is PopupRoute) return 'Unnamed Popup';
 
     return route.runtimeType.toString();
