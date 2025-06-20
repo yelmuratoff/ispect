@@ -160,6 +160,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       to: route,
       type: type,
       timestamp: timestamp,
+      arguments: route?.settings.arguments,
     );
   }
 

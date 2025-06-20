@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:ispect/src/features/json_viewer/explorer.dart';
@@ -136,24 +135,10 @@ class _JsonScreenState extends State<JsonScreen> {
                   IconButton(
                     icon: const Icon(Icons.share_rounded),
                     onPressed: () async {
-                      await context.screenSizeMaybeWhen(
-                        phone: () => showModalBottomSheet<void>(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => ISpectShareLogBottomSheet(
-                            data: widget.data,
-                            truncatedData: widget.truncatedData ?? widget.data,
-                          ),
-                        ),
-                        orElse: () => showDialog<void>(
-                          context: context,
-                          builder: (_) => ISpectShareLogBottomSheet(
-                            data: widget.data,
-                            truncatedData: widget.truncatedData ?? widget.data,
-                          ),
-                        ),
-                      );
+                      await ISpectShareLogBottomSheet(
+                        data: widget.data,
+                        truncatedData: widget.truncatedData ?? widget.data,
+                      ).show(context);
                     },
                   ),
                 ],

@@ -18,6 +18,21 @@ class ISpectShareLogBottomSheet extends StatefulWidget {
 
   final Map<String, dynamic> data;
   final Map<String, dynamic> truncatedData;
+
+  Future<void> show(BuildContext context) async {
+    await context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => this,
+      ),
+      orElse: () => showDialog<void>(
+        context: context,
+        builder: (_) => this,
+      ),
+    );
+  }
 }
 
 class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {

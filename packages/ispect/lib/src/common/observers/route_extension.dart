@@ -1,4 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:ispect/src/common/observers/transition.dart';
+import 'package:ispectify/ispectify.dart';
 
 extension ISpectRouteExtension on Route<dynamic>? {
   /// Retrieves the route name with meaningful fallbacks based on route type.
@@ -26,5 +30,80 @@ extension ISpectRouteExtension on Route<dynamic>? {
     if (this is ModalRoute) return 'Modal';
     if (this is PopupRoute) return 'Popup';
     return runtimeType.toString();
+  }
+}
+
+extension ISpectTransitionListExtension on List<RouteTransition> {
+  /// Returns either full transitions text or truncated (ID-based) description.
+  ///
+  /// - [isTruncated]: if true, returns truncated description (like transitionsToId)
+  /// - [id]: required if [isTruncated] is true
+  String transitionsDescription({bool isTruncated = false, int? id}) {
+    if (isEmpty) {
+      return 'No transitions recorded';
+    }
+    if (isTruncated) {
+      if (id == null) {
+        throw ArgumentError('id must be provided when isTruncated is true');
+      }
+      return _truncatedTransitionsToId(id);
+    }
+    return _fullTransitionsText();
+  }
+
+  String transitionsText({
+    bool isTruncated = false,
+  }) =>
+      transitionsDescription(isTruncated: isTruncated);
+  String transitionsToId(
+    int id, {
+    bool isTruncated = true,
+  }) =>
+      transitionsDescription(isTruncated: isTruncated, id: id);
+
+  String _fullTransitionsText() {
+    final buffer = StringBuffer();
+    forEachIndexed((index, transition) {
+      buffer
+        ..writeln(
+          _transitionSuffix(index, index == length - 1),
+        )
+        ..writeln(
+          DateFormat('dd.MM.yy, HH:mm:ss').format(transition.timestamp),
+        )
+        ..writeln(
+          '${transition.transitionText} (${transition.type.title})',
+        );
+      if (transition.arguments != null) {
+        buffer.writeln('Arguments: ${transition.prettyArguments}');
+      }
+      buffer.writeln('\n${ConsoleUtils.bottomLine(20)}');
+    });
+    return buffer.toString();
+  }
+
+  String _truncatedTransitionsToId(int id) {
+    final list = reversed.toList(growable: false);
+    final routeNames = <String>[];
+    for (final transition in list) {
+      final fromName = transition.from.routeName;
+      final toName = transition.to.routeName;
+      if (routeNames.isEmpty) {
+        routeNames.add(fromName);
+      }
+      if (routeNames.isEmpty || routeNames.last != toName) {
+        routeNames.add(toName);
+      }
+      if (transition.id == id) {
+        break;
+      }
+    }
+    return routeNames.join(' → ');
+  }
+
+  String _transitionSuffix(int index, bool isLast) {
+    if (index == 0) return 'Current: ';
+    if (isLast) return 'Start: ';
+    return '';
   }
 }

@@ -6,7 +6,9 @@ import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
-import 'package:ispect/src/features/json_viewer/json_screen.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/navigation_flow/actions_sheet.dart';
+
+final _timestampFormat = DateFormat('dd.MM.yy, HH:mm:ss');
 
 class ISpectNavigationFlowScreen extends StatefulWidget {
   const ISpectNavigationFlowScreen({
@@ -41,12 +43,12 @@ class ISpectNavigationFlowScreen extends StatefulWidget {
 
 class _ISpectNavigationFlowScreenState
     extends State<ISpectNavigationFlowScreen> {
-  final List<RouteTransition> _items = [];
+  late final List<RouteTransition> _items;
 
   @override
   void initState() {
     super.initState();
-    _items.addAll(widget.observer.transitions.reversed);
+    _items = widget.observer.transitions.reversed.toList();
   }
 
   @override
@@ -54,15 +56,33 @@ class _ISpectNavigationFlowScreenState
         appBar: AppBar(
           title: Text(context.ispectL10n.navigationFlow),
           leading: IconButton(
-            onPressed: Navigator.of(context).pop,
+            onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
+          actionsPadding: const EdgeInsets.only(right: 12),
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.more_horiz_rounded,
+              ),
+              onPressed: () {
+                ISpectNavigationFlowActionsSheet(
+                  items: _items,
+                  transition: null,
+                  log: widget.log,
+                ).show(context);
+              },
+            ),
+          ],
         ),
         body: _items.isEmpty
             ? Center(
                 child: Text(
                   context.ispectL10n.noNavigationTransitions,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
+                    color: context.ispectTheme.colorScheme.onSurface
+                        .withValues(alpha: 0.5),
+                  ),
                 ),
               )
             : context.screenSizeWhen<Widget>(
@@ -112,6 +132,7 @@ class _NavigationFlowList extends StatelessWidget {
             totalItems: items.length,
             log: log,
             selectedTransitionId: selectedTransitionId,
+            items: items,
           ),
         ),
       );
@@ -150,6 +171,7 @@ class _NavigationFlowGrid extends StatelessWidget {
             totalItems: items.length,
             log: log,
             selectedTransitionId: selectedTransitionId,
+            items: items,
           ),
         ),
       );
@@ -157,6 +179,7 @@ class _NavigationFlowGrid extends StatelessWidget {
 
 class _NavigationTransitionCard extends StatelessWidget {
   const _NavigationTransitionCard({
+    required this.items,
     required this.transition,
     required this.index,
     required this.totalItems,
@@ -164,17 +187,20 @@ class _NavigationTransitionCard extends StatelessWidget {
     this.log,
   });
 
+  final List<RouteTransition> items;
   final RouteLog? log;
   final RouteTransition transition;
   final int index;
   final int totalItems;
   final int? selectedTransitionId;
 
+  bool get _isSpecial => index == 0 || index == totalItems - 1;
+  bool get _isSelected => selectedTransitionId == transition.id;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isSpecial = index == 0 || index == totalItems - 1;
-    final isSelected = selectedTransitionId == transition.id;
+    final theme = context.ispectTheme;
+    final isHighlighted = _isSpecial || _isSelected;
 
     return Card(
       elevation: 0,
@@ -185,65 +211,43 @@ class _NavigationTransitionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (isSpecial || isSelected)
+            // Top section: special indicator and actions button
+            if (isHighlighted)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: 4,
                 children: [
                   Flexible(child: _buildSpecialIndicator(context)),
-                  if (log != null)
-                    SquareIconButton(
-                      icon: Icons.zoom_out_map_rounded,
-                      color: theme.colorScheme.primary,
-                      onPressed: () {
-                        JsonScreen(
-                          data: log!.toJson(),
-                        ).push(context);
-                      },
-                    ),
+                  if (log != null) _buildActionsButton(context, theme),
                 ],
               ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    transition.transitionText,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: isSpecial ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (log != null && !(isSelected || isSpecial))
-                  SquareIconButton(
-                    icon: Icons.zoom_out_map_rounded,
-                    color: theme.colorScheme.primary,
-                    onPressed: () {
-                      JsonScreen(
-                        data: log!.toJson(),
-                      ).push(context);
-                    },
-                  ),
-              ],
-            ),
+            // Middle section: transition text and actions button
             Flexible(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Flexible(
+                  Expanded(
                     child: Text(
-                      DateFormat('dd.MM.yy, HH:mm:ss')
-                          .format(transition.timestamp),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                      transition.transitionText,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight:
+                            _isSpecial ? FontWeight.w600 : FontWeight.w500,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (log != null && !isHighlighted)
+                    _buildActionsButton(context, theme),
                 ],
+              ),
+            ),
+            // Bottom section: timestamp
+            Text(
+              _timestampFormat.format(transition.timestamp),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -252,53 +256,57 @@ class _NavigationTransitionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecialIndicator(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: context.ispectTheme.colorScheme.primaryContainer,
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                _headerIcon(),
-                style: const TextStyle(fontSize: 10),
-              ),
-            ),
-            const Gap(4),
-            Flexible(
-              flex: 10,
-              child: Text(
-                _headerText(context),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.ispectTheme.textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: context.ispectTheme.colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
-          ],
-        ),
+  Widget _buildActionsButton(BuildContext context, ThemeData theme) =>
+      SquareIconButton(
+        icon: Icons.more_horiz_rounded,
+        color: theme.colorScheme.primary,
+        onPressed: () {
+          ISpectNavigationFlowActionsSheet(
+            items: items,
+            transition: transition,
+            log: log,
+          ).show(context);
+        },
       );
 
+  Widget _buildSpecialIndicator(BuildContext context) {
+    final colorScheme = context.ispectTheme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_headerIcon(), style: const TextStyle(fontSize: 10)),
+          const Gap(4),
+          Flexible(
+            child: Text(
+              _headerText(context),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.ispectTheme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _headerIcon() {
-    if (index == 0) {
-      return '📍'; // Current
-    } else if (index == totalItems - 1) {
-      return '🏁'; // Start
-    }
-    return '🔄'; // Transition
+    if (index == 0) return '📍';
+    if (index == totalItems - 1) return '🏁';
+    return '🔄';
   }
 
   String _headerText(BuildContext context) {
-    if (index == 0) {
-      return context.ispectL10n.current;
-    } else if (index == totalItems - 1) {
-      return context.ispectL10n.start;
-    }
+    if (index == 0) return context.ispectL10n.current;
+    if (index == totalItems - 1) return context.ispectL10n.start;
     return context.ispectL10n.selectedTransition;
   }
 }
