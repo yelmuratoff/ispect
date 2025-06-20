@@ -353,7 +353,7 @@ class ISpectify {
   /// - `message`: The log message, typically a route name or path.
   void route(
     String message, {
-    int? transitionId,
+    String? transitionId,
   }) {
     _processLog(RouteLog(message, transitionId: transitionId));
   }

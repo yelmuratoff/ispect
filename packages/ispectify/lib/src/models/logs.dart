@@ -31,7 +31,7 @@ class RouteLog extends ISpectifyData {
           title: ISpectifyLogType.route.key,
         );
 
-  final int? transitionId;
+  final String? transitionId;
 }
 
 /// `ProviderLog` - This class contains the provider log.

@@ -38,7 +38,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
   ///
   /// - [isTruncated]: if true, returns truncated description (like transitionsToId)
   /// - [id]: required if [isTruncated] is true
-  String transitionsDescription({bool isTruncated = false, int? id}) {
+  String transitionsDescription({bool isTruncated = false, String? id}) {
     if (isEmpty) {
       return 'No transitions recorded';
     }
@@ -56,7 +56,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
   }) =>
       transitionsDescription(isTruncated: isTruncated);
   String transitionsToId(
-    int id, {
+    String id, {
     bool isTruncated = true,
   }) =>
       transitionsDescription(isTruncated: isTruncated, id: id);
@@ -82,7 +82,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
     return buffer.toString();
   }
 
-  String _truncatedTransitionsToId(int id) {
+  String _truncatedTransitionsToId(String id) {
     final list = reversed.toList(growable: false);
     final routeNames = <String>[];
     var found = false;

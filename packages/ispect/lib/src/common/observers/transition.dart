@@ -35,7 +35,7 @@ class RouteTransition {
     required this.arguments,
   });
 
-  final int id;
+  final String id;
   final Route<dynamic>? from;
   final Route<dynamic>? to;
   // enum
@@ -99,7 +99,7 @@ class RouteTransition {
       );
 
   RouteTransition copyWith({
-    int? id,
+    String? id,
     Route<dynamic>? from,
     Route<dynamic>? to,
     TransitionType? type,

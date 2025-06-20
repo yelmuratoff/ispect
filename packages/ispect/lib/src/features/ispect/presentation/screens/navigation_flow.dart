@@ -117,7 +117,7 @@ class _NavigationFlowList extends StatelessWidget {
   });
 
   final List<RouteTransition> items;
-  final int? selectedTransitionId;
+  final String? selectedTransitionId;
   final RouteLog? log;
 
   @override
@@ -150,7 +150,7 @@ class _NavigationFlowGrid extends StatelessWidget {
   final List<RouteTransition> items;
   final double maxItemWidth;
   final double aspectRatio;
-  final int? selectedTransitionId;
+  final String? selectedTransitionId;
   final RouteLog? log;
 
   @override
@@ -192,7 +192,7 @@ class _NavigationTransitionCard extends StatelessWidget {
   final RouteTransition transition;
   final int index;
   final int totalItems;
-  final int? selectedTransitionId;
+  final String? selectedTransitionId;
 
   bool get _isSpecial => index == 0 || index == totalItems - 1;
   bool get _isSelected => selectedTransitionId == transition.id;
