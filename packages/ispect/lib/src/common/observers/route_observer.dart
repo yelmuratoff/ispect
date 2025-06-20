@@ -182,14 +182,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     final previousRouteName = previousRoute.routeName;
     final previousRouteType = _getRouteType(previousRoute);
 
-    // Primary transition info
-    buffer.writeln('${type.title}: $routeName (Type: $routeType)');
-
-    // Previous route info (only if route exists and has meaningful name)
-    if (previousRoute != null && previousRouteName != 'Unknown') {
-      buffer.writeln(
-          'Previous route: $previousRouteName (Type: $previousRouteType)');
-    }
+    buffer.writeln(
+        '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
     // Arguments info (only if present)
     final arguments = route?.settings.arguments;
@@ -201,9 +195,6 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         buffer.writeln('Arguments: $arguments');
       }
     }
-
-    // Transition summary
-    buffer.writeln('${type.title} | $previousRouteName → $routeName');
 
     return buffer.toString().trim();
   }

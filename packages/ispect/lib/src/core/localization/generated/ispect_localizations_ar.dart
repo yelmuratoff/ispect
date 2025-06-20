@@ -567,4 +567,19 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'العودة إلى الشاشة الرئيسية';
+
+  @override
+  String get navigationFlow => 'تدفق التنقل';
+
+  @override
+  String get noNavigationTransitions => 'لم يتم تسجيل أي انتقالات تنقل';
+
+  @override
+  String get current => 'الحالي';
+
+  @override
+  String get start => 'البداية';
+
+  @override
+  String get selectedTransition => 'الانتقال المحدد';
 }

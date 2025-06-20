@@ -575,4 +575,19 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Вернуться на главный экран';
+
+  @override
+  String get navigationFlow => 'Flow навигации';
+
+  @override
+  String get noNavigationTransitions => 'Переходы навигации не зафиксированы';
+
+  @override
+  String get current => 'Текущий';
+
+  @override
+  String get start => 'Начало';
+
+  @override
+  String get selectedTransition => 'Выбранный переход';
 }

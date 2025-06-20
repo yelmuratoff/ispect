@@ -557,4 +557,19 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => '返回主屏幕';
+
+  @override
+  String get navigationFlow => '导航流程';
+
+  @override
+  String get noNavigationTransitions => '未记录导航转换';
+
+  @override
+  String get current => '当前';
+
+  @override
+  String get start => '开始';
+
+  @override
+  String get selectedTransition => '已选转换';
 }

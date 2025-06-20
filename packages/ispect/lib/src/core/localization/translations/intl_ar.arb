@@ -166,5 +166,10 @@
    "inspectWidgets": "فحص العناصر على الشاشة",
    "togglePerformanceTracking": "تبديل تتبع الأداء",
    "openLogViewer": "فتح عارض السجلات",
-   "backToMainScreen": "العودة إلى الشاشة الرئيسية"
+   "backToMainScreen": "العودة إلى الشاشة الرئيسية",
+   "navigationFlow": "تدفق التنقل",
+   "noNavigationTransitions": "لم يتم تسجيل أي انتقالات تنقل",
+   "current": "الحالي",
+   "start": "البداية",
+   "selectedTransition": "الانتقال المحدد"
 }

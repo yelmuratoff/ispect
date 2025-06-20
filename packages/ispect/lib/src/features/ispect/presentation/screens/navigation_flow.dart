@@ -52,17 +52,17 @@ class _ISpectNavigationFlowScreenState
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text('Navigation Flow'),
+          title: Text(context.ispectL10n.navigationFlow),
           leading: IconButton(
             onPressed: Navigator.of(context).pop,
             icon: const Icon(Icons.arrow_back_rounded),
           ),
         ),
         body: _items.isEmpty
-            ? const Center(
+            ? Center(
                 child: Text(
-                  'No navigation transitions recorded',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  context.ispectL10n.noNavigationTransitions,
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               )
             : context.screenSizeWhen<Widget>(
@@ -271,7 +271,7 @@ class _NavigationTransitionCard extends StatelessWidget {
             Flexible(
               flex: 10,
               child: Text(
-                _headerText(),
+                _headerText(context),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.ispectTheme.textTheme.labelSmall?.copyWith(
@@ -293,12 +293,12 @@ class _NavigationTransitionCard extends StatelessWidget {
     return '🔄'; // Transition
   }
 
-  String _headerText() {
+  String _headerText(BuildContext context) {
     if (index == 0) {
-      return 'Current';
+      return context.ispectL10n.current;
     } else if (index == totalItems - 1) {
-      return 'Start';
+      return context.ispectL10n.start;
     }
-    return 'Selected Transition';
+    return context.ispectL10n.selectedTransition;
   }
 }

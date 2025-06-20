@@ -557,4 +557,19 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'メイン画面に戻る';
+
+  @override
+  String get navigationFlow => 'ナビゲーションフロー';
+
+  @override
+  String get noNavigationTransitions => 'ナビゲーションの遷移は記録されていません';
+
+  @override
+  String get current => '現在';
+
+  @override
+  String get start => '開始';
+
+  @override
+  String get selectedTransition => '選択された遷移';
 }

@@ -577,4 +577,19 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Негізгі экранға оралу';
+
+  @override
+  String get navigationFlow => 'Навигация ағыны';
+
+  @override
+  String get noNavigationTransitions => 'Навигациялық ауысулар тіркелмеген';
+
+  @override
+  String get current => 'Ағымдағы';
+
+  @override
+  String get start => 'Бастау';
+
+  @override
+  String get selectedTransition => 'Таңдалған ауысу';
 }
