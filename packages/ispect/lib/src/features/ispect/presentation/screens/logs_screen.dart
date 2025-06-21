@@ -17,6 +17,11 @@ import 'package:ispect/src/features/ispect/presentation/widgets/settings/setting
 import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
+///
+/// - Parameters: options, appBarTitle, itemsBuilder, navigatorObserver
+/// - Return: StatefulWidget that displays logs in a scrollable list
+/// - Usage example: LogsScreen(options: myOptions).push(context)
+/// - Edge case notes: Handles empty state when no logs are available
 class LogsScreen extends StatefulWidget {
   const LogsScreen({
     required this.options,
@@ -26,6 +31,12 @@ class LogsScreen extends StatefulWidget {
     this.navigatorObserver,
   });
 
+  final String? appBarTitle;
+  final ISpectifyDataBuilder? itemsBuilder;
+  final ISpectOptions options;
+  final ISpectNavigatorObserver? navigatorObserver;
+
+  /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -35,22 +46,11 @@ class LogsScreen extends StatefulWidget {
     );
   }
 
-  final String? appBarTitle;
-  final ISpectifyDataBuilder? itemsBuilder;
-  final ISpectOptions options;
-  final ISpectNavigatorObserver? navigatorObserver;
-
   @override
   State<LogsScreen> createState() => _LogsScreenState();
 }
 
 class _LogsScreenState extends State<LogsScreen> {
-  static const double _cacheExtent = 1000;
-  static const double _dividerHeight = 1;
-  static const double _emptyStatePaddingTop = 24;
-  static const double _emptyStatePaddingLeft = 16;
-  static const double _sliverGapHeight = 8;
-
   final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
@@ -83,19 +83,33 @@ class _LogsScreenState extends State<LogsScreen> {
             Expanded(
               child: ISpectifyBuilder(
                 iSpectify: ISpect.logger,
-                builder: (context, data) =>
-                    _buildMainLogsList(context, data, iSpect),
+                builder: (context, data) => _MainLogsView(
+                  logsData: data,
+                  iSpectTheme: iSpect,
+                  titleFiltersController: _titleFiltersController,
+                  searchFocusNode: _searchFocusNode,
+                  logsScrollController: _logsScrollController,
+                  logsViewController: _logsViewController,
+                  appBarTitle: widget.appBarTitle,
+                  itemsBuilder: widget.itemsBuilder,
+                  navigatorObserver: widget.navigatorObserver,
+                  onSettingsTap: () => _openLogsSettings(context),
+                  onInfoTap: () => _showInfoBottomSheet(context),
+                ),
               ),
             ),
             if (_logsViewController.activeData != null) ...[
               VerticalDivider(
                 color: _getDividerColor(iSpect, context),
-                width: _dividerHeight,
-                thickness: _dividerHeight,
+                width: 1,
+                thickness: 1,
               ),
               context.screenSizeMaybeWhen(
                 phone: () => const SizedBox.shrink(),
-                orElse: _buildDetailView,
+                orElse: () => _DetailView(
+                  activeData: _logsViewController.activeData!,
+                  onClose: () => _logsViewController.activeData = null,
+                ),
               ),
             ],
           ],
@@ -104,98 +118,13 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  Widget _buildMainLogsList(
-    BuildContext context,
-    List<ISpectifyData> logsData,
-    ISpectScopeModel iSpectTheme,
-  ) {
-    final filteredLogEntries =
-        _logsViewController.applyCurrentFilters(logsData);
-    final (allTitles, uniqueTitles) = _logsViewController.getTitles(logsData);
-    return CustomScrollView(
-      controller: _logsScrollController,
-      cacheExtent: _cacheExtent,
-      slivers: [
-        ISpectAppBar(
-          focusNode: _searchFocusNode,
-          title: widget.appBarTitle,
-          titlesController: _titleFiltersController,
-          titles: allTitles,
-          uniqTitles: uniqueTitles,
-          controller: _logsViewController,
-          onSettingsTap: () => _openLogsSettings(context),
-          onInfoTap: () => _showInfoBottomSheet(context),
-          onToggleTitle: (title, selected) => _logsViewController
-              .handleTitleFilterToggle(title, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.backgroundColor(context),
-        ),
-        if (filteredLogEntries.isEmpty)
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: _emptyStatePaddingTop,
-                left: _emptyStatePaddingLeft,
-              ),
-              child: _EmptyLogsWidget(),
-            ),
-          ),
-        SliverList.builder(
-          itemCount: filteredLogEntries.length,
-          itemBuilder: (context, index) {
-            final logEntry = _logsViewController.getLogEntryAtIndex(
-              filteredLogEntries,
-              index,
-            );
-            return _LogListItem(
-              key: ValueKey('${logEntry.hashCode}_$index'),
-              logData: logEntry,
-              itemIndex: index,
-              statusIcon:
-                  iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
-              statusColor:
-                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
-              isExpanded:
-                  _logsViewController.activeData?.hashCode == logEntry.hashCode,
-              isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: _getDividerColor(iSpectTheme, context),
-              customItemBuilder: widget.itemsBuilder,
-              onCopyPressed: () => _logsViewController.copyLogEntryText(
-                context,
-                logEntry,
-                copyClipboard,
-              ),
-              onItemTapped: () =>
-                  _logsViewController.handleLogItemTap(logEntry),
-              observer: widget.navigatorObserver,
-            );
-          },
-        ),
-        const SliverGap(_sliverGapHeight),
-      ],
-    );
-  }
+  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
+      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 
   Future<void> _showInfoBottomSheet(BuildContext context) async {
     if (!mounted) return;
     await const ISpectLogsInfoBottomSheet().show(context);
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
-
-  Widget _buildDetailView() => Flexible(
-        child: RepaintBoundary(
-          child: JsonScreen(
-            key: ValueKey(_logsViewController.activeData!.hashCode),
-            data: _logsViewController.activeData!.toJson(),
-            truncatedData:
-                _logsViewController.activeData!.toJson(truncated: true),
-            onClose: () {
-              _logsViewController.activeData = null;
-            },
-          ),
-        ),
-      );
 
   void _openLogsSettings(BuildContext context) {
     final iSpectify = ValueNotifier(ISpect.logger);
@@ -317,14 +246,15 @@ class _LogListItem extends StatelessWidget {
             observer: observer,
           ),
         );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         itemContent,
         if (!isLastItem)
           Divider(
-            height: _LogsScreenState._dividerHeight,
-            thickness: _LogsScreenState._dividerHeight,
+            height: 1,
+            thickness: 1,
             color: dividerColor,
           ),
       ],
@@ -351,5 +281,124 @@ class _EmptyLogsWidget extends StatelessWidget {
             style: context.ispectTheme.textTheme.bodyLarge,
           ),
         ],
+      );
+}
+
+/// Main logs view widget that displays the scrollable list of logs
+class _MainLogsView extends StatelessWidget {
+  const _MainLogsView({
+    required this.logsData,
+    required this.iSpectTheme,
+    required this.titleFiltersController,
+    required this.searchFocusNode,
+    required this.logsScrollController,
+    required this.logsViewController,
+    required this.onSettingsTap,
+    required this.onInfoTap,
+    this.appBarTitle,
+    this.itemsBuilder,
+    this.navigatorObserver,
+  });
+
+  final List<ISpectifyData> logsData;
+  final ISpectScopeModel iSpectTheme;
+  final GroupButtonController titleFiltersController;
+  final FocusNode searchFocusNode;
+  final ScrollController logsScrollController;
+  final ISpectViewController logsViewController;
+  final VoidCallback onSettingsTap;
+  final VoidCallback onInfoTap;
+  final String? appBarTitle;
+  final ISpectifyDataBuilder? itemsBuilder;
+  final ISpectNavigatorObserver? navigatorObserver;
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
+    final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
+
+    return CustomScrollView(
+      controller: logsScrollController,
+      cacheExtent: 1000,
+      slivers: [
+        ISpectAppBar(
+          focusNode: searchFocusNode,
+          title: appBarTitle,
+          titlesController: titleFiltersController,
+          titles: allTitles,
+          uniqTitles: uniqueTitles,
+          controller: logsViewController,
+          onSettingsTap: onSettingsTap,
+          onInfoTap: onInfoTap,
+          onToggleTitle: (title, selected) => logsViewController
+              .handleTitleFilterToggle(title, isSelected: selected),
+          backgroundColor: iSpectTheme.theme.backgroundColor(context),
+        ),
+        if (filteredLogEntries.isEmpty)
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 24, left: 16),
+              child: _EmptyLogsWidget(),
+            ),
+          ),
+        SliverList.builder(
+          itemCount: filteredLogEntries.length,
+          itemBuilder: (context, index) {
+            final logEntry = logsViewController.getLogEntryAtIndex(
+              filteredLogEntries,
+              index,
+            );
+            return _LogListItem(
+              key: ValueKey('${logEntry.hashCode}_$index'),
+              logData: logEntry,
+              itemIndex: index,
+              statusIcon:
+                  iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+              statusColor:
+                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
+              isExpanded:
+                  logsViewController.activeData?.hashCode == logEntry.hashCode,
+              isLastItem: index == filteredLogEntries.length - 1,
+              dividerColor: _getDividerColor(iSpectTheme, context),
+              customItemBuilder: itemsBuilder,
+              onCopyPressed: () => logsViewController.copyLogEntryText(
+                context,
+                logEntry,
+                copyClipboard,
+              ),
+              onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
+              observer: navigatorObserver,
+            );
+          },
+        ),
+        const SliverGap(8),
+      ],
+    );
+  }
+
+  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
+      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
+}
+
+/// Detail view widget for displaying selected log data
+class _DetailView extends StatelessWidget {
+  const _DetailView({
+    required this.activeData,
+    required this.onClose,
+  });
+
+  final ISpectifyData activeData;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) => Flexible(
+        child: RepaintBoundary(
+          child: JsonScreen(
+            key: ValueKey(activeData.hashCode),
+            data: activeData.toJson(),
+            truncatedData: activeData.toJson(truncated: true),
+            onClose: onClose,
+          ),
+        ),
       );
 }
