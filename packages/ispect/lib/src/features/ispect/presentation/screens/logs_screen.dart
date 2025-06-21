@@ -139,60 +139,45 @@ class _LogsScreenState extends State<LogsScreen> {
               child: _EmptyLogsWidget(),
             ),
           ),
-        _buildVirtualizedLogsList(filteredLogEntries, iSpectTheme),
+        SliverList.builder(
+          itemCount: filteredLogEntries.length,
+          itemBuilder: (context, index) {
+            final logEntry = _logsViewController.getLogEntryAtIndex(
+              filteredLogEntries,
+              index,
+            );
+            return _LogListItem(
+              key: ValueKey('${logEntry.hashCode}_$index'),
+              logData: logEntry,
+              itemIndex: index,
+              statusIcon:
+                  iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+              statusColor:
+                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
+              isExpanded:
+                  _logsViewController.activeData?.hashCode == logEntry.hashCode,
+              isLastItem: index == filteredLogEntries.length - 1,
+              dividerColor: _getDividerColor(iSpectTheme, context),
+              customItemBuilder: widget.itemsBuilder,
+              onCopyPressed: () => _logsViewController.copyLogEntryText(
+                context,
+                logEntry,
+                copyClipboard,
+              ),
+              onItemTapped: () =>
+                  _logsViewController.handleLogItemTap(logEntry),
+              observer: widget.navigatorObserver,
+            );
+          },
+        ),
         const SliverGap(_sliverGapHeight),
       ],
     );
   }
 
-  Widget _buildVirtualizedLogsList(
-    List<ISpectifyData> filteredLogEntries,
-    ISpectScopeModel iSpectTheme,
-  ) =>
-      SliverList.builder(
-        itemCount: filteredLogEntries.length,
-        itemBuilder: (context, index) {
-          final logEntry =
-              _logsViewController.getLogEntryAtIndex(filteredLogEntries, index);
-          return _LogListItem(
-            key: ValueKey('${logEntry.hashCode}_$index'),
-            logData: logEntry,
-            itemIndex: index,
-            statusIcon:
-                iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
-            statusColor:
-                iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
-            isExpanded:
-                _logsViewController.activeData?.hashCode == logEntry.hashCode,
-            isLastItem: index == filteredLogEntries.length - 1,
-            dividerColor: _getDividerColor(iSpectTheme, context),
-            customItemBuilder: widget.itemsBuilder,
-            onCopyPressed: () => _logsViewController.copyLogEntryText(
-              context,
-              logEntry,
-              copyClipboard,
-            ),
-            onItemTapped: () => _logsViewController.handleLogItemTap(logEntry),
-            observer: widget.navigatorObserver,
-          );
-        },
-      );
-
   Future<void> _showInfoBottomSheet(BuildContext context) async {
     if (!mounted) return;
-    await context.screenSizeMaybeWhen(
-      phone: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => const ISpectLogsInfoBottomSheet(),
-      ),
-      orElse: () => showDialog<void>(
-        context: context,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Info Dialog'),
-        builder: (_) => const ISpectLogsInfoBottomSheet(),
-      ),
-    );
+    await const ISpectLogsInfoBottomSheet().show(context);
   }
 
   Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
@@ -213,31 +198,13 @@ class _LogsScreenState extends State<LogsScreen> {
       );
 
   void _openLogsSettings(BuildContext context) {
-    context.screenSizeMaybeWhen(
-      phone: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
-        builder: (_) => _buildSettingsSheet(context),
-      ),
-      orElse: () => showDialog<void>(
-        context: context,
-        useRootNavigator: false,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
-        builder: (_) => _buildSettingsSheet(context),
-      ),
-    );
-  }
-
-  ISpectSettingsBottomSheet _buildSettingsSheet(BuildContext context) {
     final iSpectify = ValueNotifier(ISpect.logger);
-    return ISpectSettingsBottomSheet(
+    ISpectSettingsBottomSheet(
       options: widget.options,
       iSpectify: iSpectify,
       controller: _logsViewController,
       actions: _buildSettingsActions(context),
-    );
+    ).show(context);
   }
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
@@ -287,32 +254,26 @@ class _LogsScreenState extends State<LogsScreen> {
         ISpectActionItem(
           title: context.ispectL10n.appInfo,
           icon: Icons.info_rounded,
-          onTap: (context) {
-            const AppInfoScreen().push(context);
-          },
+          onTap: (context) => const AppInfoScreen().push(context),
         ),
         if (widget.navigatorObserver != null)
           ISpectActionItem(
             title: 'Navigation Flow',
             icon: Icons.route_rounded,
-            onTap: (context) {
-              ISpectNavigationFlowScreen(
-                observer: widget.navigatorObserver!,
-              ).push(context);
-            },
+            onTap: (context) => ISpectNavigationFlowScreen(
+              observer: widget.navigatorObserver!,
+            ).push(context),
           ),
         ISpectActionItem(
           title: context.ispectL10n.appData,
           icon: Icons.data_usage_rounded,
-          onTap: (context) {
-            const AppDataScreen().push(context);
-          },
+          onTap: (context) => const AppDataScreen().push(context),
         ),
         ...widget.options.actionItems,
       ];
 }
 
-/// Log list item widget with integrated divider.
+/// A widget that represents a single log entry in the list.
 class _LogListItem extends StatelessWidget {
   const _LogListItem({
     required this.logData,
@@ -343,41 +304,37 @@ class _LogListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itemContent = customItemBuilder != null
-        ? customItemBuilder!(context, logData)
-        : RepaintBoundary(
-            child: LogCard(
-              icon: statusIcon,
-              color: statusColor,
-              data: logData,
-              index: itemIndex,
-              isExpanded: isExpanded,
-              onCopyTap: onCopyPressed,
-              onTap: onItemTapped,
-              observer: observer,
-            ),
-          );
-    if (isLastItem) return itemContent;
+    final itemContent = customItemBuilder?.call(context, logData) ??
+        RepaintBoundary(
+          child: LogCard(
+            icon: statusIcon,
+            color: statusColor,
+            data: logData,
+            index: itemIndex,
+            isExpanded: isExpanded,
+            onCopyTap: onCopyPressed,
+            onTap: onItemTapped,
+            observer: observer,
+          ),
+        );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         itemContent,
-        Divider(
-          height: _LogsScreenState._dividerHeight,
-          thickness: _LogsScreenState._dividerHeight,
-          color: dividerColor,
-        ),
+        if (!isLastItem)
+          Divider(
+            height: _LogsScreenState._dividerHeight,
+            thickness: _LogsScreenState._dividerHeight,
+            color: dividerColor,
+          ),
       ],
     );
   }
 }
 
-/// Widget displayed when no logs match the current filters.
+/// A widget displayed when there are no logs to show.
 class _EmptyLogsWidget extends StatelessWidget {
   const _EmptyLogsWidget();
-  static const double _iconSize = 40;
-  static const Color _iconColor = Colors.white70;
-  static const double _gapSize = 8;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -385,10 +342,10 @@ class _EmptyLogsWidget extends StatelessWidget {
         children: [
           const Icon(
             Icons.info_outline_rounded,
-            size: _iconSize,
-            color: _iconColor,
+            size: 40,
+            color: Colors.white70,
           ),
-          const Gap(_gapSize),
+          const Gap(8),
           Text(
             context.ispectL10n.notFound.capitalize(),
             style: context.ispectTheme.textTheme.bodyLarge,

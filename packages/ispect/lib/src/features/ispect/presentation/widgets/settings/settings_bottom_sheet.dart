@@ -30,6 +30,24 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
   /// Controller for the ISpect view
   final ISpectViewController controller;
 
+  Future<void> show(BuildContext context) async {
+    await context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
+        builder: (_) => this,
+      ),
+      orElse: () => showDialog<void>(
+        context: context,
+        useRootNavigator: false,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
+        builder: (_) => this,
+      ),
+    );
+  }
+
   @override
   State<ISpectSettingsBottomSheet> createState() =>
       _ISpectifySettingsBottomSheetState();

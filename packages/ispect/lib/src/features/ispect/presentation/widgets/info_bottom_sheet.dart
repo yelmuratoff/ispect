@@ -7,6 +7,23 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 class ISpectLogsInfoBottomSheet extends StatefulWidget {
   const ISpectLogsInfoBottomSheet({super.key});
 
+  Future<void> show(BuildContext context) async {
+    await context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Info Sheet'),
+        builder: (_) => this,
+      ),
+      orElse: () => showDialog<void>(
+        context: context,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Info Dialog'),
+        builder: (_) => this,
+      ),
+    );
+  }
+
   @override
   State<ISpectLogsInfoBottomSheet> createState() =>
       _ISpectLogsInfoBottomSheetState();
