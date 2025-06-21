@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/utils/logs_file/logs_file_factory.dart';
-import 'package:ispectify/ispectify.dart';
+import 'package:ispect/ispect.dart';
 
 /// Controller for managing the state of ISpectify views.
 ///
@@ -16,6 +15,17 @@ class ISpectViewController extends ChangeNotifier {
   List<Type>? _cachedTypes;
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
+
+  // --- Логика фильтрации и кеширования ---
+
+  List<ISpectifyData> _cachedFilteredData = <ISpectifyData>[];
+  int _lastProcessedDataLength = 0;
+  ISpectifyFilter? _lastAppliedFilter;
+  int? _lastDataHash;
+
+  List<String>? _cachedAllTitles;
+  List<String>? _cachedUniqueTitles;
+  int? _lastTitlesDataHash;
 
   /// Retrieves the current log filter.
   ISpectifyFilter get filter => _filter;
@@ -177,5 +187,112 @@ class ISpectViewController extends ChangeNotifier {
   void _notifyWithDebounce() {
     // For search queries, we could add debouncing here if needed
     notifyListeners();
+  }
+
+  List<ISpectifyData> applyCurrentFilters(List<ISpectifyData> logsData) {
+    final currentFilter = filter;
+    final currentDataHash = _calculateDataHash(logsData);
+    if (logsData.length == _lastProcessedDataLength &&
+        logsData.isNotEmpty &&
+        _cachedFilteredData.isNotEmpty &&
+        _lastDataHash == currentDataHash &&
+        _lastAppliedFilter == currentFilter) {
+      return _cachedFilteredData;
+    }
+    final filteredData = logsData.where(currentFilter.apply).toList();
+    _cachedFilteredData = filteredData;
+    _lastProcessedDataLength = logsData.length;
+    _lastAppliedFilter = currentFilter;
+    _lastDataHash = currentDataHash;
+    return filteredData;
+  }
+
+  int _calculateDataHash(List<ISpectifyData> data) {
+    if (data.isEmpty) return 0;
+    return Object.hashAll([
+      data.length,
+      data.first.hashCode,
+      data.last.hashCode,
+    ]);
+  }
+
+  (List<String>, List<String>) getTitles(List<ISpectifyData> logsData) {
+    final currentHash = _calculateDataHash(logsData);
+    if (_lastTitlesDataHash == currentHash &&
+        _cachedAllTitles != null &&
+        _cachedUniqueTitles != null) {
+      return (_cachedAllTitles!, _cachedUniqueTitles!);
+    }
+    final allTitles = logsData.map((e) => e.title).whereType<String>().toList();
+    final uniqueTitles = allTitles.toSet().toList();
+    _cachedAllTitles = allTitles;
+    _cachedUniqueTitles = uniqueTitles;
+    _lastTitlesDataHash = currentHash;
+    return (allTitles, uniqueTitles);
+  }
+
+  void handleLogItemTap(ISpectifyData logEntry) {
+    if (activeData?.hashCode == logEntry.hashCode) {
+      activeData = null;
+    } else {
+      activeData = logEntry;
+    }
+  }
+
+  void handleTitleFilterToggle(String title, {required bool isSelected}) {
+    if (isSelected) {
+      addFilterTitle(title);
+    } else {
+      removeFilterTitle(title);
+    }
+  }
+
+  ISpectifyData getLogEntryAtIndex(
+    List<ISpectifyData> filteredEntries,
+    int index,
+  ) {
+    final actualIndex =
+        isLogOrderReversed ? filteredEntries.length - 1 - index : index;
+    return filteredEntries[actualIndex];
+  }
+
+  void copyLogEntryText(
+    BuildContext context,
+    ISpectifyData logEntry,
+    void Function(BuildContext, {required String value}) copyClipboard,
+  ) {
+    final text = logEntry.toJson(truncated: true).toString();
+    copyClipboard(context, value: text);
+  }
+
+  void copyAllLogsToClipboard(
+    BuildContext context,
+    List<ISpectifyData> logs,
+    void Function(
+      BuildContext, {
+      required String value,
+      String? title,
+      bool? showValue,
+    }) copyClipboard,
+    String title,
+  ) {
+    copyClipboard(
+      context,
+      value: logs.map((e) => e.toJson(truncated: true).toString()).join('\n'),
+      title: title,
+      showValue: false,
+    );
+  }
+
+  void clearLogsHistory(VoidCallback clearHistory) {
+    clearHistory();
+    update();
+  }
+
+  Future<void> shareLogsAsFile(List<ISpectifyData> logs) async {
+    final filteredLogs = applyCurrentFilters(logs);
+    await downloadLogsFile(
+      filteredLogs.formattedText,
+    );
   }
 }

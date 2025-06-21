@@ -16,22 +16,8 @@ import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_car
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
-/// Extension for enhanced log data operations.
-extension _LogDataExtensions on List<ISpectifyData> {
-  /// Extracts all titles from log entries, filtering out nulls.
-  List<String> get allTitles => map((entry) => entry.title)
-      .where((title) => title != null)
-      .cast<String>()
-      .toList();
-
-  /// Gets unique titles from log entries.
-  List<String> get uniqueTitles => allTitles.toSet().toList();
-}
-
-/// This screen provides an efficient interface for browsing, searching, and filtering
-/// application logs with the following key features:
+/// Screen for browsing, searching, and filtering application logs.
 class LogsScreen extends StatefulWidget {
-  /// Creates a high-performance logs viewer screen.
   const LogsScreen({
     required this.options,
     super.key,
@@ -49,31 +35,9 @@ class LogsScreen extends StatefulWidget {
     );
   }
 
-  /// Custom title for the screen's app bar.
-  ///
-  /// If not provided, a default title will be used based on the current locale.
   final String? appBarTitle;
-
-  /// Optional builder function to customize the appearance of log items.
-  ///
-  /// When provided, this builder will be called for each log entry, allowing
-  /// complete customization of the log card appearance and behavior.
-  ///
-  /// Example:
-  /// ```dart
-  /// itemsBuilder: (context, data) => CustomLogCard(
-  ///   data: data,
-  ///   onTap: () => handleLogTap(data),
-  /// )
-  /// ```
   final ISpectifyDataBuilder? itemsBuilder;
-
-  /// Configuration options for the ISpect logging system.
-  ///
-  /// Contains settings for theming, behavior, and additional action items.
   final ISpectOptions options;
-
-  /// Optional observer for navigation events.
   final ISpectNavigatorObserver? navigatorObserver;
 
   @override
@@ -87,34 +51,10 @@ class _LogsScreenState extends State<LogsScreen> {
   static const double _emptyStatePaddingLeft = 16;
   static const double _sliverGapHeight = 8;
 
-  /// Controller for managing title filter buttons group state
   final _titleFiltersController = GroupButtonController();
-
-  /// Focus node for the search input field
   final _searchFocusNode = FocusNode();
-
-  /// Scroll controller for the main logs list
   final _logsScrollController = ScrollController();
-
-  /// Main controller for logs view operations (search, filter, expansion)
   late final _logsViewController = ISpectViewController();
-
-  // Performance optimization: Smart caching for filtered data
-  /// Cached filtered data to avoid redundant computations
-  List<ISpectifyData> _cachedFilteredData = <ISpectifyData>[];
-
-  /// Last processed data length for cache invalidation
-  int _lastProcessedDataLength = 0;
-
-  /// Last applied filter for cache invalidation
-  ISpectifyFilter? _lastAppliedFilter;
-
-  /// Hash of the last processed data for more accurate cache validation
-  int? _lastDataHash;
-
-  List<String>? _cachedTitles;
-  List<String>? _cachedUniqueTitles;
-  int? _lastTitlesDataHash;
 
   @override
   void initState() {
@@ -134,7 +74,6 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(context),
       body: ListenableBuilder(
@@ -170,9 +109,9 @@ class _LogsScreenState extends State<LogsScreen> {
     List<ISpectifyData> logsData,
     ISpectScopeModel iSpectTheme,
   ) {
-    final filteredLogEntries = _applyCurrentFilters(logsData);
-    final (allTitles, uniqueTitles) = _getTitles(logsData);
-
+    final filteredLogEntries =
+        _logsViewController.applyCurrentFilters(logsData);
+    final (allTitles, uniqueTitles) = _logsViewController.getTitles(logsData);
     return CustomScrollView(
       controller: _logsScrollController,
       cacheExtent: _cacheExtent,
@@ -186,7 +125,8 @@ class _LogsScreenState extends State<LogsScreen> {
           controller: _logsViewController,
           onSettingsTap: () => _openLogsSettings(context),
           onInfoTap: () => _showInfoBottomSheet(context),
-          onToggleTitle: _handleTitleFilterToggle,
+          onToggleTitle: (title, selected) => _logsViewController
+              .handleTitleFilterToggle(title, isSelected: selected),
           backgroundColor: iSpectTheme.theme.backgroundColor(context),
         ),
         if (filteredLogEntries.isEmpty)
@@ -212,8 +152,8 @@ class _LogsScreenState extends State<LogsScreen> {
       SliverList.builder(
         itemCount: filteredLogEntries.length,
         itemBuilder: (context, index) {
-          final logEntry = _getLogEntryAtIndex(filteredLogEntries, index);
-
+          final logEntry =
+              _logsViewController.getLogEntryAtIndex(filteredLogEntries, index);
           return _LogListItem(
             key: ValueKey('${logEntry.hashCode}_$index'),
             logData: logEntry,
@@ -227,119 +167,24 @@ class _LogsScreenState extends State<LogsScreen> {
             isLastItem: index == filteredLogEntries.length - 1,
             dividerColor: _getDividerColor(iSpectTheme, context),
             customItemBuilder: widget.itemsBuilder,
-            onCopyPressed: () => _copyLogEntryText(logEntry),
-            onItemTapped: () => _handleLogItemTap(logEntry),
+            onCopyPressed: () => _logsViewController.copyLogEntryText(
+              context,
+              logEntry,
+              copyClipboard,
+            ),
+            onItemTapped: () => _logsViewController.handleLogItemTap(logEntry),
             observer: widget.navigatorObserver,
           );
         },
       );
 
-  /// This method implements smart caching to avoid redundant filter computations:
-  /// - Checks if data and filter haven't changed
-  /// - Returns cached result when possible
-  /// - Recomputes only when necessary
-  List<ISpectifyData> _applyCurrentFilters(List<ISpectifyData> logsData) {
-    // Get current filter from the controller
-    final currentFilter = _logsViewController.filter;
-
-    final currentDataHash = _calculateDataHash(logsData);
-
-    // Check if we can use cached result (optimization for large datasets)
-    if (logsData.length == _lastProcessedDataLength &&
-        logsData.isNotEmpty &&
-        _cachedFilteredData.isNotEmpty &&
-        _lastDataHash == currentDataHash &&
-        // Check if filter hasn't changed
-        _lastAppliedFilter == currentFilter) {
-      // Data and filter haven't changed, return cached result
-      return _cachedFilteredData;
-    }
-
-    // Apply the filter using the controller's filter
-    final filteredData = logsData.where(currentFilter.apply).toList();
-    _cachedFilteredData = filteredData;
-    _lastProcessedDataLength = logsData.length;
-    _lastAppliedFilter = currentFilter;
-    _lastDataHash = currentDataHash;
-
-    return filteredData;
-  }
-
-  /// Calculates a hash for the data list.
-  int _calculateDataHash(List<ISpectifyData> data) {
-    if (data.isEmpty) return 0;
-    return Object.hashAll([
-      data.length,
-      data.first.hashCode,
-      data.last.hashCode,
-    ]);
-  }
-
-  (List<String>, List<String>) _getTitles(List<ISpectifyData> logsData) {
-    final currentHash = _calculateDataHash(logsData);
-
-    if (_lastTitlesDataHash == currentHash &&
-        _cachedTitles != null &&
-        _cachedUniqueTitles != null) {
-      return (_cachedTitles!, _cachedUniqueTitles!);
-    }
-
-    // Compute titles using extension methods
-    final allTitles = logsData.allTitles;
-    final uniqueTitles = logsData.uniqueTitles;
-
-    _cachedTitles = allTitles;
-    _cachedUniqueTitles = uniqueTitles;
-    _lastTitlesDataHash = currentHash;
-
-    return (allTitles, uniqueTitles);
-  }
-
-  /// Handles log item tap to toggle its selection.
-  void _handleLogItemTap(ISpectifyData logEntry) {
-    if (_logsViewController.activeData?.hashCode == logEntry.hashCode) {
-      _logsViewController.activeData = null;
-    } else {
-      _logsViewController.activeData = logEntry;
-    }
-  }
-
-  /// Handles title filter toggle events from the app bar.
-  ///
-  /// When a title filter is toggled:
-  /// - Adds the title to active filters if selected
-  /// - Removes the title from active filters if deselected
-  void _handleTitleFilterToggle(String title, bool isSelected) {
-    if (isSelected) {
-      _logsViewController.addFilterTitle(title);
-    } else {
-      _logsViewController.removeFilterTitle(title);
-    }
-  }
-
-  /// Gets the log entry at the specified index, considering log order settings.
-  ///
-  /// Respects the user's preference for log order (normal or reversed).
-  ISpectifyData _getLogEntryAtIndex(
-    List<ISpectifyData> filteredEntries,
-    int index,
-  ) {
-    final actualIndex = _logsViewController.isLogOrderReversed
-        ? filteredEntries.length - 1 - index
-        : index;
-    return filteredEntries[actualIndex];
-  }
-
-  /// Shows the information bottom sheet with logs statistics and help.
   Future<void> _showInfoBottomSheet(BuildContext context) async {
     if (!mounted) return;
-
     await context.screenSizeMaybeWhen(
       phone: () => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        // routeSettings: const RouteSettings(name: 'ISpect Logs Info Sheet'),
         builder: (_) => const ISpectLogsInfoBottomSheet(),
       ),
       orElse: () => showDialog<void>(
@@ -350,11 +195,9 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  /// Gets the appropriate divider color from theme.
   Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
       iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 
-  /// Builds the detail view for the selected log entry.
   Widget _buildDetailView() => Flexible(
         child: RepaintBoundary(
           child: JsonScreen(
@@ -369,7 +212,6 @@ class _LogsScreenState extends State<LogsScreen> {
         ),
       );
 
-  /// Opens the logs settings and actions bottom sheet.
   void _openLogsSettings(BuildContext context) {
     context.screenSizeMaybeWhen(
       phone: () => showModalBottomSheet<void>(
@@ -388,10 +230,8 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  /// Builds the settings bottom sheet with available actions.
   ISpectSettingsBottomSheet _buildSettingsSheet(BuildContext context) {
     final iSpectify = ValueNotifier(ISpect.logger);
-
     return ISpectSettingsBottomSheet(
       options: widget.options,
       iSpectify: iSpectify,
@@ -400,7 +240,6 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  /// Builds the list of settings actions.
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
         ISpectActionItem(
           onTap: (_) => _logsViewController.toggleLogOrder(),
@@ -408,12 +247,24 @@ class _LogsScreenState extends State<LogsScreen> {
           icon: Icons.swap_vert,
         ),
         ISpectActionItem(
-          onTap: _copyAllLogsToClipboard,
+          onTap: (_) => _logsViewController.copyAllLogsToClipboard(
+            context,
+            ISpect.logger.history,
+            (context, {required value, showValue, title}) {
+              copyClipboard(
+                context,
+                value: value,
+                title: title ?? context.ispectL10n.allLogsCopied,
+                showValue: showValue ?? false,
+              );
+            },
+            '✅ ${context.ispectL10n.allLogsCopied}',
+          ),
           title: context.ispectL10n.copyAllLogs,
           icon: Icons.copy,
         ),
         ISpectActionItem(
-          onTap: (_) => _toggleLogsExpansion(),
+          onTap: (_) => _logsViewController.toggleExpandedLogs(),
           title: _logsViewController.expandedLogs
               ? context.ispectL10n.collapseLogs
               : context.ispectL10n.expandLogs,
@@ -422,12 +273,14 @@ class _LogsScreenState extends State<LogsScreen> {
               : Icons.visibility_off_outlined,
         ),
         ISpectActionItem(
-          onTap: (_) => _clearLogsHistory(),
+          onTap: (_) =>
+              _logsViewController.clearLogsHistory(ISpect.logger.clearHistory),
           title: context.ispectL10n.clearHistory,
           icon: Icons.delete_outline,
         ),
         ISpectActionItem(
-          onTap: (_) => _shareLogsAsFile(),
+          onTap: (_) =>
+              _logsViewController.shareLogsAsFile(ISpect.logger.history),
           title: context.ispectL10n.shareLogsFile,
           icon: Icons.ios_share_outlined,
         ),
@@ -457,52 +310,10 @@ class _LogsScreenState extends State<LogsScreen> {
         ),
         ...widget.options.actionItems,
       ];
-
-  /// Copies the text content of a log entry to the clipboard.
-  void _copyLogEntryText(ISpectifyData logEntry) {
-    final text = logEntry.toJson(truncated: true).toString();
-    copyClipboard(context, value: text);
-  }
-
-  /// Shares all logs as a downloadable file.
-  Future<void> _shareLogsAsFile() async {
-    if (!mounted) return;
-
-    await _logsViewController.downloadLogsFile(
-      _applyCurrentFilters(ISpect.logger.history).formattedText,
-    );
-  }
-
-  /// Clears the entire logs history.
-  void _clearLogsHistory() {
-    ISpect.logger.clearHistory();
-    _logsViewController.update();
-  }
-
-  /// Toggles the expanded state of all logs.
-  void _toggleLogsExpansion() {
-    _logsViewController.toggleExpandedLogs();
-  }
-
-  /// Copies all logs to the clipboard.
-  void _copyAllLogsToClipboard(BuildContext context) {
-    copyClipboard(
-      context,
-      value: ISpect.logger.history.formattedText,
-      title: '✅ ${context.ispectL10n.allLogsCopied}',
-      showValue: false,
-    );
-  }
 }
 
 /// Log list item widget with integrated divider.
-///
-/// This widget optimizes rendering by:
-/// - Combining the log card and divider into a single widget
-/// - Using RepaintBoundary for paint optimization
-/// - Supporting custom item builders for flexibility
 class _LogListItem extends StatelessWidget {
-  /// Creates a log list item with integrated divider.
   const _LogListItem({
     required this.logData,
     required this.itemIndex,
@@ -518,64 +329,35 @@ class _LogListItem extends StatelessWidget {
     super.key,
   });
 
-  /// The log data to display
   final ISpectifyData logData;
-
-  /// Index of this item in the list
   final int itemIndex;
-
-  /// Icon representing the log status/type
   final IconData statusIcon;
-
-  /// Color representing the log status/type
   final Color statusColor;
-
-  /// Whether this item is currently expanded
   final bool isExpanded;
-
-  /// Whether this is the last item in the list (affects divider rendering)
   final bool isLastItem;
-
-  /// Color for the divider line
   final Color dividerColor;
-
-  /// Callback when the item is tapped
   final VoidCallback onItemTapped;
-
-  /// Callback when the copy button is pressed
   final VoidCallback onCopyPressed;
-
-  /// Optional custom builder for the item content
   final ISpectifyDataBuilder? customItemBuilder;
-
   final ISpectNavigatorObserver? observer;
 
   @override
   Widget build(BuildContext context) {
-    Widget itemContent;
-
-    if (customItemBuilder != null) {
-      itemContent = customItemBuilder!.call(context, logData);
-    } else {
-      itemContent = RepaintBoundary(
-        child: LogCard(
-          icon: statusIcon,
-          color: statusColor,
-          data: logData,
-          index: itemIndex,
-          isExpanded: isExpanded,
-          onCopyTap: onCopyPressed,
-          onTap: onItemTapped,
-          observer: observer,
-        ),
-      );
-    }
-
-    // Only add divider if not the last item
-    if (isLastItem) {
-      return itemContent;
-    }
-
+    final itemContent = customItemBuilder != null
+        ? customItemBuilder!(context, logData)
+        : RepaintBoundary(
+            child: LogCard(
+              icon: statusIcon,
+              color: statusColor,
+              data: logData,
+              index: itemIndex,
+              isExpanded: isExpanded,
+              onCopyTap: onCopyPressed,
+              onTap: onItemTapped,
+              observer: observer,
+            ),
+          );
+    if (isLastItem) return itemContent;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -591,13 +373,8 @@ class _LogListItem extends StatelessWidget {
 }
 
 /// Widget displayed when no logs match the current filters.
-///
-/// Shows a helpful message with an icon to indicate that no logs
-/// were found matching the current search and filter criteria.
 class _EmptyLogsWidget extends StatelessWidget {
-  /// Creates an empty logs widget.
   const _EmptyLogsWidget();
-
   static const double _iconSize = 40;
   static const Color _iconColor = Colors.white70;
   static const double _gapSize = 8;
