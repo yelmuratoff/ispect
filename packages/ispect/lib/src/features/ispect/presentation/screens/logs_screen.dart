@@ -97,7 +97,7 @@ class _LogsScreenState extends State<LogsScreen> {
   final _logsScrollController = ScrollController();
 
   /// Main controller for logs view operations (search, filter, expansion)
-  late final _logsViewController = ISpectifyViewController();
+  late final _logsViewController = ISpectViewController();
 
   // Performance optimization: Smart caching for filtered data
   /// Cached filtered data to avoid redundant computations
@@ -395,6 +395,7 @@ class _LogsScreenState extends State<LogsScreen> {
     return ISpectSettingsBottomSheet(
       options: widget.options,
       iSpectify: iSpectify,
+      controller: _logsViewController,
       actions: _buildSettingsActions(context),
     );
   }
@@ -468,7 +469,7 @@ class _LogsScreenState extends State<LogsScreen> {
     if (!mounted) return;
 
     await _logsViewController.downloadLogsFile(
-      ISpect.logger.history.formattedText,
+      _applyCurrentFilters(ISpect.logger.history).formattedText,
     );
   }
 

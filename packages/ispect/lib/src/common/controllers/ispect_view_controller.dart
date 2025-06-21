@@ -6,13 +6,12 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// This class extends `ChangeNotifier` to provide state updates
 /// when filters, log visibility, or log order change.
-class ISpectifyViewController extends ChangeNotifier {
+class ISpectViewController extends ChangeNotifier {
   ISpectifyFilter _filter = ISpectifyFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   ISpectifyData? _activeData;
 
-  // Cache for performance optimization
   List<String>? _cachedTitles;
   List<Type>? _cachedTypes;
   String? _cachedSearchQuery;
