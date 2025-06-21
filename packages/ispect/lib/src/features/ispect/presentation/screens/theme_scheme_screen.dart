@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -199,53 +200,127 @@ class TextStylesDisplay extends StatelessWidget {
 }
 
 // Buttons Component
-class ButtonDisplay extends StatelessWidget {
+class ButtonDisplay extends StatefulWidget {
   const ButtonDisplay({super.key});
 
-  static void _emptyCallback() {}
+  @override
+  State<ButtonDisplay> createState() => _ButtonDisplayState();
+}
+
+class _ButtonDisplayState extends State<ButtonDisplay> {
+  final List<bool> _toggleSelection = [true, false, false];
+  Set<String> _segmentedSelection = {'Segment 1'};
+
+  void _showButtonFeedback(BuildContext context, String buttonType) {
+    if (kDebugMode) {
+      debugPrint('🎯 Button interaction: $buttonType');
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$buttonType pressed!'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) => const Wrap(
-        spacing: 8,
-        runSpacing: 8,
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ElevatedButton(
-            onPressed: _emptyCallback,
-            child: Text('Elevated Button'),
+          Text(
+            'Button States:',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-          FilledButton(
-            onPressed: _emptyCallback,
-            child: Text('Filled Button'),
+          const Gap(8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton(
+                onPressed: () =>
+                    _showButtonFeedback(context, 'Elevated Button'),
+                child: const Text('Elevated Button'),
+              ),
+              FilledButton(
+                onPressed: () => _showButtonFeedback(context, 'Filled Button'),
+                child: const Text('Filled Button'),
+              ),
+              FilledButton.tonal(
+                onPressed: () =>
+                    _showButtonFeedback(context, 'Filled Tonal Button'),
+                child: const Text('Filled Tonal Button'),
+              ),
+              OutlinedButton(
+                onPressed: () =>
+                    _showButtonFeedback(context, 'Outlined Button'),
+                child: const Text('Outlined Button'),
+              ),
+              TextButton(
+                onPressed: () => _showButtonFeedback(context, 'Text Button'),
+                child: const Text('Text Button'),
+              ),
+              IconButton(
+                onPressed: () => _showButtonFeedback(context, 'Icon Button'),
+                icon: const Icon(Icons.star),
+              ),
+            ],
           ),
-          FilledButton.tonal(
-            onPressed: _emptyCallback,
-            child: Text('Filled Tonal Button'),
+          const Gap(16),
+          _ToggleButtonsWidget(
+            isSelected: _toggleSelection,
+            onPressed: (index) {
+              setState(() {
+                _toggleSelection[index] = !_toggleSelection[index];
+              });
+            },
           ),
-          OutlinedButton(
-            onPressed: _emptyCallback,
-            child: Text('Outlined Button'),
+          const Gap(8),
+          _SegmentedButtonWidget(
+            selected: _segmentedSelection,
+            onSelectionChanged: (newSelection) {
+              setState(() {
+                _segmentedSelection = newSelection;
+              });
+            },
           ),
-          TextButton(
-            onPressed: _emptyCallback,
-            child: Text('Text Button'),
+          const Gap(16),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Toggle States:',
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+                Text('Bold: ${_toggleSelection[0] ? "ON" : "OFF"}'),
+                Text('Italic: ${_toggleSelection[1] ? "ON" : "OFF"}'),
+                Text('Underline: ${_toggleSelection[2] ? "ON" : "OFF"}'),
+                Text('Selected Segment: ${_segmentedSelection.join(", ")}'),
+              ],
+            ),
           ),
-          IconButton(
-            onPressed: _emptyCallback,
-            icon: Icon(Icons.star),
-          ),
-          _ToggleButtonsWidget(),
-          _SegmentedButtonWidget(),
         ],
       );
 }
 
 class _ToggleButtonsWidget extends StatelessWidget {
-  const _ToggleButtonsWidget();
+  const _ToggleButtonsWidget({
+    required this.isSelected,
+    required this.onPressed,
+  });
+
+  final List<bool> isSelected;
+  final ValueChanged<int> onPressed;
 
   @override
   Widget build(BuildContext context) => ToggleButtons(
-        isSelected: const [true, false, false],
-        onPressed: (_) {},
+        isSelected: isSelected,
+        onPressed: onPressed,
         children: const [
           Icon(Icons.format_bold),
           Icon(Icons.format_italic),
@@ -255,7 +330,13 @@ class _ToggleButtonsWidget extends StatelessWidget {
 }
 
 class _SegmentedButtonWidget extends StatelessWidget {
-  const _SegmentedButtonWidget();
+  const _SegmentedButtonWidget({
+    required this.selected,
+    required this.onSelectionChanged,
+  });
+
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onSelectionChanged;
 
   @override
   Widget build(BuildContext context) => SegmentedButton<String>(
@@ -269,40 +350,103 @@ class _SegmentedButtonWidget extends StatelessWidget {
             icon: Icon(Icons.star),
           ),
         ],
-        selected: const {'Segment 1'},
-        onSelectionChanged: (_) {},
+        selected: selected,
+        onSelectionChanged: onSelectionChanged,
       );
 }
 
 // Inputs Component
-class InputDisplay extends StatelessWidget {
+class InputDisplay extends StatefulWidget {
   const InputDisplay({super.key});
+
+  @override
+  State<InputDisplay> createState() => _InputDisplayState();
+}
+
+class _InputDisplayState extends State<InputDisplay> {
+  final TextEditingController _textController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedDropdownValue = 'Option 1';
+  String _selectedRadioMenuValue = 'option1';
 
   static void _dismissKeyboard(PointerDownEvent event) {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
   @override
-  Widget build(BuildContext context) => const Column(
+  void dispose() {
+    _textController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            decoration: InputDecoration(labelText: 'TextField'),
-            onTapOutside: _dismissKeyboard,
+          Text(
+            'Input Values:',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-          Gap(8),
+          const Gap(8),
+          TextField(
+            controller: _textController,
+            decoration: const InputDecoration(labelText: 'TextField'),
+            onTapOutside: _dismissKeyboard,
+            onChanged: (_) => setState(() {}),
+          ),
+          const Gap(8),
           SearchBar(
+            controller: _searchController,
             hintText: 'SearchBar',
             onTapOutside: _dismissKeyboard,
+            onChanged: (_) => setState(() {}),
           ),
-          Gap(8),
-          _DatePickerButton(),
-          Gap(8),
-          _DropdownWidget(),
-          Gap(8),
-          _TimePickerButton(),
-          Gap(8),
-          _PopupMenuWidget(),
-          _RadioMenuWidget(),
+          const Gap(8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Values:',
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+                Text('TextField: "${_textController.text}"'),
+                Text('SearchBar: "${_searchController.text}"'),
+                Text('Dropdown: $_selectedDropdownValue'),
+                Text('Radio Menu: $_selectedRadioMenuValue'),
+              ],
+            ),
+          ),
+          const Gap(8),
+          const _DatePickerButton(),
+          const Gap(8),
+          _DropdownWidget(
+            value: _selectedDropdownValue,
+            onChanged: (value) {
+              setState(() {
+                _selectedDropdownValue = value ?? 'Option 1';
+              });
+            },
+          ),
+          const Gap(8),
+          const _TimePickerButton(),
+          const Gap(8),
+          const _PopupMenuWidget(),
+          _RadioMenuWidget(
+            value: _selectedRadioMenuValue,
+            groupValue: _selectedRadioMenuValue,
+            onChanged: (value) {
+              setState(() {
+                _selectedRadioMenuValue = value ?? 'option1';
+              });
+            },
+          ),
         ],
       );
 }
@@ -344,77 +488,169 @@ class _TimePickerButton extends StatelessWidget {
 }
 
 class _DropdownWidget extends StatelessWidget {
-  const _DropdownWidget();
+  const _DropdownWidget({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String value;
+  final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) => DropdownButton<String>(
-        value: 'Option 1',
+        value: value,
         items: const [
           DropdownMenuItem(value: 'Option 1', child: Text('Option 1')),
           DropdownMenuItem(value: 'Option 2', child: Text('Option 2')),
+          DropdownMenuItem(value: 'Option 3', child: Text('Option 3')),
         ],
-        onChanged: (_) {},
+        onChanged: onChanged,
       );
 }
 
-class _PopupMenuWidget extends StatelessWidget {
+class _PopupMenuWidget extends StatefulWidget {
   const _PopupMenuWidget();
 
   @override
-  Widget build(BuildContext context) => PopupMenuButton<String>(
-        itemBuilder: (context) => const [
-          PopupMenuItem(value: 'Option 1', child: Text('Option 1')),
-          PopupMenuItem(value: 'Option 2', child: Text('Option 2')),
+  State<_PopupMenuWidget> createState() => _PopupMenuWidgetState();
+}
+
+class _PopupMenuWidgetState extends State<_PopupMenuWidget> {
+  String _selectedItem = 'No selection';
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          Text('Selected: $_selectedItem'),
+          PopupMenuButton<String>(
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'Option 1', child: Text('Option 1')),
+              PopupMenuItem(value: 'Option 2', child: Text('Option 2')),
+              PopupMenuItem(value: 'Option 3', child: Text('Option 3')),
+            ],
+            onSelected: (value) {
+              setState(() {
+                _selectedItem = value;
+              });
+            },
+            child: const Chip(
+              label: Text('Popup Menu'),
+              avatar: Icon(Icons.arrow_drop_down),
+            ),
+          ),
         ],
       );
 }
 
 class _RadioMenuWidget extends StatelessWidget {
-  const _RadioMenuWidget();
+  const _RadioMenuWidget({
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  final String value;
+  final String groupValue;
+  final ValueChanged<String?> onChanged;
 
   @override
-  Widget build(BuildContext context) => const RadioMenuButton<String>(
-        onChanged: null,
-        value: '',
-        groupValue: '',
-        child: Text('Radio Button'),
+  Widget build(BuildContext context) => RadioMenuButton<String>(
+        onChanged: onChanged,
+        value: value,
+        groupValue: groupValue,
+        child: const Text('Radio Menu Button'),
       );
 }
 
 // Selection Controls Component
-class SelectionControlsDisplay extends StatelessWidget {
+class SelectionControlsDisplay extends StatefulWidget {
   const SelectionControlsDisplay({super.key});
 
   @override
-  Widget build(BuildContext context) => const Column(
+  State<SelectionControlsDisplay> createState() =>
+      _SelectionControlsDisplayState();
+}
+
+class _SelectionControlsDisplayState extends State<SelectionControlsDisplay> {
+  bool _checkboxValue = true;
+  bool _switchValue = true;
+  String? _radioValue = 'option1';
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Controls State:',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const Gap(8),
           Row(
             children: [
-              Checkbox(value: true, onChanged: null),
-              Text('Checkbox'),
+              Checkbox(
+                value: _checkboxValue,
+                onChanged: (value) {
+                  setState(() {
+                    _checkboxValue = value ?? false;
+                  });
+                },
+              ),
+              Text('Checkbox: ${_checkboxValue ? "Checked" : "Unchecked"}'),
             ],
           ),
-          _RadioControlRow(),
+          _RadioControlRow(
+            groupValue: _radioValue,
+            onChanged: (value) {
+              setState(() {
+                _radioValue = value;
+              });
+            },
+          ),
           Row(
             children: [
-              Switch(value: true, onChanged: null),
-              Text('Switch'),
+              Switch(
+                value: _switchValue,
+                onChanged: (value) {
+                  setState(() {
+                    _switchValue = value;
+                  });
+                },
+              ),
+              Text('Switch: ${_switchValue ? "On" : "Off"}'),
             ],
+          ),
+          const Gap(8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Radio selected: ${_radioValue ?? "None"}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
         ],
       );
 }
 
 class _RadioControlRow extends StatelessWidget {
-  const _RadioControlRow();
+  const _RadioControlRow({
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  final String? groupValue;
+  final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Radio<bool>(
-            value: true,
-            groupValue: null,
-            onChanged: (_) {},
+          Radio<String>(
+            value: 'option1',
+            groupValue: groupValue,
+            onChanged: onChanged,
           ),
           const Text('Radio'),
         ],
@@ -422,23 +658,52 @@ class _RadioControlRow extends StatelessWidget {
 }
 
 // List Tiles Component
-class ListTilesDisplay extends StatelessWidget {
+class ListTilesDisplay extends StatefulWidget {
   const ListTilesDisplay({super.key});
+
+  @override
+  State<ListTilesDisplay> createState() => _ListTilesDisplayState();
+}
+
+class _ListTilesDisplayState extends State<ListTilesDisplay> {
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          const ListTile(
-            leading: Icon(Icons.info),
-            title: Text('ListTile 1'),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('ListTile 1'),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ListTile 1 tapped!')),
+              );
+            },
           ),
-          const ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('ListTile 2'),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('ListTile 2'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ListTile 2 tapped!')),
+              );
+            },
           ),
-          const ExpansionTile(
-            title: Text('Expandable Tile'),
-            children: [Text('Expanded Content')],
+          ExpansionTile(
+            title: const Text('Expandable Tile'),
+            initiallyExpanded: _isExpanded,
+            onExpansionChanged: (expanded) {
+              setState(() {
+                _isExpanded = expanded;
+              });
+            },
+            children: const [
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Expanded Content - This tile can be expanded!'),
+              ),
+            ],
           ),
           Divider(
             color: Colors.grey.shade400,
@@ -449,17 +714,57 @@ class ListTilesDisplay extends StatelessWidget {
 }
 
 // Progress and Sliders Component
-class ProgressSlidersDisplay extends StatelessWidget {
+class ProgressSlidersDisplay extends StatefulWidget {
   const ProgressSlidersDisplay({super.key});
+
+  @override
+  State<ProgressSlidersDisplay> createState() => _ProgressSlidersDisplayState();
+}
+
+class _ProgressSlidersDisplayState extends State<ProgressSlidersDisplay>
+    with TickerProviderStateMixin {
+  double _sliderValue = 0.5;
+  late AnimationController _progressController;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          const LinearProgressIndicator(),
+          AnimatedBuilder(
+            animation: _progressController,
+            builder: (context, child) => LinearProgressIndicator(
+              value: _progressController.value,
+            ),
+          ),
+          const Gap(16),
           const CircularProgressIndicator(),
-          Slider(
-            value: 0.5,
-            onChanged: (_) {},
+          const Gap(16),
+          Column(
+            children: [
+              Text('Slider Value: ${_sliderValue.toStringAsFixed(2)}'),
+              Slider(
+                value: _sliderValue,
+                onChanged: (value) {
+                  setState(() {
+                    _sliderValue = value;
+                  });
+                },
+              ),
+            ],
           ),
         ],
       );
