@@ -110,17 +110,19 @@ class ISpectViewController extends ChangeNotifier {
     _updateFilter(titles: updatedTitles);
   }
 
-  /// Updates filter with new values and notifies listeners.
+  /// Updates filter with new values and notifies listeners if changed.
   void _updateFilter({
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
   }) {
-    _filter = ISpectifyFilter(
+    final newFilter = ISpectifyFilter(
       titles: titles ?? _getCurrentTitles(),
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
     );
+    if (newFilter == _filter) return;
+    _filter = newFilter;
     _invalidateFilterCache();
     notifyListeners();
   }
