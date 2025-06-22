@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/json_viewer/widgets/json_attribute.dart';
-import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
+import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
+import 'package:ispect/src/features/json_viewer/widgets/json_attribute.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
