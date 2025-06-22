@@ -26,6 +26,7 @@ dependencies:
     sdk: flutter
 
   meta: any
+  collection: any
 
   # Logging
   ispectify: ^4.2.0-dev02

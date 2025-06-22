@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/core/res/json_color.dart';
-import 'package:ispect/src/features/json_viewer/dot_painter.dart';
-import 'package:ispect/src/features/json_viewer/explorer.dart';
+import 'package:ispect/src/features/json_viewer/widgets/dot_painter.dart';
+import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 
-import 'package:ispect/src/features/json_viewer/json_item_card.dart';
-import 'package:ispect/src/features/json_viewer/store.dart';
+import 'package:ispect/src/features/json_viewer/widgets/json_item_card.dart';
+import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/utils/colors.dart';
 import 'package:provider/provider.dart';
