@@ -1,46 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/src/common/utils/logs_file/logs_file_factory.dart';
-import 'package:ispectify/ispectify.dart';
+import 'package:ispect/ispect.dart';
 
 /// Controller for managing the state of ISpectify views.
 ///
-/// This class extends `ChangeNotifier` to provide state updates
-/// when filters, log visibility, or log order change.
-class ISpectifyViewController extends ChangeNotifier {
+/// - Parameters: None required for initialization
+/// - Return: ISpectViewController instance
+/// - Usage example: final controller = ISpectViewController();
+/// - Edge case notes: Handles null data gracefully with caching
+class ISpectViewController extends ChangeNotifier {
   ISpectifyFilter _filter = ISpectifyFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   ISpectifyData? _activeData;
 
-  // Cache for performance optimization
+  // Filter cache properties
   List<String>? _cachedTitles;
   List<Type>? _cachedTypes;
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
 
+  // Data filtering cache
+  List<ISpectifyData> _cachedFilteredData = <ISpectifyData>[];
+  int _lastProcessedDataLength = 0;
+  ISpectifyFilter? _lastAppliedFilter;
+  int? _lastDataHash;
+
+  // Titles cache
+  List<String>? _cachedAllTitles;
+  List<String>? _cachedUniqueTitles;
+  int? _lastTitlesDataHash;
+
   /// Retrieves the current log filter.
   ISpectifyFilter get filter => _filter;
 
-  /// Updates the log filter and notifies listeners with debouncing.
+  /// Updates the log filter and notifies listeners.
   set filter(ISpectifyFilter val) {
-    if (_filter != val) {
-      _filter = val;
-      _invalidateFilterCache();
-      _notifyWithDebounce();
-    }
+    if (_filter == val) return;
+    _filter = val;
+    _invalidateFilterCache();
+    notifyListeners();
   }
 
+  /// Gets the currently active data.
+  ISpectifyData? get activeData => _activeData;
+
+  /// Sets the active data and notifies listeners if changed.
   set activeData(ISpectifyData? data) {
-    if (_activeData != data) {
-      _activeData = data;
-      notifyListeners();
-    }
+    if (_activeData == data) return;
+    _activeData = data;
+    notifyListeners();
   }
 
   /// Indicates whether logs are expanded.
   bool get expandedLogs => _expandedLogs;
-
-  ISpectifyData? get activeData => _activeData;
 
   /// Toggles the expanded logs state and notifies listeners.
   void toggleExpandedLogs() {
@@ -61,63 +73,58 @@ class ISpectifyViewController extends ChangeNotifier {
   void updateFilterSearchQuery(String query) {
     _filter = _filter.copyWith(searchQuery: query);
     _invalidateFilterCache();
-    _notifyWithDebounce();
+    notifyListeners();
   }
 
   /// Adds a new filter type and notifies listeners.
   void addFilterType(Type type) {
     final currentTypes = _getCurrentTypes();
-    if (!currentTypes.contains(type)) {
-      _filter = ISpectifyFilter(
-        titles: _getCurrentTitles(),
-        types: [...currentTypes, type],
-        searchQuery: _getCurrentSearchQuery(),
-      );
-      _invalidateFilterCache();
-      notifyListeners();
-    }
+    if (currentTypes.contains(type)) return;
+
+    _updateFilter(types: [...currentTypes, type]);
   }
 
   /// Removes a filter type and notifies listeners.
   void removeFilterType(Type type) {
-    final updatedTypes = _getCurrentTypes().where((t) => t != type).toList();
-    if (updatedTypes.length != _getCurrentTypes().length) {
-      _filter = ISpectifyFilter(
-        titles: _getCurrentTitles(),
-        types: updatedTypes,
-        searchQuery: _getCurrentSearchQuery(),
-      );
-      _invalidateFilterCache();
-      notifyListeners();
-    }
+    final currentTypes = _getCurrentTypes();
+    final updatedTypes = currentTypes.where((t) => t != type).toList();
+    if (updatedTypes.length == currentTypes.length) return;
+
+    _updateFilter(types: updatedTypes);
   }
 
   /// Adds a new filter title and notifies listeners.
   void addFilterTitle(String title) {
     final currentTitles = _getCurrentTitles();
-    if (!currentTitles.contains(title)) {
-      _filter = ISpectifyFilter(
-        titles: [...currentTitles, title],
-        types: _getCurrentTypes(),
-        searchQuery: _getCurrentSearchQuery(),
-      );
-      _invalidateFilterCache();
-      notifyListeners();
-    }
+    if (currentTitles.contains(title)) return;
+
+    _updateFilter(titles: [...currentTitles, title]);
   }
 
   /// Removes a filter title and notifies listeners.
   void removeFilterTitle(String title) {
-    final updatedTitles = _getCurrentTitles().where((t) => t != title).toList();
-    if (updatedTitles.length != _getCurrentTitles().length) {
-      _filter = ISpectifyFilter(
-        titles: updatedTitles,
-        types: _getCurrentTypes(),
-        searchQuery: _getCurrentSearchQuery(),
-      );
-      _invalidateFilterCache();
-      notifyListeners();
-    }
+    final currentTitles = _getCurrentTitles();
+    final updatedTitles = currentTitles.where((t) => t != title).toList();
+    if (updatedTitles.length == currentTitles.length) return;
+
+    _updateFilter(titles: updatedTitles);
+  }
+
+  /// Updates filter with new values and notifies listeners if changed.
+  void _updateFilter({
+    List<String>? titles,
+    List<Type>? types,
+    String? searchQuery,
+  }) {
+    final newFilter = ISpectifyFilter(
+      titles: titles ?? _getCurrentTitles(),
+      types: types ?? _getCurrentTypes(),
+      searchQuery: searchQuery ?? _getCurrentSearchQuery(),
+    );
+    if (newFilter == _filter) return;
+    _filter = newFilter;
+    _invalidateFilterCache();
+    notifyListeners();
   }
 
   /// Downloads logs as a file.
@@ -174,9 +181,148 @@ class ISpectifyViewController extends ChangeNotifier {
     _cachedSearchQuery = null;
   }
 
-  /// Debounced notification to prevent excessive rebuilds.
-  void _notifyWithDebounce() {
-    // For search queries, we could add debouncing here if needed
-    notifyListeners();
+  /// Applies current filters to log data with caching for performance.
+  List<ISpectifyData> applyCurrentFilters(List<ISpectifyData> logsData) {
+    if (logsData.isEmpty) return <ISpectifyData>[];
+
+    final currentFilter = filter;
+    final currentDataHash = _calculateDataHash(logsData);
+
+    // Return cached result if data and filter haven't changed
+    if (_isCacheValid(logsData, currentFilter, currentDataHash)) {
+      return _cachedFilteredData;
+    }
+
+    // Apply filter and update cache
+    final filteredData = logsData.where(currentFilter.apply).toList();
+    _updateFilterCache(logsData, currentFilter, currentDataHash, filteredData);
+
+    return filteredData;
+  }
+
+  /// Checks if the current cache is valid.
+  bool _isCacheValid(
+    List<ISpectifyData> logsData,
+    ISpectifyFilter currentFilter,
+    int currentDataHash,
+  ) =>
+      logsData.length == _lastProcessedDataLength &&
+      _cachedFilteredData.isNotEmpty &&
+      _lastDataHash == currentDataHash &&
+      _lastAppliedFilter == currentFilter;
+
+  /// Updates the filter cache with new data.
+  void _updateFilterCache(
+    List<ISpectifyData> logsData,
+    ISpectifyFilter currentFilter,
+    int currentDataHash,
+    List<ISpectifyData> filteredData,
+  ) {
+    _cachedFilteredData = filteredData;
+    _lastProcessedDataLength = logsData.length;
+    _lastAppliedFilter = currentFilter;
+    _lastDataHash = currentDataHash;
+  }
+
+  /// Calculates a hash for the given data list for cache validation.
+  int _calculateDataHash(List<ISpectifyData> data) {
+    if (data.isEmpty) return 0;
+    return Object.hashAll([
+      data.length,
+      data.first.hashCode,
+      data.last.hashCode,
+    ]);
+  }
+
+  /// Retrieves all titles and unique titles from log data with caching.
+  (List<String>, List<String>) getTitles(List<ISpectifyData> logsData) {
+    final currentHash = _calculateDataHash(logsData);
+
+    // Return cached titles if data hasn't changed
+    if (_lastTitlesDataHash == currentHash &&
+        _cachedAllTitles != null &&
+        _cachedUniqueTitles != null) {
+      return (_cachedAllTitles!, _cachedUniqueTitles!);
+    }
+
+    // Extract and cache titles
+    final allTitles =
+        logsData.map((data) => data.title).whereType<String>().toList();
+    final uniqueTitles = allTitles.toSet().toList();
+
+    _cachedAllTitles = allTitles;
+    _cachedUniqueTitles = uniqueTitles;
+    _lastTitlesDataHash = currentHash;
+
+    return (allTitles, uniqueTitles);
+  }
+
+  /// Handles tap on a log item, toggling its selection state.
+  void handleLogItemTap(ISpectifyData logEntry) {
+    activeData = activeData?.hashCode == logEntry.hashCode ? null : logEntry;
+  }
+
+  /// Handles toggle of title filter selection.
+  void handleTitleFilterToggle(String title, {required bool isSelected}) {
+    if (isSelected) {
+      addFilterTitle(title);
+    } else {
+      removeFilterTitle(title);
+    }
+  }
+
+  /// Retrieves log entry at the specified index, respecting sort order.
+  ISpectifyData getLogEntryAtIndex(
+    List<ISpectifyData> filteredEntries,
+    int index,
+  ) {
+    final actualIndex =
+        isLogOrderReversed ? filteredEntries.length - 1 - index : index;
+    return filteredEntries[actualIndex];
+  }
+
+  /// Copies log entry text to clipboard.
+  void copyLogEntryText(
+    BuildContext context,
+    ISpectifyData logEntry,
+    void Function(BuildContext, {required String value}) copyClipboard,
+  ) {
+    final text = logEntry.toJson(truncated: true).toString();
+    copyClipboard(context, value: text);
+  }
+
+  /// Copies all logs to clipboard with specified formatting.
+  void copyAllLogsToClipboard(
+    BuildContext context,
+    List<ISpectifyData> logs,
+    void Function(
+      BuildContext, {
+      required String value,
+      String? title,
+      bool? showValue,
+    }) copyClipboard,
+    String title,
+  ) {
+    final logsText =
+        logs.map((log) => log.toJson(truncated: true).toString()).join('\n');
+
+    copyClipboard(
+      context,
+      value: logsText,
+      title: title,
+      showValue: false,
+    );
+  }
+
+  /// Clears logs history and updates UI.
+  void clearLogsHistory(VoidCallback clearHistory) {
+    clearHistory();
+    update();
+  }
+
+  /// Shares filtered logs as a downloadable file.
+  Future<void> shareLogsAsFile(List<ISpectifyData> logs) async {
+    final filteredLogs = applyCurrentFilters(logs);
+    await downloadLogsFile(filteredLogs.formattedText);
   }
 }

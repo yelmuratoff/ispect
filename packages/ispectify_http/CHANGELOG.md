@@ -1,17 +1,18 @@
 # Changelog
 
-## 4.2.0-dev02
+## 4.2.0
 
 ### Added:
 
-- Introduce navigation flow feature to visualize app route transitions
+- Introduce navigation flow feature to visualize app route transitions.
+- Ability to share log with the applied filters in the `ISpect` screen.
 
 ### Enhancements:
 
-- Extend `ISpectNavigatorObserver` to buffer `RouteTransition` objects with unique IDs, timestamps, and structured logging using a `TransitionType` `enum`
-- Add `RouteTransition` data model, `List` extensions, and `routeName`/`routeType` extensions for richer route `metadata`
-- Improve `ISpectOptions` equality and `toString` implementations with `DeepCollectionEquality`
-- Toggle default `isLogModals` behavior to `false` for finer logging control
+- Extend `ISpectNavigatorObserver` to buffer `RouteTransition` objects with unique IDs, timestamps, and structured logging using a `TransitionType` `enum`.
+- Add `RouteTransition` data model, `List` extensions, and `routeName`/`routeType` extensions for richer route `metadata`.
+- Improve `ISpectOptions` equality and `toString` implementations with `DeepCollectionEquality`.
+- Toggle default `isLogModals` behavior to `false` for finer logging control.
 
 ## 4.1.9
 

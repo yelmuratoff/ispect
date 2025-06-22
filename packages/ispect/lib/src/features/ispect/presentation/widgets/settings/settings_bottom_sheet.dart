@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/column_builder.dart';
@@ -13,6 +14,7 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
     required this.iSpectify,
     required this.options,
     required this.actions,
+    required this.controller,
     super.key,
   });
 
@@ -22,7 +24,29 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
   /// Options for `ISpect`
   final ISpectOptions options;
 
+  /// Actions to display in the settings bottom sheet
   final List<ISpectActionItem> actions;
+
+  /// Controller for the ISpect view
+  final ISpectViewController controller;
+
+  Future<void> show(BuildContext context) async {
+    await context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
+        builder: (_) => this,
+      ),
+      orElse: () => showDialog<void>(
+        context: context,
+        useRootNavigator: false,
+        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
+        builder: (_) => this,
+      ),
+    );
+  }
 
   @override
   State<ISpectSettingsBottomSheet> createState() =>

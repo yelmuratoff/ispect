@@ -24,7 +24,7 @@ class ISpectAppBar extends StatefulWidget {
   final String? title;
 
   final GroupButtonController titlesController;
-  final ISpectifyViewController controller;
+  final ISpectViewController controller;
 
   final List<String?> titles;
   final List<String?> uniqTitles;

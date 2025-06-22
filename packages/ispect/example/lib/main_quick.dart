@@ -3,7 +3,7 @@ import 'package:ispect/ispect.dart';
 
 void main() {
   // Initialize ISpectify for logging
-  final ISpectify logger = ISpectifyFlutter.init();
+  final logger = ISpectifyFlutter.init();
 
   // Wrap your app with ISpect
   ISpect.run(
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       ]),
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
-          locale: const Locale('your_locale'),
+          locale: const Locale('en'),
           isFeedbackEnabled: true,
           actionItems: [
             ISpectActionItem(

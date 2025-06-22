@@ -489,16 +489,7 @@ class InspectorState extends State<Inspector> {
                     DraggablePanelItem(
                       icon: Icons.color_lens_rounded,
                       enableBadge: false,
-                      onTap: (_) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const ThemeSchemeScreen(),
-                            settings: const RouteSettings(
-                              name: 'Theme Scheme Screen',
-                            ),
-                          ),
-                        );
-                      },
+                      onTap: const ThemeSchemeScreen().push,
                       description: context.ispectL10n.viewThemeScheme,
                     ),
                   ...widget.options.panelItems,
