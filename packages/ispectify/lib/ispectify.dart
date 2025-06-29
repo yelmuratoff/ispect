@@ -3,6 +3,7 @@ export 'package:ansicolor/ansicolor.dart';
 export 'src/enums/log_type.dart';
 export 'src/filter/filter.dart';
 export 'src/history/history.dart';
+export 'src/history/serialization.dart';
 export 'src/ispectify.dart';
 export 'src/logger/logger.dart';
 export 'src/models/data.dart';
