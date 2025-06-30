@@ -13,7 +13,7 @@ extension ISpectifyDataSerialization on ISpectifyData {
         'time': time.toIso8601String(),
         if (title != null)
           'title': truncated && title != null ? title.truncated : title,
-        if (logLevel != null) 'log-level': logLevel.toString(),
+        if (logLevel != null) 'log-level': logLevel?.index.toString(),
         if (message != null) 'message': truncated ? message.truncated : message,
         if (exception != null)
           'exception':
@@ -38,7 +38,7 @@ class ISpectifyDataJsonUtils {
         json['message'] as String?,
         time: DateTime.parse(json['time'] as String),
         logLevel: json['log-level'] != null
-            ? LogLevel.values[json['log-level'] as int]
+            ? LogLevel.values[int.parse(json['log-level'] as String)]
             : null,
         title: json['title'] as String?,
         key: json['key'] as String?,
