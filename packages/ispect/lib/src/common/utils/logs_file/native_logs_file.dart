@@ -41,7 +41,7 @@ class NativeLogsFile extends BaseLogsFile {
 
       // Sanitize filename for cross-platform compatibility
       final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-      final fullFileName = '${safeFileName}_$timestamp.txt';
+      final fullFileName = '${safeFileName}_$timestamp.json';
 
       final filePath = '${logsDir.path}/$fullFileName';
       final file = File(filePath);
@@ -139,7 +139,7 @@ class NativeLogsFile extends BaseLogsFile {
           '${now.second.toString().padLeft(2, '0')}';
 
       final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-      final fullFileName = '${safeFileName}_$timestamp.txt';
+      final fullFileName = '${safeFileName}_$timestamp.json';
       final filePath = '${dir.path}/$fullFileName';
 
       final file = File(filePath);

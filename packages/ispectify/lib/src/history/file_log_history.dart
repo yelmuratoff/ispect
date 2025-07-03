@@ -33,7 +33,7 @@ abstract class FileLogHistory extends LogHistory {
   Future<void> clearDateStorage(DateTime date);
 
   /// Gets the current session directory path.
-  String? get sessionDirectory;
+  String get sessionDirectory;
 
   /// Gets today's session file path.
   String get todaySessionPath;
@@ -41,23 +41,20 @@ abstract class FileLogHistory extends LogHistory {
   /// Gets available log dates.
   Future<List<DateTime>> getAvailableLogDates();
 
-  /// Sets up automatic daily session saving.
-  void enableDailyAutoSave(String sessionDirectory, {Duration? interval});
-
-  /// Disables automatic session saving.
-  void disableAutoSave();
-
   /// Gets file size for a specific date.
   Future<int> getDateFileSize(DateTime date);
 
   /// Checks if today's session file exists.
   Future<bool> hasTodaySession();
+
+  /// Gets all logs for a specific date without modifying current history.
+  Future<List<ISpectifyData>> getLogsByDate(DateTime date);
 }
 
 /// Optimized daily file-based log history implementation.
 ///
-/// This class provides efficient daily log management with cross-platform support,
-/// automatic day-based file organization, and memory-conscious operations.
+/// This class provides efficient daily log management with automatic
+/// secure cache directory setup and memory-conscious operations.
 class DailyFileLogHistory extends DefaultISpectifyHistory
     implements FileLogHistory {
   /// Creates a daily file-based log history manager.
@@ -65,11 +62,15 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Parameters: settings for log behavior
   /// - Return: DailyFileLogHistory instance
   /// - Usage example: DailyFileLogHistory(ISpectifyOptions())
-  /// - Edge case notes: Handles platform-specific paths and permissions
+  /// - Edge case notes: Automatically creates secure cache directory
   DailyFileLogHistory(
     super.settings, {
     super.history,
-  });
+    Duration? autoSaveInterval,
+  }) {
+    _initializeSecureDirectory();
+    _setupAutoSave(autoSaveInterval ?? const Duration(seconds: 30));
+  }
 
   String? _sessionDirectory;
   Timer? _autoSaveTimer;
@@ -77,22 +78,118 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   final Set<String> _pendingWrites = {};
   final StreamController<String> _writeQueue =
       StreamController<String>.broadcast();
+  final Completer<void> _directoryInitialized = Completer<void>();
 
   @override
-  String? get sessionDirectory => _sessionDirectory;
-
-  @override
-  String get todaySessionPath {
+  String get sessionDirectory {
     if (_sessionDirectory == null) {
       throw StateError(
-        'Session directory not set. Call enableDailyAutoSave first.',
+        'Session directory not initialized yet. Wait for initialization to complete.',
       );
     }
-    return _getDateFilePath(DateTime.now());
+    return _sessionDirectory!;
+  }
+
+  @override
+  String get todaySessionPath => _getDateFilePath(DateTime.now());
+
+  /// Initializes secure cache directory for log storage.
+  Future<void> _initializeSecureDirectory() async {
+    try {
+      final cacheDir = await _getSecureCacheDirectory();
+      final logsDir = Directory('$cacheDir/ispectify_logs');
+
+      if (!await logsDir.exists()) {
+        await logsDir.create(recursive: true);
+      }
+
+      _sessionDirectory = logsDir.path;
+      _directoryInitialized.complete();
+
+      // Load today's history after directory is ready
+      await loadTodayHistory();
+    } catch (e) {
+      if (settings.useConsoleLogs) {
+        print('Failed to initialize secure directory: $e');
+      }
+      _directoryInitialized.completeError(e);
+    }
+  }
+
+  /// Gets platform-specific secure cache directory.
+  Future<String> _getSecureCacheDirectory() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      // For mobile platforms, use app cache directory
+      return _getMobileCacheDirectory();
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // For desktop platforms, use system cache directory
+      return _getDesktopCacheDirectory();
+    } else {
+      // Fallback to current directory with hidden folder
+      return Directory.current.path;
+    }
+  }
+
+  /// Gets mobile cache directory path.
+  Future<String> _getMobileCacheDirectory() async {
+    // For mobile, we'll use a subdirectory in temp
+    final tempDir = Directory.systemTemp;
+    final appCacheDir = Directory('${tempDir.path}/ispectify_cache');
+
+    if (!await appCacheDir.exists()) {
+      await appCacheDir.create(recursive: true);
+    }
+
+    return appCacheDir.path;
+  }
+
+  /// Gets desktop cache directory path.
+  Future<String> _getDesktopCacheDirectory() async {
+    final homeDir = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        Directory.current.path;
+
+    String cacheDir;
+    if (Platform.isMacOS) {
+      cacheDir = '$homeDir/Library/Caches/ispectify';
+    } else if (Platform.isWindows) {
+      final localAppData =
+          Platform.environment['LOCALAPPDATA'] ?? '$homeDir/AppData/Local';
+      cacheDir = '$localAppData/ispectify/cache';
+    } else {
+      // Linux
+      final xdgCache =
+          Platform.environment['XDG_CACHE_HOME'] ?? '$homeDir/.cache';
+      cacheDir = '$xdgCache/ispectify';
+    }
+
+    final dir = Directory(cacheDir);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+
+    return dir.path;
+  }
+
+  /// Ensures directory is initialized before operations.
+  Future<void> _ensureDirectoryInitialized() async {
+    if (!_directoryInitialized.isCompleted) {
+      await _directoryInitialized.future;
+    }
+  }
+
+  /// Sets up automatic saving with the specified interval.
+  void _setupAutoSave(Duration interval) {
+    _autoSaveTimer = Timer.periodic(interval, (_) {
+      _performAutoSave();
+    });
   }
 
   /// Gets file path for specific date with optimized formatting.
   String _getDateFilePath(DateTime date) {
+    if (_sessionDirectory == null) {
+      throw StateError('Session directory not initialized yet.');
+    }
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     return '$_sessionDirectory/logs_$dateStr.json';
@@ -111,30 +208,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return null;
   }
 
-  @override
-  void enableDailyAutoSave(String sessionDirectory, {Duration? interval}) {
-    _sessionDirectory = sessionDirectory;
-    _autoSaveTimer?.cancel();
-
-    final saveInterval = interval ?? const Duration(seconds: 30);
-    _autoSaveTimer = Timer.periodic(saveInterval, (_) {
-      _performAutoSave();
-    });
-
-    // Load today's history if exists
-    loadTodayHistory();
-  }
-
-  @override
-  void disableAutoSave() {
-    _autoSaveTimer?.cancel();
-    _autoSaveTimer = null;
-  }
-
   /// Performs optimized auto-save with write queue management.
   Future<void> _performAutoSave() async {
-    if (_sessionDirectory == null ||
-        _pendingWrites.contains(todaySessionPath)) {
+    if (_sessionDirectory == null) return;
+
+    if (_pendingWrites.contains(todaySessionPath)) {
       return;
     }
 
@@ -150,7 +228,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<void> saveToDailyFile() async {
-    if (_sessionDirectory == null) return;
+    await _ensureDirectoryInitialized();
 
     final filePath = todaySessionPath;
     if (_pendingWrites.contains(filePath)) {
@@ -259,7 +337,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<void> loadFromDate(DateTime date) async {
-    if (_sessionDirectory == null) return;
+    await _ensureDirectoryInitialized();
 
     final filePath = _getDateFilePath(date);
     final file = File(filePath);
@@ -334,10 +412,10 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<void> clearAllFileStorage() async {
-    if (_sessionDirectory == null) return;
+    await _ensureDirectoryInitialized();
 
     try {
-      final directory = Directory(_sessionDirectory!);
+      final directory = Directory(sessionDirectory);
       if (await directory.exists()) {
         await for (final file in directory.list()) {
           if (file is File && file.path.endsWith('.json')) {
@@ -354,7 +432,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<void> clearDateStorage(DateTime date) async {
-    if (_sessionDirectory == null) return;
+    await _ensureDirectoryInitialized();
 
     final filePath = _getDateFilePath(date);
     final file = File(filePath);
@@ -372,12 +450,12 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<List<DateTime>> getAvailableLogDates() async {
-    if (_sessionDirectory == null) return [];
+    await _ensureDirectoryInitialized();
 
     final dates = <DateTime>[];
 
     try {
-      final directory = Directory(_sessionDirectory!);
+      final directory = Directory(sessionDirectory);
       if (await directory.exists()) {
         await for (final file in directory.list()) {
           if (file is File) {
@@ -401,7 +479,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<int> getDateFileSize(DateTime date) async {
-    if (_sessionDirectory == null) return 0;
+    await _ensureDirectoryInitialized();
 
     final filePath = _getDateFilePath(date);
     final file = File(filePath);
@@ -422,7 +500,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<bool> hasTodaySession() async {
-    if (_sessionDirectory == null) return false;
+    await _ensureDirectoryInitialized();
 
     final file = File(todaySessionPath);
     return file.exists();
@@ -436,7 +514,38 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   /// Cleanup resources when history is no longer needed.
   void dispose() {
-    disableAutoSave();
+    _autoSaveTimer?.cancel();
     _writeQueue.close();
+  }
+
+  @override
+  Future<List<ISpectifyData>> getLogsByDate(DateTime date) async {
+    await _ensureDirectoryInitialized();
+
+    final filePath = _getDateFilePath(date);
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      try {
+        final jsonString = await file.readAsString();
+        final dynamic jsonData = jsonDecode(jsonString);
+        final jsonList = jsonData as List<dynamic>;
+
+        return jsonList
+            .map(
+              (jsonEntry) => ISpectifyDataJsonUtils.fromJson(
+                jsonEntry as Map<String, dynamic>,
+              ),
+            )
+            .toList();
+      } catch (e) {
+        if (settings.useConsoleLogs) {
+          print('Failed to load logs from $date: $e');
+        }
+        return [];
+      }
+    }
+
+    return [];
   }
 }

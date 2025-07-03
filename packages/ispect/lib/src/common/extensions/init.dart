@@ -31,6 +31,7 @@ extension ISpectifyFlutter on ISpectify {
     ISpectifyObserver? observer,
     ISpectifyOptions? options,
     ISpectifyFilter? filter,
+    LogHistory? history,
   }) =>
       ISpectify(
         logger: (logger ?? ISpectifyLogger()).copyWith(
@@ -39,6 +40,7 @@ extension ISpectifyFlutter on ISpectify {
         options: options,
         observer: observer,
         filter: filter,
+        history: history,
       );
 
   /// Default output handler for logging in Flutter.

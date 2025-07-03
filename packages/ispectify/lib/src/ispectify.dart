@@ -120,6 +120,11 @@ class ISpectify {
   /// List of all log entries stored in history.
   List<ISpectifyData> get history => _history.history;
 
+  LogHistory get logHistory => _history;
+
+  FileLogHistory? get fileLogHistory =>
+      _history is FileLogHistory ? _history as FileLogHistory : null;
+
   // ======= OPTIONS METHODS =======
 
   /// Clears all log entries from history.

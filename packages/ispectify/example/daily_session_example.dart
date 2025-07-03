@@ -5,28 +5,29 @@ import 'dart:io';
 import 'package:ispectify/ispectify.dart';
 
 /// Advanced example demonstrating Daily Session History functionality
-/// with optimized file persistence and cross-platform support.
+/// with automatic secure cache directory and cross-platform support.
+///
+/// This example showcases the new DailyFileLogHistory implementation that:
+/// - Automatically creates secure cache directory (no manual setup needed)
+/// - Uses platform-specific cache locations (cleared with app cache)
+/// - Provides cross-platform compatibility
+/// - Automatically loads today's session on initialization
 Future<void> main() async {
   print('🚀 Daily Session History Demo Started');
 
-  // Create daily file history with optimized settings
+  // Create daily file history with automatic secure cache directory
   final dailyHistory = DailyFileLogHistory(
     ISpectifyOptions(
       maxHistoryItems: 5000, // Higher limit for daily sessions
     ),
   );
 
-  // Setup session directory (cross-platform)
-  final sessionDir = Directory('/tmp/ispectify_daily_logs');
-  await sessionDir.create(recursive: true);
+  // Wait for secure directory initialization
+  await Future<void>.delayed(const Duration(milliseconds: 100));
 
-  print('📁 Session directory: ${sessionDir.path}');
-
-  // Enable daily auto-save with optimized interval
-  dailyHistory.enableDailyAutoSave(
-    sessionDir.path,
-    interval: const Duration(seconds: 10), // Demo: short interval
-  );
+  // Get the automatically created secure session directory
+  final sessionDir = dailyHistory.sessionDirectory;
+  print('📁 Secure session directory: $sessionDir');
 
   // Create ISpectify instance with daily history
   final iSpectify = ISpectify(
@@ -36,12 +37,12 @@ Future<void> main() async {
     history: dailyHistory,
   );
 
-  print('📋 Checking if today has existing session...');
+  // Note: DailyFileLogHistory automatically loads today's session during initialization
+  print("📋 Checking today's session status...");
   final hasToday = await dailyHistory.hasTodaySession();
   if (hasToday) {
-    print('✅ Found existing session for today, loading...');
-    await dailyHistory.loadTodayHistory();
-    print('📊 Loaded ${iSpectify.history.length} existing entries');
+    print("✅ Today's session automatically loaded during initialization");
+    print('📊 Current entries: ${dailyHistory.history.length}');
   } else {
     print('🆕 No existing session for today, starting fresh');
   }
@@ -110,7 +111,7 @@ Future<void> main() async {
       ),
     );
 
-  print('✅ Generated ${iSpectify.history.length} total log entries');
+  print('✅ Generated ${dailyHistory.history.length} total log entries');
 
   // Manual save to demonstrate file operations
   print('\n💾 Performing manual save...');
@@ -131,7 +132,7 @@ Future<void> main() async {
   // Export today's session to JSON
   print("\n📤 Exporting today's session...");
   final exportedJson = await dailyHistory.exportToJson();
-  final exportFile = File('${sessionDir.path}/exported_session.json');
+  final exportFile = File('$sessionDir/exported_session.json');
   await exportFile.writeAsString(exportedJson);
   print('✅ Exported ${exportedJson.length} characters to ${exportFile.path}');
 
@@ -141,7 +142,7 @@ Future<void> main() async {
 
   // Create some mock data for yesterday
   final yesterdayFile = File(
-    '${sessionDir.path}/logs_${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}.json',
+    '$sessionDir/logs_${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}.json',
   );
   const mockYesterdayData = '''[
     {
@@ -162,11 +163,11 @@ Future<void> main() async {
   // Clear current and load yesterday's data
   dailyHistory.clear();
   await dailyHistory.loadFromDate(yesterday);
-  print('📊 Loaded ${iSpectify.history.length} entries from yesterday');
+  print('📊 Loaded ${dailyHistory.history.length} entries from yesterday');
 
   // Load today's data back
   await dailyHistory.loadTodayHistory();
-  print('📊 Reloaded today: ${iSpectify.history.length} entries');
+  print('📊 Reloaded today: ${dailyHistory.history.length} entries');
 
   // Performance test with large dataset
   print('\n⚡ Performance test: Adding 1000 entries...');
@@ -195,7 +196,7 @@ Future<void> main() async {
   final endTime = DateTime.now();
   final duration = endTime.difference(startTime);
   print('✅ Added 1000 entries in ${duration.inMilliseconds}ms');
-  print('📊 Total entries now: ${iSpectify.history.length}');
+  print('📊 Total entries now: ${dailyHistory.history.length}');
 
   // Save performance test results
   print('\n💾 Saving performance test results...');
@@ -207,7 +208,7 @@ Future<void> main() async {
 
   // Display session statistics
   print('\n📈 Session Statistics:');
-  final totalEntries = iSpectify.history.length;
+  final totalEntries = dailyHistory.history.length;
   final todayFileSize = await dailyHistory.getDateFileSize(DateTime.now());
   final fileSizeMB = (todayFileSize / (1024 * 1024)).toStringAsFixed(2);
 
@@ -217,7 +218,7 @@ Future<void> main() async {
 
   // Analyze log types
   final logTypes = <String, int>{};
-  for (final entry in iSpectify.history) {
+  for (final entry in dailyHistory.history) {
     final key = entry.key ?? 'unknown';
     logTypes[key] = (logTypes[key] ?? 0) + 1;
   }
@@ -245,7 +246,7 @@ Future<void> main() async {
   }
 
   print('\n✅ Daily Session History Demo Completed!');
-  print('📂 Session files remain in: ${sessionDir.path}');
+  print('📂 Session files remain in: $sessionDir');
   print('🔄 Auto-save will continue until app shutdown');
 
   // Cleanup

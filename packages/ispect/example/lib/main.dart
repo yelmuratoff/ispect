@@ -29,10 +29,12 @@ final Dio dummyDio = Dio(
 );
 
 void main() {
+  final options = ISpectifyOptions(
+    logTruncateLength: 500,
+  );
   final ISpectify iSpectify = ISpectifyFlutter.init(
-    options: ISpectifyOptions(
-      logTruncateLength: 500,
-    ),
+    options: options,
+    history: DailyFileLogHistory(options),
   );
 
   // debugRepaintRainbowEnabled = true;
@@ -44,7 +46,7 @@ void main() {
       ),
     ),
     logger: iSpectify,
-    isPrintLoggingEnabled: true,
+    isPrintLoggingEnabled: false,
     onInit: () {
       Bloc.observer = ISpectifyBlocObserver(
         iSpectify: iSpectify,
