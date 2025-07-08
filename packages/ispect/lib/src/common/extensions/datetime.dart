@@ -9,4 +9,9 @@ extension DateTimeExtensions on DateTime {
   /// String formatted = now.toFormattedString(); // e.g., '25.10.2023'
   /// ```
   String toFormattedString() => DateFormat('dd.MM.yyyy').format(this);
+
+  bool get isToday {
+    final now = DateTime.now();
+    return year == now.year && month == now.month && day == now.day;
+  }
 }

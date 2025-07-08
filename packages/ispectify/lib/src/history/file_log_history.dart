@@ -106,8 +106,8 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       _sessionDirectory = logsDir.path;
       _directoryInitialized.complete();
 
-      // Load today's history after directory is ready
-      await loadTodayHistory();
+      // Don't auto-load history on initialization to prevent data mixing
+      // Users should explicitly call loadTodayHistory() if needed
     } catch (e) {
       if (settings.useConsoleLogs) {
         print('Failed to initialize secure directory: $e');
@@ -210,7 +210,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   /// Performs optimized auto-save with write queue management.
   Future<void> _performAutoSave() async {
-    if (_sessionDirectory == null) return;
+    if (_sessionDirectory == null || history.isEmpty) return;
 
     if (_pendingWrites.contains(todaySessionPath)) {
       return;
@@ -229,6 +229,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   @override
   Future<void> saveToDailyFile() async {
     await _ensureDirectoryInitialized();
+
+    // Don't save empty history
+    if (history.isEmpty) return;
 
     final filePath = todaySessionPath;
     if (_pendingWrites.contains(filePath)) {
@@ -250,6 +253,33 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       // Merge with current history (avoid duplicates)
       final mergedData = _mergeHistoryData(existingData, history);
 
+      // Don't save if no new data
+      if (mergedData.isEmpty) return;
+
+      // Validate that all data belongs to today
+      final today = DateTime.now();
+      if (!_validateDataForDate(mergedData, today)) {
+        if (settings.useConsoleLogs) {
+          print('Prevented saving mixed-date data to daily file');
+        }
+        return;
+      }
+
+      // Additional safety: ensure we're not overwriting files from other days
+      final existingFileData = await _loadExistingData(file);
+      if (existingFileData.isNotEmpty) {
+        final firstEntryDate = existingFileData.first.time;
+        if (!_isSameDay(firstEntryDate, today)) {
+          // File contains data from another day - don't overwrite
+          if (settings.useConsoleLogs) {
+            print(
+              "Prevented overwriting file from ${firstEntryDate.toIso8601String().split('T').first} with today's data",
+            );
+          }
+          return;
+        }
+      }
+
       // Use chunked writing for large datasets
       await _writeDataChunked(file, mergedData);
       _lastSaveDate = DateTime.now();
@@ -261,9 +291,15 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Checks if we should merge with existing data.
   bool _shouldMergeWithExisting() {
     final now = DateTime.now();
-    return _lastSaveDate == null ||
-        !_isSameDay(_lastSaveDate!, now) ||
-        _lastSaveDate!.difference(now).inMinutes > 5;
+
+    // If no previous save date, merge with existing (same session)
+    if (_lastSaveDate == null) return true;
+
+    // If different day, DON'T merge - we're creating a new day file
+    if (!_isSameDay(_lastSaveDate!, now)) return false;
+
+    // If more than 5 minutes passed on same day, merge with existing
+    return now.difference(_lastSaveDate!).inMinutes > 5;
   }
 
   /// Loads existing data from file efficiently.
@@ -285,25 +321,30 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Merges history data avoiding duplicates.
+  /// Merges history data avoiding duplicates and filtering by today's date.
   List<ISpectifyData> _mergeHistoryData(
     List<ISpectifyData> existing,
     List<ISpectifyData> current,
   ) {
     final merged = <String, ISpectifyData>{};
+    final today = DateTime.now();
 
-    // Add existing data
+    // Add existing data (only from today)
     for (final item in existing) {
-      final key =
-          '${item.time.millisecondsSinceEpoch}_${item.message?.hashCode ?? 0}';
-      merged[key] = item;
+      if (_isSameDay(item.time, today)) {
+        final key =
+            '${item.time.millisecondsSinceEpoch}_${item.message?.hashCode ?? 0}';
+        merged[key] = item;
+      }
     }
 
-    // Add current data (newer entries override)
+    // Add current data (only from today, newer entries override)
     for (final item in current) {
-      final key =
-          '${item.time.millisecondsSinceEpoch}_${item.message?.hashCode ?? 0}';
-      merged[key] = item;
+      if (_isSameDay(item.time, today)) {
+        final key =
+            '${item.time.millisecondsSinceEpoch}_${item.message?.hashCode ?? 0}';
+        merged[key] = item;
+      }
     }
 
     // Sort by time
@@ -345,7 +386,12 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     if (await file.exists()) {
       try {
         final jsonString = await file.readAsString();
-        await importFromJson(jsonString);
+        final loadedData = await _parseJsonToData(jsonString);
+
+        // Replace current history with loaded data (don't merge)
+        clear();
+
+        loadedData.forEach(add);
       } catch (e) {
         if (settings.useConsoleLogs) {
           print('Failed to load logs from $date: $e');
@@ -382,27 +428,13 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   @override
   Future<void> importFromJson(String jsonString) async {
+    // Note: This method is for importing external JSON data, not for loading daily files
+    // Use loadFromDate() for loading specific date files
     try {
-      final dynamic jsonData = jsonDecode(jsonString);
-      final jsonList = jsonData as List<dynamic>;
+      final loadedData = await _parseJsonToData(jsonString);
 
-      // Process in chunks to prevent UI freezing
-      const chunkSize = 25;
-      for (var i = 0; i < jsonList.length; i += chunkSize) {
-        final chunk = jsonList.skip(i).take(chunkSize);
-
-        for (final jsonEntry in chunk) {
-          final entry = ISpectifyDataJsonUtils.fromJson(
-            jsonEntry as Map<String, dynamic>,
-          );
-          add(entry);
-        }
-
-        // Yield control for UI responsiveness
-        if (i % (chunkSize * 4) == 0) {
-          await Future<void>.delayed(const Duration(microseconds: 1));
-        }
-      }
+      // Add imported data to current history (this is the expected behavior for import)
+      loadedData.forEach(add);
     } catch (e) {
       if (settings.useConsoleLogs) {
         print('Failed to import JSON: $e');
@@ -528,16 +560,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     if (await file.exists()) {
       try {
         final jsonString = await file.readAsString();
-        final dynamic jsonData = jsonDecode(jsonString);
-        final jsonList = jsonData as List<dynamic>;
-
-        return jsonList
-            .map(
-              (jsonEntry) => ISpectifyDataJsonUtils.fromJson(
-                jsonEntry as Map<String, dynamic>,
-              ),
-            )
-            .toList();
+        return _parseJsonToData(jsonString);
       } catch (e) {
         if (settings.useConsoleLogs) {
           print('Failed to load logs from $date: $e');
@@ -547,5 +570,51 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
 
     return [];
+  }
+
+  /// Parses JSON string to list of ISpectifyData without modifying current history.
+  Future<List<ISpectifyData>> _parseJsonToData(String jsonString) async {
+    final result = <ISpectifyData>[];
+
+    try {
+      final dynamic jsonData = jsonDecode(jsonString);
+      final jsonList = jsonData as List<dynamic>;
+
+      // Process in chunks to prevent UI freezing
+      const chunkSize = 25;
+      for (var i = 0; i < jsonList.length; i += chunkSize) {
+        final chunk = jsonList.skip(i).take(chunkSize);
+
+        for (final jsonEntry in chunk) {
+          final entry = ISpectifyDataJsonUtils.fromJson(
+            jsonEntry as Map<String, dynamic>,
+          );
+          result.add(entry);
+        }
+
+        // Yield control for UI responsiveness
+        if (i % (chunkSize * 4) == 0) {
+          await Future<void>.delayed(const Duration(microseconds: 1));
+        }
+      }
+    } catch (e) {
+      if (settings.useConsoleLogs) {
+        print('Failed to parse JSON: $e');
+      }
+    }
+
+    return result;
+  }
+
+  /// Validates that all data entries belong to the specified date.
+  bool _validateDataForDate(List<ISpectifyData> data, DateTime targetDate) {
+    if (data.isEmpty) return true;
+
+    for (final entry in data) {
+      if (!_isSameDay(entry.time, targetDate)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
