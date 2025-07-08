@@ -42,7 +42,9 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
 
   Future<void> _copyPathToClipboard() async {
     final history = widget.history;
-    if (history == null) return;
+    if (history == null) {
+      return;
+    }
 
     copyClipboard(
       context,
@@ -52,11 +54,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   Future<void> _loadSessions({bool isRefreshing = false}) async {
-    print('Loading daily sessions...');
-    print('Path: ${widget.history?.sessionDirectory}');
-
     final history = widget.history;
-    if (history == null) return;
+    if (history == null) {
+      return;
+    }
 
     final availableDates = await history.getAvailableLogDates();
     _dates
@@ -119,42 +120,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                 itemCount: _dates.length,
                 itemBuilder: (context, index) {
                   final session = _dates[index];
-                  return ListTile(
+                  return _SessionListTile(
                     key: ValueKey(session.hashCode),
-                    dense: true,
-                    title: Text(
-                      _getSessionTitle(session),
-                      style: context.ispectTheme.textTheme.titleSmall,
-                    ),
-                    subtitle: FutureBuilder<int>(
-                      future: widget.history!.getDateFileSize(session),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final sizeKB =
-                              (snapshot.data! / 1024).toStringAsFixed(1);
-                          return Text(
-                            'File size: $sizeKB KB',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          );
-                        }
-                        return const Text(
-                          'Loading...',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        );
-                      },
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14,
-                    ),
+                    session: session,
+                    history: widget.history!,
                     onTap: () => _navigateToSession(session),
                   );
                 },
@@ -176,7 +145,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await widget.history!.clearAllFileStorage();
+              await widget.history?.clearAllFileStorage();
               if (context.mounted) {
                 Navigator.of(context).pop();
                 await _loadSessions(isRefreshing: true);
@@ -191,7 +160,9 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
 
   Future<void> _navigateToSession(DateTime session) async {
     try {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       unawaited(
         Navigator.of(context).push(
@@ -226,6 +197,41 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
       ),
     );
   }
+}
+
+class _SessionListTile extends StatefulWidget {
+  const _SessionListTile({
+    required this.session,
+    required this.history,
+    required this.onTap,
+    super.key,
+  });
+
+  final DateTime session;
+  final FileLogHistory history;
+  final VoidCallback onTap;
+
+  @override
+  State<_SessionListTile> createState() => _SessionListTileState();
+}
+
+class _SessionListTileState extends State<_SessionListTile> {
+  int? _fileSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFileSize();
+  }
+
+  Future<void> _fetchFileSize() async {
+    final size = await widget.history.getDateFileSize(widget.session);
+    if (mounted) {
+      setState(() {
+        _fileSize = size;
+      });
+    }
+  }
 
   String _getSessionTitle(DateTime date) {
     if (date.isToday) {
@@ -233,4 +239,35 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     }
     return date.toFormattedString();
   }
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        dense: true,
+        title: Text(
+          _getSessionTitle(widget.session),
+          style: context.ispectTheme.textTheme.titleSmall,
+        ),
+        subtitle: _fileSize != null
+            ? Text(
+                'File size: ${(_fileSize! / 1024).toStringAsFixed(1)} KB',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w300,
+                ),
+              )
+            : const Text(
+                'Loading...',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 14,
+        ),
+        onTap: widget.onTap,
+      );
 }
