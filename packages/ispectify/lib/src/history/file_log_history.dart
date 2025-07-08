@@ -188,13 +188,13 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Gets file path for specific date with optimized formatting.
-  String _getDateFilePath(DateTime date) {
+  String _getDateFilePath(DateTime date, {String fileType = 'json'}) {
     if (_sessionDirectory == null) {
       throw StateError('Session directory not initialized yet.');
     }
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    return '$_sessionDirectory/logs_$dateStr.json';
+    return '$_sessionDirectory/logs_$dateStr.$fileType';
   }
 
   /// Optimized date parsing from file name.

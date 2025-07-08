@@ -327,13 +327,17 @@ class ISpectViewController extends ChangeNotifier {
   ///
   /// Exports logs in structured JSON format with metadata including
   /// filter information for better context and import capabilities.
-  Future<void> shareLogsAsFile(List<ISpectifyData> logs) async {
+  Future<void> shareLogsAsFile(
+    List<ISpectifyData> logs, {
+    String fileType = 'json',
+  }) async {
     final filteredLogs = applyCurrentFilters(logs);
     await _logsJsonService.shareFilteredLogsAsJsonFile(
       logs,
       filteredLogs,
       filter,
       fileName: 'ispect_logs_${DateTime.now().millisecondsSinceEpoch}',
+      fileType: fileType,
     );
   }
 

@@ -15,6 +15,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
@@ -176,8 +177,12 @@ class _LogsScreenState extends State<LogsScreen> {
           icon: Icons.delete_outline,
         ),
         ISpectActionItem(
-          onTap: (_) =>
-              _logsViewController.shareLogsAsFile(ISpect.logger.history),
+          onTap: (_) {
+            // _logsViewController.shareLogsAsFile(ISpect.logger.history);
+            ISpectShareAllLogsBottomSheet(
+              controller: _logsViewController,
+            ).show(context);
+          },
           title: context.ispectL10n.shareLogsFile,
           icon: Icons.ios_share_outlined,
         ),

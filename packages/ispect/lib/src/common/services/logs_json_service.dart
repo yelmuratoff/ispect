@@ -2,6 +2,19 @@ import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
 
+// ignore: avoid_annotating_with_dynamic
+Object? _toEncodable(dynamic object) {
+  if (object is Uri) {
+    return object.toString();
+  }
+  try {
+    // ignore: avoid_dynamic_calls
+    return object.toJson();
+  } catch (_) {
+    return object.toString();
+  }
+}
+
 /// Service for managing JSON export/import operations for logs.
 ///
 /// - Parameters: None required for initialization
@@ -65,7 +78,7 @@ class LogsJsonService {
     exportData['logs'] = jsonLogs;
 
     // Use pretty print for better readability
-    const encoder = JsonEncoder.withIndent('  ');
+    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     return encoder.convert(exportData);
   }
 
@@ -185,6 +198,7 @@ class LogsJsonService {
     List<ISpectifyData> filteredLogs,
     ISpectifyFilter filter, {
     String fileName = 'ispect_filtered_logs',
+    String fileType = 'json',
   }) async {
     if (filteredLogs.isEmpty) {
       throw ArgumentError('Cannot export empty filtered logs list');
@@ -207,12 +221,13 @@ class LogsJsonService {
       'logs': filteredLogs.map((log) => log.toJson()).toList(),
     };
 
-    const encoder = JsonEncoder.withIndent('  ');
+    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     final jsonContent = encoder.convert(exportData);
 
     await LogsFileFactory.downloadFile(
       jsonContent,
       fileName: fileName,
+      fileType: fileType,
     );
   }
 

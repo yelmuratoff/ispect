@@ -13,6 +13,7 @@ abstract class BaseLogsFile {
   Future<Object> createFile(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   });
 
   /// Gets the file path or identifier.
@@ -40,7 +41,11 @@ abstract class BaseLogsFile {
   /// **Parameters:**
   /// - [file]: The file object to download/share
   /// - [fileName]: Optional custom filename (defaults to file's original name)
-  Future<void> downloadFile(Object file, {String? fileName});
+  Future<void> downloadFile(
+    Object file, {
+    String? fileName,
+    String fileType = 'json',
+  });
 
   /// Creates and immediately downloads/shares a log file.
   ///
@@ -52,9 +57,10 @@ abstract class BaseLogsFile {
   Future<void> createAndDownloadFile(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   }) async {
-    final file = await createFile(logs, fileName: fileName);
-    await downloadFile(file, fileName: fileName);
+    final file = await createFile(logs, fileName: fileName, fileType: fileType);
+    await downloadFile(file, fileName: fileName, fileType: fileType);
   }
 
   /// Checks if the platform supports native file operations.

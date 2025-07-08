@@ -15,6 +15,7 @@ class NativeLogsFile extends BaseLogsFile {
   Future<File> createFile(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   }) async {
     try {
       // Get platform-appropriate directory
@@ -41,7 +42,7 @@ class NativeLogsFile extends BaseLogsFile {
 
       // Sanitize filename for cross-platform compatibility
       final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-      final fullFileName = '${safeFileName}_$timestamp.json';
+      final fullFileName = '${safeFileName}_$timestamp.$fileType';
 
       final filePath = '${logsDir.path}/$fullFileName';
       final file = File(filePath);
@@ -97,7 +98,11 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   @override
-  Future<void> downloadFile(Object file, {String? fileName}) async {
+  Future<void> downloadFile(
+    Object file, {
+    String? fileName,
+    String fileType = 'json',
+  }) async {
     if (file is! File) {
       throw ArgumentError('Expected File instance, got ${file.runtimeType}');
     }
@@ -127,6 +132,7 @@ class NativeLogsFile extends BaseLogsFile {
   static Future<void> createAndShareLogs(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   }) async {
     try {
       // Create temporary file for sharing
@@ -139,7 +145,7 @@ class NativeLogsFile extends BaseLogsFile {
           '${now.second.toString().padLeft(2, '0')}';
 
       final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-      final fullFileName = '${safeFileName}_$timestamp.json';
+      final fullFileName = '${safeFileName}_$timestamp.$fileType';
       final filePath = '${dir.path}/$fullFileName';
 
       final file = File(filePath);
