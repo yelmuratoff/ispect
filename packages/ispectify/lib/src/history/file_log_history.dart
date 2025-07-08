@@ -71,7 +71,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     Duration? autoSaveInterval,
   }) {
     _initializeSecureDirectory();
-    _setupAutoSave(autoSaveInterval ?? const Duration(seconds: 30));
+    _setupAutoSave(autoSaveInterval ?? const Duration(seconds: 1));
   }
 
   String? _sessionDirectory;
@@ -294,14 +294,14 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   bool _shouldMergeWithExisting() {
     final now = DateTime.now();
 
-    // If no previous save date, merge with existing (same session)
+    // If no previous save date, merge with existing (first save in a session)
     if (_lastSaveDate == null) return true;
 
     // If different day, DON'T merge - we're creating a new day file
     if (!_isSameDay(_lastSaveDate!, now)) return false;
 
-    // If more than 5 minutes passed on same day, merge with existing
-    return now.difference(_lastSaveDate!).inMinutes > 5;
+    // Always merge if saving on the same day to prevent data loss
+    return true;
   }
 
   /// Loads existing data from file efficiently.
