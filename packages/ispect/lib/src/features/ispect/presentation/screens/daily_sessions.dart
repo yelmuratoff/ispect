@@ -3,10 +3,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/list_screen.dart';
-import 'package:ispectify/ispectify.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});
@@ -19,11 +20,8 @@ class DailySessionsScreen extends StatefulWidget {
         builder: (_) => this,
         settings: RouteSettings(
           name: 'ISpect Daily Sessions Screen',
-          arguments: history != null
-              ? {
-                  'directory': history!.sessionDirectory,
-                }
-              : null,
+          arguments:
+              history != null ? {'directory': history!.sessionDirectory} : null,
         ),
       ),
     );
@@ -39,19 +37,42 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadSessions();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSessions());
   }
 
-  Future<void> _loadSessions() async {
+  Future<void> _copyPathToClipboard() async {
+    final history = widget.history;
+    if (history == null) return;
+
+    copyClipboard(
+      context,
+      value: history.sessionDirectory,
+      title: '✅ Sessions Path Copied',
+    );
+  }
+
+  Future<void> _loadSessions({bool isRefreshing = false}) async {
     print('Loading daily sessions...');
     print('Path: ${widget.history?.sessionDirectory}');
-    if (widget.history == null) return;
+
+    final history = widget.history;
+    if (history == null) return;
+
+    final availableDates = await history.getAvailableLogDates();
     _dates
       ..clear()
-      ..addAll((await widget.history!.getAvailableLogDates()).reversed);
-    setState(() {});
+      ..addAll(availableDates.reversed);
+
+    if (mounted) {
+      setState(() {});
+
+      if (isRefreshing) {
+        await ISpectToaster.showInfoToast(
+          context,
+          title: '✅ Daily sessions refreshed',
+        );
+      }
+    }
   }
 
   @override
@@ -72,40 +93,19 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           actionsPadding: const EdgeInsets.only(right: 12),
           actions: [
             IconButton(
+              icon: const Icon(Icons.copy_all_rounded),
+              onPressed: _copyPathToClipboard,
+              tooltip: 'Copy path',
+            ),
+            IconButton(
               icon: const Icon(Icons.refresh_rounded),
-              onPressed: _loadSessions,
+              onPressed: () => _loadSessions(isRefreshing: true),
               tooltip: 'Refresh',
             ),
             if (widget.history != null)
               IconButton(
                 icon: const Icon(Icons.clear_all_rounded),
-                onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Clear all Sessions'),
-                      content: const Text(
-                        'Are you sure you want to clear all daily sessions?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            await widget.history!.clearAllFileStorage();
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                              await _loadSessions();
-                            }
-                          },
-                          child: const Text('Clear'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                onPressed: _showClearAllDialog,
                 tooltip: 'Clear All Sessions',
               ),
           ],
@@ -123,8 +123,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                     key: ValueKey(session.hashCode),
                     dense: true,
                     title: Text(
-                      // session.toFormattedString(),
-                      _title(session),
+                      _getSessionTitle(session),
                       style: context.ispectTheme.textTheme.titleSmall,
                     ),
                     subtitle: FutureBuilder<int>(
@@ -156,34 +155,63 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                       Icons.arrow_forward_ios_rounded,
                       size: 14,
                     ),
-                    onTap: () async {
-                      try {
-                        final logs =
-                            await widget.history!.getLogsByDate(session);
-                        if (context.mounted) {
-                          final reversedList = logs.reversed.toList();
-                          unawaited(
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => LogsV2Screen(
-                                  logs: reversedList,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          _showErrorDialog(context, 'Failed to load logs: $e');
-                        }
-                      }
-                    },
+                    onTap: () => _navigateToSession(session),
                   );
                 },
               ),
       );
 
-  void _showErrorDialog(BuildContext context, String message) {
+  void _showClearAllDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear all Sessions'),
+        content: const Text(
+          'Are you sure you want to clear all daily sessions?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await widget.history!.clearAllFileStorage();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                await _loadSessions(isRefreshing: true);
+              }
+            },
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _navigateToSession(DateTime session) async {
+    try {
+      if (!mounted) return;
+
+      unawaited(
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            settings: RouteSettings(
+              name: 'ISpect Daily Session Logs',
+              arguments: {'date': session.toIso8601String()},
+            ),
+            builder: (_) => LogsV2Screen(sessionDate: session),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('Failed to load logs: $e');
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -199,7 +227,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     );
   }
 
-  String _title(DateTime date) {
+  String _getSessionTitle(DateTime date) {
     if (date.isToday) {
       return '📅 ${context.ispectL10n.current}: ${date.toFormattedString()}';
     }

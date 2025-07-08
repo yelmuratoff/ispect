@@ -20,13 +20,17 @@ import 'package:ispect/src/features/json_viewer/json_screen.dart';
 /// - Edge case notes: Handles empty state when no logs are available
 class LogsV2Screen extends StatefulWidget {
   const LogsV2Screen({
-    required this.logs,
+    this.logs,
     super.key,
     this.appBarTitle,
+    this.sessionPath,
+    this.sessionDate,
   });
 
   final String? appBarTitle;
-  final List<ISpectifyData> logs;
+  final List<ISpectifyData>? logs;
+  final String? sessionPath;
+  final DateTime? sessionDate;
 
   /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
@@ -47,11 +51,13 @@ class _LogsScreenState extends State<LogsV2Screen> {
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final _logsViewController = ISpectViewController();
+  final List<ISpectifyData> _logs = [];
 
   @override
   void initState() {
     super.initState();
     _logsViewController.toggleExpandedLogs();
+    getLogs();
   }
 
   @override
@@ -74,7 +80,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
           children: [
             Expanded(
               child: _MainLogsView(
-                logsData: widget.logs,
+                logsData: _logs,
                 iSpectTheme: iSpect,
                 titleFiltersController: _titleFiltersController,
                 searchFocusNode: _searchFocusNode,
@@ -105,6 +111,21 @@ class _LogsScreenState extends State<LogsV2Screen> {
 
   Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
       iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
+
+  Future<void> getLogs() async {
+    if (widget.logs != null && widget.logs!.isNotEmpty) {
+      _logs.addAll(widget.logs!);
+    } else if (widget.sessionPath != null) {
+      final fileLogHistory = ISpect.logger.fileLogHistory;
+      final logs = await fileLogHistory?.getLogsBySession(widget.sessionPath!);
+      _logs.addAll(logs ?? []);
+    } else if (widget.sessionDate != null) {
+      final fileLogHistory = ISpect.logger.fileLogHistory;
+      final logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
+      _logs.addAll(logs ?? []);
+    }
+    setState(() {});
+  }
 }
 
 /// A widget that represents a single log entry in the list.

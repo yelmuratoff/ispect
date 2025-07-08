@@ -49,6 +49,8 @@ abstract class FileLogHistory extends LogHistory {
 
   /// Gets all logs for a specific date without modifying current history.
   Future<List<ISpectifyData>> getLogsByDate(DateTime date);
+
+  Future<List<ISpectifyData>> getLogsBySession(String sessionPath);
 }
 
 /// Optimized daily file-based log history implementation.
@@ -616,5 +618,25 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       }
     }
     return true;
+  }
+
+  @override
+  Future<List<ISpectifyData>> getLogsBySession(String sessionPath) async {
+    await _ensureDirectoryInitialized();
+
+    final file = File(sessionPath);
+    if (await file.exists()) {
+      try {
+        final jsonString = await file.readAsString();
+        return _parseJsonToData(jsonString);
+      } catch (e) {
+        if (settings.useConsoleLogs) {
+          print('Failed to load logs from $sessionPath: $e');
+        }
+        return [];
+      }
+    }
+
+    return [];
   }
 }
