@@ -215,6 +215,25 @@ class _HomeState extends State<_Home> {
   ) {
     return <_ButtonConfig>[
       (
+        label: 'All logs',
+        onPressed: () {
+          ISpect.logger.critical('critical');
+          ISpect.logger.debug('debug');
+          ISpect.logger.error('error');
+          ISpect.logger.good('good');
+          ISpect.logger.handle(
+              exception: Exception('exception'),
+              stackTrace: StackTrace.current);
+          ISpect.logger.info('info');
+          ISpect.logger.log('log');
+          ISpect.logger.print('print');
+          ISpect.logger.route('route');
+          ISpect.logger.track('track');
+          ISpect.logger.verbose('verbose');
+          ISpect.logger.warning('warning');
+        },
+      ),
+      (
         label: 'Mock Nested Map with Depth IDs',
         onPressed: () {
           const int depth = 5000;

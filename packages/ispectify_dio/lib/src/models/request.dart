@@ -15,7 +15,7 @@ class DioRequestLog extends ISpectifyData {
   }) : super(
           title: getKey,
           key: getKey,
-          pen: settings.requestPen ?? (AnsiPen()..xterm(219)),
+          pen: settings.requestPen ?? (AnsiPen()..xterm(207)),
           additionalData: requestData.toJson,
         );
 
