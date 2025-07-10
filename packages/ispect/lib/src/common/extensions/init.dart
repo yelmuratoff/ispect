@@ -63,7 +63,7 @@ extension ISpectifyFlutter on ISpectify {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        log(message, name: 'ISpectify', level: 800); // INFO level logging
+        log(message, name: 'ISpect', level: 1000);
       default:
         debugPrint(message);
     }
