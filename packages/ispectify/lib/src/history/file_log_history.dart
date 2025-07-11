@@ -134,20 +134,28 @@ abstract class FileLogHistory extends LogHistory {
 /// - Edge case notes: Provides efficient daily log management with secure storage
 class DailyFileLogHistory extends DefaultISpectifyHistory
     implements FileLogHistory {
-  /// Creates a daily file-based log history manager.
+  /// Creates a daily file-based log history manager with session control.
   ///
-  /// - Parameters: settings for log behavior, optional history and autoSaveInterval
+  /// - Parameters:
+  ///   - settings: Log behavior settings
+  ///   - history: Optional initial history
+  ///   - autoSaveInterval: How often to auto-save (default: 1 second)
+  ///   - maxSessionDays: Maximum days to keep logs (default: 10)
   /// - Return: DailyFileLogHistory instance
-  /// - Usage example: DailyFileLogHistory(ISpectifyOptions())
-  /// - Edge case notes: Automatically creates secure cache directory
+  /// - Usage example: DailyFileLogHistory(ISpectifyOptions(), maxSessionDays: 30, autoSaveInterval: Duration(minutes: 5))
+  /// - Edge case notes: Oldest logs are deleted if limit exceeded before saving new logs
   DailyFileLogHistory(
     super.settings, {
     super.history,
     Duration? autoSaveInterval,
-  }) {
+    int maxSessionDays = 10,
+  }) : _maxSessionDays = maxSessionDays {
     _initializeSecureDirectory();
     _setupAutoSave(autoSaveInterval ?? const Duration(seconds: 1));
   }
+
+  /// Maximum number of days to keep session logs
+  final int _maxSessionDays;
 
   String? _sessionDirectory;
   Timer? _autoSaveTimer;
@@ -375,6 +383,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     _pendingWrites.add(filePath);
 
     try {
+      final availableDates = await getAvailableLogDates();
+      if (availableDates.length >= _maxSessionDays) {
+        // Sort dates ascending, delete oldest
+        final datesToDelete = availableDates.sublist(
+          0,
+          availableDates.length - _maxSessionDays + 1,
+        );
+        for (final date in datesToDelete) {
+          await clearDateStorage(date);
+        }
+      }
+
       final file = File(filePath);
       await file.parent.create(recursive: true);
 
