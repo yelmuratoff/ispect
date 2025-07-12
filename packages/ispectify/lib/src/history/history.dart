@@ -1,5 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-export 'file_log_history.dart';
+export 'file_log/file_log_history.dart';
 
 /// An abstract class representing a log history storage.
 ///

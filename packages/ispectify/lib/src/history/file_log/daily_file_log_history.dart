@@ -3,266 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:ispectify/ispectify.dart';
-
-/// Strategy for cleaning up old log files when session limit is exceeded.
-///
-/// - deleteOldest: Remove oldest files first (default)
-/// - deleteBySize: Remove largest files first
-/// - archiveOldest: Archive oldest files before deletion
-enum SessionCleanupStrategy {
-  /// Delete oldest files first when limit exceeded
-  deleteOldest,
-
-  /// Delete largest files first when limit exceeded
-  deleteBySize,
-
-  /// Archive oldest files before deletion
-  archiveOldest,
-}
-
-/// Comprehensive statistics about the current log session.
-///
-/// - totalDays: Number of days with log files
-/// - totalSize: Total size of all log files in bytes
-/// - totalEntries: Total number of log entries across all files
-/// - oldestDate: Date of the oldest log file
-/// - newestDate: Date of the newest log file
-/// - maxSessionDays: Configured maximum session days
-/// - autoSaveInterval: Current auto-save interval
-/// - enableAutoSave: Whether auto-save is currently enabled
-/// - maxFileSize: Maximum file size limit
-/// - cleanupStrategy: Current cleanup strategy
-class SessionStatistics {
-  /// Creates session statistics with comprehensive metrics.
-  ///
-  /// - Parameters: All session-related metrics and configuration
-  /// - Return: SessionStatistics instance
-  /// - Usage example: Used by getSessionStatistics()
-  /// - Edge case notes: Nullable dates when no files exist
-  const SessionStatistics({
-    required this.totalDays,
-    required this.totalSize,
-    required this.totalEntries,
-    required this.oldestDate,
-    required this.newestDate,
-    required this.maxSessionDays,
-    required this.autoSaveInterval,
-    required this.enableAutoSave,
-    required this.maxFileSize,
-    required this.cleanupStrategy,
-  });
-
-  /// Number of days with log files
-  final int totalDays;
-
-  /// Total size of all log files in bytes
-  final int totalSize;
-
-  /// Total number of log entries across all files
-  final int totalEntries;
-
-  /// Date of the oldest log file (null if no files)
-  final DateTime? oldestDate;
-
-  /// Date of the newest log file (null if no files)
-  final DateTime? newestDate;
-
-  /// Configured maximum session days
-  final int maxSessionDays;
-
-  /// Current auto-save interval
-  final Duration autoSaveInterval;
-
-  /// Whether auto-save is currently enabled
-  final bool enableAutoSave;
-
-  /// Maximum file size limit in bytes
-  final int maxFileSize;
-
-  /// Current cleanup strategy
-  final SessionCleanupStrategy cleanupStrategy;
-
-  /// Converts statistics to a readable string format.
-  ///
-  /// - Parameters: None
-  /// - Return: String formatted statistics summary
-  /// - Usage example: print(stats.toString())
-  /// - Edge case notes: Handles null dates gracefully
-  @override
-  String toString() {
-    final oldestStr = oldestDate?.toString() ?? 'None';
-    final newestStr = newestDate?.toString() ?? 'None';
-    final sizeStr = _formatBytes(totalSize);
-
-    return '''
-Session Statistics:
-- Total Days: $totalDays
-- Total Size: $sizeStr
-- Total Entries: $totalEntries
-- Date Range: $oldestStr to $newestStr
-- Max Session Days: $maxSessionDays
-- Auto-save: ${enableAutoSave ? 'Enabled (${autoSaveInterval.inSeconds}s)' : 'Disabled'}
-- Max File Size: ${_formatBytes(maxFileSize)}
-- Cleanup Strategy: ${cleanupStrategy.name}
-''';
-  }
-
-  /// Formats bytes into human-readable format.
-  ///
-  /// - Parameters: bytes - Number of bytes to format
-  /// - Return: String formatted size (e.g., "1.5 MB")
-  /// - Usage example: Used internally for display formatting
-  /// - Edge case notes: Handles zero and large values
-  String _formatBytes(int bytes) {
-    if (bytes == 0) return '0 B';
-
-    const suffixes = ['B', 'KB', 'MB', 'GB'];
-    final i = (bytes.bitLength - 1) ~/ 10;
-    final value = bytes / (1 << (i * 10));
-
-    return '${value.toStringAsFixed(1)} ${suffixes[i]}';
-  }
-}
-
-/// Extended interface for log history with daily file system support.
-///
-/// - Parameters: Extends LogHistory with file-based persistence
-/// - Return: Abstract interface for file-based log management
-/// - Usage example: Implement this interface for custom file storage
-/// - Edge case notes: All file operations are async and may throw IO exceptions
-abstract class FileLogHistory extends LogHistory {
-  /// Saves the current history to daily organized files.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<void> completing when save is done
-  /// - Usage example: await fileHistory.saveToDailyFile()
-  /// - Edge case notes: Creates directory if not exists, handles concurrent writes
-  Future<void> saveToDailyFile();
-
-  /// Loads history from a specific date.
-  ///
-  /// - Parameters: date - The date to load logs from
-  /// - Return: Future<void> completing when load is done
-  /// - Usage example: await fileHistory.loadFromDate(DateTime(2024, 1, 1))
-  /// - Edge case notes: Replaces current history, returns silently if file missing
-  Future<void> loadFromDate(DateTime date);
-
-  /// Loads history from today's file if exists.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<void> completing when load is done
-  /// - Usage example: await fileHistory.loadTodayHistory()
-  /// - Edge case notes: Convenience method for loadFromDate(DateTime.now())
-  Future<void> loadTodayHistory();
-
-  /// Exports history to JSON format.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<String> containing JSON representation
-  /// - Usage example: final json = await fileHistory.exportToJson()
-  /// - Edge case notes: Uses chunked processing for large datasets
-  Future<String> exportToJson();
-
-  /// Imports history from JSON format.
-  ///
-  /// - Parameters: jsonString - Valid JSON array of log entries
-  /// - Return: Future<void> completing when import is done
-  /// - Usage example: await fileHistory.importFromJson(jsonData)
-  /// - Edge case notes: Adds to current history, validates JSON format
-  Future<void> importFromJson(String jsonString);
-
-  /// Clears all file-based storage.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<void> completing when clear is done
-  /// - Usage example: await fileHistory.clearAllFileStorage()
-  /// - Edge case notes: Removes all .json files in session directory
-  Future<void> clearAllFileStorage();
-
-  /// Clears specific date's storage.
-  ///
-  /// - Parameters: date - The date whose storage to clear
-  /// - Return: Future<void> completing when clear is done
-  /// - Usage example: await fileHistory.clearDateStorage(DateTime(2024, 1, 1))
-  /// - Edge case notes: Silently succeeds if file doesn't exist
-  Future<void> clearDateStorage(DateTime date);
-
-  /// Gets the current session directory path.
-  ///
-  /// - Parameters: None
-  /// - Return: String path to session directory
-  /// - Usage example: final path = fileHistory.sessionDirectory
-  /// - Edge case notes: Throws StateError if not initialized
-  String get sessionDirectory;
-
-  /// Gets today's session file path.
-  ///
-  /// - Parameters: None
-  /// - Return: String path to today's log file
-  /// - Usage example: final path = fileHistory.todaySessionPath
-  /// - Edge case notes: Computed dynamically from current date
-  String get todaySessionPath;
-
-  /// Gets available log dates.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<List<DateTime>> of dates with log files
-  /// - Usage example: final dates = await fileHistory.getAvailableLogDates()
-  /// - Edge case notes: Returns sorted list, empty if no files found
-  Future<List<DateTime>> getAvailableLogDates();
-
-  /// Gets file size for a specific date.
-  ///
-  /// - Parameters: date - The date to check file size for
-  /// - Return: Future<int> file size in bytes
-  /// - Usage example: final size = await fileHistory.getDateFileSize(date)
-  /// - Edge case notes: Returns 0 if file doesn't exist or on error
-  Future<int> getDateFileSize(DateTime date);
-
-  /// Checks if today's session file exists.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<bool> true if today's file exists
-  /// - Usage example: if (await fileHistory.hasTodaySession()) { ... }
-  /// - Edge case notes: Uses file system check, not memory cache
-  Future<bool> hasTodaySession();
-
-  /// Gets all logs for a specific date without modifying current history.
-  ///
-  /// - Parameters: date - The date to get logs for
-  /// - Return: Future<List<ISpectifyData>> logs for the date
-  /// - Usage example: final logs = await fileHistory.getLogsByDate(date)
-  /// - Edge case notes: Read-only operation, returns empty list if no file
-  Future<List<ISpectifyData>> getLogsByDate(DateTime date);
-
-  /// Gets all logs for a specific session file without modifying current history.
-  ///
-  /// - Parameters: sessionPath - Path to the session file
-  /// - Return: Future<List<ISpectifyData>> logs from the session
-  /// - Usage example: final logs = await fileHistory.getLogsBySession(path)
-  /// - Edge case notes: Read-only operation, returns empty list if no file
-  Future<List<ISpectifyData>> getLogsBySession(String sessionPath);
-
-  /// Gets comprehensive session statistics.
-  ///
-  /// - Parameters: None
-  /// - Return: Future<SessionStatistics> with detailed session info
-  /// - Usage example: final stats = await fileHistory.getSessionStatistics()
-  /// - Edge case notes: Calculates total files, sizes, and date ranges
-  Future<SessionStatistics> getSessionStatistics();
-
-  /// Updates auto-save settings during runtime.
-  ///
-  /// - Parameters:
-  ///   - enabled: Whether to enable auto-save
-  ///   - interval: New auto-save interval (optional)
-  /// - Return: void
-  /// - Usage example: fileHistory.updateAutoSaveSettings(enabled: true, interval: Duration(minutes: 2))
-  /// - Edge case notes: Recreates timer with new settings
-  void updateAutoSaveSettings({bool? enabled, Duration? interval});
-}
 
 /// Optimized daily file-based log history implementation.
 ///
@@ -297,7 +38,6 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   static const int _chunkSize = 100;
-  static const int _bufferSize = 8192;
   static const int _fallbackEntrySize = 500;
   static const double _sizeSafetyMargin = 1.2;
 
@@ -850,74 +590,37 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   /// Writes data in chunks using optimized streaming approach.
   Future<void> _writeDataChunked(File file, List<ISpectifyData> data) async {
-    final sink = file.openWrite()..write('[');
-
-    var hasContent = false;
-    final buffer = StringBuffer();
+    final sink = file.openWrite();
 
     try {
-      for (var i = 0; i < data.length; i += _chunkSize) {
-        final chunkEnd =
-            (i + _chunkSize > data.length) ? data.length : i + _chunkSize;
-        final chunk = data.sublist(i, chunkEnd);
+      sink.write('[');
 
-        await _processChunkOptimized(
-          chunk,
-          buffer,
-          hasContent,
-          sink,
-        );
-        hasContent = true;
+      for (var i = 0; i < data.length; i++) {
+        if (i > 0) {
+          sink.write(',');
+        }
 
-        // Yield control less frequently for better performance
-        if (i % (_chunkSize * 10) == 0) {
+        try {
+          final json = data[i].toJson();
+          final sanitizedJson = _sanitizeJsonForEncoding(json);
+          sink.write(jsonEncode(sanitizedJson));
+        } catch (e) {
+          if (settings.useConsoleLogs) {
+            print('Failed to encode entry $i: $e. Skipping entry.');
+          }
+          // Write null placeholder to maintain array structure
+          sink.write('null');
+        }
+
+        // Yield control periodically for large datasets
+        if (i % _chunkSize == 0) {
           await Future<void>.delayed(const Duration(microseconds: 1));
         }
-      }
-
-      // Write any remaining buffer content
-      if (buffer.isNotEmpty) {
-        sink.write(buffer.toString());
-        buffer.clear();
       }
 
       sink.write(']');
     } finally {
       await sink.close();
-    }
-  }
-
-  /// Processes a chunk with optimized buffering.
-  Future<void> _processChunkOptimized(
-    List<ISpectifyData> chunk,
-    StringBuffer buffer,
-    bool hasContent,
-    IOSink sink,
-  ) async {
-    final chunkJsonList = <String>[];
-
-    for (final entry in chunk) {
-      try {
-        final json = entry.toJson();
-        final sanitizedJson = _sanitizeJsonForEncoding(json);
-        chunkJsonList.add(jsonEncode(sanitizedJson));
-      } catch (e) {
-        if (settings.useConsoleLogs) {
-          print('Failed to encode entry: $e. Skipping entry.');
-        }
-      }
-    }
-
-    if (chunkJsonList.isNotEmpty) {
-      if (hasContent && buffer.isEmpty) buffer.write(',');
-      if (buffer.isNotEmpty) buffer.write(',');
-      buffer.write(chunkJsonList.join(','));
-
-      // Flush buffer if it's getting large
-      if (buffer.length > _bufferSize) {
-        sink.write(buffer.toString());
-        buffer.clear();
-      }
     }
   }
 
@@ -972,20 +675,21 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     if (history.isEmpty) return '[]';
 
     final buffer = StringBuffer('[');
+    var isFirstEntry = true;
 
     for (var i = 0; i < history.length; i += _chunkSize) {
       final chunkEnd =
           (i + _chunkSize > history.length) ? history.length : i + _chunkSize;
       final chunk = history.sublist(i, chunkEnd);
 
-      if (i > 0) buffer.write(',');
-
       // Process chunk entries
-      final chunkJson = <String>[];
       for (final entry in chunk) {
-        chunkJson.add(jsonEncode(entry.toJson()));
+        if (!isFirstEntry) {
+          buffer.write(',');
+        }
+        buffer.write(jsonEncode(entry.toJson()));
+        isFirstEntry = false;
       }
-      buffer.write(chunkJson.join(','));
 
       // Yield control for very large datasets
       if (i % (_chunkSize * 20) == 0) {
