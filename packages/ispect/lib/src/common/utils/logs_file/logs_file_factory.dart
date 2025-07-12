@@ -69,8 +69,13 @@ class LogsFileFactory {
   static Future<void> downloadFile(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   }) async {
     final handler = create();
-    await handler.createAndDownloadFile(logs, fileName: fileName);
+    await handler.createAndDownloadFile(
+      logs,
+      fileName: fileName,
+      fileType: fileType,
+    );
   }
 }

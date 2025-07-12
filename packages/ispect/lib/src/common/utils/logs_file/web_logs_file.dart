@@ -17,6 +17,7 @@ class WebLogsFile extends BaseLogsFile {
   Future<Blob> createFile(
     String logs, {
     String fileName = 'ispect_all_logs',
+    String fileType = 'json',
   }) async {
     try {
       // Create safe filename with timestamp
@@ -29,7 +30,7 @@ class WebLogsFile extends BaseLogsFile {
 
       // Sanitize filename for web compatibility
       final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-      final fullFileName = '${safeFileName}_$timestamp.txt';
+      final fullFileName = '${safeFileName}_$timestamp.$fileType';
 
       // Create blob with proper MIME type using the new web API
       final jsArray = [logs.toJS].toJS;
@@ -86,7 +87,11 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   @override
-  Future<void> downloadFile(Object file, {String? fileName}) async {
+  Future<void> downloadFile(
+    Object file, {
+    String? fileName,
+    String fileType = 'json',
+  }) async {
     if (file is! Blob) {
       throw ArgumentError(
         'Expected Blob instance for web download, got ${file.runtimeType}',
@@ -108,9 +113,10 @@ class WebLogsFile extends BaseLogsFile {
           '${now.minute.toString().padLeft(2, '0')}-'
           '${now.second.toString().padLeft(2, '0')}';
 
-      finalFileName = hasExtension ? fileName : '${fileName}_$timestamp.txt';
+      finalFileName =
+          hasExtension ? fileName : '${fileName}_$timestamp.$fileType';
     } else {
-      finalFileName = _fileNames[url] ?? 'ispect_logs.txt';
+      finalFileName = _fileNames[url] ?? 'ispect_logs.json';
     }
 
     final anchor = document.createElement('a') as HTMLAnchorElement
@@ -150,7 +156,7 @@ class WebLogsFile extends BaseLogsFile {
         '${now.minute.toString().padLeft(2, '0')}-'
         '${now.second.toString().padLeft(2, '0')}';
 
-    final finalFileName = '${fileName}_$timestamp.txt';
+    final finalFileName = '${fileName}_$timestamp.json';
     final url = URL.createObjectURL(blob);
 
     document.createElement('a') as HTMLAnchorElement
