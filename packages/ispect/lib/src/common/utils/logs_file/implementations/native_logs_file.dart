@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:ispect/src/common/utils/logs_file/base_logs_file.dart';
+import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
