@@ -5,9 +5,11 @@ import 'package:web/web.dart';
 
 /// Web platform implementation for log file operations.
 ///
-/// Uses browser Blob API to simulate file operations.
+/// - Parameters: Browser Blob API for file simulation
+/// - Return: Blob objects for web file operations
+/// - Usage example: `final logsFile = WebLogsFile(); await logsFile.createFile(logs);`
+/// - Edge case notes: Uses blob URLs for file identification, handles browser download limitations
 class WebLogsFile extends BaseLogsFile {
-  // Store filename metadata separately
   static final Map<String, String> _fileNames = <String, String>{};
 
   @override
@@ -30,14 +32,14 @@ class WebLogsFile extends BaseLogsFile {
     }
   }
 
-  /// Generates a timestamped filename with proper sanitization
+  /// Generates timestamped filename with proper sanitization
   String _generateFileNameWithTimestamp(String fileName, String fileType) {
     final timestamp = _generateTimestamp();
     final safeFileName = _sanitizeFileName(fileName);
     return '${safeFileName}_$timestamp.$fileType';
   }
 
-  /// Creates a timestamp string in YYYY-MM-DD_HH-mm-ss format
+  /// Creates timestamp string in YYYY-MM-DD_HH-mm-ss format
   String _generateTimestamp() {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-'
@@ -51,7 +53,7 @@ class WebLogsFile extends BaseLogsFile {
   String _sanitizeFileName(String fileName) =>
       fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
 
-  /// Creates a Blob from log string using web API
+  /// Creates Blob from log string using web API
   Blob _createBlobFromLogs(String logs) {
     final jsArray = [logs.toJS].toJS;
     return Blob(jsArray, BlobPropertyBag(type: 'text/plain'));
@@ -65,42 +67,38 @@ class WebLogsFile extends BaseLogsFile {
 
   @override
   String getFilePath(Object file) {
-    if (file is Blob) {
-      // Return blob URL for web using the new web API
-      return URL.createObjectURL(file);
+    if (file is! Blob) {
+      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
-    throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+    return URL.createObjectURL(file);
   }
 
   @override
   Future<int> getFileSize(Object file) async {
-    if (file is Blob) {
-      return file.size;
+    if (file is! Blob) {
+      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
-    throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+    return file.size;
   }
 
   @override
   Future<String> readAsString(Object file) async {
-    if (file is Blob) {
-      // Use the modern web API to read the blob as text
-      final jsString = await file.text().toDart;
-      return jsString.toDart;
+    if (file is! Blob) {
+      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
-    throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+    final jsString = await file.text().toDart;
+    return jsString.toDart;
   }
 
   @override
   Future<void> deleteFile(Object file) async {
-    if (file is Blob) {
-      // Revoke blob URL to free memory using the new web API
-      final url = URL.createObjectURL(file);
-      URL.revokeObjectURL(url);
-      // Remove from our filename metadata
-      _fileNames.remove(url);
-      return;
+    if (file is! Blob) {
+      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
-    throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+
+    final url = URL.createObjectURL(file);
+    URL.revokeObjectURL(url);
+    _fileNames.remove(url);
   }
 
   @override
@@ -115,15 +113,14 @@ class WebLogsFile extends BaseLogsFile {
       );
     }
 
-    final blob = file;
-    final url = URL.createObjectURL(blob);
+    final url = URL.createObjectURL(file);
     final finalFileName = _determineFinalFileName(url, fileName, fileType);
 
     _triggerBrowserDownload(url, finalFileName);
     URL.revokeObjectURL(url);
   }
 
-  /// Determines the final filename for download
+  /// Determines final filename for download
   String _determineFinalFileName(
     String url,
     String? fileName,
@@ -137,8 +134,7 @@ class WebLogsFile extends BaseLogsFile {
 
   /// Processes custom filename with timestamp if needed
   String _processCustomFileName(String fileName, String fileType) {
-    final hasExtension = fileName.contains('.');
-    if (hasExtension) {
+    if (fileName.contains('.')) {
       return fileName;
     }
 
@@ -158,14 +154,12 @@ class WebLogsFile extends BaseLogsFile {
     document.body!.removeChild(anchor);
   }
 
-  /// Creates and immediately downloads a log file.
+  /// Creates and immediately downloads a log file
   ///
-  /// **Convenience method** for web platforms that creates a temporary blob
-  /// and triggers download without storing the file.
-  ///
-  /// **Parameters:**
-  /// - [logs]: The log content to download
-  /// - [fileName]: Base name for the file (default: 'ispect_all_logs')
+  /// - Parameters: logs (content), fileName (base name)
+  /// - Return: void (triggers browser download)
+  /// - Usage example: `await WebLogsFile.createAndDownloadLogs(logs);`
+  /// - Edge case notes: Creates temporary blob, handles direct download without DOM overhead
   static Future<void> createAndDownloadLogs(
     String logs, {
     String fileName = 'ispect_all_logs',
@@ -178,7 +172,7 @@ class WebLogsFile extends BaseLogsFile {
     URL.revokeObjectURL(url);
   }
 
-  /// Creates a blob directly for immediate download
+  /// Creates blob directly for immediate download
   static Blob _createDirectBlob(String logs) {
     final jsArray = [logs.toJS].toJS;
     return Blob(jsArray, BlobPropertyBag(type: 'text/plain'));
