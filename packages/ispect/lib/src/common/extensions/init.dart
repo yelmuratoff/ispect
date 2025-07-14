@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -59,9 +61,9 @@ extension ISpectifyFlutter on ISpectify {
     }
 
     switch (defaultTargetPlatform) {
-      // case TargetPlatform.iOS:
-      // case TargetPlatform.macOS:
-      //   log(message, name: 'ISpect', level: 1000);
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        log(message, name: 'ISpect', level: 1000);
       default:
         // ignore: avoid_print
         print(message);
