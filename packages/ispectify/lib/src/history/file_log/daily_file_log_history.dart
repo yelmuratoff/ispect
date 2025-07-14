@@ -5,23 +5,27 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:ispectify/ispectify.dart';
 
-/// Optimized daily file-based log history implementation.
+/// Optimized daily file-based log history implementation
 ///
-/// Provides efficient daily log management with secure storage,
-/// automatic cleanup, and optimized I/O operations.
+/// - Parameters: Settings for configuration, optional history data
+/// - Return: DailyFileLogHistory instance with secure storage
+/// - Usage example: `final history = DailyFileLogHistory(settings);`
+/// - Edge case notes: Handles platform-specific directories, auto-cleanup, memory optimization
 class DailyFileLogHistory extends DefaultISpectifyHistory
     implements FileLogHistory {
-  /// Creates a daily file-based log history manager.
+  /// Creates a daily file-based log history manager
   ///
-  /// Optimizes log storage with configurable session limits, auto-save,
-  /// and cleanup strategies for production use.
+  /// - Parameters: settings (required), history (optional), maxSessionDays (limit), autoSaveInterval (frequency), enableAutoSave (flag), maxFileSize (bytes), enableCompression (flag), sessionCleanupStrategy (cleanup method)
+  /// - Return: Configured DailyFileLogHistory instance
+  /// - Usage example: `DailyFileLogHistory(settings, maxSessionDays: 7)`
+  /// - Edge case notes: Initializes secure directory, sets up auto-save timer
   DailyFileLogHistory(
     super.settings, {
     super.history,
     int maxSessionDays = 10,
     Duration? autoSaveInterval,
     bool enableAutoSave = true,
-    int maxFileSize = 10 * 1024 * 1024, // 10MB
+    int maxFileSize = 10 * 1024 * 1024,
     bool enableCompression = false,
     SessionCleanupStrategy sessionCleanupStrategy =
         SessionCleanupStrategy.deleteOldest,
@@ -96,7 +100,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Gets platform-specific secure cache directory.
+  /// Gets platform-specific secure cache directory
   ///
   /// - Parameters: None
   /// - Return: Future<String> path to secure cache directory
@@ -105,11 +109,13 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<String> _getSecureCacheDirectory() async {
     if (Platform.isAndroid || Platform.isIOS) {
       return _getMobileCacheDirectory();
-    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      return _getDesktopCacheDirectory();
-    } else {
-      return Directory.current.path;
     }
+
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      return _getDesktopCacheDirectory();
+    }
+
+    return Directory.current.path;
   }
 
   /// Gets mobile cache directory path.
@@ -150,7 +156,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return dir.path;
   }
 
-  /// Builds platform-specific cache directory path.
+  /// Builds platform-specific cache directory path
   ///
   /// - Parameters: homeDir - User's home directory path
   /// - Return: String cache directory path
@@ -159,15 +165,17 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   String _buildPlatformCacheDir(String homeDir) {
     if (Platform.isMacOS) {
       return '$homeDir/Library/Caches/ispectify';
-    } else if (Platform.isWindows) {
+    }
+
+    if (Platform.isWindows) {
       final localAppData =
           Platform.environment['LOCALAPPDATA'] ?? '$homeDir/AppData/Local';
       return '$localAppData/ispectify/cache';
-    } else {
-      final xdgCache =
-          Platform.environment['XDG_CACHE_HOME'] ?? '$homeDir/.cache';
-      return '$xdgCache/ispectify';
     }
+
+    final xdgCache =
+        Platform.environment['XDG_CACHE_HOME'] ?? '$homeDir/.cache';
+    return '$xdgCache/ispectify';
   }
 
   /// Ensures directory is initialized before operations.
@@ -182,7 +190,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Sets up automatic saving timer.
+  /// Sets up automatic saving timer
   void _setupAutoSave() {
     if (!_autoSaveEnabled) return;
 
@@ -191,11 +199,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     });
   }
 
-  /// Gets file path for specific date with optimized formatting.
+  /// Gets file path for specific date with optimized formatting
   ///
   /// - Parameters: date - Target date, fileType - File extension (default: json)
   /// - Return: String absolute path to date-specific log file
-  /// - Usage example: _getDateFilePath(DateTime.now())
+  /// - Usage example: `_getDateFilePath(DateTime.now())`
   /// - Edge case notes: Throws StateError if directory not initialized
   String _getDateFilePath(DateTime date, {String fileType = 'json'}) {
     if (_sessionDirectory == null) {
@@ -205,7 +213,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return '$_sessionDirectory/logs_$dateStr.$fileType';
   }
 
-  /// Formats date for consistent file naming.
+  /// Formats date for consistent file naming
   ///
   /// - Parameters: date - Date to format
   /// - Return: String formatted as YYYY-MM-DD
@@ -214,16 +222,15 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   String _formatDateForFileName(DateTime date) =>
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-  /// Optimized date parsing from file name.
+  /// Optimized date parsing from file name
   DateTime? _parseDateFromFileName(String fileName) {
     final match = _datePattern.firstMatch(fileName);
-    if (match != null) {
-      final year = int.parse(match.group(1)!);
-      final month = int.parse(match.group(2)!);
-      final day = int.parse(match.group(3)!);
-      return DateTime(year, month, day);
-    }
-    return null;
+    if (match == null) return null;
+
+    final year = int.parse(match.group(1)!);
+    final month = int.parse(match.group(2)!);
+    final day = int.parse(match.group(3)!);
+    return DateTime(year, month, day);
   }
 
   /// Performs optimized auto-save with write queue management.
@@ -289,7 +296,6 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
       if (!await _validateFileIntegrity(file, today)) return;
 
-      // Check if file size would exceed limit after writing
       if (await _wouldExceedSizeLimit(file, mergedData)) {
         if (settings.useConsoleLogs) {
           print('File size would exceed limit, performing rotation');
@@ -339,7 +345,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Cleanup strategy: delete largest files first.
+  /// Cleanup strategy: delete largest files first
   ///
   /// - Parameters: availableDates - List of dates with existing log files
   /// - Return: Future<void> completing when cleanup is done
@@ -353,7 +359,6 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       datesSizes.add(MapEntry(date, size));
     }
 
-    // Sort by file size descending (largest first)
     datesSizes.sort((a, b) => b.value.compareTo(a.value));
 
     final datesToDelete = datesSizes
@@ -366,7 +371,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Cleanup strategy: archive oldest files before deletion.
+  /// Cleanup strategy: archive oldest files before deletion
   ///
   /// - Parameters: availableDates - List of dates with existing log files
   /// - Return: Future<void> completing when cleanup is done
@@ -384,15 +389,12 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         await _archiveAndDeleteDate(date);
       }
     } else {
-      // Fallback to oldest deletion if compression not enabled
       await _cleanupByOldest(availableDates);
     }
   }
 
-  /// Archives a date's log file and deletes the original.
+  /// Archives a date's log file and deletes the original
   Future<void> _archiveAndDeleteDate(DateTime date) async {
-    // Currently just delete as archiving would require compression library
-    // This is a placeholder for future enhancement
     await clearDateStorage(date);
 
     if (settings.useConsoleLogs) {
@@ -422,7 +424,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return true;
   }
 
-  /// Checks if writing the data would exceed the maximum file size limit.
+  /// Checks if writing the data would exceed the maximum file size limit
   ///
   /// - Parameters: file - Target file, data - Data to be written
   /// - Return: Future<bool> true if size limit would be exceeded
@@ -432,7 +434,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     File file,
     List<ISpectifyData> data,
   ) async {
-    if (_maxFileSize <= 0) return false; // No limit set
+    if (_maxFileSize <= 0) return false;
 
     try {
       final currentSize = await file.exists() ? await file.length() : 0;
@@ -443,15 +445,14 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       if (settings.useConsoleLogs) {
         print('Failed to check file size limit: $e');
       }
-      return false; // Allow write if check fails
+      return false;
     }
   }
 
-  /// Estimates the JSON size of the data with safety margin.
+  /// Estimates the JSON size of the data with safety margin
   int _estimateJsonSize(List<ISpectifyData> data) {
     if (data.isEmpty) return 0;
 
-    // Sample first few entries to estimate average size
     final sampleSize = data.length > 10 ? 10 : data.length;
     var totalSampleSize = 0;
 
@@ -460,7 +461,6 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         final json = jsonEncode(data[i].toJson());
         totalSampleSize += json.length;
       } catch (e) {
-        // Use fallback size estimate if encoding fails
         totalSampleSize += _fallbackEntrySize;
       }
     }
@@ -468,21 +468,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     final averageSize = totalSampleSize ~/ sampleSize;
     final estimatedTotal = averageSize * data.length;
 
-    // Add safety margin for JSON formatting and brackets
     return (estimatedTotal * _sizeSafetyMargin).round();
   }
 
-  /// Rotates the file if it would exceed size limits.
+  /// Rotates the file if it would exceed size limits
   Future<void> _rotateFileIfNeeded(File file, DateTime date) async {
     if (!await file.exists()) return;
 
     try {
-      // Create timestamped backup
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '${file.path}.backup_$timestamp';
       await file.copy(backupPath);
 
-      // Clear original file for new data
       await file.writeAsString('[]');
 
       if (settings.useConsoleLogs) {
@@ -495,7 +492,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Checks if we should merge with existing data.
+  /// Checks if we should merge with existing data
   ///
   /// - Parameters: None
   /// - Return: bool true if should merge with existing file
@@ -534,7 +531,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Merges history data avoiding duplicates and filtering by today's date.
+  /// Merges history data avoiding duplicates and filtering by today's date
   ///
   /// - Parameters: existing - Data from file, current - Data from memory
   /// - Return: List<ISpectifyData> merged and deduplicated data
@@ -551,12 +548,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     _addDataToMerged(merged, current, today);
 
     final result = merged.values.toList()
-      // Use more efficient sort with direct comparison
       ..sort((a, b) => a.time.compareTo(b.time));
     return result;
   }
 
-  /// Adds data to merged map with deduplication using optimized key generation.
+  /// Adds data to merged map with deduplication using optimized key generation
   ///
   /// - Parameters: merged - Target map, data - Source data, today - Filter date
   /// - Return: void
@@ -575,7 +571,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Generates optimized integer key for deduplication.
+  /// Generates optimized integer key for deduplication
   ///
   /// - Parameters: item - Data item to generate key for
   /// - Return: int unique key based on timestamp and message hash
@@ -584,11 +580,10 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   int _generateOptimizedKey(ISpectifyData item) {
     final timeKey = item.time.millisecondsSinceEpoch;
     final messageHash = item.message?.hashCode ?? 0;
-    // Use bit shifting for efficient key combination
     return (timeKey << 16) ^ messageHash;
   }
 
-  /// Writes data in chunks using optimized streaming approach.
+  /// Writes data in chunks using optimized streaming approach
   Future<void> _writeDataChunked(File file, List<ISpectifyData> data) async {
     final sink = file.openWrite();
 
@@ -608,11 +603,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
           if (settings.useConsoleLogs) {
             print('Failed to encode entry $i: $e. Skipping entry.');
           }
-          // Write null placeholder to maintain array structure
           sink.write('null');
         }
 
-        // Yield control periodically for large datasets
         if (i % _chunkSize == 0) {
           await Future<void>.delayed(const Duration(microseconds: 1));
         }
@@ -624,7 +617,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
   }
 
-  /// Sanitizes JSON data to ensure all values are encodable.
+  /// Sanitizes JSON data to ensure all values are encodable
   Map<String, dynamic> _sanitizeJsonForEncoding(Map<String, dynamic> json) {
     final sanitized = <String, dynamic>{};
 
@@ -635,7 +628,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return sanitized;
   }
 
-  /// Sanitizes a single value for JSON encoding.
+  /// Sanitizes a single value for JSON encoding
   Object? _sanitizeValue(Object? value) => switch (value) {
         null || String() || num() || bool() => value,
         final List<dynamic> list => list.map(_sanitizeValue).toList(),
@@ -810,7 +803,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     return file.exists();
   }
 
-  /// Checks if two dates are the same day.
+  /// Checks if two dates are the same day
   ///
   /// - Parameters: date1, date2 - Dates to compare
   /// - Return: bool true if same calendar day
@@ -821,7 +814,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       date1.month == date2.month &&
       date1.day == date2.day;
 
-  /// Cleanup resources when history is no longer needed.
+  /// Cleanup resources when history is no longer needed
   void dispose() {
     _autoSaveTimer?.cancel();
   }

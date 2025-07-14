@@ -1,8 +1,9 @@
+// ignore_for_file: avoid_annotating_with_dynamic
+
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
 
-// ignore: avoid_annotating_with_dynamic
 Object? _toEncodable(dynamic object) {
   if (object is Uri) {
     return object.toString();
@@ -25,40 +26,40 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
-  /// Exports logs to JSON format with metadata.
+  /// Exports logs to JSON format with metadata
   ///
-  /// Creates a structured JSON file containing:
-  /// - Export metadata (timestamp, version, count)
-  /// - Formatted log entries with all available data
-  ///
-  /// **Parameters:**
-  /// - [logs]: List of log entries to export
-  /// - [includeMetadata]: Whether to include export metadata (default: true)
-  ///
-  /// **Returns:** JSON string ready for file export
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final service = LogsJsonService();
-  /// final jsonString = await service.exportToJson(logs);
-  /// ```
+  /// - Parameters: logs (list of entries), includeMetadata (flag for metadata)
+  /// - Return: JSON string ready for file export
+  /// - Usage example: `final jsonString = await service.exportToJson(logs);`
+  /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
   Future<String> exportToJson(
     List<ISpectifyData> logs, {
     bool includeMetadata = true,
   }) async {
     final exportData = <String, dynamic>{};
 
-    // Add metadata if requested
     if (includeMetadata) {
-      exportData['metadata'] = {
-        'exportedAt': DateTime.now().toIso8601String(),
-        'version': '1.0.0',
-        'totalLogs': logs.length,
-        'platform': 'ispect',
-      };
+      exportData['metadata'] = _createExportMetadata(logs.length);
     }
 
-    // Process logs in chunks to prevent memory issues
+    exportData['logs'] = await _processLogsInChunks(logs);
+
+    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
+    return encoder.convert(exportData);
+  }
+
+  /// Creates export metadata with current timestamp and version
+  Map<String, dynamic> _createExportMetadata(int totalLogs) => {
+        'exportedAt': DateTime.now().toIso8601String(),
+        'version': '1.0.0',
+        'totalLogs': totalLogs,
+        'platform': 'ispect',
+      };
+
+  /// Processes logs in chunks to prevent memory issues
+  Future<List<Map<String, dynamic>>> _processLogsInChunks(
+    List<ISpectifyData> logs,
+  ) async {
     final jsonLogs = <Map<String, dynamic>>[];
     const chunkSize = 50;
 
@@ -69,94 +70,79 @@ class LogsJsonService {
         jsonLogs.add(log.toJson());
       }
 
-      // Yield control periodically for large datasets
       if (i % (chunkSize * 10) == 0) {
         await Future<void>.delayed(Duration.zero);
       }
     }
 
-    exportData['logs'] = jsonLogs;
-
-    // Use pretty print for better readability
-    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-    return encoder.convert(exportData);
+    return jsonLogs;
   }
 
-  /// Imports logs from JSON format.
+  /// Imports logs from JSON format
   ///
-  /// Parses JSON file and converts back to ISpectifyData objects.
-  /// Supports both legacy format (array of logs) and new format (with metadata).
-  ///
-  /// **Parameters:**
-  /// - [jsonString]: JSON content to parse
-  ///
-  /// **Returns:** List of imported log entries
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final service = LogsJsonService();
-  /// final logs = await service.importFromJson(jsonContent);
-  /// ```
+  /// - Parameters: jsonString (JSON content to parse)
+  /// - Return: List of imported log entries
+  /// - Usage example: `final logs = await service.importFromJson(jsonContent);`
+  /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   Future<List<ISpectifyData>> importFromJson(String jsonString) async {
     try {
       final dynamic jsonData = jsonDecode(jsonString);
-      List<dynamic> logsJson;
+      final logsJson = _extractLogsFromJsonData(jsonData);
 
-      // Handle both new format (with metadata) and legacy format
-      if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
-        logsJson = jsonData['logs'] as List<dynamic>;
-      } else if (jsonData is List<dynamic>) {
-        logsJson = jsonData;
-      } else {
-        throw const FormatException('Invalid JSON format for logs import');
-      }
-
-      final logs = <ISpectifyData>[];
-      const chunkSize = 25;
-
-      // Process in chunks to prevent UI freezing
-      for (var i = 0; i < logsJson.length; i += chunkSize) {
-        final chunk = logsJson.skip(i).take(chunkSize);
-
-        for (final logJson in chunk) {
-          try {
-            final log = ISpectifyDataJsonUtils.fromJson(
-              logJson as Map<String, dynamic>,
-            );
-            logs.add(log);
-          } catch (e) {
-            // Skip invalid log entries but continue processing
-            continue;
-          }
-        }
-
-        // Yield control
-        if (i % (chunkSize * 4) == 0) {
-          await Future<void>.delayed(Duration.zero);
-        }
-      }
-
-      return logs;
+      return await _processImportedLogsInChunks(logsJson);
     } catch (e) {
       throw FormatException('Failed to import logs from JSON: $e');
     }
   }
 
-  /// Creates and downloads a JSON file with logs.
+  /// Extracts logs array from JSON data supporting both formats
+  List<dynamic> _extractLogsFromJsonData(dynamic jsonData) {
+    if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
+      return jsonData['logs'] as List<dynamic>;
+    }
+
+    if (jsonData is List<dynamic>) {
+      return jsonData;
+    }
+
+    throw const FormatException('Invalid JSON format for logs import');
+  }
+
+  /// Processes imported logs in chunks to prevent UI freezing
+  Future<List<ISpectifyData>> _processImportedLogsInChunks(
+    List<dynamic> logsJson,
+  ) async {
+    final logs = <ISpectifyData>[];
+    const chunkSize = 25;
+
+    for (var i = 0; i < logsJson.length; i += chunkSize) {
+      final chunk = logsJson.skip(i).take(chunkSize);
+
+      for (final logJson in chunk) {
+        try {
+          final log = ISpectifyDataJsonUtils.fromJson(
+            logJson as Map<String, dynamic>,
+          );
+          logs.add(log);
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (i % (chunkSize * 4) == 0) {
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+
+    return logs;
+  }
+
+  /// Creates and downloads a JSON file with logs
   ///
-  /// Combines export and download operations into a single method.
-  /// Uses platform-appropriate file handling.
-  ///
-  /// **Parameters:**
-  /// - [logs]: List of log entries to export
-  /// - [fileName]: Base name for the file (default: 'ispect_logs')
-  /// - [includeMetadata]: Whether to include export metadata
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final service = LogsJsonService();
-  /// await service.shareLogsAsJsonFile(logs, fileName: 'my_logs');
-  /// ```
+  /// - Parameters: logs (list of entries), fileName (base name), includeMetadata (flag)
+  /// - Return: void (triggers file download)
+  /// - Usage example: `await service.shareLogsAsJsonFile(logs, fileName: 'my_logs');`
+  /// - Edge case notes: Validates non-empty logs, combines export and download operations
   Future<void> shareLogsAsJsonFile(
     List<ISpectifyData> logs, {
     String fileName = 'ispect_logs',
@@ -174,25 +160,12 @@ class LogsJsonService {
     );
   }
 
-  /// Exports filtered logs with current filter information.
+  /// Exports filtered logs with current filter information
   ///
-  /// Includes filter metadata in the export for better context.
-  ///
-  /// **Parameters:**
-  /// - [logs]: Original logs list
-  /// - [filteredLogs]: Filtered logs to export
-  /// - [filter]: Applied filter for metadata
-  /// - [fileName]: Base name for the file
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final service = LogsJsonService();
-  /// await service.shareFilteredLogsAsJsonFile(
-  ///   allLogs,
-  ///   filteredLogs,
-  ///   currentFilter,
-  /// );
-  /// ```
+  /// - Parameters: logs (original list), filteredLogs (filtered list), filter (applied filter), fileName (base name), fileType (extension)
+  /// - Return: void (triggers file download)
+  /// - Usage example: `await service.shareFilteredLogsAsJsonFile(allLogs, filteredLogs, currentFilter);`
+  /// - Edge case notes: Includes filter metadata for context, validates non-empty filtered logs
   Future<void> shareFilteredLogsAsJsonFile(
     List<ISpectifyData> logs,
     List<ISpectifyData> filteredLogs,
@@ -204,23 +177,7 @@ class LogsJsonService {
       throw ArgumentError('Cannot export empty filtered logs list');
     }
 
-    final exportData = <String, dynamic>{
-      'metadata': {
-        'exportedAt': DateTime.now().toIso8601String(),
-        'version': '1.0.0',
-        'totalLogs': logs.length,
-        'filteredLogs': filteredLogs.length,
-        'platform': 'ispect',
-        'appliedFilter': {
-          'hasSearchQuery': filter.filters
-              .any((f) => f is SearchFilter && f.query.isNotEmpty),
-          'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,
-          'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
-        },
-      },
-      'logs': filteredLogs.map((log) => log.toJson()).toList(),
-    };
-
+    final exportData = _createFilteredExportData(logs, filteredLogs, filter);
     const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     final jsonContent = encoder.convert(exportData);
 
@@ -231,48 +188,83 @@ class LogsJsonService {
     );
   }
 
-  /// Validates JSON structure for logs import.
+  /// Creates export data structure for filtered logs
+  Map<String, dynamic> _createFilteredExportData(
+    List<ISpectifyData> logs,
+    List<ISpectifyData> filteredLogs,
+    ISpectifyFilter filter,
+  ) =>
+      {
+        'metadata': _createFilteredMetadata(logs, filteredLogs, filter),
+        'logs': filteredLogs.map((log) => log.toJson()).toList(),
+      };
+
+  /// Creates metadata for filtered export including filter information
+  Map<String, dynamic> _createFilteredMetadata(
+    List<ISpectifyData> logs,
+    List<ISpectifyData> filteredLogs,
+    ISpectifyFilter filter,
+  ) =>
+      {
+        'exportedAt': DateTime.now().toIso8601String(),
+        'version': '1.0.0',
+        'totalLogs': logs.length,
+        'filteredLogs': filteredLogs.length,
+        'platform': 'ispect',
+        'appliedFilter': _createFilterSummary(filter),
+      };
+
+  /// Creates summary of applied filter
+  Map<String, dynamic> _createFilterSummary(ISpectifyFilter filter) => {
+        'hasSearchQuery':
+            filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
+        'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,
+        'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
+      };
+
+  /// Validates JSON structure for logs import
   ///
-  /// Checks if the JSON structure is valid for import without full parsing.
-  ///
-  /// **Parameters:**
-  /// - [jsonString]: JSON content to validate
-  ///
-  /// **Returns:** True if valid, false otherwise
+  /// - Parameters: jsonString (JSON content to validate)
+  /// - Return: True if valid, false otherwise
+  /// - Usage example: `final isValid = service.validateJsonStructure(jsonContent);`
+  /// - Edge case notes: Checks structure without full parsing for performance
   bool validateJsonStructure(String jsonString) {
     try {
       final dynamic jsonData = jsonDecode(jsonString);
-
-      // Check for new format
-      if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
-        return jsonData['logs'] is List<dynamic>;
-      }
-
-      // Check for legacy format
-      return jsonData is List<dynamic>;
+      return _isValidJsonStructure(jsonData);
     } catch (e) {
       return false;
     }
   }
 
-  /// Gets metadata from JSON export if available.
+  /// Checks if JSON data has valid structure for logs
+  bool _isValidJsonStructure(dynamic jsonData) {
+    if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
+      return jsonData['logs'] is List<dynamic>;
+    }
+    return jsonData is List<dynamic>;
+  }
+
+  /// Gets metadata from JSON export if available
   ///
-  /// **Parameters:**
-  /// - [jsonString]: JSON content to extract metadata from
-  ///
-  /// **Returns:** Metadata map or null if not available
+  /// - Parameters: jsonString (JSON content to extract metadata from)
+  /// - Return: Metadata map or null if not available
+  /// - Usage example: `final metadata = service.getMetadataFromJson(jsonContent);`
+  /// - Edge case notes: Returns null for legacy format or invalid JSON
   Map<String, dynamic>? getMetadataFromJson(String jsonString) {
     try {
       final dynamic jsonData = jsonDecode(jsonString);
-
-      if (jsonData is Map<String, dynamic> &&
-          jsonData.containsKey('metadata')) {
-        return jsonData['metadata'] as Map<String, dynamic>;
-      }
-
-      return null;
+      return _extractMetadata(jsonData);
     } catch (e) {
       return null;
     }
+  }
+
+  /// Extracts metadata from JSON data if available
+  Map<String, dynamic>? _extractMetadata(dynamic jsonData) {
+    if (jsonData is Map<String, dynamic> && jsonData.containsKey('metadata')) {
+      return jsonData['metadata'] as Map<String, dynamic>;
+    }
+    return null;
   }
 }
