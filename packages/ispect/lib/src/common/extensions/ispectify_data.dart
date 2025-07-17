@@ -68,7 +68,7 @@ StackTrace: $stackTraceText]''';
             message == 'FlutterErrorDetails') &&
         stackTrace != null &&
         stackTrace.toString().isNotEmpty) {
-      return 'StackTrace:\n$stackTrace'.truncated;
+      return 'StackTrace:\n$stackTrace'.truncate();
     }
     return null;
   }
@@ -85,7 +85,7 @@ StackTrace: $stackTraceText]''';
 
     final text = isHttpLog ? textMessage : txt;
 
-    return text.truncated;
+    return text.truncate();
   }
 
   /// Checks if this log entry is related to HTTP requests.

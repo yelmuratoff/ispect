@@ -31,7 +31,7 @@ extension ISpectifyFlutter on ISpectify {
     ISpectifyObserver? observer,
     ISpectifyOptions? options,
     ISpectifyFilter? filter,
-    LogHistory? history,
+    ILogHistory? history,
   }) =>
       ISpectify(
         logger: (logger ?? ISpectifyLogger()).copyWith(

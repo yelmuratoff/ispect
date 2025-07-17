@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// Implementations of this interface should define how logs are structured
 /// when converted into a string representation.
-abstract interface class LoggerFormatter {
+abstract interface class ILoggerFormatter {
   /// Formats the log details based on the provided settings.
   ///
   /// This method is responsible for transforming `LogDetails` into a human-readable
@@ -34,7 +34,7 @@ abstract interface class LoggerFormatter {
 /// ```
 ///
 /// If colorization is enabled, ANSI escape codes will be applied to the output.
-class ExtendedLoggerFormatter implements LoggerFormatter {
+class ExtendedLoggerFormatter implements ILoggerFormatter {
   /// Creates an instance of `ExtendedLoggerFormatter`.
   ///
   /// This formatter does not hold any internal state and can be reused across logs.

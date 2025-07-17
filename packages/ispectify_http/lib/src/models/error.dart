@@ -53,6 +53,6 @@ class HttpErrorLog extends ISpectifyData {
       buffer.write('\nHeaders: $prettyHeaders');
     }
 
-    return buffer.toString().truncated!;
+    return buffer.toString().truncate()!;
   }
 }

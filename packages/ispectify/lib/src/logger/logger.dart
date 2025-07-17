@@ -34,7 +34,7 @@ class ISpectifyLogger {
   final LoggerSettings settings;
 
   /// Formatter for structuring log messages.
-  final LoggerFormatter formatter;
+  final ILoggerFormatter formatter;
 
   /// Output function to handle final log message.
   final void Function(String message) _output;
@@ -81,7 +81,7 @@ class ISpectifyLogger {
   /// Creates a new `ISpectifyLogger` instance with overridden properties.
   ISpectifyLogger copyWith({
     LoggerSettings? settings,
-    LoggerFormatter? formatter,
+    ILoggerFormatter? formatter,
     ILoggerFilter? filter,
     void Function(String message)? output,
   }) =>

@@ -9,7 +9,7 @@
 
 ### Enhancements:
 
-- Extend `ISpectifyFlutter.init` to accept custom `LogHistory` instances and disable default print logging.
+- Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
 

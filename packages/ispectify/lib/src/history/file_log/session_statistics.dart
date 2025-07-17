@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/file_log_history.dart';
 import 'package:ispectify/src/history/file_log/session_cleanup_strategy.dart';

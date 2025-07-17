@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 /// Strategy for cleaning up old log files when session limit is exceeded.
 ///
 /// - deleteOldest: Remove oldest files first (default)

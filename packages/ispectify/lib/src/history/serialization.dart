@@ -12,17 +12,19 @@ extension ISpectifyDataSerialization on ISpectifyData {
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
         if (title != null)
-          'title': truncated && title != null ? title.truncated : title,
+          'title': truncated && title != null ? title.truncate() : title,
         if (logLevel != null) 'log-level': logLevel?.index.toString(),
-        if (message != null) 'message': truncated ? message.truncated : message,
+        if (message != null)
+          'message': truncated ? message.truncate() : message,
         if (exception != null)
-          'exception':
-              truncated ? exception.toString().truncated : exception.toString(),
+          'exception': truncated
+              ? exception.toString().truncate()
+              : exception.toString(),
         if (error != null)
-          'error': truncated ? error.toString().truncated : error.toString(),
+          'error': truncated ? error.toString().truncate() : error.toString(),
         if (stackTrace != null)
           'stack-trace': truncated
-              ? stackTrace.toString().truncated
+              ? stackTrace.toString().truncate()
               : stackTrace.toString(),
         if (additionalData != null) 'additional-data': additionalData,
       };

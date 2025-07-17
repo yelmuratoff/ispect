@@ -10,11 +10,11 @@ export 'session_statistics.dart';
 
 /// Extended interface for log history with daily file system support.
 ///
-/// - Parameters: Extends LogHistory with file-based persistence
+/// - Parameters: Extends ILogHistory with file-based persistence
 /// - Return: Abstract interface for file-based log management
 /// - Usage example: Implement this interface for custom file storage
 /// - Edge case notes: All file operations are async and may throw IO exceptions
-abstract class FileLogHistory extends LogHistory {
+abstract class FileLogHistory implements ILogHistory {
   /// Saves the current history to daily organized files.
   ///
   /// - Parameters: None
