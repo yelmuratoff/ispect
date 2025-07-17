@@ -19,7 +19,7 @@ class HttpResponseLog extends ISpectifyData {
   }) : super(
           key: getKey,
           title: getKey,
-          pen: AnsiPen()..xterm(46),
+          pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
           additionalData: responseData?.toJson,
         );
 
@@ -62,6 +62,6 @@ class HttpResponseLog extends ISpectifyData {
       buffer.write('\nHeaders: $prettyHeaders');
     }
 
-    return buffer.toString().truncated!;
+    return buffer.toString().truncate()!;
   }
 }

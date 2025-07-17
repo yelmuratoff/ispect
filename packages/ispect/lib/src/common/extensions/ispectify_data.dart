@@ -68,7 +68,7 @@ StackTrace: $stackTraceText]''';
             message == 'FlutterErrorDetails') &&
         stackTrace != null &&
         stackTrace.toString().isNotEmpty) {
-      return 'StackTrace:\n$stackTrace'.truncated;
+      return 'StackTrace:\n$stackTrace'.truncate();
     }
     return null;
   }
@@ -85,7 +85,7 @@ StackTrace: $stackTraceText]''';
 
     final text = isHttpLog ? textMessage : txt;
 
-    return text.truncated;
+    return text.truncate();
   }
 
   /// Checks if this log entry is related to HTTP requests.
@@ -105,28 +105,28 @@ StackTrace: $stackTraceText]''';
     return 'Type: ${exception?.runtimeType ?? error?.runtimeType ?? ''}';
   }
 
-  /// Converts the log data into a JSON representation.
-  ///
-  /// Omits `null` values for a cleaner output.
-  Map<String, dynamic> toJson({
-    bool truncated = false,
-  }) =>
-      {
-        if (key != null) 'key': key,
-        'time': time.toIso8601String(),
-        if (title != null)
-          'title': truncated && title != null ? title.truncated : title,
-        if (logLevel != null) 'log-level': logLevel.toString(),
-        if (message != null) 'message': truncated ? message.truncated : message,
-        if (exception != null)
-          'exception':
-              truncated ? exception.toString().truncated : exception.toString(),
-        if (error != null)
-          'error': truncated ? error.toString().truncated : error.toString(),
-        if (stackTrace != null)
-          'stack-trace': truncated
-              ? stackTrace.toString().truncated
-              : stackTrace.toString(),
-        if (additionalData != null) 'additional-data': additionalData,
-      };
+  // /// Converts the log data into a JSON representation.
+  // ///
+  // /// Omits `null` values for a cleaner output.
+  // Map<String, dynamic> toJson({
+  //   bool truncated = false,
+  // }) =>
+  //     {
+  //       if (key != null) 'key': key,
+  //       'time': time.toIso8601String(),
+  //       if (title != null)
+  //         'title': truncated && title != null ? title.truncated : title,
+  //       if (logLevel != null) 'log-level': logLevel.toString(),
+  //       if (message != null) 'message': truncated ? message.truncated : message,
+  //       if (exception != null)
+  //         'exception':
+  //             truncated ? exception.toString().truncated : exception.toString(),
+  //       if (error != null)
+  //         'error': truncated ? error.toString().truncated : error.toString(),
+  //       if (stackTrace != null)
+  //         'stack-trace': truncated
+  //             ? stackTrace.toString().truncated
+  //             : stackTrace.toString(),
+  //       if (additionalData != null) 'additional-data': additionalData,
+  //     };
 }

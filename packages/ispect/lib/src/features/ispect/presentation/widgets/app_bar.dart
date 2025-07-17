@@ -13,10 +13,10 @@ class ISpectAppBar extends StatefulWidget {
     required this.controller,
     required this.titles,
     required this.uniqTitles,
-    required this.onSettingsTap,
-    required this.onInfoTap,
     required this.onToggleTitle,
     required this.focusNode,
+    this.onSettingsTap,
+    this.onInfoTap,
     this.backgroundColor,
     super.key,
   });
@@ -29,8 +29,8 @@ class ISpectAppBar extends StatefulWidget {
   final List<String?> titles;
   final List<String?> uniqTitles;
 
-  final VoidCallback onSettingsTap;
-  final VoidCallback onInfoTap;
+  final VoidCallback? onSettingsTap;
+  final VoidCallback? onInfoTap;
 
   final FocusNode focusNode;
 
@@ -73,22 +73,24 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           backgroundColor: widget.backgroundColor ??
               context.ispectTheme.scaffoldBackgroundColor,
           actions: [
-            UnconstrainedBox(
-              child: IconButton(
-                onPressed: widget.onInfoTap,
-                icon: const Icon(
-                  Icons.info_outline_rounded,
+            if (widget.onInfoTap != null)
+              UnconstrainedBox(
+                child: IconButton(
+                  onPressed: widget.onInfoTap,
+                  icon: const Icon(
+                    Icons.info_outline_rounded,
+                  ),
                 ),
               ),
-            ),
-            UnconstrainedBox(
-              child: IconButton(
-                onPressed: widget.onSettingsTap,
-                icon: const Icon(
-                  Icons.settings_rounded,
+            if (widget.onSettingsTap != null)
+              UnconstrainedBox(
+                child: IconButton(
+                  onPressed: widget.onSettingsTap,
+                  icon: const Icon(
+                    Icons.settings_rounded,
+                  ),
                 ),
               ),
-            ),
             const Gap(10),
           ],
           title: Text(

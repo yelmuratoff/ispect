@@ -13,7 +13,7 @@ class HttpRequestLog extends ISpectifyData {
   }) : super(
           title: getKey,
           key: getKey,
-          pen: AnsiPen()..xterm(219),
+          pen: settings.requestPen ?? (AnsiPen()..xterm(207)),
           additionalData: {
             'method': method,
             'url': url,
@@ -45,6 +45,6 @@ class HttpRequestLog extends ISpectifyData {
       buffer.write('\nHeaders: $prettyHeaders');
     }
 
-    return buffer.toString().truncated!;
+    return buffer.toString().truncate()!;
   }
 }

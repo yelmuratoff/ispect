@@ -41,7 +41,7 @@ class ISpectify {
     ISpectifyOptions? options,
     ISpectifyFilter? filter,
     ISpectifyErrorHandler? errorHandler,
-    LogHistory? history,
+    ILogHistory? history,
   }) {
     _init(filter, options, logger, observer, errorHandler, history);
   }
@@ -56,7 +56,7 @@ class ISpectify {
     ISpectifyLogger? logger,
     ISpectifyObserver? observer,
     ISpectifyErrorHandler? errorHandler,
-    LogHistory? history,
+    ILogHistory? history,
   ) {
     _filter = filter;
     _observer = observer;
@@ -75,7 +75,7 @@ class ISpectify {
   late ISpectifyErrorHandler _errorHandler;
   late ISpectifyFilter? _filter;
   late ISpectifyObserver? _observer;
-  late LogHistory _history;
+  late ILogHistory _history;
 
   /// Reconfigures the inspector with new components.
   ///
@@ -95,7 +95,7 @@ class ISpectify {
     ISpectifyObserver? observer,
     ISpectifyFilter? filter,
     ISpectifyErrorHandler? errorHandler,
-    LogHistory? history,
+    ILogHistory? history,
   }) {
     _filter = filter ?? _filter; // Fixed null-aware assignment
     _options = options ?? _options;
@@ -119,6 +119,11 @@ class ISpectify {
 
   /// List of all log entries stored in history.
   List<ISpectifyData> get history => _history.history;
+
+  ILogHistory get logHistory => _history;
+
+  FileLogHistory? get fileLogHistory =>
+      _history is FileLogHistory ? _history as FileLogHistory : null;
 
   // ======= OPTIONS METHODS =======
 

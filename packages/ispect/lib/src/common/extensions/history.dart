@@ -31,7 +31,7 @@ extension HistoryListFlutterText on List<ISpectifyData> {
         ..writeln(
           '\n${JsonTruncatorService.pretty(
             data.toJson(truncated: true),
-          ).truncated}',
+          ).truncate()}',
         ) // Ensures newline after text.
         ..writeln('\n${ConsoleUtils.bottomLine(100)}'); // Separator line.
     }

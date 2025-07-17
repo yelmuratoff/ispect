@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// Implementations of this interface should define how logs are structured
 /// when converted into a string representation.
-abstract interface class LoggerFormatter {
+abstract interface class ILoggerFormatter {
   /// Formats the log details based on the provided settings.
   ///
   /// This method is responsible for transforming `LogDetails` into a human-readable
@@ -30,13 +30,11 @@ abstract interface class LoggerFormatter {
 ///
 /// Example output:
 /// ```
-/// ┌───────────────────────────────
-/// │ Log message goes here...
-/// └───────────────────────────────
+/// - Log message goes here...
 /// ```
 ///
 /// If colorization is enabled, ANSI escape codes will be applied to the output.
-class ExtendedLoggerFormatter implements LoggerFormatter {
+class ExtendedLoggerFormatter implements ILoggerFormatter {
   /// Creates an instance of `ExtendedLoggerFormatter`.
   ///
   /// This formatter does not hold any internal state and can be reused across logs.
@@ -47,31 +45,24 @@ class ExtendedLoggerFormatter implements LoggerFormatter {
     LogDetails details,
     LoggerSettings settings,
   ) {
-    // Generate top and bottom borders using ConsoleUtils.
-    final topLine = ConsoleUtils.topLine(
-      settings.maxLineWidth,
-      lineSymbol: settings.lineSymbol,
-      withCorner: true,
-    );
-    final bottomLine = ConsoleUtils.bottomLine(
-      settings.maxLineWidth,
-      lineSymbol: settings.lineSymbol,
-      withCorner: true,
-    );
-
     // Extract the log message, ensuring it is a valid string.
     final message = details.message?.toString() ?? '';
 
     // Prepare bordered log lines. If the message is empty, show a placeholder.
-    final msgBorderedLines = message.isEmpty
-        ? ['│ (empty log message)'] // Placeholder for empty messages.
-        : message.split('\n').map((line) => '│ $line');
+    final List<String> msgBorderedLines;
+    if (message.isEmpty) {
+      msgBorderedLines = ['- (empty log message)'];
+    } else {
+      final lines = message.split('\n');
+      msgBorderedLines = [
+        '- ${lines.first}',
+        ...lines.skip(1).map((line) => '  $line'),
+      ];
+    }
 
-    // Construct the final log output with borders.
+    // Construct the final log output.
     final formattedLines = [
-      topLine,
       ...msgBorderedLines,
-      bottomLine,
     ];
 
     // Apply colorization if enabled, otherwise return the plain log.

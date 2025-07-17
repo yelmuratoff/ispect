@@ -17,7 +17,7 @@ class HttpErrorLog extends ISpectifyData {
     required this.settings,
   }) : super(
           key: getKey,
-          pen: AnsiPen()..red(),
+          pen: settings.errorPen ?? (AnsiPen()..red()),
           additionalData: responseData?.toJson,
         );
 
@@ -53,6 +53,6 @@ class HttpErrorLog extends ISpectifyData {
       buffer.write('\nHeaders: $prettyHeaders');
     }
 
-    return buffer.toString().truncated!;
+    return buffer.toString().truncate()!;
   }
 }

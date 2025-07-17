@@ -1,9 +1,10 @@
 import 'package:ispectify/ispectify.dart';
+export 'file_log/file_log_history.dart';
 
 /// An abstract class representing a log history storage.
 ///
 /// This defines a common interface for managing logged data.
-abstract class LogHistory {
+abstract interface class ILogHistory {
   /// A list of stored log entries.
   List<ISpectifyData> get history;
 
@@ -14,11 +15,11 @@ abstract class LogHistory {
   void add(ISpectifyData data);
 }
 
-/// The default implementation of `LogHistory` for managing log history.
+/// The default implementation of `ILogHistory` for managing log history.
 ///
 /// This class stores log entries in-memory and follows the configuration
 /// defined in `ISpectifyOptions`.
-class DefaultISpectifyHistory implements LogHistory {
+class DefaultISpectifyHistory implements ILogHistory {
   /// Creates a log history manager with the given `settings`.
   ///
   /// Optionally, an initial `history` list can be provided.
