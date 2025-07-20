@@ -1,6 +1,6 @@
 name: web_logs_viewer
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -9,6 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  ispect:
+    path: ../packages/ispect
+  file_picker: ^10.2.0
+  super_drag_and_drop: ^0.9.1
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
