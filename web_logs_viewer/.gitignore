@@ -16,6 +16,10 @@ migrate_working_dir/
 *.iws
 .idea/
 
+ios/
+web/
+
+
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
@@ -39,5 +43,3 @@ build/
 **/*.gen.dart
 **/*.freezed.dart
 **/*.select.dart
-packages/ispect_jira/example/ios/Podfile.lock
-
