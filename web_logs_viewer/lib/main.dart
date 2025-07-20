@@ -161,6 +161,7 @@ class HomeLayout extends StatelessWidget {
                   child: IntrinsicWidth(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: 8,
                       children: draggable.toList(growable: false),
                     ),
                   ),
@@ -410,6 +411,9 @@ class _DropZoneState extends State<_DropZone> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
               border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Row(
