@@ -6,11 +6,16 @@ version: 0.1.0
 environment:
   sdk: ^3.8.1
 
+dependency_overrides:
+  ispect:
+    path: ../packages/ispect
+  ispectify:
+    path: ../packages/ispectify
+
 dependencies:
   flutter:
     sdk: flutter
-  ispect:
-    path: ../packages/ispect
+  ispect: ^4.2.1-dev05
   file_picker: ^10.2.0
   super_drag_and_drop: ^0.9.1
   collection: ^1.19.1

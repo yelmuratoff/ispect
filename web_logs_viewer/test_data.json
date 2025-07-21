@@ -1,0 +1,44 @@
+{
+   "name": "ISpect Log Test",
+   "version": "1.0.0",
+   "timestamp": "2025-07-22T10:30:00Z",
+   "logs": [
+      {
+         "id": 1,
+         "level": "INFO",
+         "message": "Application started",
+         "timestamp": "2025-07-22T10:30:01Z"
+      },
+      {
+         "id": 2,
+         "level": "ERROR",
+         "message": "Failed to connect to database",
+         "timestamp": "2025-07-22T10:30:02Z",
+         "details": {
+            "error_code": "DB_CONNECTION_FAILED",
+            "retry_count": 3,
+            "last_attempt": "2025-07-22T10:30:02Z"
+         }
+      },
+      {
+         "id": 3,
+         "level": "DEBUG",
+         "message": "User authentication successful",
+         "timestamp": "2025-07-22T10:30:03Z",
+         "user_data": {
+            "user_id": "user123",
+            "session_id": "sess_abc123",
+            "permissions": [
+               "read",
+               "write",
+               "admin"
+            ]
+         }
+      }
+   ],
+   "metadata": {
+      "total_entries": 3,
+      "file_size": "1.2KB",
+      "created_by": "ISpect Logger v2.0"
+   }
+}
