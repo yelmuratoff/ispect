@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io' show File;
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -1598,6 +1600,18 @@ class _DropZoneState extends State<_DropZone>
                   _showPasteDialog();
                 },
               ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.content_paste),
+                title: const Text('Pick Files'),
+                subtitle: const Text(
+                  'Select .txt or .json files from your device',
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _showFilePicker();
+                },
+              ),
               const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
@@ -1621,6 +1635,173 @@ class _DropZoneState extends State<_DropZone>
         );
       },
     );
+  }
+
+  void _showFilePicker() async {
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      for (final PlatformFile file in result.files) {
+        if (!mounted) return;
+
+        // Validate file extension
+        final String fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.txt') && !fileName.endsWith('.json')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unsupported file type: ${file.name}'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          continue;
+        }
+
+        // Check file size (limit to 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File too large: ${file.name} (max 10MB)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          continue;
+        }
+
+        // Read file content
+        String? content;
+        if (kIsWeb) {
+          // For web platform, use bytes
+          if (file.bytes != null) {
+            try {
+              content = utf8.decode(file.bytes!);
+            } catch (e) {
+              ISpect.logger.error('Error decoding file bytes: $e');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error reading file: ${file.name}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              continue;
+            }
+          }
+        } else {
+          // For mobile platforms, use file path
+          if (file.path != null) {
+            try {
+              final File fileHandle = File(file.path!);
+              content = await fileHandle.readAsString();
+            } catch (e) {
+              ISpect.logger.error('Error reading file from path: $e');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error reading file: ${file.name}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              continue;
+            }
+          }
+        }
+
+        if (content == null || content.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Empty or unreadable file: ${file.name}'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          continue;
+        }
+
+        // Determine file type and display properties
+        String displayName = 'Text';
+        String mimeType = 'text/plain';
+
+        if (fileName.endsWith('.json')) {
+          displayName = 'JSON';
+          mimeType = 'application/json';
+
+          // Validate JSON structure
+          try {
+            jsonDecode(content);
+          } catch (e) {
+            // Still process as JSON but show warning
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Warning: ${file.name} contains invalid JSON'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        } else {
+          // For .txt files, try to detect if content is actually JSON
+          final String trimmedContent = content.trim();
+          if ((trimmedContent.startsWith('{') &&
+                  trimmedContent.endsWith('}')) ||
+              (trimmedContent.startsWith('[') &&
+                  trimmedContent.endsWith(']'))) {
+            try {
+              jsonDecode(trimmedContent);
+              displayName = 'JSON (from .txt file)';
+              mimeType = 'application/json';
+            } catch (e) {
+              // Keep as text file
+            }
+          }
+        }
+
+        // Ensure content is not null (we already checked this above)
+        final String finalContent = content;
+
+        // Create mock file object with platform file information
+        final mockFile = _MockFileWithPlatformFile(
+          content: finalContent,
+          fileName: file.name,
+          size: file.size,
+          platformFile: file,
+        );
+
+        // Add the processed file to the drop zone
+        setState(() {
+          _addWidgetToContent(
+            _buildGenericTextFileWidget(
+              finalContent,
+              mockFile,
+              displayName,
+              mimeType,
+            ),
+          );
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Loaded file: ${file.name}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ISpect.logger.error('Error in file picker: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening file picker: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showPasteDialog() {
@@ -1757,6 +1938,23 @@ class _MockFile {
   final String? fileName;
 
   _MockFile({required this.content, this.fileName});
+}
+
+class _MockFileWithPlatformFile {
+  final String content;
+  final String? fileName;
+  final int? size;
+  final PlatformFile platformFile;
+
+  _MockFileWithPlatformFile({
+    required this.content,
+    this.fileName,
+    this.size,
+    required this.platformFile,
+  });
+
+  // Getter for compatibility with existing code
+  int? get length => size;
 }
 
 class _DropItemInfo extends StatelessWidget {
