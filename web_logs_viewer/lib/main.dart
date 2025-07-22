@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/json_viewer/json_screen.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
 void main() async {
