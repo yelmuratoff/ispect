@@ -18,7 +18,7 @@ dependencies:
   ispect: ^4.2.1-dev05
   file_picker: ^10.2.0
   super_drag_and_drop: ^0.9.1
-  collection: ^1.19.0
+  collection: any
 
 dev_dependencies:
   flutter_test:
