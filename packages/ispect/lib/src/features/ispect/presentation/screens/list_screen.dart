@@ -10,7 +10,6 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
-import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///

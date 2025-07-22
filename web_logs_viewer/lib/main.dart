@@ -18,13 +18,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       localizationsDelegates: ISpectLocalizations.localizationDelegates([]),
       theme: ThemeData(
+        useMaterial3: true,
         snackBarTheme: const SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
         ),
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+        ),
       ),
       home: const MyHomePage(title: 'ISpect File Viewer'),
       builder: (context, child) {
@@ -122,13 +135,8 @@ Future<Uint8List> createImageData(Color color) async {
 }
 
 class HomeLayout extends StatelessWidget {
-  const HomeLayout({
-    super.key,
-    required this.draggable,
-    required this.dropZone,
-  });
+  const HomeLayout({super.key, required this.dropZone});
 
-  final List<Widget> draggable;
   final Widget dropZone;
 
   @override
@@ -140,15 +148,6 @@ class HomeLayout extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Wrap(
-                    direction: Axis.horizontal,
-                    runSpacing: 8,
-                    spacing: 10,
-                    children: draggable,
-                  ),
-                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0).copyWith(top: 0),
@@ -162,19 +161,9 @@ class HomeLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               textDirection: TextDirection.rtl,
               children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: IntrinsicWidth(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 8,
-                      children: draggable.toList(growable: false),
-                    ),
-                  ),
-                ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0).copyWith(right: 0),
+                    padding: const EdgeInsets.all(16.0),
                     child: dropZone,
                   ),
                 ),
@@ -356,43 +345,6 @@ This demonstrates how to handle file drops with super_drag_and_drop.
         ),
       ),
       body: HomeLayout(
-        draggable: [
-          DragableWidget(
-            name: 'Text',
-            color: Colors.red,
-            dragItemProvider: textDragItem,
-          ),
-          DragableWidget(
-            name: 'Image',
-            color: Colors.green,
-            dragItemProvider: imageDragItem,
-          ),
-          DragableWidget(
-            name: 'Lazy Image',
-            color: Colors.blue,
-            dragItemProvider: lazyImageDragItem,
-          ),
-          DragableWidget(
-            name: 'Virtual File',
-            color: Colors.amber.shade700,
-            dragItemProvider: virtualFileDragItem,
-          ),
-          DragableWidget(
-            name: 'Text File',
-            color: Colors.teal,
-            dragItemProvider: fileDragItem,
-          ),
-          DragableWidget(
-            name: 'JSON Data',
-            color: Colors.deepPurple,
-            dragItemProvider: jsonDragItem,
-          ),
-          DragableWidget(
-            name: 'Multiple',
-            color: Colors.pink,
-            dragItemProvider: multipleRepresentationsDragItem,
-          ),
-        ],
         dropZone: Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.blueGrey.shade200),
@@ -438,35 +390,59 @@ class _DropZoneState extends State<_DropZone>
               border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Row(
+              spacing: 8,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.folder_open),
-                const SizedBox(width: 8),
-                const Text(
-                  'Drop Zone',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                // File picker button
-                ElevatedButton.icon(
-                  onPressed: _showFileOptionsDialog,
-                  icon: const Icon(Icons.upload_file, size: 16),
-                  label: const Text('Load File'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade100,
-                    foregroundColor: Colors.blue.shade700,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (_droppedWidgets.isNotEmpty)
-                  ElevatedButton.icon(
-                    onPressed: _clearDroppedItems,
-                    icon: const Icon(Icons.clear, size: 16),
-                    label: const Text('Clear'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade100,
-                      foregroundColor: Colors.red.shade700,
+                Row(
+                  children: [
+                    const Icon(Icons.folder_open),
+
+                    const Text(
+                      'Drop Zone',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                  ],
+                ),
+
+                Flexible(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    spacing: 8,
+                    children: [
+                      Flexible(
+                        child: FilledButton.icon(
+                          onPressed: _showFileOptionsDialog,
+                          icon: const Icon(Icons.upload_file_rounded, size: 16),
+                          label: const Text(
+                            'Load File',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+
+                      if (_droppedWidgets.isNotEmpty)
+                        Flexible(
+                          child: ElevatedButton.icon(
+                            onPressed: _clearDroppedItems,
+                            icon: const Icon(Icons.clear, size: 16),
+                            label: const Text(
+                              'Clear',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade100,
+                              foregroundColor: Colors.red.shade700,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -517,13 +493,12 @@ class _DropZoneState extends State<_DropZone>
   }
 
   DropOperation _onDropOver(DropOverEvent event) {
-    print('Drop over: ${event.session.items.length} items');
     setState(() {
       _isDragOver = true;
       _preview = Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(13),
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
         ),
         child: Padding(
           padding: const EdgeInsets.all(50),
@@ -559,7 +534,9 @@ class _DropZoneState extends State<_DropZone>
         final reader = item.dataReader!;
 
         // Log available formats for debugging
-        print('Available formats for item: ${item.platformFormats.join(', ')}');
+        ISpect.logger.info(
+          'Available formats for item: ${item.platformFormats.join(', ')}',
+        );
 
         // Process each format the item can provide
         widgets.add(_buildDropItemHeader(item));
@@ -586,7 +563,7 @@ class _DropZoneState extends State<_DropZone>
           for (final check in formatChecks) {
             final format = check();
             if (format != null) {
-              print('Using format: $format');
+              ISpect.logger.info('Using format: $format');
 
               switch (format) {
                 case 'json':
@@ -596,7 +573,7 @@ class _DropZoneState extends State<_DropZone>
                       _handleJsonFile(file);
                     },
                     onError: (error) {
-                      print('Error reading JSON file: $error');
+                      ISpect.logger.error('Error reading JSON file: $error');
                     },
                   );
                   break;
@@ -607,7 +584,9 @@ class _DropZoneState extends State<_DropZone>
                       _handleTextFile(file);
                     },
                     onError: (error) {
-                      print('Error reading plain text file: $error');
+                      ISpect.logger.error(
+                        'Error reading plain text file: $error',
+                      );
                     },
                   );
                   break;
@@ -618,7 +597,7 @@ class _DropZoneState extends State<_DropZone>
                       _handleHtmlFile(file);
                     },
                     onError: (error) {
-                      print('Error reading HTML file: $error');
+                      ISpect.logger.error('Error reading HTML file: $error');
                     },
                   );
                   break;
@@ -635,7 +614,7 @@ class _DropZoneState extends State<_DropZone>
                       }
                     },
                     onError: (error) {
-                      print('Error reading file URI: $error');
+                      ISpect.logger.error('Error reading file URI: $error');
                     },
                   );
                   break;
@@ -651,7 +630,7 @@ class _DropZoneState extends State<_DropZone>
           // Try to find web:file or similar formats
           for (final format in item.platformFormats) {
             if (format.startsWith('web:') || format.contains('file')) {
-              print('Trying to read web format: $format');
+              ISpect.logger.info('Trying to read web format: $format');
               // Try to read as file using a custom approach
               _tryReadWebFormat(reader, format, item);
               fileProcessed = true;
@@ -666,7 +645,7 @@ class _DropZoneState extends State<_DropZone>
             if (format == 'application/json' ||
                 format == 'text/plain' ||
                 format == 'text/json') {
-              print('Found MIME type: $format');
+              ISpect.logger.info('Found MIME type: $format');
               _tryReadMimeTypeFormat(reader, format, item);
               fileProcessed = true;
               break;
@@ -697,7 +676,7 @@ class _DropZoneState extends State<_DropZone>
               }
             },
             onError: (error) {
-              print('Error reading plain text: $error');
+              ISpect.logger.error('Error reading plain text: $error');
             },
           );
           fileProcessed = true;
@@ -717,7 +696,7 @@ class _DropZoneState extends State<_DropZone>
               }
             },
             onError: (error) {
-              print('Error reading file URI: $error');
+              ISpect.logger.error('Error reading file URI: $error');
             },
           );
           fileProcessed = true;
@@ -735,7 +714,7 @@ class _DropZoneState extends State<_DropZone>
         _updateContent();
       });
     } catch (e) {
-      print('Error in _onPerformDrop: $e');
+      ISpect.logger.error('Error in _onPerformDrop: $e');
     }
   }
 
@@ -957,7 +936,7 @@ class _DropZoneState extends State<_DropZone>
             });
           }
         } catch (e) {
-          print('Error decoding text file stream: $e');
+          ISpect.logger.error('Error decoding text file stream: $e');
           if (mounted) {
             setState(() {
               _addWidgetToContent(
@@ -968,7 +947,7 @@ class _DropZoneState extends State<_DropZone>
         }
       },
       onError: (error) {
-        print('Error reading text file stream: $error');
+        ISpect.logger.error('Error reading text file stream: $error');
         if (mounted) {
           setState(() {
             _addWidgetToContent(
@@ -981,7 +960,7 @@ class _DropZoneState extends State<_DropZone>
   }
 
   void _handleJsonFile(dynamic file) {
-    print('Handling JSON file specifically');
+    ISpect.logger.info('Handling JSON file specifically');
     final stream = file.getStream();
     final chunks = <Uint8List>[];
 
@@ -1008,7 +987,7 @@ class _DropZoneState extends State<_DropZone>
             });
           }
         } catch (e) {
-          print('Error decoding JSON file stream: $e');
+          ISpect.logger.error('Error decoding JSON file stream: $e');
           if (mounted) {
             setState(() {
               _addWidgetToContent(
@@ -1019,7 +998,7 @@ class _DropZoneState extends State<_DropZone>
         }
       },
       onError: (error) {
-        print('Error reading JSON file stream: $error');
+        ISpect.logger.error('Error reading JSON file stream: $error');
         if (mounted) {
           setState(() {
             _addWidgetToContent(
@@ -1032,7 +1011,7 @@ class _DropZoneState extends State<_DropZone>
   }
 
   void _handleHtmlFile(dynamic file) {
-    print('Handling HTML file');
+    ISpect.logger.info('Handling HTML file');
     final stream = file.getStream();
     final chunks = <Uint8List>[];
 
@@ -1077,7 +1056,7 @@ class _DropZoneState extends State<_DropZone>
             });
           }
         } catch (e) {
-          print('Error decoding HTML file stream: $e');
+          ISpect.logger.error('Error decoding HTML file stream: $e');
           if (mounted) {
             setState(() {
               _addWidgetToContent(
@@ -1088,7 +1067,7 @@ class _DropZoneState extends State<_DropZone>
         }
       },
       onError: (error) {
-        print('Error reading HTML file stream: $error');
+        ISpect.logger.error('Error reading HTML file stream: $error');
         if (mounted) {
           setState(() {
             _addWidgetToContent(
@@ -1157,7 +1136,7 @@ class _DropZoneState extends State<_DropZone>
           _handleTextFile(file);
         },
         onError: (error) {
-          print('Could not read external file as text: $error');
+          ISpect.logger.error('Could not read external file as text: $error');
           _showExternalFileError(fileName, 'Could not read file content');
         },
       );
@@ -1172,7 +1151,7 @@ class _DropZoneState extends State<_DropZone>
   }
 
   void _tryReadWebFormat(dynamic reader, String format, DropItem item) {
-    print('Attempting to read web format: $format');
+    ISpect.logger.info('Attempting to read web format: $format');
 
     // Try different approaches to read web-specific formats
     try {
@@ -1184,7 +1163,9 @@ class _DropZoneState extends State<_DropZone>
             _handleJsonFile(file);
           },
           onError: (error) {
-            print('Error reading web format as JSON file: $error');
+            ISpect.logger.error(
+              'Error reading web format as JSON file: $error',
+            );
             // Try as plain text file
             _tryWebFormatAsPlainText(reader, format);
           },
@@ -1200,7 +1181,9 @@ class _DropZoneState extends State<_DropZone>
             _handleTextFile(file);
           },
           onError: (error) {
-            print('Error reading web format as text file: $error');
+            ISpect.logger.error(
+              'Error reading web format as text file: $error',
+            );
             _showWebFormatError(format, 'Could not read as text file');
           },
         );
@@ -1210,13 +1193,13 @@ class _DropZoneState extends State<_DropZone>
       // Try to read as plain text
       _tryWebFormatAsPlainText(reader, format);
     } catch (e) {
-      print('Error in _tryReadWebFormat: $e');
+      ISpect.logger.error('Error in _tryReadWebFormat: $e');
       _showWebFormatError(format, 'Unexpected error: $e');
     }
   }
 
   void _tryReadMimeTypeFormat(dynamic reader, String mimeType, DropItem item) {
-    print('Attempting to read MIME type: $mimeType');
+    ISpect.logger.info('Attempting to read MIME type: $mimeType');
 
     try {
       // For application/json or text/plain MIME types, try different formats
@@ -1228,7 +1211,9 @@ class _DropZoneState extends State<_DropZone>
             _handleJsonFile(file);
           },
           onError: (error) {
-            print('Error reading JSON MIME type as JSON file: $error');
+            ISpect.logger.error(
+              'Error reading JSON MIME type as JSON file: $error',
+            );
             // Fallback to plain text file
             _tryReadAsPlainTextFile(reader, mimeType);
           },
@@ -1244,7 +1229,7 @@ class _DropZoneState extends State<_DropZone>
             _handleTextFile(file);
           },
           onError: (error) {
-            print('Error reading MIME type as file: $error');
+            ISpect.logger.error('Error reading MIME type as file: $error');
             _showMimeTypeError(mimeType, 'Could not read file content');
           },
         );
@@ -1278,7 +1263,7 @@ class _DropZoneState extends State<_DropZone>
             }
           },
           onError: (error) {
-            print('Error reading MIME type as text: $error');
+            ISpect.logger.error('Error reading MIME type as text: $error');
             _showMimeTypeError(mimeType, 'Could not read text content');
           },
         );
@@ -1287,7 +1272,7 @@ class _DropZoneState extends State<_DropZone>
 
       _showMimeTypeError(mimeType, 'MIME type not supported for reading');
     } catch (e) {
-      print('Error in _tryReadMimeTypeFormat: $e');
+      ISpect.logger.error('Error in _tryReadMimeTypeFormat: $e');
       _showMimeTypeError(mimeType, 'Unexpected error: $e');
     }
   }
@@ -1320,7 +1305,7 @@ class _DropZoneState extends State<_DropZone>
           _handleTextFile(file);
         },
         onError: (error) {
-          print('Error reading as plain text file: $error');
+          ISpect.logger.error('Error reading as plain text file: $error');
           _showMimeTypeError(mimeType, 'Could not read as text file');
         },
       );
@@ -1352,7 +1337,7 @@ class _DropZoneState extends State<_DropZone>
           }
         },
         onError: (error) {
-          print('Error reading web format as plain text: $error');
+          ISpect.logger.error('Error reading web format as plain text: $error');
           _showWebFormatError(format, 'Could not read as plain text');
         },
       );
@@ -1553,74 +1538,38 @@ class _DropZoneState extends State<_DropZone>
             Text('File Size: ${_formatFileSize(fileLength)}'),
             const SizedBox(height: 8),
           ],
-          Container(
-            constraints: const BoxConstraints(maxHeight: 200),
-            child: SingleChildScrollView(
-              child: SelectableText(
-                _formatContentForDisplay(content, mimeType),
-                style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-              ),
-            ),
-          ),
-          if (mimeType == 'application/json') ...[
-            const SizedBox(height: 32),
-            FilledButton(
-              onPressed: () {
-                final json = jsonDecode(content);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => JsonScreen(
-                      data: {
-                        'content': json,
-                        'mimeType': mimeType,
-                        'fileName': file.fileName ?? 'unknown',
-                      },
-                    ),
+
+          const SizedBox(height: 32),
+          FilledButton(
+            onPressed: () {
+              dynamic data;
+              if (mimeType == 'application/json') {
+                data = jsonDecode(content);
+              } else {
+                data = content;
+              }
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => JsonScreen(
+                    data: {
+                      'display_name': displayName,
+                      'mime_type': mimeType,
+                      'file_name': file.fileName ?? 'unknown',
+                      'size': fileLength != null
+                          ? _formatFileSize(fileLength)
+                          : 'unknown',
+                      'fileName': file ?? 'unknown',
+                      'content': data,
+                    },
                   ),
-                );
-              },
-              child: const Text('View in JSON Viewer'),
-            ),
-          ],
+                ),
+              );
+            },
+            child: const Text('View in JSON Viewer'),
+          ),
         ],
       ),
     );
-  }
-
-  String _formatContentForDisplay(String content, String mimeType) {
-    // Format JSON files for better readability
-    if (mimeType == 'application/json') {
-      try {
-        final dynamic jsonObject = jsonDecode(content);
-        return const JsonEncoder.withIndent('  ').convert(jsonObject);
-      } catch (e) {
-        // If JSON parsing fails, try to clean up the content and try again
-        final cleanContent = content.trim();
-        try {
-          final dynamic jsonObject = jsonDecode(cleanContent);
-          return const JsonEncoder.withIndent('  ').convert(jsonObject);
-        } catch (e2) {
-          // If still fails, return original content with a note
-          return '// JSON parsing failed, showing raw content:\n$content';
-        }
-      }
-    }
-
-    // Also try to detect and format JSON-like content even if MIME type is not application/json
-    final trimmedContent = content.trim();
-    if ((trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) ||
-        (trimmedContent.startsWith('[') && trimmedContent.endsWith(']'))) {
-      try {
-        final dynamic jsonObject = jsonDecode(trimmedContent);
-        return const JsonEncoder.withIndent('  ').convert(jsonObject);
-      } catch (e) {
-        // If JSON parsing fails, return original content
-        return content;
-      }
-    }
-
-    // For other text files, return as is
-    return content;
   }
 
   void _showFileOptionsDialog() {

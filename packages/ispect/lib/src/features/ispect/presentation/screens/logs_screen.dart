@@ -16,7 +16,6 @@ import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_shee
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
-import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
