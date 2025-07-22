@@ -3,7 +3,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
-import 'package:ispect/src/features/json_viewer/json_screen.dart';
 
 part 'collapsed_body.dart';
 

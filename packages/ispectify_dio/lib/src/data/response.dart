@@ -13,7 +13,7 @@ class DioResponseData {
 
   Map<String, dynamic> get toJson => {
         'request-options': requestData.toJson,
-        'real-uri': response?.realUri,
+        'real-uri': response?.realUri.toString(),
         'data': response?.data,
         'status-code': response?.statusCode,
         'status-message': response?.statusMessage,

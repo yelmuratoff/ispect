@@ -40,3 +40,4 @@ build/
 **/*.freezed.dart
 **/*.select.dart
 packages/ispect_jira/example/ios/Podfile.lock
+

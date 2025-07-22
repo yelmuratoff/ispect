@@ -1,6 +1,6 @@
 name: ispect
 description: "Logging and inspection tool for development and testing. ISpect provides an intuitive interface that makes debugging efficient and insightful."
-version: 4.2.0
+version: 4.2.1-dev05
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -26,14 +26,14 @@ dependencies:
     sdk: flutter
 
   meta: any
-  collection: any
+  collection: ^1.19.0
 
   # Logging
-  ispectify: ^4.2.0
+  ispectify: ^4.2.1-dev05
 
   # Utils
   path_provider: ^2.1.5
-  path: ^1.9.1
+  path: ^1.9.0
   device_info_plus: ^11.4.0
   package_info_plus: ^8.3.0
   share_plus: ^11.0.0

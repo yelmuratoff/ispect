@@ -13,6 +13,9 @@ class ISpectViewController extends ChangeNotifier {
   bool _isLogOrderReversed = true;
   ISpectifyData? _activeData;
 
+  // JSON service for logs export/import
+  final LogsJsonService _logsJsonService = const LogsJsonService();
+
   // Filter cache properties
   List<String>? _cachedTitles;
   List<Type>? _cachedTypes;
@@ -320,9 +323,42 @@ class ISpectViewController extends ChangeNotifier {
     update();
   }
 
-  /// Shares filtered logs as a downloadable file.
-  Future<void> shareLogsAsFile(List<ISpectifyData> logs) async {
+  /// Shares filtered logs as a downloadable JSON file.
+  ///
+  /// Exports logs in structured JSON format with metadata including
+  /// filter information for better context and import capabilities.
+  Future<void> shareLogsAsFile(
+    List<ISpectifyData> logs, {
+    String fileType = 'json',
+  }) async {
     final filteredLogs = applyCurrentFilters(logs);
-    await downloadLogsFile(filteredLogs.formattedText);
+    await _logsJsonService.shareFilteredLogsAsJsonFile(
+      logs,
+      filteredLogs,
+      filter,
+      fileName: 'ispect_logs_${DateTime.now().millisecondsSinceEpoch}',
+      fileType: fileType,
+    );
   }
+
+  /// Shares all logs as JSON file without filtering.
+  ///
+  /// Exports all logs in JSON format for complete backup.
+  Future<void> shareAllLogsAsJsonFile(List<ISpectifyData> logs) async {
+    await _logsJsonService.shareLogsAsJsonFile(
+      logs,
+      fileName: 'ispect_all_logs_${DateTime.now().millisecondsSinceEpoch}',
+    );
+  }
+
+  /// Imports logs from JSON content.
+  ///
+  /// Parses JSON content and returns list of imported logs.
+  /// Can be used to restore previously exported logs.
+  Future<List<ISpectifyData>> importLogsFromJson(String jsonContent) async =>
+      _logsJsonService.importFromJson(jsonContent);
+
+  /// Validates if JSON content is valid for logs import.
+  bool validateLogsJsonContent(String jsonContent) =>
+      _logsJsonService.validateJsonStructure(jsonContent);
 }

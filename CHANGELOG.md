@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.2.1-dev05
+
+### Added:
+
+- Add `LogsJsonService` for structured `JSON` export/import of logs and integrate sharing/import features into `ISpectViewController` and UI.
+- Implement `DailyFileLogHistory` for file-based log persistence with daily sessions and provide related screens for browsing and sharing sessions.
+
+### Enhancements:
+
+- Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
+- Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
+- Make settings and info callback parameters optional in the app bar and conditionally render related UI.
+
 ## 4.2.0
 
 ### Added:

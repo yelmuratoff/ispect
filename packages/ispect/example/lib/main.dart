@@ -29,10 +29,12 @@ final Dio dummyDio = Dio(
 );
 
 void main() {
+  final options = ISpectifyOptions(
+    logTruncateLength: 500,
+  );
   final ISpectify iSpectify = ISpectifyFlutter.init(
-    options: ISpectifyOptions(
-      logTruncateLength: 500,
-    ),
+    options: options,
+    history: DailyFileLogHistory(options),
   );
 
   // debugRepaintRainbowEnabled = true;
@@ -44,7 +46,7 @@ void main() {
       ),
     ),
     logger: iSpectify,
-    isPrintLoggingEnabled: true,
+    isPrintLoggingEnabled: false,
     onInit: () {
       Bloc.observer = ISpectifyBlocObserver(
         iSpectify: iSpectify,
@@ -212,6 +214,25 @@ class _HomeState extends State<_Home> {
     ISpectScopeModel iSpect,
   ) {
     return <_ButtonConfig>[
+      (
+        label: 'All logs',
+        onPressed: () {
+          ISpect.logger.critical('critical');
+          ISpect.logger.debug('debug');
+          ISpect.logger.error('error');
+          ISpect.logger.good('good');
+          ISpect.logger.handle(
+              exception: Exception('exception'),
+              stackTrace: StackTrace.current);
+          ISpect.logger.info('info');
+          ISpect.logger.log('log');
+          ISpect.logger.print('print');
+          ISpect.logger.route('route');
+          ISpect.logger.track('track');
+          ISpect.logger.verbose('verbose');
+          ISpect.logger.warning('warning');
+        },
+      ),
       (
         label: 'Mock Nested Map with Depth IDs',
         onPressed: () {

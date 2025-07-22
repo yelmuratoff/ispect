@@ -66,8 +66,8 @@ class ISpectifyData {
   /// Returns the full message, including the stack trace if available.
   String get textMessage {
     final errMsg = (error != null)
-        ? '$error'.truncated
-        : ((exception != null) ? '$exception' : ''.truncated);
+        ? '$error'.truncate()
+        : ((exception != null) ? '$exception' : ''.truncate());
 
     return '$messageText$errMsg$stackTraceText';
   }
@@ -83,13 +83,13 @@ class ISpectifyData {
 
   /// Returns the exception as a string if available, otherwise an empty string.
   String? get exceptionText =>
-      exception != null ? '\n$exception'.truncated : '';
+      exception != null ? '\n$exception'.truncate() : '';
 
   /// Returns the error as a string if available, otherwise an empty string.
-  String? get errorText => error != null ? '\n$error'.truncated : '';
+  String? get errorText => error != null ? '\n$error'.truncate() : '';
 
   /// Returns the log message as a string, or an empty string if `null`.
-  String? get messageText => message.truncated;
+  String? get messageText => message.truncate();
 
   /// Returns the formatted timestamp of the log entry.
   String get formattedTime => ISpectifyDateTimeFormatter(time).format;
