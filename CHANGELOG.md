@@ -1,11 +1,12 @@
 # Changelog
 
-## 4.2.1-dev05
+## 4.2.1-dev06
 
 ### Added:
 
 - Add `LogsJsonService` for structured `JSON` export/import of logs and integrate sharing/import features into `ISpectViewController` and UI.
 - Implement `DailyFileLogHistory` for file-based log persistence with daily sessions and provide related screens for browsing and sharing sessions.
+- Added `File Viewer` to settings sheet in `ISpect` screen to view and manage log files.
 
 ### Enhancements:
 
