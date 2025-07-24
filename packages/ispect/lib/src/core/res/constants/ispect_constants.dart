@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/features/ispect/models/log_description.dart';
+import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
 
 /// `ISpectConstants` class contains all the constants used in the `ISpect` package.
 final class ISpectConstants {

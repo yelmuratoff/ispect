@@ -16,6 +16,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_shee
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
+import 'package:ispect/src/features/ispect/services/file_processing_service.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
@@ -56,6 +57,7 @@ class _LogsScreenState extends State<LogsScreen> {
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final _logsViewController = ISpectViewController();
+  final _fileService = FileProcessingService();
 
   @override
   void initState() {
@@ -207,12 +209,187 @@ class _LogsScreenState extends State<LogsScreen> {
             ).push(context),
           ),
         ISpectActionItem(
+          title: 'Log Viewer',
+          icon: Icons.developer_mode_rounded,
+          onTap: (context) {
+            _showFileOptionsDialog();
+          },
+        ),
+        ISpectActionItem(
           title: context.ispectL10n.appData,
           icon: Icons.data_usage_rounded,
           onTap: (context) => const AppDataScreen().push(context),
         ),
         ...widget.options.actionItems,
       ];
+
+  Future<void> _showFileOptionsDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Load File Content'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Choose how to load your file:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8),
+                ),
+              ),
+              leading: const Icon(Icons.content_paste),
+              title: const Text('Paste Content'),
+              subtitle: const Text(
+                'Copy .txt or .json file content and paste it here',
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _showPasteDialog();
+              },
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8),
+                ),
+              ),
+              leading: const Icon(Icons.content_paste),
+              title: const Text('Pick Files'),
+              subtitle: const Text(
+                'Select .txt or .json files from your device',
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickFiles();
+              },
+            ),
+            const SizedBox(height: 8),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              '💡 Tip: You can also drag and drop ${_fileService.supportedExtensions.map((e) => '.$e').join(' or ')} files directly to the drop zone above.',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '⚠️ Only ${_fileService.supportedExtensions.map((e) => '.$e').join(' and ')} files are supported (max ${_fileService.maxFileSizeFormatted}).',
+              style: const TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPasteDialog() {
+    final controller = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Paste File Content'),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Paste your file content below:'),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    maxLines: null,
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Paste your .txt or .json file content here...',
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (controller.text.trim().isNotEmpty) {
+                  Navigator.of(context).pop();
+                  _processPastedContent(controller.text);
+                }
+              },
+              child: const Text('Process'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickFiles() async {
+    final results = await _fileService.pickAndProcessFiles();
+
+    if (!mounted) return;
+
+    for (final result in results) {
+      if (result.success) {
+        await ISpectToaster.showInfoToast(
+          context,
+          title: 'Loaded file: ${result.fileName}',
+        );
+      } else {
+        final color = (result.error?.contains('too large') ?? false) ||
+                (result.error?.contains('Unsupported') ?? false)
+            ? Colors.orange
+            : Colors.red;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${result.error}: ${result.fileName}'),
+            backgroundColor: color,
+          ),
+        );
+      }
+    }
+  }
+
+  void _processPastedContent(String content) {
+    final result = _fileService.processPastedContent(content);
+
+    if (result.success) {
+      result.action(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Failed to process content'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
 
 /// A widget that represents a single log entry in the list.
