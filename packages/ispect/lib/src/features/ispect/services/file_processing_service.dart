@@ -17,16 +17,19 @@ class FileProcessingService {
   static const List<String> _supportedExtensions = ['txt', 'json'];
 
   /// Pick and process files from device
-  Future<List<FileProcessingResult>> pickAndProcessFiles() async {
+  Future<FileProcessingResult> pickAndProcessFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        allowMultiple: true,
         type: FileType.custom,
         allowedExtensions: _supportedExtensions,
       );
 
       if (result == null || result.files.isEmpty) {
-        return [];
+        return FileProcessingResult.failure(
+          fileName: 'Unknown',
+          error: 'No files selected',
+          format: FileFormat.text,
+        );
       }
 
       final results = <FileProcessingResult>[];
@@ -36,16 +39,20 @@ class FileProcessingService {
         results.add(processedResult);
       }
 
-      return results;
+      return results.length == 1
+          ? results.first
+          : FileProcessingResult.failure(
+              fileName: 'Multiple Files',
+              error: 'Multiple files selected, please select one at a time',
+              format: FileFormat.text,
+            );
     } catch (e) {
       ISpect.logger.error('Error in file picker: $e');
-      return [
-        FileProcessingResult.failure(
-          fileName: 'Unknown',
-          error: 'Error opening file picker: $e',
-          format: FileFormat.text,
-        ),
-      ];
+      return FileProcessingResult.failure(
+        fileName: 'Unknown',
+        error: 'Error opening file picker: $e',
+        format: FileFormat.text,
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
@@ -140,240 +141,151 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
-        ISpectActionItem(
-          onTap: (_) => _logsViewController.toggleLogOrder(),
-          title: context.ispectL10n.reverseLogs,
-          icon: Icons.swap_vert,
-        ),
-        ISpectActionItem(
-          onTap: (_) => _logsViewController.copyAllLogsToClipboard(
-            context,
-            ISpect.logger.history,
-            (context, {required value, showValue, title}) {
-              copyClipboard(
-                context,
-                value: value,
-                title: title ?? context.ispectL10n.allLogsCopied,
-                showValue: showValue ?? false,
-              );
-            },
-            '✅ ${context.ispectL10n.allLogsCopied}',
-          ),
-          title: context.ispectL10n.copyAllLogs,
-          icon: Icons.copy,
-        ),
-        ISpectActionItem(
-          onTap: (_) => _logsViewController.toggleExpandedLogs(),
-          title: _logsViewController.expandedLogs
-              ? context.ispectL10n.collapseLogs
-              : context.ispectL10n.expandLogs,
-          icon: _logsViewController.expandedLogs
-              ? Icons.visibility_outlined
-              : Icons.visibility_off_outlined,
-        ),
-        ISpectActionItem(
-          onTap: (_) =>
-              _logsViewController.clearLogsHistory(ISpect.logger.clearHistory),
-          title: context.ispectL10n.clearHistory,
-          icon: Icons.delete_outline,
-        ),
-        ISpectActionItem(
-          onTap: (_) {
-            // _logsViewController.shareLogsAsFile(ISpect.logger.history);
-            ISpectShareAllLogsBottomSheet(
-              controller: _logsViewController,
-            ).show(context);
-          },
-          title: context.ispectL10n.shareLogsFile,
-          icon: Icons.ios_share_outlined,
-        ),
-        ISpectActionItem(
-          title: context.ispectL10n.appInfo,
-          icon: Icons.info_rounded,
-          onTap: (context) => const AppInfoScreen().push(context),
-        ),
-        if (widget.navigatorObserver != null)
-          ISpectActionItem(
-            title: 'Navigation Flow',
-            icon: Icons.route_rounded,
-            onTap: (context) => ISpectNavigationFlowScreen(
-              observer: widget.navigatorObserver!,
-            ).push(context),
-          ),
-        if (ISpect.logger.fileLogHistory != null)
-          ISpectActionItem(
-            title: 'Daily Sessions',
-            icon: Icons.history_rounded,
-            onTap: (context) => DailySessionsScreen(
-              history: ISpect.logger.fileLogHistory,
-            ).push(context),
-          ),
-        ISpectActionItem(
-          title: 'Log Viewer',
-          icon: Icons.developer_mode_rounded,
-          onTap: (context) {
-            _showFileOptionsDialog();
-          },
-        ),
-        ISpectActionItem(
-          title: context.ispectL10n.appData,
-          icon: Icons.data_usage_rounded,
-          onTap: (context) => const AppDataScreen().push(context),
-        ),
+        _buildReverseLogsAction(context),
+        _buildCopyAllLogsAction(context),
+        _buildExpandLogsAction(context),
+        _buildClearHistoryAction(context),
+        _buildShareLogsAction(context),
+        _buildAppInfoAction(context),
+        if (widget.navigatorObserver != null) _buildNavigationFlowAction(),
+        if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
+        _buildLogViewerAction(),
+        _buildAppDataAction(context),
         ...widget.options.actionItems,
       ];
 
+  ISpectActionItem _buildReverseLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => _logsViewController.toggleLogOrder(),
+        title: context.ispectL10n.reverseLogs,
+        icon: Icons.swap_vert,
+      );
+
+  ISpectActionItem _buildCopyAllLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => _logsViewController.copyAllLogsToClipboard(
+          context,
+          ISpect.logger.history,
+          (context, {required value, showValue, title}) {
+            copyClipboard(
+              context,
+              value: value,
+              title: title ?? context.ispectL10n.allLogsCopied,
+              showValue: showValue ?? false,
+            );
+          },
+          '✅ ${context.ispectL10n.allLogsCopied}',
+        ),
+        title: context.ispectL10n.copyAllLogs,
+        icon: Icons.copy,
+      );
+
+  ISpectActionItem _buildExpandLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => _logsViewController.toggleExpandedLogs(),
+        title: _logsViewController.expandedLogs
+            ? context.ispectL10n.collapseLogs
+            : context.ispectL10n.expandLogs,
+        icon: _logsViewController.expandedLogs
+            ? Icons.visibility_outlined
+            : Icons.visibility_off_outlined,
+      );
+
+  ISpectActionItem _buildClearHistoryAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) =>
+            _logsViewController.clearLogsHistory(ISpect.logger.clearHistory),
+        title: context.ispectL10n.clearHistory,
+        icon: Icons.delete_outline,
+      );
+
+  ISpectActionItem _buildShareLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => ISpectShareAllLogsBottomSheet(
+          controller: _logsViewController,
+        ).show(context),
+        title: context.ispectL10n.shareLogsFile,
+        icon: Icons.ios_share_outlined,
+      );
+
+  ISpectActionItem _buildAppInfoAction(BuildContext context) =>
+      ISpectActionItem(
+        title: context.ispectL10n.appInfo,
+        icon: Icons.info_rounded,
+        onTap: (context) => const AppInfoScreen().push(context),
+      );
+
+  ISpectActionItem _buildNavigationFlowAction() => ISpectActionItem(
+        title: 'Navigation Flow',
+        icon: Icons.route_rounded,
+        onTap: (context) => ISpectNavigationFlowScreen(
+          observer: widget.navigatorObserver!,
+        ).push(context),
+      );
+
+  ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
+        title: 'Daily Sessions',
+        icon: Icons.history_rounded,
+        onTap: (context) => DailySessionsScreen(
+          history: ISpect.logger.fileLogHistory,
+        ).push(context),
+      );
+
+  ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
+        title: 'Log Viewer',
+        icon: Icons.developer_mode_rounded,
+        onTap: (context) => _showFileOptionsDialog(),
+      );
+
+  ISpectActionItem _buildAppDataAction(BuildContext context) =>
+      ISpectActionItem(
+        title: context.ispectL10n.appData,
+        icon: Icons.data_usage_rounded,
+        onTap: (context) => const AppDataScreen().push(context),
+      );
+
   Future<void> _showFileOptionsDialog() async {
+    if (!mounted) return;
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Load File Content'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Choose how to load your file:',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
-              ),
-              leading: const Icon(Icons.content_paste),
-              title: const Text('Paste Content'),
-              subtitle: const Text(
-                'Copy .txt or .json file content and paste it here',
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _showPasteDialog();
-              },
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
-              ),
-              leading: const Icon(Icons.content_paste),
-              title: const Text('Pick Files'),
-              subtitle: const Text(
-                'Select .txt or .json files from your device',
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickFiles();
-              },
-            ),
-            const SizedBox(height: 8),
-            const Divider(),
-            const SizedBox(height: 8),
-            Text(
-              '💡 Tip: You can also drag and drop ${_fileService.supportedExtensions.map((e) => '.$e').join(' or ')} files directly to the drop zone above.',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '⚠️ Only ${_fileService.supportedExtensions.map((e) => '.$e').join(' and ')} files are supported (max ${_fileService.maxFileSizeFormatted}).',
-              style: const TextStyle(fontSize: 12, color: Colors.orange),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
+      builder: (context) => _FileOptionsDialog(
+        onPasteContent: _showPasteDialog,
+        onPickFiles: _pickFiles,
+        fileService: _fileService,
       ),
     );
   }
 
   void _showPasteDialog() {
-    final controller = TextEditingController();
-
+    if (!mounted) return;
     showDialog<void>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Paste File Content'),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Paste your file content below:'),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Paste your .txt or .json file content here...',
-                    ),
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (controller.text.trim().isNotEmpty) {
-                  Navigator.of(context).pop();
-                  _processPastedContent(controller.text);
-                }
-              },
-              child: const Text('Process'),
-            ),
-          ],
-        ),
+      builder: (context) => _PasteContentDialog(
+        onContentProcessed: _processPastedContent,
       ),
     );
   }
 
   Future<void> _pickFiles() async {
-    final results = await _fileService.pickAndProcessFiles();
+    final result = await _fileService.pickAndProcessFiles();
 
     if (!mounted) return;
 
-    for (final result in results) {
-      if (result.success) {
-        await ISpectToaster.showInfoToast(
-          context,
-          title: 'Loaded file: ${result.fileName}',
-        );
-      } else {
-        final color = (result.error?.contains('too large') ?? false) ||
-                (result.error?.contains('Unsupported') ?? false)
-            ? Colors.orange
-            : Colors.red;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${result.error}: ${result.fileName}'),
-            backgroundColor: color,
-          ),
-        );
-      }
+    if (result.success) {
+      await result.action(context);
+    } else {
+      _showFileProcessingError(result);
     }
+  }
+
+  void _showFileProcessingError(FileProcessingResult result) {
+    final errorMessage = result.error?.toString() ?? '';
+
+    ISpectToaster.showErrorToast(
+      context,
+      title: 'File Processing Error',
+      message: errorMessage,
+    );
   }
 
   void _processPastedContent(String content) {
@@ -382,13 +294,17 @@ class _LogsScreenState extends State<LogsScreen> {
     if (result.success) {
       result.action(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error ?? 'Failed to process content'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showContentProcessingError(result.error);
     }
+  }
+
+  void _showContentProcessingError(String? error) {
+    if (!mounted) return;
+    ISpectToaster.showErrorToast(
+      context,
+      title: 'Content Processing Error',
+      message: error ?? 'Unknown error occurred while processing content',
+    );
   }
 }
 
@@ -506,6 +422,7 @@ class _MainLogsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
     final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
+    final dividerColor = _getDividerColor(iSpectTheme, context);
 
     return CustomScrollView(
       controller: logsScrollController,
@@ -550,7 +467,7 @@ class _MainLogsView extends StatelessWidget {
                       logEntry.hashCode ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: _getDividerColor(iSpectTheme, context),
+              dividerColor: dividerColor,
               customItemBuilder: itemsBuilder,
               onCopyPressed: () => logsViewController.copyLogEntryText(
                 context,
@@ -591,5 +508,195 @@ class _DetailView extends StatelessWidget {
             onClose: onClose,
           ),
         ),
+      );
+}
+
+/// Dialog widget for selecting file loading options
+class _FileOptionsDialog extends StatelessWidget {
+  const _FileOptionsDialog({
+    required this.onPasteContent,
+    required this.onPickFiles,
+    required this.fileService,
+  });
+
+  final VoidCallback onPasteContent;
+  final VoidCallback onPickFiles;
+  final FileProcessingService fileService;
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Load File Content'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Choose how to load your file:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const Gap(16),
+            _FileOptionTile(
+              icon: Icons.content_paste,
+              title: 'Paste Content',
+              subtitle: 'Copy .txt or .json file content and paste it here',
+              onTap: () {
+                Navigator.of(context).pop();
+                onPasteContent();
+              },
+            ),
+            const Gap(16),
+            _FileOptionTile(
+              icon: Icons.file_open,
+              title: 'Pick Files',
+              subtitle: 'Select .txt or .json files from your device',
+              onTap: () {
+                Navigator.of(context).pop();
+                onPickFiles();
+              },
+            ),
+            const Gap(8),
+            const Divider(),
+            const Gap(8),
+            _FileOptionHint(
+              text:
+                  '⚠️ Only ${fileService.supportedExtensions.map((e) => '.$e').join(' and ')} files are supported (max ${fileService.maxFileSizeFormatted}).',
+              color: Colors.orange,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      );
+}
+
+/// Reusable tile widget for file options
+class _FileOptionTile extends StatelessWidget {
+  const _FileOptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        onTap: onTap,
+      );
+}
+
+/// Hint text widget for file options
+class _FileOptionHint extends StatelessWidget {
+  const _FileOptionHint({
+    required this.text,
+    required this.color,
+  });
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: TextStyle(fontSize: 12, color: color),
+      );
+}
+
+/// Dialog widget for pasting file content
+class _PasteContentDialog extends StatefulWidget {
+  const _PasteContentDialog({
+    required this.onContentProcessed,
+  });
+
+  final void Function(String content) onContentProcessed;
+
+  @override
+  State<_PasteContentDialog> createState() => _PasteContentDialogState();
+}
+
+class _PasteContentDialogState extends State<_PasteContentDialog> {
+  final _controller = TextEditingController();
+  bool _hasContent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTextChanged);
+    // ignore: cascade_invocations
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final hasContent = _controller.text.trim().isNotEmpty;
+    if (hasContent != _hasContent) {
+      setState(() => _hasContent = hasContent);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Paste File Content'),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Paste your file content below:'),
+              const Gap(8),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Paste your .txt or .json file content here...',
+                  ),
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: _hasContent
+                ? () {
+                    Navigator.of(context).pop();
+                    widget.onContentProcessed(_controller.text);
+                  }
+                : null,
+            child: const Text('Process'),
+          ),
+        ],
       );
 }
