@@ -31,7 +31,7 @@
 
 <div align="center">
 
-🔗 **WebSocket Logging** • � **Message Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+🔗 **WebSocket Logging** • 📨 **Message Tracking** • ❌ **Error Handling** • ⚡ **Performance**
 
 </div>
 
@@ -40,7 +40,7 @@ Enhance your WebSocket debugging workflow by automatically capturing and logging
 ### 🎯 Key Features
 
 - 🔗 **WebSocket Connection Logging**: Automatic logging of all WebSocket connections
-- � **Message Tracking**: Detailed logging of sent and received messages
+- 📨 **Message Tracking**: Detailed logging of sent and received messages
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
 - 🔍 **Connection Inspection**: URL, connection state, and metrics logging
 - ⚡ **Performance Metrics**: Connection timing and message count tracking
@@ -55,14 +55,15 @@ final logger = ISpectify();
 
 // Create interceptor with custom settings
 final interceptor = ISpectWSInterceptor(
-  url: 'wss://echo.websocket.org',
   logger: logger,
   settings: const ISpectWSInterceptorSettings(
     enabled: true,
-    printRequestData: true,
-    printResponseData: true,
+    printSentData: true,
+    printReceivedData: true,
+    printReceivedMessage: true,
     printErrorData: true,
-    printRequestHeaders: false,
+    printErrorMessage: true,
+    printReceivedHeaders: false,
   ),
 );
 
@@ -81,16 +82,15 @@ interceptor.setClient(client);
 
 ```dart
 final interceptor = ISpectWSInterceptor(
-  url: url,
   logger: logger,
   settings: ISpectWSInterceptorSettings(
     enabled: true,
     // Custom filters for selective logging
-    requestFilter: (request) {
+    sentFilter: (request) {
       // Only log requests containing specific data
       return request.body?['data']?.toString().contains('important') ?? false;
     },
-    responseFilter: (response) {
+    receivedFilter: (response) {
       // Only log successful responses
       return !response.body?['data']?.toString().contains('error') ?? true;
     },
@@ -99,8 +99,8 @@ final interceptor = ISpectWSInterceptor(
       return true;
     },
     // Custom console colors
-    requestPen: AnsiPen()..blue(),
-    responsePen: AnsiPen()..green(),
+    sentPen: AnsiPen()..blue(),
+    receivedPen: AnsiPen()..green(),
     errorPen: AnsiPen()..red(),
   ),
 );
@@ -110,7 +110,6 @@ final interceptor = ISpectWSInterceptor(
 
 ```dart
 final interceptor = ISpectWSInterceptor(
-  url: url,
   logger: logger,
   onClientReady: (client) {
     print('WebSocket client is ready');
@@ -125,7 +124,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.2.1-dev07
+  ispectify_ws: ^4.2.1-dev09
 ```
 
 ## 🚀 Quick Start
@@ -143,12 +142,11 @@ void main() {
 
   // Create WebSocket interceptor
   final interceptor = ISpectWSInterceptor(
-    url: url,
     logger: logger,
     settings: const ISpectWSInterceptorSettings(
       enabled: true,
-      printRequestData: true,
-      printResponseData: true,
+      printSentData: true,
+      printReceivedData: true,
       printErrorData: true,
     ),
   );

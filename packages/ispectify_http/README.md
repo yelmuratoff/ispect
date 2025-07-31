@@ -95,7 +95,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.2.1-dev07
+  ispectify_http: ^4.2.1-dev09
 ```
 
 ## 🚀 Quick Start

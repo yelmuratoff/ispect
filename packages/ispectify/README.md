@@ -97,7 +97,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.2.1-dev07
+  ispectify: ^4.2.1-dev09
 ```
 
 ## 🚀 Quick Start
