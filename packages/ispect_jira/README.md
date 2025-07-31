@@ -161,7 +161,7 @@ Add ispect_jira to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect_jira: ^4.1.4
+  ispect_jira: ^4.2.1-dev07
 ```
 
 ## 🚀 Quick Start

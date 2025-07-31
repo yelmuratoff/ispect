@@ -1,11 +1,11 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>HTTP interceptor integration for ISpectify logging system using http_interceptor package</strong></p>
+  <p><strong>WebSocket interceptor integration for ISpectify logging system using ws package</strong></p>
   
   <p>
-    <a href="https://pub.dev/packages/ispectify_http">
-      <img src="https://img.shields.io/pub/v/ispectify_http.svg" alt="pub version">
+    <a href="https://pub.dev/packages/ispectify_ws">
+      <img src="https://img.shields.io/pub/v/ispectify_ws.svg" alt="pub version">
     </a>
     <a href="https://opensource.org/licenses/MIT">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
@@ -16,169 +16,197 @@
   </p>
   
   <p>
-    <a href="https://pub.dev/packages/ispectify_http/score">
-      <img src="https://img.shields.io/pub/likes/ispectify_http?logo=flutter" alt="Pub likes">
+    <a href="https://pub.dev/packages/ispectify_ws/score">
+      <img src="https://img.shields.io/pub/likes/ispectify_ws?logo=flutter" alt="Pub likes">
     </a>
-    <a href="https://pub.dev/packages/ispectify_http/score">
-      <img src="https://img.shields.io/pub/points/ispectify_http?logo=flutter" alt="Pub points">
+    <a href="https://pub.dev/packages/ispectify_ws/score">
+      <img src="https://img.shields.io/pub/points/ispectify_ws?logo=flutter" alt="Pub points">
     </a>
   </p>
 </div>
 
 ## 🔍 Overview
 
-> **ISpectify HTTP** provides seamless integration between the http_interceptor package and the ISpectify logging system.
+> **ISpectify WebSocket** provides seamless integration between the ws package and the ISpectify logging system for comprehensive WebSocket monitoring.
 
 <div align="center">
 
-🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+🔗 **WebSocket Logging** • � **Message Tracking** • ❌ **Error Handling** • ⚡ **Performance**
 
 </div>
 
-Enhance your HTTP debugging workflow by automatically capturing and logging all HTTP client interactions using the http_interceptor package. Provides seamless integration with Dart's HTTP package through interceptors for comprehensive request and response monitoring.
+Enhance your WebSocket debugging workflow by automatically capturing and logging all WebSocket client interactions using the ws package. Provides seamless integration with Dart's WebSocket client through interceptors for comprehensive connection and message monitoring.
 
 ### 🎯 Key Features
 
-- 🌐 **HTTP Request Logging**: Automatic logging of all HTTP requests
-- 📊 **Response Tracking**: Detailed response logging with timing information
+- 🔗 **WebSocket Connection Logging**: Automatic logging of all WebSocket connections
+- � **Message Tracking**: Detailed logging of sent and received messages
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Request Inspection**: Headers, body, and parameter logging
-- ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Lightweight**: Minimal overhead using http_interceptor package
+- 🔍 **Connection Inspection**: URL, connection state, and metrics logging
+- ⚡ **Performance Metrics**: Connection timing and message count tracking
+- 🎛️ **Lightweight**: Minimal overhead using ws package interceptors
 
 ## 🔧 Configuration Options
 
 ### Basic Setup
 
 ```dart
-final http_interceptor.InterceptedClient client =
-    http_interceptor.InterceptedClient.build(interceptors: []);
+final logger = ISpectify();
 
-// Initialize in ISpect.run onInit callback
-ISpect.run(
-  () => runApp(MyApp()),
-  logger: iSpectify,
-  onInit: () {
-    client.interceptors.add(
-      ISpectifyHttpLogger(iSpectify: iSpectify),
-    );
+// Create interceptor with custom settings
+final interceptor = ISpectWSInterceptor(
+  url: 'wss://echo.websocket.org',
+  logger: logger,
+  settings: const ISpectWSInterceptorSettings(
+    enabled: true,
+    printRequestData: true,
+    printResponseData: true,
+    printErrorData: true,
+    printRequestHeaders: false,
+  ),
+);
+
+// Create WebSocket client
+final client = WebSocketClient(
+  WebSocketOptions.common(
+    interceptors: [interceptor],
+  ),
+);
+
+// Set client for interceptor
+interceptor.setClient(client);
+```
+
+### Advanced Configuration with Filters
+
+```dart
+final interceptor = ISpectWSInterceptor(
+  url: url,
+  logger: logger,
+  settings: ISpectWSInterceptorSettings(
+    enabled: true,
+    // Custom filters for selective logging
+    requestFilter: (request) {
+      // Only log requests containing specific data
+      return request.body?['data']?.toString().contains('important') ?? false;
+    },
+    responseFilter: (response) {
+      // Only log successful responses
+      return !response.body?['data']?.toString().contains('error') ?? true;
+    },
+    errorFilter: (error) {
+      // Log all errors
+      return true;
+    },
+    // Custom console colors
+    requestPen: AnsiPen()..blue(),
+    responsePen: AnsiPen()..green(),
+    errorPen: AnsiPen()..red(),
+  ),
+);
+```
+
+### Connection Event Handling
+
+```dart
+final interceptor = ISpectWSInterceptor(
+  url: url,
+  logger: logger,
+  onClientReady: (client) {
+    print('WebSocket client is ready');
+    print('Client metrics: ${client.metrics}');
   },
 );
 ```
 
-### File Upload Example
-
-```dart
-// Upload file using MultipartRequest
-final List<int> bytes = [1, 2, 3]; // File data
-const String filename = 'file.txt';
-
-final http_interceptor.MultipartRequest request =
-    http_interceptor.MultipartRequest(
-  'POST',
-  Uri.parse('https://api.example.com/upload'),
-);
-
-request.files.add(http_interceptor.MultipartFile.fromBytes(
-  'file', // Field name
-  bytes,
-  filename: filename,
-));
-
-// Send request - will be automatically logged
-client.send(request);
-```
-
 ## 📦 Installation
 
-Add ispectify_http to your `pubspec.yaml`:
+Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.1.4
+  ispectify_ws: ^4.2.1-dev07
 ```
 
 ## 🚀 Quick Start
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
-import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
-import 'package:ispectify_http/ispectify_http.dart';
-
-final http_interceptor.InterceptedClient client =
-    http_interceptor.InterceptedClient.build(interceptors: []);
+import 'dart:async';
+import 'dart:io' as io show exit;
+import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ws/ws.dart';
 
 void main() {
-  final ISpectify iSpectify = ISpectifyFlutter.init();
+  const url = 'wss://echo.websocket.org';
+  final logger = ISpectify();
 
-  ISpect.run(
-    () => runApp(MyApp()),
-    logger: iSpectify,
-    onInit: () {
-      // Add ISpectify HTTP interceptor
-      client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: iSpectify),
-      );
+  // Create WebSocket interceptor
+  final interceptor = ISpectWSInterceptor(
+    url: url,
+    logger: logger,
+    settings: const ISpectWSInterceptorSettings(
+      enabled: true,
+      printRequestData: true,
+      printResponseData: true,
+      printErrorData: true,
+    ),
+  );
+
+  // Create WebSocket client with interceptor
+  final client = WebSocketClient(
+    WebSocketOptions.common(
+      connectionRetryInterval: (
+        min: const Duration(milliseconds: 500),
+        max: const Duration(seconds: 15),
+      ),
+      interceptors: [interceptor],
+    ),
+  );
+
+  // Set client for interceptor
+  interceptor.setClient(client);
+
+  // Connect and send messages - all will be automatically logged
+  client
+    ..connect(url)
+    ..add('Hello WebSocket!')
+    ..add('{"type": "message", "data": "JSON data"}');
+
+  // Listen to messages
+  client.stream.listen(
+    (message) {
+      print('Received: $message');
+    },
+    onError: (error) {
+      print('Error: $error');
     },
   );
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('ISpectify HTTP Example')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  // All HTTP requests will be automatically logged
-                  await client.get(
-                    Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
-                  );
-                },
-                child: const Text('Send HTTP Request'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  // Error requests are also logged
-                  await client.get(
-                    Uri.parse('https://jsonplaceholder.typicode.com/invalid'),
-                  );
-                },
-                child: const Text('Send Error Request'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Close connection after some time
+  Timer(const Duration(seconds: 5), () async {
+    await client.close();
+    print('Connection closed');
+    print('Metrics: ${client.metrics}');
+  });
 }
 ```
 
 ## 📚 Examples
 
-See the [example/](example/) directory for complete integration examples with different HTTP client configurations.
+See the [example/](example/) directory for complete integration examples with different WebSocket client configurations.
 
 ## 🏗️ Architecture
 
-ISpectifyHttp integrates with the standard HTTP client through interceptors:
+ISpectifyWS integrates with the WebSocket client through interceptors:
 
 | Component | Description |
 |-----------|-----------|
-| **HTTP Interceptor** | Captures HTTP requests and responses |
-| **Request Logger** | Logs request details (headers, body, params) |
-| **Response Logger** | Logs response data and timing |
-| **Error Handler** | Captures and logs HTTP errors |
-| **Performance Tracker** | Measures request/response times |
+| **WS Interceptor** | Captures WebSocket connection events and messages |
+| **Message Logger** | Logs sent and received message details |
+| **Connection Logger** | Logs connection state and URL information |
+| **Error Handler** | Captures and logs WebSocket errors |
+| **Metrics Tracker** | Measures connection timing and message counts |
 
 ## 🤝 Contributing
 
@@ -192,8 +220,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
+- [ispectify_http](../ispectify_http) - HTTP client integration
 - [ispect](../ispect) - Main debugging interface
-- [http_interceptor](https://pub.dev/packages/http_interceptor) - HTTP interceptor package for Dart
+- [ws](https://pub.dev/packages/ws) - WebSocket client package for Dart
 
 ---
 
