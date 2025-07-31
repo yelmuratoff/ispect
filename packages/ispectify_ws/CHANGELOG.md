@@ -1,12 +1,13 @@
 # Changelog
 
-## 4.2.1-dev07
+## 4.2.1-dev08
 
 ### Added:
 
 - Add `LogsJsonService` for structured `JSON` export/import of logs and integrate sharing/import features into `ISpectViewController` and UI.
 - Implement `DailyFileLogHistory` for file-based log persistence with daily sessions and provide related screens for browsing and sharing sessions.
 - Added `File Viewer` to settings sheet in `ISpect` screen to view and manage log files.
+- `ispectify_ws` package for WebSocket *(ws package)* logging with `ISpect` integration.
 
 ### Enhancements:
 
