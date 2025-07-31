@@ -1,9 +1,9 @@
 import 'package:ispectify/ispectify.dart';
 
-class WSResponseLog extends ISpectifyData {
-  WSResponseLog(
+class WSReceivedLog extends ISpectifyData {
+  WSReceivedLog(
     super.message, {
-    required this.method,
+    required this.type,
     required this.url,
     required this.path,
     required this.body,
@@ -12,25 +12,25 @@ class WSResponseLog extends ISpectifyData {
           key: getKey,
           pen: (AnsiPen()..xterm(35)),
           additionalData: {
-            'method': method,
+            'type': type,
             'url': url,
             'path': path,
             'body': body,
           },
         );
 
-  final String method;
+  final String type;
   final String url;
   final String path;
   final Object? body;
 
-  static const getKey = 'ws-response';
+  static const getKey = 'ws-received';
 
   @override
   String get textMessage {
     final buffer = StringBuffer()
       ..writeln('URL: $url')
-      ..writeln('Data: $message');
+      ..write('Data: $message');
 
     return buffer.toString().truncate()!;
   }

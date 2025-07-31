@@ -5,17 +5,17 @@ import 'package:ispectify_ws/ispectify_ws.dart';
 class ISpectWSInterceptorSettings {
   const ISpectWSInterceptorSettings({
     this.enabled = true,
-    this.printResponseData = true,
-    this.printResponseMessage = true,
+    this.printReceivedData = true,
+    this.printReceivedMessage = true,
     this.printErrorData = true,
     this.printErrorMessage = true,
-    this.printRequestData = true,
-    this.printRequestHeaders = false,
-    this.requestPen,
-    this.responsePen,
+    this.printSentData = true,
+    this.printReceivedHeaders = false,
+    this.sentPen,
+    this.receivedPen,
     this.errorPen,
-    this.requestFilter,
-    this.responseFilter,
+    this.sentFilter,
+    this.receivedFilter,
     this.errorFilter,
   });
 
@@ -23,10 +23,10 @@ class ISpectWSInterceptorSettings {
   final bool enabled;
 
   /// Print response data if true
-  final bool printResponseData;
+  final bool printReceivedData;
 
   /// Print response status message if true
-  final bool printResponseMessage;
+  final bool printReceivedMessage;
 
   /// Print error data if true
   final bool printErrorData;
@@ -35,12 +35,12 @@ class ISpectWSInterceptorSettings {
   final bool printErrorMessage;
 
   /// Print request data if true
-  final bool printRequestData;
+  final bool printSentData;
 
   /// Print request headers if true
-  final bool printRequestHeaders;
+  final bool printReceivedHeaders;
 
-  /// Field to set custom http request console logs color
+  /// Field to set custom ws sent console logs color
   ///```
   ///// Red color
   ///final redPen = AnsiPen()..red();
@@ -49,9 +49,9 @@ class ISpectWSInterceptorSettings {
   ///final redPen = AnsiPen()..blue();
   ///```
   /// More details in `AnsiPen` docs
-  final AnsiPen? requestPen;
+  final AnsiPen? sentPen;
 
-  /// Field to set custom http response console logs color
+  /// Field to set custom ws received console logs color
   ///```
   ///// Red color
   ///final redPen = AnsiPen()..red();
@@ -60,9 +60,9 @@ class ISpectWSInterceptorSettings {
   ///final redPen = AnsiPen()..blue();
   ///```
   /// More details in `AnsiPen` docs
-  final AnsiPen? responsePen;
+  final AnsiPen? receivedPen;
 
-  /// Field to set custom http error console logs color
+  /// Field to set custom ws error console logs color
   ///```
   ///// Red color
   ///final redPen = AnsiPen()..red();
@@ -73,9 +73,9 @@ class ISpectWSInterceptorSettings {
   /// More details in `AnsiPen` docs
   final AnsiPen? errorPen;
 
-  final bool Function(WSRequestLog request)? requestFilter;
+  final bool Function(WSSentLog request)? sentFilter;
 
-  final bool Function(WSResponseLog response)? responseFilter;
+  final bool Function(WSReceivedLog response)? receivedFilter;
 
   final bool Function(WSErrorLog response)? errorFilter;
 }

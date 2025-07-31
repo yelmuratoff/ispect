@@ -46,6 +46,10 @@ final class ISpectConstants {
 
     /// Flutter section
     'route': Icons.route_rounded,
+
+    /// WebSocket
+    'ws-sent': Icons.call_made_rounded,
+    'ws-received': Icons.call_received_rounded,
   };
 
   static const lightTypeColors = {
@@ -80,6 +84,10 @@ final class ISpectConstants {
 
     /// Flutter section
     'route': Color(0xFF8E24AA),
+
+    /// WebSocket
+    'ws-sent': Color.fromARGB(255, 162, 0, 190),
+    'ws-received': Color.fromARGB(255, 0, 158, 66),
   };
 
   static const darkTypeColors = {
@@ -114,6 +122,10 @@ final class ISpectConstants {
 
     /// Flutter section
     'route': Color(0xFFAF5FFF),
+
+    /// WebSocket
+    'ws-sent': Color(0xFFF602C1),
+    'ws-received': Color(0xFF26FF3C),
   };
 
   /// Converts default log descriptions into a list of `LogDescription`.
@@ -211,6 +223,11 @@ final class ISpectConstants {
       LogDescription(
         key: 'route',
         description: l10n.routeLogDesc,
+      ),
+      const LogDescription(key: 'ws-sent', description: 'l10n.wsSentLogDesc'),
+      const LogDescription(
+        key: 'ws-received',
+        description: 'l10n.wsReceivedLogDesc',
       ),
     ];
   }

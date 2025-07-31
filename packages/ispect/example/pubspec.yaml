@@ -19,6 +19,8 @@ dependency_overrides:
     path: ../../ispectify_dio
   ispect_jira:
     path: ../../ispect_jira
+  ispectify_ws:
+    path: ../../ispectify_ws
 
 dependencies:
   flutter:
@@ -28,6 +30,7 @@ dependencies:
     sdk: flutter
 
   dio: ^5.8.0+1
+  ws: ^1.0.0
   http: ^1.3.0
   flutter_bloc: ^9.1.0
   http_interceptor: ^2.0.0
@@ -38,6 +41,7 @@ dependencies:
   ispectify_http: ^4.2.1-dev08
   ispectify_bloc: ^4.2.1-dev08
   ispect_jira: ^4.2.1-dev08
+  ispectify_ws: ^4.2.1-dev08
 
   provider: ^6.1.2
 

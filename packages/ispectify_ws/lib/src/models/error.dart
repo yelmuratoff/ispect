@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 class WSErrorLog extends ISpectifyData {
   WSErrorLog(
     super.message, {
-    required this.method,
+    required this.type,
     required this.url,
     required this.path,
     required this.body,
@@ -14,14 +14,14 @@ class WSErrorLog extends ISpectifyData {
           key: getKey,
           pen: (AnsiPen()..red()),
           additionalData: {
-            'method': method,
+            'type': type,
             'url': url,
             'path': path,
             'body': body,
           },
         );
 
-  final String method;
+  final String type;
   final String url;
   final String path;
   final Object? body;
@@ -32,7 +32,7 @@ class WSErrorLog extends ISpectifyData {
   String get textMessage {
     final buffer = StringBuffer()
       ..writeln('URL: $url')
-      ..writeln('Data: $message');
+      ..write('Data: $message');
 
     return buffer.toString().truncate()!;
   }

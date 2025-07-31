@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,8 @@ import 'package:ispectify_dio/ispectify_dio.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ws/ws.dart';
 
 final Dio dio = Dio(
   BaseOptions(
@@ -290,6 +294,48 @@ class _HomeState extends State<_Home> {
               interceptor.onResponse(response, ResponseInterceptorHandler());
             }
           }
+        },
+      ),
+      (
+        label: 'Connect to WebSocket',
+        onPressed: () {
+          // Using a non-existent WebSocket URL to trigger a connection error.
+          const url = String.fromEnvironment(
+            'URL',
+            defaultValue: 'wss://echo.plugfox.dev:443/non-existent-path',
+          );
+
+          final interceptor = ISpectWSInterceptor(logger: ISpect.logger);
+
+          final client = WebSocketClient(
+            WebSocketOptions.common(
+              connectionRetryInterval: (
+                min: const Duration(milliseconds: 500),
+                max: const Duration(seconds: 15),
+              ),
+              interceptors: [interceptor],
+            ),
+          );
+
+          interceptor.setClient(client);
+
+          client
+            ..connect(url)
+            ..add('Hello')
+            ..add('world!');
+
+          // Adding a client-side error by trying to send data after closing the connection.
+          Timer(const Duration(seconds: 1), () async {
+            await client.close();
+            try {
+              unawaited(client.add('This will fail'));
+            } catch (e) {
+              // This error will be caught by the interceptor.
+            }
+            // ignore: avoid_print
+            print('Metrics:\n${client.metrics}');
+            client.close();
+          });
         },
       ),
       (

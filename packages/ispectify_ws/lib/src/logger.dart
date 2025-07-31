@@ -1,17 +1,14 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
-import 'package:ispectify_ws/src/settings.dart';
 import 'package:ws/ws.dart';
 
 final class ISpectWSInterceptor implements WSInterceptor {
   ISpectWSInterceptor({
     required this.logger,
-    this.url,
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
   });
 
-  final String? url;
   final ISpectify logger;
   final ISpectWSInterceptorSettings settings;
   final void Function(WebSocketClient)? onClientReady;
@@ -24,19 +21,19 @@ final class ISpectWSInterceptor implements WSInterceptor {
 
   void _log({
     required Object data,
-    required String method,
+    required String type,
     required void Function(Object data) next,
   }) {
     if (!settings.enabled) {
       next(data);
       return;
     }
-    final uri = Uri.tryParse(url ?? _client?.metrics.lastUrl ?? '');
+    final uri = Uri.tryParse(_client?.metrics.lastUrl ?? '');
     try {
-      final log = switch (method) {
-        'REQUEST' => WSRequestLog(
+      final log = switch (type) {
+        'REQUEST' => WSSentLog(
             '$data',
-            method: method,
+            type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
             body: {
@@ -44,9 +41,9 @@ final class ISpectWSInterceptor implements WSInterceptor {
               'metrics': _client?.metrics.toJson(),
             },
           ),
-        'RESPONSE' => WSResponseLog(
+        'RESPONSE' => WSReceivedLog(
             '$data',
-            method: method,
+            type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
             body: {
@@ -57,15 +54,15 @@ final class ISpectWSInterceptor implements WSInterceptor {
         _ => null,
       };
       if (log != null) {
-        if (log is WSRequestLog) {
-          if (settings.requestFilter?.call(log) ?? true) {
-            if (settings.printRequestData) {
+        if (log is WSSentLog) {
+          if (settings.sentFilter?.call(log) ?? true) {
+            if (settings.printSentData) {
               logger.logCustom(log);
             }
           }
-        } else if (log is WSResponseLog) {
-          if (settings.responseFilter?.call(log) ?? true) {
-            if (settings.printResponseData) {
+        } else if (log is WSReceivedLog) {
+          if (settings.receivedFilter?.call(log) ?? true) {
+            if (settings.printReceivedData) {
               logger.logCustom(log);
             }
           }
@@ -81,8 +78,8 @@ final class ISpectWSInterceptor implements WSInterceptor {
       }
     } catch (e, s) {
       final errorLog = WSErrorLog(
-        'Failed to log $method: $e',
-        method: method,
+        'Failed to log $type: $e',
+        type: type,
         url: uri.toString(),
         path: uri?.path ?? '',
         body: {
@@ -105,7 +102,7 @@ final class ISpectWSInterceptor implements WSInterceptor {
   void onMessage(Object data, void Function(Object data) next) {
     _log(
       data: data,
-      method: 'RESPONSE',
+      type: 'RESPONSE',
       next: next,
     );
   }
@@ -114,7 +111,7 @@ final class ISpectWSInterceptor implements WSInterceptor {
   void onSend(Object data, void Function(Object data) next) {
     _log(
       data: data,
-      method: 'REQUEST',
+      type: 'REQUEST',
       next: next,
     );
   }

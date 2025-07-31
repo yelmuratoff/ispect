@@ -12,7 +12,7 @@ void main([List<String>? args]) {
   );
   final logger = ISpectify();
 
-  final interceptor = ISpectWSInterceptor(url: url, logger: logger);
+  final interceptor = ISpectWSInterceptor(logger: logger);
 
   final client = WebSocketClient(
     WebSocketOptions.common(
