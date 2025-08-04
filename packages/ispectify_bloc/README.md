@@ -124,7 +124,7 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.2.1-dev09
+  ispectify_bloc: ^4.2.1-dev10
 ```
 
 ## 🚀 Quick Start
