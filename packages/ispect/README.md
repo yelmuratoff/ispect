@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Logging and inspection tool for Flutter development and testing</strong></p>
+  <p><strong>Logging and inspector tool for Flutter development and testing</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispect">
@@ -57,6 +57,7 @@ ISpect is built as a modular system with specialized packages:
 | [ispectify](packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
 | [ispectify_dio](packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
 | [ispectify_http](packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_ws](packages/ispectify_ws) | WebSocket connection monitoring | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
 | [ispectify_bloc](packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
 | [ispect_jira](packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
@@ -230,12 +231,13 @@ ISpect is built as a modular system with specialized packages:
 
 | Package | Purpose | Version |
 |---------|---------|---------|
-| [ispect](../ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
-| [ispectify](../ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
-| [ispectify_dio](../ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
-| [ispectify_http](../ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
-| [ispectify_bloc](../ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
-| [ispect_jira](../ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
+| [ispect](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_ws](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_ws) | WebSocket connection monitoring | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_bloc](https://github.com/yelmuratoff/ispect/tree/main/packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
+| [ispect_jira](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## 🤝 Contributing
 
@@ -250,6 +252,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
 - [ispectify_http](../ispectify_http) - Standard HTTP client integration
+- [ispectify_ws](../ispectify_ws) - WebSocket connection monitoring
 - [ispectify_bloc](../ispectify_bloc) - BLoC state management integration
 - [ispect_jira](../ispect_jira) - Jira ticket creation integration
 
