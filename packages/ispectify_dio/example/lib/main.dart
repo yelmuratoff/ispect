@@ -20,14 +20,14 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     // Disable flutter logs cut by the console
-    final iSpectify = ISpectify();
+    final logger = ISpectify();
     // Disable flutter logs cut by the console
 
     _dio = Dio();
     _dio.interceptors.add(
-      ISpectifyDioLogger(
-        iSpectify: iSpectify,
-        settings: const ISpectifyDioLoggerSettings(
+      ISpectDioInterceptor(
+        logger: logger,
+        settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
         ),

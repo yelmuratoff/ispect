@@ -63,9 +63,9 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     dio.interceptors.add(
-      ISpectifyDioLogger(
+      ISpectDioInterceptor(
         iSpectify: iSpectify,
-        settings: const ISpectifyDioLoggerSettings(
+        settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
         ),
       ),
@@ -78,9 +78,9 @@ ISpect.run(
 
 ```dart
 dio.interceptors.add(
-  ISpectifyDioLogger(
+  ISpectDioInterceptor(
     iSpectify: iSpectify,
-    settings: const ISpectifyDioLoggerSettings(
+    settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
       // Filter specific requests
       // requestFilter: (requestOptions) =>
@@ -109,11 +109,11 @@ final Dio uploadDio = Dio(
 
 // Add interceptors to both
 mainDio.interceptors.add(
-  ISpectifyDioLogger(iSpectify: iSpectify),
+  ISpectDioInterceptor(iSpectify: iSpectify),
 );
 
 uploadDio.interceptors.add(
-  ISpectifyDioLogger(iSpectify: iSpectify),
+  ISpectDioInterceptor(iSpectify: iSpectify),
 );
 ```
 
@@ -149,9 +149,9 @@ void main() {
     onInit: () {
       // Add ISpectify Dio interceptor
       dio.interceptors.add(
-        ISpectifyDioLogger(
+        ISpectDioInterceptor(
           iSpectify: iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+          settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
           ),
         ),

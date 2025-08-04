@@ -60,7 +60,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     client.interceptors.add(
-      ISpectifyHttpLogger(iSpectify: iSpectify),
+      ISpectHttpInterceptor(iSpectify: iSpectify),
     );
   },
 );
@@ -118,7 +118,7 @@ void main() {
     onInit: () {
       // Add ISpectify HTTP interceptor
       client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: iSpectify),
+        ISpectHttpInterceptor(iSpectify: iSpectify),
       );
     },
   );

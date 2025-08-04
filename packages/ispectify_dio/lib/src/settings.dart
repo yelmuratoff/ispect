@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpectifyDioLogger` settings and customization
-class ISpectifyDioLoggerSettings {
-  const ISpectifyDioLoggerSettings({
+/// `ISpectDioInterceptor` settings and customization
+class ISpectDioInterceptorSettings {
+  const ISpectDioInterceptorSettings({
     this.enabled = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
@@ -93,7 +93,7 @@ class ISpectifyDioLoggerSettings {
   /// You can add your custom logic to log only specific Dio error `DioException`.
   final bool Function(DioException response)? errorFilter;
 
-  ISpectifyDioLoggerSettings copyWith({
+  ISpectDioInterceptorSettings copyWith({
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -109,7 +109,7 @@ class ISpectifyDioLoggerSettings {
     bool Function(Response<dynamic> response)? responseFilter,
     bool Function(DioException response)? errorFilter,
   }) =>
-      ISpectifyDioLoggerSettings(
+      ISpectDioInterceptorSettings(
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

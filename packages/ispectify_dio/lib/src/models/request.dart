@@ -24,7 +24,7 @@ class DioRequestLog extends ISpectifyData {
   final String path;
   final Map<String, dynamic> headers;
   final Object? body;
-  final ISpectifyDioLoggerSettings settings;
+  final ISpectDioInterceptorSettings settings;
   final DioRequestData requestData;
 
   static const getKey = 'http-request';

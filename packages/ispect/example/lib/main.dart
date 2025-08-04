@@ -36,7 +36,7 @@ void main() {
   final options = ISpectifyOptions(
     logTruncateLength: 500,
   );
-  final ISpectify iSpectify = ISpectifyFlutter.init(
+  final ISpectify logger = ISpectifyFlutter.init(
     options: options,
     history: DailyFileLogHistory(options),
   );
@@ -46,22 +46,22 @@ void main() {
   ISpect.run(
     () => runApp(
       ThemeProvider(
-        child: App(iSpectify: iSpectify),
+        child: App(logger: logger),
       ),
     ),
-    logger: iSpectify,
+    logger: logger,
     isPrintLoggingEnabled: false,
     onInit: () {
-      Bloc.observer = ISpectifyBlocObserver(
-        iSpectify: iSpectify,
+      Bloc.observer = ISpecBlocObserver(
+        logger: logger,
       );
       client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: iSpectify),
+        ISpectHttpInterceptor(logger: logger),
       );
       dio.interceptors.add(
-        ISpectifyDioLogger(
-          iSpectify: iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+        ISpectDioInterceptor(
+          logger: logger,
+          settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
             // requestFilter: (requestOptions) =>
             //     requestOptions.path != '/post3s/1',
@@ -74,8 +74,8 @@ void main() {
         ),
       );
       dummyDio.interceptors.add(
-        ISpectifyDioLogger(
-          iSpectify: iSpectify,
+        ISpectDioInterceptor(
+          logger: logger,
         ),
       );
     },
@@ -84,8 +84,8 @@ void main() {
 }
 
 class App extends StatefulWidget {
-  final ISpectify iSpectify;
-  const App({super.key, required this.iSpectify});
+  final ISpectify logger;
+  const App({super.key, required this.logger});
 
   @override
   State<App> createState() => _AppState();
@@ -256,7 +256,7 @@ class _HomeState extends State<_Home> {
             statusCode: 200,
           );
           for (final Interceptor interceptor in dio.interceptors) {
-            if (interceptor is ISpectifyDioLogger) {
+            if (interceptor is ISpectDioInterceptor) {
               interceptor.onResponse(response, ResponseInterceptorHandler());
             }
           }
@@ -290,7 +290,7 @@ class _HomeState extends State<_Home> {
           );
 
           for (final Interceptor interceptor in dio.interceptors) {
-            if (interceptor is ISpectifyDioLogger) {
+            if (interceptor is ISpectDioInterceptor) {
               interceptor.onResponse(response, ResponseInterceptorHandler());
             }
           }

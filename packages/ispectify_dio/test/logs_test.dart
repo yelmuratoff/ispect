@@ -8,7 +8,7 @@
 //   // group('DioRequestLog', () {
 //   //   test('textMessage should include method and message', () {
 //   //     final requestOptions = RequestOptions(path: '/test', method: 'GET');
-//   //     final settings = ISpectifyDioLoggerSettings(
+//   //     final settings = ISpectDioInterceptorSettings(
 //   //       requestPen: AnsiPen()..blue(),
 //   //     );
 //   //     final dioRequestLog = DioRequestLog(
@@ -24,7 +24,7 @@
 
 //   //   test('textMessage should include data if printRequestData is true', () {
 //   //     final requestOptions = RequestOptions(path: '/test', method: 'POST', data: {'key': 'value'});
-//   //     final settings = ISpectifyDioLoggerSettings(printRequestData: true);
+//   //     final settings = ISpectDioInterceptorSettings(printRequestData: true);
 //   //     final dioRequestLog = DioRequestLog('Test message', requestOptions: requestOptions, settings: settings);
 
 //   //     final result = dioRequestLog.textMessage;
@@ -34,7 +34,7 @@
 
 //   //   test('textMessage should include headers if printRequestHeaders is true', () {
 //   //     final requestOptions = RequestOptions(path: '/test', method: 'GET', headers: {'Authorization': 'Bearer Token'});
-//   //     final settings = ISpectifyDioLoggerSettings(printRequestHeaders: true);
+//   //     final settings = ISpectDioInterceptorSettings(printRequestHeaders: true);
 //   //     final dioRequestLog = DioRequestLog('Test message', requestOptions: requestOptions, settings: settings);
 
 //   //     final result = dioRequestLog.textMessage;
@@ -55,7 +55,7 @@
 //           'content-type': ['application/json']
 //         }),
 //       );
-//       final settings = ISpectifyDioLoggerSettings(
+//       final settings = ISpectDioInterceptorSettings(
 //         responsePen: AnsiPen()..blue(),
 //       );
 //       final dioResponseLog = DioResponseLog(
@@ -78,7 +78,7 @@
 //         statusCode: 200,
 //         statusMessage: 'OK',
 //       );
-//       final settings = ISpectifyDioLoggerSettings(printResponseMessage: true);
+//       final settings = ISpectDioInterceptorSettings(printResponseMessage: true);
 //       final dioResponseLog = DioResponseLog(
 //         'Test message',
 //         response: response,
@@ -98,7 +98,7 @@
 //           'content-type': ['application/json'],
 //         }),
 //       );
-//       final settings = ISpectifyDioLoggerSettings(printResponseHeaders: true);
+//       final settings = ISpectDioInterceptorSettings(printResponseHeaders: true);
 //       final dioResponseLog = DioResponseLog('Test message', response: response, settings: settings);
 
 //       final result = dioResponseLog.textMessage;
@@ -121,7 +121,7 @@
 //         requestOptions: RequestOptions(path: '/test', method: 'GET'),
 //         message: 'Error message',
 //       );
-//       final settings = ISpectifyDioLoggerSettings(
+//       final settings = ISpectDioInterceptorSettings(
 //         errorPen: AnsiPen()..blue(),
 //       );
 //       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
@@ -145,7 +145,7 @@
 //                   'content-type': ['application/json'],
 //                 },
 //               )));
-//       final settings = ISpectifyDioLoggerSettings(
+//       final settings = ISpectDioInterceptorSettings(
 //         errorPen: AnsiPen()..blue(),
 //         printErrorData: false,
 //         printErrorHeaders: false,
@@ -178,7 +178,7 @@
 //         message: 'Error message',
 //       );
 
-//       final settings = ISpectifyDioLoggerSettings();
+//       final settings = ISpectDioInterceptorSettings();
 //       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
 //       final result = dioErrorLog.textMessage;
@@ -199,7 +199,7 @@
 //         response: response,
 //       );
 
-//       final settings = ISpectifyDioLoggerSettings();
+//       final settings = ISpectDioInterceptorSettings();
 //       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
 //       final result = dioErrorLog.textMessage;
@@ -220,7 +220,7 @@
 //         response: response,
 //       );
 
-//       final settings = ISpectifyDioLoggerSettings(printResponseHeaders: true);
+//       final settings = ISpectDioInterceptorSettings(printResponseHeaders: true);
 //       final dioErrorLog = DioErrorLog('Error title', dioException: dioException, settings: settings);
 
 //       final result = dioErrorLog.textMessage;

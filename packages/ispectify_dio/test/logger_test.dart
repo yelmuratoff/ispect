@@ -5,29 +5,29 @@ import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyDioLogger tests', () {
-    late ISpectifyDioLogger logger;
-    late ISpectify iSpectify;
+  group('ISpectDioInterceptor tests', () {
+    late ISpectDioInterceptor interceptor;
+    late ISpectify logger;
 
     setUp(() {
-      iSpectify = ISpectify(
+      logger = ISpectify(
         options: ISpectifyOptions(
           useConsoleLogs: false,
         ),
       );
-      logger = ISpectifyDioLogger(iSpectify: iSpectify);
+      interceptor = ISpectDioInterceptor(logger: logger);
     });
 
     test('configure method should update logger settings', () {
-      logger.configure(printRequestData: true);
-      expect(logger.settings.printRequestData, true);
+      interceptor.configure(printRequestData: true);
+      expect(interceptor.settings.printRequestData, true);
     });
 
     test('onRequest method should log http request', () {
       final options = RequestOptions(path: '/test');
       final logMessage = '${options.uri}';
-      logger.onRequest(options, RequestInterceptorHandler());
-      expect(iSpectify.history.last.message, logMessage);
+      interceptor.onRequest(options, RequestInterceptorHandler());
+      expect(logger.history.last.message, logMessage);
     });
 
     test('onResponse method should log http response', () {
@@ -35,28 +35,29 @@ void main() {
       final response =
           Response<dynamic>(requestOptions: options, statusCode: 200);
       final logMessage = '${response.requestOptions.uri}';
-      logger.onResponse(response, ResponseInterceptorHandler());
-      expect(iSpectify.history.last.message, logMessage);
+      interceptor.onResponse(response, ResponseInterceptorHandler());
+      expect(logger.history.last.message, logMessage);
     });
 
     test('onError should log DioErrorLog', () async {
-      final iSpectify = ISpectify();
-      final logger = ISpectifyDioLogger(iSpectify: iSpectify);
+      final logger = ISpectify();
+      final interceptor = ISpectDioInterceptor(logger: logger);
       final dio = Dio();
-      dio.interceptors.add(logger);
+      dio.interceptors.add(interceptor);
 
       try {
         // ignore: inference_failure_on_function_invocation
         await dio.get('asdsada');
       } catch (_) {}
-      expect(iSpectify.history, isNotEmpty);
-      expect(iSpectify.history.last, isA<DioErrorLog>());
+      expect(logger.history, isNotEmpty);
+      expect(logger.history.last, isA<DioErrorLog>());
     });
 
     test('onResponse method should log http response headers', () {
-      final logger = ISpectifyDioLogger(
-        iSpectify: iSpectify,
-        settings: const ISpectifyDioLoggerSettings(printResponseHeaders: true),
+      final interceptor = ISpectDioInterceptor(
+        logger: logger,
+        settings:
+            const ISpectDioInterceptorSettings(printResponseHeaders: true),
       );
 
       final options = RequestOptions(path: '/test');
@@ -65,9 +66,9 @@ void main() {
         statusCode: 200,
         headers: Headers()..add('HEADER', 'VALUE'),
       );
-      logger.onResponse(response, ResponseInterceptorHandler());
+      interceptor.onResponse(response, ResponseInterceptorHandler());
       expect(
-          iSpectify.history.last.textMessage,
+          logger.history.last.textMessage,
           '[http-response] [GET] /test\n'
           'Status: 200\n'
           'Headers: {\n'

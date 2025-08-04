@@ -32,7 +32,7 @@ class DioResponseLog extends ISpectifyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
-  final ISpectifyDioLoggerSettings settings;
+  final ISpectDioInterceptorSettings settings;
   final DioResponseData responseData;
 
   static const getKey = 'http-response';

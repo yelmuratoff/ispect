@@ -32,7 +32,7 @@ class HttpResponseLog extends ISpectifyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
-  final ISpectifyHttpLoggerSettings settings;
+  final ISpectHttpInterceptorSettings settings;
   final HttpResponseData? responseData;
 
   static const getKey = 'http-response';

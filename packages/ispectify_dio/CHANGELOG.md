@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.2.1-dev09
+## 4.2.1-dev10
 
 ### Added:
 
@@ -14,6 +14,12 @@
 - Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
+
+### Changes:
+- Rename `ISpectifyDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
+- Rename `ISpectifyHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
+- Rename `ISpectifyBlocObserver` to `ISpectBLocObserver` for consistency
+- Rename `iSpectify` to `logger` and update related classes and documentation for consistency
 
 ## 4.2.0
 
@@ -170,7 +176,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - **Custom Performance Overlay** - Changed the approach and some improvements
 - **Enhanced Log Navigation** - Search, highlight, and expand/collapse functionality
 - **New Option: `logTruncateLength`** - Available in `ISpectifyOptions` for configurable log truncation
-- **New Configuration: `ISpectifyHttpLoggerSettings`** - Added to `ISpectifyHttpLogger` for improved setup flexibility
+- **New Configuration: `ISpectHttpInterceptorSettings`** - Added to `ISpectHttpInterceptor` for improved setup flexibility
 
 ### Improved
 - **JSON Handling** - Async and lazy loading for better performance on large data structures

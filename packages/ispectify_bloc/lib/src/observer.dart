@@ -5,12 +5,12 @@ import 'package:ispectify_bloc/src/models/_models.dart';
 
 /// `BLoC` logger on `ISpectify` base
 ///
-/// `iSpectify` field is the current `ISpectify` instance.
+/// `logger` field is the current `ISpectify` instance.
 /// Provide your instance if your application uses `ISpectify` as the default logger
 /// Common ISpectify instance will be used by default
-class ISpectifyBlocObserver extends BlocObserver {
-  ISpectifyBlocObserver({
-    ISpectify? iSpectify,
+class ISpecBlocObserver extends BlocObserver {
+  ISpecBlocObserver({
+    ISpectify? logger,
     this.settings = const ISpectifyBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
@@ -20,10 +20,10 @@ class ISpectifyBlocObserver extends BlocObserver {
     this.onBlocClose,
     this.filters = const [],
   }) {
-    _iSpectify = iSpectify ?? ISpectify();
+    _logger = logger ?? ISpectify();
   }
 
-  late ISpectify _iSpectify;
+  late ISpectify _logger;
   final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
   final void Function(
     Bloc<dynamic, dynamic> bloc,
@@ -54,7 +54,7 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocEvent?.call(bloc, event);
-    _iSpectify.logCustom(
+    _logger.logCustom(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -79,7 +79,7 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocTransition?.call(bloc, transition);
-    _iSpectify.logCustom(
+    _logger.logCustom(
       BlocStateLog(
         bloc: bloc,
         transition: transition,
@@ -97,7 +97,7 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocChange?.call(bloc, change);
-    _iSpectify.logCustom(
+    _logger.logCustom(
       BlocChangeLog(
         bloc: bloc,
         change: change,
@@ -115,7 +115,7 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocError?.call(bloc, error, stackTrace);
-    _iSpectify.error(
+    _logger.error(
       '${bloc.runtimeType}',
       exception: error,
       stackTrace: stackTrace,
@@ -131,7 +131,7 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocCreate?.call(bloc);
-    _iSpectify.logCustom(BlocCreateLog(bloc: bloc));
+    _logger.logCustom(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -143,6 +143,6 @@ class ISpectifyBlocObserver extends BlocObserver {
       return;
     }
     onBlocClose?.call(bloc);
-    _iSpectify.logCustom(BlocCloseLog(bloc: bloc));
+    _logger.logCustom(BlocCloseLog(bloc: bloc));
   }
 }

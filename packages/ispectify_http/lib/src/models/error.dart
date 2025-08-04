@@ -30,7 +30,7 @@ class HttpErrorLog extends ISpectifyData {
   final Map<String, String>? headers;
   final Map<String, dynamic>? body;
   final HttpResponseData? responseData;
-  final ISpectifyHttpLoggerSettings settings;
+  final ISpectHttpInterceptorSettings settings;
 
   static const getKey = 'http-error';
 

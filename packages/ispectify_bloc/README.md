@@ -57,7 +57,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     // Set up BLoC observer for automatic logging
-    Bloc.observer = ISpectifyBlocObserver(
+    Bloc.observer = ISpecBlocObserver(
       iSpectify: iSpectify,
     );
   },
@@ -143,7 +143,7 @@ void main() {
     logger: iSpectify,
     onInit: () {
       // Set up BLoC observer for automatic state tracking
-      Bloc.observer = ISpectifyBlocObserver(
+      Bloc.observer = ISpecBlocObserver(
         iSpectify: iSpectify,
       );
     },
