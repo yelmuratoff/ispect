@@ -28,11 +28,10 @@ class CustomPerformanceOverlay extends StatelessWidget {
     this.alignment = Alignment.topRight,
     this.scale = 1,
     this.sampleSize = 32,
-    this.targetFrameTime = const Duration(milliseconds: 16),
-    this.barRangeMax = const Duration(milliseconds: 24),
+    this.targetFrameTime = const Duration(microseconds: 16667),
+    this.barRangeMax = const Duration(milliseconds: 50),
     this.backgroundColor = Colors.white,
     this.textColor = Colors.black,
-    this.textBackgroundColor = const Color(0x77ffffff),
     this.uiColor = Colors.teal,
     this.rasterColor = Colors.blue,
     this.highLatencyColor = Colors.cyan,
@@ -61,9 +60,6 @@ class CustomPerformanceOverlay extends StatelessWidget {
 
   /// Foreground color for the text labels.
   final Color textColor;
-
-  /// Background color behind the text.
-  final Color textBackgroundColor;
 
   /// Bar color for UI durations.
   final Color uiColor;
@@ -324,7 +320,7 @@ class _ChartColumn extends StatelessWidget {
 
 /// A chart widget that renders frame timings as vertical bars.
 ///
-/// Displays the maximum, average, and FPS summary for each sample set.
+/// Displays the maximum, average, and FPS for each sample set.
 class _PerformanceChart extends StatelessWidget {
   /// Creates a performance chart for a set of frame timings.
   const _PerformanceChart({
@@ -391,19 +387,23 @@ class _PerformanceChart extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'max ${maxDuration.ms}ms ',
+                    text: 'max ${maxDuration.ms}ms\n',
                     style: TextStyle(
-                      color: maxDuration <= targetFrameTime ? null : Colors.red,
+                      color: maxDuration <= targetFrameTime
+                          ? null
+                          : const Color.fromARGB(255, 255, 151, 144),
                     ),
                   ),
                   TextSpan(
                     text: 'avg ${avg.ms}ms\n',
                     style: TextStyle(
-                      color: avg <= targetFrameTime ? null : Colors.red,
+                      color: avg <= targetFrameTime
+                          ? null
+                          : const Color.fromARGB(255, 255, 151, 144),
                     ),
                   ),
                   TextSpan(
-                    text: '$type <= ${fps.toStringAsFixed(1)} FPS',
+                    text: '$type ${fps.toStringAsFixed(1)} FPS',
                   ),
                 ],
                 style: textStyle,
@@ -459,7 +459,8 @@ class _OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Draw a horizontal line to mark the target frame time.
-    final lineY = size.height * (1 - targetFrameTime / barRangeMax);
+    final lineY =
+        size.height * (1 - (targetFrameTime / barRangeMax).clamp(0.0, 1.0));
     canvas.drawLine(
       Offset(0, lineY),
       Offset(size.width, lineY),
@@ -474,7 +475,7 @@ class _OverlayPainter extends CustomPainter {
       final index = i - sampleSize + samples.length;
       if (index < 0) break;
       final duration = samples[index];
-      final heightFactor = duration / barRangeMax;
+      final heightFactor = (duration / barRangeMax).clamp(0.0, 1.0);
       paint.color = duration <= targetFrameTime ? color : Colors.red;
       canvas.drawRect(
         Rect.fromLTWH(

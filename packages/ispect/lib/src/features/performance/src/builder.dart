@@ -53,8 +53,8 @@ class PerformanceOverlayBuilder extends StatelessWidget {
           backgroundColor:
               context.ispectTheme.colorScheme.surface.withAlpha(100),
           textColor: context.ispectTheme.colorScheme.onSurface,
-          textBackgroundColor:
-              context.ispectTheme.colorScheme.surface.withAlpha(0x80),
+          // textBackgroundColor:
+          //     context.ispectTheme.colorScheme.surface.withAlpha(0x80),
           child: child,
         ),
       );
