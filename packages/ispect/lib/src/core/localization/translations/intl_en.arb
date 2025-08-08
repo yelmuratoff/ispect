@@ -190,5 +190,12 @@
    "cancel": "Cancel",
    "pasteYourFileContentBelow": "Paste your file content below:",
    "pasteYourTxtOrJsonFileContentHere": "Paste your .txt or .json file content here...",
-   "process": "Process"
+   "process": "Process",
+   "confirmClearAllDailySessions": "Are you sure you want to clear all daily sessions?",
+   "dailySessionsRefreshed": "Daily sessions refreshed",
+   "sessionsPathCopied": "Sessions Path Copied",
+   "error": "Error",
+   "ok": "OK",
+   "fileSize": "File size",
+   "loading": "Loading"
 }

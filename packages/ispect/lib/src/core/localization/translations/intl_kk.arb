@@ -190,5 +190,12 @@
    "cancel": "Болдырмау",
    "pasteYourFileContentBelow": "Файл мазмұнын төменде қойыңыз:",
    "pasteYourTxtOrJsonFileContentHere": ".txt немесе .json файл мазмұнын мұнда қойыңыз...",
-   "process": "Өңдеу"
+   "process": "Өңдеу",
+   "confirmClearAllDailySessions": "Сіз барлық күнделікті сессияларды тазалағыңыз келетініне сенімдісіз бе?",
+   "dailySessionsRefreshed": "Күнделікті сессиялар жаңартылды",
+   "sessionsPathCopied": "Сессия жолы көшірілді",
+   "error": "Қате",
+   "ok": "Жарайды",
+   "fileSize": "Файл өлшемі",
+   "loading": "Жүктеу"
 }

@@ -632,4 +632,25 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get process => '処理';
+
+  @override
+  String get confirmClearAllDailySessions => 'すべての日次セッションをクリアしてもよろしいですか？';
+
+  @override
+  String get dailySessionsRefreshed => '日次セッションが更新されました';
+
+  @override
+  String get sessionsPathCopied => 'セッションパスがコピーされました';
+
+  @override
+  String get error => 'エラー';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'ファイルサイズ';
+
+  @override
+  String get loading => '読み込み中';
 }

@@ -1264,6 +1264,48 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Process'**
   String get process;
+
+  /// No description provided for @confirmClearAllDailySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all daily sessions?'**
+  String get confirmClearAllDailySessions;
+
+  /// No description provided for @dailySessionsRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily sessions refreshed'**
+  String get dailySessionsRefreshed;
+
+  /// No description provided for @sessionsPathCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions Path Copied'**
+  String get sessionsPathCopied;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @fileSize.
+  ///
+  /// In en, this message translates to:
+  /// **'File size'**
+  String get fileSize;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
 }
 
 class _ISpectGeneratedLocalizationDelegate

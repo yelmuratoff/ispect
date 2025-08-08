@@ -157,5 +157,12 @@
    "cancel": "取消",
    "pasteYourFileContentBelow": "请在下方粘贴您的文件内容：",
    "pasteYourTxtOrJsonFileContentHere": "请在此处粘贴您的 .txt 或 .json 文件内容...",
-   "process": "处理"
+   "process": "处理",
+   "confirmClearAllDailySessions": "您确定要清除所有每日会话吗？",
+   "dailySessionsRefreshed": "每日会话已刷新",
+   "sessionsPathCopied": "会话路径已复制",
+   "error": "错误",
+   "ok": "确定",
+   "fileSize": "文件大小",
+   "loading": "加载中"
 }

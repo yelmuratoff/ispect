@@ -190,5 +190,12 @@
    "cancel": "Cancelar",
    "pasteYourFileContentBelow": "Cole o conteúdo do seu arquivo abaixo:",
    "pasteYourTxtOrJsonFileContentHere": "Cole o conteúdo do seu arquivo .txt ou .json aqui...",
-   "process": "Processar"
+   "process": "Processar",
+   "confirmClearAllDailySessions": "Tem certeza de que deseja limpar todas as sessões diárias?",
+   "dailySessionsRefreshed": "Sessões diárias atualizadas",
+   "sessionsPathCopied": "Caminho das sessões copiado",
+   "error": "Erro",
+   "ok": "OK",
+   "fileSize": "Tamanho do arquivo",
+   "loading": "Carregando"
 }

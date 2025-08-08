@@ -190,5 +190,12 @@
    "cancel": "Отмена",
    "pasteYourFileContentBelow": "Вставьте содержимое файла ниже:",
    "pasteYourTxtOrJsonFileContentHere": "Вставьте содержимое .txt или .json файла здесь...",
-   "process": "Обработать"
+   "process": "Обработать",
+   "confirmClearAllDailySessions": "Вы уверены, что хотите очистить все ежедневные сессии?",
+   "dailySessionsRefreshed": "Ежедневные сессии обновлены",
+   "sessionsPathCopied": "Путь к сессиям скопирован",
+   "error": "Ошибка",
+   "ok": "ОК",
+   "fileSize": "Размер файла",
+   "loading": "Загрузка"
 }

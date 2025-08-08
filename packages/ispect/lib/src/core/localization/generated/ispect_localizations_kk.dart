@@ -656,4 +656,26 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get process => 'Өңдеу';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Сіз барлық күнделікті сессияларды тазалағыңыз келетініне сенімдісіз бе?';
+
+  @override
+  String get dailySessionsRefreshed => 'Күнделікті сессиялар жаңартылды';
+
+  @override
+  String get sessionsPathCopied => 'Сессия жолы көшірілді';
+
+  @override
+  String get error => 'Қате';
+
+  @override
+  String get ok => 'Жарайды';
+
+  @override
+  String get fileSize => 'Файл өлшемі';
+
+  @override
+  String get loading => 'Жүктеу';
 }

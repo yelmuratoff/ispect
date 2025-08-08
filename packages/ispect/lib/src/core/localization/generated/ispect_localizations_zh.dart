@@ -632,4 +632,25 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get process => '处理';
+
+  @override
+  String get confirmClearAllDailySessions => '您确定要清除所有每日会话吗？';
+
+  @override
+  String get dailySessionsRefreshed => '每日会话已刷新';
+
+  @override
+  String get sessionsPathCopied => '会话路径已复制';
+
+  @override
+  String get error => '错误';
+
+  @override
+  String get ok => '确定';
+
+  @override
+  String get fileSize => '文件大小';
+
+  @override
+  String get loading => '加载中';
 }

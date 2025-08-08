@@ -190,5 +190,12 @@
    "cancel": "취소",
    "pasteYourFileContentBelow": "파일 내용을 아래에 붙여넣으세요:",
    "pasteYourTxtOrJsonFileContentHere": ".txt 또는 .json 파일 내용을 여기에 붙여넣으세요...",
-   "process": "처리"
+   "process": "처리",
+   "confirmClearAllDailySessions": "모든 일일 세션을 지우시겠습니까?",
+   "dailySessionsRefreshed": "일일 세션이 새로고침되었습니다",
+   "sessionsPathCopied": "세션 경로가 복사되었습니다",
+   "error": "오류",
+   "ok": "확인",
+   "fileSize": "파일 크기",
+   "loading": "로딩 중"
 }

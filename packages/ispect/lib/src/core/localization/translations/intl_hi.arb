@@ -190,5 +190,12 @@
    "cancel": "रद्द करें",
    "pasteYourFileContentBelow": "अपनी फ़ाइल सामग्री नीचे चिपकाएं:",
    "pasteYourTxtOrJsonFileContentHere": "अपनी .txt या .json फ़ाइल सामग्री यहाँ चिपकाएं...",
-   "process": "प्रोसेस"
+   "process": "प्रोसेस",
+   "confirmClearAllDailySessions": "क्या आप वाकई सभी दैनिक सेशन साफ़ करना चाहते हैं?",
+   "dailySessionsRefreshed": "दैनिक सेशन रीफ्रेश हो गए",
+   "sessionsPathCopied": "सेशन पाथ कॉपी किया गया",
+   "error": "त्रुटि",
+   "ok": "ठीक है",
+   "fileSize": "फ़ाइल साइज़",
+   "loading": "लोड हो रहा है"
 }

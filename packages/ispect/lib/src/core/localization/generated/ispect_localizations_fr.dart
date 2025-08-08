@@ -661,4 +661,26 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get process => 'Traiter';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Êtes-vous sûr de vouloir effacer toutes les sessions quotidiennes ?';
+
+  @override
+  String get dailySessionsRefreshed => 'Sessions quotidiennes actualisées';
+
+  @override
+  String get sessionsPathCopied => 'Chemin des sessions copié';
+
+  @override
+  String get error => 'Erreur';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'Taille du fichier';
+
+  @override
+  String get loading => 'Chargement';
 }

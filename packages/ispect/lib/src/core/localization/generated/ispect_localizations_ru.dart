@@ -653,4 +653,26 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get process => 'Обработать';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Вы уверены, что хотите очистить все ежедневные сессии?';
+
+  @override
+  String get dailySessionsRefreshed => 'Ежедневные сессии обновлены';
+
+  @override
+  String get sessionsPathCopied => 'Путь к сессиям скопирован';
+
+  @override
+  String get error => 'Ошибка';
+
+  @override
+  String get ok => 'ОК';
+
+  @override
+  String get fileSize => 'Размер файла';
+
+  @override
+  String get loading => 'Загрузка';
 }

@@ -632,4 +632,25 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get process => '처리';
+
+  @override
+  String get confirmClearAllDailySessions => '모든 일일 세션을 지우시겠습니까?';
+
+  @override
+  String get dailySessionsRefreshed => '일일 세션이 새로고침되었습니다';
+
+  @override
+  String get sessionsPathCopied => '세션 경로가 복사되었습니다';
+
+  @override
+  String get error => '오류';
+
+  @override
+  String get ok => '확인';
+
+  @override
+  String get fileSize => '파일 크기';
+
+  @override
+  String get loading => '로딩 중';
 }

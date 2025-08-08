@@ -652,4 +652,26 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get process => 'प्रोसेस';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'क्या आप वाकई सभी दैनिक सेशन साफ़ करना चाहते हैं?';
+
+  @override
+  String get dailySessionsRefreshed => 'दैनिक सेशन रीफ्रेश हो गए';
+
+  @override
+  String get sessionsPathCopied => 'सेशन पाथ कॉपी किया गया';
+
+  @override
+  String get error => 'त्रुटि';
+
+  @override
+  String get ok => 'ठीक है';
+
+  @override
+  String get fileSize => 'फ़ाइल साइज़';
+
+  @override
+  String get loading => 'लोड हो रहा है';
 }

@@ -190,5 +190,12 @@
    "cancel": "إلغاء",
    "pasteYourFileContentBelow": "الصق محتوى ملفك أدناه:",
    "pasteYourTxtOrJsonFileContentHere": "الصق محتوى ملف .txt أو .json هنا...",
-   "process": "معالجة"
+   "process": "معالجة",
+   "confirmClearAllDailySessions": "هل أنت متأكد من أنك تريد مسح جميع الجلسات اليومية؟",
+   "dailySessionsRefreshed": "تم تحديث الجلسات اليومية",
+   "sessionsPathCopied": "تم نسخ مسار الجلسات",
+   "error": "خطأ",
+   "ok": "موافق",
+   "fileSize": "حجم الملف",
+   "loading": "تحميل"
 }

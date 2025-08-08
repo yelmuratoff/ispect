@@ -190,5 +190,12 @@
    "cancel": "Annuler",
    "pasteYourFileContentBelow": "Collez le contenu de votre fichier ci-dessous :",
    "pasteYourTxtOrJsonFileContentHere": "Collez le contenu de votre fichier .txt ou .json ici...",
-   "process": "Traiter"
+   "process": "Traiter",
+   "confirmClearAllDailySessions": "Êtes-vous sûr de vouloir effacer toutes les sessions quotidiennes ?",
+   "dailySessionsRefreshed": "Sessions quotidiennes actualisées",
+   "sessionsPathCopied": "Chemin des sessions copié",
+   "error": "Erreur",
+   "ok": "OK",
+   "fileSize": "Taille du fichier",
+   "loading": "Chargement"
 }
