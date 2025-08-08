@@ -619,4 +619,17 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String onlyExtensionsSupported(Object extensions, Object max) {
     return '仅支持 $extensions 文件（最大 $max）';
   }
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get pasteYourFileContentBelow => '请在下方粘贴您的文件内容：';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '请在此处粘贴您的 .txt 或 .json 文件内容...';
+
+  @override
+  String get process => '处理';
 }

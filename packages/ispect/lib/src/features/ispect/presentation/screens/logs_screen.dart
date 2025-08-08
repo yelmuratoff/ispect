@@ -573,7 +573,7 @@ class _FileOptionsDialog extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.ispectL10n.cancel),
           ),
         ],
       );
@@ -661,14 +661,14 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Paste File Content'),
+        title: Text(context.ispectL10n.pasteContent),
         content: SizedBox(
           width: MediaQuery.of(context).size.width * 0.8,
           height: MediaQuery.of(context).size.height * 0.6,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Paste your file content below:'),
+              Text(context.ispectL10n.pasteYourFileContentBelow),
               const Gap(8),
               Expanded(
                 child: TextField(
@@ -676,9 +676,10 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Paste your .txt or .json file content here...',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText:
+                        context.ispectL10n.pasteYourTxtOrJsonFileContentHere,
                   ),
                   style: const TextStyle(
                     fontFamily: 'monospace',
@@ -692,7 +693,7 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.ispectL10n.cancel),
           ),
           ElevatedButton(
             onPressed: _hasContent
@@ -701,7 +702,7 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
                     widget.onContentProcessed(_controller.text);
                   }
                 : null,
-            child: const Text('Process'),
+            child: Text(context.ispectL10n.process),
           ),
         ],
       );

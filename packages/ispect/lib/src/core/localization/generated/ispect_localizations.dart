@@ -1240,6 +1240,30 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Only {extensions} files are supported (max {max})'**
   String onlyExtensionsSupported(Object extensions, Object max);
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @pasteYourFileContentBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your file content below:'**
+  String get pasteYourFileContentBelow;
+
+  /// No description provided for @pasteYourTxtOrJsonFileContentHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your .txt or .json file content here...'**
+  String get pasteYourTxtOrJsonFileContentHere;
+
+  /// No description provided for @process.
+  ///
+  /// In en, this message translates to:
+  /// **'Process'**
+  String get process;
 }
 
 class _ISpectGeneratedLocalizationDelegate

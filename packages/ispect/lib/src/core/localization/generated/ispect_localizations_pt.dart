@@ -645,4 +645,18 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String onlyExtensionsSupported(Object extensions, Object max) {
     return 'Apenas arquivos $extensions são suportados (máx. $max)';
   }
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get pasteYourFileContentBelow =>
+      'Cole o conteúdo do seu arquivo abaixo:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Cole o conteúdo do seu arquivo .txt ou .json aqui...';
+
+  @override
+  String get process => 'Processar';
 }

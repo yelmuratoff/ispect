@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "Құрылғыңыздан .txt немесе .json файлдарын таңдаңыз",
    "onlyTxtAndJsonSupported": "Тек .txt және .json файлдары қолдау табады (ең көп 10 МБ)",
    "and": "және",
-   "onlyExtensionsSupported": "Тек {extensions} файлдары қолдау табады (ең көп {max})"
+   "onlyExtensionsSupported": "Тек {extensions} файлдары қолдау табады (ең көп {max})",
+   "cancel": "Болдырмау",
+   "pasteYourFileContentBelow": "Файл мазмұнын төменде қойыңыз:",
+   "pasteYourTxtOrJsonFileContentHere": ".txt немесе .json файл мазмұнын мұнда қойыңыз...",
+   "process": "Өңдеу"
 }

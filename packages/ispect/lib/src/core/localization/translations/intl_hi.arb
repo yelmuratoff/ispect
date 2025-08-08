@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "डिवाइस से .txt या .json फ़ाइलें चुनें",
    "onlyTxtAndJsonSupported": "केवल .txt और .json फ़ाइलें समर्थित हैं (अधिकतम 10MB)",
    "and": "और",
-   "onlyExtensionsSupported": "केवल {extensions} फ़ाइलें समर्थित हैं (अधिकतम {max})"
+   "onlyExtensionsSupported": "केवल {extensions} फ़ाइलें समर्थित हैं (अधिकतम {max})",
+   "cancel": "रद्द करें",
+   "pasteYourFileContentBelow": "अपनी फ़ाइल सामग्री नीचे चिपकाएं:",
+   "pasteYourTxtOrJsonFileContentHere": "अपनी .txt या .json फ़ाइल सामग्री यहाँ चिपकाएं...",
+   "process": "प्रोसेस"
 }

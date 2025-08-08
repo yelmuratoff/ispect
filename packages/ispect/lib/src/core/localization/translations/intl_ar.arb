@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "اختر ملفات .txt أو .json من جهازك",
    "onlyTxtAndJsonSupported": "يتم دعم ملفات .txt و .json فقط (الحد الأقصى 10MB)",
    "and": "و",
-   "onlyExtensionsSupported": "يتم دعم ملفات {extensions} فقط (الحد الأقصى {max})"
+   "onlyExtensionsSupported": "يتم دعم ملفات {extensions} فقط (الحد الأقصى {max})",
+   "cancel": "إلغاء",
+   "pasteYourFileContentBelow": "الصق محتوى ملفك أدناه:",
+   "pasteYourTxtOrJsonFileContentHere": "الصق محتوى ملف .txt أو .json هنا...",
+   "process": "معالجة"
 }

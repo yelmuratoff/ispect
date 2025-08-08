@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "Выберите файлы .txt или .json с вашего устройства",
    "onlyTxtAndJsonSupported": "Поддерживаются только файлы .txt и .json (макс. 10 МБ)",
    "and": "и",
-   "onlyExtensionsSupported": "Поддерживаются только файлы {extensions} (макс. {max})"
+   "onlyExtensionsSupported": "Поддерживаются только файлы {extensions} (макс. {max})",
+   "cancel": "Отмена",
+   "pasteYourFileContentBelow": "Вставьте содержимое файла ниже:",
+   "pasteYourTxtOrJsonFileContentHere": "Вставьте содержимое .txt или .json файла здесь...",
+   "process": "Обработать"
 }

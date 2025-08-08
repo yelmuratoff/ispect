@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "Select .txt or .json files from your device",
    "onlyTxtAndJsonSupported": "Only .txt and .json files are supported (max 10MB)",
    "and": "and",
-   "onlyExtensionsSupported": "Only {extensions} files are supported (max {max})"
+   "onlyExtensionsSupported": "Only {extensions} files are supported (max {max})",
+   "cancel": "Cancel",
+   "pasteYourFileContentBelow": "Paste your file content below:",
+   "pasteYourTxtOrJsonFileContentHere": "Paste your .txt or .json file content here...",
+   "process": "Process"
 }

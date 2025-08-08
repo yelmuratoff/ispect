@@ -153,5 +153,9 @@
    "selectTxtOrJsonFromDevice": "从你的设备选择 .txt 或 .json 文件",
    "onlyTxtAndJsonSupported": "仅支持 .txt 和 .json 文件（最大 10MB）",
    "and": "和",
-   "onlyExtensionsSupported": "仅支持 {extensions} 文件（最大 {max}）"
+   "onlyExtensionsSupported": "仅支持 {extensions} 文件（最大 {max}）",
+   "cancel": "取消",
+   "pasteYourFileContentBelow": "请在下方粘贴您的文件内容：",
+   "pasteYourTxtOrJsonFileContentHere": "请在此处粘贴您的 .txt 或 .json 文件内容...",
+   "process": "处理"
 }

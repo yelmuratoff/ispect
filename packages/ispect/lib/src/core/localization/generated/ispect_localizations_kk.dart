@@ -643,4 +643,17 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String onlyExtensionsSupported(Object extensions, Object max) {
     return 'Тек $extensions файлдары қолдау табады (ең көп $max)';
   }
+
+  @override
+  String get cancel => 'Болдырмау';
+
+  @override
+  String get pasteYourFileContentBelow => 'Файл мазмұнын төменде қойыңыз:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '.txt немесе .json файл мазмұнын мұнда қойыңыз...';
+
+  @override
+  String get process => 'Өңдеу';
 }

@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "디바이스에서 .txt 또는 .json 파일을 선택하세요",
    "onlyTxtAndJsonSupported": ".txt 및 .json 파일만 지원됩니다 (최대 10MB)",
    "and": "및",
-   "onlyExtensionsSupported": "{extensions} 파일만 지원됩니다 (최대 {max})"
+   "onlyExtensionsSupported": "{extensions} 파일만 지원됩니다 (최대 {max})",
+   "cancel": "취소",
+   "pasteYourFileContentBelow": "파일 내용을 아래에 붙여넣으세요:",
+   "pasteYourTxtOrJsonFileContentHere": ".txt 또는 .json 파일 내용을 여기에 붙여넣으세요...",
+   "process": "처리"
 }

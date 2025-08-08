@@ -619,4 +619,17 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String onlyExtensionsSupported(Object extensions, Object max) {
     return '$extensions ファイルのみ対応（最大 $max）';
   }
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get pasteYourFileContentBelow => 'ファイルの内容を以下に貼り付けてください：';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '.txt または .json ファイルの内容をここに貼り付けてください...';
+
+  @override
+  String get process => '処理';
 }

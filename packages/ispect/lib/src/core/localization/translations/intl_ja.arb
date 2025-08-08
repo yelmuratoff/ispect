@@ -186,5 +186,9 @@
    "selectTxtOrJsonFromDevice": "デバイスから .txt または .json ファイルを選択",
    "onlyTxtAndJsonSupported": ".txt と .json のみ対応（最大 10MB）",
    "and": "と",
-   "onlyExtensionsSupported": "{extensions} ファイルのみ対応（最大 {max}）"
+   "onlyExtensionsSupported": "{extensions} ファイルのみ対応（最大 {max}）",
+   "cancel": "キャンセル",
+   "pasteYourFileContentBelow": "ファイルの内容を以下に貼り付けてください：",
+   "pasteYourTxtOrJsonFileContentHere": ".txt または .json ファイルの内容をここに貼り付けてください...",
+   "process": "処理"
 }
