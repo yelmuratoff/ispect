@@ -138,5 +138,20 @@
    "noNavigationTransitions": "未记录导航转换",
    "current": "当前",
    "start": "开始",
-   "selectedTransition": "已选转换"
+   "selectedTransition": "已选转换",
+   "dailySessions": "每日会话",
+   "logViewer": "日志查看器",
+   "sessions": "会话",
+   "clearAllSessions": "清除所有会话",
+   "refresh": "刷新",
+   "copyPath": "复制路径",
+   "loadFileContent": "加载文件内容",
+   "chooseHowToLoadYourFile": "选择如何加载你的文件",
+   "pasteContent": "粘贴内容",
+   "pasteTxtOrJsonHere": "复制 .txt 或 .json 文件内容并粘贴到此处",
+   "pickFiles": "选择文件",
+   "selectTxtOrJsonFromDevice": "从你的设备选择 .txt 或 .json 文件",
+   "onlyTxtAndJsonSupported": "仅支持 .txt 和 .json 文件（最大 10MB）",
+   "and": "和",
+   "onlyExtensionsSupported": "仅支持 {extensions} 文件（最大 {max}）"
 }

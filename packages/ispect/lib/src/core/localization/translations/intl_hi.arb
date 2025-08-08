@@ -171,5 +171,20 @@
    "inspectWidgets": "स्क्रीन पर विजेट्स का निरीक्षण करें",
    "togglePerformanceTracking": "प्रदर्शन ट्रैकिंग टॉगल करें",
    "openLogViewer": "लॉग व्यूअर खोलें",
-   "backToMainScreen": "मुख्य स्क्रीन पर वापस जाएं"
+   "backToMainScreen": "मुख्य स्क्रीन पर वापस जाएँ",
+   "dailySessions": "दैनिक सत्र",
+   "logViewer": "लॉग व्यूअर",
+   "sessions": "सत्र",
+   "clearAllSessions": "सभी सत्र साफ़ करें",
+   "refresh": "ताज़ा करें",
+   "copyPath": "पाथ कॉपी करें",
+   "loadFileContent": "फ़ाइल सामग्री लोड करें",
+   "chooseHowToLoadYourFile": "अपनी फ़ाइल कैसे लोड करें, चुनें",
+   "pasteContent": "सामग्री पेस्ट करें",
+   "pasteTxtOrJsonHere": ".txt या .json फ़ाइल की सामग्री कॉपी करें और यहाँ पेस्ट करें",
+   "pickFiles": "फ़ाइलें चुनें",
+   "selectTxtOrJsonFromDevice": "डिवाइस से .txt या .json फ़ाइलें चुनें",
+   "onlyTxtAndJsonSupported": "केवल .txt और .json फ़ाइलें समर्थित हैं (अधिकतम 10MB)",
+   "and": "और",
+   "onlyExtensionsSupported": "केवल {extensions} फ़ाइलें समर्थित हैं (अधिकतम {max})"
 }

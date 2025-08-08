@@ -171,5 +171,20 @@
    "noNavigationTransitions": "No se registraron transiciones de navegación",
    "current": "Actual",
    "start": "Inicio",
-   "selectedTransition": "Transición seleccionada"
+   "selectedTransition": "Transición seleccionada",
+   "dailySessions": "Sesiones diarias",
+   "logViewer": "Visor de registros",
+   "sessions": "Sesiones",
+   "clearAllSessions": "Borrar todas las sesiones",
+   "refresh": "Actualizar",
+   "copyPath": "Copiar ruta",
+   "loadFileContent": "Cargar contenido del archivo",
+   "chooseHowToLoadYourFile": "Elige cómo cargar tu archivo",
+   "pasteContent": "Pegar contenido",
+   "pasteTxtOrJsonHere": "Copia el contenido de un archivo .txt o .json y pégalo aquí",
+   "pickFiles": "Seleccionar archivos",
+   "selectTxtOrJsonFromDevice": "Selecciona archivos .txt o .json desde tu dispositivo",
+   "onlyTxtAndJsonSupported": "Solo se admiten archivos .txt y .json (máx. 10 MB)",
+   "and": "y",
+   "onlyExtensionsSupported": "Solo se admiten archivos {extensions} (máx. {max})"
 }

@@ -171,5 +171,20 @@
    "inspectWidgets": "Widgets auf dem Bildschirm überprüfen",
    "togglePerformanceTracking": "Leistungsverfolgung umschalten",
    "openLogViewer": "Protokoll-Viewer öffnen",
-   "backToMainScreen": "Zurück zum Hauptbildschirm"
+   "backToMainScreen": "Zurück zum Hauptbildschirm",
+   "dailySessions": "Tägliche Sitzungen",
+   "logViewer": "Protokoll-Viewer",
+   "sessions": "Sitzungen",
+   "clearAllSessions": "Alle Sitzungen löschen",
+   "refresh": "Aktualisieren",
+   "copyPath": "Pfad kopieren",
+   "loadFileContent": "Dateiinhalt laden",
+   "chooseHowToLoadYourFile": "Wählen Sie aus, wie Sie Ihre Datei laden möchten",
+   "pasteContent": "Inhalt einfügen",
+   "pasteTxtOrJsonHere": "Kopieren Sie den Inhalt einer .txt- oder .json-Datei und fügen Sie ihn hier ein",
+   "pickFiles": "Dateien auswählen",
+   "selectTxtOrJsonFromDevice": "Wählen Sie .txt- oder .json-Dateien von Ihrem Gerät aus",
+   "onlyTxtAndJsonSupported": "Nur .txt- und .json-Dateien werden unterstützt (max. 10 MB)",
+   "and": "und",
+   "onlyExtensionsSupported": "Nur {extensions}-Dateien werden unterstützt (max. {max})"
 }

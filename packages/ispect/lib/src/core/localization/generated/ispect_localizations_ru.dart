@@ -590,4 +590,54 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Выбранный переход';
+
+  @override
+  String get dailySessions => 'Ежедневные сессии';
+
+  @override
+  String get logViewer => 'Просмотрщик логов';
+
+  @override
+  String get sessions => 'Сессии';
+
+  @override
+  String get clearAllSessions => 'Очистить все сессии';
+
+  @override
+  String get refresh => 'Обновить';
+
+  @override
+  String get copyPath => 'Скопировать путь';
+
+  @override
+  String get loadFileContent => 'Загрузить содержимое файла';
+
+  @override
+  String get chooseHowToLoadYourFile => 'Выберите способ загрузки файла';
+
+  @override
+  String get pasteContent => 'Вставить содержимое';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Скопируйте содержимое файла .txt или .json и вставьте его сюда';
+
+  @override
+  String get pickFiles => 'Выбрать файлы';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Выберите файлы .txt или .json с вашего устройства';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Поддерживаются только файлы .txt и .json (макс. 10 МБ)';
+
+  @override
+  String get and => 'и';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Поддерживаются только файлы $extensions (макс. $max)';
+  }
 }

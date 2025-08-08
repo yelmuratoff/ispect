@@ -171,5 +171,20 @@
    "inspectWidgets": "Проверить виджеты на экране",
    "togglePerformanceTracking": "Переключить отслеживание производительности",
    "openLogViewer": "Открыть просмотрщик логов",
-   "backToMainScreen": "Вернуться на главный экран"
+   "backToMainScreen": "Вернуться на главный экран",
+   "dailySessions": "Ежедневные сессии",
+   "logViewer": "Просмотрщик логов",
+   "sessions": "Сессии",
+   "clearAllSessions": "Очистить все сессии",
+   "refresh": "Обновить",
+   "copyPath": "Скопировать путь",
+   "loadFileContent": "Загрузить содержимое файла",
+   "chooseHowToLoadYourFile": "Выберите способ загрузки файла",
+   "pasteContent": "Вставить содержимое",
+   "pasteTxtOrJsonHere": "Скопируйте содержимое файла .txt или .json и вставьте его сюда",
+   "pickFiles": "Выбрать файлы",
+   "selectTxtOrJsonFromDevice": "Выберите файлы .txt или .json с вашего устройства",
+   "onlyTxtAndJsonSupported": "Поддерживаются только файлы .txt и .json (макс. 10 МБ)",
+   "and": "и",
+   "onlyExtensionsSupported": "Поддерживаются только файлы {extensions} (макс. {max})"
 }

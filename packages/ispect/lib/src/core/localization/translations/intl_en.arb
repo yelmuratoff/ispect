@@ -171,5 +171,20 @@
    "noNavigationTransitions": "No navigation transitions recorded",
    "current": "Current",
    "start": "Start",
-   "selectedTransition": "Selected Transition"
+   "selectedTransition": "Selected Transition",
+   "dailySessions": "Daily Sessions",
+   "logViewer": "Log Viewer",
+   "sessions": "Sessions",
+   "clearAllSessions": "Clear all sessions",
+   "refresh": "Refresh",
+   "copyPath": "Copy path",
+   "loadFileContent": "Load file content",
+   "chooseHowToLoadYourFile": "Choose how to load your file",
+   "pasteContent": "Paste content",
+   "pasteTxtOrJsonHere": "Copy .txt or .json file content and paste it here",
+   "pickFiles": "Pick files",
+   "selectTxtOrJsonFromDevice": "Select .txt or .json files from your device",
+   "onlyTxtAndJsonSupported": "Only .txt and .json files are supported (max 10MB)",
+   "and": "and",
+   "onlyExtensionsSupported": "Only {extensions} files are supported (max {max})"
 }

@@ -572,4 +572,51 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => '已选转换';
+
+  @override
+  String get dailySessions => '每日会话';
+
+  @override
+  String get logViewer => '日志查看器';
+
+  @override
+  String get sessions => '会话';
+
+  @override
+  String get clearAllSessions => '清除所有会话';
+
+  @override
+  String get refresh => '刷新';
+
+  @override
+  String get copyPath => '复制路径';
+
+  @override
+  String get loadFileContent => '加载文件内容';
+
+  @override
+  String get chooseHowToLoadYourFile => '选择如何加载你的文件';
+
+  @override
+  String get pasteContent => '粘贴内容';
+
+  @override
+  String get pasteTxtOrJsonHere => '复制 .txt 或 .json 文件内容并粘贴到此处';
+
+  @override
+  String get pickFiles => '选择文件';
+
+  @override
+  String get selectTxtOrJsonFromDevice => '从你的设备选择 .txt 或 .json 文件';
+
+  @override
+  String get onlyTxtAndJsonSupported => '仅支持 .txt 和 .json 文件（最大 10MB）';
+
+  @override
+  String get and => '和';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return '仅支持 $extensions 文件（最大 $max）';
+  }
 }

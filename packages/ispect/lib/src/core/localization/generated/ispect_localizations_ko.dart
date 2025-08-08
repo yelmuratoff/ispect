@@ -572,4 +572,51 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => '선택된 전환';
+
+  @override
+  String get dailySessions => '일일 세션';
+
+  @override
+  String get logViewer => '로그 뷰어';
+
+  @override
+  String get sessions => '세션';
+
+  @override
+  String get clearAllSessions => '모든 세션 삭제';
+
+  @override
+  String get refresh => '새로고침';
+
+  @override
+  String get copyPath => '경로 복사';
+
+  @override
+  String get loadFileContent => '파일 내용 불러오기';
+
+  @override
+  String get chooseHowToLoadYourFile => '파일을 불러오는 방법을 선택하세요';
+
+  @override
+  String get pasteContent => '내용 붙여넣기';
+
+  @override
+  String get pasteTxtOrJsonHere => '.txt 또는 .json 파일 내용을 복사해 여기에 붙여넣으세요';
+
+  @override
+  String get pickFiles => '파일 선택';
+
+  @override
+  String get selectTxtOrJsonFromDevice => '디바이스에서 .txt 또는 .json 파일을 선택하세요';
+
+  @override
+  String get onlyTxtAndJsonSupported => '.txt 및 .json 파일만 지원됩니다 (최대 10MB)';
+
+  @override
+  String get and => '및';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return '$extensions 파일만 지원됩니다 (최대 $max)';
+  }
 }

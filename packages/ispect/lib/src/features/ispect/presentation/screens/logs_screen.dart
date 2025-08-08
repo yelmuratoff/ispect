@@ -216,7 +216,7 @@ class _LogsScreenState extends State<LogsScreen> {
       );
 
   ISpectActionItem _buildNavigationFlowAction() => ISpectActionItem(
-        title: 'Navigation Flow',
+        title: context.ispectL10n.navigationFlow,
         icon: Icons.route_rounded,
         onTap: (context) => ISpectNavigationFlowScreen(
           observer: widget.navigatorObserver!,
@@ -224,7 +224,7 @@ class _LogsScreenState extends State<LogsScreen> {
       );
 
   ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
-        title: 'Daily Sessions',
+        title: context.ispectL10n.dailySessions,
         icon: Icons.history_rounded,
         onTap: (context) => DailySessionsScreen(
           history: ISpect.logger.fileLogHistory,
@@ -232,7 +232,7 @@ class _LogsScreenState extends State<LogsScreen> {
       );
 
   ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
-        title: 'Log Viewer',
+        title: context.ispectL10n.logViewer,
         icon: Icons.developer_mode_rounded,
         onTap: (context) => _showFileOptionsDialog(),
       );
@@ -525,20 +525,20 @@ class _FileOptionsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Load File Content'),
+        title: Text(context.ispectL10n.loadFileContent),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Choose how to load your file:',
-              style: TextStyle(fontSize: 16),
+            Text(
+              '${context.ispectL10n.chooseHowToLoadYourFile}:',
+              style: const TextStyle(fontSize: 16),
             ),
             const Gap(16),
             _FileOptionTile(
               icon: Icons.content_paste,
-              title: 'Paste Content',
-              subtitle: 'Copy .txt or .json file content and paste it here',
+              title: context.ispectL10n.pasteContent,
+              subtitle: context.ispectL10n.pasteTxtOrJsonHere,
               onTap: () {
                 Navigator.of(context).pop();
                 onPasteContent();
@@ -547,8 +547,8 @@ class _FileOptionsDialog extends StatelessWidget {
             const Gap(16),
             _FileOptionTile(
               icon: Icons.file_open,
-              title: 'Pick Files',
-              subtitle: 'Select .txt or .json files from your device',
+              title: context.ispectL10n.pickFiles,
+              subtitle: context.ispectL10n.selectTxtOrJsonFromDevice,
               onTap: () {
                 Navigator.of(context).pop();
                 onPickFiles();
@@ -558,8 +558,14 @@ class _FileOptionsDialog extends StatelessWidget {
             const Divider(),
             const Gap(8),
             _FileOptionHint(
-              text:
-                  '⚠️ Only ${fileService.supportedExtensions.map((e) => '.$e').join(' and ')} files are supported (max ${fileService.maxFileSizeFormatted}).',
+              text: '⚠️ ${context.ispectL10n.onlyExtensionsSupported}'
+                  .replaceFirst(
+                    '{extensions}',
+                    fileService.supportedExtensions
+                        .map((e) => '.$e')
+                        .join(' ${context.ispectL10n.and} '),
+                  )
+                  .replaceFirst('{max}', fileService.maxFileSizeFormatted),
               color: Colors.orange,
             ),
           ],

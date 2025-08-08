@@ -595,4 +595,55 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Ausgewählter Übergang';
+
+  @override
+  String get dailySessions => 'Tägliche Sitzungen';
+
+  @override
+  String get logViewer => 'Protokoll-Viewer';
+
+  @override
+  String get sessions => 'Sitzungen';
+
+  @override
+  String get clearAllSessions => 'Alle Sitzungen löschen';
+
+  @override
+  String get refresh => 'Aktualisieren';
+
+  @override
+  String get copyPath => 'Pfad kopieren';
+
+  @override
+  String get loadFileContent => 'Dateiinhalt laden';
+
+  @override
+  String get chooseHowToLoadYourFile =>
+      'Wählen Sie aus, wie Sie Ihre Datei laden möchten';
+
+  @override
+  String get pasteContent => 'Inhalt einfügen';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Kopieren Sie den Inhalt einer .txt- oder .json-Datei und fügen Sie ihn hier ein';
+
+  @override
+  String get pickFiles => 'Dateien auswählen';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Wählen Sie .txt- oder .json-Dateien von Ihrem Gerät aus';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Nur .txt- und .json-Dateien werden unterstützt (max. 10 MB)';
+
+  @override
+  String get and => 'und';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Nur $extensions-Dateien werden unterstützt (max. $max)';
+  }
 }

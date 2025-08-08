@@ -171,5 +171,20 @@
    "noNavigationTransitions": "Навигациялық ауысулар тіркелмеген",
    "current": "Ағымдағы",
    "start": "Бастау",
-   "selectedTransition": "Таңдалған ауысу"
+   "selectedTransition": "Таңдалған ауысу",
+   "dailySessions": "Күнделікті сессиялар",
+   "logViewer": "Лог көруші",
+   "sessions": "Сессиялар",
+   "clearAllSessions": "Барлық сессияларды тазарту",
+   "refresh": "Жаңарту",
+   "copyPath": "Жолды көшіру",
+   "loadFileContent": "Файл мазмұнын жүктеу",
+   "chooseHowToLoadYourFile": "Файлыңызды қалай жүктеу керегін таңдаңыз",
+   "pasteContent": "Мазмұнды қою",
+   "pasteTxtOrJsonHere": ".txt немесе .json файлдың мазмұнын көшіріп, осында қойыңыз",
+   "pickFiles": "Файлдарды таңдау",
+   "selectTxtOrJsonFromDevice": "Құрылғыңыздан .txt немесе .json файлдарын таңдаңыз",
+   "onlyTxtAndJsonSupported": "Тек .txt және .json файлдары қолдау табады (ең көп 10 МБ)",
+   "and": "және",
+   "onlyExtensionsSupported": "Тек {extensions} файлдары қолдау табады (ең көп {max})"
 }

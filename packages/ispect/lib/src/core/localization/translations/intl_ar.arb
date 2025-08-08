@@ -171,5 +171,20 @@
    "noNavigationTransitions": "لم يتم تسجيل أي انتقالات تنقل",
    "current": "الحالي",
    "start": "البداية",
-   "selectedTransition": "الانتقال المحدد"
+   "selectedTransition": "الانتقال المحدد",
+   "dailySessions": "الجلسات اليومية",
+   "logViewer": "عارض السجلات",
+   "sessions": "الجلسات",
+   "clearAllSessions": "مسح جميع الجلسات",
+   "refresh": "تحديث",
+   "copyPath": "نسخ المسار",
+   "loadFileContent": "تحميل محتوى الملف",
+   "chooseHowToLoadYourFile": "اختر كيفية تحميل ملفك",
+   "pasteContent": "لصق المحتوى",
+   "pasteTxtOrJsonHere": "انسخ محتوى ملف .txt أو .json والصقه هنا",
+   "pickFiles": "اختيار ملفات",
+   "selectTxtOrJsonFromDevice": "اختر ملفات .txt أو .json من جهازك",
+   "onlyTxtAndJsonSupported": "يتم دعم ملفات .txt و .json فقط (الحد الأقصى 10MB)",
+   "and": "و",
+   "onlyExtensionsSupported": "يتم دعم ملفات {extensions} فقط (الحد الأقصى {max})"
 }
