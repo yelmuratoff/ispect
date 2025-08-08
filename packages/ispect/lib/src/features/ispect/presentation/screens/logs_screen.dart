@@ -526,49 +526,49 @@ class _FileOptionsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AlertDialog(
         title: Text(context.ispectL10n.loadFileContent),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${context.ispectL10n.chooseHowToLoadYourFile}:',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const Gap(16),
-            _FileOptionTile(
-              icon: Icons.content_paste,
-              title: context.ispectL10n.pasteContent,
-              subtitle: context.ispectL10n.pasteTxtOrJsonHere,
-              onTap: () {
-                Navigator.of(context).pop();
-                onPasteContent();
-              },
-            ),
-            const Gap(16),
-            _FileOptionTile(
-              icon: Icons.file_open,
-              title: context.ispectL10n.pickFiles,
-              subtitle: context.ispectL10n.selectTxtOrJsonFromDevice,
-              onTap: () {
-                Navigator.of(context).pop();
-                onPickFiles();
-              },
-            ),
-            const Gap(8),
-            const Divider(),
-            const Gap(8),
-            _FileOptionHint(
-              text: '⚠️ ${context.ispectL10n.onlyExtensionsSupported}'
-                  .replaceFirst(
-                    '{extensions}',
-                    fileService.supportedExtensions
-                        .map((e) => '.$e')
-                        .join(' ${context.ispectL10n.and} '),
-                  )
-                  .replaceFirst('{max}', fileService.maxFileSizeFormatted),
-              color: Colors.orange,
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${context.ispectL10n.chooseHowToLoadYourFile}:',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const Gap(16),
+              _FileOptionTile(
+                icon: Icons.content_paste,
+                title: context.ispectL10n.pasteContent,
+                subtitle: context.ispectL10n.pasteTxtOrJsonHere,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onPasteContent();
+                },
+              ),
+              const Gap(16),
+              _FileOptionTile(
+                icon: Icons.file_open,
+                title: context.ispectL10n.pickFiles,
+                subtitle: context.ispectL10n.selectTxtOrJsonFromDevice,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onPickFiles();
+                },
+              ),
+              const Gap(8),
+              const Divider(),
+              const Gap(8),
+              _FileOptionHint(
+                text: context.ispectL10n.onlyExtensionsSupported(
+                  fileService.supportedExtensions
+                      .map((e) => '.$e')
+                      .join(' ${context.ispectL10n.and} '),
+                  fileService.maxFileSizeFormatted,
+                ),
+                color: Colors.orange,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
