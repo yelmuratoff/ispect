@@ -17,11 +17,11 @@ import 'package:flutter/scheduler.dart';
 /// that exceed the [targetFrameTime].
 ///
 /// Can be aligned and scaled, and provides customizable styling options.
-class CustomPerformanceOverlay extends StatelessWidget {
+class ISpectPerformanceOverlay extends StatelessWidget {
   /// Creates a performance overlay widget.
   ///
   /// The [child] is the main content; the overlay renders on top of it when [enabled].
-  const CustomPerformanceOverlay({
+  const ISpectPerformanceOverlay({
     required this.child,
     super.key,
     this.enabled = true,
@@ -87,7 +87,7 @@ class CustomPerformanceOverlay extends StatelessWidget {
                     child: Transform.scale(
                       alignment: alignment,
                       scale: scale,
-                      child: _CustomPerformanceOverlay(
+                      child: _ISpectPerformanceOverlay(
                         sampleSize: sampleSize,
                         targetFrameTime: targetFrameTime,
                         barRangeMax: barRangeMax,
@@ -107,9 +107,9 @@ class CustomPerformanceOverlay extends StatelessWidget {
 }
 
 /// Internal stateful widget that collects and displays frame timings.
-class _CustomPerformanceOverlay extends StatefulWidget {
+class _ISpectPerformanceOverlay extends StatefulWidget {
   /// Creates the internal performance overlay.
-  const _CustomPerformanceOverlay({
+  const _ISpectPerformanceOverlay({
     required this.sampleSize,
     required this.targetFrameTime,
     required this.barRangeMax,
@@ -145,12 +145,12 @@ class _CustomPerformanceOverlay extends StatefulWidget {
   final Color highLatencyColor;
 
   @override
-  State<_CustomPerformanceOverlay> createState() =>
-      _CustomPerformanceOverlayState();
+  State<_ISpectPerformanceOverlay> createState() =>
+      _ISpectPerformanceOverlayState();
 }
 
-/// State for [_CustomPerformanceOverlay] that manages frame timing samples.
-class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
+/// State for [_ISpectPerformanceOverlay] that manages frame timing samples.
+class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
   /// Recent frame timing samples.
   List<FrameTiming> _samples = const [];
 
@@ -214,11 +214,8 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
   Widget build(BuildContext context) {
     final devicePixelRatio =
         MediaQuery.maybeOf(context)?.devicePixelRatio ?? 1.0;
-    final width = 448.0 * devicePixelRatio.clamp(1.0, 2.0);
-    final height = 40.0 * devicePixelRatio.clamp(1.0, 2.0);
 
-    // DRY: constant for text style
-    const textStyle = TextStyle(fontSize: 10);
+    final height = 40.0 * devicePixelRatio.clamp(1.0, 2.0);
 
     // Optimization: buildDuration/rasterDuration/totalSpan are computed once
     final uiSamples = [for (final e in _samples) e.buildDuration];
@@ -226,7 +223,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
     final latencySamples = [for (final e in _samples) e.totalSpan];
 
     return SizedBox(
-      width: width,
+      width: double.maxFinite,
       height: height,
       child: ColoredBox(
         color: widget.backgroundColor,
@@ -240,7 +237,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
               const VerticalDivider(width: 2, thickness: 2),
               _ChartColumn(
@@ -250,7 +247,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
               const VerticalDivider(width: 2, thickness: 2),
               _ChartColumn(
@@ -260,7 +257,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
             ],
           ),

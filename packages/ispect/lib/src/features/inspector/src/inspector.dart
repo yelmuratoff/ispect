@@ -614,6 +614,15 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
+        if (feedback.text.isEmpty) {
+          unawaited(
+            ISpectToaster.showErrorToast(
+              context,
+              title: 'The feedback text cannot be empty.',
+            ),
+          );
+          return;
+        }
         final screenshotFilePath =
             await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
 
