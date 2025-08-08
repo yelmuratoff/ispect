@@ -36,12 +36,12 @@ dependencies:
   http_interceptor: ^2.0.0
 
   # Use local paths through dependency_overrides
-  ispect: ^4.2.1-dev10
-  ispectify_dio: ^4.2.1-dev10
-  ispectify_http: ^4.2.1-dev10
-  ispectify_bloc: ^4.2.1-dev10
-  ispect_jira: ^4.2.1-dev10
-  ispectify_ws: ^4.2.1-dev10
+  ispect: ^4.2.1-dev11
+  ispectify_dio: ^4.2.1-dev11
+  ispectify_http: ^4.2.1-dev11
+  ispectify_bloc: ^4.2.1-dev11
+  ispect_jira: ^4.2.1-dev11
+  ispectify_ws: ^4.2.1-dev11
 
   provider: ^6.1.2
 

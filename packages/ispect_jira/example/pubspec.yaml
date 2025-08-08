@@ -18,8 +18,8 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
-  ispect: ^4.2.1-dev10
-  ispect_jira: ^4.2.1-dev10
+  ispect: ^4.2.1-dev11
+  ispect_jira: ^4.2.1-dev11
 
 dev_dependencies:
   flutter_test:
