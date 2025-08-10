@@ -38,6 +38,7 @@ dependencies:
   package_info_plus: ^8.3.0
   share_plus: ^11.0.0
   web: ^1.1.1
+  open_filex: ^4.7.0
 
   # UI
   draggable_panel: ^1.0.6

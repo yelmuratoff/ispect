@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/list_screen.dart';
+import 'package:open_filex/open_filex.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});
@@ -38,6 +39,21 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadSessions());
+  }
+
+  Future<void> _openPath() async {
+    final history = widget.history;
+    if (history == null) {
+      return;
+    }
+
+    await OpenFilex.open(history.sessionDirectory);
+
+    // copyClipboard(
+    //   context,
+    //   value: history.sessionDirectory,
+    //   title: '✅ ${context.ispectL10n.sessionsPathCopied}',
+    // );
   }
 
   Future<void> _copyPathToClipboard() async {
@@ -93,6 +109,11 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           ),
           actionsPadding: const EdgeInsets.only(right: 12),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.folder_open_rounded),
+              onPressed: _openPath,
+              tooltip: 'Open Path',
+            ),
             IconButton(
               icon: const Icon(Icons.copy_all_rounded),
               onPressed: _copyPathToClipboard,
