@@ -8,7 +8,7 @@ extension DateTimeExtensions on DateTime {
   /// DateTime now = DateTime.now();
   /// String formatted = now.toFormattedString(); // e.g., '25.10.2023'
   /// ```
-  String toFormattedString() => DateFormat('dd.MM.yyyy').format(this);
+  String toFormattedString() => DateFormat('dd.MM.yyyy').format(toLocal());
 
   bool get isToday {
     final now = DateTime.now();

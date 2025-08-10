@@ -154,7 +154,7 @@ class InspectorState extends State<Inspector> {
 
   Offset? _pointerHoverPosition;
 
-  final InspectorController _controller = InspectorController();
+  final _controller = InspectorController();
   late final DraggablePanelController _draggablePanelController;
 
   @override
