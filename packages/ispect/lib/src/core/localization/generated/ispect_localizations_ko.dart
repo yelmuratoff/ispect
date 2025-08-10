@@ -592,6 +592,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get copyPath => '경로 복사';
 
   @override
+  String get openPath => '경로 열기';
+
+  @override
   String get loadFileContent => '파일 내용 불러오기';
 
   @override

@@ -592,6 +592,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get copyPath => 'パスをコピー';
 
   @override
+  String get openPath => 'パスを開く';
+
+  @override
   String get loadFileContent => 'ファイル内容を読み込む';
 
   @override

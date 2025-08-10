@@ -592,6 +592,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get copyPath => '复制路径';
 
   @override
+  String get openPath => '打开路径';
+
+  @override
   String get loadFileContent => '加载文件内容';
 
   @override

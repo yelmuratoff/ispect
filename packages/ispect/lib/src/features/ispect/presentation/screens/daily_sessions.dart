@@ -112,7 +112,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
             IconButton(
               icon: const Icon(Icons.open_in_new_rounded),
               onPressed: _openPath,
-              tooltip: 'Open Path',
+              tooltip: context.ispectL10n.openPath,
             ),
             IconButton(
               icon: const Icon(Icons.copy_all_rounded),

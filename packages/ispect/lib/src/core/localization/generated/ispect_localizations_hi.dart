@@ -609,6 +609,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get copyPath => 'पाथ कॉपी करें';
 
   @override
+  String get openPath => 'पाथ खोलें';
+
+  @override
   String get loadFileContent => 'फ़ाइल सामग्री लोड करें';
 
   @override

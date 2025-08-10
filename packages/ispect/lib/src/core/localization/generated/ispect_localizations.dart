@@ -1187,6 +1187,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Copy path'**
   String get copyPath;
 
+  /// No description provided for @openPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Open path'**
+  String get openPath;
+
   /// No description provided for @loadFileContent.
   ///
   /// In en, this message translates to:

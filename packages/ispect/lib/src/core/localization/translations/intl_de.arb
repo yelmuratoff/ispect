@@ -178,6 +178,7 @@
    "clearAllSessions": "Alle Sitzungen löschen",
    "refresh": "Aktualisieren",
    "copyPath": "Pfad kopieren",
+   "openPath": "Pfad öffnen",
    "loadFileContent": "Dateiinhalt laden",
    "chooseHowToLoadYourFile": "Wählen Sie aus, wie Sie Ihre Datei laden möchten",
    "pasteContent": "Inhalt einfügen",

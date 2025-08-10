@@ -615,6 +615,9 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get copyPath => 'Pfad kopieren';
 
   @override
+  String get openPath => 'Pfad öffnen';
+
+  @override
   String get loadFileContent => 'Dateiinhalt laden';
 
   @override

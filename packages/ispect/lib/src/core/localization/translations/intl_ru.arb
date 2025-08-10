@@ -178,6 +178,7 @@
    "clearAllSessions": "Очистить все сессии",
    "refresh": "Обновить",
    "copyPath": "Скопировать путь",
+   "openPath": "Открыть путь",
    "loadFileContent": "Загрузить содержимое файла",
    "chooseHowToLoadYourFile": "Выберите способ загрузки файла",
    "pasteContent": "Вставить содержимое",

@@ -612,6 +612,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copyPath => 'Жолды көшіру';
 
   @override
+  String get openPath => 'Жолды ашу';
+
+  @override
   String get loadFileContent => 'Файл мазмұнын жүктеу';
 
   @override

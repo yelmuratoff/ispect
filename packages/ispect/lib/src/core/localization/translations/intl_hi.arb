@@ -178,6 +178,7 @@
    "clearAllSessions": "सभी सत्र साफ़ करें",
    "refresh": "ताज़ा करें",
    "copyPath": "पाथ कॉपी करें",
+   "openPath": "पाथ खोलें",
    "loadFileContent": "फ़ाइल सामग्री लोड करें",
    "chooseHowToLoadYourFile": "अपनी फ़ाइल कैसे लोड करें, चुनें",
    "pasteContent": "सामग्री पेस्ट करें",

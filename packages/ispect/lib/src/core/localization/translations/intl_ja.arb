@@ -178,6 +178,7 @@
    "clearAllSessions": "すべてのセッションをクリア",
    "refresh": "更新",
    "copyPath": "パスをコピー",
+   "openPath": "パスを開く",
    "loadFileContent": "ファイル内容を読み込む",
    "chooseHowToLoadYourFile": "ファイルの読み込み方法を選択",
    "pasteContent": "内容を貼り付け",

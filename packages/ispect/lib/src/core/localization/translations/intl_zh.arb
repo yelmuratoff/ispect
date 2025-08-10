@@ -145,6 +145,7 @@
    "clearAllSessions": "清除所有会话",
    "refresh": "刷新",
    "copyPath": "复制路径",
+   "openPath": "打开路径",
    "loadFileContent": "加载文件内容",
    "chooseHowToLoadYourFile": "选择如何加载你的文件",
    "pasteContent": "粘贴内容",

@@ -178,6 +178,7 @@
    "clearAllSessions": "모든 세션 삭제",
    "refresh": "새로고침",
    "copyPath": "경로 복사",
+   "openPath": "경로 열기",
    "loadFileContent": "파일 내용 불러오기",
    "chooseHowToLoadYourFile": "파일을 불러오는 방법을 선택하세요",
    "pasteContent": "내용 붙여넣기",

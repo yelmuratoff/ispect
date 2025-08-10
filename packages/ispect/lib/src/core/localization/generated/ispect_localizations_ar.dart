@@ -602,6 +602,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get copyPath => 'نسخ المسار';
 
   @override
+  String get openPath => 'فتح المسار';
+
+  @override
   String get loadFileContent => 'تحميل محتوى الملف';
 
   @override

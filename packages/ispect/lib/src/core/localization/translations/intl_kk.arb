@@ -178,6 +178,7 @@
    "clearAllSessions": "Барлық сессияларды тазарту",
    "refresh": "Жаңарту",
    "copyPath": "Жолды көшіру",
+   "openPath": "Жолды ашу",
    "loadFileContent": "Файл мазмұнын жүктеу",
    "chooseHowToLoadYourFile": "Файлыңызды қалай жүктеу керегін таңдаңыз",
    "pasteContent": "Мазмұнды қою",

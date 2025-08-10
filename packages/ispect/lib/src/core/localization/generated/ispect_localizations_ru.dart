@@ -610,6 +610,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get copyPath => 'Скопировать путь';
 
   @override
+  String get openPath => 'Открыть путь';
+
+  @override
   String get loadFileContent => 'Загрузить содержимое файла';
 
   @override

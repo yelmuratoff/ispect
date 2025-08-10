@@ -178,6 +178,7 @@
    "clearAllSessions": "مسح جميع الجلسات",
    "refresh": "تحديث",
    "copyPath": "نسخ المسار",
+   "openPath": "فتح المسار",
    "loadFileContent": "تحميل محتوى الملف",
    "chooseHowToLoadYourFile": "اختر كيفية تحميل ملفك",
    "pasteContent": "لصق المحتوى",

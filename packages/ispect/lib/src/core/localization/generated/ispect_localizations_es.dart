@@ -614,6 +614,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get copyPath => 'Copiar ruta';
 
   @override
+  String get openPath => 'Abrir ruta';
+
+  @override
   String get loadFileContent => 'Cargar contenido del archivo';
 
   @override
