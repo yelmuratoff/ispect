@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+      localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         // Add your localization delegates here
       ]),
       builder: (context, child) => ISpectBuilder(

@@ -207,7 +207,6 @@ class LogsJsonService {
   ) =>
       {
         'exportedAt': DateTime.now().toIso8601String(),
-        'version': '1.0.0',
         'totalLogs': logs.length,
         'filteredLogs': filteredLogs.length,
         'platform': 'ispect',

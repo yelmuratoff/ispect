@@ -50,7 +50,7 @@ class _AppState extends State<App> {
       navigatorObservers: [observer],
       locale: locale,
       supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+      localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         ExampleGeneratedLocalization.delegate,
         ISpectJiraLocalization.delegate,
       ]),

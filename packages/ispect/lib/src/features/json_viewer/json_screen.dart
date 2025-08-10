@@ -56,34 +56,7 @@ class _JsonScreenState extends State<JsonScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _jsonTheme = JsonExplorerTheme(
-      propertyKeyTextStyle: TextStyle(
-        color: context.ispectTheme.colorScheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
-      rootKeyTextStyle: TextStyle(
-        color: context.ispectTheme.colorScheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
-      valueSearchHighlightTextStyle: const TextStyle(
-        color: Colors.black87,
-        backgroundColor: Color.fromARGB(228, 255, 235, 59),
-      ),
-      focusedValueSearchHighlightTextStyle: const TextStyle(
-        color: Colors.black,
-        backgroundColor: Colors.yellow,
-        fontWeight: FontWeight.bold,
-      ),
-      keySearchHighlightTextStyle: const TextStyle(
-        color: Colors.black87,
-        backgroundColor: Color.fromARGB(228, 255, 235, 59),
-      ),
-      focusedKeySearchHighlightTextStyle: const TextStyle(
-        color: Colors.black,
-        backgroundColor: Colors.yellow,
-        fontWeight: FontWeight.bold,
-      ),
-    );
+    _jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);
   }
 
   @override
@@ -290,6 +263,7 @@ class _SearchNavigationPanel extends StatelessWidget {
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 12,
             children: [
               IconButton(
                 onPressed: _onPreviousPressed,
@@ -301,7 +275,6 @@ class _SearchNavigationPanel extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.arrow_drop_up_rounded),
               ),
-              const SizedBox(width: 12),
               IconButton(
                 onPressed: _onNextPressed,
                 visualDensity: VisualDensity.compact,

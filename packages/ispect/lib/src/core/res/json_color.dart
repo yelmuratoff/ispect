@@ -43,7 +43,7 @@ class JsonColors {
   /// - `4xx` (Client Errors) → Red
   /// - `5xx` (Server Errors) → Red
   /// - Other / Unknown → Grey
-  static Color getStatusColor(int? statusCode) {
+  static Color statusColor(int? statusCode) {
     if (statusCode == null) {
       return Colors.grey;
     } else if (statusCode >= 200 && statusCode < 300) {
