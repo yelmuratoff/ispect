@@ -119,6 +119,14 @@ abstract class FileLogHistory implements ILogHistory {
   /// - Edge case notes: Read-only operation, returns empty list if no file
   Future<List<ISpectifyData>> getLogsByDate(DateTime date);
 
+  /// Gets the log file path for a specific date.
+  ///
+  /// - Parameters: date - The date to get the log file path for
+  /// - Return: Future<String> path to the log file
+  /// - Usage example: final path = await fileHistory.getLogPathByDate(date)
+  /// - Edge case notes: Returns empty string if file doesn't exist
+  Future<String> getLogPathByDate(DateTime date);
+
   /// Gets all logs for a specific session file without modifying current history.
   ///
   /// - Parameters: sessionPath - Path to the session file

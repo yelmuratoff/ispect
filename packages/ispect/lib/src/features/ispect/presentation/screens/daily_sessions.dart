@@ -98,7 +98,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           title: Text(
             context.ispectL10n.sessions,
             style: const TextStyle(
-              fontSize: 26,
+              fontSize: 18,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.5,
             ),
@@ -110,7 +110,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           actionsPadding: const EdgeInsets.only(right: 12),
           actions: [
             IconButton(
-              icon: const Icon(Icons.folder_open_rounded),
+              icon: const Icon(Icons.open_in_new_rounded),
               onPressed: _openPath,
               tooltip: 'Open Path',
             ),
@@ -283,10 +283,32 @@ class _SessionListTileState extends State<_SessionListTile> {
                   fontWeight: FontWeight.w300,
                 ),
               ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 14,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.open_in_new_rounded),
+              onPressed: () {
+                _navigateToSession(widget.session);
+              },
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+            ),
+          ],
         ),
         onTap: widget.onTap,
       );
+
+  Future<void> _navigateToSession(DateTime session) async {
+    final fileLogHistory = ISpect.logger.fileLogHistory;
+    final path = await fileLogHistory?.getLogPathByDate(session);
+    if (path != null) {
+      unawaited(OpenFilex.open(path));
+    }
+  }
 }

@@ -986,4 +986,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
     return <ISpectifyData>[];
   }
+
+  @override
+  Future<String> getLogPathByDate(DateTime date) async {
+    await _ensureDirectoryInitialized();
+
+    final filePath = _getDateFilePath(date);
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      return file.path;
+    } else {
+      throw FileSystemException('Log file does not exist for date: $date');
+    }
+  }
 }
