@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.2.1-dev11
+## 4.2.1-dev12
 
 ### Added:
 
@@ -14,6 +14,7 @@
 - Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
+- Add ability to open log files directly from the `ISpect` screen.
 
 ### Changes:
 - Rename `ISpectifyDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
