@@ -30,13 +30,13 @@ class JsonColorsUtils {
   }
 
   /// Resolves the display color of the value based on the `keyName`.
-  static Color? valueColorByKey(
+  static Color valueColorByKey(
     BuildContext context,
     String keyName,
     Object? value,
   ) {
     final theme = ISpect.read(context).theme;
-    return switch (keyName) {
+    final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
       'method' => JsonColors.methodColors[value.toString()],
@@ -59,5 +59,10 @@ class JsonColorsUtils {
           Theme.of(context).colorScheme.secondary,
         ),
     };
+    return result ??
+        valueColor(
+          value,
+          Theme.of(context).colorScheme.secondary,
+        );
   }
 }
