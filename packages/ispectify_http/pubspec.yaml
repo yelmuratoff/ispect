@@ -1,6 +1,6 @@
 name: ispectify_http
 description: An additional package for http (logging and handling).
-version: 4.2.1-dev12
+version: 4.2.1-dev13
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -13,7 +13,7 @@ dependency_overrides:
 
 dependencies:
   http_interceptor: ^2.0.0
-  ispectify: ^4.2.1-dev12
+  ispectify: ^4.2.1-dev13
 
 dev_dependencies:
   lints: ^5.1.1
