@@ -139,10 +139,10 @@ class _AppState extends State<App> {
             theme: Theme.of(context),
             scrollController: controller,
           ),
-          initialPosition: (x: 0, y: 200),
-          onPositionChanged: (x, y) {
-            debugPrint('x: $x, y: $y');
-          },
+          // initialPosition: (x: 0, y: 200),
+          // onPositionChanged: (x, y) {
+          //   debugPrint('x: $x, y: $y');
+          // },
           child: child ?? const SizedBox.shrink(),
         );
         return child;

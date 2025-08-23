@@ -14,12 +14,10 @@ class ISpectBuilder extends StatefulWidget {
     this.isISpectEnabled = kDebugMode,
     this.options,
     this.theme,
-    this.initialPosition,
     this.observer,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
-    this.onPositionChanged,
     this.controller,
     super.key,
   });
@@ -36,9 +34,6 @@ class ISpectBuilder extends StatefulWidget {
     Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
     ScrollController? controller,
   )? feedbackBuilder;
-  final void Function(double x, double y)? onPositionChanged;
-
-  final ({double x, double y})? initialPosition;
 
   final DraggablePanelController? controller;
 
@@ -81,7 +76,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
             selectedColor: theme.colorScheme.primaryContainer,
             textColor: theme.colorScheme.onSurface,
             selectedTextColor: theme.colorScheme.onSurface,
-            onPositionChanged: widget.onPositionChanged,
             controller: widget.controller,
             child: currentChild,
           );

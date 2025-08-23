@@ -100,6 +100,20 @@ class _AppState extends State<App> {
   static const Locale locale = Locale('ru');
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addPositionListener(
+      (x, y) {
+        debugPrint('x: $x, y: $y');
+      },
+    );
+    _controller.setPosition(
+      x: 500,
+      y: 500,
+    );
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -136,14 +150,8 @@ class _AppState extends State<App> {
           ),
           observer: _observer,
           controller: _controller,
-          initialPosition: (x: 0, y: 200),
-          onPositionChanged: (x, y) {
-            debugPrint('x: $x, y: $y');
-          },
           options: ISpectOptions(
             locale: locale,
-            // isThemeSchemaEnabled: false,
-
             panelButtons: [
               DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,
