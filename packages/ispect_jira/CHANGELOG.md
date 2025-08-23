@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.2.1-dev13
+## 4.3.0-dev14
 
 ### Added:
 
@@ -21,6 +21,13 @@
 - Rename `ISpectifyHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
 - Rename `ISpectifyBlocObserver` to `ISpectBLocObserver` for consistency
 - Rename `iSpectify` to `logger` and update related classes and documentation for consistency
+
+## Draggable Panel
+- Added: Position change listener API in `DraggablePanelController` (`addPositionListener` / `removePositionListener`).
+- Added: Public `dockBoundary` getter for consistent boundary logic across widget and controller.
+- Changed: `toggle()` now respects current `panelState` (not `initialPanelState`). Auto-toggle on mount removed to preserve user state. Initial position is clamped and (when starting closed) docked to the nearest edge.
+- Fixed: Panel no longer resets to default after visibility toggles; duplicate position callbacks removed; unified docking logic.
+- Performance: Batched x/y updates during drag via `setPosition(x, y)`; reduced redundant notifications and rebuilds; lifecycle safety (mounted checks) and controller rewire in `didUpdateWidget`.
 
 ## 4.2.0
 
