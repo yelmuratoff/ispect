@@ -2,10 +2,10 @@ import 'package:bloc/bloc.dart';
 
 /// Configuration settings for controlling Bloc lifecycle logging.
 ///
-/// The `ISpectifyBlocSettings` class allows customization of what types of
+/// The `ISpectBlocSettings` class allows customization of what types of
 /// Bloc lifecycle events should be logged and how the logs should be formatted.
-class ISpectifyBlocSettings {
-  /// Creates an instance of `ISpectifyBlocSettings`.
+class ISpectBlocSettings {
+  /// Creates an instance of `ISpectBlocSettings`.
   ///
   /// - `enabled`: If `true`, logging is enabled. Defaults to `true`.
   /// - `printEvents`: If `true`, logs events received by the Bloc. Defaults to `true`.
@@ -17,7 +17,7 @@ class ISpectifyBlocSettings {
   /// - `printClosings`: If `true`, logs Bloc closing events. Defaults to `false`.
   /// - `transitionFilter`: A filter function to determine if a transition should be logged.
   /// - `eventFilter`: A filter function to determine if an event should be logged.
-  const ISpectifyBlocSettings({
+  const ISpectBlocSettings({
     this.enabled = true,
     this.printEvents = true,
     this.printTransitions = true,

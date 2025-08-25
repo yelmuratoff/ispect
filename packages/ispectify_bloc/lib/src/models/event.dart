@@ -17,7 +17,7 @@ class BlocEventLog extends ISpectifyData {
 
   final Bloc<dynamic, dynamic> bloc;
   final Object? event;
-  final ISpectifyBlocSettings settings;
+  final ISpectBlocSettings settings;
 
   static const getKey = 'bloc-event';
 

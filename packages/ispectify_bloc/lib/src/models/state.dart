@@ -15,7 +15,7 @@ class BlocStateLog extends ISpectifyData {
 
   final Bloc<dynamic, dynamic> bloc;
   final Transition<dynamic, dynamic> transition;
-  final ISpectifyBlocSettings settings;
+  final ISpectBlocSettings settings;
 
   static const getKey = 'bloc-state';
 }

@@ -11,7 +11,7 @@ import 'package:ispectify_bloc/src/models/_models.dart';
 class ISpecBlocObserver extends BlocObserver {
   ISpecBlocObserver({
     ISpectify? logger,
-    this.settings = const ISpectifyBlocSettings(),
+    this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
     this.onBlocChange,
@@ -38,7 +38,7 @@ class ISpecBlocObserver extends BlocObserver {
   )? onBlocError;
   final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
   final void Function(BlocBase<dynamic> bloc)? onBlocClose;
-  final ISpectifyBlocSettings settings;
+  final ISpectBlocSettings settings;
   final List<String> filters;
 
   @override
