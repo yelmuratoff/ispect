@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.3.0-dev14
+## 4.3.0
 
 ### Added:
 
