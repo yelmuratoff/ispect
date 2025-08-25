@@ -50,7 +50,6 @@ class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,
     required this.options,
-    this.onPositionChanged,
     this.observer,
     super.key,
     this.backgroundColor,
@@ -95,7 +94,6 @@ class Inspector extends StatefulWidget {
   final Color? selectedTextColor;
   final NavigatorObserver? observer;
   final ISpectOptions options;
-  final void Function(double x, double y)? onPositionChanged;
 
   final DraggablePanelController? controller;
 
@@ -154,7 +152,7 @@ class InspectorState extends State<Inspector> {
 
   Offset? _pointerHoverPosition;
 
-  final InspectorController _controller = InspectorController();
+  final _controller = InspectorController();
   late final DraggablePanelController _draggablePanelController;
 
   @override
@@ -431,8 +429,6 @@ class InspectorState extends State<Inspector> {
                     ? context.ispectTheme.colorScheme.primaryContainer
                     : context.ispectTheme.colorScheme.primary,
                 controller: _draggablePanelController,
-                onPositionChanged: (x, y) =>
-                    widget.onPositionChanged?.call(x, y),
                 items: [
                   if (widget.options.isLogPageEnabled)
                     DraggablePanelItem(
@@ -614,6 +610,15 @@ class InspectorState extends State<Inspector> {
   void _toggleFeedback(FeedbackController feedback, BuildContext context) {
     if (!feedback.isVisible) {
       feedback.show((feedback) async {
+        if (feedback.text.isEmpty) {
+          unawaited(
+            ISpectToaster.showErrorToast(
+              context,
+              title: 'The feedback text cannot be empty.',
+            ),
+          );
+          return;
+        }
         final screenshotFilePath =
             await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
 

@@ -30,7 +30,7 @@ class DioErrorLog extends ISpectifyData {
   final Map<String, dynamic>? requestHeaders;
   final Map<String, String>? headers;
   final Map<String, dynamic>? body;
-  final ISpectifyDioLoggerSettings settings;
+  final ISpectDioInterceptorSettings settings;
   final DioErrorData errorData;
 
   static const getKey = 'http-error';

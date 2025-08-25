@@ -572,7 +572,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get openLogViewer => 'लॉग व्यूअर खोलें';
 
   @override
-  String get backToMainScreen => 'मुख्य स्क्रीन पर वापस जाएं';
+  String get backToMainScreen => 'मुख्य स्क्रीन पर वापस जाएँ';
 
   @override
   String get navigationFlow => 'नेविगेशन फ्लो';
@@ -589,4 +589,92 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'चयनित ट्रांजिशन';
+
+  @override
+  String get dailySessions => 'दैनिक सत्र';
+
+  @override
+  String get logViewer => 'लॉग व्यूअर';
+
+  @override
+  String get sessions => 'सत्र';
+
+  @override
+  String get clearAllSessions => 'सभी सत्र साफ़ करें';
+
+  @override
+  String get refresh => 'ताज़ा करें';
+
+  @override
+  String get copyPath => 'पाथ कॉपी करें';
+
+  @override
+  String get openPath => 'पाथ खोलें';
+
+  @override
+  String get loadFileContent => 'फ़ाइल सामग्री लोड करें';
+
+  @override
+  String get chooseHowToLoadYourFile => 'अपनी फ़ाइल कैसे लोड करें, चुनें';
+
+  @override
+  String get pasteContent => 'सामग्री पेस्ट करें';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      '.txt या .json फ़ाइल की सामग्री कॉपी करें और यहाँ पेस्ट करें';
+
+  @override
+  String get pickFiles => 'फ़ाइलें चुनें';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'डिवाइस से .txt या .json फ़ाइलें चुनें';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'केवल .txt और .json फ़ाइलें समर्थित हैं (अधिकतम 10MB)';
+
+  @override
+  String get and => 'और';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'केवल $extensions फ़ाइलें समर्थित हैं (अधिकतम $max)';
+  }
+
+  @override
+  String get cancel => 'रद्द करें';
+
+  @override
+  String get pasteYourFileContentBelow => 'अपनी फ़ाइल सामग्री नीचे चिपकाएं:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'अपनी .txt या .json फ़ाइल सामग्री यहाँ चिपकाएं...';
+
+  @override
+  String get process => 'प्रोसेस';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'क्या आप वाकई सभी दैनिक सेशन साफ़ करना चाहते हैं?';
+
+  @override
+  String get dailySessionsRefreshed => 'दैनिक सेशन रीफ्रेश हो गए';
+
+  @override
+  String get sessionsPathCopied => 'सेशन पाथ कॉपी किया गया';
+
+  @override
+  String get error => 'त्रुटि';
+
+  @override
+  String get ok => 'ठीक है';
+
+  @override
+  String get fileSize => 'फ़ाइल साइज़';
+
+  @override
+  String get loading => 'लोड हो रहा है';
 }

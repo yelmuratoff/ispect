@@ -1,8 +1,9 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispectify/ispectify.dart';
+
+final _routeTimestampFormatter = DateFormat('dd.MM.yy, HH:mm:ss');
 
 extension ISpectRouteExtension on Route<dynamic>? {
   /// Retrieves the route name with meaningful fallbacks based on route type.
@@ -55,6 +56,7 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
     bool isTruncated = false,
   }) =>
       transitionsDescription(isTruncated: isTruncated);
+
   String transitionsToId(
     String id, {
     bool isTruncated = true,
@@ -63,13 +65,15 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
 
   String _fullTransitionsText() {
     final buffer = StringBuffer();
-    forEachIndexed((index, transition) {
+    final lastIndex = length - 1;
+    for (var i = 0; i < length; i++) {
+      final transition = this[i];
       buffer
         ..writeln(
-          _transitionSuffix(index, index == length - 1),
+          _transitionSuffix(i, i == lastIndex),
         )
         ..writeln(
-          DateFormat('dd.MM.yy, HH:mm:ss').format(transition.timestamp),
+          _routeTimestampFormatter.format(transition.timestamp),
         )
         ..writeln(
           '${transition.transitionText} (${transition.type.title})',
@@ -78,28 +82,35 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
         buffer.writeln('Arguments: ${transition.prettyArguments}');
       }
       buffer.writeln('\n${ConsoleUtils.bottomLine(20)}');
-    });
+    }
     return buffer.toString();
   }
 
   String _truncatedTransitionsToId(String id) {
-    final list = reversed.toList(growable: false);
     final routeNames = <String>[];
+    String? lastAdded;
     var found = false;
-    for (final transition in list) {
+
+    for (var i = length - 1; i >= 0; i--) {
+      final transition = this[i];
       final fromName = transition.from.routeName;
       final toName = transition.to.routeName;
+
       if (routeNames.isEmpty) {
         routeNames.add(fromName);
+        lastAdded = fromName;
       }
-      if (routeNames.isEmpty || routeNames.last != toName) {
+      if (lastAdded != toName) {
         routeNames.add(toName);
+        lastAdded = toName;
       }
+
       if (transition.id == id) {
         found = true;
         break;
       }
     }
+
     if (!found) {
       return 'Transition with id $id not found';
     }

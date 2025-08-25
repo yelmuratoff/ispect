@@ -5,9 +5,9 @@ import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/utils/colors.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
-import 'package:ispect/src/features/json_viewer/widgets/dot_painter.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
-import 'package:ispect/src/features/json_viewer/widgets/json_item_card.dart';
+import 'package:ispect/src/features/json_viewer/widgets/json_card.dart';
+import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
 import 'package:provider/provider.dart';
 
 class JsonAttribute extends StatelessWidget {
@@ -533,7 +533,7 @@ class _PropertyNodeWidget extends StatelessWidget {
 
     // Cache computations
     final text = _formatValue();
-    final valueColor = JsonColorsUtils.getValueColorByKey(
+    final valueColor = JsonColorsUtils.valueColorByKey(
       context,
       node.key,
       node.value,

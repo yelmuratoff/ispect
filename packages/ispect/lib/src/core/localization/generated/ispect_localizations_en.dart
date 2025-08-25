@@ -589,4 +589,92 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Selected Transition';
+
+  @override
+  String get dailySessions => 'Daily Sessions';
+
+  @override
+  String get logViewer => 'Log Viewer';
+
+  @override
+  String get sessions => 'Sessions';
+
+  @override
+  String get clearAllSessions => 'Clear all sessions';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get copyPath => 'Copy path';
+
+  @override
+  String get openPath => 'Open path';
+
+  @override
+  String get loadFileContent => 'Load file content';
+
+  @override
+  String get chooseHowToLoadYourFile => 'Choose how to load your file';
+
+  @override
+  String get pasteContent => 'Paste content';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Copy .txt or .json file content and paste it here';
+
+  @override
+  String get pickFiles => 'Pick files';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Select .txt or .json files from your device';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Only .txt and .json files are supported (max 10MB)';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Only $extensions files are supported (max $max)';
+  }
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get pasteYourFileContentBelow => 'Paste your file content below:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Paste your .txt or .json file content here...';
+
+  @override
+  String get process => 'Process';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Are you sure you want to clear all daily sessions?';
+
+  @override
+  String get dailySessionsRefreshed => 'Daily sessions refreshed';
+
+  @override
+  String get sessionsPathCopied => 'Sessions Path Copied';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'File size';
+
+  @override
+  String get loading => 'Loading';
 }

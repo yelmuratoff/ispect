@@ -572,4 +572,88 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => '선택된 전환';
+
+  @override
+  String get dailySessions => '일일 세션';
+
+  @override
+  String get logViewer => '로그 뷰어';
+
+  @override
+  String get sessions => '세션';
+
+  @override
+  String get clearAllSessions => '모든 세션 삭제';
+
+  @override
+  String get refresh => '새로고침';
+
+  @override
+  String get copyPath => '경로 복사';
+
+  @override
+  String get openPath => '경로 열기';
+
+  @override
+  String get loadFileContent => '파일 내용 불러오기';
+
+  @override
+  String get chooseHowToLoadYourFile => '파일을 불러오는 방법을 선택하세요';
+
+  @override
+  String get pasteContent => '내용 붙여넣기';
+
+  @override
+  String get pasteTxtOrJsonHere => '.txt 또는 .json 파일 내용을 복사해 여기에 붙여넣으세요';
+
+  @override
+  String get pickFiles => '파일 선택';
+
+  @override
+  String get selectTxtOrJsonFromDevice => '디바이스에서 .txt 또는 .json 파일을 선택하세요';
+
+  @override
+  String get onlyTxtAndJsonSupported => '.txt 및 .json 파일만 지원됩니다 (최대 10MB)';
+
+  @override
+  String get and => '및';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return '$extensions 파일만 지원됩니다 (최대 $max)';
+  }
+
+  @override
+  String get cancel => '취소';
+
+  @override
+  String get pasteYourFileContentBelow => '파일 내용을 아래에 붙여넣으세요:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '.txt 또는 .json 파일 내용을 여기에 붙여넣으세요...';
+
+  @override
+  String get process => '처리';
+
+  @override
+  String get confirmClearAllDailySessions => '모든 일일 세션을 지우시겠습니까?';
+
+  @override
+  String get dailySessionsRefreshed => '일일 세션이 새로고침되었습니다';
+
+  @override
+  String get sessionsPathCopied => '세션 경로가 복사되었습니다';
+
+  @override
+  String get error => '오류';
+
+  @override
+  String get ok => '확인';
+
+  @override
+  String get fileSize => '파일 크기';
+
+  @override
+  String get loading => '로딩 중';
 }

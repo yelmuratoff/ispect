@@ -590,4 +590,92 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Выбранный переход';
+
+  @override
+  String get dailySessions => 'Ежедневные сессии';
+
+  @override
+  String get logViewer => 'Просмотрщик логов';
+
+  @override
+  String get sessions => 'Сессии';
+
+  @override
+  String get clearAllSessions => 'Очистить все сессии';
+
+  @override
+  String get refresh => 'Обновить';
+
+  @override
+  String get copyPath => 'Скопировать путь';
+
+  @override
+  String get openPath => 'Открыть путь';
+
+  @override
+  String get loadFileContent => 'Загрузить содержимое файла';
+
+  @override
+  String get chooseHowToLoadYourFile => 'Выберите способ загрузки файла';
+
+  @override
+  String get pasteContent => 'Вставить содержимое';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Скопируйте содержимое файла .txt или .json и вставьте его сюда';
+
+  @override
+  String get pickFiles => 'Выбрать файлы';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Выберите файлы .txt или .json с вашего устройства';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Поддерживаются только файлы .txt и .json (макс. 10 МБ)';
+
+  @override
+  String get and => 'и';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Поддерживаются только файлы $extensions (макс. $max)';
+  }
+
+  @override
+  String get cancel => 'Отмена';
+
+  @override
+  String get pasteYourFileContentBelow => 'Вставьте содержимое файла ниже:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Вставьте содержимое .txt или .json файла здесь...';
+
+  @override
+  String get process => 'Обработать';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Вы уверены, что хотите очистить все ежедневные сессии?';
+
+  @override
+  String get dailySessionsRefreshed => 'Ежедневные сессии обновлены';
+
+  @override
+  String get sessionsPathCopied => 'Путь к сессиям скопирован';
+
+  @override
+  String get error => 'Ошибка';
+
+  @override
+  String get ok => 'ОК';
+
+  @override
+  String get fileSize => 'Размер файла';
+
+  @override
+  String get loading => 'Загрузка';
 }

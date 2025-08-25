@@ -4,15 +4,29 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 
 final class ISpectLocalizations {
+  @Deprecated('Reason: Use `delegates` instead.')
   static List<LocalizationsDelegate<Object>> localizationDelegates(
-    List<LocalizationsDelegate<Object>> appDelegates,
+    List<LocalizationsDelegate<Object>> delegates,
   ) {
     final localizationList = [
       GlobalMaterialLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       ISpectGeneratedLocalization.delegate,
-      ...appDelegates,
+      ...delegates,
+    ];
+    return localizationList;
+  }
+
+  static List<LocalizationsDelegate<Object>> delegates({
+    List<LocalizationsDelegate<Object>> delegates = const [],
+  }) {
+    final localizationList = [
+      GlobalMaterialLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      ISpectGeneratedLocalization.delegate,
+      ...delegates,
     ];
     return localizationList;
   }

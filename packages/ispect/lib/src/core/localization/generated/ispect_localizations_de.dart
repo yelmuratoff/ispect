@@ -595,4 +595,94 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Ausgewählter Übergang';
+
+  @override
+  String get dailySessions => 'Tägliche Sitzungen';
+
+  @override
+  String get logViewer => 'Protokoll-Viewer';
+
+  @override
+  String get sessions => 'Sitzungen';
+
+  @override
+  String get clearAllSessions => 'Alle Sitzungen löschen';
+
+  @override
+  String get refresh => 'Aktualisieren';
+
+  @override
+  String get copyPath => 'Pfad kopieren';
+
+  @override
+  String get openPath => 'Pfad öffnen';
+
+  @override
+  String get loadFileContent => 'Dateiinhalt laden';
+
+  @override
+  String get chooseHowToLoadYourFile =>
+      'Wählen Sie aus, wie Sie Ihre Datei laden möchten';
+
+  @override
+  String get pasteContent => 'Inhalt einfügen';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Kopieren Sie den Inhalt einer .txt- oder .json-Datei und fügen Sie ihn hier ein';
+
+  @override
+  String get pickFiles => 'Dateien auswählen';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Wählen Sie .txt- oder .json-Dateien von Ihrem Gerät aus';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Nur .txt- und .json-Dateien werden unterstützt (max. 10 MB)';
+
+  @override
+  String get and => 'und';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Nur $extensions-Dateien werden unterstützt (max. $max)';
+  }
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get pasteYourFileContentBelow =>
+      'Fügen Sie Ihren Dateiinhalt unten ein:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Fügen Sie Ihren .txt- oder .json-Dateiinhalt hier ein...';
+
+  @override
+  String get process => 'Verarbeiten';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Sind Sie sicher, dass Sie alle täglichen Sitzungen löschen möchten?';
+
+  @override
+  String get dailySessionsRefreshed => 'Tägliche Sitzungen aktualisiert';
+
+  @override
+  String get sessionsPathCopied => 'Sitzungspfad kopiert';
+
+  @override
+  String get error => 'Fehler';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'Dateigröße';
+
+  @override
+  String get loading => 'Laden';
 }

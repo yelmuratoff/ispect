@@ -10,8 +10,8 @@
     <a href="https://opensource.org/licenses/MIT">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
     </a>
-    <a href="https://github.com/yelmuratoff/ispect">
-      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="GitHub stars">
+    <a href="https://github.com/K1yoshiSho/ispect">
+      <img src="https://img.shields.io/github/stars/K1yoshiSho/ispect?style=social" alt="GitHub stars">
     </a>
   </p>
   
@@ -63,9 +63,9 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     dio.interceptors.add(
-      ISpectifyDioLogger(
+      ISpectDioInterceptor(
         iSpectify: iSpectify,
-        settings: const ISpectifyDioLoggerSettings(
+        settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
         ),
       ),
@@ -78,9 +78,9 @@ ISpect.run(
 
 ```dart
 dio.interceptors.add(
-  ISpectifyDioLogger(
+  ISpectDioInterceptor(
     iSpectify: iSpectify,
-    settings: const ISpectifyDioLoggerSettings(
+    settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
       // Filter specific requests
       // requestFilter: (requestOptions) =>
@@ -109,11 +109,11 @@ final Dio uploadDio = Dio(
 
 // Add interceptors to both
 mainDio.interceptors.add(
-  ISpectifyDioLogger(iSpectify: iSpectify),
+  ISpectDioInterceptor(iSpectify: iSpectify),
 );
 
 uploadDio.interceptors.add(
-  ISpectifyDioLogger(iSpectify: iSpectify),
+  ISpectDioInterceptor(iSpectify: iSpectify),
 );
 ```
 
@@ -123,7 +123,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.1.4
+  ispectify_dio: ^4.3.0
 ```
 
 ## 🚀 Quick Start
@@ -149,9 +149,9 @@ void main() {
     onInit: () {
       // Add ISpectify Dio interceptor
       dio.interceptors.add(
-        ISpectifyDioLogger(
+        ISpectDioInterceptor(
           iSpectify: iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+          settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
           ),
         ),
@@ -247,7 +247,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <p>Built with ❤️ for the Flutter community</p>
-  <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
+  <a href="https://github.com/K1yoshiSho/ispect/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
   </a>
 </div>

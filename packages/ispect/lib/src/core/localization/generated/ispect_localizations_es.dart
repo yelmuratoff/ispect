@@ -594,4 +594,93 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Transición seleccionada';
+
+  @override
+  String get dailySessions => 'Sesiones diarias';
+
+  @override
+  String get logViewer => 'Visor de registros';
+
+  @override
+  String get sessions => 'Sesiones';
+
+  @override
+  String get clearAllSessions => 'Borrar todas las sesiones';
+
+  @override
+  String get refresh => 'Actualizar';
+
+  @override
+  String get copyPath => 'Copiar ruta';
+
+  @override
+  String get openPath => 'Abrir ruta';
+
+  @override
+  String get loadFileContent => 'Cargar contenido del archivo';
+
+  @override
+  String get chooseHowToLoadYourFile => 'Elige cómo cargar tu archivo';
+
+  @override
+  String get pasteContent => 'Pegar contenido';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Copia el contenido de un archivo .txt o .json y pégalo aquí';
+
+  @override
+  String get pickFiles => 'Seleccionar archivos';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Selecciona archivos .txt o .json desde tu dispositivo';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Solo se admiten archivos .txt y .json (máx. 10 MB)';
+
+  @override
+  String get and => 'y';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Solo se admiten archivos $extensions (máx. $max)';
+  }
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get pasteYourFileContentBelow =>
+      'Pega el contenido de tu archivo a continuación:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Pega el contenido de tu archivo .txt o .json aquí...';
+
+  @override
+  String get process => 'Procesar';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      '¿Estás seguro de que quieres borrar todas las sesiones diarias?';
+
+  @override
+  String get dailySessionsRefreshed => 'Sesiones diarias actualizadas';
+
+  @override
+  String get sessionsPathCopied => 'Ruta de sesiones copiada';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'Tamaño del archivo';
+
+  @override
+  String get loading => 'Cargando';
 }

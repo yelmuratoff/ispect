@@ -9,6 +9,8 @@ environment:
 dependency_overrides:
   ispectify:
     path: ../../ispectify
+  ispectify_dio:
+    path: ../../ispectify_dio
   ispect:
     path: ../../ispect
 
@@ -16,8 +18,8 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^5.0.0
-  ispectify_dio: ^4.2.1-dev05
-  ispect: ^4.2.1-dev05
+  ispectify_dio: ^4.3.0
+  ispect: ^4.3.0
 
 dev_dependencies:
   flutter_test:

@@ -10,8 +10,8 @@
     <a href="https://opensource.org/licenses/MIT">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
     </a>
-    <a href="https://github.com/yelmuratoff/ispect">
-      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=social" alt="GitHub stars">
+    <a href="https://github.com/K1yoshiSho/ispect">
+      <img src="https://img.shields.io/github/stars/K1yoshiSho/ispect?style=social" alt="GitHub stars">
     </a>
   </p>
   
@@ -72,7 +72,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <p>Built with ❤️ for the Flutter community</p>
-  <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
+  <a href="https://github.com/K1yoshiSho/ispect/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
   </a>
 </div>

@@ -6,28 +6,28 @@ import 'package:ispectify_dio/src/settings.dart';
 
 /// `Dio` http client logger on [ISpectify] base
 ///
-/// `iSpectify` filed is current [ISpectify] instance.
+/// `logger` filed is current [ISpectify] instance.
 /// Provide your instance if your application used `ISpectify` as default logger
 /// Common ISpectify instance will be used by default
-class ISpectifyDioLogger extends Interceptor {
-  ISpectifyDioLogger({
-    ISpectify? iSpectify,
-    this.settings = const ISpectifyDioLoggerSettings(),
+class ISpectDioInterceptor extends Interceptor {
+  ISpectDioInterceptor({
+    ISpectify? logger,
+    this.settings = const ISpectDioInterceptorSettings(),
     this.addonId,
   }) {
-    _iSpectify = iSpectify ?? ISpectify();
+    _logger = logger ?? ISpectify();
   }
 
-  late ISpectify _iSpectify;
+  late ISpectify _logger;
 
-  /// `ISpectifyDioLogger` settings and customization
-  ISpectifyDioLoggerSettings settings;
+  /// `ISpectDioInterceptor` settings and customization
+  ISpectDioInterceptorSettings settings;
 
   /// ISpectify addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
 
-  /// Method to update `settings` of [ISpectifyDioLogger]
+  /// Method to update `settings` of [ISpectDioInterceptor]
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,
@@ -82,7 +82,7 @@ class ISpectifyDioLogger extends Interceptor {
         settings: settings,
         requestData: DioRequestData(options),
       );
-      _iSpectify.logCustom(httpLog);
+      _logger.logCustom(httpLog);
     } catch (_) {
       //pass
     }
@@ -174,7 +174,7 @@ class ISpectifyDioLogger extends Interceptor {
           requestData: DioRequestData(response.requestOptions),
         ),
       );
-      _iSpectify.logCustom(httpLog);
+      _logger.logCustom(httpLog);
     } catch (_) {
       //pass
     }
@@ -220,7 +220,7 @@ class ISpectifyDioLogger extends Interceptor {
           ),
         ),
       );
-      _iSpectify.logCustom(httpErrorLog);
+      _logger.logCustom(httpErrorLog);
     } catch (_) {
       //pass
     }

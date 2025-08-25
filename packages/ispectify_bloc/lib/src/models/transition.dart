@@ -15,7 +15,7 @@ class BlocChangeLog extends ISpectifyData {
 
   final BlocBase<dynamic> bloc;
   final Change<dynamic> change;
-  final ISpectifyBlocSettings settings;
+  final ISpectBlocSettings settings;
 
   static const getKey = 'bloc-transition';
 }

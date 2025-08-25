@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,8 @@ import 'package:ispectify_dio/ispectify_dio.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ws/ws.dart';
 
 final Dio dio = Dio(
   BaseOptions(
@@ -32,7 +36,7 @@ void main() {
   final options = ISpectifyOptions(
     logTruncateLength: 500,
   );
-  final ISpectify iSpectify = ISpectifyFlutter.init(
+  final ISpectify logger = ISpectifyFlutter.init(
     options: options,
     history: DailyFileLogHistory(options),
   );
@@ -42,22 +46,22 @@ void main() {
   ISpect.run(
     () => runApp(
       ThemeProvider(
-        child: App(iSpectify: iSpectify),
+        child: App(logger: logger),
       ),
     ),
-    logger: iSpectify,
+    logger: logger,
     isPrintLoggingEnabled: false,
     onInit: () {
-      Bloc.observer = ISpectifyBlocObserver(
-        iSpectify: iSpectify,
+      Bloc.observer = ISpecBlocObserver(
+        logger: logger,
       );
       client.interceptors.add(
-        ISpectifyHttpLogger(iSpectify: iSpectify),
+        ISpectHttpInterceptor(logger: logger),
       );
       dio.interceptors.add(
-        ISpectifyDioLogger(
-          iSpectify: iSpectify,
-          settings: const ISpectifyDioLoggerSettings(
+        ISpectDioInterceptor(
+          logger: logger,
+          settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
             // requestFilter: (requestOptions) =>
             //     requestOptions.path != '/post3s/1',
@@ -70,8 +74,8 @@ void main() {
         ),
       );
       dummyDio.interceptors.add(
-        ISpectifyDioLogger(
-          iSpectify: iSpectify,
+        ISpectDioInterceptor(
+          logger: logger,
         ),
       );
     },
@@ -80,8 +84,8 @@ void main() {
 }
 
 class App extends StatefulWidget {
-  final ISpectify iSpectify;
-  const App({super.key, required this.iSpectify});
+  final ISpectify logger;
+  const App({super.key, required this.logger});
 
   @override
   State<App> createState() => _AppState();
@@ -93,7 +97,21 @@ class _AppState extends State<App> {
     isLogModals: true,
   );
 
-  static const Locale locale = Locale('en');
+  static const Locale locale = Locale('ru');
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addPositionListener(
+      (x, y) {
+        debugPrint('x: $x, y: $y');
+      },
+    );
+    _controller.setPosition(
+      x: 500,
+      y: 500,
+    );
+  }
 
   @override
   void dispose() {
@@ -109,7 +127,7 @@ class _AppState extends State<App> {
       navigatorObservers: [_observer],
       locale: locale,
       supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([
+      localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         ExampleGeneratedLocalization.delegate,
       ]),
       theme: ThemeData.from(
@@ -132,14 +150,8 @@ class _AppState extends State<App> {
           ),
           observer: _observer,
           controller: _controller,
-          initialPosition: (x: 0, y: 200),
-          onPositionChanged: (x, y) {
-            debugPrint('x: $x, y: $y');
-          },
           options: ISpectOptions(
             locale: locale,
-            // isThemeSchemaEnabled: false,
-
             panelButtons: [
               DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,
@@ -252,7 +264,7 @@ class _HomeState extends State<_Home> {
             statusCode: 200,
           );
           for (final Interceptor interceptor in dio.interceptors) {
-            if (interceptor is ISpectifyDioLogger) {
+            if (interceptor is ISpectDioInterceptor) {
               interceptor.onResponse(response, ResponseInterceptorHandler());
             }
           }
@@ -286,10 +298,52 @@ class _HomeState extends State<_Home> {
           );
 
           for (final Interceptor interceptor in dio.interceptors) {
-            if (interceptor is ISpectifyDioLogger) {
+            if (interceptor is ISpectDioInterceptor) {
               interceptor.onResponse(response, ResponseInterceptorHandler());
             }
           }
+        },
+      ),
+      (
+        label: 'Connect to WebSocket',
+        onPressed: () {
+          // Using a non-existent WebSocket URL to trigger a connection error.
+          const url = String.fromEnvironment(
+            'URL',
+            defaultValue: 'wss://echo.plugfox.dev:443/non-existent-path',
+          );
+
+          final interceptor = ISpectWSInterceptor(logger: ISpect.logger);
+
+          final client = WebSocketClient(
+            WebSocketOptions.common(
+              connectionRetryInterval: (
+                min: const Duration(milliseconds: 500),
+                max: const Duration(seconds: 15),
+              ),
+              interceptors: [interceptor],
+            ),
+          );
+
+          interceptor.setClient(client);
+
+          client
+            ..connect(url)
+            ..add('Hello')
+            ..add('world!');
+
+          // Adding a client-side error by trying to send data after closing the connection.
+          Timer(const Duration(seconds: 1), () async {
+            await client.close();
+            try {
+              unawaited(client.add('This will fail'));
+            } catch (e) {
+              // This error will be caught by the interceptor.
+            }
+            // ignore: avoid_print
+            print('Metrics:\n${client.metrics}');
+            client.close();
+          });
         },
       ),
       (

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/features/ispect/models/log_description.dart';
+import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
 
 /// Defines the theme configuration for `ISpect`, including colors, icons, and log descriptions.
 ///

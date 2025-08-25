@@ -84,7 +84,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<void> _initializeSecureDirectory() async {
     try {
       final cacheDir = await _getSecureCacheDirectory();
-      final logsDir = Directory('$cacheDir/ispectify_logs');
+      final logsDir = Directory('$cacheDir/ispect_logs');
 
       if (!await logsDir.exists()) {
         await logsDir.create(recursive: true);
@@ -126,7 +126,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Edge case notes: Creates directory in system temp with app subdirectory
   Future<String> _getMobileCacheDirectory() async {
     final tempDir = Directory.systemTemp;
-    final appCacheDir = Directory('${tempDir.path}/ispectify_cache');
+    final appCacheDir = Directory('${tempDir.path}/ispect_cache');
 
     if (!await appCacheDir.exists()) {
       await appCacheDir.create(recursive: true);
@@ -164,18 +164,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Edge case notes: Handles macOS, Windows, and Linux conventions
   String _buildPlatformCacheDir(String homeDir) {
     if (Platform.isMacOS) {
-      return '$homeDir/Library/Caches/ispectify';
+      return '$homeDir/Library/Caches/ispect';
     }
 
     if (Platform.isWindows) {
       final localAppData =
           Platform.environment['LOCALAPPDATA'] ?? '$homeDir/AppData/Local';
-      return '$localAppData/ispectify/cache';
+      return '$localAppData/ispect/cache';
     }
 
     final xdgCache =
         Platform.environment['XDG_CACHE_HOME'] ?? '$homeDir/.cache';
-    return '$xdgCache/ispectify';
+    return '$xdgCache/ispect';
   }
 
   /// Ensures directory is initialized before operations.
@@ -251,7 +251,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       await saveToDailyFile();
     } catch (e) {
       if (settings.useConsoleLogs) {
-        print('ISpectify auto-save failed: $e');
+        print('ISpect auto-save failed: $e');
       }
     }
   }
@@ -985,5 +985,19 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     }
 
     return <ISpectifyData>[];
+  }
+
+  @override
+  Future<String> getLogPathByDate(DateTime date) async {
+    await _ensureDirectoryInitialized();
+
+    final filePath = _getDateFilePath(date);
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      return file.path;
+    } else {
+      throw FileSystemException('Log file does not exist for date: $date');
+    }
   }
 }

@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: ISpectLocalizations.localizationDelegates([]),
+      localizationsDelegates: ISpectLocalizations.delegates(),
       theme: ThemeData(
         useMaterial3: true,
         snackBarTheme: const SnackBarThemeData(
@@ -1701,6 +1701,7 @@ class _DropZoneState extends State<_DropZone>
               content = await fileHandle.readAsString();
             } catch (e) {
               ISpect.logger.error('Error reading file from path: $e');
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Error reading file: ${file.name}'),
@@ -1713,6 +1714,7 @@ class _DropZoneState extends State<_DropZone>
         }
 
         if (content == null || content.isEmpty) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Empty or unreadable file: ${file.name}'),
@@ -1735,6 +1737,7 @@ class _DropZoneState extends State<_DropZone>
             jsonDecode(content);
           } catch (e) {
             // Still process as JSON but show warning
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Warning: ${file.name} contains invalid JSON'),
@@ -1783,6 +1786,7 @@ class _DropZoneState extends State<_DropZone>
         });
 
         // Show success message
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Loaded file: ${file.name}'),

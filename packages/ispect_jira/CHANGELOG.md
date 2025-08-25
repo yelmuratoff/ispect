@@ -1,17 +1,33 @@
 # Changelog
 
-## 4.2.1-dev05
+## 4.3.0
 
 ### Added:
 
 - Add `LogsJsonService` for structured `JSON` export/import of logs and integrate sharing/import features into `ISpectViewController` and UI.
 - Implement `DailyFileLogHistory` for file-based log persistence with daily sessions and provide related screens for browsing and sharing sessions.
+- Added `File Viewer` to settings sheet in `ISpect` screen to view and manage log files.
+- `ispectify_ws` package for WebSocket *(ws package)* logging with `ISpect` integration.
 
 ### Enhancements:
 
 - Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
+- Add ability to open log files directly from the `ISpect` screen.
+
+### Changes:
+- Rename `ISpectifyDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
+- Rename `ISpectifyHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
+- Rename `ISpectifyBlocObserver` to `ISpectBLocObserver` for consistency
+- Rename `iSpectify` to `logger` and update related classes and documentation for consistency
+
+## Draggable Panel
+- Added: Position change listener API in `DraggablePanelController` (`addPositionListener` / `removePositionListener`).
+- Added: Public `dockBoundary` getter for consistent boundary logic across widget and controller.
+- Changed: `toggle()` now respects current `panelState` (not `initialPanelState`). Auto-toggle on mount removed to preserve user state. Initial position is clamped and (when starting closed) docked to the nearest edge.
+- Fixed: Panel no longer resets to default after visibility toggles; duplicate position callbacks removed; unified docking logic.
+- Performance: Batched x/y updates during drag via `setPosition(x, y)`; reduced redundant notifications and rebuilds; lifecycle safety (mounted checks) and controller rewire in `didUpdateWidget`.
 
 ## 4.2.0
 
@@ -168,7 +184,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - **Custom Performance Overlay** - Changed the approach and some improvements
 - **Enhanced Log Navigation** - Search, highlight, and expand/collapse functionality
 - **New Option: `logTruncateLength`** - Available in `ISpectifyOptions` for configurable log truncation
-- **New Configuration: `ISpectifyHttpLoggerSettings`** - Added to `ISpectifyHttpLogger` for improved setup flexibility
+- **New Configuration: `ISpectHttpInterceptorSettings`** - Added to `ISpectHttpInterceptor` for improved setup flexibility
 
 ### Improved
 - **JSON Handling** - Async and lazy loading for better performance on large data structures

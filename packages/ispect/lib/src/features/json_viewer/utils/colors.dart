@@ -7,7 +7,7 @@ import 'package:ispect/src/core/res/json_color.dart';
 /// Utility class containing color and styling helper methods for JSON tree viewing
 class JsonColorsUtils {
   /// Returns a default color based on the `JsonNodeType`.
-  static Color getValueColor(Object? value, Color defaultColor) {
+  static Color valueColor(Object? value, Color defaultColor) {
     if (value == null) {
       return JsonColors.nullColor;
     }
@@ -30,16 +30,16 @@ class JsonColorsUtils {
   }
 
   /// Resolves the display color of the value based on the `keyName`.
-  static Color getValueColorByKey(
+  static Color valueColorByKey(
     BuildContext context,
     String keyName,
     Object? value,
   ) {
     final theme = ISpect.read(context).theme;
-    return switch (keyName) {
+    final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
-      'method' => JsonColors.methodColors[value.toString()]!,
+      'method' => JsonColors.methodColors[value.toString()],
       'base-url' ||
       'url' ||
       'uri' ||
@@ -48,16 +48,21 @@ class JsonColorsUtils {
       'path' ||
       'Authorization' =>
         JsonColors.stringColor,
-      'status_code' => JsonColors.getStatusColor(value as int?),
+      'status_code' => JsonColors.statusColor(value as int?),
       'exception' => theme.getTypeColor(context, key: 'exception'),
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
       'time' || 'date' => JsonColors.dateTimeColor,
-      _ => getValueColor(
+      _ => valueColor(
           value,
           Theme.of(context).colorScheme.secondary,
         ),
     };
+    return result ??
+        valueColor(
+          value,
+          Theme.of(context).colorScheme.secondary,
+        );
   }
 }

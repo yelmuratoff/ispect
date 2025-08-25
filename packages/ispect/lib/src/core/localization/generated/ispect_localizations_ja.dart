@@ -572,4 +572,88 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => '選択された遷移';
+
+  @override
+  String get dailySessions => '日次セッション';
+
+  @override
+  String get logViewer => 'ログビューア';
+
+  @override
+  String get sessions => 'セッション';
+
+  @override
+  String get clearAllSessions => 'すべてのセッションをクリア';
+
+  @override
+  String get refresh => '更新';
+
+  @override
+  String get copyPath => 'パスをコピー';
+
+  @override
+  String get openPath => 'パスを開く';
+
+  @override
+  String get loadFileContent => 'ファイル内容を読み込む';
+
+  @override
+  String get chooseHowToLoadYourFile => 'ファイルの読み込み方法を選択';
+
+  @override
+  String get pasteContent => '内容を貼り付け';
+
+  @override
+  String get pasteTxtOrJsonHere => '.txt または .json ファイルの内容をコピーしてここに貼り付けてください';
+
+  @override
+  String get pickFiles => 'ファイルを選択';
+
+  @override
+  String get selectTxtOrJsonFromDevice => 'デバイスから .txt または .json ファイルを選択';
+
+  @override
+  String get onlyTxtAndJsonSupported => '.txt と .json のみ対応（最大 10MB）';
+
+  @override
+  String get and => 'と';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return '$extensions ファイルのみ対応（最大 $max）';
+  }
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get pasteYourFileContentBelow => 'ファイルの内容を以下に貼り付けてください：';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '.txt または .json ファイルの内容をここに貼り付けてください...';
+
+  @override
+  String get process => '処理';
+
+  @override
+  String get confirmClearAllDailySessions => 'すべての日次セッションをクリアしてもよろしいですか？';
+
+  @override
+  String get dailySessionsRefreshed => '日次セッションが更新されました';
+
+  @override
+  String get sessionsPathCopied => 'セッションパスがコピーされました';
+
+  @override
+  String get error => 'エラー';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'ファイルサイズ';
+
+  @override
+  String get loading => '読み込み中';
 }

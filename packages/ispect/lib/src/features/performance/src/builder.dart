@@ -17,7 +17,7 @@ import 'package:ispect/src/features/performance/performance.dart';
 ///
 /// Example usage:
 /// ```dart
-/// PerformanceOverlayBuilder(
+/// ISpectPerformanceOverlayBuilder(
 ///   isPerformanceTrackingEnabled: true,
 ///   theme: Theme.of(context),
 ///   child: MyAppView(),
@@ -25,14 +25,14 @@ import 'package:ispect/src/features/performance/performance.dart';
 /// ```
 ///
 /// See also:
-/// - `CustomPerformanceOverlay], which this builder configures and displays.
-class PerformanceOverlayBuilder extends StatelessWidget {
-  /// Creates a `PerformanceOverlayBuilder`.
+/// - `ISpectPerformanceOverlay`, which this builder configures and displays.
+class ISpectPerformanceOverlayBuilder extends StatelessWidget {
+  /// Creates a `ISpectPerformanceOverlayBuilder`.
   ///
   /// - `child] is the content to wrap with the performance overlay.
   /// - `isPerformanceTrackingEnabled] determines whether the overlay is shown.
   /// - `theme] is used to derive overlay colors from the current theme context.
-  const PerformanceOverlayBuilder({
+  const ISpectPerformanceOverlayBuilder({
     required this.child,
     required this.isPerformanceTrackingEnabled,
     super.key,
@@ -47,14 +47,14 @@ class PerformanceOverlayBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Directionality(
         textDirection: TextDirection.ltr,
-        child: CustomPerformanceOverlay(
+        child: ISpectPerformanceOverlay(
           enabled: isPerformanceTrackingEnabled,
           alignment: Alignment.topCenter,
           backgroundColor:
               context.ispectTheme.colorScheme.surface.withAlpha(100),
           textColor: context.ispectTheme.colorScheme.onSurface,
-          textBackgroundColor:
-              context.ispectTheme.colorScheme.surface.withAlpha(0x80),
+          // textBackgroundColor:
+          //     context.ispectTheme.colorScheme.surface.withAlpha(0x80),
           child: child,
         ),
       );

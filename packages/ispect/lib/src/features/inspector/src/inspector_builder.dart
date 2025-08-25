@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
-import 'package:ispect/src/common/widgets/feedback_body.dart';
+import 'package:ispect/src/common/widgets/builder/feedback_builder.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
@@ -14,12 +14,10 @@ class ISpectBuilder extends StatefulWidget {
     this.isISpectEnabled = kDebugMode,
     this.options,
     this.theme,
-    this.initialPosition,
     this.observer,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
-    this.onPositionChanged,
     this.controller,
     super.key,
   });
@@ -36,9 +34,6 @@ class ISpectBuilder extends StatefulWidget {
     Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
     ScrollController? controller,
   )? feedbackBuilder;
-  final void Function(double x, double y)? onPositionChanged;
-
-  final ({double x, double y})? initialPosition;
 
   final DraggablePanelController? controller;
 
@@ -81,13 +76,12 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
             selectedColor: theme.colorScheme.primaryContainer,
             textColor: theme.colorScheme.onSurface,
             selectedTextColor: theme.colorScheme.onSurface,
-            onPositionChanged: widget.onPositionChanged,
             controller: widget.controller,
             child: currentChild,
           );
 
           // Add performance overlay to the widget tree.
-          currentChild = PerformanceOverlayBuilder(
+          currentChild = ISpectPerformanceOverlayBuilder(
             isPerformanceTrackingEnabled: model.isPerformanceTrackingEnabled,
             child: currentChild,
           );

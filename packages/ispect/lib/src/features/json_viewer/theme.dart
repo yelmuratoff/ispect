@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 
 /// Theme used to display the `JsonExplorer`.
 @immutable
@@ -139,6 +140,37 @@ class JsonExplorerTheme {
     indentationPadding: 8,
     propertyIndentationPaddingFactor: 4,
   );
+
+  // ignore: prefer_constructors_over_static_methods
+  static JsonExplorerTheme defaultThemeByContext(BuildContext context) =>
+      JsonExplorerTheme(
+        propertyKeyTextStyle: TextStyle(
+          color: context.ispectTheme.colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+        rootKeyTextStyle: TextStyle(
+          color: context.ispectTheme.colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+        valueSearchHighlightTextStyle: const TextStyle(
+          color: Colors.black87,
+          backgroundColor: Color.fromARGB(228, 255, 235, 59),
+        ),
+        focusedValueSearchHighlightTextStyle: const TextStyle(
+          color: Colors.black,
+          backgroundColor: Colors.yellow,
+          fontWeight: FontWeight.bold,
+        ),
+        keySearchHighlightTextStyle: const TextStyle(
+          color: Colors.black87,
+          backgroundColor: Color.fromARGB(228, 255, 235, 59),
+        ),
+        focusedKeySearchHighlightTextStyle: const TextStyle(
+          color: Colors.black,
+          backgroundColor: Colors.yellow,
+          fontWeight: FontWeight.bold,
+        ),
+      );
 
   JsonExplorerTheme copyWith({
     TextStyle? rootKeyTextStyle,

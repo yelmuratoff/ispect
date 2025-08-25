@@ -37,7 +37,7 @@ migrate_working_dir/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
-
+ios
 .env
 .DS_Store
 

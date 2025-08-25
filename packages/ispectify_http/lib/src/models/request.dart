@@ -28,7 +28,7 @@ class HttpRequestLog extends ISpectifyData {
   final String path;
   final Map<String, String>? headers;
   final Object? body;
-  final ISpectifyHttpLoggerSettings settings;
+  final ISpectHttpInterceptorSettings settings;
 
   static const getKey = 'http-request';
 

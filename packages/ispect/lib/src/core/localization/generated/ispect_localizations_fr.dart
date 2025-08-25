@@ -596,4 +596,94 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Transition sélectionnée';
+
+  @override
+  String get dailySessions => 'Sessions quotidiennes';
+
+  @override
+  String get logViewer => 'Visualiseur de journaux';
+
+  @override
+  String get sessions => 'Sessions';
+
+  @override
+  String get clearAllSessions => 'Effacer toutes les sessions';
+
+  @override
+  String get refresh => 'Actualiser';
+
+  @override
+  String get copyPath => 'Copier le chemin';
+
+  @override
+  String get openPath => 'Ouvrir le chemin';
+
+  @override
+  String get loadFileContent => 'Charger le contenu du fichier';
+
+  @override
+  String get chooseHowToLoadYourFile =>
+      'Choisissez comment charger votre fichier';
+
+  @override
+  String get pasteContent => 'Coller le contenu';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      'Copiez le contenu d’un fichier .txt ou .json et collez-le ici';
+
+  @override
+  String get pickFiles => 'Sélectionner des fichiers';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Sélectionnez des fichiers .txt ou .json depuis votre appareil';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Seuls les fichiers .txt et .json sont pris en charge (max 10 Mo)';
+
+  @override
+  String get and => 'et';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Seuls les fichiers $extensions sont pris en charge (max $max)';
+  }
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get pasteYourFileContentBelow =>
+      'Collez le contenu de votre fichier ci-dessous :';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      'Collez le contenu de votre fichier .txt ou .json ici...';
+
+  @override
+  String get process => 'Traiter';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Êtes-vous sûr de vouloir effacer toutes les sessions quotidiennes ?';
+
+  @override
+  String get dailySessionsRefreshed => 'Sessions quotidiennes actualisées';
+
+  @override
+  String get sessionsPathCopied => 'Chemin des sessions copié';
+
+  @override
+  String get error => 'Erreur';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get fileSize => 'Taille du fichier';
+
+  @override
+  String get loading => 'Chargement';
 }

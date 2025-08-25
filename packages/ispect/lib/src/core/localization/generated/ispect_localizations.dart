@@ -1150,6 +1150,168 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Selected Transition'**
   String get selectedTransition;
+
+  /// No description provided for @dailySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Sessions'**
+  String get dailySessions;
+
+  /// No description provided for @logViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Viewer'**
+  String get logViewer;
+
+  /// No description provided for @sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessions;
+
+  /// No description provided for @clearAllSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all sessions'**
+  String get clearAllSessions;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @copyPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy path'**
+  String get copyPath;
+
+  /// No description provided for @openPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Open path'**
+  String get openPath;
+
+  /// No description provided for @loadFileContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Load file content'**
+  String get loadFileContent;
+
+  /// No description provided for @chooseHowToLoadYourFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how to load your file'**
+  String get chooseHowToLoadYourFile;
+
+  /// No description provided for @pasteContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste content'**
+  String get pasteContent;
+
+  /// No description provided for @pasteTxtOrJsonHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy .txt or .json file content and paste it here'**
+  String get pasteTxtOrJsonHere;
+
+  /// No description provided for @pickFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick files'**
+  String get pickFiles;
+
+  /// No description provided for @selectTxtOrJsonFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Select .txt or .json files from your device'**
+  String get selectTxtOrJsonFromDevice;
+
+  /// No description provided for @onlyTxtAndJsonSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Only .txt and .json files are supported (max 10MB)'**
+  String get onlyTxtAndJsonSupported;
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @onlyExtensionsSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {extensions} files are supported (max {max})'**
+  String onlyExtensionsSupported(Object extensions, Object max);
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @pasteYourFileContentBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your file content below:'**
+  String get pasteYourFileContentBelow;
+
+  /// No description provided for @pasteYourTxtOrJsonFileContentHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your .txt or .json file content here...'**
+  String get pasteYourTxtOrJsonFileContentHere;
+
+  /// No description provided for @process.
+  ///
+  /// In en, this message translates to:
+  /// **'Process'**
+  String get process;
+
+  /// No description provided for @confirmClearAllDailySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all daily sessions?'**
+  String get confirmClearAllDailySessions;
+
+  /// No description provided for @dailySessionsRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily sessions refreshed'**
+  String get dailySessionsRefreshed;
+
+  /// No description provided for @sessionsPathCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions Path Copied'**
+  String get sessionsPathCopied;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @fileSize.
+  ///
+  /// In en, this message translates to:
+  /// **'File size'**
+  String get fileSize;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
 }
 
 class _ISpectGeneratedLocalizationDelegate

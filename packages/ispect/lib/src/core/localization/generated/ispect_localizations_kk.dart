@@ -592,4 +592,93 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get selectedTransition => 'Таңдалған ауысу';
+
+  @override
+  String get dailySessions => 'Күнделікті сессиялар';
+
+  @override
+  String get logViewer => 'Лог көруші';
+
+  @override
+  String get sessions => 'Сессиялар';
+
+  @override
+  String get clearAllSessions => 'Барлық сессияларды тазарту';
+
+  @override
+  String get refresh => 'Жаңарту';
+
+  @override
+  String get copyPath => 'Жолды көшіру';
+
+  @override
+  String get openPath => 'Жолды ашу';
+
+  @override
+  String get loadFileContent => 'Файл мазмұнын жүктеу';
+
+  @override
+  String get chooseHowToLoadYourFile =>
+      'Файлыңызды қалай жүктеу керегін таңдаңыз';
+
+  @override
+  String get pasteContent => 'Мазмұнды қою';
+
+  @override
+  String get pasteTxtOrJsonHere =>
+      '.txt немесе .json файлдың мазмұнын көшіріп, осында қойыңыз';
+
+  @override
+  String get pickFiles => 'Файлдарды таңдау';
+
+  @override
+  String get selectTxtOrJsonFromDevice =>
+      'Құрылғыңыздан .txt немесе .json файлдарын таңдаңыз';
+
+  @override
+  String get onlyTxtAndJsonSupported =>
+      'Тек .txt және .json файлдары қолдау табады (ең көп 10 МБ)';
+
+  @override
+  String get and => 'және';
+
+  @override
+  String onlyExtensionsSupported(Object extensions, Object max) {
+    return 'Тек $extensions файлдары қолдау табады (ең көп $max)';
+  }
+
+  @override
+  String get cancel => 'Болдырмау';
+
+  @override
+  String get pasteYourFileContentBelow => 'Файл мазмұнын төменде қойыңыз:';
+
+  @override
+  String get pasteYourTxtOrJsonFileContentHere =>
+      '.txt немесе .json файл мазмұнын мұнда қойыңыз...';
+
+  @override
+  String get process => 'Өңдеу';
+
+  @override
+  String get confirmClearAllDailySessions =>
+      'Сіз барлық күнделікті сессияларды тазалағыңыз келетініне сенімдісіз бе?';
+
+  @override
+  String get dailySessionsRefreshed => 'Күнделікті сессиялар жаңартылды';
+
+  @override
+  String get sessionsPathCopied => 'Сессия жолы көшірілді';
+
+  @override
+  String get error => 'Қате';
+
+  @override
+  String get ok => 'Жарайды';
+
+  @override
+  String get fileSize => 'Файл өлшемі';
+
+  @override
+  String get loading => 'Жүктеу';
 }

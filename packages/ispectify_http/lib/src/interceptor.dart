@@ -6,20 +6,20 @@ import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/models/_models.dart';
 import 'package:ispectify_http/src/settings.dart';
 
-class ISpectifyHttpLogger extends InterceptorContract {
-  ISpectifyHttpLogger({
-    ISpectify? iSpectify,
-    this.settings = const ISpectifyHttpLoggerSettings(),
+class ISpectHttpInterceptor extends InterceptorContract {
+  ISpectHttpInterceptor({
+    ISpectify? logger,
+    this.settings = const ISpectHttpInterceptorSettings(),
   }) {
-    _iSpectify = iSpectify ?? ISpectify();
+    _logger = logger ?? ISpectify();
   }
 
-  late ISpectify _iSpectify;
+  late ISpectify _logger;
 
-  /// `ISpectifyHttpLogger` settings and customization
-  ISpectifyHttpLoggerSettings settings;
+  /// `ISpectHttpInterceptor` settings and customization
+  ISpectHttpInterceptorSettings settings;
 
-  /// Method to update `settings` of [ISpectifyHttpLogger]
+  /// Method to update `settings` of [ISpectHttpInterceptor]
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,
@@ -62,7 +62,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
     }
 
     final message = '${request.url}';
-    _iSpectify.logCustom(
+    _logger.logCustom(
       HttpRequestLog(
         message,
         method: request.method,
@@ -124,7 +124,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
         return response;
       }
 
-      _iSpectify.logCustom(
+      _logger.logCustom(
         HttpErrorLog(
           message,
           method: response.request?.method,
@@ -149,7 +149,7 @@ class ISpectifyHttpLogger extends InterceptorContract {
         ),
       );
     } else {
-      _iSpectify.logCustom(
+      _logger.logCustom(
         HttpResponseLog(
           message,
           method: response.request?.method,

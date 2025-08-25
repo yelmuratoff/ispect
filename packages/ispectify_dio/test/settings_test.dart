@@ -4,9 +4,9 @@ import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyDioLoggerSettings', () {
+  group('ISpectDioInterceptorSettings', () {
     test('copyWith should create a new instance with the provided values', () {
-      const originalSettings = ISpectifyDioLoggerSettings();
+      const originalSettings = ISpectDioInterceptorSettings();
       final updatedSettings = originalSettings.copyWith(
         printResponseData: false,
         printRequestHeaders: true,
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('requestFilter should return true for allowed paths', () {
-      final settings = ISpectifyDioLoggerSettings(
+      final settings = ISpectDioInterceptorSettings(
         requestFilter: (requestOptions) => requestOptions.path == '/allowed',
       );
       final allowedRequestOptions =
@@ -38,7 +38,7 @@ void main() {
     });
 
     test('responseFilter should return true for successful responses', () {
-      final settings = ISpectifyDioLoggerSettings(
+      final settings = ISpectDioInterceptorSettings(
         responseFilter: (response) => response.statusCode == 200,
       );
       final successfulResponse = Response<dynamic>(
@@ -55,7 +55,7 @@ void main() {
     });
 
     test('errorFilter should return true for cancelled responses', () {
-      final settings = ISpectifyDioLoggerSettings(
+      final settings = ISpectDioInterceptorSettings(
         errorFilter: (err) => err.type == DioExceptionType.cancel,
       );
       final cancelledResponse = DioException(
@@ -74,7 +74,7 @@ void main() {
     test(
         'copyWith should create a new instance with updated values for all fields',
         () {
-      final originalSettings = ISpectifyDioLoggerSettings(
+      final originalSettings = ISpectDioInterceptorSettings(
         printErrorHeaders: false,
         requestPen: AnsiPen()..green(),
         responsePen: AnsiPen()..cyan(),

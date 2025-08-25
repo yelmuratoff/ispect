@@ -150,6 +150,17 @@ class _FileListItem extends StatelessWidget {
                 ),
               ),
               IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  OpenFilex.open(file.path);
+                },
+                icon: const Icon(Icons.open_in_new_rounded),
+              ),
+              const Gap(8),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete_rounded),
               ),

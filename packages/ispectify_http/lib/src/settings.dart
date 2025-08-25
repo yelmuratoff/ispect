@@ -1,9 +1,9 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpectifyHttpLogger` settings and customization
-class ISpectifyHttpLoggerSettings {
-  const ISpectifyHttpLoggerSettings({
+/// `ISpectHttpInterceptor` settings and customization
+class ISpectHttpInterceptorSettings {
+  const ISpectHttpInterceptorSettings({
     this.enabled = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
@@ -93,7 +93,7 @@ class ISpectifyHttpLoggerSettings {
   /// You can add your custom logic to log only specific HTTP errors `BaseResponse`.
   final bool Function(BaseResponse response)? errorFilter;
 
-  ISpectifyHttpLoggerSettings copyWith({
+  ISpectHttpInterceptorSettings copyWith({
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -109,7 +109,7 @@ class ISpectifyHttpLoggerSettings {
     bool Function(BaseResponse response)? responseFilter,
     bool Function(BaseResponse response)? errorFilter,
   }) =>
-      ISpectifyHttpLoggerSettings(
+      ISpectHttpInterceptorSettings(
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

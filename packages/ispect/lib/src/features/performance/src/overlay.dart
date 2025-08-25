@@ -17,22 +17,21 @@ import 'package:flutter/scheduler.dart';
 /// that exceed the [targetFrameTime].
 ///
 /// Can be aligned and scaled, and provides customizable styling options.
-class CustomPerformanceOverlay extends StatelessWidget {
+class ISpectPerformanceOverlay extends StatelessWidget {
   /// Creates a performance overlay widget.
   ///
   /// The [child] is the main content; the overlay renders on top of it when [enabled].
-  const CustomPerformanceOverlay({
+  const ISpectPerformanceOverlay({
     required this.child,
     super.key,
     this.enabled = true,
     this.alignment = Alignment.topRight,
     this.scale = 1,
     this.sampleSize = 32,
-    this.targetFrameTime = const Duration(milliseconds: 16),
-    this.barRangeMax = const Duration(milliseconds: 24),
+    this.targetFrameTime = const Duration(microseconds: 16667),
+    this.barRangeMax = const Duration(milliseconds: 50),
     this.backgroundColor = Colors.white,
     this.textColor = Colors.black,
-    this.textBackgroundColor = const Color(0x77ffffff),
     this.uiColor = Colors.teal,
     this.rasterColor = Colors.blue,
     this.highLatencyColor = Colors.cyan,
@@ -62,9 +61,6 @@ class CustomPerformanceOverlay extends StatelessWidget {
   /// Foreground color for the text labels.
   final Color textColor;
 
-  /// Background color behind the text.
-  final Color textBackgroundColor;
-
   /// Bar color for UI durations.
   final Color uiColor;
 
@@ -91,7 +87,7 @@ class CustomPerformanceOverlay extends StatelessWidget {
                     child: Transform.scale(
                       alignment: alignment,
                       scale: scale,
-                      child: _CustomPerformanceOverlay(
+                      child: _ISpectPerformanceOverlay(
                         sampleSize: sampleSize,
                         targetFrameTime: targetFrameTime,
                         barRangeMax: barRangeMax,
@@ -111,9 +107,9 @@ class CustomPerformanceOverlay extends StatelessWidget {
 }
 
 /// Internal stateful widget that collects and displays frame timings.
-class _CustomPerformanceOverlay extends StatefulWidget {
+class _ISpectPerformanceOverlay extends StatefulWidget {
   /// Creates the internal performance overlay.
-  const _CustomPerformanceOverlay({
+  const _ISpectPerformanceOverlay({
     required this.sampleSize,
     required this.targetFrameTime,
     required this.barRangeMax,
@@ -149,12 +145,12 @@ class _CustomPerformanceOverlay extends StatefulWidget {
   final Color highLatencyColor;
 
   @override
-  State<_CustomPerformanceOverlay> createState() =>
-      _CustomPerformanceOverlayState();
+  State<_ISpectPerformanceOverlay> createState() =>
+      _ISpectPerformanceOverlayState();
 }
 
-/// State for [_CustomPerformanceOverlay] that manages frame timing samples.
-class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
+/// State for [_ISpectPerformanceOverlay] that manages frame timing samples.
+class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
   /// Recent frame timing samples.
   List<FrameTiming> _samples = const [];
 
@@ -218,11 +214,8 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
   Widget build(BuildContext context) {
     final devicePixelRatio =
         MediaQuery.maybeOf(context)?.devicePixelRatio ?? 1.0;
-    final width = 448.0 * devicePixelRatio.clamp(1.0, 2.0);
-    final height = 40.0 * devicePixelRatio.clamp(1.0, 2.0);
 
-    // DRY: constant for text style
-    const textStyle = TextStyle(fontSize: 10);
+    final height = 40.0 * devicePixelRatio.clamp(1.0, 2.0);
 
     // Optimization: buildDuration/rasterDuration/totalSpan are computed once
     final uiSamples = [for (final e in _samples) e.buildDuration];
@@ -230,7 +223,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
     final latencySamples = [for (final e in _samples) e.totalSpan];
 
     return SizedBox(
-      width: width,
+      width: double.maxFinite,
       height: height,
       child: ColoredBox(
         color: widget.backgroundColor,
@@ -244,7 +237,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
               const VerticalDivider(width: 2, thickness: 2),
               _ChartColumn(
@@ -254,7 +247,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
               const VerticalDivider(width: 2, thickness: 2),
               _ChartColumn(
@@ -264,7 +257,7 @@ class _CustomPerformanceOverlayState extends State<_CustomPerformanceOverlay> {
                 sampleSize: widget.sampleSize,
                 targetFrameTime: widget.targetFrameTime,
                 barRangeMax: widget.barRangeMax,
-                textStyle: textStyle,
+                textStyle: const TextStyle(fontSize: 10),
               ),
             ],
           ),
@@ -324,7 +317,7 @@ class _ChartColumn extends StatelessWidget {
 
 /// A chart widget that renders frame timings as vertical bars.
 ///
-/// Displays the maximum, average, and FPS summary for each sample set.
+/// Displays the maximum, average, and FPS for each sample set.
 class _PerformanceChart extends StatelessWidget {
   /// Creates a performance chart for a set of frame timings.
   const _PerformanceChart({
@@ -391,19 +384,23 @@ class _PerformanceChart extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'max ${maxDuration.ms}ms ',
+                    text: 'max ${maxDuration.ms}ms\n',
                     style: TextStyle(
-                      color: maxDuration <= targetFrameTime ? null : Colors.red,
+                      color: maxDuration <= targetFrameTime
+                          ? null
+                          : const Color.fromARGB(255, 255, 151, 144),
                     ),
                   ),
                   TextSpan(
                     text: 'avg ${avg.ms}ms\n',
                     style: TextStyle(
-                      color: avg <= targetFrameTime ? null : Colors.red,
+                      color: avg <= targetFrameTime
+                          ? null
+                          : const Color.fromARGB(255, 255, 151, 144),
                     ),
                   ),
                   TextSpan(
-                    text: '$type <= ${fps.toStringAsFixed(1)} FPS',
+                    text: '$type ${fps.toStringAsFixed(1)} FPS',
                   ),
                 ],
                 style: textStyle,
@@ -459,7 +456,8 @@ class _OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Draw a horizontal line to mark the target frame time.
-    final lineY = size.height * (1 - targetFrameTime / barRangeMax);
+    final lineY =
+        size.height * (1 - (targetFrameTime / barRangeMax).clamp(0.0, 1.0));
     canvas.drawLine(
       Offset(0, lineY),
       Offset(size.width, lineY),
@@ -474,7 +472,7 @@ class _OverlayPainter extends CustomPainter {
       final index = i - sampleSize + samples.length;
       if (index < 0) break;
       final duration = samples[index];
-      final heightFactor = duration / barRangeMax;
+      final heightFactor = (duration / barRangeMax).clamp(0.0, 1.0);
       paint.color = duration <= targetFrameTime ? color : Colors.red;
       canvas.drawRect(
         Rect.fromLTWH(

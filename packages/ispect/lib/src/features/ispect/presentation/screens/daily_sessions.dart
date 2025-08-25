@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/list_screen.dart';
+import 'package:open_filex/open_filex.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});
@@ -40,6 +41,21 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadSessions());
   }
 
+  Future<void> _openPath() async {
+    final history = widget.history;
+    if (history == null) {
+      return;
+    }
+
+    await OpenFilex.open(history.sessionDirectory);
+
+    // copyClipboard(
+    //   context,
+    //   value: history.sessionDirectory,
+    //   title: '✅ ${context.ispectL10n.sessionsPathCopied}',
+    // );
+  }
+
   Future<void> _copyPathToClipboard() async {
     final history = widget.history;
     if (history == null) {
@@ -49,7 +65,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     copyClipboard(
       context,
       value: history.sessionDirectory,
-      title: '✅ Sessions Path Copied',
+      title: '✅ ${context.ispectL10n.sessionsPathCopied}',
     );
   }
 
@@ -70,7 +86,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
       if (isRefreshing) {
         await ISpectToaster.showInfoToast(
           context,
-          title: '✅ Daily sessions refreshed',
+          title: '✅ ${context.ispectL10n.dailySessionsRefreshed}',
         );
       }
     }
@@ -79,10 +95,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Sessions',
-            style: TextStyle(
-              fontSize: 26,
+          title: Text(
+            context.ispectL10n.sessions,
+            style: const TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.5,
             ),
@@ -94,20 +110,25 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           actionsPadding: const EdgeInsets.only(right: 12),
           actions: [
             IconButton(
+              icon: const Icon(Icons.open_in_new_rounded),
+              onPressed: _openPath,
+              tooltip: context.ispectL10n.openPath,
+            ),
+            IconButton(
               icon: const Icon(Icons.copy_all_rounded),
               onPressed: _copyPathToClipboard,
-              tooltip: 'Copy path',
+              tooltip: context.ispectL10n.copyPath,
             ),
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
               onPressed: () => _loadSessions(isRefreshing: true),
-              tooltip: 'Refresh',
+              tooltip: context.ispectL10n.refresh,
             ),
             if (widget.history != null)
               IconButton(
                 icon: const Icon(Icons.clear_all_rounded),
                 onPressed: _showClearAllDialog,
-                tooltip: 'Clear All Sessions',
+                tooltip: context.ispectL10n.clearAllSessions,
               ),
           ],
         ),
@@ -134,14 +155,12 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear all Sessions'),
-        content: const Text(
-          'Are you sure you want to clear all daily sessions?',
-        ),
+        title: Text(context.ispectL10n.clearAllSessions),
+        content: Text(context.ispectL10n.confirmClearAllDailySessions),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.ispectL10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -151,7 +170,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                 await _loadSessions(isRefreshing: true);
               }
             },
-            child: const Text('Clear'),
+            child: Text(context.ispectL10n.ok),
           ),
         ],
       ),
@@ -186,12 +205,12 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text(context.ispectL10n.error),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text(context.ispectL10n.ok),
           ),
         ],
       ),
@@ -249,25 +268,47 @@ class _SessionListTileState extends State<_SessionListTile> {
         ),
         subtitle: _fileSize != null
             ? Text(
-                'File size: ${(_fileSize! / 1024).toStringAsFixed(1)} KB',
+                '${context.ispectL10n.fileSize}: ${(_fileSize! / 1024).toStringAsFixed(1)} KB',
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                   fontWeight: FontWeight.w300,
                 ),
               )
-            : const Text(
-                'Loading...',
-                style: TextStyle(
+            : Text(
+                '${context.ispectL10n.loading}...',
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                   fontWeight: FontWeight.w300,
                 ),
               ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 14,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.open_in_new_rounded),
+              onPressed: () {
+                _navigateToSession(widget.session);
+              },
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+            ),
+          ],
         ),
         onTap: widget.onTap,
       );
+
+  Future<void> _navigateToSession(DateTime session) async {
+    final fileLogHistory = ISpect.logger.fileLogHistory;
+    final path = await fileLogHistory?.getLogPathByDate(session);
+    if (path != null) {
+      unawaited(OpenFilex.open(path));
+    }
+  }
 }

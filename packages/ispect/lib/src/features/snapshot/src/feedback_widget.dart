@@ -52,15 +52,13 @@ class FeedbackWidget extends StatefulWidget {
 class FeedbackWidgetState extends State<FeedbackWidget>
     with SingleTickerProviderStateMixin {
   // Padding to put around the interactive screenshot preview.
-  final double _padding = 8;
+  final _padding = 8.0;
 
   // We use a ValueNotifier instead of just a double and `SetState` because
   // rebuilding the feedback sheet mid-drag cancels the drag.
-  final ValueNotifier<double> _sheetProgress = ValueNotifier(0);
+  final _sheetProgress = ValueNotifier<double>(0);
 
   late final PainterController _painterController = _create();
-
-  final TextEditingController _ = TextEditingController();
 
   late FeedbackMode _mode = widget.mode;
   late final AnimationController _controller = AnimationController(
@@ -83,7 +81,6 @@ class FeedbackWidgetState extends State<FeedbackWidget>
 
   @override
   void dispose() {
-    _.dispose();
     _painterController.dispose();
     _sheetProgress.dispose();
     _controller.dispose();
