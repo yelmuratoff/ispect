@@ -5,6 +5,7 @@ import 'package:ispectify/ispectify.dart';
 class ISpectHttpInterceptorSettings {
   const ISpectHttpInterceptorSettings({
     this.enabled = true,
+    this.enableRedaction = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,
@@ -23,6 +24,9 @@ class ISpectHttpInterceptorSettings {
 
   // Print HTTP logger if true
   final bool enabled;
+
+  /// Enable sensitive data redaction if true (default: true)
+  final bool enableRedaction;
 
   /// Print response data if true
   final bool printResponseData;
@@ -94,6 +98,7 @@ class ISpectHttpInterceptorSettings {
   final bool Function(BaseResponse response)? errorFilter;
 
   ISpectHttpInterceptorSettings copyWith({
+    bool? enableRedaction,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -110,6 +115,7 @@ class ISpectHttpInterceptorSettings {
     bool Function(BaseResponse response)? errorFilter,
   }) =>
       ISpectHttpInterceptorSettings(
+        enableRedaction: enableRedaction ?? this.enableRedaction,
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

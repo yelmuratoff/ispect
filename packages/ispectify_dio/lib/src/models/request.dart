@@ -12,11 +12,12 @@ class DioRequestLog extends ISpectifyData {
     required this.path,
     required this.headers,
     required this.body,
+    this.redactor,
   }) : super(
           title: getKey,
           key: getKey,
           pen: settings.requestPen ?? (AnsiPen()..xterm(207)),
-          additionalData: requestData.toJson,
+          additionalData: requestData.toJson(redactor: redactor),
         );
 
   final String method;
@@ -26,6 +27,7 @@ class DioRequestLog extends ISpectifyData {
   final Object? body;
   final ISpectDioInterceptorSettings settings;
   final DioRequestData requestData;
+  final RedactionService? redactor;
 
   static const getKey = 'http-request';
 

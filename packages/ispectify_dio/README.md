@@ -43,6 +43,7 @@ Streamline your HTTP debugging workflow by automatically capturing and logging a
 - 📊 **Response Tracking**: Detailed response logging with timing information
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
 - 🔍 **Request Inspection**: Headers, body, and parameter logging
+- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
 - ⚡ **Performance Metrics**: Request/response timing and size tracking
 - 🎛️ **Configurable**: Flexible configuration options for different environments
 
@@ -74,6 +75,32 @@ ISpect.run(
 );
 ```
 
+### Sensitive Data Redaction
+
+Redaction is enabled by default. Disable globally via settings or provide a custom redactor.
+
+```dart
+// Disable redaction
+dio.interceptors.add(
+  ISpectDioInterceptor(
+    iSpectify: iSpectify,
+    settings: const ISpectDioInterceptorSettings(enableRedaction: false),
+  ),
+);
+
+// Provide a custom redactor
+final redactor = RedactionService();
+redactor.ignoreKeys(['x-debug']);
+redactor.ignoreValues(['sample-token']);
+
+dio.interceptors.add(
+  ISpectDioInterceptor(
+    iSpectify: iSpectify,
+    redactor: redactor,
+  ),
+);
+```
+
 ### Advanced Configuration with Filters
 
 ```dart
@@ -82,12 +109,9 @@ dio.interceptors.add(
     iSpectify: iSpectify,
     settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
-      // Filter specific requests
       // requestFilter: (requestOptions) =>
       //     requestOptions.path != '/sensitive-endpoint',
-      // Filter specific responses
       // responseFilter: (response) => response.statusCode != 404,
-      // Filter specific errors
       // errorFilter: (error) => error.response?.statusCode != 404,
     ),
   ),
@@ -97,24 +121,11 @@ dio.interceptors.add(
 ### Multiple Dio Instances
 
 ```dart
-// Main API client
-final Dio mainDio = Dio(
-  BaseOptions(baseUrl: 'https://api.example.com'),
-);
+final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
 
-// File upload client
-final Dio uploadDio = Dio(
-  BaseOptions(baseUrl: 'https://upload.example.com'),
-);
-
-// Add interceptors to both
-mainDio.interceptors.add(
-  ISpectDioInterceptor(iSpectify: iSpectify),
-);
-
-uploadDio.interceptors.add(
-  ISpectDioInterceptor(iSpectify: iSpectify),
-);
+mainDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
+uploadDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
 ```
 
 ## 📦 Installation
@@ -123,7 +134,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.0
+  ispectify_dio: ^4.3.1-dev01
 ```
 
 ## 🚀 Quick Start

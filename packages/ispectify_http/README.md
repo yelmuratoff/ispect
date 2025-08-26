@@ -43,6 +43,7 @@ Enhance your HTTP debugging workflow by automatically capturing and logging all 
 - 📊 **Response Tracking**: Detailed response logging with timing information
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
 - 🔍 **Request Inspection**: Headers, body, and parameter logging
+- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
 - ⚡ **Performance Metrics**: Request/response timing and size tracking
 - 🎛️ **Lightweight**: Minimal overhead using http_interceptor package
 
@@ -54,7 +55,6 @@ Enhance your HTTP debugging workflow by automatically capturing and logging all 
 final http_interceptor.InterceptedClient client =
     http_interceptor.InterceptedClient.build(interceptors: []);
 
-// Initialize in ISpect.run onInit callback
 ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
@@ -66,26 +66,49 @@ ISpect.run(
 );
 ```
 
+### Sensitive Data Redaction
+
+Redaction is enabled by default. Disable globally via settings or provide a custom redactor.
+
+```dart
+// Disable redaction
+client.interceptors.add(
+  ISpectHttpInterceptor(
+    iSpectify: iSpectify,
+    settings: const ISpectHttpInterceptorSettings(enableRedaction: false),
+  ),
+);
+
+// Provide a custom redactor
+final redactor = RedactionService();
+redactor.ignoreKeys(['x-debug']);
+redactor.ignoreValues(['sample-token']);
+
+client.interceptors.add(
+  ISpectHttpInterceptor(
+    iSpectify: iSpectify,
+    redactor: redactor,
+  ),
+);
+```
+
 ### File Upload Example
 
 ```dart
-// Upload file using MultipartRequest
-final List<int> bytes = [1, 2, 3]; // File data
+final List<int> bytes = [1, 2, 3];
 const String filename = 'file.txt';
 
-final http_interceptor.MultipartRequest request =
-    http_interceptor.MultipartRequest(
+final http_interceptor.MultipartRequest request = http_interceptor.MultipartRequest(
   'POST',
   Uri.parse('https://api.example.com/upload'),
 );
 
 request.files.add(http_interceptor.MultipartFile.fromBytes(
-  'file', // Field name
+  'file',
   bytes,
   filename: filename,
 ));
 
-// Send request - will be automatically logged
 client.send(request);
 ```
 
@@ -95,7 +118,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.0
+  ispectify_http: ^4.3.1-dev01
 ```
 
 ## 🚀 Quick Start

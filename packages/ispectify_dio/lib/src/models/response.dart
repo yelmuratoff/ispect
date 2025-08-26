@@ -16,11 +16,12 @@ class DioResponseLog extends ISpectifyData {
     required this.headers,
     required this.requestBody,
     required this.responseBody,
+    this.redactor,
   }) : super(
           key: getKey,
           title: getKey,
           pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
-          additionalData: responseData.toJson,
+          additionalData: responseData.toJson(redactor: redactor),
         );
 
   final String? method;
@@ -34,6 +35,7 @@ class DioResponseLog extends ISpectifyData {
   final Object? responseBody;
   final ISpectDioInterceptorSettings settings;
   final DioResponseData responseData;
+  final RedactionService? redactor;
 
   static const getKey = 'http-response';
 

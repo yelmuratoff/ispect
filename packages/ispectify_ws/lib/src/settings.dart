@@ -5,6 +5,7 @@ import 'package:ispectify_ws/ispectify_ws.dart';
 class ISpectWSInterceptorSettings {
   const ISpectWSInterceptorSettings({
     this.enabled = true,
+    this.enableRedaction = true,
     this.printReceivedData = true,
     this.printReceivedMessage = true,
     this.printErrorData = true,
@@ -21,6 +22,9 @@ class ISpectWSInterceptorSettings {
 
   // Print HTTP logger if true
   final bool enabled;
+
+  /// Enable sensitive data redaction if true (default: true)
+  final bool enableRedaction;
 
   /// Print response data if true
   final bool printReceivedData;

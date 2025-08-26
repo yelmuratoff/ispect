@@ -43,6 +43,7 @@ Enhance your WebSocket debugging workflow by automatically capturing and logging
 - 📨 **Message Tracking**: Detailed logging of sent and received messages
 - ❌ **Error Handling**: Comprehensive error logging with stack traces
 - 🔍 **Connection Inspection**: URL, connection state, and metrics logging
+- 🔒 **Sensitive Data Redaction**: Centralized redaction for sent/received payloads (enabled by default, configurable)
 - ⚡ **Performance Metrics**: Connection timing and message count tracking
 - 🎛️ **Lightweight**: Minimal overhead using ws package interceptors
 
@@ -53,7 +54,6 @@ Enhance your WebSocket debugging workflow by automatically capturing and logging
 ```dart
 final logger = ISpectify();
 
-// Create interceptor with custom settings
 final interceptor = ISpectWSInterceptor(
   logger: logger,
   settings: const ISpectWSInterceptorSettings(
@@ -67,15 +67,34 @@ final interceptor = ISpectWSInterceptor(
   ),
 );
 
-// Create WebSocket client
 final client = WebSocketClient(
   WebSocketOptions.common(
     interceptors: [interceptor],
   ),
 );
 
-// Set client for interceptor
 interceptor.setClient(client);
+```
+
+### Sensitive Data Redaction
+
+Redaction is enabled by default. Disable globally via settings or provide a custom redactor.
+
+```dart
+// Disable redaction
+final interceptor = ISpectWSInterceptor(
+  logger: logger,
+  settings: const ISpectWSInterceptorSettings(enableRedaction: false),
+);
+
+// Provide a custom redactor
+final redactor = RedactionService();
+redactor.ignoreKeys(['x-debug']);
+redactor.ignoreValues(['sample-token']);
+final interceptor2 = ISpectWSInterceptor(
+  logger: logger,
+  redactor: redactor,
+);
 ```
 
 ### Advanced Configuration with Filters
@@ -85,20 +104,15 @@ final interceptor = ISpectWSInterceptor(
   logger: logger,
   settings: ISpectWSInterceptorSettings(
     enabled: true,
-    // Custom filters for selective logging
     sentFilter: (request) {
-      // Only log requests containing specific data
       return request.body?['data']?.toString().contains('important') ?? false;
     },
     receivedFilter: (response) {
-      // Only log successful responses
       return !response.body?['data']?.toString().contains('error') ?? true;
     },
     errorFilter: (error) {
-      // Log all errors
       return true;
     },
-    // Custom console colors
     sentPen: AnsiPen()..blue(),
     receivedPen: AnsiPen()..green(),
     errorPen: AnsiPen()..red(),
@@ -124,7 +138,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.0
+  ispectify_ws: ^4.3.1-dev01
 ```
 
 ## 🚀 Quick Start

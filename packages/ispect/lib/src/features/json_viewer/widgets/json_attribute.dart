@@ -137,7 +137,7 @@ class JsonAttribute extends StatelessWidget {
                       length: node.children.length,
                       style: theme.rootKeyTextStyle,
                     ),
-                  if (node.value is Map)
+                  if (node.value is Map || node.value is Set)
                     _MapSuffixWidget(
                       length: node.children.length,
                       style: theme.rootKeyTextStyle,

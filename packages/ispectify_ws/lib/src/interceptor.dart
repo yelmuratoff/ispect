@@ -7,11 +7,13 @@ final class ISpectWSInterceptor implements WSInterceptor {
     required this.logger,
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
-  });
+    RedactionService? redactor,
+  }) : _redactor = redactor ?? RedactionService();
 
   final ISpectify logger;
   final ISpectWSInterceptorSettings settings;
   final void Function(WebSocketClient)? onClientReady;
+  final RedactionService _redactor;
   WebSocketClient? _client;
 
   void setClient(WebSocketClient client) {
@@ -30,24 +32,26 @@ final class ISpectWSInterceptor implements WSInterceptor {
     }
     final uri = Uri.tryParse(_client?.metrics.lastUrl ?? '');
     try {
+      final useRedaction = settings.enableRedaction;
+      final safe = useRedaction ? _redactor.redact(data) : data;
       final log = switch (type) {
         'REQUEST' => WSSentLog(
-            '$data',
+            '$safe',
             type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
             body: {
-              'data': data.toString(),
+              'data': safe,
               'metrics': _client?.metrics.toJson(),
             },
           ),
         'RESPONSE' => WSReceivedLog(
-            '$data',
+            '$safe',
             type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
             body: {
-              'data': data.toString(),
+              'data': safe,
               'metrics': _client?.metrics.toJson(),
             },
           ),

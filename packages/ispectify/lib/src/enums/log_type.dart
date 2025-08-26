@@ -97,6 +97,9 @@ enum ISpectifyLogType {
 
     return ISpectifyLogType.values.firstWhere((e) => e.level == logLevel);
   }
+
+  static Set<String> get keys =>
+      ISpectifyLogType.values.map((e) => e.key).toSet();
 }
 
 extension ISpectifyLogTypeExt on ISpectifyLogType {
