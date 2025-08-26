@@ -26,6 +26,9 @@
 
 - Preserve response headers shape while redacting in `ispectify_dio` (`Map<String, List<String>>`) to avoid type/cast issues.
 
+### Updates
+- Update `draggable_panel` dependency to version 1.2.0. See what's changed in `draggable_panel`: https://pub.dev/packages/draggable_panel/changelog
+
 
 ## 4.3.0
 
