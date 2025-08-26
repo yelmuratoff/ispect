@@ -75,7 +75,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.3.1-dev01
+  ispect: ^4.3.1-dev02
 ```
 
 ## 🚀 Quick Start
