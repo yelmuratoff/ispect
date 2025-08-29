@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.3.1-dev02
+## 4.3.1
 
 ### Added
 
