@@ -8,13 +8,6 @@ import 'package:ispectify/ispectify.dart';
 /// A single-class, configurable service to redact sensitive values in
 /// headers, JSON-like maps, and lists. Designed to be fast, recursive, and
 /// idempotent with sensible defaults.
-///
-/// Notes:
-/// - Case-insensitive key matching for headers/JSON keys.
-/// - Partial masking keeps useful context (e.g., "Bearer ") and first/last chars.
-/// - Handles nested Map/List structures.
-/// - Detects likely binary/base64 payloads and replaces with placeholders.
-/// - Processes all data recursively without depth limits for complete coverage.
 class RedactionService {
   RedactionService({
     Set<String>? sensitiveKeys,
@@ -25,12 +18,13 @@ class RedactionService {
     bool? redactBase64,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    int? maxDepth,
   })  : _sensitiveKeysLower = (sensitiveKeys ?? _kDefaultSensitiveKeys)
             .map((e) => e.toLowerCase())
             .toSet(),
         _sensitiveKeyPatterns =
             sensitiveKeyPatterns ?? _kDefaultSensitiveKeyRegexps,
-        // _maxDepth = maxDepth ?? 1000, // Removed - no longer needed
+        _maxDepth = maxDepth ?? 100,
         _stringEdgeVisible = stringEdgeVisible ?? 2,
         _placeholder = placeholder ?? '[REDACTED]',
         _redactBinary = redactBinary ?? true,
@@ -38,18 +32,30 @@ class RedactionService {
         _ignoredValues = {...?ignoredValues, ...ISpectifyLogType.keys},
         _ignoredKeyNamesLower = {
           ...?(ignoredKeys?.map((e) => e.toLowerCase())),
-        };
+        } {
+    // Input validation
+    if (_maxDepth <= 0) {
+      throw ArgumentError('maxDepth must be positive, got: $_maxDepth');
+    }
+    if (_stringEdgeVisible < 0) {
+      throw ArgumentError(
+        'stringEdgeVisible must be non-negative, got: $_stringEdgeVisible',
+      );
+    }
+    if (_placeholder.isEmpty) {
+      throw ArgumentError('placeholder must not be empty');
+    }
+  }
 
   final Set<String> _sensitiveKeysLower;
   final List<RegExp> _sensitiveKeyPatterns;
-  // final int _maxDepth; // Removed - no longer needed
+  final int _maxDepth;
   final int _stringEdgeVisible;
   final String _placeholder;
   final bool _redactBinary;
   final bool _redactBase64;
-  final Set<String> _ignoredValues; // exact string matches to skip redaction
-  final Set<String>
-      _ignoredKeyNamesLower; // key names (lowercased) to skip sensitivity
+  final Set<String> _ignoredValues;
+  final Set<String> _ignoredKeyNamesLower;
 
   // --- Public API ----------------------------------------------------------
 
@@ -73,7 +79,7 @@ class RedactionService {
       out[keyStr] = _redactNode(
         value,
         keyName: keyStr,
-        // depth: 0, // Removed - no longer needed
+        depth: 0,
         ignoredValues: callIgnored,
         ignoredKeysLower: callIgnoredKeysLower,
       );
@@ -94,7 +100,7 @@ class RedactionService {
       _redactNode(
         data,
         keyName: keyName,
-        // depth: 0, // Removed - no longer needed
+        depth: 0,
         ignoredValues: (ignoredValues == null || ignoredValues.isEmpty)
             ? null
             : ignoredValues,
@@ -150,77 +156,141 @@ class RedactionService {
   Object? _redactNode(
     Object? node, {
     required String? keyName,
-    // required int depth, // Removed - no longer needed
+    required int depth,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeysLower,
   }) {
     if (node == null) return null;
-    // Process all data recursively - sensitive values will be masked appropriately
 
-    // If key is sensitive (and not in ignored keys), mask scalar values directly (idempotent check inside)
+    // Prevent infinite recursion and DoS attacks
+    if (depth >= _maxDepth) {
+      return node; // Return as-is if max depth reached
+    }
+
+    // If key is sensitive, mask scalar values directly
     if (_isSensitiveKey(keyName, ignoredKeysLower)) {
-      if (node is String) {
-        if (_isIgnoredValue(node, ignoredValues)) return node;
-        return _maskString(node, keyName: keyName);
-      }
-      if (node is num || node is bool || node is DateTime) return _placeholder;
-      if (node is Uint8List) return _binaryPlaceholder(node.length);
-      // For complex types under sensitive key, replace with placeholder
-      return _placeholder;
+      return _redactSensitiveValue(node, ignoredValues, keyName);
     }
 
     // For non-sensitive keys, handle based on type
+    return _redactByType(node, keyName, depth, ignoredValues, ignoredKeysLower);
+  }
+
+  /// Redacts a sensitive scalar value (String, num, bool, DateTime)
+  /// Returns the placeholder for scalar types or processes binary data appropriately
+  Object? _redactSensitiveValue(
+    Object? node,
+    Set<String>? ignoredValues,
+    String? keyName,
+  ) {
+    if (node is String) {
+      if (_isIgnoredValue(node, ignoredValues)) return node;
+      return _maskString(node, keyName: keyName);
+    }
+    if (node.isScalarType) return _placeholder;
+    if (node is Uint8List) return _redactBinary ? _redactUint8List(node) : node;
+    // For complex types under sensitive key, replace with placeholder
+    return _placeholder;
+  }
+
+  /// Redacts data based on its type (Map, List, Uint8List, String)
+  /// Preserves the original data structure and types where possible
+  Object? _redactByType(
+    Object? node,
+    String? keyName,
+    int depth,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeysLower,
+  ) {
     if (node is Map) {
-      final input = node;
-      final out = input.map((k, v) {
-        final childKey = k.toString();
-        return MapEntry(
-          k,
-          _redactNode(
-            v,
-            keyName: childKey,
-            // depth: depth + 1, // Removed - no longer needed
-            ignoredValues: ignoredValues,
-            ignoredKeysLower: ignoredKeysLower,
-          ),
-        );
-      });
-      return out;
+      return _redactMap(node, depth, ignoredValues, ignoredKeysLower);
     }
     if (node is List) {
-      return node
+      return _redactList(node, keyName, depth, ignoredValues, ignoredKeysLower);
+    }
+    if (node is Uint8List) {
+      return _redactBinary ? _redactUint8List(node) : node;
+    }
+    if (node is String) {
+      return _redactStringContent(node, ignoredValues, keyName);
+    }
+    // Primitive non-string types left as-is
+    return node;
+  }
+
+  /// Recursively redacts all values in a Map while preserving keys and structure
+  Map<Object?, Object?> _redactMap(
+    Map<Object?, Object?> input,
+    int depth,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeysLower,
+  ) {
+    // For String-keyed maps, preserve the type more carefully
+    if (input is Map<String, Object?>) {
+      final result = <String, Object?>{};
+      input.forEach((k, v) {
+        result[k] = _redactNode(
+          v,
+          keyName: k,
+          depth: depth + 1,
+          ignoredValues: ignoredValues,
+          ignoredKeysLower: ignoredKeysLower,
+        );
+      });
+      return result;
+    }
+
+    // Fallback for other Map types
+    final result = <Object?, Object?>{};
+    input.forEach((k, v) {
+      result[k] = _redactNode(
+        v,
+        keyName: k?.toString(),
+        depth: depth + 1,
+        ignoredValues: ignoredValues,
+        ignoredKeysLower: ignoredKeysLower,
+      );
+    });
+    return result;
+  }
+
+  List<Object?> _redactList(
+    List<Object?> input,
+    String? keyName,
+    int depth,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeysLower,
+  ) =>
+      input
           .map(
             (e) => _redactNode(
               e,
               keyName: keyName,
-              // depth: depth + 1, // Removed - no longer needed
+              depth: depth + 1,
               ignoredValues: ignoredValues,
               ignoredKeysLower: ignoredKeysLower,
             ),
           )
           .toList(growable: false);
-    }
 
-    if (node is Uint8List) {
-      return _redactBinary ? _binaryPlaceholder(node.length) : node;
-    }
+  /// Redacts string content that may contain sensitive data like tokens or binary data
+  Object? _redactStringContent(
+    String node,
+    Set<String>? ignoredValues,
+    String? keyName,
+  ) {
+    if (_isIgnoredValue(node, ignoredValues)) return node;
 
-    if (node is String) {
-      if (_isIgnoredValue(node, ignoredValues)) return node;
-      // If the content itself looks like a JWT, token, or base64/binary, mask partially.
-      if (_looksLikeAuthorizationValue(node)) {
-        return _maskString(node, keyName: keyName);
-      }
-      if (_redactBase64 && _isLikelyBase64(node)) {
-        return _base64Placeholder(node.length);
-      }
-      if (_redactBinary && _isProbablyBinaryString(node)) {
-        return _binaryPlaceholder(node.codeUnits.length);
-      }
-      return node;
+    // If the content itself looks like a JWT, token, or base64/binary, mask partially.
+    if (_looksLikeAuthorizationValue(node)) {
+      return _maskString(node, keyName: keyName);
     }
-
-    // Primitive non-string types left as-is
+    if (_redactBase64 && _isLikelyBase64(node)) {
+      return _base64Placeholder(node.length);
+    }
+    if (_redactBinary && _isProbablyBinaryString(node)) {
+      return _binaryPlaceholder(node.codeUnits.length);
+    }
     return node;
   }
 
@@ -296,9 +366,12 @@ class RedactionService {
     if (s.length < 32) return false;
     if (s.length % 4 != 0) return false;
     if (!_base64Regex.hasMatch(s)) return false;
+
+    // Limit decode attempt to first 256 characters for performance
+    final sampleLength = s.length > 256 ? 256 : s.length;
+    final sample = s.substring(0, sampleLength);
+
     try {
-      // Attempt to decode small sample to validate; avoid full decode for very large strings
-      final sample = s.length > 256 ? s.substring(0, 256) : s;
       base64Decode(sample);
       return true;
     } catch (_) {
@@ -308,17 +381,43 @@ class RedactionService {
 
   bool _isProbablyBinaryString(String s) {
     // Heuristic: ratio of non-printable characters
+    // Limit check to first 1024 characters for performance
+    final checkLength = s.length > 1024 ? 1024 : s.length;
     var nonPrintable = 0;
-    for (final code in s.codeUnits) {
+    const maxNonPrintable = 8;
+
+    for (var i = 0; i < checkLength; i++) {
+      final code = s.codeUnitAt(i);
       if (code == 9 || code == 10 || code == 13) continue; // whitespace
-      if (code < 32 || code > 126) nonPrintable++;
-      if (nonPrintable > 8) return true; // early exit
+      if (code < 32 || code > 126) {
+        nonPrintable++;
+        if (nonPrintable > maxNonPrintable) return true; // early exit
+      }
     }
     return false;
   }
 
   String _binaryPlaceholder(int length) => '[binary $length bytes]';
   String _base64Placeholder(int length) => '[base64 ~${length}B]';
+
+  /// Redacts Uint8List by preserving the type and size but masking the content
+  /// This ensures that the returned data maintains the same type as the input,
+  /// preventing type-related issues in user code
+  Uint8List _redactUint8List(Uint8List data) {
+    final placeholder = _binaryPlaceholder(data.length);
+    final placeholderBytes = Uint8List.fromList(placeholder.codeUnits);
+    // If placeholder is longer than original data, truncate it
+    final length = placeholderBytes.length > data.length
+        ? data.length
+        : placeholderBytes.length;
+    final result = Uint8List(data.length)
+      ..setRange(0, length, placeholderBytes.take(length));
+    // Fill remaining bytes with zeros or pattern
+    for (var i = length; i < data.length; i++) {
+      result[i] = 0; // or some other pattern
+    }
+    return result;
+  }
 
   bool _isIgnoredValue(String value, Set<String>? callIgnored) =>
       _ignoredValues.contains(value) || (callIgnored?.contains(value) ?? false);
@@ -363,4 +462,11 @@ class RedactionService {
       RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
   static final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
   static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=\-_\r\n]+$');
+}
+
+extension _ObjectExtensions on Object? {
+  bool get isScalarType {
+    final obj = this;
+    return obj is num || obj is bool || obj is DateTime || obj is String;
+  }
 }
