@@ -414,10 +414,20 @@ class _HomeState extends State<_Home> {
         label: 'Send HTTP request with Token',
         onPressed: () {
           dio.options.headers.addAll({
-            'Authorization': 'Bearer token',
+            'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
           });
           dio.get<dynamic>('/posts/1');
           dio.options.headers.remove('Authorization');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token (http)',
+        onPressed: () async {
+          await client.get(
+              Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+              headers: {
+                'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
+              });
         },
       ),
       (

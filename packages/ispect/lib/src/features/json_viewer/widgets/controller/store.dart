@@ -260,7 +260,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
 }) {
   final map = <String, NodeViewModelState>{};
   object.forEach((key, value) {
-    if (value is Map<String, dynamic>) {
+    if (value is Map) {
       final classNode = NodeViewModelState.fromClass(
         treeDepth: treeDepth,
         key: key,
@@ -269,7 +269,7 @@ Map<String, NodeViewModelState> _buildClassNodes({
       );
 
       final children = _buildClassNodes(
-        object: value,
+        object: value.cast<String, dynamic>(),
         treeDepth: treeDepth + 1,
         parent: classNode,
       );
@@ -366,7 +366,7 @@ List<NodeViewModelState> _flattenClass(Map<String, NodeViewModelState> object) {
     flatList.add(value);
 
     if (!value.isCollapsed) {
-      if (value.value is Map) {
+      if (value.value is Map<String, NodeViewModelState>) {
         // Avoid unnecessary allocations by directly adding to the list
         _addFlattenedClassToList(
           value.value as Map<String, NodeViewModelState>,

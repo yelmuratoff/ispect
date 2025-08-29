@@ -14,11 +14,14 @@ class ISpectDioInterceptor extends Interceptor {
     ISpectify? logger,
     this.settings = const ISpectDioInterceptorSettings(),
     this.addonId,
+    RedactionService? redactor,
   }) {
     _logger = logger ?? ISpectify();
+    _redactor = redactor ?? RedactionService();
   }
 
   late ISpectify _logger;
+  late RedactionService _redactor;
 
   /// `ISpectDioInterceptor` settings and customization
   ISpectDioInterceptorSettings settings;
@@ -40,6 +43,7 @@ class ISpectDioInterceptor extends Interceptor {
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
+    RedactionService? redactor,
   }) {
     settings = settings.copyWith(
       printRequestData: printRequestData,
@@ -54,6 +58,7 @@ class ISpectDioInterceptor extends Interceptor {
       responsePen: responsePen,
       errorPen: errorPen,
     );
+    if (redactor != null) _redactor = redactor;
   }
 
   @override
@@ -72,15 +77,29 @@ class ISpectDioInterceptor extends Interceptor {
     try {
       final message = '${options.uri}';
 
+      // Redact headers and body safely before logging
+      final useRedaction = settings.enableRedaction;
+      final redactedHeaders = useRedaction
+          ? _redactor.redactHeaders(options.headers)
+          : options.headers;
+      final Object? redactedBody;
+      if (options.data is FormData) {
+        redactedBody = '[form-data]';
+      } else {
+        redactedBody =
+            useRedaction ? _redactor.redact(options.data) : options.data;
+      }
+
       final httpLog = DioRequestLog(
         message,
         method: options.method,
         url: options.uri.toString(),
         path: options.uri.path,
-        headers: options.headers,
-        body: options.data,
+        headers: redactedHeaders,
+        body: redactedBody,
         settings: settings,
         requestData: DioRequestData(options),
+        redactor: useRedaction ? _redactor : null,
       );
       _logger.logCustom(httpLog);
     } catch (_) {
@@ -107,6 +126,7 @@ class ISpectDioInterceptor extends Interceptor {
       //
       // <--- Request data --->
       //
+      final useRedaction = settings.enableRedaction;
       Map<String, dynamic>? requestBody;
       if (response.requestOptions.data is FormData) {
         final formData = response.requestOptions.data as FormData;
@@ -127,7 +147,9 @@ class ISpectDioInterceptor extends Interceptor {
           'files': files,
         };
       } else {
-        requestBody = response.requestOptions.data as Map<String, dynamic>?;
+        final Object? reqData = response.requestOptions.data;
+        final red = useRedaction ? _redactor.redact(reqData) : reqData;
+        requestBody = red is Map<String, dynamic> ? red : {'data': red};
       }
 
       //
@@ -153,7 +175,8 @@ class ISpectDioInterceptor extends Interceptor {
           'files': files,
         };
       } else {
-        responseBody = response.data;
+        responseBody =
+            useRedaction ? _redactor.redact(response.data) : response.data;
       }
 
       final httpLog = DioResponseLog(
@@ -164,15 +187,28 @@ class ISpectDioInterceptor extends Interceptor {
         path: response.requestOptions.uri.path,
         statusCode: response.statusCode,
         statusMessage: response.statusMessage,
-        requestHeaders: response.requestOptions.headers,
-        headers: response.headers.map
-            .map((key, value) => MapEntry(key, value.toString())),
+        requestHeaders: useRedaction
+            ? _redactor
+                .redactHeaders(response.requestOptions.headers)
+                .map((k, v) => MapEntry(k, v?.toString()))
+            : response.requestOptions.headers
+                .map((k, v) => MapEntry(k, v.toString())),
+        headers: useRedaction
+            ? _redactor
+                .redactHeaders(
+                  response.headers.map
+                      .map((key, value) => MapEntry(key, value.toString())),
+                )
+                .map((k, v) => MapEntry(k, v?.toString() ?? ''))
+            : response.headers.map
+                .map((key, value) => MapEntry(key, value.toString())),
         requestBody: requestBody,
         responseBody: responseBody,
         responseData: DioResponseData(
           response: response,
           requestData: DioRequestData(response.requestOptions),
         ),
+        redactor: useRedaction ? _redactor : null,
       );
       _logger.logCustom(httpLog);
     } catch (_) {
@@ -192,11 +228,19 @@ class ISpectDioInterceptor extends Interceptor {
     }
     try {
       final message = '${err.requestOptions.uri}';
+      final useRedaction = settings.enableRedaction;
       Map<String, dynamic> data;
       if (err.response?.data is Map<String, dynamic>) {
-        data = err.response?.data as Map<String, dynamic>;
+        data = (useRedaction
+                ? _redactor.redact(err.response?.data)
+                : err.response?.data) as Map<String, dynamic>? ??
+            <String, dynamic>{};
       } else {
-        data = {'data': err.response?.data};
+        data = {
+          'data': useRedaction
+              ? _redactor.redact(err.response?.data)
+              : err.response?.data,
+        };
       }
       final requestData = DioRequestData(err.requestOptions);
       final httpErrorLog = DioErrorLog(
@@ -206,9 +250,23 @@ class ISpectDioInterceptor extends Interceptor {
         path: err.requestOptions.uri.path,
         statusCode: err.response?.statusCode,
         statusMessage: err.response?.statusMessage,
-        requestHeaders: err.requestOptions.headers,
-        headers: err.response?.headers.map
-            .map((key, value) => MapEntry(key, value.toString())),
+        requestHeaders: useRedaction
+            ? _redactor
+                .redactHeaders(err.requestOptions.headers)
+                .map((k, v) => MapEntry(k, v?.toString()))
+            : err.requestOptions.headers
+                .map((k, v) => MapEntry(k, v.toString())),
+        headers: err.response == null
+            ? null
+            : (useRedaction
+                ? _redactor
+                    .redactHeaders(
+                      err.response!.headers.map
+                          .map((key, value) => MapEntry(key, value.toString())),
+                    )
+                    .map((k, v) => MapEntry(k, v?.toString() ?? ''))
+                : err.response!.headers.map
+                    .map((key, value) => MapEntry(key, value.toString()))),
         body: data,
         settings: settings,
         errorData: DioErrorData(
@@ -219,6 +277,7 @@ class ISpectDioInterceptor extends Interceptor {
             requestData: requestData,
           ),
         ),
+        redactor: useRedaction ? _redactor : null,
       );
       _logger.logCustom(httpErrorLog);
     } catch (_) {

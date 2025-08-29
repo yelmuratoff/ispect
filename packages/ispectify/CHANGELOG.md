@@ -1,5 +1,35 @@
 # Changelog
 
+## 4.3.2
+
+### Added
+
+- Optional redaction toggle in settings (enabled by default):
+  - `ISpectDioInterceptorSettings.enableRedaction`
+  - `ISpectHttpInterceptorSettings.enableRedaction`
+  - `ISpectWSInterceptorSettings.enableRedaction`
+- Redactor-aware serialization for network data models:
+  - `ispectify_dio`: `DioRequestData.toJson`, `DioResponseData.toJson`, `DioErrorData.toJson` now accept an optional `RedactionService` and (when provided) redact headers, data, and metadata. Per-call `ignoredValues`/`ignoredKeys` supported.
+  - `ispectify_http`: `HttpRequestData.toJson`, `HttpResponseData.toJson` updated similarly; redaction applied when a redactor is passed.
+
+### Enhancements
+
+- Apply centralized sensitive-data redaction consistently before logging and when serializing `additionalData` across `dio`/`http`/`ws` interceptors. Interceptors pass their redactor into model `toJson(...)` calls when redaction is enabled.
+- `ispectify_dio`:
+  - Request/response/error logs redact request headers/body, response headers/body, and common metadata (`query-parameters`, `extra`). `FormData` bodies are represented with a safe placeholder.
+- `ispectify_http`:
+  - Request/response logs redact headers and (when parsable) JSON/string bodies; multipart request details are preserved in shape while avoiding sensitive content.
+- `ispectify_ws`:
+  - Interceptor respects the redaction toggle and redacts sent/received payloads when enabled.
+
+### Fixed
+
+- Preserve response headers shape while redacting in `ispectify_dio` (`Map<String, List<String>>`) to avoid type/cast issues.
+
+### Updates
+- Update `draggable_panel` dependency to version 1.2.0. See what's changed in `draggable_panel`: https://pub.dev/packages/draggable_panel/changelog
+
+
 ## 4.3.0
 
 ### Added:

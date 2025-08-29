@@ -5,6 +5,7 @@ import 'package:ispectify/ispectify.dart';
 class ISpectDioInterceptorSettings {
   const ISpectDioInterceptorSettings({
     this.enabled = true,
+    this.enableRedaction = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,
@@ -23,6 +24,9 @@ class ISpectDioInterceptorSettings {
 
   // Print Dio logger if true
   final bool enabled;
+
+  /// Enable sensitive data redaction if true (default: true)
+  final bool enableRedaction;
 
   /// Print `response.data` if true
   final bool printResponseData;
@@ -94,6 +98,7 @@ class ISpectDioInterceptorSettings {
   final bool Function(DioException response)? errorFilter;
 
   ISpectDioInterceptorSettings copyWith({
+    bool? enableRedaction,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -110,6 +115,7 @@ class ISpectDioInterceptorSettings {
     bool Function(DioException response)? errorFilter,
   }) =>
       ISpectDioInterceptorSettings(
+        enableRedaction: enableRedaction ?? this.enableRedaction,
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

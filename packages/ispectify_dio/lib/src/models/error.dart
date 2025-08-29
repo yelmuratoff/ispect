@@ -15,11 +15,12 @@ class DioErrorLog extends ISpectifyData {
     required this.headers,
     required this.body,
     required this.settings,
+    this.redactor,
   }) : super(
           key: getKey,
           title: getKey,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: errorData.toJson,
+          additionalData: errorData.toJson(redactor: redactor),
         );
 
   final String? method;
@@ -32,6 +33,7 @@ class DioErrorLog extends ISpectifyData {
   final Map<String, dynamic>? body;
   final ISpectDioInterceptorSettings settings;
   final DioErrorData errorData;
+  final RedactionService? redactor;
 
   static const getKey = 'http-error';
 

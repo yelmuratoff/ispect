@@ -15,10 +15,11 @@ class HttpErrorLog extends ISpectifyData {
     required this.body,
     required this.responseData,
     required this.settings,
+    this.redactor,
   }) : super(
           key: getKey,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: responseData?.toJson,
+          additionalData: responseData?.toJson(redactor: redactor),
         );
 
   final String? method;
@@ -31,6 +32,7 @@ class HttpErrorLog extends ISpectifyData {
   final Map<String, dynamic>? body;
   final HttpResponseData? responseData;
   final ISpectHttpInterceptorSettings settings;
+  final RedactionService? redactor;
 
   static const getKey = 'http-error';
 
