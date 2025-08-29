@@ -14,12 +14,11 @@ import 'package:ispectify/ispectify.dart';
 /// - Partial masking keeps useful context (e.g., "Bearer ") and first/last chars.
 /// - Handles nested Map/List structures.
 /// - Detects likely binary/base64 payloads and replaces with placeholders.
-/// - Limits recursion depth to avoid performance issues.
+/// - Processes all data recursively without depth limits for complete coverage.
 class RedactionService {
   RedactionService({
     Set<String>? sensitiveKeys,
     List<RegExp>? sensitiveKeyPatterns,
-    int? maxDepth,
     int? stringEdgeVisible,
     String? placeholder,
     bool? redactBinary,
@@ -31,7 +30,7 @@ class RedactionService {
             .toSet(),
         _sensitiveKeyPatterns =
             sensitiveKeyPatterns ?? _kDefaultSensitiveKeyRegexps,
-        _maxDepth = maxDepth ?? 16,
+        // _maxDepth = maxDepth ?? 1000, // Removed - no longer needed
         _stringEdgeVisible = stringEdgeVisible ?? 2,
         _placeholder = placeholder ?? '[REDACTED]',
         _redactBinary = redactBinary ?? true,
@@ -43,7 +42,7 @@ class RedactionService {
 
   final Set<String> _sensitiveKeysLower;
   final List<RegExp> _sensitiveKeyPatterns;
-  final int _maxDepth;
+  // final int _maxDepth; // Removed - no longer needed
   final int _stringEdgeVisible;
   final String _placeholder;
   final bool _redactBinary;
@@ -74,7 +73,7 @@ class RedactionService {
       out[keyStr] = _redactNode(
         value,
         keyName: keyStr,
-        depth: 0,
+        // depth: 0, // Removed - no longer needed
         ignoredValues: callIgnored,
         ignoredKeysLower: callIgnoredKeysLower,
       );
@@ -95,7 +94,7 @@ class RedactionService {
       _redactNode(
         data,
         keyName: keyName,
-        depth: 0,
+        // depth: 0, // Removed - no longer needed
         ignoredValues: (ignoredValues == null || ignoredValues.isEmpty)
             ? null
             : ignoredValues,
@@ -151,12 +150,12 @@ class RedactionService {
   Object? _redactNode(
     Object? node, {
     required String? keyName,
-    required int depth,
+    // required int depth, // Removed - no longer needed
     Set<String>? ignoredValues,
     Set<String>? ignoredKeysLower,
   }) {
     if (node == null) return null;
-    if (depth > _maxDepth) return node; // safety guard
+    // Process all data recursively - sensitive values will be masked appropriately
 
     // If key is sensitive (and not in ignored keys), mask scalar values directly (idempotent check inside)
     if (_isSensitiveKey(keyName, ignoredKeysLower)) {
@@ -180,7 +179,7 @@ class RedactionService {
           _redactNode(
             v,
             keyName: childKey,
-            depth: depth + 1,
+            // depth: depth + 1, // Removed - no longer needed
             ignoredValues: ignoredValues,
             ignoredKeysLower: ignoredKeysLower,
           ),
@@ -194,7 +193,7 @@ class RedactionService {
             (e) => _redactNode(
               e,
               keyName: keyName,
-              depth: depth + 1,
+              // depth: depth + 1, // Removed - no longer needed
               ignoredValues: ignoredValues,
               ignoredKeysLower: ignoredKeysLower,
             ),
