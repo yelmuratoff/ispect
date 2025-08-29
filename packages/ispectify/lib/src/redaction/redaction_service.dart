@@ -363,5 +363,5 @@ class RedactionService {
   static final RegExp _jwtRegex =
       RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
   static final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
-  static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=\r\n]+$');
+  static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=\-_\r\n]+$');
 }
