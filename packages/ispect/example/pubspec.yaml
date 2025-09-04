@@ -54,3 +54,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+platforms:
+  android:
+  ios:
+  macos:
+  linux:
+  windows:
+  web:
