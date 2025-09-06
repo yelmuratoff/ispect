@@ -8,6 +8,7 @@ const String configDir = 'readme_generator/configs';
 const String templateFile = 'readme_generator/template.md';
 const String packagesDir = 'packages';
 const String versionConfigFile = 'version.config';
+const String rootReadmeFile = 'README.md';
 
 void main(List<String> args) {
   if (args.isEmpty) {
@@ -24,6 +25,11 @@ void main(List<String> args) {
     generateAllReadmes();
   } else {
     generateReadme(command);
+
+    // Also update root README if generating ispect package
+    if (command == 'ispect') {
+      generateRootReadme();
+    }
   }
 }
 
@@ -64,6 +70,9 @@ void generateAllReadmes() {
     );
     generateReadme(packageName);
   }
+
+  // Generate root README.md based on ispect config
+  generateRootReadme();
 
   print('\n✅ All README files generated successfully!');
 }
@@ -136,4 +145,58 @@ String _cleanupEmptySections(String content) {
   content = content.replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n');
 
   return content.trim();
+}
+
+void generateRootReadme() {
+  try {
+    print('📝 Generating root README.md...');
+
+    // Read template
+    final template = File(templateFile).readAsStringSync();
+
+    // Read ispect config as base for root README
+    final configFile = File('$configDir/ispect.json');
+    if (!configFile.existsSync()) {
+      print('❌ ispect config file not found: $configDir/ispect.json');
+      return;
+    }
+
+    final configJson =
+        json.decode(configFile.readAsStringSync()) as Map<String, dynamic>;
+
+    // Read version from config file
+    final version = readVersionFromConfig();
+    print('📦 Using version: $version');
+
+    // Generate README content
+    String readme = template;
+
+    // Add version to config data
+    final configWithVersion = Map<String, dynamic>.from(configJson);
+    configWithVersion['version'] = version;
+
+    // Replace simple placeholders
+    configWithVersion.forEach((key, value) {
+      if (value is String) {
+        readme = readme.replaceAll('{{$key}}', value);
+      } else if (value is List) {
+        if (key == 'features') {
+          final featuresText =
+              value.cast<String>().map((feature) => '- $feature').join('\n');
+          readme = readme.replaceAll('{{$key}}', featuresText);
+        }
+      }
+    });
+
+    // Handle empty sections
+    readme = _cleanupEmptySections(readme);
+
+    // Write root README file
+    final outputFile = File(rootReadmeFile);
+    outputFile.writeAsStringSync(readme);
+
+    print('✅ Root README generated: ${outputFile.path}');
+  } catch (e) {
+    print('❌ Error generating root README: $e');
+  }
 }
