@@ -137,13 +137,103 @@ dependencies:
   ispectify_dio: ^4.3.2
 ```
 
+## ⚠️ Security & Production Guidelines
+
+> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+
+### 🔒 Production Safety
+
+ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+
+### ✅ Recommended Setup with Dart Define Constants
+
+**1. Create environment-aware initialization:**
+
+```dart
+// main.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Use dart define to control ISpect inclusion
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
+void main() {
+  if (kEnableISpect) {
+    // Initialize ISpect only in development/staging
+    _initializeISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeISpect() {
+  // ISpect initialization code here
+  // This entire function will be tree-shaken in production
+}
+```
+
+**2. Build Commands:**
+
+```bash
+# Development build (includes ISpect)
+flutter run --dart-define=ENABLE_ISPECT=true
+
+# Staging build (includes ISpect)
+flutter build appbundle --dart-define=ENABLE_ISPECT=true
+
+# Production build (ISpect completely removed via tree-shaking)
+flutter build appbundle --dart-define=ENABLE_ISPECT=false
+# or simply:
+flutter build appbundle  # defaults to false
+```
+
+**3. Conditional Widget Wrapping:**
+
+```dart
+Widget build(BuildContext context) {
+  Widget app = MaterialApp(/* your app */);
+  
+  // Wrap with ISpect only when enabled
+  if (kEnableISpect) {
+    app = ISpectBuilder(child: app);
+  }
+  
+  return app;
+}
+```
+
+### 🛡️ Security Benefits
+
+- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
+- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
+- ✅ **Performance Optimized**: No debugging overhead in production
+- ✅ **Compliance Ready**: Meets security requirements for app store releases
+
+### 🔍 Verification
+
+To verify ISpect is not included in your production build:
+
+```bash
+# Build release APK and check size difference
+flutter build apk --dart-define=ENABLE_ISPECT=false --release
+flutter build apk --dart-define=ENABLE_ISPECT=true --release
+
+# Use flutter tools to analyze bundle
+flutter analyze --dart-define=ENABLE_ISPECT=false
+```
+
 ## 🚀 Quick Start
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
+
+// Use dart define to control ISpectify Dio integration
+const bool kEnableISpectDio = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 final Dio dio = Dio(
   BaseOptions(
@@ -152,13 +242,22 @@ final Dio dio = Dio(
 );
 
 void main() {
+  if (kEnableISpectDio) {
+    _initializeWithISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeWithISpect() {
   final ISpectify iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
     logger: iSpectify,
     onInit: () {
-      // Add ISpectify Dio interceptor
+      // Add ISpectify Dio interceptor only in development/staging
       dio.interceptors.add(
         ISpectDioInterceptor(
           iSpectify: iSpectify,
@@ -185,7 +284,7 @@ class MyApp extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  // All Dio requests will be automatically logged
+                  // HTTP requests will be logged only when ISpect is enabled
                   dio.get<dynamic>('/posts/1');
                 },
                 child: const Text('Send GET Request'),
@@ -193,7 +292,7 @@ class MyApp extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  // Error requests are also logged
+                  // Error requests are also logged (when enabled)
                   dio.get<dynamic>('/invalid-endpoint');
                 },
                 child: const Text('Send Error Request'),
@@ -220,6 +319,102 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+```
+
+## ⚙️ Advanced Configuration
+
+### 🛡️ Production-Safe HTTP Logging
+
+```dart
+// Create a factory for conditional Dio setup
+class DioFactory {
+  static const bool _isEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+  
+  static Dio createDio({
+    String baseUrl = '',
+    ISpectify? iSpectify,
+  }) {
+    final dio = Dio(BaseOptions(baseUrl: baseUrl));
+    
+    // Only add interceptor when ISpect is enabled
+    if (_isEnabled && iSpectify != null) {
+      dio.interceptors.add(
+        ISpectDioInterceptor(
+          iSpectify: iSpectify,
+          settings: ISpectDioInterceptorSettings(
+            printRequestHeaders: kDebugMode,
+            enableRedaction: true, // Always enable redaction for security
+          ),
+        ),
+      );
+    }
+    
+    return dio;
+  }
+}
+
+// Usage
+final dio = DioFactory.createDio(
+  baseUrl: 'https://api.example.com',
+  iSpectify: ISpect.logger,
+);
+```
+
+### 🔒 Environment-Specific Configuration
+
+```dart
+class DioConfig {
+  static ISpectDioInterceptorSettings getSettings() {
+    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+    
+    switch (environment) {
+      case 'development':
+        return const ISpectDioInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          enableRedaction: false, // Allow full debugging in dev
+        );
+      case 'staging':
+        return const ISpectDioInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: false,
+          enableRedaction: true, // Enable redaction in staging
+        );
+      default: // production
+        return const ISpectDioInterceptorSettings(
+          printRequestHeaders: false,
+          printResponseHeaders: false,
+          enableRedaction: true,
+        );
+    }
+  }
+}
+```
+
+### 🎛️ Conditional Interceptor Setup
+
+```dart
+void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
+  const isISpectEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+  
+  if (isISpectEnabled && iSpectify != null) {
+    // Custom redactor for sensitive data
+    final redactor = RedactionService();
+    redactor.ignoreKeys(['authorization', 'x-api-key']);
+    redactor.ignoreValues(['password', 'token']);
+    
+    dio.interceptors.add(
+      ISpectDioInterceptor(
+        iSpectify: iSpectify,
+        redactor: redactor,
+        settings: DioConfig.getSettings(),
+      ),
+    );
+  }
+  
+  // Add other production interceptors here
+  dio.interceptors.add(LogInterceptor(requestBody: false, responseBody: false));
 }
 ```
 

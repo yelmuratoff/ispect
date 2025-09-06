@@ -127,22 +127,121 @@ dependencies:
   ispectify_bloc: ^4.3.2
 ```
 
+## ⚠️ Security & Production Guidelines
+
+> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+
+### 🔒 Production Safety
+
+ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+
+### ✅ Recommended Setup with Dart Define Constants
+
+**1. Create environment-aware initialization:**
+
+```dart
+// main.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Use dart define to control ISpect inclusion
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
+void main() {
+  if (kEnableISpect) {
+    // Initialize ISpect only in development/staging
+    _initializeISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeISpect() {
+  // ISpect initialization code here
+  // This entire function will be tree-shaken in production
+}
+```
+
+**2. Build Commands:**
+
+```bash
+# Development build (includes ISpect)
+flutter run --dart-define=ENABLE_ISPECT=true
+
+# Staging build (includes ISpect)
+flutter build appbundle --dart-define=ENABLE_ISPECT=true
+
+# Production build (ISpect completely removed via tree-shaking)
+flutter build appbundle --dart-define=ENABLE_ISPECT=false
+# or simply:
+flutter build appbundle  # defaults to false
+```
+
+**3. Conditional Widget Wrapping:**
+
+```dart
+Widget build(BuildContext context) {
+  Widget app = MaterialApp(/* your app */);
+  
+  // Wrap with ISpect only when enabled
+  if (kEnableISpect) {
+    app = ISpectBuilder(child: app);
+  }
+  
+  return app;
+}
+```
+
+### 🛡️ Security Benefits
+
+- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
+- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
+- ✅ **Performance Optimized**: No debugging overhead in production
+- ✅ **Compliance Ready**: Meets security requirements for app store releases
+
+### 🔍 Verification
+
+To verify ISpect is not included in your production build:
+
+```bash
+# Build release APK and check size difference
+flutter build apk --dart-define=ENABLE_ISPECT=false --release
+flutter build apk --dart-define=ENABLE_ISPECT=true --release
+
+# Use flutter tools to analyze bundle
+flutter analyze --dart-define=ENABLE_ISPECT=false
+```
+
 ## 🚀 Quick Start
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
+// Use dart define to control ISpectify BLoC integration
+const bool kEnableISpectBloc = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
 void main() {
+  if (kEnableISpectBloc) {
+    _initializeWithISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeWithISpect() {
   final ISpectify iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
     logger: iSpectify,
     onInit: () {
-      // Set up BLoC observer for automatic state tracking
+      // Set up BLoC observer only in development/staging
       Bloc.observer = ISpecBlocObserver(
         iSpectify: iSpectify,
       );
@@ -164,7 +263,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Your Cubit/BLoC will be automatically logged
+// Your Cubit/BLoC will be automatically logged only when ISpect is enabled
 class CounterCubit extends Cubit<int> {
   CounterCubit() : super(0);
 
@@ -172,7 +271,7 @@ class CounterCubit extends Cubit<int> {
   void decrement() => emit(state - 1);
   
   void load({required String data}) {
-    // All state changes will be automatically logged
+    // State changes will be logged only when ISpect is enabled
     emit(state + 1);
   }
 }
@@ -196,7 +295,7 @@ class CounterPage extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // This state change will be logged
+                // This state change will be logged only when enabled
                 context.read<CounterCubit>().increment();
               },
               child: const Text('Increment'),
@@ -204,7 +303,7 @@ class CounterPage extends StatelessWidget {
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: () {
-                // This state change will also be logged
+                // This state change will also be logged only when enabled
                 context.read<CounterCubit>().load(data: 'Test data');
               },
               child: const Text('Load Data'),

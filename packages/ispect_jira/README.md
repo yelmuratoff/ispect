@@ -164,26 +164,124 @@ dependencies:
   ispect_jira: ^4.3.2
 ```
 
+## ⚠️ Security & Production Guidelines
+
+> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+
+### 🔒 Production Safety
+
+ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+
+### ✅ Recommended Setup with Dart Define Constants
+
+**1. Create environment-aware initialization:**
+
+```dart
+// main.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Use dart define to control ISpect inclusion
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
+void main() {
+  if (kEnableISpect) {
+    // Initialize ISpect only in development/staging
+    _initializeISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeISpect() {
+  // ISpect initialization code here
+  // This entire function will be tree-shaken in production
+}
+```
+
+**2. Build Commands:**
+
+```bash
+# Development build (includes ISpect)
+flutter run --dart-define=ENABLE_ISPECT=true
+
+# Staging build (includes ISpect)
+flutter build appbundle --dart-define=ENABLE_ISPECT=true
+
+# Production build (ISpect completely removed via tree-shaking)
+flutter build appbundle --dart-define=ENABLE_ISPECT=false
+# or simply:
+flutter build appbundle  # defaults to false
+```
+
+**3. Conditional Widget Wrapping:**
+
+```dart
+Widget build(BuildContext context) {
+  Widget app = MaterialApp(/* your app */);
+  
+  // Wrap with ISpect only when enabled
+  if (kEnableISpect) {
+    app = ISpectBuilder(child: app);
+  }
+  
+  return app;
+}
+```
+
+### 🛡️ Security Benefits
+
+- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
+- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
+- ✅ **Performance Optimized**: No debugging overhead in production
+- ✅ **Compliance Ready**: Meets security requirements for app store releases
+
+### 🔍 Verification
+
+To verify ISpect is not included in your production build:
+
+```bash
+# Build release APK and check size difference
+flutter build apk --dart-define=ENABLE_ISPECT=false --release
+flutter build apk --dart-define=ENABLE_ISPECT=true --release
+
+# Use flutter tools to analyze bundle
+flutter analyze --dart-define=ENABLE_ISPECT=false
+```
+
 ## 🚀 Quick Start
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_jira/ispect_jira.dart';
 
+// Use dart define to control ISpect Jira integration
+const bool kEnableISpectJira = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
 void main() {
+  if (kEnableISpectJira) {
+    _initializeWithISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeWithISpect() {
   final iSpectify = ISpectifyFlutter.init();
 
   ISpect.run(
-    () => runApp(MyApp(iSpectify: iSpectify)),
+    () => runApp(MyApp()),
     logger: iSpectify,
     isPrintLoggingEnabled: true,
   );
 }
 
 class MyApp extends StatefulWidget {
-  final ISpectify iSpectify;
-  const MyApp({super.key, required this.iSpectify});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -193,59 +291,86 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Initialize Jira client
-    ISpectJiraClient.initialize(
-      projectDomain: 'your-domain',
-      userEmail: 'your-email@domain.com',
-      apiToken: 'your-api-token',
-      projectId: '10007',
-      projectKey: 'PROJECT',
-    );
+    
+    // Initialize Jira client only when ISpect is enabled
+    if (kEnableISpectJira) {
+      ISpectJiraClient.initialize(
+        projectDomain: 'your-domain',
+        userEmail: 'your-email@domain.com',
+        apiToken: 'your-api-token',
+        projectId: '10007',
+        projectKey: 'PROJECT',
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      builder: (context, child) => ISpectBuilder(
-        options: ISpectOptions(
-          actionItems: [
-            ISpectActionItem(
-              title: 'ISpect',
-              icon: Icons.bug_report_outlined,
-              onTap: (context) {
-                if (ISpectJiraClient.isInitialized) {
-                  // Navigate to create issue screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => const JiraSendIssueScreen(),
-                    ),
-                  );
-                } else {
-                  // Navigate to auth screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => JiraAuthScreen(
-                        onAuthorized: (domain, email, apiToken, projectId, projectKey) {
-                          ISpect.logger.good('✅ Jira authorized');
-                        },
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-        feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
-          onSubmit: onSubmit,
-          theme: Theme.of(context),
-          scrollController: controller,
-        ),
-        child: child ?? const SizedBox.shrink(),
-      ),
+    Widget app = MaterialApp(
       home: const HomePage(),
+    );
+    
+    // Wrap with ISpect only when enabled
+    if (kEnableISpectJira) {
+      app = MaterialApp(
+        builder: (context, child) => ISpectBuilder(
+          options: ISpectOptions(
+            actionItems: [
+              ISpectActionItem(
+                title: 'Report Bug',
+                icon: Icons.bug_report_outlined,
+                onTap: (context) {
+                  if (ISpectJiraClient.isInitialized) {
+                    // Navigate to create issue screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => const JiraSendIssueScreen(),
+                      ),
+                    );
+                  } else {
+                    // Navigate to auth screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => JiraAuthScreen(
+                          onAuthorized: (domain, email, apiToken, projectId, projectKey) {
+                            ISpect.logger.good('✅ Jira authorized');
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+          feedbackBuilder: (context, onSubmit, controller) => JiraFeedbackBuilder(
+            onSubmit: onSubmit,
+            theme: Theme.of(context),
+            scrollController: controller,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
+        home: const HomePage(),
+      );
+    }
+    
+    return app;
+  }
+}
+
+// Placeholder home page
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ISpect Jira Example')),
+      body: const Center(
+        child: Text('Jira integration enabled only in development'),
+      ),
     );
   }
 }
