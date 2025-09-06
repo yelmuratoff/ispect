@@ -219,14 +219,16 @@ flutter build appbundle  # defaults to false
 
 ```dart
 Widget build(BuildContext context) {
-  Widget app = MaterialApp(/* your app */);
-  
-  // Wrap with ISpect only when enabled
-  if (kEnableISpect) {
-    app = ISpectBuilder(child: app);
-  }
-  
-  return app;
+  return MaterialApp(
+    // Conditionally add ISpectBuilder in MaterialApp builder
+    builder: (context, child) {
+      if (kEnableISpect) {
+        return ISpectBuilder(child: child ?? const SizedBox.shrink());
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
 }
 ```
 
@@ -306,13 +308,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    Widget app = MaterialApp(
-      home: const HomePage(),
-    );
-    
     // Wrap with ISpect only when enabled
     if (kEnableISpectJira) {
-      app = MaterialApp(
+      return MaterialApp(
         builder: (context, child) => ISpectBuilder(
           options: ISpectOptions(
             actionItems: [
@@ -356,7 +354,10 @@ class _MyAppState extends State<MyApp> {
       );
     }
     
-    return app;
+    // Production app without ISpect
+    return MaterialApp(
+      home: const HomePage(),
+    );
   }
 }
 

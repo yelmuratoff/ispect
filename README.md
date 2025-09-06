@@ -133,14 +133,16 @@ flutter build appbundle  # defaults to false
 
 ```dart
 Widget build(BuildContext context) {
-  Widget app = MaterialApp(/* your app */);
-  
-  // Wrap with ISpect only when enabled
-  if (kEnableISpect) {
-    app = ISpectBuilder(child: app);
-  }
-  
-  return app;
+  return MaterialApp(
+    // Conditionally add ISpectBuilder in MaterialApp builder
+    builder: (context, child) {
+      if (kEnableISpect) {
+        return ISpectBuilder(child: child ?? const SizedBox.shrink());
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
 }
 ```
 
@@ -200,7 +202,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget app = MaterialApp(
+    return MaterialApp(
       localizationsDelegates: kEnableISpect
           ? ISpectLocalizations.localizationDelegates([
               // Add your localization delegates here
@@ -208,6 +210,13 @@ class MyApp extends StatelessWidget {
           : [
               // Your regular localization delegates
             ],
+      // Conditionally add ISpectBuilder in MaterialApp builder
+      builder: (context, child) {
+        if (kEnableISpect) {
+          return ISpectBuilder(child: child ?? const SizedBox.shrink());
+        }
+        return child ?? const SizedBox.shrink();
+      },
       home: Scaffold(
         appBar: AppBar(title: const Text('ISpect Example')),
         body: Center(
@@ -222,13 +231,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-
-    // Wrap with ISpect only when enabled
-    if (kEnableISpect) {
-      app = ISpectBuilder(child: app);
-    }
-
-    return app;
   }
 }
 ```
@@ -264,91 +266,98 @@ class ISpectConfig {
 
 ```dart
 // Wrap theming configuration in conditional check
-Widget _buildApp() {
-  Widget app = MaterialApp(/* your app */);
-  
-  if (ISpectConfig.shouldInitialize) {
-    app = ISpectBuilder(
-      theme: ISpectTheme(
-        pageTitle: 'Debug Panel',
-        lightBackgroundColor: Colors.white,
-        darkBackgroundColor: Colors.black,
-        lightDividerColor: Colors.grey.shade300,
-        darkDividerColor: Colors.grey.shade800,
-        logColors: {
-          'error': Colors.red,
-          'info': Colors.blue,
-        },
-        logIcons: {
-          'error': Icons.error,
-          'info': Icons.info,
-        },
-        logDescriptions: [
-          LogDescription(
-            key: 'riverpod-add',
-            isDisabled: true,
+Widget build(BuildContext context) {
+  return MaterialApp(
+    builder: (context, child) {
+      if (ISpectConfig.shouldInitialize) {
+        return ISpectBuilder(
+          theme: ISpectTheme(
+            pageTitle: 'Debug Panel',
+            lightBackgroundColor: Colors.white,
+            darkBackgroundColor: Colors.black,
+            lightDividerColor: Colors.grey.shade300,
+            darkDividerColor: Colors.grey.shade800,
+            logColors: {
+              'error': Colors.red,
+              'info': Colors.blue,
+            },
+            logIcons: {
+              'error': Icons.error,
+              'info': Icons.info,
+            },
+            logDescriptions: [
+              LogDescription(
+                key: 'riverpod-add',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-update',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-dispose',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-fail',
+                isDisabled: true,
+              ),
+            ],
           ),
-          LogDescription(
-            key: 'riverpod-update',
-            isDisabled: true,
-          ),
-          LogDescription(
-            key: 'riverpod-dispose',
-            isDisabled: true,
-          ),
-          LogDescription(
-            key: 'riverpod-fail',
-            isDisabled: true,
-          ),
-        ],
-      ),
-      child: app,
-    );
-  }
-  
-  return app;
+          child: child ?? const SizedBox.shrink(),
+        );
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
 }
 ```
 
 ### 🎛️ Panel Customization (Development Only)
 
 ```dart
-Widget _buildAppWithISpect(Widget child) {
-  if (!ISpectConfig.shouldInitialize) {
-    return child; // Return app without ISpect in production
-  }
-  
-  return ISpectBuilder(
-    options: ISpectOptions(
-      locale: const Locale('en'),
-      isFeedbackEnabled: true,
-      actionItems: [
-        ISpectActionItem(
-            onTap: (BuildContext context) {
-              // Development-only actions
-            },
-            title: 'Dev Action',
-            icon: Icons.build),
-      ],
-      panelItems: [
-        ISpectPanelItem(
-          enableBadge: false,
-          icon: Icons.settings,
-          onTap: (context) {
-            // Handle settings tap
-          },
+Widget build(BuildContext context) {
+  return MaterialApp(
+    builder: (context, child) {
+      if (!ISpectConfig.shouldInitialize) {
+        return child ?? const SizedBox.shrink(); // Return app without ISpect in production
+      }
+      
+      return ISpectBuilder(
+        options: ISpectOptions(
+          locale: const Locale('en'),
+          isFeedbackEnabled: true,
+          actionItems: [
+            ISpectActionItem(
+                onTap: (BuildContext context) {
+                  // Development-only actions
+                },
+                title: 'Dev Action',
+                icon: Icons.build),
+          ],
+          panelItems: [
+            ISpectPanelItem(
+              enableBadge: false,
+              icon: Icons.settings,
+              onTap: (context) {
+                // Handle settings tap
+              },
+            ),
+          ],
+          panelButtons: [
+            ISpectPanelButtonItem(
+                icon: Icons.info,
+                label: 'Debug Info',
+                onTap: (context) {
+                  // Handle debug info tap
+                }),
+          ],
         ),
-      ],
-      panelButtons: [
-        ISpectPanelButtonItem(
-            icon: Icons.info,
-            label: 'Debug Info',
-            onTap: (context) {
-              // Handle debug info tap
-            }),
-      ],
-    ),
-    child: child,
+        child: child ?? const SizedBox.shrink(),
+      );
+    },
+    home: Scaffold(/* your app content */),
   );
 }
 ```

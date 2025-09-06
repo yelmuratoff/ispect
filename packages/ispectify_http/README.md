@@ -176,14 +176,16 @@ flutter build appbundle  # defaults to false
 
 ```dart
 Widget build(BuildContext context) {
-  Widget app = MaterialApp(/* your app */);
-  
-  // Wrap with ISpect only when enabled
-  if (kEnableISpect) {
-    app = ISpectBuilder(child: app);
-  }
-  
-  return app;
+  return MaterialApp(
+    // Conditionally add ISpectBuilder in MaterialApp builder
+    builder: (context, child) {
+      if (kEnableISpect) {
+        return ISpectBuilder(child: child ?? const SizedBox.shrink());
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
 }
 ```
 
