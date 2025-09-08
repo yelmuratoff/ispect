@@ -7,6 +7,7 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
+import 'package:ispect/src/features/json_viewer/services/json_performance_manager.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 
@@ -27,8 +28,12 @@ class JsonExplorerStore extends ChangeNotifier {
 
   // Services for better separation of concerns
   final JsonViewerCacheService _cacheService = JsonViewerCacheService();
+  JsonPerformanceManager? _performanceManager;
 
   bool get mounted => _mounted;
+
+  /// Gets performance manager for optimization insights
+  JsonPerformanceManager? get performanceManager => _performanceManager;
 
   /// Gets the list of nodes to be displayed.
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
@@ -170,6 +175,10 @@ class JsonExplorerStore extends ChangeNotifier {
     _allNodes = UnmodifiableListView(flatList);
     _displayNodes = List.from(flatList);
 
+    // Initialize performance optimizations
+    _performanceManager = JsonPerformanceManager(_cacheService);
+    _performanceManager!.initializeOptimizations(_allNodes);
+
     if (areAllCollapsed) {
       collapseAll();
     } else {
@@ -181,6 +190,9 @@ class JsonExplorerStore extends ChangeNotifier {
   void dispose() {
     // Clear caches when disposing the store
     _cacheService.clearAll();
+
+    // Dispose performance manager
+    _performanceManager?.dispose();
 
     // Cancel any ongoing search
     _currentSearchOperation?.cancel();
@@ -216,7 +228,8 @@ class JsonExplorerStore extends ChangeNotifier {
   /// Expands all the parent nodes of each search result.
   void expandSearchResults() {
     JsonNodeService.expandSearchResults(
-        searchResults.cast<SearchResult>().toList(),);
+      searchResults.cast<SearchResult>().toList(),
+    );
   }
 
   /// Expands all the parent nodes of the given `node`.
