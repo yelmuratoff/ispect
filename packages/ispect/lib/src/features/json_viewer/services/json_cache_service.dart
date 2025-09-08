@@ -1,101 +1,109 @@
-/// Service responsible for caching computations in JSON viewer
-class JsonViewerCacheService {
-  final Map<String, List<int>> _searchMatchesCache = {};
-  final Map<int, int> _visibleChildrenCountCache = {};
+/// Interface for cache services to follow Dependency Inversion Principle
+abstract interface class CacheService<K, V> {
+  V? get(K key);
+  void put(K key, V value);
+  void clear();
+  void maintain({int maxEntries});
+  int get size;
+}
 
-  // LRU tracking for efficient cache eviction
-  final Map<String, DateTime> _searchAccessTimes = {};
-  final Map<int, DateTime> _nodeAccessTimes = {};
+/// Generic LRU cache implementation following SRP
+class LRUCache<K, V> implements CacheService<K, V> {
+  LRUCache({this.maxEntries = 100});
 
-  /// Cache for search term results to avoid recomputing on navigation
-  Map<String, List<int>> get searchMatchesCache => _searchMatchesCache;
+  final int maxEntries;
+  final Map<K, V> _cache = {};
+  final Map<K, DateTime> _accessTimes = {};
 
-  /// Cache for visible children count to avoid expensive recalculations
-  Map<int, int> get visibleChildrenCountCache => _visibleChildrenCountCache;
-
-  /// Clear all caches to free memory
-  void clearAll() {
-    _searchMatchesCache.clear();
-    _visibleChildrenCountCache.clear();
-    _searchAccessTimes.clear();
-    _nodeAccessTimes.clear();
-  }
-
-  /// Clear only search-related caches
-  void clearSearchCaches() {
-    _searchMatchesCache.clear();
-    _searchAccessTimes.clear();
-  }
-
-  /// Clear only node hierarchy caches
-  void clearHierarchyCaches() {
-    _visibleChildrenCountCache.clear();
-    _nodeAccessTimes.clear();
-  }
-
-  /// Get cached search matches for a term with LRU tracking
-  List<int>? getCachedSearchMatches(String term) {
-    final matches = _searchMatchesCache[term];
-    if (matches != null) {
-      _searchAccessTimes[term] = DateTime.now();
+  @override
+  V? get(K key) {
+    final value = _cache[key];
+    if (value != null) {
+      _accessTimes[key] = DateTime.now();
     }
-    return matches;
+    return value;
   }
+
+  @override
+  void put(K key, V value) {
+    _cache[key] = value;
+    _accessTimes[key] = DateTime.now();
+
+    if (_cache.length > maxEntries) {
+      maintain();
+    }
+  }
+
+  @override
+  void clear() {
+    _cache.clear();
+    _accessTimes.clear();
+  }
+
+  @override
+  void maintain({int? maxEntries}) {
+    final limit = maxEntries ?? this.maxEntries;
+    if (_cache.length <= limit) return;
+
+    final sortedEntries = _accessTimes.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+
+    final removeCount = _cache.length - limit ~/ 2;
+    for (var i = 0; i < removeCount; i++) {
+      final key = sortedEntries[i].key;
+      _cache.remove(key);
+      _accessTimes.remove(key);
+    }
+  }
+
+  @override
+  int get size => _cache.length;
+}
+
+/// Specialized search cache service following SRP
+class SearchCacheService {
+  SearchCacheService({int maxEntries = 100})
+      : _cache = LRUCache<String, List<int>>(maxEntries: maxEntries);
+
+  final LRUCache<String, List<int>> _cache;
+
+  /// Get cached search matches for a term
+  List<int>? getCachedMatches(String term) => _cache.get(term);
 
   /// Cache search matches for a term
-  void cacheSearchMatches(String term, List<int> matches) {
-    _searchMatchesCache[term] = matches;
-    _searchAccessTimes[term] = DateTime.now();
-  }
+  void cacheMatches(String term, List<int> matches) =>
+      _cache.put(term, matches);
 
-  /// Get cached visible children count for a node with LRU tracking
-  int? getCachedVisibleChildrenCount(int nodeHashCode) {
-    final count = _visibleChildrenCountCache[nodeHashCode];
-    if (count != null) {
-      _nodeAccessTimes[nodeHashCode] = DateTime.now();
-    }
-    return count;
-  }
+  /// Clear search cache
+  void clear() => _cache.clear();
+
+  /// Maintain cache size
+  void maintain({int? maxEntries}) => _cache.maintain(maxEntries: maxEntries);
+
+  /// Get cache size
+  int get size => _cache.size;
+}
+
+/// Specialized node hierarchy cache service following SRP
+class NodeHierarchyCacheService {
+  NodeHierarchyCacheService({int maxEntries = 1000})
+      : _cache = LRUCache<int, int>(maxEntries: maxEntries);
+
+  final LRUCache<int, int> _cache;
+
+  /// Get cached visible children count for a node
+  int? getCachedCount(int nodeHashCode) => _cache.get(nodeHashCode);
 
   /// Cache visible children count for a node
-  void cacheVisibleChildrenCount(int nodeHashCode, int count) {
-    _visibleChildrenCountCache[nodeHashCode] = count;
-    _nodeAccessTimes[nodeHashCode] = DateTime.now();
-  }
+  void cacheCount(int nodeHashCode, int count) =>
+      _cache.put(nodeHashCode, count);
 
-  /// Efficient LRU-based cache maintenance
-  void maintainCaches({int maxSearchEntries = 100, int maxNodeEntries = 1000}) {
-    _maintainSearchCache(maxSearchEntries);
-    _maintainNodeCache(maxNodeEntries);
-  }
+  /// Clear hierarchy cache
+  void clear() => _cache.clear();
 
-  void _maintainSearchCache(int maxEntries) {
-    if (_searchMatchesCache.length <= maxEntries) return;
+  /// Maintain cache size
+  void maintain({int? maxEntries}) => _cache.maintain(maxEntries: maxEntries);
 
-    // Sort by access time and remove oldest entries
-    final sortedEntries = _searchAccessTimes.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    final removeCount = _searchMatchesCache.length - maxEntries ~/ 2;
-    for (var i = 0; i < removeCount; i++) {
-      final key = sortedEntries[i].key;
-      _searchMatchesCache.remove(key);
-      _searchAccessTimes.remove(key);
-    }
-  }
-
-  void _maintainNodeCache(int maxEntries) {
-    if (_visibleChildrenCountCache.length <= maxEntries) return;
-
-    // Sort by access time and remove oldest entries
-    final sortedEntries = _nodeAccessTimes.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    final removeCount = _visibleChildrenCountCache.length - maxEntries ~/ 2;
-    for (var i = 0; i < removeCount; i++) {
-      final key = sortedEntries[i].key;
-      _visibleChildrenCountCache.remove(key);
-      _nodeAccessTimes.remove(key);
-    }
-  }
+  /// Get cache size
+  int get size => _cache.size;
 }

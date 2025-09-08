@@ -3,10 +3,48 @@ import 'dart:collection';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 
-/// Service responsible for node operations in JSON tree
-class JsonNodeService {
-  /// Expands a node and updates the display list efficiently
-  static List<NodeViewModelState> expandNode(
+/// Interface for node expansion operations following ISP
+abstract interface class NodeExpansionService {
+  List<NodeViewModelState> expandNode(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  );
+
+  List<NodeViewModelState> collapseNode(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  );
+}
+
+/// Interface for bulk node operations following ISP
+abstract interface class BulkNodeService {
+  List<NodeViewModelState> expandAll(
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  );
+
+  List<NodeViewModelState> collapseAll(
+    List<NodeViewModelState> displayNodes,
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  );
+}
+
+/// Interface for node navigation operations following ISP
+abstract interface class NodeNavigationService {
+  void expandParentNodes(NodeViewModelState node);
+  void expandSearchResults(List<SearchResult> searchResults);
+}
+
+/// Interface for node analysis operations following ISP
+abstract interface class NodeAnalysisService {
+  Object? getDirectChildren(NodeViewModelState node);
+  int countVisibleChildren(NodeViewModelState node);
+  int countVisibleChildrenCached(NodeViewModelState node, Map<int, int> cache);
+}
+
+/// Concrete implementation for node expansion operations
+class DefaultNodeExpansionService implements NodeExpansionService {
+  @override
+  List<NodeViewModelState> expandNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) {
@@ -15,18 +53,16 @@ class JsonNodeService {
     }
 
     final nodeIndex = displayNodes.indexOf(node) + 1;
-    final children = getDirectChildren(node);
+    final children = _getDirectChildren(node);
     final flatChildren = JsonTreeFlattener.flatten(children);
 
     node.expand();
-
-    // Use insertAll directly instead of creating new list
     displayNodes.insertAll(nodeIndex, flatChildren);
     return displayNodes;
   }
 
-  /// Collapses a node and updates the display list efficiently
-  static List<NodeViewModelState> collapseNode(
+  @override
+  List<NodeViewModelState> collapseNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) {
@@ -35,17 +71,57 @@ class JsonNodeService {
     }
 
     final nodeIndex = displayNodes.indexOf(node) + 1;
-    final children = countVisibleChildren(node) - 1;
+    final children = _countVisibleChildren(node) - 1;
 
     node.collapse();
-
-    // Remove range directly instead of creating new list
     displayNodes.removeRange(nodeIndex, nodeIndex + children);
     return displayNodes;
   }
 
-  /// Collapses all nodes in the tree efficiently
-  static List<NodeViewModelState> collapseAll(
+  Object? _getDirectChildren(NodeViewModelState node) {
+    if (node.isClass) {
+      return node.value as Map<String, NodeViewModelState>?;
+    } else if (node.isArray) {
+      return node.value as List<NodeViewModelState>?;
+    }
+    return null;
+  }
+
+  int _countVisibleChildren(NodeViewModelState node) {
+    if (!node.isRoot) return 1;
+
+    var count = 1;
+
+    if (node.isClass && !node.isCollapsed) {
+      final children = node.value! as Map<String, NodeViewModelState>;
+      for (final child in children.values) {
+        count += _countVisibleChildren(child);
+      }
+    } else if (node.isArray && !node.isCollapsed) {
+      final children = node.value! as List<NodeViewModelState>;
+      for (final child in children) {
+        count += _countVisibleChildren(child);
+      }
+    }
+
+    return count;
+  }
+}
+
+/// Concrete implementation for bulk node operations
+class DefaultBulkNodeService implements BulkNodeService {
+  @override
+  List<NodeViewModelState> expandAll(
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  ) {
+    for (final node in allNodes) {
+      node.expand();
+    }
+    return List<NodeViewModelState>.from(allNodes);
+  }
+
+  @override
+  List<NodeViewModelState> collapseAll(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) {
@@ -58,26 +134,17 @@ class JsonNodeService {
     final rootNodes =
         displayNodes.where((node) => node.treeDepth == 0).toList();
 
-    displayNodes
-      ..clear()
-      ..addAll(rootNodes);
+    displayNodes..clear()
+    ..addAll(rootNodes);
 
     return displayNodes;
   }
+}
 
-  /// Expands all nodes in the tree
-  static List<NodeViewModelState> expandAll(
-    UnmodifiableListView<NodeViewModelState> allNodes,
-  ) {
-    for (final node in allNodes) {
-      node.expand();
-    }
-
-    return List<NodeViewModelState>.from(allNodes);
-  }
-
-  /// Expands all parent nodes of a given node
-  static void expandParentNodes(NodeViewModelState node) {
+/// Concrete implementation for node navigation operations
+class DefaultNodeNavigationService implements NodeNavigationService {
+  @override
+  void expandParentNodes(NodeViewModelState node) {
     final parent = node.parent;
     if (parent == null) return;
 
@@ -85,15 +152,18 @@ class JsonNodeService {
     parent.expand();
   }
 
-  /// Expands all parent nodes for each search result
-  static void expandSearchResults(List<SearchResult> searchResults) {
+  @override
+  void expandSearchResults(List<SearchResult> searchResults) {
     for (final searchResult in searchResults) {
       expandParentNodes(searchResult.node);
     }
   }
+}
 
-  /// Gets direct children of a node
-  static Object? getDirectChildren(NodeViewModelState node) {
+/// Concrete implementation for node analysis operations
+class DefaultNodeAnalysisService implements NodeAnalysisService {
+  @override
+  Object? getDirectChildren(NodeViewModelState node) {
     if (node.isClass) {
       return node.value as Map<String, NodeViewModelState>?;
     } else if (node.isArray) {
@@ -102,11 +172,9 @@ class JsonNodeService {
     return null;
   }
 
-  /// Counts visible children of a node (recursive)
-  static int countVisibleChildren(NodeViewModelState node) {
-    if (!node.isRoot) {
-      return 1;
-    }
+  @override
+  int countVisibleChildren(NodeViewModelState node) {
+    if (!node.isRoot) return 1;
 
     var count = 1;
 
@@ -125,8 +193,8 @@ class JsonNodeService {
     return count;
   }
 
-  /// Optimized version of countVisibleChildren with caching
-  static int countVisibleChildrenCached(
+  @override
+  int countVisibleChildrenCached(
     NodeViewModelState node,
     Map<int, int> cache,
   ) {
@@ -140,4 +208,124 @@ class JsonNodeService {
     cache[nodeHash] = count;
     return count;
   }
+}
+
+/// Facade service that combines all node operations following Facade pattern
+class JsonNodeService
+    implements
+        NodeExpansionService,
+        BulkNodeService,
+        NodeNavigationService,
+        NodeAnalysisService {
+  JsonNodeService({
+    NodeExpansionService? expansionService,
+    BulkNodeService? bulkService,
+    NodeNavigationService? navigationService,
+    NodeAnalysisService? analysisService,
+  })  : _expansionService = expansionService ?? DefaultNodeExpansionService(),
+        _bulkService = bulkService ?? DefaultBulkNodeService(),
+        _navigationService =
+            navigationService ?? DefaultNodeNavigationService(),
+        _analysisService = analysisService ?? DefaultNodeAnalysisService();
+
+  final NodeExpansionService _expansionService;
+  final BulkNodeService _bulkService;
+  final NodeNavigationService _navigationService;
+  final NodeAnalysisService _analysisService;
+
+  // Delegate to expansion service
+  @override
+  List<NodeViewModelState> expandNode(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  ) =>
+      _expansionService.expandNode(node, displayNodes);
+
+  @override
+  List<NodeViewModelState> collapseNode(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  ) =>
+      _expansionService.collapseNode(node, displayNodes);
+
+  // Delegate to bulk service
+  @override
+  List<NodeViewModelState> expandAll(
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  ) =>
+      _bulkService.expandAll(allNodes);
+
+  @override
+  List<NodeViewModelState> collapseAll(
+    List<NodeViewModelState> displayNodes,
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  ) =>
+      _bulkService.collapseAll(displayNodes, allNodes);
+
+  // Delegate to navigation service
+  @override
+  void expandParentNodes(NodeViewModelState node) =>
+      _navigationService.expandParentNodes(node);
+
+  @override
+  void expandSearchResults(List<SearchResult> searchResults) =>
+      _navigationService.expandSearchResults(searchResults);
+
+  // Delegate to analysis service
+  @override
+  Object? getDirectChildren(NodeViewModelState node) =>
+      _analysisService.getDirectChildren(node);
+
+  @override
+  int countVisibleChildren(NodeViewModelState node) =>
+      _analysisService.countVisibleChildren(node);
+
+  @override
+  int countVisibleChildrenCached(
+    NodeViewModelState node,
+    Map<int, int> cache,
+  ) =>
+      _analysisService.countVisibleChildrenCached(node, cache);
+
+  // Static methods for backward compatibility
+  static List<NodeViewModelState> expandNodeStatic(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  ) =>
+      DefaultNodeExpansionService().expandNode(node, displayNodes);
+
+  static List<NodeViewModelState> collapseNodeStatic(
+    NodeViewModelState node,
+    List<NodeViewModelState> displayNodes,
+  ) =>
+      DefaultNodeExpansionService().collapseNode(node, displayNodes);
+
+  static List<NodeViewModelState> expandAllStatic(
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  ) =>
+      DefaultBulkNodeService().expandAll(allNodes);
+
+  static List<NodeViewModelState> collapseAllStatic(
+    List<NodeViewModelState> displayNodes,
+    UnmodifiableListView<NodeViewModelState> allNodes,
+  ) =>
+      DefaultBulkNodeService().collapseAll(displayNodes, allNodes);
+
+  static void expandParentNodesStatic(NodeViewModelState node) =>
+      DefaultNodeNavigationService().expandParentNodes(node);
+
+  static void expandSearchResultsStatic(List<SearchResult> searchResults) =>
+      DefaultNodeNavigationService().expandSearchResults(searchResults);
+
+  static Object? getDirectChildrenStatic(NodeViewModelState node) =>
+      DefaultNodeAnalysisService().getDirectChildren(node);
+
+  static int countVisibleChildrenStatic(NodeViewModelState node) =>
+      DefaultNodeAnalysisService().countVisibleChildren(node);
+
+  static int countVisibleChildrenCachedStatic(
+    NodeViewModelState node,
+    Map<int, int> cache,
+  ) =>
+      DefaultNodeAnalysisService().countVisibleChildrenCached(node, cache);
 }

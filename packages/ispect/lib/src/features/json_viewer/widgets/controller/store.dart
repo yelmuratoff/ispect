@@ -27,7 +27,11 @@ class JsonExplorerStore extends ChangeNotifier {
   bool _mounted = true;
 
   // Services for better separation of concerns
-  final JsonViewerCacheService _cacheService = JsonViewerCacheService();
+  final SearchCacheService _searchCacheService = SearchCacheService();
+  final NodeHierarchyCacheService _hierarchyCacheService =
+      NodeHierarchyCacheService();
+  late final JsonNodeService _nodeService;
+  late final JsonSearchService _searchService;
   JsonPerformanceManager? _performanceManager;
 
   bool get mounted => _mounted;
@@ -59,15 +63,15 @@ class JsonExplorerStore extends ChangeNotifier {
       return;
     }
 
-    _displayNodes = JsonNodeService.collapseNode(node, _displayNodes);
-    _cacheService.clearHierarchyCaches();
+    _displayNodes = _nodeService.collapseNode(node, _displayNodes);
+    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
   /// Collapses all nodes.
   void collapseAll() {
-    _displayNodes = JsonNodeService.collapseAll(_displayNodes, _allNodes);
-    _cacheService.clearHierarchyCaches();
+    _displayNodes = _nodeService.collapseAll(_displayNodes, _allNodes);
+    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -81,13 +85,14 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodes = JsonTreeFlattener.flatten(node.value);
     _displayNodes.insertAll(nodeIndex, nodes);
     node.expand();
-    _cacheService.clearHierarchyCaches();
+    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
   /// Expands all nodes.
   void expandAll() {
-    _displayNodes = JsonNodeService.expandAll(_allNodes);
+    _displayNodes = _nodeService.expandAll(_allNodes);
+    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -152,7 +157,8 @@ class JsonExplorerStore extends ChangeNotifier {
     bool areAllCollapsed = false,
   }) async {
     // Clear caches first to avoid memory leaks
-    _cacheService.clearAll();
+    _searchCacheService.clear();
+    _hierarchyCacheService.clear();
 
     // Cancel any ongoing search
     _currentSearchOperation?.cancel();
@@ -175,9 +181,11 @@ class JsonExplorerStore extends ChangeNotifier {
     _allNodes = UnmodifiableListView(flatList);
     _displayNodes = List.from(flatList);
 
-    // Initialize performance optimizations
-    _performanceManager = JsonPerformanceManager(_cacheService);
-    _performanceManager!.initializeOptimizations(_allNodes);
+    // Initialize services
+    _nodeService = JsonNodeService();
+    _searchService = JsonSearchService();
+    _performanceManager = PerformanceManagerFactory.createDevelopmentManager()
+        as JsonPerformanceManager;
 
     if (areAllCollapsed) {
       collapseAll();
@@ -189,10 +197,11 @@ class JsonExplorerStore extends ChangeNotifier {
   @override
   void dispose() {
     // Clear caches when disposing the store
-    _cacheService.clearAll();
+    _searchCacheService.clear();
+    _hierarchyCacheService.clear();
 
     // Dispose performance manager
-    _performanceManager?.dispose();
+    _performanceManager?.reset();
 
     // Cancel any ongoing search
     _currentSearchOperation?.cancel();
@@ -210,7 +219,7 @@ class JsonExplorerStore extends ChangeNotifier {
     _searchResults.clear();
 
     // Use search service for better performance and separation of concerns
-    final results = await JsonSearchService.searchInNodes(
+    final results = await _searchService.searchInNodes(
       allNodes: _allNodes,
       searchTerm: _searchTerm,
       isMounted: () => mounted,
@@ -227,13 +236,13 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Expands all the parent nodes of each search result.
   void expandSearchResults() {
-    JsonNodeService.expandSearchResults(
+    _nodeService.expandSearchResults(
       searchResults.cast<SearchResult>().toList(),
     );
   }
 
   /// Expands all the parent nodes of the given `node`.
   void expandParentNodes(NodeViewModelState node) {
-    JsonNodeService.expandParentNodes(node);
+    _nodeService.expandParentNodes(node);
   }
 }
