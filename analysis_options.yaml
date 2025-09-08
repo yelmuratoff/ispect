@@ -11,3 +11,5 @@ linter:
     - use_key_in_widget_constructors
     - prefer_final_locals
     - always_declare_return_types
+    - prefer_typing_uninitialized_variables
+    - avoid_dynamic_calls
