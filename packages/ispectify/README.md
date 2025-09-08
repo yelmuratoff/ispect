@@ -299,7 +299,7 @@ class SafeLogger {
     return ISpectify(
       logger: ISpectifyLogger(
         settings: LoggerSettings(
-          enableColors: true,
+          enableColors: kDebugMode, // Disable colors in headless/CI for cleaner output
         )
       ),
       options: ISpectifyOptions(
@@ -333,20 +333,20 @@ class SafeLogger {
 // Environment-specific logger configuration
 ISpectify createLogger() {
   const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
-  
+  final bool isProd = environment == 'production';
   return ISpectify(
     logger: ISpectifyLogger(
       settings: LoggerSettings(
-        enableColors: environment != 'production',
+        enableColors: !isProd,
         lineLength: environment == 'development' ? 120 : 80,
       )
     ),
     options: ISpectifyOptions(
-      enabled: environment != 'production',
+      enabled: !isProd,
       useHistory: true,
       useConsoleLogs: environment == 'development',
-      maxHistoryItems: environment == 'development' ? 10000 : 1000,
-      logTruncateLength: environment == 'development' ? 10000 : 1000,
+      maxHistoryItems: environment == 'development' ? 10000 : 2000,
+      logTruncateLength: environment == 'development' ? 10000 : 2000,
       titles: {
         'error': 'Errors',
         'warning': 'Warnings', 
@@ -357,6 +357,21 @@ ISpectify createLogger() {
   );
 }
 ```
+
+### Memory & History Tuning
+
+Large history buffers increase memory usage. Adjust for CI, tests, or low-end devices:
+
+```dart
+ISpectifyOptions(
+  maxHistoryItems: 2000, // Lower for constrained environments
+  logTruncateLength: 4000, // Shorter entries reduce memory footprint
+);
+```
+
+### Redaction Guidance
+
+Prefer key-based masking (e.g. 'authorization', 'token', 'apiKey'). Avoid hardcoding actual secret values in ignoreValues; use placeholder markers instead. Disable redaction only with synthetic or non-sensitive data.
 
 ## Examples
 

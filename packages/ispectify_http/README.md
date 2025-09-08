@@ -363,7 +363,7 @@ void setupHttpInterceptors(
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
-    redactor.ignoreValues(['password', 'token']);
+    redactor.ignoreValues(['<placeholder-secret>']);
     
     client.interceptors.add(
       ISpectHttpInterceptor(
@@ -373,9 +373,9 @@ void setupHttpInterceptors(
       ),
     );
   }
-  
-  // Add other production interceptors here
 }
+
+// Close the underlying client if created outside the app lifecycle to free resources.
 ```
 
 ## Examples

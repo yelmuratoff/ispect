@@ -369,7 +369,7 @@ class DioConfig {
         return const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
-          enableRedaction: false, // Allow full debugging in dev
+          enableRedaction: false, // Only disable if using non-sensitive test data
         );
       case 'staging':
         return const ISpectDioInterceptorSettings(
@@ -398,7 +398,7 @@ void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
-    redactor.ignoreValues(['password', 'token']);
+    redactor.ignoreValues(['<placeholder-secret>', '<another-placeholder>']);
     
     dio.interceptors.add(
       ISpectDioInterceptor(
@@ -409,8 +409,7 @@ void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
     );
   }
   
-  // Add other production interceptors here
-  dio.interceptors.add(LogInterceptor(requestBody: false, responseBody: false));
+  // Add other production interceptors here (avoid duplicate logging)
 }
 ```
 

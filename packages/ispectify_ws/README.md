@@ -72,19 +72,17 @@ interceptor.setClient(client);
 
 ### Sensitive Data Redaction
 
-Redaction is enabled by default. Disable globally via settings or provide a custom redactor.
+Redaction is enabled by default. Disable only with synthetic / non-sensitive data.
 
 ```dart
-// Disable redaction
 final interceptor = ISpectWSInterceptor(
   logger: logger,
   settings: const ISpectWSInterceptorSettings(enableRedaction: false),
 );
 
-// Provide a custom redactor
 final redactor = RedactionService();
 redactor.ignoreKeys(['x-debug']);
-redactor.ignoreValues(['sample-token']);
+redactor.ignoreValues(['<placeholder-token>']);
 final interceptor2 = ISpectWSInterceptor(
   logger: logger,
   redactor: redactor,
@@ -98,15 +96,9 @@ final interceptor = ISpectWSInterceptor(
   logger: logger,
   settings: ISpectWSInterceptorSettings(
     enabled: true,
-    sentFilter: (request) {
-      return request.body?['data']?.toString().contains('important') ?? false;
-    },
-    receivedFilter: (response) {
-      return !response.body?['data']?.toString().contains('error') ?? true;
-    },
-    errorFilter: (error) {
-      return true;
-    },
+    sentFilter: (request) => request.body?['data']?.toString().contains('important') ?? false,
+    receivedFilter: (response) => !(response.body?['data']?.toString().contains('error') ?? false),
+    errorFilter: (error) => true,
     sentPen: AnsiPen()..blue(),
     receivedPen: AnsiPen()..green(),
     errorPen: AnsiPen()..red(),
@@ -237,20 +229,17 @@ import 'package:ws/ws.dart';
 const bool kEnableISpectWS = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 void main() {
-  const url = 'wss://echo.websocket.org';
-  
+  // Replace with your test endpoint or local dev server; avoid deprecated public echo services
+  const url = 'wss://example.com/socket';
   if (kEnableISpectWS) {
     _initializeWithISpect(url);
   } else {
-    // Production initialization without ISpect
     _initializeWithoutISpect(url);
   }
 }
 
 void _initializeWithISpect(String url) {
   final logger = ISpectify();
-
-  // Create WebSocket interceptor only in development/staging
   final interceptor = ISpectWSInterceptor(
     logger: logger,
     settings: const ISpectWSInterceptorSettings(
@@ -258,11 +247,9 @@ void _initializeWithISpect(String url) {
       printSentData: true,
       printReceivedData: true,
       printErrorData: true,
-      enableRedaction: true, // Always enable redaction for security
+      enableRedaction: true, // Keep redaction enabled for any non-local traffic
     ),
   );
-
-  // Create WebSocket client with interceptor
   final client = WebSocketClient(
     WebSocketOptions.common(
       connectionRetryInterval: (
@@ -272,15 +259,11 @@ void _initializeWithISpect(String url) {
       interceptors: [interceptor],
     ),
   );
-
-  // Set client for interceptor
   interceptor.setClient(client);
-
-  _runWebSocketExample(client);
+  _runWebSocketExample(client, url);
 }
 
 void _initializeWithoutISpect(String url) {
-  // Create WebSocket client without interceptor for production
   final client = WebSocketClient(
     WebSocketOptions.common(
       connectionRetryInterval: (
@@ -289,20 +272,13 @@ void _initializeWithoutISpect(String url) {
       ),
     ),
   );
-
-  _runWebSocketExample(client);
+  _runWebSocketExample(client, url);
 }
 
-void _runWebSocketExample(WebSocketClient client) {
-  const url = 'wss://echo.websocket.org';
-  
-  // Connect and send messages - logged only when ISpect is enabled
+void _runWebSocketExample(WebSocketClient client, String url) {
   client
     ..connect(url)
-    ..add('Hello WebSocket!')
-    ..add('{"type": "message", "data": "JSON data"}');
-
-  // Listen to messages
+    ..add('Hello WebSocket!');
   client.stream.listen(
     (message) {
       print('Received: $message');
@@ -311,8 +287,6 @@ void _runWebSocketExample(WebSocketClient client) {
       print('Error: $error');
     },
   );
-
-  // Close connection after some time
   Timer(const Duration(seconds: 5), () async {
     await client.close();
     print('Connection closed');

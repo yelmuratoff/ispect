@@ -420,7 +420,6 @@ final Dio dio = Dio(
   ),
 );
 
-// Initialize in ISpect.run onInit callback
 ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
@@ -436,6 +435,7 @@ ISpect.run(
         ),
       ),
     );
+    // Avoid also adding Dio's LogInterceptor unless deliberately comparing outputs.
   },
 );
 ```
@@ -475,7 +475,7 @@ ISpect.run(
 
 #### Multiple HTTP Clients
 
-You can monitor multiple Dio or HTTP clients simultaneously:
+You can monitor multiple Dio or HTTP clients simultaneously. Placing interceptor setup inside `onInit` ensures all code is removed from production when the flag is false:
 
 ```dart
 final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
@@ -485,7 +485,6 @@ ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
   onInit: () {
-    // Add interceptors to both clients
     mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
     uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
   },
@@ -539,7 +538,6 @@ dependencies:
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-// Initialize in ISpect.run onInit callback
 ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
@@ -559,15 +557,15 @@ ISpectBuilder(
     logDescriptions: [
       LogDescription(
         key: 'bloc-event',
-        isDisabled: true, // Disable event logs
+        isDisabled: true,
       ),
       LogDescription(
         key: 'bloc-transition',
-        isDisabled: true, // Disable transition logs
+        isDisabled: true,
       ),
       LogDescription(
         key: 'bloc-state',
-        isDisabled: true, // Disable state logs
+        isDisabled: true,
       ),
     ],
   ),
@@ -590,10 +588,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _observer = ISpectNavigatorObserver(
-    isLogModals: true,      // Log modal dialogs
-    isLogPages: true,       // Log page navigations
-    isLogGestures: false,    // Log user gestures (can be verbose)
-    isLogOtherTypes: true,   // Log other navigation types
+    isLogModals: true,
+    isLogPages: true,
+    isLogGestures: false,
+    isLogOtherTypes: true,
   );
 
   @override
@@ -611,35 +609,20 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-Navigation events will be logged with the key `route` and include information about:
-- Page transitions (push/pop)
-- Modal presentations
-- User gestures (if enabled)
-- Route names and arguments
+Navigation events will be logged with the key `route`.
 
 ### Sensitive Data Redaction
 
-All integration packages support automatic redaction of sensitive data. Redaction is enabled by default but can be configured:
+All integration packages support redaction. Prefer disabling only with synthetic data. Use placeholder values when demonstrating secrets.
 
 #### Dio Example
 
 ```dart
-// Disable redaction globally
 final interceptor = ISpectDioInterceptor(
   logger: iSpectify,
   settings: const ISpectDioInterceptorSettings(
-    enableRedaction: false,
+    enableRedaction: false, // Only if data is guaranteed non-sensitive
   ),
-);
-
-// Custom redaction service
-final redactor = RedactionService();
-redactor.ignoreKeys(['x-debug']);
-redactor.ignoreValues(['sample-token']);
-
-final interceptor = ISpectDioInterceptor(
-  logger: iSpectify,
-  redactor: redactor,
 );
 ```
 
@@ -648,14 +631,8 @@ final interceptor = ISpectDioInterceptor(
 ```dart
 final redactor = RedactionService();
 redactor.ignoreKeys(['authorization', 'x-api-key']);
-redactor.ignoreValues(['Bearer token123', 'secret-key']);
-
-client.interceptors.add(
-  ISpectHttpInterceptor(
-    logger: iSpectify,
-    redactor: redactor,
-  ),
-);
+redactor.ignoreValues(['<placeholder-secret>']);
+client.interceptors.add(ISpectHttpInterceptor(logger: iSpectify, redactor: redactor));
 ```
 
 #### WebSocket Example
@@ -663,44 +640,27 @@ client.interceptors.add(
 ```dart
 final redactor = RedactionService();
 redactor.ignoreKeys(['auth_token']);
-redactor.ignoreValues(['ws-secret']);
-
-final interceptor = ISpectWSInterceptor(
-  logger: iSpectify,
-  redactor: redactor,
-);
+redactor.ignoreValues(['<placeholder>']);
+final interceptor = ISpectWSInterceptor(logger: iSpectify, redactor: redactor);
 ```
 
-Redaction masks sensitive data in:
-- HTTP headers (Authorization, API keys, etc.)
-- Request/response bodies
-- WebSocket messages
-- Query parameters
+Redaction masks data in headers, bodies, WS messages, and query parameters. Avoid embedding real secrets in code.
 
 ### Log Filtering and Customization
-
-You can disable specific types of logs to reduce noise:
 
 ```dart
 ISpectBuilder(
   theme: const ISpectTheme(
     logDescriptions: [
-      // BLoC logs
       LogDescription(key: 'bloc-event', isDisabled: true),
       LogDescription(key: 'bloc-transition', isDisabled: true),
       LogDescription(key: 'bloc-state', isDisabled: true),
       LogDescription(key: 'bloc-create', isDisabled: false),
       LogDescription(key: 'bloc-close', isDisabled: false),
-      
-      // HTTP logs
       LogDescription(key: 'http-request', isDisabled: false),
       LogDescription(key: 'http-response', isDisabled: false),
       LogDescription(key: 'http-error', isDisabled: false),
-      
-      // Navigation logs
       LogDescription(key: 'route', isDisabled: false),
-      
-      // Other logs
       LogDescription(key: 'print', isDisabled: true),
       LogDescription(key: 'analytics', isDisabled: true),
     ],
@@ -709,13 +669,7 @@ ISpectBuilder(
 )
 ```
 
-Available log keys include:
-- `bloc-*`: BLoC state management events
-- `http-*`: HTTP request/response/error logs
-- `route`: Navigation events
-- `print`: Flutter print statements
-- `analytics`: Analytics events
-- `error`, `debug`, `info`: General log levels
+Available log keys: `bloc-*`, `http-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
 
 ## Examples
 
