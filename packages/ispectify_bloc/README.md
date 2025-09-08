@@ -29,22 +29,16 @@
 
 > **ISpectify BLoC** provides seamless integration between BLoC state management and the ISpectify logging system.
 
-<div align="center">
-
-🔄 **State Tracking** • 📝 **Event Logging** • 🔍 **Transition Monitoring** • ❌ **Error Handling**
-
-</div>
-
-Enhance your BLoC debugging workflow by automatically capturing and logging all state management interactions. Perfect for tracking state changes, debugging complex flows, and monitoring application behavior.
+ISpectifyBloc provides seamless integration between BLoC state management and the ISpectify logging system for comprehensive state management monitoring.
 
 ### 🎯 Key Features
 
-- 🔄 **State Change Logging**: Automatic logging of all BLoC state changes
-- 📝 **Event Tracking**: Detailed event logging with parameters
-- 🔍 **Transition Monitoring**: Complete state transition tracking
-- ❌ **Error Handling**: BLoC error logging with stack traces
-- ⚡ **Performance Metrics**: State change timing and performance tracking
-- 🎛️ **Configurable**: Flexible filtering and formatting options
+- State Change Logging: Automatic logging of all BLoC state changes
+- Event Tracking: Detailed event logging with parameters
+- Transition Monitoring: Complete state transition tracking
+- Error Handling: BLoC error logging with stack traces
+- Performance Metrics: State change timing and performance tracking
+- Configurable: Flexible filtering and formatting options
 
 ## 🔧 Configuration Options
 
@@ -58,7 +52,7 @@ ISpect.run(
   onInit: () {
     // Set up BLoC observer for automatic logging
     Bloc.observer = ISpecBlocObserver(
-      iSpectify: iSpectify,
+      logger: iSpectify,
     );
   },
 );
@@ -245,7 +239,7 @@ void _initializeWithISpect() {
     onInit: () {
       // Set up BLoC observer only in development/staging
       Bloc.observer = ISpecBlocObserver(
-        iSpectify: iSpectify,
+        logger: iSpectify,
       );
     },
   );

@@ -29,23 +29,17 @@
 
 > **ISpectify Dio** provides seamless integration between Dio HTTP client and the ISpectify logging system.
 
-<div align="center">
-
-🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
-
-</div>
-
-Streamline your HTTP debugging workflow by automatically capturing and logging all Dio HTTP client interactions. Perfect for monitoring API calls, debugging network issues, and tracking performance metrics.
+ISpectifyDio provides seamless integration between Dio HTTP client and the ISpectify logging system for comprehensive HTTP request monitoring.
 
 ### 🎯 Key Features
 
-- 🌐 **HTTP Request Logging**: Automatic logging of all Dio requests
-- 📊 **Response Tracking**: Detailed response logging with timing information
-- ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Request Inspection**: Headers, body, and parameter logging
-- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
-- ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Configurable**: Flexible configuration options for different environments
+- HTTP Request Logging: Automatic logging of all Dio requests
+- Response Tracking: Detailed response logging with timing information
+- Error Handling: Comprehensive error logging with stack traces
+- Request Inspection: Headers, body, and parameter logging
+- Sensitive Data Redaction: Centralized redaction for headers and bodies (enabled by default, configurable)
+- Performance Metrics: Request/response timing and size tracking
+- Configurable: Flexible configuration options for different environments
 
 ## 🔧 Configuration Options
 
@@ -65,7 +59,7 @@ ISpect.run(
   onInit: () {
     dio.interceptors.add(
       ISpectDioInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
         ),
@@ -83,7 +77,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectDioInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -95,7 +89,7 @@ redactor.ignoreValues(['sample-token']);
 
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     redactor: redactor,
   ),
 );
@@ -106,7 +100,7 @@ dio.interceptors.add(
 ```dart
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
       // requestFilter: (requestOptions) =>
@@ -124,8 +118,8 @@ dio.interceptors.add(
 final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
 
-mainDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
-uploadDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
+mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
 ```
 
 ## 📦 Installation
@@ -257,12 +251,12 @@ void _initializeWithISpect() {
 
   ISpect.run(
     () => runApp(MyApp()),
-    logger: iSpectify,
+          logger: iSpectify,
     onInit: () {
       // Add ISpectify Dio interceptor only in development/staging
       dio.interceptors.add(
         ISpectDioInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
           ),
@@ -343,7 +337,7 @@ class DioFactory {
     if (_isEnabled && iSpectify != null) {
       dio.interceptors.add(
         ISpectDioInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: ISpectDioInterceptorSettings(
             printRequestHeaders: kDebugMode,
             enableRedaction: true, // Always enable redaction for security
@@ -408,7 +402,7 @@ void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
     
     dio.interceptors.add(
       ISpectDioInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         redactor: redactor,
         settings: DioConfig.getSettings(),
       ),

@@ -29,23 +29,17 @@
 
 > **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
 
-<div align="center">
-
-📊 **Real-time Monitoring** • 🐛 **Debugging** • 🔍 **Inspection** • ⚡ **Performance Tracking**
-
-</div>
-
-ISpect empowers Flutter developers with a suite of debugging tools that seamlessly integrate into your development workflow. From monitoring HTTP requests in real-time to tracking performance metrics and managing application state, ISpect provides an intuitive interface that makes debugging efficient and insightful.
+ISpect provides comprehensive debugging capabilities for Flutter applications, including network monitoring, performance tracking, and UI inspection tools.
 
 ### 🎯 Key Features
 
-- 🌐 **Network Monitoring**: Detailed HTTP request/response inspection with error tracking
-- 📝 **Logging**: Advanced logging system with categorization and filtering
-- ⚡ **Performance Analysis**: Real-time performance metrics and monitoring
-- 🔍 **UI Inspector**: Widget hierarchy inspection with color picker and layout analysis
-- 📱 **Device Information**: System and app metadata collection
-- 🐛 **Bug Reporting**: Integrated feedback system with screenshot capture
-- 🗄️ **Cache Management**: Application cache inspection and management
+- Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Logging: Advanced logging system with categorization and filtering
+- Performance Analysis: Real-time performance metrics and monitoring
+- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
+- Device Information: System and app metadata collection
+- Bug Reporting: Integrated feedback system with screenshot capture
+- Cache Management: Application cache inspection and management
 
 ## 🌐 Internationalization
 - Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
@@ -377,6 +371,352 @@ flutter build apk --dart-define=ENABLE_ISPECT=false --dart-define=ENVIRONMENT=pr
 # Or use flavor-specific configurations
 flutter build apk --flavor production # ISpect automatically disabled
 ```
+
+## 🔗 Integration Guides
+
+ISpect provides seamless integration with various Flutter packages through specialized companion packages. Below are detailed guides for integrating ISpect with HTTP clients, state management, WebSocket connections, and navigation.
+
+### 📦 Required Dependencies
+
+Add the following packages to your `pubspec.yaml` based on your needs:
+
+```yaml
+dependencies:
+  # Core ISpect
+  ispect: ^4.3.3
+  
+  # HTTP integrations (choose one or both)
+  ispectify_dio: ^4.3.3      # For Dio HTTP client
+  ispectify_http: ^4.3.3     # For standard HTTP package
+  
+  # WebSocket integration
+  ispectify_ws: ^4.3.3       # For WebSocket monitoring
+  
+  # State management integration
+  ispectify_bloc: ^4.3.3     # For BLoC state management
+  
+  # Optional: Jira integration
+  ispect_jira: ^4.3.3        # For automated bug reporting
+```
+
+### 🌐 HTTP Integration
+
+#### Dio HTTP Client
+
+For Dio integration, use the `ispectify_dio` package:
+
+```yaml
+dependencies:
+  ispectify_dio: ^4.3.3
+```
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
+
+final Dio dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.example.com',
+  ),
+);
+
+// Initialize in ISpect.run onInit callback
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    dio.interceptors.add(
+      ISpectDioInterceptor(
+        logger: iSpectify,
+        settings: const ISpectDioInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printRequestData: true,
+          printResponseData: true,
+        ),
+      ),
+    );
+  },
+);
+```
+
+#### Standard HTTP Client
+
+For standard HTTP package integration, use the `ispectify_http` package:
+
+```yaml
+dependencies:
+  ispectify_http: ^4.3.3
+```
+
+```dart
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
+
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    client.interceptors.add(
+      ISpectHttpInterceptor(
+        logger: iSpectify,
+        settings: const ISpectHttpInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+        ),
+      ),
+    );
+  },
+);
+```
+
+#### Multiple HTTP Clients
+
+You can monitor multiple Dio or HTTP clients simultaneously:
+
+```dart
+final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    // Add interceptors to both clients
+    mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+    uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+  },
+);
+```
+
+### 🔗 WebSocket Integration
+
+For WebSocket monitoring, use the `ispectify_ws` package:
+
+```yaml
+dependencies:
+  ispectify_ws: ^4.3.3
+```
+
+```dart
+import 'package:ws/ws.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+
+final interceptor = ISpectWSInterceptor(
+  logger: iSpectify,
+  settings: const ISpectWSInterceptorSettings(
+    enabled: true,
+    printSentData: true,
+    printReceivedData: true,
+    printReceivedMessage: true,
+    printErrorData: true,
+    printErrorMessage: true,
+  ),
+);
+
+final client = WebSocketClient(
+  WebSocketOptions.common(
+    interceptors: [interceptor],
+  ),
+);
+
+interceptor.setClient(client);
+```
+
+### 🔄 BLoC State Management Integration
+
+For BLoC integration, use the `ispectify_bloc` package:
+
+```yaml
+dependencies:
+  ispectify_bloc: ^4.3.3
+```
+
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
+
+// Initialize in ISpect.run onInit callback
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: iSpectify,
+  onInit: () {
+    Bloc.observer = ISpecBlocObserver(
+      logger: iSpectify,
+    );
+  },
+);
+```
+
+You can also filter specific BLoC logs in the ISpect theme:
+
+```dart
+ISpectBuilder(
+  theme: const ISpectTheme(
+    logDescriptions: [
+      LogDescription(
+        key: 'bloc-event',
+        isDisabled: true, // Disable event logs
+      ),
+      LogDescription(
+        key: 'bloc-transition',
+        isDisabled: true, // Disable transition logs
+      ),
+      LogDescription(
+        key: 'bloc-state',
+        isDisabled: true, // Disable state logs
+      ),
+    ],
+  ),
+  child: child,
+)
+```
+
+### 🧭 Navigation Integration
+
+To track screen navigation, use `ISpectNavigatorObserver`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _observer = ISpectNavigatorObserver(
+    isLogModals: true,      // Log modal dialogs
+    isLogPages: true,       // Log page navigations
+    isLogGestures: false,    // Log user gestures (can be verbose)
+    isLogOtherTypes: true,   // Log other navigation types
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorObservers: [_observer],
+      // ... other MaterialApp properties
+      builder: (context, child) {
+        return ISpectBuilder(
+          observer: _observer, // Connect observer to ISpect
+          child: child ?? const SizedBox(),
+        );
+      },
+    );
+  }
+}
+```
+
+Navigation events will be logged with the key `route` and include information about:
+- Page transitions (push/pop)
+- Modal presentations
+- User gestures (if enabled)
+- Route names and arguments
+
+### 🔒 Sensitive Data Redaction
+
+All integration packages support automatic redaction of sensitive data. Redaction is enabled by default but can be configured:
+
+#### Dio Example
+
+```dart
+// Disable redaction globally
+final interceptor = ISpectDioInterceptor(
+  logger: iSpectify,
+  settings: const ISpectDioInterceptorSettings(
+    enableRedaction: false,
+  ),
+);
+
+// Custom redaction service
+final redactor = RedactionService();
+redactor.ignoreKeys(['x-debug']);
+redactor.ignoreValues(['sample-token']);
+
+final interceptor = ISpectDioInterceptor(
+  logger: iSpectify,
+  redactor: redactor,
+);
+```
+
+#### HTTP Example
+
+```dart
+final redactor = RedactionService();
+redactor.ignoreKeys(['authorization', 'x-api-key']);
+redactor.ignoreValues(['Bearer token123', 'secret-key']);
+
+client.interceptors.add(
+  ISpectHttpInterceptor(
+    logger: iSpectify,
+    redactor: redactor,
+  ),
+);
+```
+
+#### WebSocket Example
+
+```dart
+final redactor = RedactionService();
+redactor.ignoreKeys(['auth_token']);
+redactor.ignoreValues(['ws-secret']);
+
+final interceptor = ISpectWSInterceptor(
+  logger: iSpectify,
+  redactor: redactor,
+);
+```
+
+Redaction automatically masks sensitive data in:
+- HTTP headers (Authorization, API keys, etc.)
+- Request/response bodies
+- WebSocket messages
+- Query parameters
+
+### 🎛️ Log Filtering and Customization
+
+You can disable specific types of logs to reduce noise and focus on relevant information:
+
+```dart
+ISpectBuilder(
+  theme: const ISpectTheme(
+    logDescriptions: [
+      // BLoC logs
+      LogDescription(key: 'bloc-event', isDisabled: true),
+      LogDescription(key: 'bloc-transition', isDisabled: true),
+      LogDescription(key: 'bloc-state', isDisabled: true),
+      LogDescription(key: 'bloc-create', isDisabled: false),
+      LogDescription(key: 'bloc-close', isDisabled: false),
+      
+      // HTTP logs
+      LogDescription(key: 'http-request', isDisabled: false),
+      LogDescription(key: 'http-response', isDisabled: false),
+      LogDescription(key: 'http-error', isDisabled: false),
+      
+      // Navigation logs
+      LogDescription(key: 'route', isDisabled: false),
+      
+      // Other logs
+      LogDescription(key: 'print', isDisabled: true), // Flutter print statements
+      LogDescription(key: 'analytics', isDisabled: true),
+    ],
+  ),
+  child: child,
+)
+```
+
+Available log keys include:
+- `bloc-*`: BLoC state management events
+- `http-*`: HTTP request/response/error logs
+- `route`: Navigation events
+- `print`: Flutter print statements
+- `analytics`: Analytics events
+- `error`, `debug`, `info`: General log levels
 
 ## 📚 Examples
 

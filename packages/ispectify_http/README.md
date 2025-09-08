@@ -29,23 +29,17 @@
 
 > **ISpectify HTTP** provides seamless integration between the http_interceptor package and the ISpectify logging system.
 
-<div align="center">
-
-🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
-
-</div>
-
-Enhance your HTTP debugging workflow by automatically capturing and logging all HTTP client interactions using the http_interceptor package. Provides seamless integration with Dart's HTTP package through interceptors for comprehensive request and response monitoring.
+ISpectifyHttp provides seamless integration between the http_interceptor package and the ISpectify logging system for comprehensive HTTP request monitoring.
 
 ### 🎯 Key Features
 
-- 🌐 **HTTP Request Logging**: Automatic logging of all HTTP requests
-- 📊 **Response Tracking**: Detailed response logging with timing information
-- ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Request Inspection**: Headers, body, and parameter logging
-- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
-- ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Lightweight**: Minimal overhead using http_interceptor package
+- HTTP Request Logging: Automatic logging of all HTTP requests
+- Response Tracking: Detailed response logging with timing information
+- Error Handling: Comprehensive error logging with stack traces
+- Request Inspection: Headers, body, and parameter logging
+- Sensitive Data Redaction: Centralized redaction for headers and bodies (enabled by default, configurable)
+- Performance Metrics: Request/response timing and size tracking
+- Lightweight: Minimal overhead using http_interceptor package
 
 ## 🔧 Configuration Options
 
@@ -60,7 +54,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     client.interceptors.add(
-      ISpectHttpInterceptor(iSpectify: iSpectify),
+      ISpectHttpInterceptor(logger: iSpectify),
     );
   },
 );
@@ -74,7 +68,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 client.interceptors.add(
   ISpectHttpInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectHttpInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -86,7 +80,7 @@ redactor.ignoreValues(['sample-token']);
 
 client.interceptors.add(
   ISpectHttpInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     redactor: redactor,
   ),
 );
@@ -243,7 +237,7 @@ void _initializeWithISpect() {
       // Add ISpectify HTTP interceptor only in development/staging
       client.interceptors.add(
         ISpectHttpInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectHttpInterceptorSettings(
             enableRedaction: true, // Always enable redaction for security
           ),
@@ -311,7 +305,7 @@ class HttpClientFactory {
     if (_isEnabled && iSpectify != null) {
       interceptors.add(
         ISpectHttpInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectHttpInterceptorSettings(
             enableRedaction: true, // Always enable redaction for security
           ),
@@ -373,7 +367,7 @@ void setupHttpInterceptors(
     
     client.interceptors.add(
       ISpectHttpInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         redactor: redactor,
         settings: HttpConfig.getSettings(),
       ),

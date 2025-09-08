@@ -140,6 +140,8 @@ flutter analyze --dart-define=ENABLE_ISPECT=false
 
 {{advanced_configuration}}
 
+{{integration_guides}}
+
 {{examples_section}}
 
 ## 🏗️ Architecture
