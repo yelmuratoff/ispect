@@ -3,13 +3,12 @@
 ## 4.3.3
 
 ### Architecture Refactoring
-- Refactored JSON viewer services to follow SOLID principles
+- Refactored JSON viewer services
 - Replaced monolithic services with specialized implementations:
   - Split `JsonViewerCacheService` into `SearchCacheService` and `NodeHierarchyCacheService`
   - Decomposed `JsonNodeService` into `NodeExpansionService`, `NodeCollapseService`, and `NodeNavigationService`
   - Implemented strategy pattern for `JsonSearchService` with pluggable search algorithms
   - Added universal object pool with dependency injection support
-  - Created comprehensive performance monitoring system with interface segregation
 - Migrated from static method calls to instance-based service architecture
 - Eliminated temporary v2 files, replaced legacy implementations
 
