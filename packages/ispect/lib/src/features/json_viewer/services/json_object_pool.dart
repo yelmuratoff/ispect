@@ -128,7 +128,8 @@ class JsonObjectPool implements UniversalObjectPool {
       releaseStringDynamicMap(object);
     } else {
       throw UnsupportedError(
-          'Type ${T.runtimeType} not supported by object pool',);
+        'Type ${T.runtimeType} not supported by object pool',
+      );
     }
   }
 
@@ -320,8 +321,7 @@ class ObjectPoolFactory {
     int maxPoolSize = 50,
     bool warmUp = true,
   }) {
-    final pool = JsonObjectPool.instance
-    ..setMaxPoolSize(maxPoolSize);
+    final pool = JsonObjectPool.instance..setMaxPoolSize(maxPoolSize);
     if (warmUp) {
       pool.warmUp();
     }

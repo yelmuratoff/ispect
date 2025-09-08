@@ -134,8 +134,9 @@ class DefaultBulkNodeService implements BulkNodeService {
     final rootNodes =
         displayNodes.where((node) => node.treeDepth == 0).toList();
 
-    displayNodes..clear()
-    ..addAll(rootNodes);
+    displayNodes
+      ..clear()
+      ..addAll(rootNodes);
 
     return displayNodes;
   }
