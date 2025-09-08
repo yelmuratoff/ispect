@@ -69,7 +69,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.3.3
+  ispect: ^4.3.4
 ```
 
 ## Security & Production Guidelines

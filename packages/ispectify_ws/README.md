@@ -124,7 +124,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.3
+  ispectify_ws: ^4.3.4
 ```
 
 ## Security & Production Guidelines

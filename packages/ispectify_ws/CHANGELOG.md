@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.3.3
+## 4.3.4
 
 ### Architecture Refactoring
 - Refactored JSON viewer services
