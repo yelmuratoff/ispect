@@ -6,7 +6,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
-import 'package:ispect/src/common/widgets/builder/column_builder.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
 class ISpectSettingsBottomSheet extends StatefulWidget {
@@ -201,7 +200,7 @@ class _SettingsBody extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: ColumnBuilder(
+                    child: ISpectColumnBuilder(
                       itemCount: settings.length,
                       itemBuilder: (_, index) => Column(
                         children: [
@@ -235,7 +234,7 @@ class _SettingsBody extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: ColumnBuilder(
+                    child: ISpectColumnBuilder(
                       itemCount: actions.length,
                       itemBuilder: (_, index) {
                         final action = actions[index];

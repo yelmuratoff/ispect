@@ -6,7 +6,6 @@ import 'package:ispect_jira/src/jira/bloc/current_user/current_user_cubit.dart';
 import 'package:ispect_jira/src/jira/bloc/projects/projects_bloc.dart';
 import 'package:ispect_jira/src/jira/jira_client.dart';
 import 'package:ispect_jira/src/jira/presentation/widgets/error_widget.dart';
-import 'package:ispect_jira/src/common/widgets/column_builder.dart';
 import 'package:ispect_jira/src/common/widgets/ispect_textfield.dart';
 import 'package:ispect_jira/src/core/localization/generated/ispect_localizations.dart';
 
@@ -185,7 +184,7 @@ class _JiraAuthScreenState extends State<JiraAuthScreen> {
                         ProjectsLoading() => const Center(
                             child: CircularProgressIndicator(),
                           ),
-                        ProjectsLoaded() => ColumnBuilder(
+                        ProjectsLoaded() => ISpectColumnBuilder(
                             itemCount: state.projects.length,
                             itemBuilder: (_, index) => ListTile(
                               leading: const Icon(Icons.folder_copy_rounded),

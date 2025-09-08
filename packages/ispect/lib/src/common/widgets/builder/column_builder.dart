@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 
-///* `ColumnBuilder` - This widget is designed to build a column layout with a specified number of child widgets,
+///* `ISpectColumnBuilder` - This widget is designed to build a column layout with a specified number of child widgets,
 /// which are generated dynamically based on an IndexedWidgetBuilder function.
 
-class ColumnBuilder extends StatelessWidget {
-  const ColumnBuilder({
+class ISpectColumnBuilder extends StatelessWidget {
+  const ISpectColumnBuilder({
     required this.itemBuilder,
     required this.itemCount,
     super.key,
