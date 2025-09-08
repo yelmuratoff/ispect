@@ -1,11 +1,15 @@
 name: ispect_jira
 description: "An additional package for ISpect to create Jira tickets"
-version: 4.3.2
+version: 4.3.3
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:
   sdk: ^3.6.0
+
+dependency_overrides:
+  ispect:
+    path: ../ispect
 
 dependencies:
   flutter:
@@ -15,7 +19,7 @@ dependencies:
   intl: any
 
   atlassian_apis: ^0.15.0
-  ispect: ^4.3.2
+  ispect: ^4.3.3
   flutter_bloc: ^9.1.0
   meta: ^1.15.0
   file_picker: ^10.2.0

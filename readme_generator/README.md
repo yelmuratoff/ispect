@@ -2,6 +2,8 @@
 
 Automated documentation generation system for ISpect package ecosystem. Generates consistent, customized README files from a unified template with package-specific configurations.
 
+**New Feature**: Now also updates the workspace root README.md when generating ispect package documentation or running the 'all' command.
+
 ## Architecture
 
 ```
@@ -20,18 +22,35 @@ bash/
 └── generate_readme.sh       # CLI wrapper script
 ```
 
+## Features
+
+- **Template-based generation**: Unified template with placeholder substitution
+- **Package-specific customization**: Individual configs for each package
+- **Workspace root update**: Automatically updates root README.md based on ispect config
+- **Version synchronization**: Reads version from version.config file
+- **Batch processing**: Generate all READMEs with single command
+
 ## Usage
 
 ### Generate README for specific package
 
 ```bash
-./bash/generate_readme.sh generate ispect
+./bash/generate_readme.sh generate ispect  # Also updates root README.md
+./bash/generate_readme.sh generate ispectify_dio  # Only updates package README
 ```
 
 ### Generate README for all packages
 
 ```bash
-./bash/generate_readme.sh generate all
+./bash/generate_readme.sh generate all  # Updates all packages + root README.md
+```
+
+### Direct Dart execution
+
+```bash
+dart readme_generator/generate_readme.dart ispect     # Updates package + root
+dart readme_generator/generate_readme.dart all       # Updates all packages + root
+dart readme_generator/generate_readme.dart ispectify # Updates only package
 ```
 
 ### List available packages

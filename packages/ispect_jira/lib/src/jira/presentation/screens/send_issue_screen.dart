@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect_jira/src/common/widgets/column_builder.dart';
 import 'package:ispect_jira/src/common/widgets/ispect_textfield.dart';
 import 'package:ispect_jira/src/jira/bloc/boards/boards_cubit.dart';
 import 'package:ispect_jira/src/jira/bloc/create_issue/create_issue_cubit.dart';
@@ -618,7 +617,7 @@ class _JiraSendIssueScreenState extends State<JiraSendIssueScreen> {
                     if (_attachments.isNotEmpty) ...[
                       Text(ISpectJiraLocalization.of(context)!.pickedImages),
                       const SizedBox(height: 16),
-                      ColumnBuilder(
+                      ISpectColumnBuilder(
                         itemCount: _attachments.length,
                         itemBuilder: (_, index) {
                           final file = _attachments[index];

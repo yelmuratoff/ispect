@@ -8,7 +8,44 @@ import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 
+/// A widget that wraps your app with ISpect debugging tools.
+///
+/// **⚠️ WARNING: Never include in production builds - contains sensitive debug data.**
+///
+/// This widget adds debugging capabilities around your main app widget:
+/// - Inspector panel for UI debugging
+/// - Performance monitoring overlay
+/// - Feedback system for bug reporting
+/// - Navigation tracking
+///
+/// ## Safe Usage
+///
+/// ```dart
+/// const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+///
+/// MaterialApp(
+///   builder: (context, child) {
+///     if (kEnableISpect) {
+///       return ISpectBuilder(child: child);
+///     }
+///     return child;
+///   },
+///   home: MyApp(),
+/// )
+/// ```
+///
+/// Build commands:
+/// ```bash
+/// # Development
+/// flutter run --dart-define=ENABLE_ISPECT=true
+///
+/// # Production (ISpect removed)
+/// flutter build apk
+/// ```
 class ISpectBuilder extends StatefulWidget {
+  /// Creates an ISpectBuilder that wraps [child] with debugging tools.
+  ///
+  /// Set [isISpectEnabled] to false in production for security.
   const ISpectBuilder({
     required this.child,
     this.isISpectEnabled = kDebugMode,
@@ -22,19 +59,35 @@ class ISpectBuilder extends StatefulWidget {
     super.key,
   });
 
+  /// Your main app widget.
   final Widget child;
+
+  /// ISpect configuration options.
   final ISpectOptions? options;
+
+  /// Custom theme for ISpect interface.
   final ISpectTheme? theme;
+
+  /// Whether debugging tools are enabled. Set to false in production.
   final bool isISpectEnabled;
+
+  /// Navigation observer for route tracking.
   final NavigatorObserver? observer;
+
+  /// Light theme for feedback widget.
   final FeedbackThemeData? feedbackTheme;
+
+  /// Dark theme for feedback widget.
   final FeedbackThemeData? feedBackDarkTheme;
+
+  /// Custom feedback widget builder.
   final Widget Function(
     BuildContext context,
     Future<void> Function(String text, {Map<String, dynamic>? extras}) onSubmit,
     ScrollController? controller,
   )? feedbackBuilder;
 
+  /// Controller for the draggable debug panel.
   final DraggablePanelController? controller;
 
   @override

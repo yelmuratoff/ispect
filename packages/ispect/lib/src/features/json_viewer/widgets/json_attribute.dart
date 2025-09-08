@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/utils/colors.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
@@ -10,7 +11,7 @@ import 'package:ispect/src/features/json_viewer/widgets/json_card.dart';
 import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
 import 'package:provider/provider.dart';
 
-class JsonAttribute extends StatelessWidget {
+class JsonAttribute extends StatefulWidget {
   const JsonAttribute({
     required this.node,
     required this.theme,
@@ -78,49 +79,73 @@ class JsonAttribute extends StatelessWidget {
   /// Maximum width for root nodes, will wrap if exceeded
   final double? maxRootNodeWidth;
 
+  @override
+  State<JsonAttribute> createState() => _JsonAttributeState();
+}
+
+class _JsonAttributeState extends State<JsonAttribute> {
   // Static constants for reuse
   static const _kEmptyWidget = SizedBox.shrink();
   static const _kLeftPadding = EdgeInsets.only(left: 4);
   static const _kBottomPadding = EdgeInsets.only(bottom: 4);
+
+  // Cached expensive computations
+  PropertyOverrides? _cachedValueStyle;
+  bool? _cachedHasInteraction;
+
+  @override
+  void didUpdateWidget(JsonAttribute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Clear cache if node or relevant properties changed
+    if (oldWidget.node != widget.node ||
+        oldWidget.valueStyleBuilder != widget.valueStyleBuilder ||
+        oldWidget.theme != widget.theme) {
+      _cachedValueStyle = null;
+      _cachedHasInteraction = null;
+    }
+  }
+
+  PropertyOverrides get _valueStyle =>
+      _cachedValueStyle ??= widget.valueStyleBuilder?.call(
+            widget.node.value,
+            widget.theme.valueTextStyle,
+          ) ??
+          PropertyOverrides(style: widget.theme.valueTextStyle);
+
+  bool get _hasInteraction =>
+      _cachedHasInteraction ??= widget.node.isRoot || _valueStyle.onTap != null;
 
   @override
   Widget build(BuildContext context) {
     final searchTerm =
         context.select<JsonExplorerStore, String>((store) => store.searchTerm);
 
-    final valueStyle = valueStyleBuilder?.call(
-          node.value,
-          theme.valueTextStyle,
-        ) ??
-        PropertyOverrides(style: theme.valueTextStyle);
-
-    final hasInteraction = node.isRoot || valueStyle.onTap != null;
-
     return MouseRegion(
-      cursor: hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
+      cursor: _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
       onEnter: (_) => _handleMouseEnter(),
       onExit: (_) => _handleMouseExit(),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: hasInteraction ? () => _handleTap(context, valueStyle) : null,
+        onTap: _hasInteraction ? () => _handleTap(context, _valueStyle) : null,
         child: AnimatedBuilder(
-          animation: node,
+          animation: widget.node,
           builder: (context, _) => RepaintBoundary(
             child: Padding(
               padding: _kBottomPadding,
               child: Row(
-                crossAxisAlignment: node.isRoot
+                crossAxisAlignment: widget.node.isRoot
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
                 children: [
                   SelectionContainer.disabled(
                     child: _IndentationWidget(
-                      depth: node.treeDepth,
-                      indentationPadding: theme.indentationPadding,
-                      color: theme.indentationLineColor,
+                      depth: widget.node.treeDepth,
+                      indentationPadding: widget.theme.indentationPadding,
+                      color: widget.theme.indentationLineColor,
                     ),
                   ),
-                  if (node.isRoot && node.children.isNotEmpty)
+                  if (widget.node.isRoot && widget.node.children.isNotEmpty)
                     const SelectionContainer.disabled(
                       child: SizedBox(
                         width: 24,
@@ -132,28 +157,30 @@ class JsonAttribute extends StatelessWidget {
                     width: 8,
                     child: _KeySeparatorText(),
                   ),
-                  if (node.value is List)
+                  if (widget.node.value is List)
                     _ArraySuffixWidget(
-                      length: node.children.length,
-                      style: theme.rootKeyTextStyle,
+                      length: widget.node.children.length,
+                      style: widget.theme.rootKeyTextStyle,
                     ),
-                  if (node.value is Map || node.value is Set)
+                  if (widget.node.value is Map || widget.node.value is Set)
                     _MapSuffixWidget(
-                      length: node.children.length,
-                      style: theme.rootKeyTextStyle,
+                      length: widget.node.children.length,
+                      style: widget.theme.rootKeyTextStyle,
                     ),
-                  if (node.isRoot)
+                  if (widget.node.isRoot)
                     SelectionContainer.disabled(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 6),
-                        child: _CopyButton(node: node, theme: theme),
+                        child:
+                            _CopyButton(node: widget.node, theme: widget.theme),
                       ),
                     ),
-                  if (node.isRoot)
+                  if (widget.node.isRoot)
                     _buildRootInformation(context)
                   else
-                    _buildPropertyValue(context, searchTerm, valueStyle),
-                  if (trailingBuilder != null) trailingBuilder!(context, node),
+                    _buildPropertyValue(context, searchTerm, _valueStyle),
+                  if (widget.trailingBuilder != null)
+                    widget.trailingBuilder!(context, widget.node),
                 ],
               ),
             ),
@@ -164,13 +191,13 @@ class JsonAttribute extends StatelessWidget {
   }
 
   void _handleMouseEnter() {
-    node
+    widget.node
       ..highlight()
       ..focus();
   }
 
   void _handleMouseExit() {
-    node
+    widget.node
       ..highlight(isHighlighted: false)
       ..focus(isFocused: false);
   }
@@ -185,24 +212,24 @@ class JsonAttribute extends StatelessWidget {
 
   Widget _buildNodeKey(BuildContext context, String searchTerm) {
     final nodeKey = _RootNodeWidget(
-      key: ValueKey('${node.key}-${node.isRoot}'),
-      node: node,
-      rootNameFormatter: rootNameFormatter,
-      propertyNameFormatter: propertyNameFormatter,
+      key: ValueKey('${widget.node.key}-${widget.node.isRoot}'),
+      node: widget.node,
+      rootNameFormatter: widget.rootNameFormatter,
+      propertyNameFormatter: widget.propertyNameFormatter,
       searchTerm: searchTerm,
-      theme: theme,
+      theme: widget.theme,
     );
 
     final jsonCard = JsonCard(
-      backgroundColor: theme.rootKeyTextStyle.color,
+      backgroundColor: widget.theme.rootKeyTextStyle.color,
       child: nodeKey,
     );
 
-    if (maxRootNodeWidth != null) {
+    if (widget.maxRootNodeWidth != null) {
       return Flexible(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: maxRootNodeWidth!,
+            maxWidth: widget.maxRootNodeWidth!,
           ),
           child: jsonCard,
         ),
@@ -214,7 +241,8 @@ class JsonAttribute extends StatelessWidget {
 
   Widget _buildRootInformation(BuildContext context) => Padding(
         padding: _kLeftPadding,
-        child: rootInformationBuilder?.call(context, node) ?? _kEmptyWidget,
+        child: widget.rootInformationBuilder?.call(context, widget.node) ??
+            _kEmptyWidget,
       );
 
   Widget _buildPropertyValue(
@@ -225,29 +253,29 @@ class JsonAttribute extends StatelessWidget {
       Expanded(
         flex: 10,
         child: _PropertyNodeWidget(
-          key: ValueKey('value-${node.key}'),
-          node: node,
+          key: ValueKey('value-${widget.node.key}'),
+          node: widget.node,
           searchTerm: searchTerm,
-          valueFormatter: valueFormatter,
+          valueFormatter: widget.valueFormatter,
           style: valueStyle.style,
-          searchHighlightStyle: theme.valueSearchHighlightTextStyle,
+          searchHighlightStyle: widget.theme.valueSearchHighlightTextStyle,
           focusedSearchHighlightStyle:
-              theme.focusedValueSearchHighlightTextStyle,
+              widget.theme.focusedValueSearchHighlightTextStyle,
         ),
       );
 
   void _onNodeTap(BuildContext context) {
-    if (!node.isRoot) return;
+    if (!widget.node.isRoot) return;
 
     final jsonExplorerStore = Provider.of<JsonExplorerStore>(
       context,
       listen: false,
     );
 
-    if (node.isCollapsed) {
-      jsonExplorerStore.expandNode(node);
+    if (widget.node.isCollapsed) {
+      jsonExplorerStore.expandNode(widget.node);
     } else {
-      jsonExplorerStore.collapseNode(node);
+      jsonExplorerStore.collapseNode(widget.node);
     }
   }
 }
@@ -321,7 +349,7 @@ class _ArraySuffixWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Flexible(
         child: Padding(
-          padding: JsonAttribute._kLeftPadding,
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             '[$length]',
             style: style.copyWith(
@@ -340,7 +368,7 @@ class _MapSuffixWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Flexible(
         child: Padding(
-          padding: JsonAttribute._kLeftPadding,
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             '{$length}',
             style: style.copyWith(
@@ -352,13 +380,26 @@ class _MapSuffixWidget extends StatelessWidget {
 }
 
 /// Toggle button for expanding/collapsing nodes
-class _ToggleButton extends StatelessWidget {
+class _ToggleButton extends StatefulWidget {
   const _ToggleButton();
 
   @override
+  State<_ToggleButton> createState() => _ToggleButtonState();
+}
+
+class _ToggleButtonState extends State<_ToggleButton> {
+  JsonAttribute? _cachedJsonAttribute;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _cachedJsonAttribute =
+        context.findAncestorWidgetOfExactType<JsonAttribute>();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final jsonAttribute =
-        context.findAncestorWidgetOfExactType<JsonAttribute>()!;
+    final jsonAttribute = _cachedJsonAttribute!;
     final node = jsonAttribute.node;
     final toggle = jsonAttribute.collapsableToggleBuilder;
 
@@ -385,14 +426,26 @@ class _ToggleButton extends StatelessWidget {
 }
 
 /// Text separator widget showing colon between key and value
-class _KeySeparatorText extends StatelessWidget {
+class _KeySeparatorText extends StatefulWidget {
   const _KeySeparatorText();
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.findAncestorWidgetOfExactType<JsonAttribute>()!.theme;
-    return Text(':', style: theme.rootKeyTextStyle);
+  State<_KeySeparatorText> createState() => _KeySeparatorTextState();
+}
+
+class _KeySeparatorTextState extends State<_KeySeparatorText> {
+  JsonExplorerTheme? _cachedTheme;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _cachedTheme =
+        context.findAncestorWidgetOfExactType<JsonAttribute>()?.theme;
   }
+
+  @override
+  Widget build(BuildContext context) =>
+      Text(':', style: _cachedTheme?.rootKeyTextStyle);
 }
 
 /// A `Widget` that renders a node that can be a class or a list.
@@ -419,32 +472,29 @@ class _RootNodeWidget extends StatelessWidget {
     return propertyNameFormatter?.call(node.key) ?? node.key;
   }
 
-  /// Gets the index of the focused search match.
-  int? _getFocusedSearchMatchIndex(JsonExplorerStore store) {
-    if (store.searchResults.isEmpty) {
-      return null;
-    }
-
-    if (store.focusedSearchResult.node != node) {
-      return null;
-    }
-
-    // Assert that it's the key and not the value of the node.
-    if (store.focusedSearchResult.matchLocation != SearchMatchLocation.key) {
-      return null;
-    }
-
-    return store.focusedSearchResult.matchIndex;
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Combine selectors to reduce rebuilds
-    final storeData =
-        context.select<JsonExplorerStore, ({bool hasSearchResults})>(
-      (store) => (hasSearchResults: store.searchResults.isNotEmpty),
-    );
-    final showHighlightedText = storeData.hasSearchResults;
+    // Combine all selectors into one to reduce context lookups
+    final storeData = context.select<
+        JsonExplorerStore,
+        ({
+          bool hasSearchResults,
+          int? focusedSearchMatchIndex,
+        })>((store) {
+      final hasResults = store.searchResults.isNotEmpty;
+      int? focusedIndex;
+
+      if (hasResults &&
+          store.focusedSearchResult.node == node &&
+          store.focusedSearchResult.matchLocation == SearchMatchLocation.key) {
+        focusedIndex = store.focusedSearchResult.matchIndex;
+      }
+
+      return (
+        hasSearchResults: hasResults,
+        focusedSearchMatchIndex: focusedIndex,
+      );
+    });
 
     final attributeKeyStyle =
         node.isRoot ? theme.rootKeyTextStyle : theme.propertyKeyTextStyle;
@@ -452,7 +502,7 @@ class _RootNodeWidget extends StatelessWidget {
     // Memoize text value
     final text = _keyName();
 
-    if (!showHighlightedText) {
+    if (!storeData.hasSearchResults) {
       return Row(
         children: [
           Text(
@@ -463,9 +513,6 @@ class _RootNodeWidget extends StatelessWidget {
       );
     }
 
-    final focusedSearchMatchIndex =
-        context.select<JsonExplorerStore, int?>(_getFocusedSearchMatchIndex);
-
     return _HighlightedText(
       key: ValueKey('highlight-$text-$searchTerm'),
       text: text,
@@ -473,7 +520,7 @@ class _RootNodeWidget extends StatelessWidget {
       style: attributeKeyStyle,
       primaryMatchStyle: theme.focusedKeySearchNodeHighlightTextStyle,
       secondaryMatchStyle: theme.keySearchHighlightTextStyle,
-      focusedSearchMatchIndex: focusedSearchMatchIndex,
+      focusedSearchMatchIndex: storeData.focusedSearchMatchIndex,
     );
   }
 }
@@ -497,24 +544,6 @@ class _PropertyNodeWidget extends StatelessWidget {
   final TextStyle searchHighlightStyle;
   final TextStyle focusedSearchHighlightStyle;
 
-  /// Gets the index of the focused search match.
-  int? _getFocusedSearchMatchIndex(JsonExplorerStore store) {
-    if (store.searchResults.isEmpty) {
-      return null;
-    }
-
-    if (store.focusedSearchResult.node != node) {
-      return null;
-    }
-
-    // Assert that it's the value and not the key of the node.
-    if (store.focusedSearchResult.matchLocation != SearchMatchLocation.value) {
-      return null;
-    }
-
-    return store.focusedSearchResult.matchIndex;
-  }
-
 // Use a cached value if possible - this could be further optimized with a memo
   String _formatValue() =>
       valueFormatter?.call(node.value) ??
@@ -524,12 +553,28 @@ class _PropertyNodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Combine selectors to reduce context lookups
-    final storeData =
-        context.select<JsonExplorerStore, ({bool hasSearchResults})>(
-      (store) => (hasSearchResults: store.searchResults.isNotEmpty),
-    );
-    final showHighlightedText = storeData.hasSearchResults;
+    // Combine all selectors to reduce context lookups and rebuilds
+    final storeData = context.select<
+        JsonExplorerStore,
+        ({
+          bool hasSearchResults,
+          int? focusedSearchMatchIndex,
+        })>((store) {
+      final hasResults = store.searchResults.isNotEmpty;
+      int? focusedIndex;
+
+      if (hasResults &&
+          store.focusedSearchResult.node == node &&
+          store.focusedSearchResult.matchLocation ==
+              SearchMatchLocation.value) {
+        focusedIndex = store.focusedSearchResult.matchIndex;
+      }
+
+      return (
+        hasSearchResults: hasResults,
+        focusedSearchMatchIndex: focusedIndex,
+      );
+    });
 
     // Cache computations
     final text = _formatValue();
@@ -539,14 +584,15 @@ class _PropertyNodeWidget extends StatelessWidget {
       node.value,
     );
 
-    if (!showHighlightedText) {
+    if (!storeData.hasSearchResults) {
       return _buildSimpleValue(text, valueColor);
     }
 
-    final focusedSearchMatchIndex =
-        context.select<JsonExplorerStore, int?>(_getFocusedSearchMatchIndex);
-
-    return _buildHighlightedValue(text, valueColor, focusedSearchMatchIndex);
+    return _buildHighlightedValue(
+      text,
+      valueColor,
+      storeData.focusedSearchMatchIndex,
+    );
   }
 
   Widget _buildSimpleValue(String text, Color valueColor) => Row(
@@ -589,7 +635,7 @@ class _PropertyNodeWidget extends StatelessWidget {
 }
 
 /// Highlights found occurrences of `highlightedText` in [text].
-class _HighlightedText extends StatelessWidget {
+class _HighlightedText extends StatefulWidget {
   const _HighlightedText({
     required this.text,
     required this.highlightedText,
@@ -608,23 +654,57 @@ class _HighlightedText extends StatelessWidget {
   final int? focusedSearchMatchIndex;
 
   @override
+  State<_HighlightedText> createState() => _HighlightedTextState();
+}
+
+class _HighlightedTextState extends State<_HighlightedText> {
+  List<InlineSpan>? _cachedSpans;
+  String? _lastText;
+  String? _lastHighlightedText;
+  int? _lastFocusedIndex;
+
+  @override
+  void didUpdateWidget(_HighlightedText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Clear cache if relevant properties changed
+    if (oldWidget.text != widget.text ||
+        oldWidget.highlightedText != widget.highlightedText ||
+        oldWidget.focusedSearchMatchIndex != widget.focusedSearchMatchIndex) {
+      _cachedSpans = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => RepaintBoundary(
         child: Builder(
           builder: (context) {
-            // Cache these expensive operations
-            final lowerCaseText = text.toLowerCase();
-            final lowerCaseQuery = highlightedText.toLowerCase();
-
-            if (highlightedText.isEmpty ||
-                !lowerCaseText.contains(lowerCaseQuery)) {
-              return Text(text, style: style);
+            if (widget.highlightedText.isEmpty ||
+                !widget.text
+                    .toLowerCase()
+                    .contains(widget.highlightedText.toLowerCase())) {
+              return Text(widget.text, style: widget.style);
             }
 
-            return Text.rich(
-              TextSpan(
-                children: _buildTextSpans(text, lowerCaseText, lowerCaseQuery),
-              ),
-            );
+            // Use cached spans if available and valid
+            if (_cachedSpans != null &&
+                _lastText == widget.text &&
+                _lastHighlightedText == widget.highlightedText &&
+                _lastFocusedIndex == widget.focusedSearchMatchIndex) {
+              return Text.rich(TextSpan(children: _cachedSpans));
+            }
+
+            // Build and cache new spans
+            final lowerCaseText = widget.text.toLowerCase();
+            final lowerCaseQuery = widget.highlightedText.toLowerCase();
+
+            _cachedSpans =
+                _buildTextSpans(widget.text, lowerCaseText, lowerCaseQuery);
+            _lastText = widget.text;
+            _lastHighlightedText = widget.highlightedText;
+            _lastFocusedIndex = widget.focusedSearchMatchIndex;
+
+            return Text.rich(TextSpan(children: _cachedSpans));
           },
         ),
       );
@@ -635,7 +715,7 @@ class _HighlightedText extends StatelessWidget {
     String lowerCaseQuery,
   ) {
     final spans = <InlineSpan>[];
-    final queryLength = highlightedText.length;
+    final queryLength = widget.highlightedText.length;
 
     // Pre-calculate all match positions
     final matchPositions = <int>[];
@@ -650,21 +730,21 @@ class _HighlightedText extends StatelessWidget {
 
     // Process each position
     if (matchPositions.isEmpty) {
-      spans.add(TextSpan(text: text, style: style));
+      spans.add(TextSpan(text: text, style: widget.style));
       return spans;
     }
 
     var lastEnd = 0;
     for (final position in matchPositions) {
-      final highlightStyle = position == focusedSearchMatchIndex
-          ? primaryMatchStyle
-          : secondaryMatchStyle;
+      final highlightStyle = position == widget.focusedSearchMatchIndex
+          ? widget.primaryMatchStyle
+          : widget.secondaryMatchStyle;
 
       if (position > lastEnd) {
         spans.add(
           TextSpan(
             text: text.substring(lastEnd, position),
-            style: style,
+            style: widget.style,
           ),
         );
       }
@@ -688,7 +768,7 @@ class _HighlightedText extends StatelessWidget {
       spans.add(
         TextSpan(
           text: text.substring(lastEnd),
-          style: style,
+          style: widget.style,
         ),
       );
     }

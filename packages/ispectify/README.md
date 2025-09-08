@@ -97,14 +97,106 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.3.2
+  ispectify: ^4.3.3
+```
+
+## ⚠️ Security & Production Guidelines
+
+> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+
+### 🔒 Production Safety
+
+ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+
+### ✅ Recommended Setup with Dart Define Constants
+
+**1. Create environment-aware initialization:**
+
+```dart
+// main.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Use dart define to control ISpect inclusion
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+
+void main() {
+  if (kEnableISpect) {
+    // Initialize ISpect only in development/staging
+    _initializeISpect();
+  } else {
+    // Production initialization without ISpect
+    runApp(MyApp());
+  }
+}
+
+void _initializeISpect() {
+  // ISpect initialization code here
+  // This entire function will be tree-shaken in production
+}
+```
+
+**2. Build Commands:**
+
+```bash
+# Development build (includes ISpect)
+flutter run --dart-define=ENABLE_ISPECT=true
+
+# Staging build (includes ISpect)
+flutter build appbundle --dart-define=ENABLE_ISPECT=true
+
+# Production build (ISpect completely removed via tree-shaking)
+flutter build appbundle --dart-define=ENABLE_ISPECT=false
+# or simply:
+flutter build appbundle  # defaults to false
+```
+
+**3. Conditional Widget Wrapping:**
+
+```dart
+Widget build(BuildContext context) {
+  return MaterialApp(
+    // Conditionally add ISpectBuilder in MaterialApp builder
+    builder: (context, child) {
+      if (kEnableISpect) {
+        return ISpectBuilder(child: child ?? const SizedBox.shrink());
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
+}
+```
+
+### 🛡️ Security Benefits
+
+- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
+- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
+- ✅ **Performance Optimized**: No debugging overhead in production
+- ✅ **Compliance Ready**: Meets security requirements for app store releases
+
+### 🔍 Verification
+
+To verify ISpect is not included in your production build:
+
+```bash
+# Build release APK and check size difference
+flutter build apk --dart-define=ENABLE_ISPECT=false --release
+flutter build apk --dart-define=ENABLE_ISPECT=true --release
+
+# Use flutter tools to analyze bundle
+flutter analyze --dart-define=ENABLE_ISPECT=false
 ```
 
 ## 🚀 Quick Start
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+
+// Use dart define to control ISpectify inclusion
+const bool kEnableISpectify = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 class CustomLog extends ISpectifyData {
   CustomLog(
@@ -116,38 +208,45 @@ class CustomLog extends ISpectifyData {
 }
 
 void main() {
-  // Initialize ISpectify for logging
-  final ISpectify logger = ISpectify(
-    logger: ISpectifyLogger(
-        settings: LoggerSettings(
-      enableColors: false,
-    )),
-    options: ISpectifyOptions(
-      enabled: true,
-      useHistory: true,
-      useConsoleLogs: true,
-      maxHistoryItems: 10000,
-      logTruncateLength: 10000,
-      titles: {
-        'error': 'Error Logs',
-        'info': 'Info Logs',
-        'debug': 'Debug Logs',
-      },
-      colors: {
-        'error': AnsiPen()..red(),
-        'info': AnsiPen()..blue(),
-        'debug': AnsiPen()..white(),
-      },
-    ),
-  );
+  ISpectify? logger;
+  
+  if (kEnableISpectify) {
+    // Initialize ISpectify only in development/staging
+    logger = ISpectify(
+      logger: ISpectifyLogger(
+          settings: LoggerSettings(
+        enableColors: false,
+      )),
+      options: ISpectifyOptions(
+        enabled: true,
+        useHistory: true,
+        useConsoleLogs: true,
+        maxHistoryItems: 10000,
+        logTruncateLength: 10000,
+        titles: {
+          'error': 'Error Logs',
+          'info': 'Info Logs',
+          'debug': 'Debug Logs',
+        },
+        colors: {
+          'error': AnsiPen()..red(),
+          'info': AnsiPen()..blue(),
+          'debug': AnsiPen()..white(),
+        },
+      ),
+    );
 
-  logger.info('ISpectify initialized successfully');
+    logger.info('ISpectify initialized successfully');
 
-  // Wrap your app with ISpect
-  ISpect.run(
-    () => runApp(MyApp()),
-    logger: logger,
-  );
+    // Wrap your app with ISpect
+    ISpect.run(
+      () => runApp(MyApp()),
+      logger: logger,
+    );
+  } else {
+    // Production run without ISpectify
+    runApp(MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -164,13 +263,17 @@ class MyApp extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  ISpect.logger.info('Info log message');
+                  if (kEnableISpectify) {
+                    ISpect.logger.info('Info log message');
+                  }
                 },
                 child: const Text('Log Info'),
               ),
               ElevatedButton(
                 onPressed: () {
-                  ISpect.logger.logCustom(CustomLog('Custom log message'));
+                  if (kEnableISpectify) {
+                    ISpect.logger.logCustom(CustomLog('Custom log message'));
+                  }
                 },
                 child: const Text('Log Custom'),
               ),
@@ -180,6 +283,84 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+```
+
+## ⚙️ Advanced Configuration
+
+### 🛡️ Production-Safe Logging
+
+```dart
+// Create a logger wrapper that respects environment settings
+class SafeLogger {
+  static const bool _isEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+  static ISpectify? _instance;
+  
+  static ISpectify? get instance {
+    if (!_isEnabled) return null;
+    return _instance ??= _createLogger();
+  }
+  
+  static ISpectify _createLogger() {
+    return ISpectify(
+      logger: ISpectifyLogger(
+        settings: LoggerSettings(
+          enableColors: true,
+        )
+      ),
+      options: ISpectifyOptions(
+        enabled: true,
+        useHistory: true,
+        useConsoleLogs: kDebugMode,
+        maxHistoryItems: 10000,
+        logTruncateLength: 10000,
+      ),
+    );
+  }
+  
+  // Safe logging methods that check environment
+  static void info(String message) {
+    instance?.info(message);
+  }
+  
+  static void error(String message, [Object? error, StackTrace? stackTrace]) {
+    instance?.error(message, error, stackTrace);
+  }
+  
+  static void debug(String message) {
+    instance?.debug(message);
+  }
+}
+```
+
+### 🔧 Custom Configuration
+
+```dart
+// Environment-specific logger configuration
+ISpectify createLogger() {
+  const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+  
+  return ISpectify(
+    logger: ISpectifyLogger(
+      settings: LoggerSettings(
+        enableColors: environment != 'production',
+        lineLength: environment == 'development' ? 120 : 80,
+      )
+    ),
+    options: ISpectifyOptions(
+      enabled: environment != 'production',
+      useHistory: true,
+      useConsoleLogs: environment == 'development',
+      maxHistoryItems: environment == 'development' ? 10000 : 1000,
+      logTruncateLength: environment == 'development' ? 10000 : 1000,
+      titles: {
+        'error': 'Errors',
+        'warning': 'Warnings', 
+        'info': 'Information',
+        'debug': 'Debug Info',
+      },
+    ),
+  );
 }
 ```
 
