@@ -25,13 +25,13 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
 > **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
 
 ISpect provides comprehensive debugging capabilities for Flutter applications, including network monitoring, performance tracking, and UI inspection tools.
 
-### 🎯 Key Features
+### Key Features
 
 - Network Monitoring: Detailed HTTP request/response inspection with error tracking
 - Logging: Advanced logging system with categorization and filtering
@@ -41,11 +41,11 @@ ISpect provides comprehensive debugging capabilities for Flutter applications, i
 - Bug Reporting: Integrated feedback system with screenshot capture
 - Cache Management: Application cache inspection and management
 
-## 🌐 Internationalization
+## Internationalization
 - Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
 - Extensible localization system
 
-## 📱 Interface Preview
+## Interface Preview
 
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="160" />
@@ -63,7 +63,7 @@ ISpect provides comprehensive debugging capabilities for Flutter applications, i
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="160" />
 </div>
 
-## 📦 Installation
+## Installation
 
 Add ispect to your `pubspec.yaml`:
 
@@ -72,15 +72,15 @@ dependencies:
   ispect: ^4.3.3
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -140,12 +140,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -229,9 +229,9 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Configuration
+## Advanced Configuration
 
-### 🛡️ Environment-Based Setup
+### Environment-Based Setup
 
 ```dart
 // Create a dedicated ISpect configuration file
@@ -256,7 +256,7 @@ class ISpectConfig {
 }
 ```
 
-### 🎨 Custom Theming (Development Only)
+### Custom Theming (Development Only)
 
 ```dart
 // Wrap theming configuration in conditional check
@@ -308,7 +308,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🎛️ Panel Customization (Development Only)
+### Panel Customization (Development Only)
 
 ```dart
 Widget build(BuildContext context) {
@@ -356,7 +356,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 📱 Build Configuration Examples
+### Build Configuration Examples
 
 ```bash
 # Development with ISpect
@@ -372,11 +372,11 @@ flutter build apk --dart-define=ENABLE_ISPECT=false --dart-define=ENVIRONMENT=pr
 flutter build apk --flavor production # ISpect automatically disabled
 ```
 
-## 🔗 Integration Guides
+## Integration Guides
 
-ISpect provides seamless integration with various Flutter packages through specialized companion packages. Below are detailed guides for integrating ISpect with HTTP clients, state management, WebSocket connections, and navigation.
+ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, state management, WebSocket connections, and navigation.
 
-### 📦 Required Dependencies
+### Required Dependencies
 
 Add the following packages to your `pubspec.yaml` based on your needs:
 
@@ -399,7 +399,7 @@ dependencies:
   ispect_jira: ^4.3.3        # For automated bug reporting
 ```
 
-### 🌐 HTTP Integration
+### HTTP Integration
 
 #### Dio HTTP Client
 
@@ -492,7 +492,7 @@ ISpect.run(
 );
 ```
 
-### 🔗 WebSocket Integration
+### WebSocket Integration
 
 For WebSocket monitoring, use the `ispectify_ws` package:
 
@@ -526,7 +526,7 @@ final client = WebSocketClient(
 interceptor.setClient(client);
 ```
 
-### 🔄 BLoC State Management Integration
+### BLoC State Management Integration
 
 For BLoC integration, use the `ispectify_bloc` package:
 
@@ -575,7 +575,7 @@ ISpectBuilder(
 )
 ```
 
-### 🧭 Navigation Integration
+### Navigation Integration
 
 To track screen navigation, use `ISpectNavigatorObserver`:
 
@@ -600,10 +600,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorObservers: [_observer],
-      // ... other MaterialApp properties
       builder: (context, child) {
         return ISpectBuilder(
-          observer: _observer, // Connect observer to ISpect
+          observer: _observer,
           child: child ?? const SizedBox(),
         );
       },
@@ -618,7 +617,7 @@ Navigation events will be logged with the key `route` and include information ab
 - User gestures (if enabled)
 - Route names and arguments
 
-### 🔒 Sensitive Data Redaction
+### Sensitive Data Redaction
 
 All integration packages support automatic redaction of sensitive data. Redaction is enabled by default but can be configured:
 
@@ -672,15 +671,15 @@ final interceptor = ISpectWSInterceptor(
 );
 ```
 
-Redaction automatically masks sensitive data in:
+Redaction masks sensitive data in:
 - HTTP headers (Authorization, API keys, etc.)
 - Request/response bodies
 - WebSocket messages
 - Query parameters
 
-### 🎛️ Log Filtering and Customization
+### Log Filtering and Customization
 
-You can disable specific types of logs to reduce noise and focus on relevant information:
+You can disable specific types of logs to reduce noise:
 
 ```dart
 ISpectBuilder(
@@ -702,7 +701,7 @@ ISpectBuilder(
       LogDescription(key: 'route', isDisabled: false),
       
       // Other logs
-      LogDescription(key: 'print', isDisabled: true), // Flutter print statements
+      LogDescription(key: 'print', isDisabled: true),
       LogDescription(key: 'analytics', isDisabled: true),
     ],
   ),
@@ -718,7 +717,7 @@ Available log keys include:
 - `analytics`: Analytics events
 - `error`, `debug`, `info`: General log levels
 
-## 📚 Examples
+## Examples
 
 Complete example applications are available in the [example/](example/) directory demonstrating core functionality.
 
@@ -744,7 +743,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) - Foundation logging system
 - [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) - Dio HTTP client integration

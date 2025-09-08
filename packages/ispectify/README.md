@@ -25,28 +25,22 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
 > **ISpectify** is the foundation logging system that powers the ISpect debugging toolkit.
 
-<div align="center">
+ISpectify is the logging foundation for the ISpect ecosystem. It builds on the Talker logging library and adds features for debugging and monitoring Flutter applications.
 
-📝 **Logging** • 🔍 **Filtering** • 📊 **Monitoring** • 💾 **Export**
+### Key Features
 
-</div>
+- Structured Logging: Advanced logging with categorization and filtering
+- Custom Log Types: Define your own log types with custom colors and icons
+- Real-time Filtering: Filter logs by type, level, and custom criteria
+- Performance Monitoring: Track application performance metrics
+- Export Functionality: Export logs for analysis and debugging
+- Easy Integration: Simple setup with minimal configuration
 
-ISpectify provides a robust logging foundation that integrates seamlessly with the ISpect ecosystem. Built on top of the proven Talker logging library, it offers advanced features for debugging and monitoring Flutter applications.
-
-### 🎯 Key Features
-
-- 📝 **Structured Logging**: Advanced logging with categorization and filtering
-- 🎨 **Custom Log Types**: Define your own log types with custom colors and icons
-- 🔍 **Real-time Filtering**: Filter logs by type, level, and custom criteria
-- 📊 **Performance Monitoring**: Track application performance metrics
-- 💾 **Export Functionality**: Export logs for analysis and debugging
-- 🔧 **Easy Integration**: Simple setup with minimal configuration
-
-## 🔧 Configuration
+## Configuration
 
 ### Settings
 
@@ -91,7 +85,7 @@ class CustomLog extends ISpectifyData {
 logger.logCustom(CustomLog('This is a custom log message'));
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify to your `pubspec.yaml`:
 
@@ -100,15 +94,15 @@ dependencies:
   ispectify: ^4.3.3
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -168,12 +162,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -286,9 +280,9 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Configuration
+## Advanced Configuration
 
-### 🛡️ Production-Safe Logging
+### Production-Safe Logging
 
 ```dart
 // Create a logger wrapper that respects environment settings
@@ -333,7 +327,7 @@ class SafeLogger {
 }
 ```
 
-### 🔧 Custom Configuration
+### Custom Configuration
 
 ```dart
 // Environment-specific logger configuration
@@ -364,7 +358,7 @@ ISpectify createLogger() {
 }
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for usage examples and integration patterns.
 
@@ -388,7 +382,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispect](../ispect) - Main debugging interface
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration

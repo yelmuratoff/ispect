@@ -25,13 +25,13 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpectify BLoC** provides seamless integration between BLoC state management and the ISpectify logging system.
+> **ISpectify BLoC** integrates BLoC state management with the ISpectify logging system.
 
-ISpectifyBloc provides seamless integration between BLoC state management and the ISpectify logging system for comprehensive state management monitoring.
+ISpectifyBloc integrates BLoC state management with the ISpectify logging system for state change monitoring.
 
-### 🎯 Key Features
+### Key Features
 
 - State Change Logging: Automatic logging of all BLoC state changes
 - Event Tracking: Detailed event logging with parameters
@@ -40,7 +40,7 @@ ISpectifyBloc provides seamless integration between BLoC state management and th
 - Performance Metrics: State change timing and performance tracking
 - Configurable: Flexible filtering and formatting options
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -112,7 +112,7 @@ class CounterBloc extends Bloc<CounterEvent, int> {
 // All state changes will be automatically logged
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify_bloc to your `pubspec.yaml`:
 
@@ -121,15 +121,15 @@ dependencies:
   ispectify_bloc: ^4.3.3
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -189,12 +189,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -312,7 +312,7 @@ class CounterPage extends StatelessWidget {
 }
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for complete integration examples with different BLoC patterns.
 
@@ -336,7 +336,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispect](../ispect) - Main debugging interface

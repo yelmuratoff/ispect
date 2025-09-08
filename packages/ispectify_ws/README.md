@@ -25,29 +25,23 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpectify WebSocket** provides seamless integration between the ws package and the ISpectify logging system for comprehensive WebSocket monitoring.
+> **ISpectify WebSocket** integrates the ws package with the ISpectify logging system for WebSocket monitoring.
 
-<div align="center">
+ISpectifyWS integrates the ws package with the ISpectify logging system for WebSocket monitoring.
 
-🔗 **WebSocket Logging** • 📨 **Message Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+### Key Features
 
-</div>
+- WebSocket Connection Logging: Automatic logging of all WebSocket connections
+- Message Tracking: Detailed logging of sent and received messages
+- Error Handling: Comprehensive error logging with stack traces
+- Connection Inspection: URL, connection state, and metrics logging
+- Sensitive Data Redaction: Centralized redaction for sent/received payloads (enabled by default, configurable)
+- Performance Metrics: Connection timing and message count tracking
+- Lightweight: Minimal overhead using ws package interceptors
 
-Enhance your WebSocket debugging workflow by automatically capturing and logging all WebSocket client interactions using the ws package. Provides seamless integration with Dart's WebSocket client through interceptors for comprehensive connection and message monitoring.
-
-### 🎯 Key Features
-
-- 🔗 **WebSocket Connection Logging**: Automatic logging of all WebSocket connections
-- 📨 **Message Tracking**: Detailed logging of sent and received messages
-- ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Connection Inspection**: URL, connection state, and metrics logging
-- 🔒 **Sensitive Data Redaction**: Centralized redaction for sent/received payloads (enabled by default, configurable)
-- ⚡ **Performance Metrics**: Connection timing and message count tracking
-- 🎛️ **Lightweight**: Minimal overhead using ws package interceptors
-
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -97,7 +91,7 @@ final interceptor2 = ISpectWSInterceptor(
 );
 ```
 
-### Advanced Configuration with Filters
+### Filtering with Optional Predicates
 
 ```dart
 final interceptor = ISpectWSInterceptor(
@@ -132,7 +126,7 @@ final interceptor = ISpectWSInterceptor(
 );
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify_ws to your `pubspec.yaml`:
 
@@ -141,15 +135,15 @@ dependencies:
   ispectify_ws: ^4.3.3
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -209,12 +203,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -329,7 +323,7 @@ void _runWebSocketExample(WebSocketClient client) {
 }
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for complete integration examples with different WebSocket client configurations.
 
@@ -353,7 +347,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration

@@ -25,13 +25,13 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpectify HTTP** provides seamless integration between the http_interceptor package and the ISpectify logging system.
+> **ISpectify HTTP** integrates the http_interceptor package with the ISpectify logging system.
 
-ISpectifyHttp provides seamless integration between the http_interceptor package and the ISpectify logging system for comprehensive HTTP request monitoring.
+ISpectifyHttp integrates the http_interceptor package with the ISpectify logging system for HTTP request monitoring.
 
-### 🎯 Key Features
+### Key Features
 
 - HTTP Request Logging: Automatic logging of all HTTP requests
 - Response Tracking: Detailed response logging with timing information
@@ -41,7 +41,7 @@ ISpectifyHttp provides seamless integration between the http_interceptor package
 - Performance Metrics: Request/response timing and size tracking
 - Lightweight: Minimal overhead using http_interceptor package
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -106,7 +106,7 @@ request.files.add(http_interceptor.MultipartFile.fromBytes(
 client.send(request);
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify_http to your `pubspec.yaml`:
 
@@ -115,15 +115,15 @@ dependencies:
   ispectify_http: ^4.3.3
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -183,12 +183,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -287,9 +287,9 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Configuration
+## Advanced Configuration
 
-### 🛡️ Production-Safe HTTP Client Setup
+### Production-Safe HTTP Client Setup
 
 ```dart
 // Create a factory for conditional HTTP client setup
@@ -307,7 +307,7 @@ class HttpClientFactory {
         ISpectHttpInterceptor(
           logger: iSpectify,
           settings: const ISpectHttpInterceptorSettings(
-            enableRedaction: true, // Always enable redaction for security
+            enableRedaction: true,
           ),
         ),
       );
@@ -325,7 +325,7 @@ final client = HttpClientFactory.createClient(
 );
 ```
 
-### 🔒 Environment-Specific Configuration
+### Environment-Specific Configuration
 
 ```dart
 class HttpConfig {
@@ -339,7 +339,7 @@ class HttpConfig {
         );
       case 'staging':
         return const ISpectHttpInterceptorSettings(
-          enableRedaction: true, // Enable redaction in staging
+          enableRedaction: true,
         );
       default: // production
         return const ISpectHttpInterceptorSettings(
@@ -350,7 +350,7 @@ class HttpConfig {
 }
 ```
 
-### 🎛️ Conditional Interceptor Setup
+### Conditional Interceptor Setup
 
 ```dart
 void setupHttpInterceptors(
@@ -378,7 +378,7 @@ void setupHttpInterceptors(
 }
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for complete integration examples with different HTTP client configurations.
 
@@ -402,7 +402,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
