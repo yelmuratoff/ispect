@@ -5,7 +5,7 @@ import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dar
 
 /// Service responsible for node operations in JSON tree
 class JsonNodeService {
-  /// Expands a node and updates the display list
+  /// Expands a node and updates the display list efficiently
   static List<NodeViewModelState> expandNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
@@ -20,14 +20,12 @@ class JsonNodeService {
 
     node.expand();
 
-    final newDisplayNodes = List<NodeViewModelState>.from(displayNodes)
-    ..insertAll(
-        nodeIndex, flatChildren.cast<NodeViewModelState>(),);
-
-    return newDisplayNodes;
+    // Use insertAll directly instead of creating new list
+    displayNodes.insertAll(nodeIndex, flatChildren);
+    return displayNodes;
   }
 
-  /// Collapses a node and updates the display list
+  /// Collapses a node and updates the display list efficiently
   static List<NodeViewModelState> collapseNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
@@ -41,34 +39,30 @@ class JsonNodeService {
 
     node.collapse();
 
-    final newDisplayNodes = List<NodeViewModelState>.from(displayNodes)
-    ..removeRange(nodeIndex, nodeIndex + children);
-
-    return newDisplayNodes;
+    // Remove range directly instead of creating new list
+    displayNodes.removeRange(nodeIndex, nodeIndex + children);
+    return displayNodes;
   }
 
-  /// Collapses all nodes in the tree
+  /// Collapses all nodes in the tree efficiently
   static List<NodeViewModelState> collapseAll(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) {
-    final rootNodes = displayNodes.where(
-      (node) => node.treeDepth == 0 && !node.isCollapsed,
-    );
-
-    final collapsedNodes = List<NodeViewModelState>.from(displayNodes);
-
-    for (final node in rootNodes) {
-      final nodeIndex = collapsedNodes.indexOf(node) + 1;
-      final children = countVisibleChildren(node) - 1;
-      collapsedNodes.removeRange(nodeIndex, nodeIndex + children);
-    }
-
+    // Collapse all nodes first to avoid recalculating children counts
     for (final node in allNodes) {
       node.collapse();
     }
 
-    return collapsedNodes;
+    // Filter to keep only root nodes
+    final rootNodes =
+        displayNodes.where((node) => node.treeDepth == 0).toList();
+
+    displayNodes
+      ..clear()
+      ..addAll(rootNodes);
+
+    return displayNodes;
   }
 
   /// Expands all nodes in the tree

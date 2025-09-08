@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
+import 'package:ispect/src/features/json_viewer/services/json_object_pool.dart';
 
 /// Service responsible for searching within JSON tree structures
 class JsonSearchService {
@@ -147,7 +148,7 @@ class JsonSearchService {
     return results;
   }
 
-  /// Add key matches to results
+  /// Add key matches to results with reused lowercased key
   static void _addKeyMatches(
     NodeViewModelState node,
     String searchTerm,
@@ -157,21 +158,18 @@ class JsonSearchService {
     if (nodeKey.isNotEmpty) {
       final keyLower = nodeKey.toLowerCase();
       if (keyLower.contains(searchTerm)) {
-        final keyMatches = findAllOccurrences(keyLower, searchTerm);
-        for (final matchIndex in keyMatches) {
-          results.add(
-            SearchResult(
-              node,
-              matchLocation: SearchMatchLocation.key,
-              matchIndex: matchIndex,
-            ),
-          );
-        }
+        _findAndAddMatches(
+          keyLower,
+          searchTerm,
+          node,
+          SearchMatchLocation.key,
+          results,
+        );
       }
     }
   }
 
-  /// Add value matches to results
+  /// Add value matches to results with reused lowercased value
   static void _addValueMatches(
     NodeViewModelState node,
     String searchTerm,
@@ -183,38 +181,66 @@ class JsonSearchService {
       if (valueStr.isNotEmpty) {
         final valueLower = valueStr.toLowerCase();
         if (valueLower.contains(searchTerm)) {
-          final valueMatches = findAllOccurrences(valueLower, searchTerm);
-          for (final matchIndex in valueMatches) {
-            results.add(
-              SearchResult(
-                node,
-                matchLocation: SearchMatchLocation.value,
-                matchIndex: matchIndex,
-              ),
-            );
-          }
+          _findAndAddMatches(
+            valueLower,
+            searchTerm,
+            node,
+            SearchMatchLocation.value,
+            results,
+          );
         }
       }
     }
   }
 
-  /// Fast algorithm to find all occurrences without using RegExp
+  /// Unified method to find matches and add them to results using object pool
+  static void _findAndAddMatches(
+    String text,
+    String pattern,
+    NodeViewModelState node,
+    SearchMatchLocation location,
+    List<SearchResult> results,
+  ) {
+    var startIndex = 0;
+    while (true) {
+      final index = text.indexOf(pattern, startIndex);
+      if (index == -1) break;
+
+      results.add(
+        SearchResult(
+          node,
+          matchLocation: location,
+          matchIndex: index,
+        ),
+      );
+      startIndex = index + 1;
+    }
+  }
+
+  /// Fast algorithm to find all occurrences without using RegExp (deprecated)
+  @Deprecated('Use _findAndAddMatches instead for better performance')
   static List<int> findAllOccurrences(String text, String pattern) {
     if (text.isEmpty || pattern.isEmpty) {
       return const <int>[];
     }
 
-    final indices = <int>[];
+    final indices = JsonObjectPool.instance.getIntList();
     var startIndex = 0;
 
-    while (true) {
-      final index = text.indexOf(pattern, startIndex);
-      if (index == -1) break;
-      indices.add(index);
-      startIndex = index + 1;
-    }
+    try {
+      while (true) {
+        final index = text.indexOf(pattern, startIndex);
+        if (index == -1) break;
+        indices.add(index);
+        startIndex = index + 1;
+      }
 
-    return indices;
+      // Return a copy and release the pooled list
+      final result = List<int>.from(indices);
+      return result;
+    } finally {
+      JsonObjectPool.instance.releaseIntList(indices);
+    }
   }
 
   /// Debounce search operations to improve performance

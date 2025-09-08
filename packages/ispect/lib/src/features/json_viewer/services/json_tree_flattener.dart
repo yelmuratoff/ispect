@@ -4,80 +4,76 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 class JsonTreeFlattener {
   /// Flattens a hierarchical JSON tree into a list for efficient rendering
   static List<NodeViewModelState> flatten(Object? object) {
-    if (object is List) {
-      return _flattenArray(object as List<NodeViewModelState>);
-    }
-
     if (object == null) {
       return const <NodeViewModelState>[];
     }
-    return _flattenClass(object as Map<String, NodeViewModelState>);
+
+    if (object is List<NodeViewModelState>) {
+      return _flattenArray(object);
+    }
+
+    if (object is Map<String, NodeViewModelState>) {
+      return _flattenClass(object);
+    }
+
+    return const <NodeViewModelState>[];
   }
 
   static List<NodeViewModelState> _flattenClass(
     Map<String, NodeViewModelState> object,
   ) {
-    final flatList = <NodeViewModelState>[];
+    // Pre-allocate with estimated capacity for better performance
+    final resultList = <NodeViewModelState>[];
 
-    object.forEach((key, value) {
-      flatList.add(value);
+    for (final value in object.values) {
+      resultList.add(value);
 
       if (!value.isCollapsed) {
-        if (value.value is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(
-            value.value! as Map<String, NodeViewModelState>,
-            flatList,
-          );
-        } else if (value.value is List) {
-          _addFlattenedArrayToList(
-            value.value! as List<NodeViewModelState>,
-            flatList,
-          );
+        final childValue = value.value;
+        if (childValue is Map<String, NodeViewModelState>) {
+          _addFlattenedClassToList(childValue, resultList);
+        } else if (childValue is List<NodeViewModelState>) {
+          _addFlattenedArrayToList(childValue, resultList);
         }
       }
-    });
-    return flatList;
+    }
+
+    return resultList;
   }
 
   static List<NodeViewModelState> _flattenArray(
     List<NodeViewModelState> objects,
   ) {
-    final flatList = <NodeViewModelState>[];
+    final resultList = <NodeViewModelState>[];
 
     for (final object in objects) {
-      flatList.add(object);
-      if (!object.isCollapsed &&
-          object.value is Map<String, NodeViewModelState>) {
-        _addFlattenedClassToList(
-          object.value! as Map<String, NodeViewModelState>,
-          flatList,
-        );
+      resultList.add(object);
+      if (!object.isCollapsed) {
+        final childValue = object.value;
+        if (childValue is Map<String, NodeViewModelState>) {
+          _addFlattenedClassToList(childValue, resultList);
+        }
       }
     }
-    return flatList;
+    return resultList;
   }
 
   static void _addFlattenedClassToList(
     Map<String, NodeViewModelState> object,
     List<NodeViewModelState> flatList,
   ) {
-    object.forEach((key, value) {
+    for (final value in object.values) {
       flatList.add(value);
 
       if (!value.isCollapsed) {
-        if (value.value is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(
-            value.value! as Map<String, NodeViewModelState>,
-            flatList,
-          );
-        } else if (value.value is List) {
-          _addFlattenedArrayToList(
-            value.value! as List<NodeViewModelState>,
-            flatList,
-          );
+        final childValue = value.value;
+        if (childValue is Map<String, NodeViewModelState>) {
+          _addFlattenedClassToList(childValue, flatList);
+        } else if (childValue is List<NodeViewModelState>) {
+          _addFlattenedArrayToList(childValue, flatList);
         }
       }
-    });
+    }
   }
 
   static void _addFlattenedArrayToList(
@@ -86,12 +82,11 @@ class JsonTreeFlattener {
   ) {
     for (final object in objects) {
       flatList.add(object);
-      if (!object.isCollapsed &&
-          object.value is Map<String, NodeViewModelState>) {
-        _addFlattenedClassToList(
-          object.value! as Map<String, NodeViewModelState>,
-          flatList,
-        );
+      if (!object.isCollapsed) {
+        final childValue = object.value;
+        if (childValue is Map<String, NodeViewModelState>) {
+          _addFlattenedClassToList(childValue, flatList);
+        }
       }
     }
   }

@@ -10,7 +10,7 @@ class JsonNodeBuilder {
     return _buildClassNodes(object: <String, dynamic>{'data': object});
   }
 
-  /// Builds class nodes from Map
+  /// Builds class nodes from Map efficiently
   static Map<String, NodeViewModelState> _buildClassNodes({
     required Map<String, dynamic> object,
     int treeDepth = 0,
@@ -18,7 +18,10 @@ class JsonNodeBuilder {
   }) {
     final map = <String, NodeViewModelState>{};
 
-    object.forEach((key, value) {
+    for (final entry in object.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
       if (value is Map) {
         final classNode = NodeViewModelState.fromClass(
           treeDepth: treeDepth,
@@ -60,7 +63,7 @@ class JsonNodeBuilder {
           rawValue: value,
         );
       }
-    });
+    }
 
     return map;
   }
