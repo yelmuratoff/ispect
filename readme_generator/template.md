@@ -25,19 +25,19 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
 > **{{title}}** {{overview}}
 
 {{custom_overview_section}}
 
-### 🎯 Key Features
+### Key Features
 
 {{features}}
 
 {{custom_sections}}
 
-## 📦 Installation
+## Installation
 
 Add {{package_name}} to your `pubspec.yaml`:
 
@@ -46,15 +46,15 @@ dependencies:
   {{package_name}}: ^{{version}}
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -114,12 +114,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -139,6 +139,8 @@ flutter analyze --dart-define=ENABLE_ISPECT=false
 {{usage_example}}
 
 {{advanced_configuration}}
+
+{{integration_guides}}
 
 {{examples_section}}
 

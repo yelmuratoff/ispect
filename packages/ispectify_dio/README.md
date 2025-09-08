@@ -25,29 +25,23 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpectify Dio** provides seamless integration between Dio HTTP client and the ISpectify logging system.
+> **ISpectify Dio** integrates the Dio HTTP client with the ISpectify logging system.
 
-<div align="center">
+ISpectifyDio integrates the Dio HTTP client with the ISpectify logging system for HTTP request monitoring.
 
-🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+### Key Features
 
-</div>
+- HTTP Request Logging: Automatic logging of all Dio requests
+- Response Tracking: Detailed response logging with timing information
+- Error Handling: Comprehensive error logging with stack traces
+- Request Inspection: Headers, body, and parameter logging
+- Sensitive Data Redaction: Centralized redaction for headers and bodies (enabled by default, configurable)
+- Performance Metrics: Request/response timing and size tracking
+- Configurable: Flexible configuration options for different environments
 
-Streamline your HTTP debugging workflow by automatically capturing and logging all Dio HTTP client interactions. Perfect for monitoring API calls, debugging network issues, and tracking performance metrics.
-
-### 🎯 Key Features
-
-- 🌐 **HTTP Request Logging**: Automatic logging of all Dio requests
-- 📊 **Response Tracking**: Detailed response logging with timing information
-- ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Request Inspection**: Headers, body, and parameter logging
-- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
-- ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Configurable**: Flexible configuration options for different environments
-
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -65,7 +59,7 @@ ISpect.run(
   onInit: () {
     dio.interceptors.add(
       ISpectDioInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
         ),
@@ -83,7 +77,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectDioInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -95,18 +89,18 @@ redactor.ignoreValues(['sample-token']);
 
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     redactor: redactor,
   ),
 );
 ```
 
-### Advanced Configuration with Filters
+### Filtering with Optional Predicates
 
 ```dart
 dio.interceptors.add(
   ISpectDioInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
       // requestFilter: (requestOptions) =>
@@ -124,28 +118,28 @@ dio.interceptors.add(
 final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
 
-mainDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
-uploadDio.interceptors.add(ISpectDioInterceptor(iSpectify: iSpectify));
+mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.3
+  ispectify_dio: ^4.3.4
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -205,12 +199,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -257,12 +251,12 @@ void _initializeWithISpect() {
 
   ISpect.run(
     () => runApp(MyApp()),
-    logger: iSpectify,
+          logger: iSpectify,
     onInit: () {
       // Add ISpectify Dio interceptor only in development/staging
       dio.interceptors.add(
         ISpectDioInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
           ),
@@ -324,9 +318,9 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Configuration
+## Advanced Configuration
 
-### 🛡️ Production-Safe HTTP Logging
+### Production-Safe HTTP Logging
 
 ```dart
 // Create a factory for conditional Dio setup
@@ -343,10 +337,10 @@ class DioFactory {
     if (_isEnabled && iSpectify != null) {
       dio.interceptors.add(
         ISpectDioInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: ISpectDioInterceptorSettings(
             printRequestHeaders: kDebugMode,
-            enableRedaction: true, // Always enable redaction for security
+            enableRedaction: true, // Keep redaction enabled outside development
           ),
         ),
       );
@@ -363,7 +357,7 @@ final dio = DioFactory.createDio(
 );
 ```
 
-### 🔒 Environment-Specific Configuration
+### Environment-Specific Configuration
 
 ```dart
 class DioConfig {
@@ -375,13 +369,13 @@ class DioConfig {
         return const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
-          enableRedaction: false, // Allow full debugging in dev
+          enableRedaction: false, // Only disable if using non-sensitive test data
         );
       case 'staging':
         return const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: false,
-          enableRedaction: true, // Enable redaction in staging
+          enableRedaction: true,
         );
       default: // production
         return const ISpectDioInterceptorSettings(
@@ -394,7 +388,7 @@ class DioConfig {
 }
 ```
 
-### 🎛️ Conditional Interceptor Setup
+### Conditional Interceptor Setup
 
 ```dart
 void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
@@ -404,23 +398,22 @@ void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
-    redactor.ignoreValues(['password', 'token']);
+    redactor.ignoreValues(['<placeholder-secret>', '<another-placeholder>']);
     
     dio.interceptors.add(
       ISpectDioInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         redactor: redactor,
         settings: DioConfig.getSettings(),
       ),
     );
   }
   
-  // Add other production interceptors here
-  dio.interceptors.add(LogInterceptor(requestBody: false, responseBody: false));
+  // Add other production interceptors here (avoid duplicate logging)
 }
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for complete integration examples with different Dio configurations.
 
@@ -444,7 +437,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_http](../ispectify_http) - Standard HTTP client integration

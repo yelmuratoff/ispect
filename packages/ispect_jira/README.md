@@ -25,28 +25,22 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpect Jira** provides seamless integration between ISpect debugging toolkit and Jira for automated bug reporting and ticket creation.
+> **ISpect Jira** integrates the ISpect debugging toolkit with Jira for automated ticket creation.
 
-<div align="center">
+ISpectJira integrates the ISpect debugging toolkit with Jira for automated ticket creation.
 
-🎫 **Ticket Creation** • 📸 **Screenshots** • 📝 **Context** • 🔧 **Configuration**
+### Key Features
 
-</div>
+- Automated Ticket Creation: Create Jira tickets directly from the debugging interface
+- Screenshot Attachment: Automatically attach screenshots to tickets
+- Context Collection: Gather device info, logs, and app state for tickets
+- Configurable Fields: Customize ticket fields and metadata
+- Easy Integration: Simple setup with existing Jira instances
+- Flexible Auth: Support for various Jira authentication methods
 
-Streamline your bug reporting workflow by automatically creating detailed Jira tickets with screenshots, device information, and debugging context directly from your Flutter app during development and testing.
-
-### 🎯 Key Features
-
-- 🎫 **Automated Ticket Creation**: Create Jira tickets directly from the debugging interface
-- 📸 **Screenshot Attachment**: Automatically attach screenshots to tickets
-- 📝 **Context Collection**: Gather device info, logs, and app state for tickets
-- 🔧 **Configurable Fields**: Customize ticket fields and metadata
-- 🚀 **Easy Integration**: Simple setup with existing Jira instances
-- 🎛️ **Flexible Auth**: Support for various Jira authentication methods
-
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -155,24 +149,24 @@ ISpectOptions(
 ),
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispect_jira to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect_jira: ^4.3.3
+  ispect_jira: ^4.3.4
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -232,12 +226,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -333,7 +327,7 @@ class _MyAppState extends State<MyApp> {
                       MaterialPageRoute<void>(
                         builder: (_) => JiraAuthScreen(
                           onAuthorized: (domain, email, apiToken, projectId, projectKey) {
-                            ISpect.logger.good('✅ Jira authorized');
+                            ISpect.logger.good('Jira authorized');
                           },
                         ),
                       ),
@@ -377,7 +371,7 @@ class HomePage extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Features
+## Advanced Features
 
 ### Custom Issue Creation
 
@@ -468,13 +462,13 @@ MaterialApp(
 )
 ```
 
-## 📚 Examples
+## Examples
 
-See the [example/](example/) directory for complete integration examples including:
+See the [example/](example/) directory for integration examples including:
 - Basic Jira setup
 - Custom ticket templates
 - Multiple environment configuration
-- Advanced authentication scenarios
+- Authentication scenarios
 
 ## 🏗️ Architecture
 
@@ -496,7 +490,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispect](../ispect) - Main debugging interface
 - [ispectify](../ispectify) - Foundation logging system

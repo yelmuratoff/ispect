@@ -25,29 +25,23 @@
   </p>
 </div>
 
-## 🔍 Overview
+## Overview
 
-> **ISpectify HTTP** provides seamless integration between the http_interceptor package and the ISpectify logging system.
+> **ISpectify HTTP** integrates the http_interceptor package with the ISpectify logging system.
 
-<div align="center">
+ISpectifyHttp integrates the http_interceptor package with the ISpectify logging system for HTTP request monitoring.
 
-🌐 **HTTP Logging** • 📊 **Response Tracking** • ❌ **Error Handling** • ⚡ **Performance**
+### Key Features
 
-</div>
+- HTTP Request Logging: Automatic logging of all HTTP requests
+- Response Tracking: Detailed response logging with timing information
+- Error Handling: Comprehensive error logging with stack traces
+- Request Inspection: Headers, body, and parameter logging
+- Sensitive Data Redaction: Centralized redaction for headers and bodies (enabled by default, configurable)
+- Performance Metrics: Request/response timing and size tracking
+- Lightweight: Minimal overhead using http_interceptor package
 
-Enhance your HTTP debugging workflow by automatically capturing and logging all HTTP client interactions using the http_interceptor package. Provides seamless integration with Dart's HTTP package through interceptors for comprehensive request and response monitoring.
-
-### 🎯 Key Features
-
-- 🌐 **HTTP Request Logging**: Automatic logging of all HTTP requests
-- 📊 **Response Tracking**: Detailed response logging with timing information
-- ❌ **Error Handling**: Comprehensive error logging with stack traces
-- 🔍 **Request Inspection**: Headers, body, and parameter logging
-- 🔒 **Sensitive Data Redaction**: Centralized redaction for headers and bodies (enabled by default, configurable)
-- ⚡ **Performance Metrics**: Request/response timing and size tracking
-- 🎛️ **Lightweight**: Minimal overhead using http_interceptor package
-
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Basic Setup
 
@@ -60,7 +54,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     client.interceptors.add(
-      ISpectHttpInterceptor(iSpectify: iSpectify),
+      ISpectHttpInterceptor(logger: iSpectify),
     );
   },
 );
@@ -74,7 +68,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 client.interceptors.add(
   ISpectHttpInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     settings: const ISpectHttpInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -86,7 +80,7 @@ redactor.ignoreValues(['sample-token']);
 
 client.interceptors.add(
   ISpectHttpInterceptor(
-    iSpectify: iSpectify,
+    logger: iSpectify,
     redactor: redactor,
   ),
 );
@@ -112,24 +106,24 @@ request.files.add(http_interceptor.MultipartFile.fromBytes(
 client.send(request);
 ```
 
-## 📦 Installation
+## Installation
 
 Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.3
+  ispectify_http: ^4.3.4
 ```
 
-## ⚠️ Security & Production Guidelines
+## Security & Production Guidelines
 
-> **🚨 IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds**
+> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
 
-### 🔒 Production Safety
+### Production Safety
 
 ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
 
-### ✅ Recommended Setup with Dart Define Constants
+### Recommended Setup with Dart Define Constants
 
 **1. Create environment-aware initialization:**
 
@@ -189,12 +183,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-### 🛡️ Security Benefits
+### Security Benefits
 
-- ✅ **Zero Production Footprint**: Tree-shaking removes all ISpect code from release builds
-- ✅ **No Sensitive Data Exposure**: Debug information never reaches production users
-- ✅ **Performance Optimized**: No debugging overhead in production
-- ✅ **Compliance Ready**: Meets security requirements for app store releases
+- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
+- No Sensitive Data Exposure: Debug information never reaches production users
+- Performance Optimized: No debugging overhead in production
+- Compliance Ready: Meets security requirements for app store releases
 
 ### 🔍 Verification
 
@@ -243,7 +237,7 @@ void _initializeWithISpect() {
       // Add ISpectify HTTP interceptor only in development/staging
       client.interceptors.add(
         ISpectHttpInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectHttpInterceptorSettings(
             enableRedaction: true, // Always enable redaction for security
           ),
@@ -293,9 +287,9 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## ⚙️ Advanced Configuration
+## Advanced Configuration
 
-### 🛡️ Production-Safe HTTP Client Setup
+### Production-Safe HTTP Client Setup
 
 ```dart
 // Create a factory for conditional HTTP client setup
@@ -311,9 +305,9 @@ class HttpClientFactory {
     if (_isEnabled && iSpectify != null) {
       interceptors.add(
         ISpectHttpInterceptor(
-          iSpectify: iSpectify,
+          logger: iSpectify,
           settings: const ISpectHttpInterceptorSettings(
-            enableRedaction: true, // Always enable redaction for security
+            enableRedaction: true,
           ),
         ),
       );
@@ -331,7 +325,7 @@ final client = HttpClientFactory.createClient(
 );
 ```
 
-### 🔒 Environment-Specific Configuration
+### Environment-Specific Configuration
 
 ```dart
 class HttpConfig {
@@ -345,7 +339,7 @@ class HttpConfig {
         );
       case 'staging':
         return const ISpectHttpInterceptorSettings(
-          enableRedaction: true, // Enable redaction in staging
+          enableRedaction: true,
         );
       default: // production
         return const ISpectHttpInterceptorSettings(
@@ -356,7 +350,7 @@ class HttpConfig {
 }
 ```
 
-### 🎛️ Conditional Interceptor Setup
+### Conditional Interceptor Setup
 
 ```dart
 void setupHttpInterceptors(
@@ -369,22 +363,22 @@ void setupHttpInterceptors(
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
-    redactor.ignoreValues(['password', 'token']);
+    redactor.ignoreValues(['<placeholder-secret>']);
     
     client.interceptors.add(
       ISpectHttpInterceptor(
-        iSpectify: iSpectify,
+        logger: iSpectify,
         redactor: redactor,
         settings: HttpConfig.getSettings(),
       ),
     );
   }
-  
-  // Add other production interceptors here
 }
+
+// Close the underlying client if created outside the app lifecycle to free resources.
 ```
 
-## 📚 Examples
+## Examples
 
 See the [example/](example/) directory for complete integration examples with different HTTP client configurations.
 
@@ -408,7 +402,7 @@ Contributions are welcome! Please read our [contributing guidelines](../../CONTR
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Related Packages
+## Related Packages
 
 - [ispectify](../ispectify) - Foundation logging system
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration

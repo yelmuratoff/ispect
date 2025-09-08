@@ -19,7 +19,7 @@ readme_generator/
     └── ispect_jira.json
 
 bash/
-└── generate_readme.sh       # CLI wrapper script
+└── update_readme.sh       # CLI wrapper script
 ```
 
 ## Features
@@ -35,14 +35,14 @@ bash/
 ### Generate README for specific package
 
 ```bash
-./bash/generate_readme.sh generate ispect  # Also updates root README.md
-./bash/generate_readme.sh generate ispectify_dio  # Only updates package README
+./bash/update_readme.sh generate ispect  # Also updates root README.md
+./bash/update_readme.sh generate ispectify_dio  # Only updates package README
 ```
 
 ### Generate README for all packages
 
 ```bash
-./bash/generate_readme.sh generate all  # Updates all packages + root README.md
+./bash/update_readme.sh generate all  # Updates all packages + root README.md
 ```
 
 ### Direct Dart execution
@@ -56,13 +56,13 @@ dart readme_generator/generate_readme.dart ispectify # Updates only package
 ### List available packages
 
 ```bash
-./bash/generate_readme.sh list
+./bash/update_readme.sh list
 ```
 
 ### Validate package configuration
 
 ```bash
-./bash/generate_readme.sh validate ispectify_dio
+./bash/update_readme.sh validate ispectify_dio
 ```
 
 ## Configuration
@@ -143,7 +143,7 @@ cp readme_generator/configs/ispect.json readme_generator/configs/new_package.jso
 3. Generate README:
 
 ```bash
-./bash/generate_readme.sh generate new_package
+./bash/update_readme.sh generate new_package
 ```
 
 ## Automation
@@ -154,7 +154,7 @@ Add to `.git/hooks/pre-commit`:
 
 ```bash
 #!/bin/bash
-./bash/generate_readme.sh generate all
+./bash/update_readme.sh generate all
 git add packages/*/README.md
 ```
 
@@ -173,7 +173,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
       - name: Generate README files
-        run: ./bash/generate_readme.sh generate all
+        run: ./bash/update_readme.sh generate all
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
@@ -196,7 +196,7 @@ done
 ### Template Testing
 
 ```bash
-./bash/generate_readme.sh generate ispect
+./bash/update_readme.sh generate ispect
 cat packages/ispect/README.md
 ```
 
