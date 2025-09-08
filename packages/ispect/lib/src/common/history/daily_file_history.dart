@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:ispect/ispect.dart';
-import 'package:ispectify/ispectify.dart';
 
 /// Optimized daily file-based log history implementation
 ///

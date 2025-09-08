@@ -134,7 +134,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.2
+  ispectify_dio: ^4.3.3
 ```
 
 ## ⚠️ Security & Production Guidelines

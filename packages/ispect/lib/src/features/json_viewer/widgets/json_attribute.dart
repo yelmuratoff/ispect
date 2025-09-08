@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/utils/colors.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';

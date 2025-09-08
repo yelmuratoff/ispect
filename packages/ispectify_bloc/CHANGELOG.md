@@ -1,5 +1,31 @@
 # Changelog
 
+## 4.3.3
+
+### Refactored
+- Major refactoring of JSON viewer architecture - split the massive 1130-line `JsonExplorerStore` into smaller, focused services
+- Moved `NodeViewModelState` and `SearchResult` to separate models file for better organization
+- Created dedicated services:
+  - `JsonNodeService` - handles node expand/collapse and navigation
+  - `JsonSearchService` - optimized search with batching for large files
+  - `JsonTreeFlattener` - manages tree structure operations  
+  - `JsonNodeBuilder` - builds view models from JSON
+  - `JsonViewerCacheService` - handles caching logic
+
+### Performance
+- Search now processes large JSON files in batches to avoid UI freezing
+- Added proper memory cleanup and cache management
+- Large JSON objects are processed asynchronously
+
+### Fixed
+- Fixed type conflicts between original and refactored classes
+- Corrected Timer usage in search operations
+- Fixed package imports to use proper syntax
+
+### Technical
+- Better separation of concerns
+- Improved error handling and null safety
+
 ## 4.3.2
 
 ### Added
