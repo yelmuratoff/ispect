@@ -29,11 +29,12 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
-  intl: any
+  # Use an explicit version constraint instead of 'any' for pub scoring & reproducibility.
+  intl: ^0.20.0
   flutter_localizations:
     sdk: flutter
-
-  meta: any
+  # meta pinned (avoid 'any') to satisfy pub validation and enable deterministic resolution.
+  meta: ^1.16.0
   collection: ^1.19.0
 
   # Logging
