@@ -78,7 +78,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Initializes secure cache directory for log storage.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when directory is ready
+  /// - Returns: `Future<void>` completing when directory is ready
   /// - Usage example: Called automatically in constructor
   /// - Edge case notes: Handles platform-specific directory creation
   Future<void> _initializeSecureDirectory() async {
@@ -103,7 +103,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets platform-specific secure cache directory
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to secure cache directory
+  /// - Returns: `Future<String>` path to secure cache directory
   /// - Usage example: Used internally for directory setup
   /// - Edge case notes: Handles mobile, desktop, and fallback scenarios
   Future<String> _getSecureCacheDirectory() async {
@@ -121,7 +121,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets mobile cache directory path.
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to mobile cache directory
+  /// - Returns: `Future<String>` path to mobile cache directory
   /// - Usage example: Used for Android/iOS platforms
   /// - Edge case notes: Creates directory in system temp with app subdirectory
   Future<String> _getMobileCacheDirectory() async {
@@ -138,7 +138,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets desktop cache directory path.
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to desktop cache directory
+  /// - Returns: `Future<String>` path to desktop cache directory
   /// - Usage example: Used for Windows/macOS/Linux platforms
   /// - Edge case notes: Respects platform-specific cache conventions
   Future<String> _getDesktopCacheDirectory() async {
@@ -181,7 +181,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Ensures directory is initialized before operations.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when directory is ready
+  /// - Returns: `Future<void>` completing when directory is ready
   /// - Usage example: Called before file operations
   /// - Edge case notes: Waits for async initialization to complete
   Future<void> _ensureDirectoryInitialized() async {
@@ -236,7 +236,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Performs optimized auto-save with write queue management.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when auto-save is done
+  /// - Returns: `Future<void>` completing when auto-save is done
   /// - Usage example: Called periodically by auto-save timer
   /// - Edge case notes: Silently handles errors to prevent app crashes
   Future<void> _performAutoSave() async {
@@ -315,7 +315,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Performs session cleanup based on the configured strategy.
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Called internally when session limit exceeded
   /// - Edge case notes: Handles different cleanup strategies efficiently
   Future<void> _performSessionCleanup(List<DateTime> availableDates) async {
@@ -332,7 +332,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Cleanup strategy: delete oldest files first.
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Sorts dates and removes oldest first
   Future<void> _cleanupByOldest(List<DateTime> availableDates) async {
@@ -350,7 +350,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Cleanup strategy: delete largest files first
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Sorts by file size and removes largest first
   Future<void> _cleanupBySize(List<DateTime> availableDates) async {
@@ -376,7 +376,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Cleanup strategy: archive oldest files before deletion
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Archives files to compressed format then deletes originals
   Future<void> _cleanupByArchiving(List<DateTime> availableDates) async {
@@ -409,7 +409,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Validates file integrity before writing.
   ///
   /// - Parameters: file - File to validate, today - Current date
-  /// - Return: Future<bool> true if safe to write
+  /// - Returns: `Future<bool>` true if safe to write
   /// - Usage example: Used internally before file writes
   /// - Edge case notes: Prevents overwriting files from other days
   Future<bool> _validateFileIntegrity(File file, DateTime today) async {
@@ -431,7 +431,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Checks if writing the data would exceed the maximum file size limit
   ///
   /// - Parameters: file - Target file, data - Data to be written
-  /// - Return: Future<bool> true if size limit would be exceeded
+  /// - Returns: `Future<bool>` true if size limit would be exceeded
   /// - Usage example: Used before writing to prevent oversized files
   /// - Edge case notes: Estimates JSON size with safety margin
   Future<bool> _wouldExceedSizeLimit(
@@ -499,7 +499,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Checks if we should merge with existing data
   ///
   /// - Parameters: None
-  /// - Return: bool true if should merge with existing file
+  /// - Returns: `bool` true if should merge with existing file
   /// - Usage example: Used during save operations
   /// - Edge case notes: Prevents data loss by merging on same day
   bool _shouldMergeWithExisting() {
@@ -515,7 +515,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Loads existing data from file efficiently.
   ///
   /// - Parameters: file - File to load data from
-  /// - Return: Future<List<ISpectifyData>> loaded data or empty list
+  /// - Returns: `Future<List<ISpectifyData>>` loaded data or empty list
   /// - Usage example: Used during merge operations
   /// - Edge case notes: Returns empty list on any parsing error
   Future<List<ISpectifyData>> _loadExistingData(File file) async {
@@ -538,7 +538,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Merges history data avoiding duplicates and filtering by today's date
   ///
   /// - Parameters: existing - Data from file, current - Data from memory
-  /// - Return: List<ISpectifyData> merged and deduplicated data
+  /// - Returns: `List<ISpectifyData>` merged and deduplicated data
   /// - Usage example: Used during save operations to merge datasets
   /// - Edge case notes: Uses optimized int-based map for O(1) operations, sorts by timestamp
   List<ISpectifyData> _mergeHistoryData(
@@ -559,7 +559,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Adds data to merged map with deduplication using optimized key generation
   ///
   /// - Parameters: merged - Target map, data - Source data, today - Filter date
-  /// - Return: void
+  /// - Returns: `void`
   /// - Usage example: Used internally by _mergeHistoryData
   /// - Edge case notes: Uses int-based key for O(1) operations instead of string concatenation
   void _addDataToMerged(
@@ -578,7 +578,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Generates optimized integer key for deduplication
   ///
   /// - Parameters: item - Data item to generate key for
-  /// - Return: int unique key based on timestamp and message hash
+  /// - Returns: `int` unique key based on timestamp and message hash
   /// - Usage example: Used for efficient map operations
   /// - Edge case notes: Combines timestamp and message hash for uniqueness
   int _generateOptimizedKey(ISpectifyData item) {
@@ -810,7 +810,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Checks if two dates are the same day
   ///
   /// - Parameters: date1, date2 - Dates to compare
-  /// - Return: bool true if same calendar day
+  /// - Returns: `bool` true if same calendar day
   /// - Usage example: Used for date validation and filtering
   /// - Edge case notes: Ignores time components, compares only date parts
   bool _isSameDay(DateTime date1, DateTime date2) =>
@@ -906,6 +906,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Parses JSON string to list of ISpectifyData with optimized batch processing.
+  ///
+  /// - Parameters: jsonString - Raw JSON string representing a list of entries
+  /// - Returns: `Future<List<ISpectifyData>>` parsed list (empty on error)
+  /// - Usage example: Internal parsing for import and load operations
+  /// - Edge case notes: Processes in adaptive chunks, skips invalid entries
   Future<List<ISpectifyData>> _parseJsonToData(String jsonString) async {
     try {
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
@@ -952,6 +957,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Validates that all data entries belong to the specified date with early exit optimization.
+  ///
+  /// - Parameters: data - Entries to validate, targetDate - Date to enforce
+  /// - Returns: `bool` true if all entries belong to targetDate
+  /// - Usage example: Used before saving to ensure daily file consistency
+  /// - Edge case notes: Early exits on first mismatch for performance
   bool _validateDataForDate(List<ISpectifyData> data, DateTime targetDate) {
     if (data.isEmpty) return true;
 
