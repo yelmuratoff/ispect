@@ -121,6 +121,9 @@ void generateReadme(String packageName) {
     // Handle empty sections
     readme = _cleanupEmptySections(readme);
 
+    // Normalize package dependency versions in code snippets to current version
+    readme = _replacePackageVersions(readme, version);
+
     // Write README file
     final outputFile = File('$packagesDir/$packageName/README.md');
     outputFile.writeAsStringSync(readme);
@@ -191,6 +194,12 @@ void generateRootReadme() {
     // Handle empty sections
     readme = _cleanupEmptySections(readme);
 
+    // Normalize package dependency versions in code snippets to current version
+    readme = _replacePackageVersions(readme, version);
+
+    // Normalize package dependency versions in code snippets to current version
+    readme = _replacePackageVersions(readme, version);
+
     // Write root README file
     final outputFile = File(rootReadmeFile);
     outputFile.writeAsStringSync(readme);
@@ -198,5 +207,24 @@ void generateRootReadme() {
     print('✅ Root README generated: ${outputFile.path}');
   } catch (e) {
     print('❌ Error generating root README: $e');
+  }
+}
+
+String _replacePackageVersions(String content, String version) {
+  try {
+    // Matches dependency declarations inside YAML/code blocks for listed packages with semantic version
+    final depPattern = RegExp(
+      r'\b(ispectify_dio|ispectify_http|ispectify_ws|ispectify_bloc|ispectify|ispect_jira|ispect)\s*:\s*\^?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?',
+    );
+
+    content = content.replaceAllMapped(depPattern, (match) {
+      final pkg = match.group(1);
+      return '$pkg: ^$version';
+    });
+
+    return content;
+  } catch (e) {
+    print('⚠️  Version replacement failed: $e');
+    return content;
   }
 }

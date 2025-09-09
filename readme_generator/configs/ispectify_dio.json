@@ -2,6 +2,7 @@
    "package_name": "ispectify_dio",
    "title": "ISpectify Dio",
    "description": "Dio HTTP client integration for ISpectify logging system",
+   "tldr": "Capture Dio HTTP traffic with structured request/response/error logging.",
    "overview": "integrates the Dio HTTP client with the ISpectify logging system.",
    "features": [
       "HTTP Request Logging: Automatic logging of all Dio requests",

@@ -25,6 +25,22 @@
   </p>
 </div>
 
+## TL;DR
+
+Logging backbone: structured logs, filtering, history, export, redaction.
+
+## 🏗️ Architecture
+
+ISpectify serves as the logging foundation for the ISpect ecosystem:
+
+| Component | Description |
+|-----------|-----------|
+| **Core Logger** | Based on Talker with enhanced features |
+| **Log Filtering** | Advanced filtering and search capabilities |
+| **Performance Tracking** | Built-in performance monitoring |
+| **Export System** | Log export and analysis tools |
+| **Integration Layer** | Seamless integration with ISpect toolkit |
+
 ## Overview
 
 > **ISpectify** is the foundation logging system that powers the ISpect debugging toolkit.
@@ -39,6 +55,166 @@ ISpectify is the logging foundation for the ISpect ecosystem. It builds on the T
 - Performance Monitoring: Track application performance metrics
 - Export Functionality: Export logs for analysis and debugging
 - Easy Integration: Simple setup with minimal configuration
+
+## Logging Configuration
+
+### Quick Flags (ISpectifyOptions)
+| Option | Default | Effect | Use Case |
+|--------|---------|--------|----------|
+| enabled | true | Global on/off | Feature flag / release build |
+| useConsoleLogs | true | Print to stdout | CI, local dev |
+| useHistory | true | Keep in-memory history | Disable in load tests |
+| maxHistoryItems | 10000 | Ring buffer size | Tune memory footprint |
+| logTruncateLength | 10000 | Trim long console payloads | Prevent huge JSON spam |
+
+### Disable Console Output
+```dart
+final logger = ISpectify(
+  logger: ISpectifyLogger(
+    settings: LoggerSettings(enableColors: false),
+  ),
+  options: ISpectifyOptions(useConsoleLogs: false),
+);
+```
+Stdout stays clean; history + streams still work.
+
+### Disable History (Stateless Mode)
+```dart
+final logger = ISpectify(options: ISpectifyOptions(useHistory: false));
+```
+No retention; stream subscribers still receive real-time logs. Memory overhead minimal.
+
+### Minimal Footprint (CI / Benchmarks)
+```dart
+final logger = ISpectify(
+  options: ISpectifyOptions(
+    enabled: true,
+    useConsoleLogs: true, // or false for JSON parsing scenarios
+    useHistory: false,
+    logTruncateLength: 400,
+  ),
+  logger: ISpectifyLogger(
+    settings: LoggerSettings(
+      enableColors: false, // deterministic output
+      maxLineWidth: 80,
+    ),
+  ),
+);
+```
+
+### Memory Control
+Keep history bounded; large payloads are truncated before print: 
+```dart
+ISpectifyOptions(
+  maxHistoryItems: 2000,
+  logTruncateLength: 2000,
+);
+```
+
+### Custom Titles & Colors
+```dart
+ISpectifyOptions(
+  titles: { 'http-request': '➡ HTTP', 'http-response': '⬅ HTTP' },
+  colors: { 'http-error': AnsiPen()..red(bg:true) },
+);
+```
+Unknown keys fallback to the key string + gray pen.
+
+### Dynamic Reconfigure (Hot)
+```dart
+final i = ISpectify(...);
+// Later
+i.configure(options: i.options.copyWith(useConsoleLogs: false));
+```
+Existing stream listeners unaffected. History retained unless `useHistory` becomes false (existing entries remain; future ones not stored).
+
+### Filtering (Custom)
+Provide a filter implementation to drop noise early: 
+```dart
+class OnlyErrorsFilter implements ISpectifyFilter {
+  @override
+  bool apply(ISpectifyData d) => d.logLevel?.priority >= LogLevel.error.priority;
+}
+
+final logger = ISpectify(filter: OnlyErrorsFilter());
+```
+
+### Route / Analytics / Provider Logs
+Use dedicated helpers: `route('/home')`, `track('login', event: 'login')`, `provider('UserRepository created')`. Customize visibility at UI layer (ISpect theme) via `logDescriptions`.
+
+### Disabling Print Hijack
+When using `ISpect.run` set `isPrintLoggingEnabled: false` to leave `print()` untouched.
+```dart
+ISpect.run(
+  () => runApp(App()),
+  logger: logger,
+  isPrintLoggingEnabled: false,
+);
+```
+
+### Safe Production Pattern
+Keep code tree-shaken out: 
+```bash
+flutter run --dart-define=ENABLE_ISPECT=true
+flutter build apk # default false -> removed
+```
+```dart
+const kEnable = bool.fromEnvironment('ENABLE_ISPECT');
+if (kEnable) {
+  ISpect.run(() => runApp(App()), logger: logger);
+} else {
+  runApp(App());
+}
+```
+
+### Avoid Log Flood (Large JSON / Streams)
+Pre-truncate before logging if payload > N: 
+```dart
+logger.debug(json.length > 2000 ? json.substring(0, 2000) + '…' : json);
+```
+Or adjust `logTruncateLength`.
+
+### History Export (Pattern)
+History object: 
+```dart
+final copy = logger.history; // List<ISpectifyData>
+```
+Serialize manually (avoid bundling secrets). Provide redaction upstream before logging.
+
+### Toggle On-the-fly (Dev Tools)
+Expose a switch: 
+```dart
+setState(() => logger.options.enabled = !logger.options.enabled);
+```
+Prefer a wrapper method to avoid direct state in UI tests.
+
+### When to Disable History
+- Long running integration tests
+- GPU / memory profiling sessions
+- High-frequency streaming (WS metrics)
+
+### When to Disable Console
+- Parsing machine-readable test output
+- Prevent noise in CI logs
+- Benchmark harness isolation
+
+### Line Width vs Wrap
+Use `maxLineWidth` to constrain horizontal noise; does not truncate content (truncation done via `logTruncateLength`). Set lower for narrow terminals.
+
+### Color Strategy
+Disable colors for: CI, log ingestion systems, snapshot testing. Keep colors locally for readability.
+
+### Error / Exception Flow
+`logger.handle(exception)` decides between `ISpectifyError` and `ISpectifyException`; observer callbacks fire before streaming. Provide a custom `ISpectifyErrorHandler` to rewrite classification.
+
+### Zero-Allocation Path
+For ultra hot loops avoid string interpolation before checking `options.enabled`. Pattern: 
+```dart
+if (logger.options.enabled) logger.debug(buildHeavyString());
+```
+
+### Thread / Zone Capturing
+Use `ISpect.run` with `isZoneErrorHandlingEnabled` (default true) to automatically route uncaught zone errors through `logger.handle`. Disable if running inside another error aggregation framework.
 
 ## Configuration
 
@@ -91,96 +267,17 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.3.4
+  ispectify: ^4.3.6
 ```
 
 ## Security & Production Guidelines
 
-> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
+> IMPORTANT: ISpect is development‑only. Keep it out of production builds.
 
-### Production Safety
+<details>
+<summary><strong>Full security & environment setup (click to expand)</strong></summary>
 
-ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
-
-### Recommended Setup with Dart Define Constants
-
-**1. Create environment-aware initialization:**
-
-```dart
-// main.dart
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-// Use dart define to control ISpect inclusion
-const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
-
-void main() {
-  if (kEnableISpect) {
-    // Initialize ISpect only in development/staging
-    _initializeISpect();
-  } else {
-    // Production initialization without ISpect
-    runApp(MyApp());
-  }
-}
-
-void _initializeISpect() {
-  // ISpect initialization code here
-  // This entire function will be tree-shaken in production
-}
-```
-
-**2. Build Commands:**
-
-```bash
-# Development build (includes ISpect)
-flutter run --dart-define=ENABLE_ISPECT=true
-
-# Staging build (includes ISpect)
-flutter build appbundle --dart-define=ENABLE_ISPECT=true
-
-# Production build (ISpect completely removed via tree-shaking)
-flutter build appbundle --dart-define=ENABLE_ISPECT=false
-# or simply:
-flutter build appbundle  # defaults to false
-```
-
-**3. Conditional Widget Wrapping:**
-
-```dart
-Widget build(BuildContext context) {
-  return MaterialApp(
-    // Conditionally add ISpectBuilder in MaterialApp builder
-    builder: (context, child) {
-      if (kEnableISpect) {
-        return ISpectBuilder(child: child ?? const SizedBox.shrink());
-      }
-      return child ?? const SizedBox.shrink();
-    },
-    home: Scaffold(/* your app content */),
-  );
-}
-```
-
-### Security Benefits
-
-- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
-- No Sensitive Data Exposure: Debug information never reaches production users
-- Performance Optimized: No debugging overhead in production
-- Compliance Ready: Meets security requirements for app store releases
-
-### 🔍 Verification
-
-To verify ISpect is not included in your production build:
-
-```bash
-# Build release APK and check size difference
-flutter build apk --dart-define=ENABLE_ISPECT=false --release
-flutter build apk --dart-define=ENABLE_ISPECT=true --release
-
-# Use flutter tools to analyze bundle
-flutter analyze --dart-define=ENABLE_ISPECT=false
-```
+</details>
 
 ## 🚀 Quick Start
 
@@ -280,6 +377,8 @@ class MyApp extends StatelessWidget {
 }
 ```
 
+### Minimal Setup
+
 ## Advanced Configuration
 
 ### Production-Safe Logging
@@ -376,18 +475,6 @@ Prefer key-based masking (e.g. 'authorization', 'token', 'apiKey'). Avoid hardco
 ## Examples
 
 See the [example/](example/) directory for usage examples and integration patterns.
-
-## 🏗️ Architecture
-
-ISpectify serves as the logging foundation for the ISpect ecosystem:
-
-| Component | Description |
-|-----------|-----------|
-| **Core Logger** | Based on Talker with enhanced features |
-| **Log Filtering** | Advanced filtering and search capabilities |
-| **Performance Tracking** | Built-in performance monitoring |
-| **Export System** | Log export and analysis tools |
-| **Integration Layer** | Seamless integration with ISpect toolkit |
 
 ## 🤝 Contributing
 

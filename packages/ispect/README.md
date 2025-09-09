@@ -25,25 +25,9 @@
   </p>
 </div>
 
-## Overview
+## TL;DR
 
-> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
-
-ISpect provides comprehensive debugging capabilities for Flutter applications, including network monitoring, performance tracking, and UI inspection tools.
-
-### Key Features
-
-- Network Monitoring: Detailed HTTP request/response inspection with error tracking
-- Logging: Advanced logging system with categorization and filtering
-- Performance Analysis: Real-time performance metrics and monitoring
-- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
-- Device Information: System and app metadata collection
-- Bug Reporting: Integrated feedback system with screenshot capture
-- Cache Management: Application cache inspection and management
-
-## Internationalization
-- Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
-- Extensible localization system
+Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
 
 ## Interface Preview
 
@@ -63,102 +47,131 @@ ISpect provides comprehensive debugging capabilities for Flutter applications, i
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="160" />
 </div>
 
+## 🏗️ Architecture
+
+Modular packages. Include only what you use:
+
+| Package | Role | Version |
+|---------|------|---------|
+| [ispect](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect) | Core panel + inspectors | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) | Logging backbone | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP capture | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | http package capture | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
+| [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira issue export | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
+
+## Overview
+
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
+
+Provides network, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
+
+### Key Features
+
+- Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Logging: Advanced logging system with categorization and filtering
+- Performance Analysis: Real-time performance metrics and monitoring
+- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
+- Device Information: System and app metadata collection
+- Bug Reporting: Integrated feedback system with screenshot capture
+- Cache Management: Application cache inspection and management
+
+## Logging Configuration
+Core logging powered by ISpectify. Configure via `ISpectifyOptions` passed to the logger you supply into `ISpect.run`.
+
+### Typical Setup
+```dart
+final logger = ISpectify(
+  options: ISpectifyOptions(
+    enabled: true,
+    useHistory: true,
+    useConsoleLogs: kDebugMode,
+    maxHistoryItems: 5000,
+    logTruncateLength: 4000,
+  ),
+);
+ISpect.run(() => runApp(App()), logger: logger);
+```
+
+### Disable Console Noise
+```dart
+logger.configure(options: logger.options.copyWith(useConsoleLogs: false));
+```
+
+### Stateless (No History)
+```dart
+logger.configure(options: logger.options.copyWith(useHistory: false));
+```
+Stream subscribers still receive real-time events.
+
+### Filter Example
+```dart
+class WarningsAndAbove implements ISpectifyFilter {
+  @override
+  bool apply(ISpectifyData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
+}
+final logger = ISpectify(filter: WarningsAndAbove());
+```
+
+For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectify README.
+
+## Internationalization
+- Bundled locales: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
+- Extend via ISpectLocalizations delegate override
+
 ## Installation
 
 Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.3.4
+  ispect: ^4.3.6
 ```
 
 ## Security & Production Guidelines
 
-> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
+> IMPORTANT: ISpect is development‑only. Keep it out of production builds.
 
-### Production Safety
+Enable with a --dart-define flag. In release without the flag, code is tree‑shaken (no size / perf impact). Wrap all init behind the boolean and avoid committing builds with it enabled.
 
-ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+<details>
+<summary><strong>Full security & environment setup (click to expand)</strong></summary>
 
 ### Recommended Setup with Dart Define Constants
 
-**1. Create environment-aware initialization:**
-
+**1. Flag-driven initialization**
 ```dart
-// main.dart
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-// Use dart define to control ISpect inclusion
 const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
-
 void main() {
   if (kEnableISpect) {
-    // Initialize ISpect only in development/staging
-    _initializeISpect();
+    _bootstrapDebug();
   } else {
-    // Production initialization without ISpect
-    runApp(MyApp());
+    runApp(const MyApp());
   }
 }
-
-void _initializeISpect() {
-  // ISpect initialization code here
-  // This entire function will be tree-shaken in production
+void _bootstrapDebug() {
+  final logger = ISpectifyFlutter.init();
+  ISpect.run(() => runApp(const MyApp()), logger: logger);
 }
 ```
-
-**2. Build Commands:**
-
+**2. Build commands**
 ```bash
-# Development build (includes ISpect)
+# Dev / QA
 flutter run --dart-define=ENABLE_ISPECT=true
-
-# Staging build (includes ISpect)
-flutter build appbundle --dart-define=ENABLE_ISPECT=true
-
-# Production build (ISpect completely removed via tree-shaking)
-flutter build appbundle --dart-define=ENABLE_ISPECT=false
-# or simply:
-flutter build appbundle  # defaults to false
+# Release (default false)
+flutter build apk
 ```
+**3. Verify exclusion**
+Compare sizes: build once with flag true and another without; the delta should reflect removed debug assets.
 
-**3. Conditional Widget Wrapping:**
+**Benefits**
+- Zero production footprint (tree-shaken)
+- Prevents accidental data exposure
+- Faster startup & lower memory in release
+- Clear audit trail via explicit flag
 
-```dart
-Widget build(BuildContext context) {
-  return MaterialApp(
-    // Conditionally add ISpectBuilder in MaterialApp builder
-    builder: (context, child) {
-      if (kEnableISpect) {
-        return ISpectBuilder(child: child ?? const SizedBox.shrink());
-      }
-      return child ?? const SizedBox.shrink();
-    },
-    home: Scaffold(/* your app content */),
-  );
-}
-```
-
-### Security Benefits
-
-- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
-- No Sensitive Data Exposure: Debug information never reaches production users
-- Performance Optimized: No debugging overhead in production
-- Compliance Ready: Meets security requirements for app store releases
-
-### 🔍 Verification
-
-To verify ISpect is not included in your production build:
-
-```bash
-# Build release APK and check size difference
-flutter build apk --dart-define=ENABLE_ISPECT=false --release
-flutter build apk --dart-define=ENABLE_ISPECT=true --release
-
-# Use flutter tools to analyze bundle
-flutter analyze --dart-define=ENABLE_ISPECT=false
-```
+</details>
 
 ## 🚀 Quick Start
 
@@ -216,9 +229,7 @@ class MyApp extends StatelessWidget {
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              if (kEnableISpect) {
-                ISpect.logger.info('Button pressed!');
-              }
+  ISpect.logger.info('Button pressed!');
             },
             child: const Text('Press me'),
           ),
@@ -227,6 +238,20 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+```
+
+### Minimal Setup
+
+```dart
+// main.dart (minimal enable)
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+void main() {
+  if (!kEnableISpect) return runApp(const MyApp());
+  final logger = ISpectifyFlutter.init();
+  ISpect.run(() => runApp(const MyApp()), logger: logger);
+}
+
+// Run with: flutter run --dart-define=ENABLE_ISPECT=true
 ```
 
 ## Advanced Configuration
@@ -383,20 +408,20 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.3.3
+  ispect: ^4.3.6
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.3.3      # For Dio HTTP client
-  ispectify_http: ^4.3.3     # For standard HTTP package
+  ispectify_dio: ^4.3.6      # For Dio HTTP client
+  ispectify_http: ^4.3.6     # For standard HTTP package
   
   # WebSocket integration
-  ispectify_ws: ^4.3.3       # For WebSocket monitoring
+  ispectify_ws: ^4.3.6       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.3.3     # For BLoC state management
+  ispectify_bloc: ^4.3.6     # For BLoC state management
   
   # Optional: Jira integration
-  ispect_jira: ^4.3.3        # For automated bug reporting
+  ispect_jira: ^4.3.6        # For automated bug reporting
 ```
 
 ### HTTP Integration
@@ -407,7 +432,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.3
+  ispectify_dio: ^4.3.6
 ```
 
 ```dart
@@ -446,7 +471,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.3
+  ispectify_http: ^4.3.6
 ```
 
 ```dart
@@ -497,7 +522,7 @@ For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.3
+  ispectify_ws: ^4.3.6
 ```
 
 ```dart
@@ -531,7 +556,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.3
+  ispectify_bloc: ^4.3.6
 ```
 
 ```dart
@@ -674,20 +699,6 @@ Available log keys: `bloc-*`, `http-*`, `route`, `print`, `analytics`, `error`, 
 ## Examples
 
 Complete example applications are available in the [example/](example/) directory demonstrating core functionality.
-
-## 🏗️ Architecture
-
-ISpect is built as a modular system with specialized packages:
-
-| Package | Purpose | Version |
-|---------|---------|---------|
-| [ispect](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
-| [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
-| [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
-| [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
-| [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket connection monitoring | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
-| [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
-| [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## 🤝 Contributing
 

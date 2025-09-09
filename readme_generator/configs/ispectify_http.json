@@ -2,6 +2,7 @@
    "package_name": "ispectify_http",
    "title": "ISpectify HTTP",
    "description": "HTTP interceptor integration for ISpectify logging system using http_interceptor package",
+   "tldr": "Monitor standard HTTP client requests/responses with redaction & timing.",
    "overview": "integrates the http_interceptor package with the ISpectify logging system.",
    "features": [
       "HTTP Request Logging: Automatic logging of all HTTP requests",

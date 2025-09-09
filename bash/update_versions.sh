@@ -1,268 +1,178 @@
-#!/bin/bash
-# update_versions.sh - Updates package versions based on version.config
-# chmod +x bash/update_versions.sh && ./bash/update_versions.sh
+#!/usr/bin/env bash
+# update_versions.sh - Robust multi-package version & internal dependency updater.
+# Features:
+#   - Reads VERSION from version.config
+#   - --bump (patch|minor|major) auto-calculates next version & writes version.config
+#   - Updates internal dependency constraints (^VERSION)
+#   - Updates examples
+#   - Dry-run mode
+#   - Summary output
 
-# Source the version config
-if [ -f "version.config" ]; then
-  source "version.config"
-else
-  # Try with full path
-  script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-  root_dir="$(dirname "$script_dir")"
-  version_file="$root_dir/version.config"
-  
-  if [ -f "$version_file" ]; then
-    source "$version_file"
-  fi
+set -euo pipefail
+IFS=$'\n\t'
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+VERSION_FILE="version.config"
+if [[ ! -f $VERSION_FILE ]]; then
+  echo "[ERR] $VERSION_FILE not found" >&2; exit 1
 fi
 
-if [ -z "$VERSION" ]; then
-  echo "Error: VERSION not defined in version.config"
-  exit 1
+source "$VERSION_FILE" || { echo "[ERR] Failed to source $VERSION_FILE" >&2; exit 1; }
+if [[ -z ${VERSION:-} ]]; then
+  echo "[ERR] VERSION not defined in $VERSION_FILE" >&2; exit 1
 fi
 
-echo "Updating all packages to version: $VERSION"
+DRY_RUN=0
+BUMP_KIND=""
 
-# First, get all package names for later dependency updating
-declare -a package_names=()
-for package_dir in packages/*/; do
-  pubspec_file="${package_dir}pubspec.yaml"
-  if [[ -f "$pubspec_file" ]]; then
-    package_name=$(grep -E "^name:" "$pubspec_file" | sed 's/name: //' | tr -d ' ')
-    package_names+=("$package_name")
-  fi
+usage() {
+  cat <<USAGE
+update_versions.sh - sync versions across packages
+
+Usage: ./bash/update_versions.sh [--dry-run] [--bump patch|minor|major]
+
+Options:
+  --dry-run           Show changes without modifying files
+  --bump <kind>       Compute next semantic version and persist (patch|minor|major)
+  --help              Show this help
+Current VERSION: $VERSION
+USAGE
+}
+
+semver_bump() { # $1=version $2=kind
+  local v=$1 kind=$2
+  local major minor patch
+  IFS='.' read -r major minor patch <<<"$v"
+  case $kind in
+    patch) patch=$((patch+1)) ;;
+    minor) minor=$((minor+1)); patch=0 ;;
+    major) major=$((major+1)); minor=0; patch=0 ;;
+    *) echo "[ERR] Unknown bump kind: $kind" >&2; return 1 ;;
+  esac
+  echo "${major}.${minor}.${patch}"
+}
+
+while [[ ${1:-} != "" ]]; do
+  case $1 in
+    --dry-run) DRY_RUN=1 ;;
+    --bump) shift; BUMP_KIND="${1:-}" ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "[ERR] Unknown argument: $1" >&2; usage; exit 2 ;;
+  esac
+  shift || true
 done
 
-echo "Found packages: ${package_names[@]}"
-
-# Update pubspec.yaml files in all packages
-for package_dir in packages/*/; do
-  pubspec_file="${package_dir}pubspec.yaml"
-  
-  if [[ -f "$pubspec_file" ]]; then
-    # Get the current version
-    current_version=$(grep -E "^version:" "$pubspec_file" | sed 's/version: //')
-    
-    # Update the package version
-    if [[ "$current_version" != "$VERSION" ]]; then
-      echo "Updating $pubspec_file from $current_version to $VERSION"
-      
-      # Use sed to replace the version line
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS requires a different sed syntax
-        sed -i '' "s/^version:.*$/version: $VERSION/" "$pubspec_file"
-      else
-        # Linux/Unix sed syntax
-        sed -i "s/^version:.*$/version: $VERSION/" "$pubspec_file"
-      fi
+if [[ -n $BUMP_KIND ]]; then
+  NEW_VERSION=$(semver_bump "$VERSION" "$BUMP_KIND")
+  echo "[INFO] Bump $BUMP_KIND: $VERSION -> $NEW_VERSION"
+  if [[ $DRY_RUN -eq 0 ]]; then
+    if sed -i'' -e "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$VERSION_FILE"; then
+      VERSION=$NEW_VERSION
     else
-      echo "$pubspec_file already at version $VERSION"
+      echo "[ERR] Failed writing new version" >&2; exit 1
     fi
-    
-    # Now update all internal package dependencies
-    for pkg_name in "${package_names[@]}"; do
-      # Check if we're inside the dependencies section (not dependency_overrides)
-      # Extract dependencies section first
-      deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file")
-      
-      if echo "$deps_section" | grep -q "^  $pkg_name: \^"; then
-        echo "Updating dependency on $pkg_name in $pubspec_file to version $VERSION"
-        
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          # macOS requires a different sed syntax
-          # Use awk to only replace in dependencies section, not in dependency_overrides
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_deps = 0 }
-            /^dependencies:/ { in_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-            in_deps && $0 ~ "^  "pkg": \\^" {
-              print "  "pkg": ^"ver
-              next
-            }
-            { print }
-          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
-        else
-          # Linux/Unix 
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_deps = 0 }
-            /^dependencies:/ { in_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-            in_deps && $0 ~ "^  "pkg": \\^" {
-                        ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
-        fi
-      fi
-      
-      # Also check dev_dependencies section
-      dev_deps_section=$(awk '/^dev_dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$pubspec_file")
-      
-      if echo "$dev_deps_section" | grep -q "^  $pkg_name: \^"; then
-        echo "Updating dev dependency on $pkg_name in $pubspec_file to version $VERSION"
-        
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_dev_deps = 0 }
-            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
-            in_dev_deps && $0 ~ "^  "pkg": \\^" {
-              print "  "pkg": ^"ver
-              next
-            }
-            { print }
-          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
-        else
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_dev_deps = 0 }
-            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
-            in_dev_deps && $0 ~ "^  "pkg": \\^" {
-              print "  "pkg": ^"ver
-              next
-            }
-            { print }
-          ' "$pubspec_file" > "${pubspec_file}.tmp" && mv "${pubspec_file}.tmp" "$pubspec_file"
-        fi
-      fi
-    done
+  fi
+fi
+
+echo "[INFO] Target version: $VERSION (dry-run=$DRY_RUN)"
+
+PACKAGE_DIRS=()
+while IFS= read -r line; do
+  PACKAGE_DIRS+=("$line")
+done < <(find packages -maxdepth 1 -mindepth 1 -type d | sort)
+declare -a PACKAGE_NAMES=()
+for dir in "${PACKAGE_DIRS[@]}"; do
+  ps="$dir/pubspec.yaml"
+  [[ -f $ps ]] || continue
+  name=$(grep -E '^name:' "$ps" | awk '{print $2}')
+  PACKAGE_NAMES+=("$name")
+done
+echo "[INFO] Packages: ${PACKAGE_NAMES[*]}"
+
+change_files=()
+
+replace_version_line() { # $1=file
+  local file="$1"
+  local current
+  current=$(grep -E '^version:' "$file" | awk '{print $2}') || true
+  if [[ $current != "$VERSION" ]]; then
+    echo "[CHG] $file version $current -> $VERSION"
+    if [[ $DRY_RUN -eq 0 ]]; then
+      sed -i'' -e "s/^version:.*/version: $VERSION/" "$file"
+      change_files+=("$file")
+    fi
   else
-    echo "Pubspec file $pubspec_file not found, skipping..."
+    echo "[OK ] $file already $VERSION"
   fi
-done
+}
 
-# Update dependencies in example folders as well
-for package_dir in packages/*/; do
-  example_dir="${package_dir}example/"
-  example_pubspec="${example_dir}pubspec.yaml"
-  
-  if [[ -f "$example_pubspec" ]]; then
-    package_name=$(grep -E "^name:" "${package_dir}pubspec.yaml" | sed 's/name: //' | tr -d ' ')
-    echo "Checking example project for $package_name..."
-    
-    # Update the parent package dependency in the example only in dependencies section
-    deps_section=$(awk '/^dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$example_pubspec")
-    
-    if echo "$deps_section" | grep -q "^  $package_name: \^"; then
-      echo "Updating $package_name dependency in example to $VERSION"
-      
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        # Use awk to only replace in dependencies section, not in dependency_overrides
-        awk -v pkg="$package_name" -v ver="$VERSION" '
-          BEGIN { in_deps = 0 }
-          /^dependencies:/ { in_deps = 1; print; next }
-          /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-          in_deps && $0 ~ "^  "pkg": \\^" {
-            print "  "pkg": ^"ver
-            next
-          }
-          { print }
-        ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
-      else
-        # Linux/Unix approach
-        awk -v pkg="$package_name" -v ver="$VERSION" '
-          BEGIN { in_deps = 0 }
-          /^dependencies:/ { in_deps = 1; print; next }
-          /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-          in_deps && $0 ~ "^  "pkg": \\^" {
-            print "  "pkg": ^"ver
-            next
-          }
-          { print }
-        ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
+update_internal_refs() { # $1=file
+  local file="$1" updated=0
+  for pkg in "${PACKAGE_NAMES[@]}"; do
+    # Only adjust lines inside dependencies or dev_dependencies
+    if grep -q "^  $pkg: \^" "$file"; then
+      if ! grep -q "^  $pkg: \^$VERSION" "$file"; then
+        echo "[CHG] $file -> $pkg ^$VERSION"
+        if [[ $DRY_RUN -eq 0 ]]; then
+          # Use awk to scope modifications
+          awk -v pkg="$pkg" -v ver="$VERSION" '
+            BEGIN { in_section=0 }
+            /^[a-z]/ { in_section=0 }
+            /^dependencies:/ { in_section=1 }
+            /^dev_dependencies:/ { in_section=1 }
+            in_section && $0 ~ "^  "pkg": \\^" { print "  "pkg": ^"ver; next }
+            { print }
+          ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+          updated=1
+        fi
       fi
     fi
-    
-    # Update other internal dependencies in example projects, but only in dependencies section
-    for pkg_name in "${package_names[@]}"; do
-      if [[ "$pkg_name" != "$package_name" ]]; then
-        # Only match in the dependencies section
-        if echo "$deps_section" | grep -q "^  $pkg_name: \^"; then
-          echo "Updating dependency on $pkg_name in example to version $VERSION"
-          
-          if [[ "$OSTYPE" == "darwin"* ]]; then
-            awk -v pkg="$pkg_name" -v ver="$VERSION" '
-              BEGIN { in_deps = 0 }
-              /^dependencies:/ { in_deps = 1; print; next }
-              /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-              in_deps && $0 ~ "^  "pkg": \\^" {
-                print "  "pkg": ^"ver
-                next
-              }
-              { print }
-            ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
-          else
-            awk -v pkg="$pkg_name" -v ver="$VERSION" '
-              BEGIN { in_deps = 0 }
-              /^dependencies:/ { in_deps = 1; print; next }
-              /^[a-z][a-z_]*:/ && in_deps { in_deps = 0 }
-              in_deps && $0 ~ "^  "pkg": \\^" {
-                print "  "pkg": ^"ver
-                next
-              }
-              { print }
-            ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
-          fi
-        fi
-      fi
-    done
-    
-    # Also check dev_dependencies section
-    dev_deps_section=$(awk '/^dev_dependencies:/{flag=1; next} /^[a-z]/{flag=0} flag' "$example_pubspec")
-    
-    for pkg_name in "${package_names[@]}"; do
-      if echo "$dev_deps_section" | grep -q "^  $pkg_name: \^"; then
-        echo "Updating dev dependency on $pkg_name in example to version $VERSION"
-        
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          # This sed command looks for the package in dev_dependencies section and updates it
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_dev_deps = 0 }
-            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
-            in_dev_deps && $0 ~ "^  "pkg": \\^" {
-              print "  "pkg": ^"ver
-              next
-            }
-            { print }
-          ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
-        else
-          # For Linux we use a similar approach
-          awk -v pkg="$pkg_name" -v ver="$VERSION" '
-            BEGIN { in_dev_deps = 0 }
-            /^dev_dependencies:/ { in_dev_deps = 1; print; next }
-            /^[a-z][a-z_]*:/ && in_dev_deps { in_dev_deps = 0 }
-            in_dev_deps && $0 ~ "^  "pkg": \\^" {
-              print "  "pkg": ^"ver
-              next
-            }
-            { print }
-          ' "$example_pubspec" > "${example_pubspec}.tmp" && mv "${example_pubspec}.tmp" "$example_pubspec"
-        fi
-      fi
-    done
+  done
+  if [[ $updated -eq 1 ]]; then change_files+=("$file"); fi
+}
+
+# Process each package
+for dir in "${PACKAGE_DIRS[@]}"; do
+  ps="$dir/pubspec.yaml"
+  [[ -f $ps ]] || continue
+  replace_version_line "$ps"
+  update_internal_refs "$ps"
+
+  # Example project
+  ex_ps="$dir/example/pubspec.yaml"
+  if [[ -f $ex_ps ]]; then
+    update_internal_refs "$ex_ps"
   fi
 done
 
-# Update the main CHANGELOG.md to ensure it has the correct version
-changelog_file="CHANGELOG.md"
-if [[ -f "$changelog_file" ]]; then
-  # Check if the current version exists in the CHANGELOG
-  if ! grep -q "## $VERSION" "$changelog_file"; then
-    # Version doesn't exist in changelog, so add it below the header
-    echo "Adding version $VERSION to main CHANGELOG.md"
-    
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      # macOS requires a different sed syntax
-      sed -i '' "s/# Changelog/# Changelog\n\n## $VERSION\n\n### Added\n- Initial release of version $VERSION\n/" "$changelog_file"
-    else
-      # Linux/Unix sed syntax
-      sed -i "s/# Changelog/# Changelog\n\n## $VERSION\n\n### Added\n- Initial release of version $VERSION\n/" "$changelog_file"
+# Ensure root CHANGELOG has version section
+ROOT_CHANGELOG="CHANGELOG.md"
+if [[ -f $ROOT_CHANGELOG ]]; then
+  if ! grep -q "^## $VERSION" "$ROOT_CHANGELOG"; then
+    echo "[CHG] Add section $VERSION to root CHANGELOG"
+    if [[ $DRY_RUN -eq 0 ]]; then
+      printf '\n## %s\n\n### Added\n- Bump to %s\n' "$VERSION" "$VERSION" >> "$ROOT_CHANGELOG"
+      change_files+=("$ROOT_CHANGELOG")
     fi
   fi
 fi
 
-# Now update changelogs after version update
-if [[ -f "bash/update_changelog.sh" ]]; then
-  echo "Running update_changelog.sh to sync all package changelogs..."
-  bash/update_changelog.sh
+if [[ $DRY_RUN -eq 0 && -f bash/update_changelog.sh ]]; then
+  echo "[INFO] Propagating changelog section to packages"
+  bash/update_changelog.sh --version "$VERSION" >/dev/null || true
 fi
 
-echo "Version update completed!"
+echo "[INFO] Summary:" 
+if [[ ${#change_files[@]} -gt 0 ]]; then
+  printf '  - %s\n' "${change_files[@]}"
+else
+  echo "  (no file changes)"
+fi
+
+if [[ $DRY_RUN -eq 1 ]]; then
+  echo "[DONE] Dry-run completed"
+else
+  echo "[DONE] Version update completed"
+fi
