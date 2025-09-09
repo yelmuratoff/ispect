@@ -25,6 +25,10 @@
   </p>
 </div>
 
+## TL;DR
+
+Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
+
 ## Overview
 
 > **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
@@ -74,91 +78,47 @@ dependencies:
 
 ## Security & Production Guidelines
 
-> IMPORTANT: ISpect is a debugging tool and should NEVER be included in production builds
+> IMPORTANT: ISpect is development‑only. Keep it out of production builds.
 
-### Production Safety
+Enable with a --dart-define flag. In release without the flag, code is tree‑shaken (no size / perf impact). Wrap all init behind the boolean and avoid committing builds with it enabled.
 
-ISpect contains sensitive debugging information and should only be used in development and staging environments. To ensure ISpect is completely removed from production builds, use the following approach:
+<details>
+<summary><strong>Full security & environment setup (click to expand)</strong></summary>
 
 ### Recommended Setup with Dart Define Constants
 
-**1. Create environment-aware initialization:**
-
+**1. Flag-driven initialization**
 ```dart
-// main.dart
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-// Use dart define to control ISpect inclusion
 const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
-
 void main() {
   if (kEnableISpect) {
-    // Initialize ISpect only in development/staging
-    _initializeISpect();
+    _bootstrapDebug();
   } else {
-    // Production initialization without ISpect
-    runApp(MyApp());
+    runApp(const MyApp());
   }
 }
-
-void _initializeISpect() {
-  // ISpect initialization code here
-  // This entire function will be tree-shaken in production
+void _bootstrapDebug() {
+  final logger = ISpectifyFlutter.init();
+  ISpect.run(() => runApp(const MyApp()), logger: logger);
 }
 ```
-
-**2. Build Commands:**
-
+**2. Build commands**
 ```bash
-# Development build (includes ISpect)
+# Dev / QA
 flutter run --dart-define=ENABLE_ISPECT=true
-
-# Staging build (includes ISpect)
-flutter build appbundle --dart-define=ENABLE_ISPECT=true
-
-# Production build (ISpect completely removed via tree-shaking)
-flutter build appbundle --dart-define=ENABLE_ISPECT=false
-# or simply:
-flutter build appbundle  # defaults to false
+# Release (default false)
+flutter build apk
 ```
+**3. Verify exclusion**
+Compare sizes: build once with flag true and another without; the delta should reflect removed debug assets.
 
-**3. Conditional Widget Wrapping:**
+**Benefits**
+- Zero production footprint (tree-shaken)
+- Prevents accidental data exposure
+- Faster startup & lower memory in release
+- Clear audit trail via explicit flag
 
-```dart
-Widget build(BuildContext context) {
-  return MaterialApp(
-    // Conditionally add ISpectBuilder in MaterialApp builder
-    builder: (context, child) {
-      if (kEnableISpect) {
-        return ISpectBuilder(child: child ?? const SizedBox.shrink());
-      }
-      return child ?? const SizedBox.shrink();
-    },
-    home: Scaffold(/* your app content */),
-  );
-}
-```
-
-### Security Benefits
-
-- Zero Production Footprint: Tree-shaking removes all ISpect code from release builds
-- No Sensitive Data Exposure: Debug information never reaches production users
-- Performance Optimized: No debugging overhead in production
-- Compliance Ready: Meets security requirements for app store releases
-
-### 🔍 Verification
-
-To verify ISpect is not included in your production build:
-
-```bash
-# Build release APK and check size difference
-flutter build apk --dart-define=ENABLE_ISPECT=false --release
-flutter build apk --dart-define=ENABLE_ISPECT=true --release
-
-# Use flutter tools to analyze bundle
-flutter analyze --dart-define=ENABLE_ISPECT=false
-```
+</details>
 
 ## 🚀 Quick Start
 
@@ -225,6 +185,20 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+```
+
+### Minimal Setup
+
+```dart
+// main.dart (minimal enable)
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+void main() {
+  if (!kEnableISpect) return runApp(const MyApp());
+  final logger = ISpectifyFlutter.init();
+  ISpect.run(() => runApp(const MyApp()), logger: logger);
+}
+
+// Run with: flutter run --dart-define=ENABLE_ISPECT=true
 ```
 
 ## Advanced Configuration
