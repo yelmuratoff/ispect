@@ -383,20 +383,20 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.3.3
+  ispect: ^4.3.4
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.3.3      # For Dio HTTP client
-  ispectify_http: ^4.3.3     # For standard HTTP package
+  ispectify_dio: ^4.3.4      # For Dio HTTP client
+  ispectify_http: ^4.3.4     # For standard HTTP package
   
   # WebSocket integration
-  ispectify_ws: ^4.3.3       # For WebSocket monitoring
+  ispectify_ws: ^4.3.4       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.3.3     # For BLoC state management
+  ispectify_bloc: ^4.3.4     # For BLoC state management
   
   # Optional: Jira integration
-  ispect_jira: ^4.3.3        # For automated bug reporting
+  ispect_jira: ^4.3.4        # For automated bug reporting
 ```
 
 ### HTTP Integration
@@ -407,7 +407,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.3
+  ispectify_dio: ^4.3.4
 ```
 
 ```dart
@@ -446,7 +446,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.3
+  ispectify_http: ^4.3.4
 ```
 
 ```dart
@@ -497,7 +497,7 @@ For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.3
+  ispectify_ws: ^4.3.4
 ```
 
 ```dart
@@ -531,7 +531,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.3
+  ispectify_bloc: ^4.3.4
 ```
 
 ```dart
