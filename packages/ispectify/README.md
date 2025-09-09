@@ -54,6 +54,166 @@ ISpectify is the logging foundation for the ISpect ecosystem. It builds on the T
 - Export Functionality: Export logs for analysis and debugging
 - Easy Integration: Simple setup with minimal configuration
 
+## Logging Configuration
+
+### Quick Flags (ISpectifyOptions)
+| Option | Default | Effect | Use Case |
+|--------|---------|--------|----------|
+| enabled | true | Global on/off | Feature flag / release build |
+| useConsoleLogs | true | Print to stdout | CI, local dev |
+| useHistory | true | Keep in-memory history | Disable in load tests |
+| maxHistoryItems | 10000 | Ring buffer size | Tune memory footprint |
+| logTruncateLength | 10000 | Trim long console payloads | Prevent huge JSON spam |
+
+### Disable Console Output
+```dart
+final logger = ISpectify(
+  logger: ISpectifyLogger(
+    settings: LoggerSettings(enableColors: false),
+  ),
+  options: ISpectifyOptions(useConsoleLogs: false),
+);
+```
+Stdout stays clean; history + streams still work.
+
+### Disable History (Stateless Mode)
+```dart
+final logger = ISpectify(options: ISpectifyOptions(useHistory: false));
+```
+No retention; stream subscribers still receive real-time logs. Memory overhead minimal.
+
+### Minimal Footprint (CI / Benchmarks)
+```dart
+final logger = ISpectify(
+  options: ISpectifyOptions(
+    enabled: true,
+    useConsoleLogs: true, // or false for JSON parsing scenarios
+    useHistory: false,
+    logTruncateLength: 400,
+  ),
+  logger: ISpectifyLogger(
+    settings: LoggerSettings(
+      enableColors: false, // deterministic output
+      maxLineWidth: 80,
+    ),
+  ),
+);
+```
+
+### Memory Control
+Keep history bounded; large payloads are truncated before print: 
+```dart
+ISpectifyOptions(
+  maxHistoryItems: 2000,
+  logTruncateLength: 2000,
+);
+```
+
+### Custom Titles & Colors
+```dart
+ISpectifyOptions(
+  titles: { 'http-request': '➡ HTTP', 'http-response': '⬅ HTTP' },
+  colors: { 'http-error': AnsiPen()..red(bg:true) },
+);
+```
+Unknown keys fallback to the key string + gray pen.
+
+### Dynamic Reconfigure (Hot)
+```dart
+final i = ISpectify(...);
+// Later
+i.configure(options: i.options.copyWith(useConsoleLogs: false));
+```
+Existing stream listeners unaffected. History retained unless `useHistory` becomes false (existing entries remain; future ones not stored).
+
+### Filtering (Custom)
+Provide a filter implementation to drop noise early: 
+```dart
+class OnlyErrorsFilter implements ISpectifyFilter {
+  @override
+  bool apply(ISpectifyData d) => d.logLevel?.priority >= LogLevel.error.priority;
+}
+
+final logger = ISpectify(filter: OnlyErrorsFilter());
+```
+
+### Route / Analytics / Provider Logs
+Use dedicated helpers: `route('/home')`, `track('login', event: 'login')`, `provider('UserRepository created')`. Customize visibility at UI layer (ISpect theme) via `logDescriptions`.
+
+### Disabling Print Hijack
+When using `ISpect.run` set `isPrintLoggingEnabled: false` to leave `print()` untouched.
+```dart
+ISpect.run(
+  () => runApp(App()),
+  logger: logger,
+  isPrintLoggingEnabled: false,
+);
+```
+
+### Safe Production Pattern
+Keep code tree-shaken out: 
+```bash
+flutter run --dart-define=ENABLE_ISPECT=true
+flutter build apk # default false -> removed
+```
+```dart
+const kEnable = bool.fromEnvironment('ENABLE_ISPECT');
+if (kEnable) {
+  ISpect.run(() => runApp(App()), logger: logger);
+} else {
+  runApp(App());
+}
+```
+
+### Avoid Log Flood (Large JSON / Streams)
+Pre-truncate before logging if payload > N: 
+```dart
+logger.debug(json.length > 2000 ? json.substring(0, 2000) + '…' : json);
+```
+Or adjust `logTruncateLength`.
+
+### History Export (Pattern)
+History object: 
+```dart
+final copy = logger.history; // List<ISpectifyData>
+```
+Serialize manually (avoid bundling secrets). Provide redaction upstream before logging.
+
+### Toggle On-the-fly (Dev Tools)
+Expose a switch: 
+```dart
+setState(() => logger.options.enabled = !logger.options.enabled);
+```
+Prefer a wrapper method to avoid direct state in UI tests.
+
+### When to Disable History
+- Long running integration tests
+- GPU / memory profiling sessions
+- High-frequency streaming (WS metrics)
+
+### When to Disable Console
+- Parsing machine-readable test output
+- Prevent noise in CI logs
+- Benchmark harness isolation
+
+### Line Width vs Wrap
+Use `maxLineWidth` to constrain horizontal noise; does not truncate content (truncation done via `logTruncateLength`). Set lower for narrow terminals.
+
+### Color Strategy
+Disable colors for: CI, log ingestion systems, snapshot testing. Keep colors locally for readability.
+
+### Error / Exception Flow
+`logger.handle(exception)` decides between `ISpectifyError` and `ISpectifyException`; observer callbacks fire before streaming. Provide a custom `ISpectifyErrorHandler` to rewrite classification.
+
+### Zero-Allocation Path
+For ultra hot loops avoid string interpolation before checking `options.enabled`. Pattern: 
+```dart
+if (logger.options.enabled) logger.debug(buildHeavyString());
+```
+
+### Thread / Zone Capturing
+Use `ISpect.run` with `isZoneErrorHandlingEnabled` (default true) to automatically route uncaught zone errors through `logger.handle`. Disable if running inside another error aggregation framework.
+
 ## Configuration
 
 ### Settings

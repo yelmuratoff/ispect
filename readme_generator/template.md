@@ -45,6 +45,8 @@
 
 {{features}}
 
+{{logging_configuration_section}}
+
 {{internationalization_section}}
 
 {{custom_sections}}

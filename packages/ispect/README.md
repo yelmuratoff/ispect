@@ -77,6 +77,45 @@ Provides network, performance, widget tree, logging and device insight tooling v
 - Bug Reporting: Integrated feedback system with screenshot capture
 - Cache Management: Application cache inspection and management
 
+## Logging Configuration
+Core logging powered by ISpectify. Configure via `ISpectifyOptions` passed to the logger you supply into `ISpect.run`.
+
+### Typical Setup
+```dart
+final logger = ISpectify(
+  options: ISpectifyOptions(
+    enabled: true,
+    useHistory: true,
+    useConsoleLogs: kDebugMode,
+    maxHistoryItems: 5000,
+    logTruncateLength: 4000,
+  ),
+);
+ISpect.run(() => runApp(App()), logger: logger);
+```
+
+### Disable Console Noise
+```dart
+logger.configure(options: logger.options.copyWith(useConsoleLogs: false));
+```
+
+### Stateless (No History)
+```dart
+logger.configure(options: logger.options.copyWith(useHistory: false));
+```
+Stream subscribers still receive real-time events.
+
+### Filter Example
+```dart
+class WarningsAndAbove implements ISpectifyFilter {
+  @override
+  bool apply(ISpectifyData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
+}
+final logger = ISpectify(filter: WarningsAndAbove());
+```
+
+For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectify README.
+
 ## Internationalization
 - Bundled locales: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
 - Extend via ISpectLocalizations delegate override
