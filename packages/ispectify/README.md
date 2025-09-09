@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectify serves as the logging foundation for the ISpect ecosystem:
+
+| Component | Description |
+|-----------|-----------|
+| **Core Logger** | Based on Talker with enhanced features |
+| **Log Filtering** | Advanced filtering and search capabilities |
+| **Performance Tracking** | Built-in performance monitoring |
+| **Export System** | Log export and analysis tools |
+| **Integration Layer** | Seamless integration with ISpect toolkit |
+
 ## Overview
 
 > **ISpectify** is the foundation logging system that powers the ISpect debugging toolkit.
@@ -301,18 +313,6 @@ Prefer key-based masking (e.g. 'authorization', 'token', 'apiKey'). Avoid hardco
 ## Examples
 
 See the [example/](example/) directory for usage examples and integration patterns.
-
-## 🏗️ Architecture
-
-ISpectify serves as the logging foundation for the ISpect ecosystem:
-
-| Component | Description |
-|-----------|-----------|
-| **Core Logger** | Based on Talker with enhanced features |
-| **Log Filtering** | Advanced filtering and search capabilities |
-| **Performance Tracking** | Built-in performance monitoring |
-| **Export System** | Log export and analysis tools |
-| **Integration Layer** | Seamless integration with ISpect toolkit |
 
 ## 🤝 Contributing
 

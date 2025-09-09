@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectJira integrates with Atlassian Jira Cloud through REST API:
+
+| Component | Description |
+|-----------|-----------|
+| **ISpectJiraClient** | Singleton client managing Jira API communication |
+| **JiraFeedbackBuilder** | Custom feedback widget with Jira integration |
+| **JiraAuthScreen** | Authentication and project selection interface |
+| **JiraSendIssueScreen** | Complete issue creation with attachments |
+| **Screenshot Capture** | Automatic screenshot attachment system |
+
 ## Overview
 
 > **ISpect Jira** integrates the ISpect debugging toolkit with Jira for automated ticket creation.
@@ -394,18 +406,6 @@ See the [example/](example/) directory for integration examples including:
 - Custom ticket templates
 - Multiple environment configuration
 - Authentication scenarios
-
-## 🏗️ Architecture
-
-ISpectJira integrates with Atlassian Jira Cloud through REST API:
-
-| Component | Description |
-|-----------|-----------|
-| **ISpectJiraClient** | Singleton client managing Jira API communication |
-| **JiraFeedbackBuilder** | Custom feedback widget with Jira integration |
-| **JiraAuthScreen** | Authentication and project selection interface |
-| **JiraSendIssueScreen** | Complete issue creation with attachments |
-| **Screenshot Capture** | Automatic screenshot attachment system |
 
 ## 🤝 Contributing
 

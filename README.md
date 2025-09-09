@@ -29,26 +29,6 @@
 
 Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
 
-## Overview
-
-> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
-
-ISpect provides comprehensive debugging capabilities for Flutter applications, including network monitoring, performance tracking, and UI inspection tools.
-
-### Key Features
-
-- Network Monitoring: Detailed HTTP request/response inspection with error tracking
-- Logging: Advanced logging system with categorization and filtering
-- Performance Analysis: Real-time performance metrics and monitoring
-- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
-- Device Information: System and app metadata collection
-- Bug Reporting: Integrated feedback system with screenshot capture
-- Cache Management: Application cache inspection and management
-
-## Internationalization
-- Support for 12 languages: English, Russian, Kazakh, Chinese, Spanish, French, German, Portuguese, Arabic, Korean, Japanese, Hindi
-- Extensible localization system
-
 ## Interface Preview
 
 <div align="center">
@@ -66,6 +46,40 @@ ISpect provides comprehensive debugging capabilities for Flutter applications, i
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="160" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="160" />
 </div>
+
+## 🏗️ Architecture
+
+Modular packages. Include only what you use:
+
+| Package | Role | Version |
+|---------|------|---------|
+| [ispect](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect) | Core panel + inspectors | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) | Logging backbone | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP capture | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | http package capture | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
+| [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira issue export | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
+
+## Overview
+
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
+
+Provides network, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
+
+### Key Features
+
+- Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Logging: Advanced logging system with categorization and filtering
+- Performance Analysis: Real-time performance metrics and monitoring
+- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
+- Device Information: System and app metadata collection
+- Bug Reporting: Integrated feedback system with screenshot capture
+- Cache Management: Application cache inspection and management
+
+## Internationalization
+- Bundled locales: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
+- Extend via ISpectLocalizations delegate override
 
 ## Installation
 
@@ -646,20 +660,6 @@ Available log keys: `bloc-*`, `http-*`, `route`, `print`, `analytics`, `error`, 
 ## Examples
 
 Complete example applications are available in the [example/](example/) directory demonstrating core functionality.
-
-## 🏗️ Architecture
-
-ISpect is built as a modular system with specialized packages:
-
-| Package | Purpose | Version |
-|---------|---------|---------|
-| [ispect](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect) | Core debugging interface and tools | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
-| [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) | Foundation logging system (based on Talker) | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
-| [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
-| [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | Standard HTTP client integration | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
-| [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket connection monitoring | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
-| [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC state management integration | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
-| [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira ticket creation integration | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## 🤝 Contributing
 

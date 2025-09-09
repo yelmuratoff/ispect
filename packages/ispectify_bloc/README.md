@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectifyBloc integrates with the BLoC library through observers:
+
+| Component | Description |
+|-----------|-----------|
+| **BLoC Observer** | Captures all BLoC events and state changes |
+| **Event Logger** | Logs events with parameters and metadata |
+| **State Logger** | Logs state changes and transitions |
+| **Error Handler** | Captures and logs BLoC errors |
+| **Performance Tracker** | Measures state change performance |
+
 ## Overview
 
 > **ISpectify BLoC** integrates BLoC state management with the ISpectify logging system.
@@ -240,18 +252,6 @@ class CounterPage extends StatelessWidget {
 ## Examples
 
 See the [example/](example/) directory for complete integration examples with different BLoC patterns.
-
-## 🏗️ Architecture
-
-ISpectifyBloc integrates with the BLoC library through observers:
-
-| Component | Description |
-|-----------|-----------|
-| **BLoC Observer** | Captures all BLoC events and state changes |
-| **Event Logger** | Logs events with parameters and metadata |
-| **State Logger** | Logs state changes and transitions |
-| **Error Handler** | Captures and logs BLoC errors |
-| **Performance Tracker** | Measures state change performance |
 
 ## 🤝 Contributing
 

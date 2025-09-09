@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectifyWS integrates with the WebSocket client through interceptors:
+
+| Component | Description |
+|-----------|-----------|
+| **WS Interceptor** | Captures WebSocket connection events and messages |
+| **Message Logger** | Logs sent and received message details |
+| **Connection Logger** | Logs connection state and URL information |
+| **Error Handler** | Captures and logs WebSocket errors |
+| **Metrics Tracker** | Measures connection timing and message counts |
+
 ## Overview
 
 > **ISpectify WebSocket** integrates the ws package with the ISpectify logging system for WebSocket monitoring.
@@ -225,18 +237,6 @@ void _runWebSocketExample(WebSocketClient client, String url) {
 ## Examples
 
 See the [example/](example/) directory for complete integration examples with different WebSocket client configurations.
-
-## 🏗️ Architecture
-
-ISpectifyWS integrates with the WebSocket client through interceptors:
-
-| Component | Description |
-|-----------|-----------|
-| **WS Interceptor** | Captures WebSocket connection events and messages |
-| **Message Logger** | Logs sent and received message details |
-| **Connection Logger** | Logs connection state and URL information |
-| **Error Handler** | Captures and logs WebSocket errors |
-| **Metrics Tracker** | Measures connection timing and message counts |
 
 ## 🤝 Contributing
 

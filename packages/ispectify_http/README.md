@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectifyHttp integrates with the standard HTTP client through interceptors:
+
+| Component | Description |
+|-----------|-----------|
+| **HTTP Interceptor** | Captures HTTP requests and responses |
+| **Request Logger** | Logs request details (headers, body, params) |
+| **Response Logger** | Logs response data and timing |
+| **Error Handler** | Captures and logs HTTP errors |
+| **Performance Tracker** | Measures request/response times |
+
 ## Overview
 
 > **ISpectify HTTP** integrates the http_interceptor package with the ISpectify logging system.
@@ -306,18 +318,6 @@ void setupHttpInterceptors(
 ## Examples
 
 See the [example/](example/) directory for complete integration examples with different HTTP client configurations.
-
-## 🏗️ Architecture
-
-ISpectifyHttp integrates with the standard HTTP client through interceptors:
-
-| Component | Description |
-|-----------|-----------|
-| **HTTP Interceptor** | Captures HTTP requests and responses |
-| **Request Logger** | Logs request details (headers, body, params) |
-| **Response Logger** | Logs response data and timing |
-| **Error Handler** | Captures and logs HTTP errors |
-| **Performance Tracker** | Measures request/response times |
 
 ## 🤝 Contributing
 

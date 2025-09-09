@@ -29,6 +29,12 @@
 
 {{tldr}}
 
+{{interface_preview}}
+
+## 🏗️ Architecture
+
+{{architecture_note}}
+
 ## Overview
 
 > **{{title}}** {{overview}}
@@ -38,6 +44,8 @@
 ### Key Features
 
 {{features}}
+
+{{internationalization_section}}
 
 {{custom_sections}}
 
@@ -76,10 +84,6 @@ dependencies:
 {{integration_guides}}
 
 {{examples_section}}
-
-## 🏗️ Architecture
-
-{{architecture_note}}
 
 ## 🤝 Contributing
 

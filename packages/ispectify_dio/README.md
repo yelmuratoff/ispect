@@ -27,6 +27,18 @@
 
 ## TL;DR
 
+## 🏗️ Architecture
+
+ISpectifyDio integrates with the Dio HTTP client through interceptors:
+
+| Component | Description |
+|-----------|-----------|
+| **Dio Interceptor** | Captures HTTP requests and responses |
+| **Request Logger** | Logs request details (headers, body, params) |
+| **Response Logger** | Logs response data and timing |
+| **Error Handler** | Captures and logs HTTP errors |
+| **Performance Tracker** | Measures request/response times |
+
 ## Overview
 
 > **ISpectify Dio** integrates the Dio HTTP client with the ISpectify logging system.
@@ -341,18 +353,6 @@ void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
 ## Examples
 
 See the [example/](example/) directory for complete integration examples with different Dio configurations.
-
-## 🏗️ Architecture
-
-ISpectifyDio integrates with the Dio HTTP client through interceptors:
-
-| Component | Description |
-|-----------|-----------|
-| **Dio Interceptor** | Captures HTTP requests and responses |
-| **Request Logger** | Logs request details (headers, body, params) |
-| **Response Logger** | Logs response data and timing |
-| **Error Handler** | Captures and logs HTTP errors |
-| **Performance Tracker** | Measures request/response times |
 
 ## 🤝 Contributing
 
