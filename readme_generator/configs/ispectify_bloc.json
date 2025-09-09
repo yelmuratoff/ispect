@@ -2,6 +2,7 @@
    "package_name": "ispectify_bloc",
    "title": "ISpectify BLoC",
    "description": "BLoC state management integration for ISpectify logging system",
+   "tldr": "Observe BLoC/Cubit events, transitions, states with selective filtering.",
    "overview": "integrates BLoC state management with the ISpectify logging system.",
    "features": [
       "State Change Logging: Automatic logging of all BLoC state changes",

@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Capture Dio HTTP traffic with structured request/response/error logging.
+
 ## 🏗️ Architecture
 
 ISpectifyDio integrates with the Dio HTTP client through interceptors:
@@ -142,7 +144,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.5
+  ispectify_dio: ^4.3.6
 ```
 
 ## Security & Production Guidelines

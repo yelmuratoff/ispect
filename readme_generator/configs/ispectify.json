@@ -2,6 +2,7 @@
    "package_name": "ispectify",
    "title": "ISpectify",
    "description": "Foundation logging system for ISpect toolkit (based on Talker)",
+   "tldr": "Logging backbone: structured logs, filtering, history, export, redaction.",
    "overview": "is the foundation logging system that powers the ISpect debugging toolkit.",
    "features": [
       "Structured Logging: Advanced logging with categorization and filtering",

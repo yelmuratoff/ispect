@@ -37,3 +37,8 @@ You can also run the checks manually:
 # Bump version (patch, minor, major, dev, or specific version)
 ./bash/bump_version.sh patch
 ```
+
+## For me:
+```
+./bash/update_changelog.sh && ./bash/update_versions.sh && ./bash/update_readme.sh generate all
+```

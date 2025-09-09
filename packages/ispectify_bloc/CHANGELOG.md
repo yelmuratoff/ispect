@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.3.5
+## 4.3.6
 - Documentation updates
 
 ## 4.3.4

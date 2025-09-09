@@ -2,6 +2,7 @@
    "package_name": "ispect_jira",
    "title": "ISpect Jira",
    "description": "Jira ticket creation integration for ISpect debugging toolkit",
+   "tldr": "Create Jira issues from in‑app debug panel with logs, screenshot, context.",
    "overview": "integrates the ISpect debugging toolkit with Jira for automated ticket creation.",
    "features": [
       "Automated Ticket Creation: Create Jira tickets directly from the debugging interface",

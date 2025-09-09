@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Track WebSocket connects, messages, errors, metrics with optional redaction.
+
 ## 🏗️ Architecture
 
 ISpectifyWS integrates with the WebSocket client through interceptors:
@@ -138,7 +140,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.5
+  ispectify_ws: ^4.3.6
 ```
 
 ## Security & Production Guidelines

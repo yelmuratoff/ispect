@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Monitor standard HTTP client requests/responses with redaction & timing.
+
 ## 🏗️ Architecture
 
 ISpectifyHttp integrates with the standard HTTP client through interceptors:
@@ -126,7 +128,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.5
+  ispectify_http: ^4.3.6
 ```
 
 ## Security & Production Guidelines

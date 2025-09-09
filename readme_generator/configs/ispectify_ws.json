@@ -2,6 +2,7 @@
    "package_name": "ispectify_ws",
    "title": "ISpectify WebSocket",
    "description": "WebSocket interceptor integration for ISpectify logging system using ws package",
+   "tldr": "Track WebSocket connects, messages, errors, metrics with optional redaction.",
    "overview": "integrates the ws package with the ISpectify logging system for WebSocket monitoring.",
    "features": [
       "WebSocket Connection Logging: Automatic logging of all WebSocket connections",

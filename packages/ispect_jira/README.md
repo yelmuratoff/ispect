@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Create Jira issues from in‑app debug panel with logs, screenshot, context.
+
 ## 🏗️ Architecture
 
 ISpectJira integrates with Atlassian Jira Cloud through REST API:
@@ -169,7 +171,7 @@ Add ispect_jira to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect_jira: ^4.3.5
+  ispect_jira: ^4.3.6
 ```
 
 ## Security & Production Guidelines

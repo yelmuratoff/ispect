@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Observe BLoC/Cubit events, transitions, states with selective filtering.
+
 ## 🏗️ Architecture
 
 ISpectifyBloc integrates with the BLoC library through observers:
@@ -132,7 +134,7 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.5
+  ispectify_bloc: ^4.3.6
 ```
 
 ## Security & Production Guidelines

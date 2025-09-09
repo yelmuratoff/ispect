@@ -27,6 +27,8 @@
 
 ## TL;DR
 
+Logging backbone: structured logs, filtering, history, export, redaction.
+
 ## 🏗️ Architecture
 
 ISpectify serves as the logging foundation for the ISpect ecosystem:
@@ -265,7 +267,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.3.5
+  ispectify: ^4.3.6
 ```
 
 ## Security & Production Guidelines
