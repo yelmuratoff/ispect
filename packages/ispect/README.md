@@ -216,9 +216,7 @@ class MyApp extends StatelessWidget {
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              if (kEnableISpect) {
-                ISpect.logger.info('Button pressed!');
-              }
+  ISpect.logger.info('Button pressed!');
             },
             child: const Text('Press me'),
           ),
