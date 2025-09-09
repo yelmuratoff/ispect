@@ -1,12 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ./bash/update_readme.sh generate all
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+set -euo pipefail
+IFS=$'\n\t'
+
+# Colors (fallback if no TTY)
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+else
+    RED=''; GREEN=''; YELLOW=''; BLUE=''; NC=''
+fi
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,8 +31,9 @@ show_usage() {
     echo "Usage: $0 [COMMAND] [PACKAGE_NAME]"
     echo ""
     echo "Commands:"
-    echo "  generate [package_name]  Generate README for specific package"
-    echo "  generate all            Generate README for all packages"
+    echo "  generate [package]      Generate README for specific package"
+    echo "  generate all|--all      Generate README for all packages"
+    echo "  dry-run                 Validate all configs only (no generation)"
     echo "  list                    List available packages"
     echo "  validate [package_name] Validate package configuration"
     echo "  help                    Show this help message"
@@ -128,35 +136,43 @@ check_dependencies() {
 # Main script logic
 main() {
     check_dependencies
-    
-    case "${1:-help}" in
-        "generate")
-            if [ -z "$2" ]; then
-                echo -e "${RED}❌ Package name required${NC}"
-                echo "Usage: $0 generate <package_name|all>"
-                exit 1
+    local cmd="${1:-help}"
+    case "$cmd" in
+        generate)
+            if [ -z "${2:-}" ]; then
+                echo -e "${RED}❌ Package name required${NC}"; echo "Usage: $0 generate <package_name|all>"; exit 1
             fi
-            generate_readme "$2"
-            ;;
-        "list")
-            list_packages
-            ;;
-        "validate")
-            if [ -z "$2" ]; then
-                echo -e "${RED}❌ Package name required${NC}"
-                echo "Usage: $0 validate <package_name>"
-                exit 1
+            # support aliases
+            if [[ "$2" == "--all" ]]; then
+                generate_readme all
+            else
+                generate_readme "$2"
             fi
-            validate_package "$2"
             ;;
-        "help"|"-h"|"--help")
-            show_usage
-            ;;
+        list)
+            list_packages ;;
+        validate)
+            if [ -z "${2:-}" ]; then
+                echo -e "${RED}❌ Package name required${NC}"; echo "Usage: $0 validate <package_name>"; exit 1
+            fi
+            validate_package "$2" ;;
+        dry-run)
+            echo -e "${BLUE}Validating all package configs (dry-run)...${NC}"
+            local failed=0
+            for config in "$CONFIGS_DIR"/*.json; do
+                pkg=$(basename "$config" .json)
+                if ! validate_package "$pkg"; then
+                    failed=1
+                fi
+            done
+            if [[ $failed -eq 1 ]]; then
+                echo -e "${RED}❌ One or more configs invalid${NC}"; exit 2
+            fi
+            echo -e "${GREEN}✅ All configs valid${NC}"; exit 0 ;;
+        help|-h|--help)
+            show_usage ;;
         *)
-            echo -e "${RED}❌ Unknown command: $1${NC}"
-            show_usage
-            exit 1
-            ;;
+            echo -e "${RED}❌ Unknown command: $cmd${NC}"; show_usage; exit 1 ;;
     esac
 }
 
