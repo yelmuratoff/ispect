@@ -126,7 +126,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.4
+  ispectify_http: ^4.3.5
 ```
 
 ## Security & Production Guidelines

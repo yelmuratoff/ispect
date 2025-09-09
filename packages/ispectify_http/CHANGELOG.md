@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.5
+- Documentation updates
+
 ## 4.3.4
 
 ### Architecture Refactoring
