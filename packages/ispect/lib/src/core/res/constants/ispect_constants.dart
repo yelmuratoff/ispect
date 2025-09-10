@@ -17,20 +17,20 @@ final class ISpectConstants {
   static const typeIcons = {
     /// Base logs section
     'error': Icons.error_outline_rounded,
-    'critical': Icons.error_outline_rounded,
+    'critical': Icons.new_releases_rounded,
     'info': Icons.info_outline_rounded,
     'debug': Icons.bug_report_outlined,
-    'verbose': Icons.bug_report_outlined,
+    'verbose': Icons.subject,
     'warning': Icons.warning_amber_rounded,
-    'exception': Icons.error_outline_rounded,
+    'exception': Icons.report_rounded,
     'good': Icons.check_circle_outline_rounded,
     'print': Icons.print_outlined,
-    'analytics': Icons.track_changes_rounded,
+    'analytics': Icons.insights,
 
     /// Http section
     'http-error': Icons.http_rounded,
-    'http-request': Icons.http_rounded,
-    'http-response': Icons.http_rounded,
+    'http-request': Icons.call_made_rounded,
+    'http-response': Icons.call_received_rounded,
 
     /// Bloc section
     'bloc-event': Icons.event_note_rounded,
@@ -67,8 +67,8 @@ final class ISpectConstants {
 
     /// Http section
     'http-error': Color.fromARGB(255, 192, 38, 38),
-    'http-request': Color.fromARGB(255, 162, 0, 190),
-    'http-response': Color.fromARGB(255, 0, 158, 66),
+    'http-request': Color(0xFF9C27B0),
+    'http-response': Color(0xFF00C853),
 
     /// Bloc section
     'bloc-event': Color.fromARGB(255, 25, 118, 210),
@@ -224,10 +224,9 @@ final class ISpectConstants {
         key: 'route',
         description: l10n.routeLogDesc,
       ),
-      const LogDescription(key: 'ws-sent', description: 'l10n.wsSentLogDesc'),
+      const LogDescription(key: 'ws-sent'),
       const LogDescription(
         key: 'ws-received',
-        description: 'l10n.wsReceivedLogDesc',
       ),
     ];
   }

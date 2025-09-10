@@ -34,7 +34,7 @@ final Map<String, AnsiPen> _defaultColors = {
   ISpectifyLogType.warning.key: AnsiPen()..xterm(172),
   ISpectifyLogType.verbose.key: AnsiPen()..xterm(08),
   ISpectifyLogType.info.key: AnsiPen()..blue(),
-  ISpectifyLogType.debug.key: AnsiPen()..blue(),
+  ISpectifyLogType.debug.key: AnsiPen()..gray(),
   ISpectifyLogType.error.key: AnsiPen()..red(),
   ISpectifyLogType.exception.key: AnsiPen()..red(),
   ISpectifyLogType.httpError.key: AnsiPen()..red(),
