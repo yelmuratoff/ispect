@@ -1,5 +1,5 @@
 name: ispectify_bloc
-description: An additional package for BLoC (logging and handling).
+description: BLoC state management integration for ISpect toolkit
 version: 4.3.6
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues

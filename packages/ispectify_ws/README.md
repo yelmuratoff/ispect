@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>WebSocket interceptor integration for ISpectify logging system using ws package</strong></p>
+  <p><strong>WebSocket interceptor integration for ISpect toolkit using ws package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_ws">

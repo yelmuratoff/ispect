@@ -1,5 +1,5 @@
 name: ispect
-description: "Logging and inspection tool for development and testing. ISpect provides an intuitive interface that makes debugging efficient and insightful."
+description: Logging and inspector tool for Flutter development and testing
 version: 4.3.6
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues

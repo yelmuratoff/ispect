@@ -1,5 +1,5 @@
 name: ispectify_dio
-description: An additional package for Dio (logging and handling).
+description: Dio HTTP client integration for ISpect toolkit
 version: 4.3.6
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues

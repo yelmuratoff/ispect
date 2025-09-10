@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Dio HTTP client integration for ISpectify logging system</strong></p>
+  <p><strong>Dio HTTP client integration for ISpect toolkit</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_dio">
