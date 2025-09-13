@@ -188,6 +188,7 @@ class ISpectify {
   void log(
     Object? message, {
     LogLevel logLevel = LogLevel.debug,
+    ISpectifyLogType? type,
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
@@ -198,6 +199,7 @@ class ISpectify {
       stackTrace: stackTrace,
       logLevel: logLevel,
       pen: pen,
+      type: type,
     );
   }
 
@@ -225,6 +227,7 @@ class ISpectify {
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.critical,
+      type: ISpectifyLogType.critical,
     );
   }
 
@@ -240,6 +243,8 @@ class ISpectify {
   ) {
     _handleLog(
       message: msg,
+      logLevel: LogLevel.debug,
+      type: ISpectifyLogType.debug,
     );
   }
 
@@ -260,6 +265,7 @@ class ISpectify {
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.error,
+      type: ISpectifyLogType.error,
     );
   }
 
@@ -276,6 +282,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.info,
+      type: ISpectifyLogType.info,
     );
   }
 
@@ -292,6 +299,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.verbose,
+      type: ISpectifyLogType.verbose,
     );
   }
 
@@ -308,6 +316,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.warning,
+      type: ISpectifyLogType.warning,
     );
   }
 
@@ -380,17 +389,18 @@ class ISpectify {
     Object? message,
     Object? exception,
     StackTrace? stackTrace,
+    ISpectifyLogType? type,
     LogLevel? logLevel,
     AnsiPen? pen,
   }) {
-    final type = ISpectifyLogType.fromLogLevel(logLevel);
+    final logType = type ?? ISpectifyLogType.fromLogLevel(logLevel);
     final data = ISpectifyData(
-      key: type.key,
+      key: logType.key,
       message?.toString() ?? '',
-      title: _options.titleByKey(type.key),
+      title: _options.titleByKey(logType.key),
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? _options.penByKey(type.key),
+      pen: pen ?? _options.penByKey(logType.key),
       logLevel: logLevel,
     );
     _processLog(data);
