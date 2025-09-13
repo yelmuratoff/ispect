@@ -15,22 +15,16 @@ import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 import 'package:ws/ws.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ispect_example/src/riverpod/riverpod_logging.dart';
+import 'package:ispect_example/src/ui/cards/parameters_card.dart';
+import 'package:ispect_example/src/ui/cards/network_card.dart';
+import 'package:ispect_example/src/ui/cards/logging_card.dart';
+import 'package:ispect_example/src/ui/cards/state_management_card.dart';
+import 'package:ispect_example/src/ui/cards/error_card.dart';
+import 'package:ispect_example/src/ui/cards/stream_card.dart';
 
-extension on _HomeState {
-  CheckboxListTile buildCheckbox({
-    required String label,
-    required bool value,
-    required ValueChanged<bool?> onChanged,
-  }) {
-    return CheckboxListTile(
-      title: Text(label),
-      value: value,
-      onChanged: onChanged,
-      dense: true,
-      controlAffinity: ListTileControlAffinity.leading,
-    );
-  }
-}
+// helpers moved into card widgets
 
 final Dio dio = Dio(
   BaseOptions(
@@ -58,8 +52,11 @@ void main() {
 
   ISpect.run(
     () => runApp(
-      ThemeProvider(
-        child: App(logger: logger),
+      ProviderScope(
+        observers: [ISpectRiverpodObserver()],
+        child: ThemeProvider(
+          child: App(logger: logger),
+        ),
       ),
     ),
     logger: logger,
@@ -222,6 +219,9 @@ class _HomeState extends State<_Home> {
   bool _enableAnalytics = false;
   bool _enableBlocEvents = false;
   bool _enableRoutes = false;
+  bool _enableRiverpod = false;
+  bool _httpSendSuccess = true;
+  bool _httpSendErrors = true;
 
   // Advanced controls
   String _httpMethod = 'GET';
@@ -231,10 +231,16 @@ class _HomeState extends State<_Home> {
   bool _randomize = false;
   String _preset = 'Custom';
 
+  // Stream mode
+  bool _streamMode = false;
+  Timer? _streamTimer;
+  int _streamIntervalMs = 1000;
+
   @override
   void dispose() {
     _testBloc.close();
     _counterBloc.close();
+    _stopStream();
     super.dispose();
   }
 
@@ -277,6 +283,35 @@ class _HomeState extends State<_Home> {
     if (_enableRoutes) {
       _generateRoutes();
     }
+    unawaited(delay());
+    if (_enableRiverpod) {
+      _generateRiverpod();
+    }
+  }
+
+  void _toggleStream(bool enabled) {
+    setState(() {
+      _streamMode = enabled;
+    });
+    if (enabled) {
+      _startStream();
+    } else {
+      _stopStream();
+    }
+  }
+
+  void _startStream() {
+    _streamTimer?.cancel();
+    _streamTimer =
+        Timer.periodic(Duration(milliseconds: _streamIntervalMs), (timer) {
+      if (!mounted) return;
+      _executeActions();
+    });
+  }
+
+  void _stopStream() {
+    _streamTimer?.cancel();
+    _streamTimer = null;
   }
 
   void _generateLogs() {
@@ -295,11 +330,7 @@ class _HomeState extends State<_Home> {
       event: 'open',
       parameters: {'source': 'all-logs', 'time': now},
     );
-    try {
-      throw StateError('Synthetic error for demo');
-    } catch (e, st) {
-      ISpect.logger.handle(exception: e, stackTrace: st);
-    }
+    // Riverpod logs are generated via _generateRiverpod when enabled
 
     // Trigger real HTTP request/response and error to cover http log types
     final id = (_randomize ? (now.hashCode % 10) + 1 : 1);
@@ -309,9 +340,13 @@ class _HomeState extends State<_Home> {
       if (_useAuthHeader) 'Authorization': 'Bearer demo-token',
     };
     dio.options.headers.addAll(headers);
-    dio.get<dynamic>(successPath);
-    dio.get<dynamic>(errorPath).catchError(
-        (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+    if (_httpSendSuccess) {
+      dio.get<dynamic>(successPath);
+    }
+    if (_httpSendErrors) {
+      dio.get<dynamic>(errorPath).catchError(
+          (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+    }
     dio.options.headers.remove('Authorization');
 
     // Temporary Bloc to trigger create/event/transition/close/state logs
@@ -320,18 +355,37 @@ class _HomeState extends State<_Home> {
     tempBloc.add(const Decrement());
     Timer(const Duration(milliseconds: 2), () => tempBloc.close());
 
-    // Riverpod-like logs (synthetic, since riverpod isn't wired here)
-    ISpect.logger.log('riverpod add', type: ISpectifyLogType.riverpodAdd);
-    ISpect.logger.log('riverpod update', type: ISpectifyLogType.riverpodUpdate);
-    ISpect.logger
-        .log('riverpod dispose', type: ISpectifyLogType.riverpodDispose);
-    ISpect.logger.log('riverpod fail', type: ISpectifyLogType.riverpodFail);
+    // Riverpod real logs as part of all logs
+    _generateRiverpod();
+
     for (int i = 0; i < _itemCount; i++) {
       ISpect.logger.verbose('Item $i: random=${_randomize && i % 3 == 0}');
       if (_loopDelayMs > 0) {
         unawaited(Future<void>.delayed(Duration(milliseconds: _loopDelayMs)));
       }
     }
+  }
+
+  void _generateRiverpod() {
+    final container = ProviderContainer(observers: [ISpectRiverpodObserver()]);
+    for (int i = 0; i < _itemCount; i++) {
+      container.read(counterProvider.notifier).state++;
+      container.read(counterNotifierProvider.notifier).increment();
+      // Read to produce update
+      // ignore: unused_local_variable
+      final _ = container.read(counterProvider);
+      container.read(counterNotifierProvider);
+      // Trigger failing future
+      unawaited(
+        container
+            .read(failingFutureProvider.future)
+            .catchError((e, st) => 'failed'),
+      );
+      if (_loopDelayMs > 0) {
+        unawaited(Future<void>.delayed(Duration(milliseconds: _loopDelayMs)));
+      }
+    }
+    container.dispose();
   }
 
   void _generateHttpRequests() {
@@ -345,24 +399,40 @@ class _HomeState extends State<_Home> {
       dio.options.headers.addAll(headers);
       switch (_httpMethod) {
         case 'GET':
-          dio.get<dynamic>(successPath);
-          dio.get<dynamic>(errorPath).catchError(
-              (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+          if (_httpSendSuccess) {
+            dio.get<dynamic>(successPath);
+          }
+          if (_httpSendErrors) {
+            dio.get<dynamic>(errorPath).catchError((e) =>
+                Response(requestOptions: RequestOptions(path: errorPath)));
+          }
           break;
         case 'POST':
-          dio.post<dynamic>(successPath, data: _mockBody(i));
-          dio.post<dynamic>(errorPath, data: _mockBody(i)).catchError(
-              (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+          if (_httpSendSuccess) {
+            dio.post<dynamic>(successPath, data: _mockBody(i));
+          }
+          if (_httpSendErrors) {
+            dio.post<dynamic>(errorPath, data: _mockBody(i)).catchError((e) =>
+                Response(requestOptions: RequestOptions(path: errorPath)));
+          }
           break;
         case 'PUT':
-          dio.put<dynamic>(successPath, data: _mockBody(i));
-          dio.put<dynamic>(errorPath, data: _mockBody(i)).catchError(
-              (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+          if (_httpSendSuccess) {
+            dio.put<dynamic>(successPath, data: _mockBody(i));
+          }
+          if (_httpSendErrors) {
+            dio.put<dynamic>(errorPath, data: _mockBody(i)).catchError((e) =>
+                Response(requestOptions: RequestOptions(path: errorPath)));
+          }
           break;
         case 'DELETE':
-          dio.delete<dynamic>(successPath);
-          dio.delete<dynamic>(errorPath).catchError(
-              (e) => Response(requestOptions: RequestOptions(path: errorPath)));
+          if (_httpSendSuccess) {
+            dio.delete<dynamic>(successPath);
+          }
+          if (_httpSendErrors) {
+            dio.delete<dynamic>(errorPath).catchError((e) =>
+                Response(requestOptions: RequestOptions(path: errorPath)));
+          }
           break;
       }
       if (_loopDelayMs > 0) {
@@ -532,123 +602,85 @@ class _HomeState extends State<_Home> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildParameterControls(),
+            ParametersCard(
+              requestCount: _requestCount,
+              itemCount: _itemCount,
+              nestingDepth: _nestingDepth,
+              payloadSize: _payloadSize,
+              wsMessageSize: _wsMessageSize,
+              loopDelayMs: _loopDelayMs,
+              httpMethod: _httpMethod,
+              preset: _preset,
+              useAuthHeader: _useAuthHeader,
+              randomize: _randomize,
+              onRequestCountChanged: (v) => setState(() => _requestCount = v),
+              onItemCountChanged: (v) => setState(() => _itemCount = v),
+              onNestingDepthChanged: (v) => setState(() => _nestingDepth = v),
+              onPayloadSizeChanged: (v) => setState(() => _payloadSize = v),
+              onWsMessageSizeChanged: (v) => setState(() => _wsMessageSize = v),
+              onLoopDelayMsChanged: (v) => setState(() => _loopDelayMs = v),
+              onHttpMethodChanged: (v) => setState(() => _httpMethod = v),
+              onPresetChanged: (v) => setState(() {
+                _preset = v;
+                _applyPreset(_preset);
+              }),
+              onUseAuthHeaderChanged: (v) => setState(() => _useAuthHeader = v),
+              onRandomizeChanged: (v) => setState(() => _randomize = v),
+            ),
             const SizedBox(height: 24),
-            _buildActionControls(),
+            NetworkCard(
+              enableHttp: _enableHttp,
+              httpSendSuccess: _httpSendSuccess,
+              httpSendErrors: _httpSendErrors,
+              enableWs: _enableWs,
+              enableFileUploads: _enableFileUploads,
+              onEnableHttpChanged: (v) => setState(() => _enableHttp = v),
+              onHttpSendSuccessChanged: (v) =>
+                  setState(() => _httpSendSuccess = v),
+              onHttpSendErrorsChanged: (v) =>
+                  setState(() => _httpSendErrors = v),
+              onEnableWsChanged: (v) => setState(() => _enableWs = v),
+              onEnableFileUploadsChanged: (v) =>
+                  setState(() => _enableFileUploads = v),
+            ),
+            const SizedBox(height: 16),
+            LoggingCard(
+              enableLogging: _enableLogging,
+              enableAnalytics: _enableAnalytics,
+              enableRoutes: _enableRoutes,
+              onEnableLoggingChanged: (v) => setState(() => _enableLogging = v),
+              onEnableAnalyticsChanged: (v) =>
+                  setState(() => _enableAnalytics = v),
+              onEnableRoutesChanged: (v) => setState(() => _enableRoutes = v),
+            ),
+            const SizedBox(height: 16),
+            StateManagementCard(
+              enableBlocEvents: _enableBlocEvents,
+              enableRiverpod: _enableRiverpod,
+              onEnableBlocEventsChanged: (v) =>
+                  setState(() => _enableBlocEvents = v),
+              onEnableRiverpodChanged: (v) =>
+                  setState(() => _enableRiverpod = v),
+            ),
+            const SizedBox(height: 16),
+            ErrorCard(
+              enableExceptions: _enableExceptions,
+              onEnableExceptionsChanged: (v) =>
+                  setState(() => _enableExceptions = v),
+            ),
             const SizedBox(height: 24),
             _buildActionButtons(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildParameterControls() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Parameters',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
             const SizedBox(height: 16),
-            _buildSlider(
-              label: 'Request Count',
-              value: _requestCount.toDouble(),
-              min: 1,
-              max: 10,
-              onChanged: (value) =>
-                  setState(() => _requestCount = value.toInt()),
-            ),
-            _buildSlider(
-              label: 'Item Count',
-              value: _itemCount.toDouble(),
-              min: 10,
-              max: 1000,
-              onChanged: (value) => setState(() => _itemCount = value.toInt()),
-            ),
-            _buildSlider(
-              label: 'Nesting Depth',
-              value: _nestingDepth.toDouble(),
-              min: 1,
-              max: 10,
-              onChanged: (value) =>
-                  setState(() => _nestingDepth = value.toInt()),
-            ),
-            _buildSlider(
-              label: 'HTTP Payload Size',
-              value: _payloadSize.toDouble(),
-              min: 0,
-              max: 512,
-              onChanged: (value) =>
-                  setState(() => _payloadSize = value.toInt()),
-            ),
-            _buildSlider(
-              label: 'WS Message Size',
-              value: _wsMessageSize.toDouble(),
-              min: 4,
-              max: 128,
-              onChanged: (value) =>
-                  setState(() => _wsMessageSize = value.toInt()),
-            ),
-            _buildSlider(
-              label: 'Delay per Iteration (ms)',
-              value: _loopDelayMs.toDouble(),
-              min: 0,
-              max: 500,
-              onChanged: (value) =>
-                  setState(() => _loopDelayMs = value.toInt()),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _httpMethod,
-                    decoration: const InputDecoration(labelText: 'HTTP Method'),
-                    items: const [
-                      DropdownMenuItem(value: 'GET', child: Text('GET')),
-                      DropdownMenuItem(value: 'POST', child: Text('POST')),
-                      DropdownMenuItem(value: 'PUT', child: Text('PUT')),
-                      DropdownMenuItem(value: 'DELETE', child: Text('DELETE')),
-                    ],
-                    onChanged: (v) => setState(() => _httpMethod = v ?? 'GET'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _preset,
-                    decoration: const InputDecoration(labelText: 'Preset'),
-                    items: const [
-                      DropdownMenuItem(value: 'Custom', child: Text('Custom')),
-                      DropdownMenuItem(value: 'Light', child: Text('Light')),
-                      DropdownMenuItem(value: 'Stress', child: Text('Stress')),
-                      DropdownMenuItem(
-                          value: 'Network', child: Text('Network')),
-                    ],
-                    onChanged: (v) => setState(() {
-                      _preset = v ?? 'Custom';
-                      _applyPreset(_preset);
-                    }),
-                  ),
-                ),
-              ],
-            ),
-            SwitchListTile(
-              value: _useAuthHeader,
-              onChanged: (v) => setState(() => _useAuthHeader = v),
-              title: const Text('Use Authorization Header'),
-              dense: true,
-            ),
-            SwitchListTile(
-              value: _randomize,
-              onChanged: (v) => setState(() => _randomize = v),
-              title: const Text('Randomize Values'),
-              dense: true,
+            StreamCard(
+              streamMode: _streamMode,
+              intervalMs: _streamIntervalMs,
+              onStreamModeChanged: (v) => _toggleStream(v),
+              onIntervalChanged: (v) {
+                setState(() => _streamIntervalMs = v);
+                if (_streamMode) {
+                  _startStream();
+                }
+              },
             ),
           ],
         ),
@@ -656,98 +688,9 @@ class _HomeState extends State<_Home> {
     );
   }
 
-  Widget _buildActionControls() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Actions',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            _buildActionGroup(
-              title: 'Network',
-              icon: Icons.wifi,
-              children: [
-                buildCheckbox(
-                  label: 'HTTP Requests',
-                  value: _enableHttp,
-                  onChanged: (value) =>
-                      setState(() => _enableHttp = value ?? false),
-                ),
-                buildCheckbox(
-                  label: 'WebSocket',
-                  value: _enableWs,
-                  onChanged: (value) =>
-                      setState(() => _enableWs = value ?? false),
-                ),
-                buildCheckbox(
-                  label: 'File Uploads',
-                  value: _enableFileUploads,
-                  onChanged: (value) =>
-                      setState(() => _enableFileUploads = value ?? false),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildActionGroup(
-              title: 'Logging',
-              icon: Icons.bug_report,
-              children: [
-                buildCheckbox(
-                  label: 'All Log Types',
-                  value: _enableLogging,
-                  onChanged: (value) =>
-                      setState(() => _enableLogging = value ?? false),
-                ),
-                buildCheckbox(
-                  label: 'Analytics',
-                  value: _enableAnalytics,
-                  onChanged: (value) =>
-                      setState(() => _enableAnalytics = value ?? false),
-                ),
-                buildCheckbox(
-                  label: 'Routes',
-                  value: _enableRoutes,
-                  onChanged: (value) =>
-                      setState(() => _enableRoutes = value ?? false),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildActionGroup(
-              title: 'State Management',
-              icon: Icons.memory,
-              children: [
-                buildCheckbox(
-                  label: 'Bloc Events',
-                  value: _enableBlocEvents,
-                  onChanged: (value) =>
-                      setState(() => _enableBlocEvents = value ?? false),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildActionGroup(
-              title: 'Errors',
-              icon: Icons.error,
-              children: [
-                buildCheckbox(
-                  label: 'Exceptions',
-                  value: _enableExceptions,
-                  onChanged: (value) =>
-                      setState(() => _enableExceptions = value ?? false),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Replaced by ParametersCard
+
+  // Replaced by NetworkCard/LoggingCard/StateManagementCard/ErrorCard
 
   Widget _buildActionButtons() {
     return Column(
@@ -823,8 +766,11 @@ class _HomeState extends State<_Home> {
       _enableAnalytics = false;
       _enableBlocEvents = false;
       _enableRoutes = false;
+      _enableRiverpod = false;
       _httpMethod = 'GET';
       _useAuthHeader = false;
+      _httpSendSuccess = true;
+      _httpSendErrors = true;
       _wsMessageSize = 16;
       _loopDelayMs = 0;
       _randomize = false;
@@ -851,69 +797,9 @@ class _HomeState extends State<_Home> {
     );
   }
 
-  Widget _buildSlider({
-    required String label,
-    required double value,
-    required double min,
-    required double max,
-    required ValueChanged<double> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label),
-            Text(value.toInt().toString()),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: (max - min).toInt(),
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
+  // slider helper moved into ParametersCard
 
-  Widget _buildActionGroup({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
-    );
-  }
+  // Replaced by reusable card widgets
 
   void _applyPreset(String preset) {
     switch (preset) {
@@ -932,6 +818,8 @@ class _HomeState extends State<_Home> {
         _enableRoutes = true;
         _httpMethod = 'GET';
         _useAuthHeader = false;
+        _httpSendSuccess = true;
+        _httpSendErrors = false;
         _wsMessageSize = 8;
         _loopDelayMs = 0;
         _randomize = false;
@@ -951,6 +839,8 @@ class _HomeState extends State<_Home> {
         _enableRoutes = true;
         _httpMethod = 'POST';
         _useAuthHeader = true;
+        _httpSendSuccess = true;
+        _httpSendErrors = true;
         _wsMessageSize = 64;
         _loopDelayMs = 10;
         _randomize = true;
@@ -970,8 +860,32 @@ class _HomeState extends State<_Home> {
         _enableRoutes = false;
         _httpMethod = 'GET';
         _useAuthHeader = true;
+        _httpSendSuccess = true;
+        _httpSendErrors = true;
         _wsMessageSize = 32;
         _loopDelayMs = 0;
+        _randomize = true;
+        break;
+      case 'Full':
+        _requestCount = 5;
+        _itemCount = 200;
+        _nestingDepth = 4;
+        _payloadSize = 128;
+        _enableHttp = true;
+        _enableWs = true;
+        _enableLogging = true;
+        _enableExceptions = true;
+        _enableFileUploads = true;
+        _enableAnalytics = true;
+        _enableBlocEvents = true;
+        _enableRoutes = true;
+        _enableRiverpod = true;
+        _httpMethod = 'POST';
+        _useAuthHeader = true;
+        _httpSendSuccess = true;
+        _httpSendErrors = true;
+        _wsMessageSize = 32;
+        _loopDelayMs = 5;
         _randomize = true;
         break;
       default:
