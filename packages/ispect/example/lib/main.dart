@@ -8,6 +8,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
 import 'package:ispect_example/src/bloc/counter_bloc.dart';
+import 'package:ispect_example/src/theme_manager.dart';
 import 'package:ispect_example/src/ui/cards/parameters_card.dart';
 import 'package:ispect_example/src/ui/cards/network_card.dart';
 import 'package:ispect_example/src/ui/cards/logging_card.dart';
@@ -17,6 +18,25 @@ import 'package:ispect_example/src/ui/cards/stream_card.dart';
 import 'package:ispect_example/src/services/log_generation_service.dart';
 import 'package:ispect_example/src/riverpod/demo_settings_provider.dart';
 import 'package:ispect_example/src/riverpod/providers.dart';
+
+// Simple locale provider
+final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
+  return LocaleNotifier();
+});
+
+class LocaleNotifier extends StateNotifier<Locale> {
+  LocaleNotifier() : super(const Locale('en', 'US'));
+
+  void setLocale(Locale locale) {
+    state = locale;
+  }
+
+  void toggleLanguage() {
+    state = state.languageCode == 'en'
+        ? const Locale('ru', 'RU')
+        : const Locale('en', 'US');
+  }
+}
 
 final Dio dio = Dio(
   BaseOptions(
@@ -37,24 +57,29 @@ void main() {
   ISpect.run(
     logger: ISpectifyFlutter.init(),
     () => runApp(
-      ProviderScope(
-        child: const MyApp(),
+      ThemeProvider(
+        child: ProviderScope(
+          child: const MyApp(),
+        ),
       ),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ThemeProvider.themeMode(context);
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp(
       title: 'ISpect Demo',
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system,
-      locale: const Locale('en', 'US'),
+      themeMode: themeMode,
+      locale: locale,
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         ExampleGeneratedLocalization.delegate,
       ]),
@@ -77,11 +102,36 @@ class Home extends ConsumerWidget {
     final logService = ref.watch(logGenerationServiceProvider);
     final testCubit = ref.watch(testCubitProvider);
     final counterBloc = ref.watch(counterBlocProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('ISpect Demo'),
         actions: [
+          IconButton(
+            icon: Icon(
+              ThemeProvider.themeMode(context) == ThemeMode.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: () => ThemeProvider.toggleTheme(context),
+            tooltip: ThemeProvider.themeMode(context) == ThemeMode.dark
+                ? 'Switch to Light Mode'
+                : 'Switch to Dark Mode',
+          ),
+          IconButton(
+            icon: Text(
+              currentLocale.languageCode.toUpperCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => ref.read(localeProvider.notifier).toggleLanguage(),
+            tooltip: 'Toggle Language',
+          ),
+          IconButton(
+            icon: const Icon(Icons.language),
+            onPressed: () => _showLanguageDialog(context, ref),
+            tooltip: 'Change Language',
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => _showSettingsDialog(context, ref),
@@ -222,6 +272,44 @@ class Home extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('English'),
+              onTap: () {
+                ref
+                    .read(localeProvider.notifier)
+                    .setLocale(const Locale('en', 'US'));
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              title: const Text('Русский'),
+              onTap: () {
+                ref
+                    .read(localeProvider.notifier)
+                    .setLocale(const Locale('ru', 'RU'));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
         ],
       ),
