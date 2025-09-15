@@ -50,6 +50,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Icons.call_made_rounded,
     'ws-received': Icons.call_received_rounded,
+
+    /// Database
+    'db-query': Icons.storage_rounded,
+    'db-result': Icons.dataset_rounded,
+    'db-error': Icons.error_outline_rounded,
   };
 
   static const lightTypeColors = {
@@ -88,6 +93,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color.fromARGB(255, 162, 0, 190),
     'ws-received': Color.fromARGB(255, 0, 158, 66),
+
+    /// Database
+    'db-query': Color.fromARGB(255, 25, 118, 210),
+    'db-result': Color.fromARGB(255, 56, 142, 60),
+    'db-error': Color.fromARGB(255, 192, 38, 38),
   };
 
   static const darkTypeColors = {
@@ -126,6 +136,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color(0xFFF602C1),
     'ws-received': Color(0xFF26FF3C),
+
+    /// Database
+    'db-query': Color.fromARGB(255, 66, 165, 245),
+    'db-result': Color.fromARGB(255, 120, 230, 129),
+    'db-error': Color.fromARGB(255, 239, 83, 80),
   };
 
   /// Converts default log descriptions into a list of `LogDescription`.
@@ -228,6 +243,9 @@ final class ISpectConstants {
       const LogDescription(
         key: 'ws-received',
       ),
+      const LogDescription(key: 'db-query'),
+      const LogDescription(key: 'db-result'),
+      const LogDescription(key: 'db-error'),
     ];
   }
 }
