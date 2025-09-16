@@ -42,3 +42,4 @@ build/
 packages/ispect_jira/example/ios/Podfile.lock
 
 packages/ispect/example/macos/Podfile.lock
+packages/ispectify_db/example/pubspec.lock
