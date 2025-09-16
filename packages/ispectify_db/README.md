@@ -1,34 +1,136 @@
-# ispectify_db
+<div align="center">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
+  
+  <p><strong>Passive database logging utilities for the ISpect toolkit. Keep your DB calls as-is and simply log intents, timings, and results. Works with SQL and key-value stores (sqflite, drift, hive, shared_preferences, etc.) without importing them in this package.</strong></p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify_db">
+      <img src="https://img.shields.io/pub/v/ispectify_db.svg" alt="pub version">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
+    </a>
+    <a href="https://github.com/K1yoshiSho/ispect">
+      <img src="https://img.shields.io/github/stars/K1yoshiSho/ispect?style=social" alt="GitHub stars">
+    </a>
+  </p>
+  
+  <p>
+    <a href="https://pub.dev/packages/ispectify_db/score">
+      <img src="https://img.shields.io/pub/likes/ispectify_db?logo=flutter" alt="Pub likes">
+    </a>
+    <a href="https://pub.dev/packages/ispectify_db/score">
+      <img src="https://img.shields.io/pub/points/ispectify_db?logo=flutter" alt="Pub points">
+    </a>
+  </p>
+</div>
 
-Passive database logging utilities for the ISpect toolkit. Keep your DB calls as-is and simply log intents, timings, and results. Works with SQL and key-value stores (sqflite, drift, hive, shared_preferences, etc.) without importing them in this package.
+## TL;DR
 
-- No adapters required (yet) — call one or two methods.
-- Minimal API, maximum flexibility.
-- Redaction, sampling, truncation, SQL digest, slow query mark, transaction markers.
+No adapters required (yet) — call one or two methods. Minimal API, maximum flexibility. Redaction, sampling, truncation, SQL digest, slow query mark, transaction markers.
 
-## Install
+## 🏗️ Architecture
 
-Add to your `pubspec.yaml`:
+ispectify_db integrates with the ISpect logging ecosystem:
+
+| Component | Description |
+|-----------|-----------|
+| **DB Logger** | Core logging interface for database operations |
+| **Configuration** | Global settings for redaction, sampling, and thresholds |
+| **Transaction Support** | Correlated logging for multi-operation transactions |
+| **Performance Tracking** | Automatic duration measurement and slow query detection |
+| **ISpect Integration** | Structured events compatible with ISpect UI |
+
+## Overview
+
+> **ispectify_db** is the passive database logging utilities for the ISpect toolkit
+
+ispectify_db provides passive logging for database operations without requiring changes to your existing database code. Simply wrap your DB calls with logging methods to capture intents, timings, results, and errors. It integrates seamlessly with the ISpect debugging toolkit and supports various database drivers and key-value stores.
+
+### Key Features
+
+- No adapters required (yet) — call one or two methods
+- Minimal API, maximum flexibility
+- Redaction, sampling, truncation, SQL digest
+- Slow query mark, transaction markers
+- Works with SQL and key-value stores (sqflite, drift, hive, shared_preferences, etc.)
+- Automatic duration and success/error capture
+- Structured event logging with ISpect UI integration
+
+## API Reference
+
+### Core Methods
+
+- `ISpectDbCore.config = ISpectDbConfig(...)` — set global behavior
+- `ISpectify.db(...)` — emit a single DB event
+- `ISpectify.dbTrace<T>(...)` — wrap a Future and emit on completion
+- `ISpectify.dbStart(...)` / `ISpectify.dbEnd(...)` — manual span around code
+- `ISpectify.dbTransaction(...)` — run with shared transactionId
+
+### Common Fields
+
+- `source`: driver name (sqflite, drift, hive, shared_prefs, etc.)
+- `operation`: query, insert, update, delete, get, put, remove, etc.
+- `statement`: SQL string (truncated and digested)
+- `target` / `table` / `key`: operation target
+- `args` / `namedArgs`: query parameters
+- `value` or `projectResult`: logged result
+- `meta`: additional context
+
+### Redaction & Truncation
+
+Redaction replaces values for keys in `redactKeys` (case-insensitive). Truncation applies to long strings and preserves structure.
+
+### Sampling
+
+Per-call or global sampling to control log volume.
+
+### Slow Queries
+
+Mark operations exceeding `slowQueryThreshold`.
+
+## Structured Events
+
+Events use ISpect-recognized keys:
+- `db-query`: read operations
+- `db-result`: successful writes
+- `db-error`: failed operations
+
+Additional data includes source, operation, duration, success, etc.
+
+## Best Practices
+
+- Prefer `dbTrace` for automatic capture
+- Use `projectResult` for large results
+- Set `slowQueryThreshold` for performance monitoring
+- Use `dbTransaction` for correlated operations
+- Enable `attachStackOnError` for diagnostics
+
+## Installation
+
+Add ispectify_db to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.3.6
-  ispectify_db:
-    path: ../ispectify_db # or from pub when published
+  ispectify_db: ^4.3.6
 ```
 
-Then import:
+## Security & Production Guidelines
+
+> IMPORTANT: ISpect is development‑only. Keep it out of production builds.
+
+<details>
+<summary><strong>Full security & environment setup (click to expand)</strong></summary>
+
+</details>
+
+## 🚀 Quick Start
 
 ```dart
-import 'package:ispectify/ispectify.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispectify_db/ispectify_db.dart';
-```
 
-## Quick Start
-
-Configure (optional):
-
-```dart
+// Configure (optional)
 ISpectDbCore.config = const ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
@@ -36,23 +138,17 @@ ISpectDbCore.config = const ISpectDbConfig(
   enableTransactionMarkers: false,
   slowQueryThreshold: Duration(milliseconds: 400),
 );
-```
 
-Log a simple event:
-
-```dart
+// Log a simple event
 ISpect.logger.db(
   source: 'SharedPreferences',
   operation: 'write',
   target: 'language',
   value: 'eu',
 );
-```
 
-Wrap an async DB call to capture duration + success/error:
-
-```dart
-final rows = await ISpect.logger.dbTrace<List<Map<String, Object?}}>(
+// Wrap an async DB call to capture duration + success/error
+final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
   source: 'sqflite',
   operation: 'query',
   statement: 'SELECT * FROM users WHERE id = ?',
@@ -61,27 +157,8 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?}}>(
   run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
   projectResult: (rows) => {'rows': rows.length},
 );
-```
 
-Errors automatically include stack traces when `attachStackOnError: true`:
-
-```dart
-try {
-  await ISpect.logger.dbTrace<void>(
-    source: 'sqflite',
-    operation: 'insert',
-    statement: 'INSERT INTO users (name) VALUES (?)',
-    args: ['Alice'],
-    run: () => db.rawInsert('INSERT INTO users (name) VALUES (?)', ['Alice']),
-  );
-} catch (e, s) {
-  // The original stack trace `s` is captured and logged by dbTrace.
-}
-```
-
-Manual start/end:
-
-```dart
+// Manual start/end
 final t = ISpect.logger.dbStart(
   source: 'hive',
   operation: 'get',
@@ -94,11 +171,8 @@ try {
   ISpect.logger.dbEnd(t, error: e, success: false);
   rethrow;
 }
-```
 
-Transaction markers (with shared transactionId via Zone):
-
-```dart
+// Transaction markers
 await ISpect.logger.dbTransaction(
   source: 'sqflite',
   logMarkers: true,
@@ -114,71 +188,33 @@ await ISpect.logger.dbTransaction(
 );
 ```
 
-## API Reference
+### Minimal Setup
 
-- `configureISpectDb(ISpectDbConfig config)` — set global behavior: sampling, redaction, truncation, slow threshold, transaction markers.
-- `ISpectify.db(...)` — emit a single DB event.
-- `ISpectify.dbTrace<T>(...)` — wrap a `Future<T>` and emit on completion (success or error) with duration.
-- `ISpectify.dbStart(...)` / `ISpectify.dbEnd(...)` — manual span around arbitrary code.
-- `ISpectify.dbTransaction(...)` — run a closure with a shared `transactionId` and optional begin/commit/rollback markers.
+## Examples
 
-### Common fields
+See the [example/](example/) directory for complete usage examples and integration patterns.
 
-- `source`: driver or component name, e.g. `sqflite` | `drift` | `hive` | `shared_prefs` | `custom`.
-- `operation`: `query` | `insert` | `update` | `delete` | `get` | `put` | `remove` | `write` | `read` | `transaction-*` | `custom`.
-- `statement`: SQL string (if any). A truncated version and a normalized `statementDigest` are stored.
-- `target` / `table` / `key`: pick what applies.
-- `args` / `namedArgs`: parameters for queries.
-- `value` or `projectResult`: logged value (redacted/truncated). Prefer `projectResult` for large results.
-- `meta`: free-form context.
+## 🤝 Contributing
 
-### Redaction & Truncation
+Contributions are welcome! Please read our [contributing guidelines](../../CONTRIBUTING.md) and submit pull requests to the main branch.
 
-- Redaction replaces values for keys in `redactKeys` (case-insensitive) in `args`, `namedArgs`, `meta`, and `value` maps.
-- Truncation applies to long `statement` strings and leaf string values inside `args`, `namedArgs`, and `value`. Structure is preserved.
-- Limits are controlled by `maxStatementLength`, `maxArgsLength`, and `maxValueLength`.
+## 📄 License
 
-### Sampling
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- Per-call sampling: pass `sample: 0.1` to log about 10% of calls.
-- Global sampling: via `ISpectDbConfig.sampleRate`.
+## Related Packages
 
-### Slow queries
+- [ispect](../ispect) - Main debugging interface
+- [ispectify](../ispectify) - Core logging system
+- [ispectify_dio](../ispectify_dio) - HTTP client integration
+- [ispectify_http](../ispectify_http) - HTTP client integration
+- [ispectify_ws](../ispectify_ws) - WebSocket integration
 
-- If `slowQueryThreshold` is set, completed events will include `slow: true` when duration exceeds the threshold.
+---
 
-## Structured Event
-
-The underlying `ISpectifyData` uses keys already recognized by ISpect UI:
-- `db-query`: query/read operations
-- `db-result`: non-query successful operations
-- `db-error`: failed operations
-
-`additionalData` contains:
-```
-{
-  source, operation, statement, statementDigest,
-  target, table, key,
-  args, namedArgs,
-  durationMs, slow, success, affected, items,
-  value, meta, transactionId, error
-}
-```
-
-## Best Practices
-
-- Prefer `dbTrace` to automatically capture duration and success.
-- Use `projectResult` to log only aggregates (e.g., number of rows) instead of full result sets.
-- Set `slowQueryThreshold` to highlight performance hotspots.
-- Use `transactionId` correlation with `dbTransaction` to link related operations.
-- For production, enable `attachStackOnError` for actionable diagnostics without adding try/catch around every DB call.
-
-## Roadmap
-
-- Optional driver helpers (`ispectify_hive`, `ispectify_drift`, `ispectify_sqflite`): tiny wrappers that call this API.
-- Digest improvements and grouping.
-- Optional global sinks/interceptors if needed.
-
-## License
-
-MIT (same as the main repository).
+<div align="center">
+  <p>Built with ❤️ for the Flutter community</p>
+  <a href="https://github.com/K1yoshiSho/ispect/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=K1yoshiSho/ispect" />
+  </a>
+</div>
