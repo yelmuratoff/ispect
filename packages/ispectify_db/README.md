@@ -29,13 +29,13 @@ import 'package:ispectify_db/ispectify_db.dart';
 Configure (optional):
 
 ```dart
-configureISpectDb(const ISpectDbConfig(
+ISpectDbCore.config = const ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
   enableTransactionMarkers: false,
   slowQueryThreshold: Duration(milliseconds: 400),
-));
+);
 ```
 
 Log a simple event:
