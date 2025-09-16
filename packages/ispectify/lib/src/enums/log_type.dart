@@ -73,6 +73,10 @@ enum ISpectifyLogType {
   riverpodDispose('riverpod-dispose'),
   riverpodFail('riverpod-fail'),
 
+  dbQuery('db-query'),
+  dbResult('db-result'),
+  dbError('db-error'),
+
   route('route'),
   good('good'),
   analytics('analytics'),

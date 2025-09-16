@@ -46,8 +46,8 @@ final class ISpectDbCore {
     if (value is String) {
       return value.length <= maxLen ? value : value.substring(0, maxLen) + '…';
     }
-    final s = value.toString();
-    return s.length <= maxLen ? s : s.substring(0, maxLen) + '…';
+
+    return value;
   }
 
   static Object? redact(Object? data, List<String> keys) {
@@ -97,7 +97,7 @@ final class ISpectDbCore {
     Duration? duration,
     bool? success,
   }) {
-    final parts = <String>['source=$source', 'op=$operation'];
+    final parts = <String>['op=$operation'];
     if (table != null) parts.add('table=$table');
     if (target != null) parts.add('target=$target');
     if (key != null) parts.add('key=$key');
@@ -105,7 +105,7 @@ final class ISpectDbCore {
     if (affected != null) parts.add('affected=$affected');
     if (duration != null) parts.add('duration=${duration.inMilliseconds}ms');
     if (success != null) parts.add('success=$success');
-    return '[DB] ${parts.join(' ')}';
+    return '[$source] ${parts.join(' ')}';
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/bloc/counter_bloc.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
 import 'package:ispect_example/src/riverpod/riverpod_logging.dart';
+import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ws/ws.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 
@@ -34,6 +35,7 @@ class LogGenerationService {
     ISpect.logger.good('Demo started at $now');
     ISpect.logger.info('Info: opening Home screen');
     ISpect.logger.debug({'cacheWarmup': true, 'durationMs': 7});
+    ISpect.logger.verbose('Verbose log example');
     ISpect.logger.warning('Deprecated API used for demo purposes');
     ISpect.logger.critical('Critical path reached in demo');
     ISpect.logger.provider('Provider: settings updated');
@@ -44,6 +46,26 @@ class LogGenerationService {
       analytics: 'demo',
       event: 'open',
       parameters: {'source': 'all-logs', 'time': now},
+    );
+    ISpect.logger.db(
+      source: 'shared_preference',
+      operation: 'read',
+      key: 'theme',
+      value: 'dark',
+    );
+    ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+      source: 'sqflite',
+      operation: 'query',
+      statement: 'SELECT * FROM users WHERE id = ?',
+      args: [3],
+      table: 'users',
+      run: () => Future<List<Map<String, Object?>>>.delayed(
+        const Duration(milliseconds: 5),
+        () => [
+          {'id': 3, 'name': 'User 3', 'email': 'user3@example.com'},
+        ],
+      ),
+      projectResult: (rows) => rows,
     );
 
     // Trigger real HTTP request/response and error
@@ -62,14 +84,7 @@ class LogGenerationService {
     Timer(const Duration(milliseconds: 2), () => tempBloc.close());
 
     // Riverpod
-    await generateRiverpod(itemCount: itemCount, loopDelayMs: loopDelayMs);
-
-    for (int i = 0; i < itemCount; i++) {
-      ISpect.logger.verbose('Item $i: random=${randomize && i % 3 == 0}');
-      if (loopDelayMs > 0) {
-        await Future<void>.delayed(Duration(milliseconds: loopDelayMs));
-      }
-    }
+    await generateRiverpod(itemCount: 1, loopDelayMs: loopDelayMs);
   }
 
   Future<void> _triggerHttpLogs({

@@ -21,6 +21,8 @@ dependency_overrides:
     path: ../../ispect_jira
   ispectify_ws:
     path: ../../ispectify_ws
+  ispectify_db:
+    path: ../../ispectify_db
 
 dependencies:
   flutter:
@@ -44,6 +46,7 @@ dependencies:
   ispectify_bloc: ^4.3.6
   ispect_jira: ^4.3.6
   ispectify_ws: ^4.3.6
+  ispectify_db: ^4.3.6
 
   provider: ^6.1.2
 
