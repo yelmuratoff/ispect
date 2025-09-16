@@ -139,11 +139,6 @@ class ISpectDbToken {
   final String? transactionId;
 }
 
-/// Configure global DB logging behavior.
-void configureISpectDb(ISpectDbConfig config) {
-  ISpectDbCore.config = config;
-}
-
 extension ISpectifyDb on ISpectify {
   void db({
     required String source,
