@@ -40,13 +40,13 @@ dependencies:
   flutter_riverpod: ^2.5.1
 
   # Use local paths through dependency_overrides
-  ispect: ^4.4.0-dev02
-  ispectify_dio: ^4.4.0-dev02
-  ispectify_http: ^4.4.0-dev02
-  ispectify_bloc: ^4.4.0-dev02
-  ispect_jira: ^4.4.0-dev02
-  ispectify_ws: ^4.4.0-dev02
-  ispectify_db: ^4.4.0-dev02
+  ispect: ^4.4.0-dev03
+  ispectify_dio: ^4.4.0-dev03
+  ispectify_http: ^4.4.0-dev03
+  ispectify_bloc: ^4.4.0-dev03
+  ispect_jira: ^4.4.0-dev03
+  ispectify_ws: ^4.4.0-dev03
+  ispectify_db: ^4.4.0-dev03
 
   provider: ^6.1.2
 
