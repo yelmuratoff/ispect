@@ -418,7 +418,9 @@ class RedactionService {
   }
 
   bool _isPrintableCodePoint(int codePoint) {
-    if (codePoint == 0xFFFD) return false; // replacement character signals decoding issues
+    if (codePoint == 0xFFFD) {
+      return false; // replacement character signals decoding issues
+    }
     if (codePoint == 0x09 || codePoint == 0x0A || codePoint == 0x0D) {
       return true;
     }
