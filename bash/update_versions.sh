@@ -68,7 +68,7 @@ if [[ -n $BUMP_KIND ]]; then
   NEW_VERSION=$(semver_bump "$VERSION" "$BUMP_KIND")
   echo "[INFO] Bump $BUMP_KIND: $VERSION -> $NEW_VERSION"
   if [[ $DRY_RUN -eq 0 ]]; then
-    if sed -i'' -e "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$VERSION_FILE"; then
+    if sed -e "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$VERSION_FILE" > "${VERSION_FILE}.tmp" && mv "${VERSION_FILE}.tmp" "$VERSION_FILE"; then
       VERSION=$NEW_VERSION
     else
       echo "[ERR] Failed writing new version" >&2; exit 1
@@ -100,7 +100,7 @@ replace_version_line() { # $1=file
   if [[ $current != "$VERSION" ]]; then
     echo "[CHG] $file version $current -> $VERSION"
     if [[ $DRY_RUN -eq 0 ]]; then
-      sed -i'' -e "s/^version:.*/version: $VERSION/" "$file"
+      sed -e "s/^version:.*/version: $VERSION/" "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
       change_files+=("$file")
     fi
   else
@@ -146,23 +146,6 @@ for dir in "${PACKAGE_DIRS[@]}"; do
     update_internal_refs "$ex_ps"
   fi
 done
-
-# Ensure root CHANGELOG has version section
-ROOT_CHANGELOG="CHANGELOG.md"
-if [[ -f $ROOT_CHANGELOG ]]; then
-  if ! grep -q "^## $VERSION" "$ROOT_CHANGELOG"; then
-    echo "[CHG] Add section $VERSION to root CHANGELOG"
-    if [[ $DRY_RUN -eq 0 ]]; then
-      printf '\n## %s\n\n### Added\n- Bump to %s\n' "$VERSION" "$VERSION" >> "$ROOT_CHANGELOG"
-      change_files+=("$ROOT_CHANGELOG")
-    fi
-  fi
-fi
-
-if [[ $DRY_RUN -eq 0 && -f bash/update_changelog.sh ]]; then
-  echo "[INFO] Propagating changelog section to packages"
-  bash/update_changelog.sh --version "$VERSION" >/dev/null || true
-fi
 
 echo "[INFO] Summary:" 
 if [[ ${#change_files[@]} -gt 0 ]]; then
