@@ -9,6 +9,8 @@ environment:
 dependency_overrides:
   ispect:
     path: ../../ispect
+  ispectify:
+    path: ../../ispectify
   ispect_jira:
     path: ../
 
