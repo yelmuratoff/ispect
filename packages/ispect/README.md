@@ -606,7 +606,7 @@ ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
   onInit: () {
-    Bloc.observer = ISpecBlocObserver(
+    Bloc.observer = ISpectBlocObserver(
       logger: iSpectify,
     );
   },

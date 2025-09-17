@@ -67,7 +67,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     // Set up BLoC observer for automatic logging
-    Bloc.observer = ISpecBlocObserver(
+    Bloc.observer = ISpectBlocObserver(
       logger: iSpectify,
     );
   },
@@ -175,7 +175,7 @@ void _initializeWithISpect() {
     logger: iSpectify,
     onInit: () {
       // Set up BLoC observer only in development/staging
-      Bloc.observer = ISpecBlocObserver(
+      Bloc.observer = ISpectBlocObserver(
         logger: iSpectify,
       );
     },

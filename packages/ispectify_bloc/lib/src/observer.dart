@@ -8,8 +8,8 @@ import 'package:ispectify_bloc/src/models/_models.dart';
 /// `logger` field is the current `ISpectify` instance.
 /// Provide your instance if your application uses `ISpectify` as the default logger
 /// Common ISpectify instance will be used by default
-class ISpecBlocObserver extends BlocObserver {
-  ISpecBlocObserver({
+class ISpectBlocObserver extends BlocObserver {
+  ISpectBlocObserver({
     ISpectify? logger,
     this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
