@@ -58,6 +58,7 @@ Modular packages. Include only what you use:
 | [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP capture | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
 | [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | http package capture | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
 | [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) | Database operations | [![pub](https://img.shields.io/pub/v/ispectify_db.svg)](https://pub.dev/packages/ispectify_db) |
 | [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
 | [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira issue export | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
@@ -399,7 +400,7 @@ flutter build apk --flavor production # ISpect automatically disabled
 
 ## Integration Guides
 
-ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, state management, WebSocket connections, and navigation.
+ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, database operations, state management, WebSocket connections, and navigation.
 
 ### Required Dependencies
 
@@ -413,6 +414,9 @@ dependencies:
   # HTTP integrations (choose one or both)
   ispectify_dio: ^4.4.0-dev02      # For Dio HTTP client
   ispectify_http: ^4.4.0-dev02     # For standard HTTP package
+  
+  # Database integration
+  ispectify_db: ^4.4.0-dev02       # For database operation logging
   
   # WebSocket integration
   ispectify_ws: ^4.4.0-dev02       # For WebSocket monitoring
@@ -513,6 +517,40 @@ ISpect.run(
     mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
     uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
   },
+);
+```
+
+### Database Integration
+
+For database operation logging, use the `ispectify_db` package:
+
+```yaml
+dependencies:
+  ispectify_db: ^4.4.0-dev02
+```
+
+```dart
+import 'package:sqflite/sqflite.dart';
+import 'package:ispectify_db/ispectify_db.dart';
+
+// Configure database logging
+ISpectDbCore.config = const ISpectDbConfig(
+  sampleRate: 1.0,
+  redact: true,
+  attachStackOnError: true,
+  enableTransactionMarkers: false,
+  slowQueryThreshold: Duration(milliseconds: 400),
+);
+
+// Log database operations
+final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+  source: 'sqflite',
+  operation: 'query',
+  statement: 'SELECT * FROM users WHERE id = ?',
+  args: [userId],
+  table: 'users',
+  run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
+  projectResult: (rows) => {'rows': rows.length},
 );
 ```
 
@@ -669,6 +707,16 @@ redactor.ignoreValues(['<placeholder>']);
 final interceptor = ISpectWSInterceptor(logger: iSpectify, redactor: redactor);
 ```
 
+#### Database Example
+
+```dart
+// Database redaction is configured globally
+ISpectDbCore.config = const ISpectDbConfig(
+  redact: true,
+  redactKeys: ['password', 'token', 'secret'],
+);
+```
+
 Redaction masks data in headers, bodies, WS messages, and query parameters. Avoid embedding real secrets in code.
 
 ### Log Filtering and Customization
@@ -685,6 +733,9 @@ ISpectBuilder(
       LogDescription(key: 'http-request', isDisabled: false),
       LogDescription(key: 'http-response', isDisabled: false),
       LogDescription(key: 'http-error', isDisabled: false),
+      LogDescription(key: 'db-query', isDisabled: false),
+      LogDescription(key: 'db-result', isDisabled: false),
+      LogDescription(key: 'db-error', isDisabled: false),
       LogDescription(key: 'route', isDisabled: false),
       LogDescription(key: 'print', isDisabled: true),
       LogDescription(key: 'analytics', isDisabled: true),
@@ -694,7 +745,7 @@ ISpectBuilder(
 )
 ```
 
-Available log keys: `bloc-*`, `http-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
+Available log keys: `bloc-*`, `http-*`, `db-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
 
 ## Examples
 
