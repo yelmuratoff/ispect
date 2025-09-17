@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>BLoC state management integration for ISpect toolkit</strong></p>
+  <p><strong>BLoC state management integration for ISpectify logging system</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_bloc">
@@ -134,7 +134,7 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.6
+  ispectify_bloc: ^4.4.0-dev01
 ```
 
 ## Security & Production Guidelines

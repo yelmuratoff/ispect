@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>HTTP interceptor integration for ISpect toolkit using http_interceptor package</strong></p>
+  <p><strong>HTTP interceptor integration for ISpectify logging system using http_interceptor package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_http">
@@ -128,7 +128,7 @@ Add ispectify_http to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.6
+  ispectify_http: ^4.4.0-dev01
 ```
 
 ## Security & Production Guidelines

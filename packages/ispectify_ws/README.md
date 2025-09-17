@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>WebSocket interceptor integration for ISpect toolkit using ws package</strong></p>
+  <p><strong>WebSocket interceptor integration for ISpectify logging system using ws package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_ws">
@@ -140,7 +140,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.6
+  ispectify_ws: ^4.4.0-dev01
 ```
 
 ## Security & Production Guidelines
