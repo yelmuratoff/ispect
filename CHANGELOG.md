@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.0-dev02
+## 4.4.0-dev03
 
 ### Added
 - **New Package: `ispectify_db`** - Passive database logging utilities for the ISpect toolkit. Enables logging of DB operations (queries, updates, key-value access) without proxying calls, supporting drivers like sqflite, drift, hive, shared_preferences.
