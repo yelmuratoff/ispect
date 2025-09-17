@@ -362,38 +362,72 @@ class RedactionService {
   }
 
   bool _isLikelyBase64(String s) {
-    // Quick checks to avoid expensive operations
-    if (s.length < 32) return false;
-    if (s.length % 4 != 0) return false;
-    if (!_base64Regex.hasMatch(s)) return false;
+    final sanitized = s.replaceAll(RegExp(r'\s'), '');
+    if (sanitized.length < 32) return false;
+    if (!_base64Regex.hasMatch(sanitized)) return false;
+    if (sanitized.length % 4 == 1) return false;
 
-    // Limit decode attempt to first 256 characters for performance
-    final sampleLength = s.length > 256 ? 256 : s.length;
-    final sample = s.substring(0, sampleLength);
+    final sampleLength = sanitized.length > 256 ? 256 : sanitized.length;
+    final sample = sanitized.substring(0, sampleLength);
+    return _canDecodeBase64Sample(sample);
+  }
 
+  bool _canDecodeBase64Sample(String sample) {
+    if (_tryDecodeWithCodec(sample, base64)) return true;
+    if (_tryDecodeWithCodec(sample, base64Url)) return true;
+    return false;
+  }
+
+  bool _tryDecodeWithCodec(String input, Base64Codec codec) {
     try {
-      base64Decode(sample);
+      codec.decode(input);
       return true;
     } catch (_) {
-      return false;
+      final remainder = input.length % 4;
+      if (remainder == 0) return false;
+      final padded = input.padRight(input.length + (4 - remainder), '=');
+      try {
+        codec.decode(padded);
+        return true;
+      } catch (_) {
+        return false;
+      }
     }
   }
 
   bool _isProbablyBinaryString(String s) {
-    // Heuristic: ratio of non-printable characters
-    // Limit check to first 1024 characters for performance
-    final checkLength = s.length > 1024 ? 1024 : s.length;
-    var nonPrintable = 0;
     const maxNonPrintable = 8;
+    const maxInspected = 1024;
+    const ratioThreshold = 0.2;
+    const ratioSampleFloor = 16;
 
-    for (var i = 0; i < checkLength; i++) {
-      final code = s.codeUnitAt(i);
-      if (code == 9 || code == 10 || code == 13) continue; // whitespace
-      if (code < 32 || code > 126) {
-        nonPrintable++;
-        if (nonPrintable > maxNonPrintable) return true; // early exit
+    var inspected = 0;
+    var nonPrintable = 0;
+    for (final codePoint in s.runes) {
+      if (inspected >= maxInspected) break;
+      inspected++;
+      if (_isPrintableCodePoint(codePoint)) continue;
+      nonPrintable++;
+      if (nonPrintable > maxNonPrintable) return true;
+      if (inspected >= ratioSampleFloor &&
+          nonPrintable / inspected > ratioThreshold) {
+        return true;
       }
     }
+    return false;
+  }
+
+  bool _isPrintableCodePoint(int codePoint) {
+    if (codePoint == 0xFFFD) return false; // replacement character signals decoding issues
+    if (codePoint == 0x09 || codePoint == 0x0A || codePoint == 0x0D) {
+      return true;
+    }
+    if (codePoint >= 0x20 && codePoint <= 0x7E) return true;
+    if (codePoint == 0x85 || codePoint == 0x2028 || codePoint == 0x2029) {
+      return true; // common Unicode line separators
+    }
+    if (codePoint >= 0xA0 && codePoint <= 0xD7FF) return true;
+    if (codePoint >= 0xE000 && codePoint <= 0x10FFFF) return true;
     return false;
   }
 
@@ -461,7 +495,7 @@ class RedactionService {
   static final RegExp _jwtRegex =
       RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
   static final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
-  static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=\-_\r\n]+$');
+  static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
 }
 
 extension _ObjectExtensions on Object? {

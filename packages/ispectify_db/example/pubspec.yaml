@@ -7,7 +7,7 @@ environment:
   sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
-  ispectify: ^4.4.0-dev01
+  ispectify: ^4.4.0-dev02
   ispectify_db:
     path: ..
   collection: ^1.18.0

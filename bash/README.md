@@ -14,6 +14,10 @@ Scripts:
 - check_dependencies.sh – Verify internal dependency constraints reference the current version.
 - bump_version.sh – Legacy bump helper (kept for backward compatibility; prefer update_versions.sh --bump).
 
+```bash
+./bash/update_changelog.sh && ./bash/update_versions.sh && ./bash/update_readme.sh generate all
+```
+
 ## Quick Start
 
 ```bash

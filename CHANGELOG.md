@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.0-dev01
+## 4.4.0-dev02
 
 ### Added
 - **New Package: `ispectify_db`** - Passive database logging utilities for the ISpect toolkit. Enables logging of DB operations (queries, updates, key-value access) without proxying calls, supporting drivers like sqflite, drift, hive, shared_preferences.
@@ -17,6 +17,8 @@
 
 ### Enhancements
 - Updated package versions across the monorepo using `update_versions.sh` script for consistency.
+- Improved `RedactionService` heuristics to recognize both padded and unpadded Base64/Base64URL payloads while avoiding false negatives from whitespace or alternate alphabets.
+- Relaxed binary-string detection in `RedactionService` to treat Unicode text as printable, preventing `[binary …]` placeholders from replacing legitimate localized content.
 
 ## 4.3.6
 - Documentation updates
