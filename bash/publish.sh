@@ -20,6 +20,7 @@ PACKAGES=(
 	ispectify_dio      # depends on ispectify
 	ispectify_http     # depends on ispectify
 	ispectify_ws       # depends on ispectify
+   ispectify_db      # depends on ispectify
 	ispect             # core panel depends on ispectify + integrations (dev)
 	ispect_jira        # optional addon
 )
