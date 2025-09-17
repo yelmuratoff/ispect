@@ -27,7 +27,7 @@
 
 ## TL;DR
 
-Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
+Drop-in Flutter debug panel: network + database + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
 
 ## Interface Preview
 
@@ -64,13 +64,14 @@ Modular packages. Include only what you use:
 
 ## Overview
 
-> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications. Includes network, database, performance, UI, and device tools.
 
-Provides network, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
+Provides network, database, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
 
 ### Key Features
 
 - Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Database Logging: Passive DB operation tracing with duration, errors, redaction
 - Logging: Advanced logging system with categorization and filtering
 - Performance Analysis: Real-time performance metrics and monitoring
 - UI Inspector: Widget hierarchy inspection with color picker and layout analysis

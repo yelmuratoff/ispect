@@ -2,10 +2,11 @@
    "package_name": "ispect",
    "title": "ISpect",
    "description": "Logging and inspector tool for Flutter development and testing",
-   "overview": "is the main debugging and inspection toolkit designed specifically for Flutter applications.",
-   "tldr": "Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.",
+   "overview": "is the main debugging and inspection toolkit designed specifically for Flutter applications. Includes network, database, performance, UI, and device tools.",
+   "tldr": "Drop-in Flutter debug panel: network + database + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.",
    "features": [
       "Network Monitoring: Detailed HTTP request/response inspection with error tracking",
+      "Database Logging: Passive DB operation tracing with duration, errors, redaction",
       "Logging: Advanced logging system with categorization and filtering",
       "Performance Analysis: Real-time performance metrics and monitoring",
       "UI Inspector: Widget hierarchy inspection with color picker and layout analysis",
@@ -13,7 +14,7 @@
       "Bug Reporting: Integrated feedback system with screenshot capture",
       "Cache Management: Application cache inspection and management"
    ],
-   "custom_overview_section": "Provides network, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.",
+   "custom_overview_section": "Provides network, database, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.",
    "usage_example": "```dart\nimport 'package:flutter/foundation.dart';\nimport 'package:flutter/material.dart';\nimport 'package:ispect/ispect.dart';\n\n// Use dart define to control ISpect inclusion\nconst bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);\n\nvoid main() {\n  if (kEnableISpect) {\n    // Initialize ISpect only in development/staging\n    _initializeISpect();\n  } else {\n    // Production initialization without ISpect\n    runApp(MyApp());\n  }\n}\n\nvoid _initializeISpect() {\n  // Initialize ISpectify for logging\n  final ISpectify logger = ISpectifyFlutter.init();\n\n  // Wrap your app with ISpect\n  ISpect.run(\n    () => runApp(MyApp()),\n    logger: logger,\n  );\n}\n\nclass MyApp extends StatelessWidget {\n  const MyApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      localizationsDelegates: kEnableISpect\n          ? ISpectLocalizations.localizationDelegates([\n              // Add your localization delegates here\n            ])\n          : [\n              // Your regular localization delegates\n            ],\n      // Conditionally add ISpectBuilder in MaterialApp builder\n      builder: (context, child) {\n        if (kEnableISpect) {\n          return ISpectBuilder(child: child ?? const SizedBox.shrink());\n        }\n        return child ?? const SizedBox.shrink();\n      },\n      home: Scaffold(\n        appBar: AppBar(title: const Text('ISpect Example')),\n        body: Center(\n          child: ElevatedButton(\n            onPressed: () {\n  ISpect.logger.info('Button pressed!');\n            },\n            child: const Text('Press me'),\n          ),\n        ),\n      ),\n    );\n  }\n}\n```",
    "quick_start_minimal": "```dart\n// main.dart (minimal enable)\nconst bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');\nvoid main() {\n  if (!kEnableISpect) return runApp(const MyApp());\n  final logger = ISpectifyFlutter.init();\n  ISpect.run(() => runApp(const MyApp()), logger: logger);\n}\n\n// Run with: flutter run --dart-define=ENABLE_ISPECT=true\n```",
    "production_safety_short": "Enable with a --dart-define flag. In release without the flag, code is tree‑shaken (no size / perf impact). Wrap all init behind the boolean and avoid committing builds with it enabled.",
