@@ -127,7 +127,7 @@ final class ISpect {
     logger.info('🚀 ISpect: Setting up error handling.');
 
     FlutterError.presentError = (details) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      void handleError() {
         onPresentError?.call(details, details.stack);
         if (_shouldHandleError(
           details.exceptionAsString(),
@@ -139,7 +139,15 @@ final class ISpect {
             stackTrace: details.stack,
           );
         }
-      });
+      }
+
+      // Try to use addPostFrameCallback, fallback to immediate execution
+      try {
+        WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
+      } catch (_) {
+        // If WidgetsBinding is not initialized, handle immediately
+        handleError();
+      }
     };
 
     PlatformDispatcher.instance.onError = (error, stack) {
