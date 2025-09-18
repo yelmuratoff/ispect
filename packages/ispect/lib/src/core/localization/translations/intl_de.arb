@@ -198,5 +198,10 @@
    "error": "Fehler",
    "ok": "OK",
    "fileSize": "Dateigröße",
-   "loading": "Laden"
+   "loading": "Wird geladen",
+   "wsSentLogDesc": "Protokoll gesendeter WebSocket-Nachrichten",
+   "wsReceivedLogDesc": "Protokoll empfangener WebSocket-Nachrichten",
+   "dbQueryLogDesc": "Protokoll der Datenbankabfragen",
+   "dbResultLogDesc": "Protokoll der Datenbankergebnisse",
+   "dbErrorLogDesc": "Protokoll der Datenbankfehler"
 }

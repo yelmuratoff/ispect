@@ -198,5 +198,10 @@
    "error": "Erreur",
    "ok": "OK",
    "fileSize": "Taille du fichier",
-   "loading": "Chargement"
+   "loading": "Chargement",
+   "wsSentLogDesc": "Journal des messages WebSocket envoyés",
+   "wsReceivedLogDesc": "Journal des messages WebSocket reçus",
+   "dbQueryLogDesc": "Journal des requêtes à la base de données",
+   "dbResultLogDesc": "Journal des résultats de la base de données",
+   "dbErrorLogDesc": "Journal des erreurs de la base de données"
 }

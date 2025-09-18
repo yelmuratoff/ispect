@@ -677,4 +677,19 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get loading => 'लोड हो रहा है';
+
+  @override
+  String get wsSentLogDesc => 'वेब-सॉकेट भेजे गए संदेश लॉग';
+
+  @override
+  String get wsReceivedLogDesc => 'वेब-सॉकेट प्राप्त संदेश लॉग';
+
+  @override
+  String get dbQueryLogDesc => 'डेटाबेस क्वेरी लॉग';
+
+  @override
+  String get dbResultLogDesc => 'डेटाबेस परिणाम लॉग';
+
+  @override
+  String get dbErrorLogDesc => 'डेटाबेस त्रुटि लॉग';
 }

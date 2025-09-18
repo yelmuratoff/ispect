@@ -198,5 +198,10 @@
    "error": "त्रुटि",
    "ok": "ठीक है",
    "fileSize": "फ़ाइल साइज़",
-   "loading": "लोड हो रहा है"
+   "loading": "लोड हो रहा है",
+   "wsSentLogDesc": "वेब-सॉकेट भेजे गए संदेश लॉग",
+   "wsReceivedLogDesc": "वेब-सॉकेट प्राप्त संदेश लॉग",
+   "dbQueryLogDesc": "डेटाबेस क्वेरी लॉग",
+   "dbResultLogDesc": "डेटाबेस परिणाम लॉग",
+   "dbErrorLogDesc": "डेटाबेस त्रुटि लॉग"
 }

@@ -198,5 +198,10 @@
    "error": "خطأ",
    "ok": "موافق",
    "fileSize": "حجم الملف",
-   "loading": "تحميل"
+   "loading": "تحميل",
+   "wsSentLogDesc": "سجل رسائل WebSocket المُرسلة",
+   "wsReceivedLogDesc": "سجل رسائل WebSocket المستلمة",
+   "dbQueryLogDesc": "سجل استعلامات قاعدة البيانات",
+   "dbResultLogDesc": "سجل نتائج قاعدة البيانات",
+   "dbErrorLogDesc": "سجل أخطاء قاعدة البيانات"
 }

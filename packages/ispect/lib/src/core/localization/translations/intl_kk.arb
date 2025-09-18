@@ -74,7 +74,6 @@
    "method": "Әдіс",
    "navigate": "Навигация",
    "notFound": "табылған жоқ",
-   "otherLogsForDevelopers": "Басқа журналдарды әзірлеушілер қолданады",
    "pageNotFound": "Ой, бұл жолдағы бет",
    "path": "Жол",
    "performanceTracker": "Өнімділікті қадағалау",
@@ -198,5 +197,10 @@
    "error": "Қате",
    "ok": "Жарайды",
    "fileSize": "Файл өлшемі",
-   "loading": "Жүктеу"
+   "loading": "Жүктеу",
+   "wsSentLogDesc": "WebSocket жіберілген хабарламалар журналы",
+   "wsReceivedLogDesc": "WebSocket қабылданған хабарламалар журналы",
+   "dbQueryLogDesc": "Дерекқор сұранымдары журналы",
+   "dbResultLogDesc": "Дерекқор нәтижелері журналы",
+   "dbErrorLogDesc": "Дерекқор қателері журналы"
 }

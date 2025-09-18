@@ -198,5 +198,10 @@
    "error": "Erro",
    "ok": "OK",
    "fileSize": "Tamanho do arquivo",
-   "loading": "Carregando"
+   "loading": "Carregando",
+   "wsSentLogDesc": "Registro de mensagens WebSocket enviadas",
+   "wsReceivedLogDesc": "Registro de mensagens WebSocket recebidas",
+   "dbQueryLogDesc": "Registro de consultas ao banco de dados",
+   "dbResultLogDesc": "Registro de resultados do banco de dados",
+   "dbErrorLogDesc": "Registro de erros do banco de dados"
 }

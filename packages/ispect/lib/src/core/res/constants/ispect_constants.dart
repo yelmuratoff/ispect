@@ -239,13 +239,26 @@ final class ISpectConstants {
         key: 'route',
         description: l10n.routeLogDesc,
       ),
-      const LogDescription(key: 'ws-sent'),
-      const LogDescription(
-        key: 'ws-received',
+      LogDescription(
+        key: 'ws-sent',
+        description: l10n.wsSentLogDesc,
       ),
-      const LogDescription(key: 'db-query'),
-      const LogDescription(key: 'db-result'),
-      const LogDescription(key: 'db-error'),
+      LogDescription(
+        key: 'ws-received',
+        description: l10n.wsReceivedLogDesc,
+      ),
+      LogDescription(
+        key: 'db-query',
+        description: l10n.dbQueryLogDesc,
+      ),
+      LogDescription(
+        key: 'db-result',
+        description: l10n.dbResultLogDesc,
+      ),
+      LogDescription(
+        key: 'db-error',
+        description: l10n.dbErrorLogDesc,
+      ),
     ];
   }
 }
