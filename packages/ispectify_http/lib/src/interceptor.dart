@@ -108,24 +108,24 @@ class ISpectHttpInterceptor extends InterceptorContract {
     }
 
     final message = '${response.request?.url}';
-    Map<String, dynamic>? body;
+    Map<String, dynamic>? requestBodyData;
+    Object? responseBodyData;
 
     if (response is Response && settings.printResponseData) {
       try {
-        body = (settings.enableRedaction
-            ? _redactor.redact(jsonDecode(response.body))
-            : jsonDecode(response.body)) as Map<String, dynamic>?;
+        final decoded = jsonDecode(response.body);
+        responseBodyData =
+            settings.enableRedaction ? _redactor.redact(decoded) : decoded;
       } catch (_) {
-        body = {
-          'raw': settings.enableRedaction
-              ? _redactor.redact(response.body)
-              : response.body,
-        };
+        responseBodyData = settings.enableRedaction
+            ? _redactor.redact(response.body)
+            : response.body;
       }
-    } else if (response.request is MultipartRequest &&
-        settings.printRequestData) {
+    }
+
+    if (response.request is MultipartRequest && settings.printRequestData) {
       final request = response.request! as MultipartRequest;
-      body = {
+      requestBodyData = {
         'fields': request.fields,
         'files': request.files
             .map(
@@ -145,6 +145,28 @@ class ISpectHttpInterceptor extends InterceptorContract {
       if (!errorAccepted) {
         return response;
       }
+
+      final errorBodyMap = () {
+        if (responseBodyData is Map) {
+          try {
+            return (settings.enableRedaction
+                ? _redactor.redact(responseBodyData)
+                : responseBodyData)! as Map<String, dynamic>;
+          } catch (_) {
+            final raw =
+                responseBodyData as Map<Object?, Object?>;
+            return raw.map((k, v) => MapEntry(k.toString(), v));
+          }
+        }
+        if (responseBodyData is String) {
+          return <String, dynamic>{
+            'raw': settings.enableRedaction
+                ? _redactor.redact(responseBodyData)
+                : responseBodyData,
+          };
+        }
+        return requestBodyData ?? <String, dynamic>{};
+      }();
 
       _logger.logCustom(
         HttpErrorLog(
@@ -170,7 +192,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
                       .map((k, v) => MapEntry(k, v?.toString() ?? ''))
                   : response.headers)
               : null,
-          body: body ?? const {},
+          body: errorBodyMap,
           responseData: HttpResponseData(
             baseResponse: response,
             requestData: HttpRequestData(response.request),
@@ -206,14 +228,8 @@ class ISpectHttpInterceptor extends InterceptorContract {
                       .map((k, v) => MapEntry(k, v?.toString() ?? ''))
                   : response.headers)
               : null,
-          requestBody: settings.printRequestData
-              ? body?.map((k, v) => MapEntry(k, _redactor.redact(v)))
-              : null,
-          responseBody: settings.printResponseData
-              ? (settings.enableRedaction
-                  ? _redactor.redact(response)
-                  : response)
-              : null,
+          requestBody: settings.printRequestData ? requestBodyData : null,
+          responseBody: settings.printResponseData ? responseBodyData : null,
           settings: settings,
           responseData: HttpResponseData(
             baseResponse: response,
