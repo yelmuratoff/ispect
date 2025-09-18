@@ -64,6 +64,7 @@ final class ISpect {
     _filters = filters;
 
     _setupErrorHandling(
+      options: options,
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
@@ -78,6 +79,9 @@ final class ISpect {
         onZonedError: onZonedError,
         isPrintLoggingEnabled: isPrintLoggingEnabled,
         isFlutterPrintEnabled: isFlutterPrintEnabled,
+        onUncaughtErrors: onUncaughtErrors,
+        isUncaughtErrorsHandlingEnabled:
+            options.isUncaughtErrorsHandlingEnabled,
       );
     } else {
       callback();
@@ -91,7 +95,9 @@ final class ISpect {
     T Function() callback, {
     required bool isPrintLoggingEnabled,
     required bool isFlutterPrintEnabled,
+    required bool isUncaughtErrorsHandlingEnabled,
     void Function(Object, StackTrace)? onZonedError,
+    void Function(List<dynamic>)? onUncaughtErrors,
   }) {
     runZonedGuarded(
       callback,
@@ -103,6 +109,9 @@ final class ISpect {
             exception: error,
             stackTrace: stackTrace,
           );
+          if (isUncaughtErrorsHandlingEnabled) {
+            onUncaughtErrors?.call(<dynamic>[error, stackTrace]);
+          }
         }
       },
       zoneSpecification: ZoneSpecification(
@@ -119,6 +128,7 @@ final class ISpect {
 
   /// Configures global Flutter and platform error handlers.
   static void _setupErrorHandling({
+    required ISpectLogOptions options,
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
@@ -126,52 +136,67 @@ final class ISpect {
   }) {
     logger.info('🚀 ISpect: Setting up error handling.');
 
-    FlutterError.presentError = (details) {
-      void handleError() {
-        onPresentError?.call(details, details.stack);
-        if (_shouldHandleError(
-          details.exceptionAsString(),
-          details.stack.toString(),
-        )) {
+    if (options.isFlutterPresentHandlingEnabled) {
+      FlutterError.presentError = (details) {
+        void handleError() {
+          onPresentError?.call(details, details.stack);
+          if (_shouldHandleError(
+            details.exceptionAsString(),
+            details.stack.toString(),
+          )) {
+            logger.handle(
+              message: 'Flutter error presented',
+              exception: details,
+              stackTrace: details.stack,
+            );
+            if (options.isUncaughtErrorsHandlingEnabled) {
+              onUncaughtErrors?.call(<dynamic>[details, details.stack]);
+            }
+          }
+        }
+
+        // Try to use addPostFrameCallback, fallback to immediate execution
+        try {
+          WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
+        } catch (_) {
+          // If WidgetsBinding is not initialized, handle immediately
+          handleError();
+        }
+      };
+    }
+
+    if (options.isPlatformDispatcherHandlingEnabled) {
+      PlatformDispatcher.instance.onError = (error, stack) {
+        onPlatformDispatcherError?.call(error, stack);
+        if (_shouldHandleError(error.toString(), stack.toString())) {
           logger.handle(
-            message: 'Flutter error presented',
-            exception: details,
+            message: 'Platform error caught',
+            exception: error,
+            stackTrace: stack,
+          );
+          if (options.isUncaughtErrorsHandlingEnabled) {
+            onUncaughtErrors?.call(<dynamic>[error, stack]);
+          }
+        }
+        return true;
+      };
+    }
+
+    if (options.isFlutterErrorHandlingEnabled) {
+      FlutterError.onError = (details) {
+        onFlutterError?.call(details, details.stack);
+        if (_shouldHandleError(details.toString(), details.stack.toString())) {
+          logger.error(
+            'FlutterErrorDetails',
+            exception: details.toString(),
             stackTrace: details.stack,
           );
+          if (options.isUncaughtErrorsHandlingEnabled) {
+            onUncaughtErrors?.call(<dynamic>[details, details.stack]);
+          }
         }
-      }
-
-      // Try to use addPostFrameCallback, fallback to immediate execution
-      try {
-        WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
-      } catch (_) {
-        // If WidgetsBinding is not initialized, handle immediately
-        handleError();
-      }
-    };
-
-    PlatformDispatcher.instance.onError = (error, stack) {
-      onPlatformDispatcherError?.call(error, stack);
-      if (_shouldHandleError(error.toString(), stack.toString())) {
-        logger.handle(
-          message: 'Platform error caught',
-          exception: error,
-          stackTrace: stack,
-        );
-      }
-      return true;
-    };
-
-    FlutterError.onError = (details) {
-      onFlutterError?.call(details, details.stack);
-      if (_shouldHandleError(details.toString(), details.stack.toString())) {
-        logger.error(
-          'FlutterErrorDetails',
-          exception: details.toString(),
-          stackTrace: details.stack,
-        );
-      }
-    };
+      };
+    }
 
     logger.good('✅ ISpect: Error handling set up.');
   }
