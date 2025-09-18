@@ -96,16 +96,37 @@ final class ISpectDbCore {
     int? affected,
     Duration? duration,
     bool? success,
+    Object? value,
   }) {
-    final parts = <String>['op=$operation'];
-    if (table != null) parts.add('table=$table');
-    if (target != null) parts.add('target=$target');
-    if (key != null) parts.add('key=$key');
-    if (items != null) parts.add('items=$items');
-    if (affected != null) parts.add('affected=$affected');
-    if (duration != null) parts.add('duration=${duration.inMilliseconds}ms');
-    if (success != null) parts.add('success=$success');
-    return '[$source] ${parts.join(' ')}';
+    final buffer = StringBuffer('[$source] $operation');
+
+    if (table != null || target != null) {
+      final tablePart = table != null ? table : null;
+      final targetPart = target != null ? target : null;
+      if (tablePart != null && targetPart != null) {
+        buffer.write(' $tablePart → $targetPart');
+      } else if (tablePart != null) {
+        buffer.write(' $tablePart');
+      } else if (targetPart != null) {
+        buffer.write(' $targetPart');
+      }
+    }
+
+    final details = <String>[];
+    if (key != null) details.add('Key: $key');
+    if (value != null) details.add('Value: $value');
+    if (items != null) details.add('Items: $items');
+    if (affected != null) details.add('Affected: $affected');
+    if (duration != null) {
+      details.add('Duration: ${duration.inMilliseconds}ms');
+    }
+    if (success != null) details.add('Success: $success');
+
+    if (details.isNotEmpty) {
+      buffer.write('\n${details.join('\n')}');
+    }
+
+    return buffer.toString();
   }
 }
 
@@ -229,16 +250,16 @@ extension ISpectifyDb on ISpectify {
         ISpectDbCore.pickLogKey(isError: isError, operation: operation);
 
     final message = ISpectDbCore.buildMessage(
-      source: source,
-      operation: operation,
-      table: table,
-      target: target,
-      key: key,
-      items: items,
-      affected: affected,
-      duration: duration,
-      success: success,
-    );
+        source: source,
+        operation: operation,
+        table: table,
+        target: target,
+        key: key,
+        items: items,
+        affected: affected,
+        duration: duration,
+        success: success,
+        value: valTrunc);
 
     final isSlow =
         duration != null && ISpectDbCore.config.slowQueryThreshold != null
