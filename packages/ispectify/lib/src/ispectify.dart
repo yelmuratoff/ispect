@@ -101,7 +101,16 @@ class ISpectify {
     _options = options ?? _options;
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
-    _errorHandler = errorHandler ?? ISpectifyErrorHandler(_options);
+    if (errorHandler != null) {
+      _errorHandler = errorHandler;
+    } else {
+      // Preserve any injected custom error handler implementation.
+      // If current handler is the default implementation, rebuild it to reflect new options.
+      if (_errorHandler.runtimeType == ISpectifyErrorHandler) {
+        _errorHandler = ISpectifyErrorHandler(_options);
+      }
+      // Otherwise keep existing custom error handler as-is.
+    }
     if (history != null) {
       _history = history;
     } else {
