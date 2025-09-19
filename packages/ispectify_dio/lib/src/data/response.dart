@@ -17,7 +17,6 @@ class DioResponseData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    final headers = response?.headers;
     final map = <String, dynamic>{
       'request-options': redactor == null
           ? requestData.toJson()
@@ -43,7 +42,7 @@ class DioResponseData {
                 },
               )
               .toList(),
-      'headers': headers == null ? null : headers.map,
+      'headers': response?.headers.map,
     };
 
     if (redactor == null) {
