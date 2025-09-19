@@ -36,13 +36,11 @@ final class LogDescription {
   }
 
   factory LogDescription.fromMap(Map<String, dynamic> map) {
-    T cast<T>(String k) => map[k] is T
-        ? map[k] as T
-        : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
+     T cast<T>(String k) => map[k] is T ? map[k] as T : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
     return LogDescription(
-      key: cast<String>('key'),
-      description: cast<String>('description'),
-      isDisabled: cast<bool>('is_disabled'),
+      key: cast<String?>('key') ?? '' ,
+      description: cast<String?>('description'),
+      isDisabled: cast<bool?>('is_disabled') ?? false ,
     );
   }
 
@@ -52,8 +50,11 @@ final class LogDescription {
       LogDescription.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'LogDescription(key: $key, description: $description, isDisabled: $isDisabled)';
+  String toString() =>'''LogDescription(
+      key: $key,
+      description: $description,
+      isDisabled: $isDisabled,
+      )''';
 
   @override
   bool operator ==(Object other) {
