@@ -89,7 +89,7 @@ void main() {
       expect(screen.data['value'], 123);
     });
 
-    testWidgets('shows toast and does not push for invalid JSON',
+    testWidgets('shows toast and falls back to raw content for invalid JSON',
         (tester) async {
       const content = '{invalid json}';
       final result = FileProcessingResult.success(
@@ -109,10 +109,14 @@ void main() {
       );
 
       await tester.tap(find.text('go'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      // Should not navigate to JsonScreen on invalid JSON
-      expect(find.byType(JsonScreen), findsNothing);
+      // Should navigate to JsonScreen showing raw content fallback
+      final finder = find.byType(JsonScreen);
+      expect(finder, findsOneWidget);
+      final screen = tester.widget<JsonScreen>(finder);
+      expect(screen.data.containsKey('content'), isTrue);
+      expect(screen.data['content'], content);
     });
   });
 }

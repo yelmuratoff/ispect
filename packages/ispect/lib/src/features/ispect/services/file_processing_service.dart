@@ -185,31 +185,22 @@ class FileProcessingService {
     String content,
     FileFormat format,
   ) {
-    var displayName = 'Pasted Content';
-    var mimeType = 'text/plain';
-
     // Set display name and MIME type based on format
     switch (format) {
       case FileFormat.json:
-        displayName = 'JSON';
-        mimeType = 'application/json';
-
-        // Validate JSON structure
+        // Validate JSON structure but keep JSON MIME regardless
         try {
           jsonDecode(content);
+          return (displayName: 'JSON', mimeType: 'application/json');
         } catch (e) {
-          displayName = 'JSON (Invalid)';
+          return (displayName: 'JSON (Invalid)', mimeType: 'application/json');
         }
       case FileFormat.text:
-        displayName = 'Text';
-        mimeType = 'text/plain';
+        return (displayName: 'Text', mimeType: 'text/plain');
       case FileFormat.auto:
-        // This case should not occur as format should be detected before calling this method
-        displayName = 'Text';
-        mimeType = 'text/plain';
+        // Should not occur as format should be detected before calling this method
+        return (displayName: 'Text', mimeType: 'text/plain');
     }
-
-    return (displayName: displayName, mimeType: mimeType);
   }
 
   /// Detect content format based on content analysis

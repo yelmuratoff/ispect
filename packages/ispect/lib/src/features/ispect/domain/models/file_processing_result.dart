@@ -88,12 +88,9 @@ class FileProcessingResult {
         JsonScreen(data: data).push(context);
         return;
       } catch (_) {
-        unawaited(
-          ISpectToaster.showErrorToast(
-            context,
-            title: 'Invalid JSON content',
-          ),
-        );
+        // Fall back to showing raw content
+        if (!context.mounted) return;
+        JsonScreen(data: {'content': content}).push(context);
         return;
       }
     }
