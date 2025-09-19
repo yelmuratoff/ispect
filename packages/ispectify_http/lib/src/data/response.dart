@@ -35,7 +35,8 @@ class HttpResponseData {
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
       if (response != null) 'body': response!.body,
-      if (response != null) 'body-bytes': response!.bodyBytes.toString(),
+      if (response != null && redactor == null)
+        'body-bytes': response!.bodyBytes.toString(),
       if (multipartRequest != null)
         'multipart-request': {
           'fields': multipartRequest!.fields,
@@ -73,6 +74,8 @@ class HttpResponseData {
       );
     }
 
+    // Do not include raw body-bytes when redaction is enabled to prevent leaks
+
     // Redact multipart request fields/files and mask filenames
     if (multipartRequest != null && map['multipart-request'] is Map) {
       final mp = Map<String, dynamic>.from(
@@ -98,15 +101,8 @@ class HttpResponseData {
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
         )! as List;
-        mp['files'] = red
-            .map((e) => Map<String, Object?>.from(e as Map))
-            .map(
-              (m) => {
-                ...m,
-                'filename': '[REDACTED]',
-              },
-            )
-            .toList();
+        mp['files'] =
+            red.map((e) => Map<String, Object?>.from(e as Map)).toList();
       }
 
       map['multipart-request'] = mp;

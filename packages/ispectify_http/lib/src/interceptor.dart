@@ -140,15 +140,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
           )
           .toList();
       final redactedFiles = useRedaction
-          ? (_redactor.redact(filesList)! as List)
-              .cast<Map<String, Object?>>()
-              .map(
-                (m) => {
-                  ...m,
-                  'filename': '[REDACTED]',
-                },
-              )
-              .toList()
+          ? (_redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
           : filesList.cast<Map<String, Object?>>();
       requestBodyData = {
         'fields': redactedFields.map(MapEntry.new),

@@ -148,15 +148,7 @@ class ISpectDioInterceptor extends Interceptor {
             ? (_redactor.redact(rawFields)! as Map<String, Object?>)
             : rawFields;
         final redFiles = useRedaction
-            ? (_redactor.redact(rawFiles)! as List)
-                .cast<Map<String, Object?>>()
-                .map(
-                  (m) => {
-                    ...m,
-                    'filename': '[REDACTED]',
-                  },
-                )
-                .toList()
+            ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
             : rawFiles.cast<Map<String, Object?>>();
         requestBody = {
           'fields': redFields,
@@ -192,15 +184,7 @@ class ISpectDioInterceptor extends Interceptor {
             ? (_redactor.redact(rawFields)! as Map<String, Object?>)
             : rawFields;
         final redFiles = useRedaction
-            ? (_redactor.redact(rawFiles)! as List)
-                .cast<Map<String, Object?>>()
-                .map(
-                  (m) => {
-                    ...m,
-                    'filename': '[REDACTED]',
-                  },
-                )
-                .toList()
+            ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
             : rawFiles.cast<Map<String, Object?>>();
         responseBody = {
           'fields': redFields,
@@ -220,20 +204,11 @@ class ISpectDioInterceptor extends Interceptor {
         statusCode: response.statusCode,
         statusMessage: response.statusMessage,
         requestHeaders: useRedaction
-            ? _redactor
-                .redactHeaders(response.requestOptions.headers)
-                .map((k, v) => MapEntry(k, v?.toString()))
-            : response.requestOptions.headers
-                .map((k, v) => MapEntry(k, v.toString())),
+            ? _redactor.redactHeaders(response.requestOptions.headers)
+            : response.requestOptions.headers,
         headers: useRedaction
-            ? _redactor
-                .redactHeaders(
-                  response.headers.map
-                      .map((key, value) => MapEntry(key, value.toString())),
-                )
-                .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-            : response.headers.map
-                .map((key, value) => MapEntry(key, value.toString())),
+            ? _redactor.redactHeaders(response.headers.map)
+            : response.headers.map,
         requestBody: requestBody,
         responseBody: responseBody,
         responseData: DioResponseData(

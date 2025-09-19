@@ -46,8 +46,11 @@ class DioErrorLog extends ISpectifyData {
       buffer.write('\nStatus: $statusCode');
     }
 
-    if (settings.printErrorMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
+    if (settings.printErrorMessage &&
+        (statusMessage != null || errorData.exception?.message != null)) {
+      buffer.write(
+        '\nMessage: ${statusMessage ?? errorData.exception?.message ?? ''}',
+      );
     }
 
     if (settings.printErrorData && body != null) {

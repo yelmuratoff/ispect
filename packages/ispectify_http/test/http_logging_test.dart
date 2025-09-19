@@ -164,5 +164,23 @@ void main() {
         reason: 'Filenames should be redacted when redaction enabled',
       );
     });
+
+    test('omits body-bytes when redaction enabled', () async {
+      final redactor = RedactionService();
+
+      final request = http.Request('GET', Uri.parse('https://example.com'));
+      final response = http.Response('binary-response', 200, request: request);
+
+      final data = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = data.toJson(redactor: redactor);
+      expect(json.containsKey('body-bytes'), isFalse,
+          reason: 'body-bytes must be omitted when redaction is enabled',);
+    });
   });
 }

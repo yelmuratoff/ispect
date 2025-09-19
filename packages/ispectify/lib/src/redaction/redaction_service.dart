@@ -18,6 +18,7 @@ class RedactionService {
     bool? redactBase64,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    Set<String>? fullyMaskedKeys,
     int? maxDepth,
   })  : _sensitiveKeysLower = (sensitiveKeys ?? _kDefaultSensitiveKeys)
             .map((e) => e.toLowerCase())
@@ -32,7 +33,11 @@ class RedactionService {
         _ignoredValues = {...?ignoredValues, ...ISpectifyLogType.keys},
         _ignoredKeyNamesLower = {
           ...?(ignoredKeys?.map((e) => e.toLowerCase())),
-        } {
+        },
+        _fullyMaskedKeyNamesLower =
+            (fullyMaskedKeys ?? _kDefaultFullyMaskedKeys)
+                .map((e) => e.toLowerCase())
+                .toSet() {
     // Input validation
     if (_maxDepth <= 0) {
       throw ArgumentError('maxDepth must be positive, got: $_maxDepth');
@@ -56,6 +61,7 @@ class RedactionService {
   final bool _redactBase64;
   final Set<String> _ignoredValues;
   final Set<String> _ignoredKeyNamesLower;
+  final Set<String> _fullyMaskedKeyNamesLower;
 
   // --- Public API ----------------------------------------------------------
 
@@ -185,6 +191,10 @@ class RedactionService {
   ) {
     if (node is String) {
       if (_isIgnoredValue(node, ignoredValues)) return node;
+      if (keyName != null &&
+          _fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
+        return _placeholder;
+      }
       return _maskString(node, keyName: keyName);
     }
     if (node.isScalarType) return _placeholder;
@@ -202,6 +212,11 @@ class RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeysLower,
   ) {
+    if (keyName != null &&
+        node is String &&
+        _fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
+      return _placeholder;
+    }
     if (node is Map) {
       return _redactMap(node, depth, ignoredValues, ignoredKeysLower);
     }
@@ -498,6 +513,9 @@ class RedactionService {
       RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
   static final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
   static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
+  static const Set<String> _kDefaultFullyMaskedKeys = <String>{
+    'filename',
+  };
 }
 
 extension _ObjectExtensions on Object? {
