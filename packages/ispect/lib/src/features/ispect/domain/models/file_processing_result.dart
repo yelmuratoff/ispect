@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -71,11 +72,32 @@ class FileProcessingResult {
 
   Future<void> action(BuildContext context) async {
     if (format == FileFormat.json) {
-      final data = jsonDecode(content) as Map<String, dynamic>;
-      if (!context.mounted) return;
-      JsonScreen(data: data).push(context);
-    } else {
-      JsonScreen(data: {'content': content}).push(context);
+      try {
+        final decoded = jsonDecode(content);
+        Map<String, dynamic> data;
+
+        if (decoded is Map<String, dynamic>) {
+          data = decoded;
+        } else if (decoded is List) {
+          data = {'data': decoded};
+        } else {
+          data = {'value': decoded};
+        }
+
+        if (!context.mounted) return;
+        JsonScreen(data: data).push(context);
+        return;
+      } catch (_) {
+        unawaited(
+          ISpectToaster.showErrorToast(
+            context,
+            title: 'Invalid JSON content',
+          ),
+        );
+        return;
+      }
     }
+
+    JsonScreen(data: {'content': content}).push(context);
   }
 }
