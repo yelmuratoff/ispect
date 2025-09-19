@@ -78,5 +78,40 @@ void main() {
         reason: 'Pretty-printed response body should be in text output',
       );
     });
+
+    test('error logs preserve array bodies under data key', () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          printResponseData: true,
+          printErrorData: true,
+          enableRedaction: false,
+        ),
+      );
+
+      final request =
+          http.Request('POST', Uri.parse('https://api.example.com/login'));
+      final response = http.Response(
+        '[{"field":"email","message":"Invalid"},{"field":"password","message":"Too short"}]',
+        422,
+        request: request,
+      );
+
+      final future = inspector.stream
+          .where((e) => e is HttpErrorLog)
+          .cast<HttpErrorLog>()
+          .first;
+
+      await interceptor.interceptResponse(response: response);
+
+      final log = await future;
+      expect(log.body, isNotNull);
+      expect(log.body, contains('data'));
+      final data = log.body!['data'];
+      expect(data, isA<List<dynamic>>());
+      expect(log.textMessage.contains('email'), isTrue,
+          reason: 'Array error content should appear in formatted text');
+    });
   });
 }

@@ -153,10 +153,15 @@ class ISpectHttpInterceptor extends InterceptorContract {
                 ? _redactor.redact(responseBodyData)
                 : responseBodyData)! as Map<String, dynamic>;
           } catch (_) {
-            final raw =
-                responseBodyData as Map<Object?, Object?>;
+            final raw = responseBodyData as Map<Object?, Object?>;
             return raw.map((k, v) => MapEntry(k.toString(), v));
           }
+        }
+        if (responseBodyData is Iterable) {
+          final iterable = settings.enableRedaction
+              ? _redactor.redact(responseBodyData)
+              : responseBodyData;
+          return <String, dynamic>{'data': iterable};
         }
         if (responseBodyData is String) {
           return <String, dynamic>{
@@ -164,6 +169,9 @@ class ISpectHttpInterceptor extends InterceptorContract {
                 ? _redactor.redact(responseBodyData)
                 : responseBodyData,
           };
+        }
+        if (responseBodyData != null) {
+          return <String, dynamic>{'raw': responseBodyData.toString()};
         }
         return requestBodyData ?? <String, dynamic>{};
       }();
