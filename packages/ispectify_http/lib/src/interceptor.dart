@@ -127,8 +127,12 @@ class ISpectHttpInterceptor extends InterceptorContract {
       final request = response.request! as MultipartRequest;
       final useRedaction = settings.enableRedaction;
       final redactedFields = useRedaction
-          ? _redactor.redact(request.fields)! as Map<String, Object?>
-          : request.fields;
+          ? Map<String, Object?>.from(
+              (_redactor.redact(request.fields)! as Map).map(
+                (k, v) => MapEntry(k.toString(), v),
+              ),
+            )
+          : Map<String, Object?>.from(request.fields);
       final filesList = request.files
           .map(
             (file) => {
@@ -143,7 +147,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
           ? (_redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
           : filesList.cast<Map<String, Object?>>();
       requestBodyData = {
-        'fields': redactedFields.map(MapEntry.new),
+        'fields': redactedFields,
         'files': redactedFiles,
       };
     }

@@ -1,7 +1,29 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/logs_file/logs_file.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (method) async {
+      switch (method.method) {
+        case 'getApplicationDocumentsDirectory':
+        case 'getTemporaryDirectory':
+        case 'getStorageDirectory':
+        case 'getApplicationSupportDirectory':
+        case 'getLibraryDirectory':
+          return Directory.systemTemp.path;
+        default:
+          return Directory.systemTemp.path;
+      }
+    });
+  });
+
   group('LogsFileFactory', () {
     test('creates platform-appropriate handler', () {
       final handler = LogsFileFactory.create();
