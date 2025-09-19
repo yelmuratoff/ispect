@@ -84,6 +84,7 @@ enum ISpectifyLogType {
   print('print');
 
   const ISpectifyLogType(this.key);
+
   final String key;
 
   /// Converts a `LogLevel` to its corresponding [ISpectifyLogType].
@@ -104,6 +105,17 @@ enum ISpectifyLogType {
 
   static Set<String> get keys =>
       ISpectifyLogType.values.map((e) => e.key).toSet();
+
+  bool get isErrorType => switch (this) {
+        ISpectifyLogType.error ||
+        ISpectifyLogType.critical ||
+        ISpectifyLogType.exception ||
+        ISpectifyLogType.httpError ||
+        ISpectifyLogType.riverpodFail ||
+        ISpectifyLogType.dbError =>
+          true,
+        _ => false,
+      };
 }
 
 extension ISpectifyLogTypeExt on ISpectifyLogType {

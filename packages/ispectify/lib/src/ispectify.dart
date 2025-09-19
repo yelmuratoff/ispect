@@ -414,7 +414,10 @@ class ISpectify {
       pen: pen ?? _options.penByKey(logType.key),
       logLevel: logLevel,
     );
-    _processLog(data);
+    final isErrorLog = logLevel == LogLevel.error ||
+        logLevel == LogLevel.critical ||
+        (type?.isErrorType ?? false);
+    _processLog(data, isError: isErrorLog);
   }
 
   /// Processes a log entry based on the provided `ISpectifyData`.
