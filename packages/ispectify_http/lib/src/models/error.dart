@@ -20,7 +20,11 @@ class HttpErrorLog extends ISpectifyData {
           key: getKey,
           logLevel: LogLevel.error,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: responseData?.toJson(redactor: redactor),
+          additionalData: responseData?.toJson(
+            redactor: redactor,
+            printResponseData: settings.printErrorData,
+            printRequestData: settings.printRequestData,
+          ),
         );
 
   final String? method;

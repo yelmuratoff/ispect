@@ -19,6 +19,8 @@ class HttpResponseData {
     RedactionService? redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    bool printResponseData = true,
+    bool printRequestData = true,
   }) {
     final map = <String, dynamic>{
       'url': baseResponse.request?.url,
@@ -34,10 +36,10 @@ class HttpResponseData {
       'is-redirect': baseResponse.isRedirect,
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
-      if (response != null) 'body': response!.body,
-      if (response != null && redactor == null)
+      if (printResponseData && response != null) 'body': response!.body,
+      if (printResponseData && response != null && redactor == null)
         'body-bytes': response!.bodyBytes.toString(),
-      if (multipartRequest != null)
+      if (printRequestData && multipartRequest != null)
         'multipart-request': {
           'fields': multipartRequest!.fields,
           'files': multipartRequest!.files
@@ -66,7 +68,7 @@ class HttpResponseData {
         .map((k, v) => MapEntry(k, v?.toString() ?? ''));
 
     // Redact string body when present
-    if (response != null && map['body'] is String) {
+    if (printResponseData && response != null && map['body'] is String) {
       map['body'] = redactor.redact(
         map['body'],
         ignoredValues: ignoredValues,
@@ -77,7 +79,9 @@ class HttpResponseData {
     // Do not include raw body-bytes when redaction is enabled to prevent leaks
 
     // Redact multipart request fields/files and mask filenames
-    if (multipartRequest != null && map['multipart-request'] is Map) {
+    if (printRequestData &&
+        multipartRequest != null &&
+        map['multipart-request'] is Map) {
       final mp = Map<String, dynamic>.from(
         map['multipart-request'] as Map,
       );

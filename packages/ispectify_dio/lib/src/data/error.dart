@@ -17,6 +17,8 @@ class DioErrorData {
     RedactionService? redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    bool printErrorData = true,
+    bool printRequestData = true,
   }) =>
       {
         'type': exception?.type,
@@ -24,18 +26,24 @@ class DioErrorData {
         'stack-trace': exception?.stackTrace,
         'message': exception?.message,
         'request-options': redactor == null
-            ? requestData.toJson()
+            ? requestData.toJson(printRequestData: printRequestData)
             : requestData.toJson(
                 redactor: redactor,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
+                printRequestData: printRequestData,
               ),
         'response': redactor == null
-            ? responseData.toJson()
+            ? responseData.toJson(
+                printResponseData: printErrorData,
+                printRequestData: printRequestData,
+              )
             : responseData.toJson(
                 redactor: redactor,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
+                printResponseData: printErrorData,
+                printRequestData: printRequestData,
               ),
       };
 }

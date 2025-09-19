@@ -414,5 +414,86 @@ void main() {
             '}'),
       );
     });
+
+    test('additionalData omits response data when printResponseData=false', () {
+      final response = Response<dynamic>(
+        requestOptions: RequestOptions(path: '/test', method: 'GET'),
+        statusCode: 200,
+        data: {'secret': 'value'},
+      );
+      const settings = ISpectDioInterceptorSettings(
+        printResponseData: false,
+      );
+      final dioResponseLog = DioResponseLog(
+        'Test message',
+        responseData: DioResponseData(
+          response: response,
+          requestData: DioRequestData(response.requestOptions),
+        ),
+        settings: settings,
+        method: 'GET',
+        url: 'https://example.com/test',
+        path: '/test',
+        statusCode: 200,
+        statusMessage: null,
+        requestHeaders: <String, dynamic>{},
+        headers: {},
+        requestBody: null,
+        responseBody: null,
+      );
+
+      final additional = dioResponseLog.additionalData;
+      expect(additional, isNotNull);
+      expect(additional!.containsKey('data'), isFalse);
+    });
+
+    test('additionalData omits request data when printRequestData=false', () {
+      final response = Response<dynamic>(
+        requestOptions: RequestOptions(
+          path: '/test',
+          method: 'POST',
+          data: {
+            'a': 1,
+          },
+        ),
+        statusCode: 400,
+        data: {'error': 'bad'},
+      );
+      final dioException = DioException(
+        requestOptions:
+            RequestOptions(path: '/test', method: 'POST', data: {'a': 1}),
+        response: response,
+        message: 'Bad',
+      );
+
+      const settings = ISpectDioInterceptorSettings(
+        printRequestData: false,
+      );
+      final dioErrorLog = DioErrorLog(
+        'Error title',
+        errorData: DioErrorData(
+          exception: dioException,
+          requestData: DioRequestData(dioException.requestOptions),
+          responseData: DioResponseData(
+            response: dioException.response,
+            requestData: DioRequestData(dioException.requestOptions),
+          ),
+        ),
+        settings: settings,
+        method: 'POST',
+        url: 'https://example.com/test',
+        path: '/test',
+        statusCode: 400,
+        statusMessage: null,
+        requestHeaders: {},
+        headers: {},
+        body: {'error': 'bad'},
+      );
+
+      final additional = dioErrorLog.additionalData!;
+      final requestOptionsMap =
+          additional['request-options'] as Map<String, dynamic>;
+      expect(requestOptionsMap.containsKey('data'), isFalse);
+    });
   });
 }

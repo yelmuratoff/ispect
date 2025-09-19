@@ -21,7 +21,11 @@ class DioResponseLog extends ISpectifyData {
           key: getKey,
           title: getKey,
           pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
-          additionalData: responseData.toJson(redactor: redactor),
+          additionalData: responseData.toJson(
+            redactor: redactor,
+            printResponseData: settings.printResponseData,
+            printRequestData: settings.printRequestData,
+          ),
         );
 
   final String? method;

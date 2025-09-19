@@ -16,17 +16,20 @@ class DioResponseData {
     RedactionService? redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    bool printResponseData = true,
+    bool printRequestData = true,
   }) {
     final map = <String, dynamic>{
       'request-options': redactor == null
-          ? requestData.toJson()
+          ? requestData.toJson(printRequestData: printRequestData)
           : requestData.toJson(
               redactor: redactor,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              printRequestData: printRequestData,
             ),
       'real-uri': response?.realUri.toString(),
-      'data': response?.data,
+      if (printResponseData) 'data': response?.data,
       'status-code': response?.statusCode,
       'status-message': response?.statusMessage,
       'extra': response?.extra,
@@ -50,11 +53,13 @@ class DioResponseData {
     }
 
     // Redact response-level fields
-    map['data'] = redactor.redact(
-      map['data'],
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
+    if (printResponseData) {
+      map['data'] = redactor.redact(
+        map['data'],
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+    }
     final hdrs = (map['headers'] as Map?)?.cast<String, dynamic>();
     if (hdrs != null) {
       map['headers'] = redactor.redactHeaders(

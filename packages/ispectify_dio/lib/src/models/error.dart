@@ -21,7 +21,11 @@ class DioErrorLog extends ISpectifyData {
           title: getKey,
           logLevel: LogLevel.error,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: errorData.toJson(redactor: redactor),
+          additionalData: errorData.toJson(
+            redactor: redactor,
+            printErrorData: settings.printErrorData,
+            printRequestData: settings.printRequestData,
+          ),
         );
 
   final String? method;
