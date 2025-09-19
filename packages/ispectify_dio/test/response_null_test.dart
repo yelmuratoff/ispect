@@ -22,4 +22,22 @@ void main() {
     expect(json['headers'], isNull);
     expect(json['redirects'], isNull);
   });
+
+  test('DioResponseData.toJson handles DioException without response', () {
+    final dioException = DioException(
+      requestOptions: RequestOptions(path: '/exception'),
+    );
+    final data = DioResponseData(
+      response: dioException.response,
+      requestData: DioRequestData(dioException.requestOptions),
+    );
+
+    late Map<String, dynamic> json;
+    expect(
+      () => json = data.toJson(redactor: RedactionService()),
+      returnsNormally,
+    );
+
+    expect(json['headers'], anyOf(isNull, isEmpty));
+  });
 }
