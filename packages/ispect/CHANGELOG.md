@@ -20,6 +20,16 @@
 - Improved `RedactionService` heuristics to recognize both padded and unpadded Base64/Base64URL payloads while avoiding false negatives from whitespace or alternate alphabets.
 - Relaxed binary-string detection in `RedactionService` to treat Unicode text as printable, preventing `[binary …]` placeholders from replacing legitimate localized content.
 
+### Fixed (ispectify_http)
+- Response logs: `HttpResponseLog.textMessage` incorrectly used `requestBody` for the Data section. Now it uses `responseBody` and formats via `JsonTruncatorService.pretty`, supporting both `Map` and `String`.
+- Interceptor response handling: `ISpectHttpInterceptor` previously placed the entire `Response` object into `HttpResponseLog.responseBody` and mixed parsed response content into `requestBody`. Logic updated to:
+  - Separate `requestBodyData` (multipart fields/files only) and `responseBodyData` (parsed/redacted response body as `Map` or raw `String`).
+  - Apply redaction to the body content, not the `Response` object.
+  - Error logs now include parsed/redacted response body when available.
+
+### Tests (ispectify_http)
+- Added unit tests.
+
 ## 4.3.6
 - Documentation updates
 
