@@ -102,8 +102,19 @@ class ISpectify {
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
     _errorHandler = errorHandler ?? ISpectifyErrorHandler(_options);
-    _history =
-        history ?? DefaultISpectifyHistory(_options, history: _history.history);
+    if (history != null) {
+      _history = history;
+    } else {
+      // Preserve any injected custom history implementation.
+      // If current history is the default in-memory implementation, rebuild it to reflect new options.
+      if (_history is DefaultISpectifyHistory) {
+        _history = DefaultISpectifyHistory(
+          _options,
+          history: _history.history,
+        );
+      }
+      // Otherwise keep existing custom history instance as-is.
+    }
   }
 
   /// Stream controller for broadcasting log events.

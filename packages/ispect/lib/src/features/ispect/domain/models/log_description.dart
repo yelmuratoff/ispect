@@ -50,7 +50,7 @@ final class LogDescription {
       LogDescription.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>'''LogDescription(
+  String toString() => '''LogDescription(
       key: $key,
       description: $description,
       isDisabled: $isDisabled,
