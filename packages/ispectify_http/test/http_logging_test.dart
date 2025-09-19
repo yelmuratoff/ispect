@@ -41,7 +41,9 @@ void main() {
   });
 
   group('ISpectHttpInterceptor', () {
-    test('error payload preserved when printResponseData=false, printErrorData=true', () async {
+    test(
+        'error payload preserved when printResponseData=false, printErrorData=true',
+        () async {
       final inspector = ISpectify();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
@@ -52,7 +54,8 @@ void main() {
       );
 
       final request = http.Request('GET', Uri.parse('https://api.example.com'));
-      final response = http.Response('{"error":"Invalid token"}', 401, request: request);
+      final response =
+          http.Response('{"error":"Invalid token"}', 401, request: request);
 
       final future = inspector.stream
           .where((e) => e is HttpErrorLog)
@@ -64,8 +67,11 @@ void main() {
       final log = await future;
       expect(log.body, isNotNull);
       expect(log.body, contains('error'));
-      expect(log.textMessage.contains('Invalid token'), isTrue,
-          reason: 'Error text should include parsed server error payload',);
+      expect(
+        log.textMessage.contains('Invalid token'),
+        isTrue,
+        reason: 'Error text should include parsed server error payload',
+      );
     });
     test('logs parsed response body for success responses', () async {
       final inspector = ISpectify();
@@ -205,8 +211,11 @@ void main() {
       );
 
       final json = data.toJson(redactor: redactor);
-      expect(json.containsKey('body-bytes'), isFalse,
-          reason: 'body-bytes must be omitted when redaction is enabled',);
+      expect(
+        json.containsKey('body-bytes'),
+        isFalse,
+        reason: 'body-bytes must be omitted when redaction is enabled',
+      );
     });
   });
 }
