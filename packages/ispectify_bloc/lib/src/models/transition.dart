@@ -8,8 +8,8 @@ class BlocChangeLog extends ISpectifyData {
     required this.change,
     required this.settings,
   }) : super(
-          key: getKey,
           '''${bloc.runtimeType} changed\nCURRENT state: ${change.currentState.runtimeType}\nNEXT state: ${change.nextState.runtimeType}''',
+          key: getKey,
           title: getKey,
         );
 

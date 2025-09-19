@@ -4,6 +4,7 @@
 - [ ] Add test coverage
 - [ ] Handle runtime config changes and initial values with persistence (web: localStorage; mobile/desktop: SharedPreferences)
 - [ ] Performance improvements (virtualized lists, throttling, buffer limits)
+- [ ] Copy cURL command for API requests
 
 ## Packages
 ### ispect
