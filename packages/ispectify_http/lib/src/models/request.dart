@@ -36,6 +36,11 @@ class HttpRequestLog extends ISpectifyData {
   String get textMessage {
     final buffer = StringBuffer('[$method] $message');
 
+    if (settings.printRequestData && body != null) {
+      final prettyBody = JsonTruncatorService.pretty(body);
+      buffer.write('\nData: $prettyBody');
+    }
+
     if (settings.printRequestHeaders &&
         headers != null &&
         headers!.isNotEmpty) {

@@ -11,5 +11,5 @@ import 'package:web/web.dart';
 ///   will be converted to a JavaScript string using the `toJS` method
 ///   before being logged.
 void outputLog(String message) => message.split('\n').forEach(
-      (element) => console.log(message.toJS),
+      (element) => console.log(element.toJS),
     );
