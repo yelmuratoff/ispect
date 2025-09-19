@@ -242,6 +242,8 @@ extension ISpectifyDb on ISpectify {
     final val = projection ?? value;
     final valRed = useRedact ? ISpectDbCore.redact(val, rKeys) : val;
     final valTrunc = ISpectDbCore.truncateValue(valRed, maxVal);
+    final valueForAdditional =
+        valTrunc is String ? valTrunc : valTrunc?.toString();
 
     final digest = ISpectDbCore.sqlDigest(statement);
 
@@ -281,7 +283,7 @@ extension ISpectifyDb on ISpectify {
       'success': success,
       'affected': affected,
       'items': items,
-      'value': valTrunc,
+      'value': valueForAdditional,
       'meta': m,
       'transactionId': txnId,
       'error': error?.toString(),
@@ -291,6 +293,7 @@ extension ISpectifyDb on ISpectify {
       message,
       key: keyName,
       title: keyName,
+      logLevel: isError ? LogLevel.error : LogLevel.info,
       additionalData: additional,
       stackTrace: isError && ISpectDbCore.config.attachStackOnError
           ? (errorStackTrace ?? StackTrace.current)
@@ -448,8 +451,11 @@ extension ISpectifyDb on ISpectify {
         transactionId: txnId,
       );
     }
+    var didSucceed = false;
     try {
-      return await ISpectDbTxn.runInTransactionZone<T>(txnId, run);
+      final result = await ISpectDbTxn.runInTransactionZone<T>(txnId, run);
+      didSucceed = true;
+      return result;
     } catch (e) {
       if (enableMarkers) {
         db(
@@ -463,7 +469,7 @@ extension ISpectifyDb on ISpectify {
       }
       rethrow;
     } finally {
-      if (enableMarkers) {
+      if (enableMarkers && didSucceed) {
         db(
           source: source,
           operation: 'transaction-commit',

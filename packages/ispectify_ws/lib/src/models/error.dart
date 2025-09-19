@@ -12,6 +12,7 @@ class WSErrorLog extends ISpectifyData {
   }) : super(
           title: getKey,
           key: getKey,
+          logLevel: LogLevel.error,
           pen: (AnsiPen()..red()),
           additionalData: {
             'type': type,

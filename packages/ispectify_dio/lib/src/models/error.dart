@@ -19,6 +19,7 @@ class DioErrorLog extends ISpectifyData {
   }) : super(
           key: getKey,
           title: getKey,
+          logLevel: LogLevel.error,
           pen: settings.errorPen ?? (AnsiPen()..red()),
           additionalData: errorData.toJson(redactor: redactor),
         );
