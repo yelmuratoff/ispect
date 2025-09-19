@@ -84,8 +84,6 @@ void main() {
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
-          printResponseData: true,
-          printErrorData: true,
           enableRedaction: false,
         ),
       );
@@ -110,8 +108,11 @@ void main() {
       expect(log.body, contains('data'));
       final data = log.body!['data'];
       expect(data, isA<List<dynamic>>());
-      expect(log.textMessage.contains('email'), isTrue,
-          reason: 'Array error content should appear in formatted text');
+      expect(
+        log.textMessage.contains('email'),
+        isTrue,
+        reason: 'Array error content should appear in formatted text',
+      );
     });
   });
 }
