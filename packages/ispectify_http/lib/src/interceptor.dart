@@ -111,7 +111,12 @@ class ISpectHttpInterceptor extends InterceptorContract {
     Map<String, dynamic>? requestBodyData;
     Object? responseBodyData;
 
-    if (response is Response && settings.printResponseData) {
+    // Decode response body if needed for success logs or error logs
+    final shouldDecodeBody = response is Response &&
+        (settings.printResponseData ||
+            ((response.statusCode >= 400 && response.statusCode < 600) &&
+                settings.printErrorData));
+    if (shouldDecodeBody) {
       try {
         final decoded = jsonDecode(response.body);
         responseBodyData =
