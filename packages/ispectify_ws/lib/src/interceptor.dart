@@ -34,47 +34,44 @@ final class ISpectWSInterceptor implements WSInterceptor {
     try {
       final useRedaction = settings.enableRedaction;
       final safe = useRedaction ? _redactor.redact(data) : data;
+      final Object bodyPayload = {
+        'data': safe,
+        'metrics': _client?.metrics.toJson(),
+      };
+      final Object redactedOnlyMetrics = {
+        'metrics': _client?.metrics.toJson(),
+      };
       final log = switch (type) {
         'REQUEST' => WSSentLog(
-            '$safe',
+            settings.printSentData ? '$safe' : '',
             type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
-            body: {
-              'data': safe,
-              'metrics': _client?.metrics.toJson(),
-            },
+            body: settings.printSentData ? bodyPayload : redactedOnlyMetrics,
+            settings: settings,
           ),
         'RESPONSE' => WSReceivedLog(
-            '$safe',
+            settings.printReceivedData ? '$safe' : '',
             type: type,
             url: uri.toString(),
             path: uri?.path ?? '',
-            body: {
-              'data': safe,
-              'metrics': _client?.metrics.toJson(),
-            },
+            body:
+                settings.printReceivedData ? bodyPayload : redactedOnlyMetrics,
           ),
         _ => null,
       };
       if (log != null) {
         if (log is WSSentLog) {
           if (settings.sentFilter?.call(log) ?? true) {
-            if (settings.printSentData) {
-              logger.logCustom(log);
-            }
+            logger.logCustom(log);
           }
         } else if (log is WSReceivedLog) {
           if (settings.receivedFilter?.call(log) ?? true) {
-            if (settings.printReceivedData) {
-              logger.logCustom(log);
-            }
+            logger.logCustom(log);
           }
         } else if (log is WSErrorLog) {
           if (settings.errorFilter?.call(log) ?? true) {
-            if (settings.printErrorData) {
-              logger.logCustom(log);
-            }
+            logger.logCustom(log);
           }
         } else {
           logger.logCustom(log);
@@ -82,21 +79,26 @@ final class ISpectWSInterceptor implements WSInterceptor {
       }
     } catch (e, s) {
       final errorLog = WSErrorLog(
-        'Failed to log $type: $e',
+        settings.printErrorMessage
+            ? 'Failed to log $type: $e'
+            : 'Failed to log $type',
         type: type,
         url: uri.toString(),
         path: uri?.path ?? '',
-        body: {
-          'data': data.toString(),
-          'metrics': _client?.metrics.toJson(),
-        },
+        body: settings.printErrorData
+            ? {
+                'data':
+                    (settings.enableRedaction ? _redactor.redact(data) : data),
+                'metrics': _client?.metrics.toJson(),
+              }
+            : {
+                'metrics': _client?.metrics.toJson(),
+              },
         exception: e,
         stackTrace: s,
       );
       if (settings.errorFilter?.call(errorLog) ?? true) {
-        if (settings.printErrorData) {
-          logger.logCustom(errorLog);
-        }
+        logger.logCustom(errorLog);
       }
     }
     next(data);
