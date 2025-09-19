@@ -130,9 +130,17 @@ class ISpectDioInterceptor extends Interceptor {
       Map<String, dynamic>? requestBody;
       if (response.requestOptions.data is FormData) {
         final formData = response.requestOptions.data as FormData;
-        final rawFields = formData.fields
-            .map((e) => {e.key: e.value})
-            .fold<Map<String, Object?>>({}, (acc, m) => acc..addAll(m));
+        final rawFields = <String, Object?>{};
+        for (final entry in formData.fields) {
+          final existing = rawFields[entry.key];
+          if (existing == null) {
+            rawFields[entry.key] = entry.value;
+          } else if (existing is List) {
+            existing.add(entry.value);
+          } else {
+            rawFields[entry.key] = [existing, entry.value];
+          }
+        }
         final rawFiles = formData.files
             .map(
               (e) => {
@@ -145,7 +153,9 @@ class ISpectDioInterceptor extends Interceptor {
             )
             .toList();
         final redFields = useRedaction
-            ? (_redactor.redact(rawFields)! as Map<String, Object?>)
+            ? (((_redactor.redact(rawFields)! as Map).map(
+                (k, v) => MapEntry(k.toString(), v),
+              )) as Map<String, Object?>)
             : rawFields;
         final redFiles = useRedaction
             ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
@@ -166,9 +176,17 @@ class ISpectDioInterceptor extends Interceptor {
       Object? responseBody;
       if (response.data is FormData) {
         final formData = response.data as FormData;
-        final rawFields = formData.fields
-            .map((e) => {e.key: e.value})
-            .fold<Map<String, Object?>>({}, (acc, m) => acc..addAll(m));
+        final rawFields = <String, Object?>{};
+        for (final entry in formData.fields) {
+          final existing = rawFields[entry.key];
+          if (existing == null) {
+            rawFields[entry.key] = entry.value;
+          } else if (existing is List) {
+            existing.add(entry.value);
+          } else {
+            rawFields[entry.key] = [existing, entry.value];
+          }
+        }
         final rawFiles = formData.files
             .map(
               (e) => {
@@ -181,7 +199,9 @@ class ISpectDioInterceptor extends Interceptor {
             )
             .toList();
         final redFields = useRedaction
-            ? (_redactor.redact(rawFields)! as Map<String, Object?>)
+            ? (((_redactor.redact(rawFields)! as Map).map(
+                (k, v) => MapEntry(k.toString(), v),
+              )) as Map<String, Object?>)
             : rawFields;
         final redFiles = useRedaction
             ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
