@@ -130,8 +130,10 @@ class ISpectDioInterceptor extends Interceptor {
       Map<String, dynamic>? requestBody;
       if (response.requestOptions.data is FormData) {
         final formData = response.requestOptions.data as FormData;
-        final fields = formData.fields;
-        final files = formData.files
+        final rawFields = formData.fields
+            .map((e) => {e.key: e.value})
+            .fold<Map<String, Object?>>({}, (acc, m) => acc..addAll(m));
+        final rawFiles = formData.files
             .map(
               (e) => {
                 'key': e.key,
@@ -142,9 +144,23 @@ class ISpectDioInterceptor extends Interceptor {
               },
             )
             .toList();
+        final redFields = useRedaction
+            ? (_redactor.redact(rawFields)! as Map<String, Object?>)
+            : rawFields;
+        final redFiles = useRedaction
+            ? (_redactor.redact(rawFiles)! as List)
+                .cast<Map<String, Object?>>()
+                .map(
+                  (m) => {
+                    ...m,
+                    'filename': '[REDACTED]',
+                  },
+                )
+                .toList()
+            : rawFiles.cast<Map<String, Object?>>();
         requestBody = {
-          'fields': fields,
-          'files': files,
+          'fields': redFields,
+          'files': redFiles,
         };
       } else {
         final Object? reqData = response.requestOptions.data;
@@ -158,8 +174,10 @@ class ISpectDioInterceptor extends Interceptor {
       Object? responseBody;
       if (response.data is FormData) {
         final formData = response.data as FormData;
-        final fields = formData.fields;
-        final files = formData.files
+        final rawFields = formData.fields
+            .map((e) => {e.key: e.value})
+            .fold<Map<String, Object?>>({}, (acc, m) => acc..addAll(m));
+        final rawFiles = formData.files
             .map(
               (e) => {
                 'key': e.key,
@@ -170,9 +188,23 @@ class ISpectDioInterceptor extends Interceptor {
               },
             )
             .toList();
+        final redFields = useRedaction
+            ? (_redactor.redact(rawFields)! as Map<String, Object?>)
+            : rawFields;
+        final redFiles = useRedaction
+            ? (_redactor.redact(rawFiles)! as List)
+                .cast<Map<String, Object?>>()
+                .map(
+                  (m) => {
+                    ...m,
+                    'filename': '[REDACTED]',
+                  },
+                )
+                .toList()
+            : rawFiles.cast<Map<String, Object?>>();
         responseBody = {
-          'fields': fields,
-          'files': files,
+          'fields': redFields,
+          'files': redFiles,
         };
       } else {
         responseBody =

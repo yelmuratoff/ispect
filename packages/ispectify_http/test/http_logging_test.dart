@@ -114,5 +114,55 @@ void main() {
         reason: 'Array error content should appear in formatted text',
       );
     });
+
+    test('multipart request fields/files are redacted when enabled', () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          printResponseData: false,
+        ),
+      );
+
+      final request =
+          http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
+            ..fields['password'] = 'super-secret'
+            ..fields['token'] = 'abc123'
+            ..files.add(
+              http.MultipartFile.fromString(
+                'file',
+                'file-content',
+                filename: 'secret.txt',
+              ),
+            );
+      final baseResponse = http.StreamedResponse(
+        const Stream<List<int>>.empty(),
+        200,
+        request: request,
+      );
+
+      final future = inspector.stream
+          .where((e) => e is HttpResponseLog)
+          .cast<HttpResponseLog>()
+          .first;
+
+      await interceptor.interceptResponse(response: baseResponse);
+      final log = await future;
+      final body = log.requestBody;
+      expect(body, isNotNull);
+      final fields = body!['fields'] as Map<String, Object?>;
+      expect(
+        fields.values.any((v) => v == 'super-secret' || v == 'abc123'),
+        isFalse,
+        reason: 'Sensitive field values must be redacted',
+      );
+      final files = (body['files'] as List).cast<Map<String, Object?>>();
+      final filenames = files.map((m) => m['filename']?.toString()).join(',');
+      expect(
+        filenames.contains('secret.txt'),
+        isFalse,
+        reason: 'Filenames should be redacted when redaction enabled',
+      );
+    });
   });
 }

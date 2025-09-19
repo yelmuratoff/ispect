@@ -125,18 +125,34 @@ class ISpectHttpInterceptor extends InterceptorContract {
 
     if (response.request is MultipartRequest && settings.printRequestData) {
       final request = response.request! as MultipartRequest;
+      final useRedaction = settings.enableRedaction;
+      final redactedFields = useRedaction
+          ? _redactor.redact(request.fields)! as Map<String, Object?>
+          : request.fields;
+      final filesList = request.files
+          .map(
+            (file) => {
+              'filename': file.filename,
+              'length': file.length,
+              'contentType': file.contentType.toString(),
+              'field': file.field,
+            },
+          )
+          .toList();
+      final redactedFiles = useRedaction
+          ? (_redactor.redact(filesList)! as List)
+              .cast<Map<String, Object?>>()
+              .map(
+                (m) => {
+                  ...m,
+                  'filename': '[REDACTED]',
+                },
+              )
+              .toList()
+          : filesList.cast<Map<String, Object?>>();
       requestBodyData = {
-        'fields': request.fields,
-        'files': request.files
-            .map(
-              (file) => {
-                'filename': file.filename,
-                'length': file.length,
-                'contentType': file.contentType,
-                'field': file.field,
-              },
-            )
-            .toList(),
+        'fields': redactedFields.map(MapEntry.new),
+        'files': redactedFiles,
       };
     }
 

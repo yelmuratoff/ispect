@@ -395,8 +395,8 @@ class ISpectify {
   }) {
     final logType = type ?? ISpectifyLogType.fromLogLevel(logLevel);
     final data = ISpectifyData(
-      key: logType.key,
       message?.toString() ?? '',
+      key: logType.key,
       title: _options.titleByKey(logType.key),
       exception: exception,
       stackTrace: stackTrace,
