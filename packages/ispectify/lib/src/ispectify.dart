@@ -228,7 +228,9 @@ class ISpectify {
   /// This allows for creating fully customized log entries.
   ///
   /// - `log`: The custom log data to process.
-  void logCustom(ISpectifyData log) => _processLog(log);
+  void logCustom(ISpectifyData log) {
+    _processLog(log);
+  }
 
   /// Creates a critical level log entry.
   ///
@@ -423,10 +425,8 @@ class ISpectify {
       pen: pen ?? _options.penByKey(logType.key),
       logLevel: logLevel,
     );
-    final isErrorLog = logLevel == LogLevel.error ||
-        logLevel == LogLevel.critical ||
-        (type?.isErrorType ?? false);
-    _processLog(data, isError: isErrorLog);
+
+    _processLog(data);
   }
 
   /// Processes a log entry based on the provided `ISpectifyData`.
@@ -444,11 +444,11 @@ class ISpectify {
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
-  void _processLog(ISpectifyData data, {bool isError = false}) {
+  void _processLog(ISpectifyData data) {
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;
 
-    if (isError) {
+    if (data.isError) {
       _observer?.onError(data);
     } else {
       _observer?.onLog(data);
@@ -462,7 +462,7 @@ class ISpectify {
         '${data.header}${data.textMessage}'.truncate(
           maxLength: _options.logTruncateLength,
         ),
-        level: data.logLevel ?? (isError ? LogLevel.error : null),
+        level: data.logLevel ?? (data.isError ? LogLevel.error : null),
         pen: data.pen ?? _options.penByKey(data.key),
       );
     }

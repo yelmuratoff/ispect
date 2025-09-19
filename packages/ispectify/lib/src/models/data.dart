@@ -94,6 +94,15 @@ class ISpectifyData {
   /// Returns the formatted timestamp of the log entry.
   String get formattedTime => ISpectifyDateTimeFormatter(time).format;
 
+  bool get isError {
+    final isErrorLog =
+        (logLevel == LogLevel.error || logLevel == LogLevel.critical) ||
+            ISpectifyLogType.values.any(
+              (t) => t.key == key && t.isErrorType,
+            );
+    return isErrorLog;
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
