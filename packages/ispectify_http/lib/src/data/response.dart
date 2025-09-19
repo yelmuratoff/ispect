@@ -44,7 +44,7 @@ class HttpResponseData {
                 (file) => {
                   'filename': file.filename,
                   'length': file.length,
-                  'contentType': file.contentType,
+                  'contentType': file.contentType.toString(),
                   'field': file.field,
                 },
               )
@@ -71,6 +71,45 @@ class HttpResponseData {
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
+    }
+
+    // Redact multipart request fields/files and mask filenames
+    if (multipartRequest != null && map['multipart-request'] is Map) {
+      final mp = Map<String, dynamic>.from(
+        map['multipart-request'] as Map,
+      );
+
+      // Fields
+      final fields = mp['fields'];
+      if (fields is Map) {
+        final red = redactor.redact(
+          fields,
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        )! as Map;
+        mp['fields'] = red.map((k, v) => MapEntry(k.toString(), v));
+      }
+
+      // Files
+      final files = mp['files'];
+      if (files is List) {
+        final red = redactor.redact(
+          files,
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        )! as List;
+        mp['files'] = red
+            .map((e) => Map<String, Object?>.from(e as Map))
+            .map(
+              (m) => {
+                ...m,
+                'filename': '[REDACTED]',
+              },
+            )
+            .toList();
+      }
+
+      map['multipart-request'] = mp;
     }
 
     return map;
