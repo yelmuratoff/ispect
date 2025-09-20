@@ -13,7 +13,7 @@ class HttpRequestData {
     bool printRequestHeaders = true,
   }) {
     final map = <String, dynamic>{
-      'url': requestOptions?.url,
+      'url': requestOptions?.url.toString(),
       'method': requestOptions?.method,
       'content-length': requestOptions?.contentLength,
       'persistent-connection': requestOptions?.persistentConnection,

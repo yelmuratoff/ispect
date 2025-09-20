@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/ispectify_http.dart';
@@ -287,6 +289,125 @@ void main() {
         isFalse,
         reason: 'Multipart payload must be omitted when printRequestData=false',
       );
+    });
+  });
+
+  group('JSON Serialization', () {
+    test('HttpRequestData.toJson produces JSON-encodable data', () {
+      final request = http.Request('GET', Uri.parse('https://example.com/test'))
+        ..headers.addAll({'Authorization': 'Bearer token123'});
+
+      final requestData = HttpRequestData(request);
+      final jsonData = requestData.toJson();
+
+      // Verify URL is stored as string, not Uri object
+      expect(jsonData['url'], isA<String>());
+      expect(jsonData['url'], equals('https://example.com/test'));
+
+      // Verify the data can be JSON encoded without errors
+      expect(() => jsonEncode(jsonData), returnsNormally);
+    });
+
+    test('HttpResponseData.toJson produces JSON-encodable data', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/test'));
+      final response = http.Response(
+        '{"success": true}',
+        200,
+        headers: {'Content-Type': 'application/json'},
+        request: request,
+      );
+
+      final requestData = HttpRequestData(request);
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: requestData,
+        multipartRequest: null,
+      );
+
+      final jsonData = responseData.toJson();
+
+      // Verify URL is stored as string, not Uri object
+      expect(jsonData['url'], isA<String>());
+      expect(jsonData['url'], equals('https://example.com/test'));
+
+      // Verify the data can be JSON encoded without errors
+      expect(() => jsonEncode(jsonData), returnsNormally);
+    });
+
+    test('JSON serialization works with null request/response', () {
+      // Test with null request
+      final requestData = HttpRequestData(null);
+      final jsonData = requestData.toJson();
+
+      expect(jsonData['url'], isNull);
+      expect(() => jsonEncode(jsonData), returnsNormally);
+
+      // Test with null response but valid request
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/test'));
+      final nullResponseData = HttpResponseData(
+        response: null,
+        baseResponse: http.Response('', 404, request: request),
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final nullJsonData = nullResponseData.toJson();
+      expect(nullJsonData['url'], isA<String>());
+      expect(() => jsonEncode(nullJsonData), returnsNormally);
+    });
+
+    test('HttpResponseLog can be JSON encoded without Uri serialization errors',
+        () {
+      final request =
+          http.Request('POST', Uri.parse('https://api.example.com/users'))
+            ..headers.addAll({
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer token123',
+            });
+
+      final response = http.Response(
+        '{"id": 123, "created": true}',
+        201,
+        headers: {'Content-Type': 'application/json'},
+        request: request,
+      );
+
+      final requestData = HttpRequestData(request);
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: requestData,
+        multipartRequest: null,
+      );
+
+      final log = HttpResponseLog(
+        'https://api.example.com/users',
+        method: 'POST',
+        url: 'https://api.example.com/users',
+        path: '/users',
+        statusCode: 201,
+        statusMessage: 'Created',
+        requestHeaders: request.headers,
+        headers: response.headers,
+        requestBody: {'name': 'John Doe'},
+        responseBody: {'id': 123, 'created': true},
+        settings: const ISpectHttpInterceptorSettings(),
+        responseData: responseData,
+      );
+
+      // This should not throw JsonUnsupportedObjectError
+      expect(() => jsonEncode(log.toJson()), returnsNormally);
+
+      final jsonResult = log.toJson();
+      expect(jsonResult, isNotNull);
+      // The additionalData should contain the response data with URL as string
+      final additionalData = jsonResult['additionalData'];
+      if (additionalData != null && additionalData is Map<String, dynamic>) {
+        expect(additionalData['url'], isA<String>());
+      }
     });
   });
 }
