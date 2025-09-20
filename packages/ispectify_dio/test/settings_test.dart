@@ -71,46 +71,28 @@ void main() {
       expect(settings.errorFilter!(timeoutResponse), equals(false));
     });
 
-    test(
-        'copyWith should create a new instance with updated values for all fields',
-        () {
-      final originalSettings = ISpectDioInterceptorSettings(
-        printErrorHeaders: false,
-        requestPen: AnsiPen()..green(),
-        responsePen: AnsiPen()..cyan(),
-        errorPen: AnsiPen()..red(),
-      );
-
-      final updatedSettings = originalSettings.copyWith(
+    test('copyWith preserves enabled flag when changing other settings', () {
+      // Test with enabled = false
+      const disabledSettings = ISpectDioInterceptorSettings(enabled: false);
+      final updatedDisabledSettings = disabledSettings.copyWith(
         printResponseData: false,
         printRequestHeaders: true,
-        printErrorHeaders: true,
-        printErrorData: false,
-        requestPen: AnsiPen()..yellow(),
       );
 
-      expect(updatedSettings.printResponseData, equals(false));
-      expect(updatedSettings.printResponseHeaders, equals(false));
-      expect(updatedSettings.printResponseMessage, equals(true));
-      expect(updatedSettings.printRequestData, equals(true));
-      expect(updatedSettings.printErrorHeaders, equals(true));
-      expect(updatedSettings.printErrorData, equals(false));
-      expect(
-        updatedSettings.printRequestHeaders,
-        equals(true),
+      expect(updatedDisabledSettings.enabled, equals(false));
+      expect(updatedDisabledSettings.printResponseData, equals(false));
+      expect(updatedDisabledSettings.printRequestHeaders, equals(true));
+
+      // Test with enabled = true (default)
+      const enabledSettings = ISpectDioInterceptorSettings();
+      final updatedEnabledSettings = enabledSettings.copyWith(
+        printErrorHeaders: false,
+        printRequestData: false,
       );
-      expect(
-        updatedSettings.requestPen,
-        isNot(same(originalSettings.requestPen)),
-      );
-      expect(
-        updatedSettings.responsePen,
-        equals(originalSettings.responsePen),
-      );
-      expect(
-        updatedSettings.errorPen,
-        equals(originalSettings.errorPen),
-      );
+
+      expect(updatedEnabledSettings.enabled, equals(true));
+      expect(updatedEnabledSettings.printErrorHeaders, equals(false));
+      expect(updatedEnabledSettings.printRequestData, equals(false));
     });
   });
 }

@@ -1,15 +1,14 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/history/history.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('ISpectify clearHistory', () {
     test('clearHistory works when logging is disabled', () {
-      final logger = ISpectify();
+      final logger = ISpectify()
 
-      // Add some logs to history
-      logger.info('Test log 1');
-      logger.error('Test log 2');
+        // Add some logs to history
+        ..info('Test log 1')
+        ..error('Test log 2');
       expect(logger.history.length, 2);
 
       // Disable logging
@@ -38,11 +37,9 @@ void main() {
       expect(historyDisabled.history.length, 0);
 
       // Test with useHistory = true but enabled = false
-      final optionsEnabledFalse =
-          ISpectifyOptions(useHistory: true, enabled: false);
-      final historyEnabledFalse = DefaultISpectifyHistory(optionsEnabledFalse);
-
-      historyEnabledFalse.addForTesting(testData);
+      final optionsEnabledFalse = ISpectifyOptions(enabled: false);
+      final historyEnabledFalse = DefaultISpectifyHistory(optionsEnabledFalse)
+        ..addForTesting(testData);
       expect(historyEnabledFalse.history.length, 1);
 
       historyEnabledFalse.clear();
@@ -50,11 +47,11 @@ void main() {
     });
 
     test('clearHistory preserves history functionality after re-enabling', () {
-      final logger = ISpectify();
+      final logger = ISpectify()
 
-      // Add logs and disable
-      logger.info('Test log 1');
-      logger.disable();
+        // Add logs and disable
+        ..info('Test log 1')
+        ..disable();
       expect(logger.history.length, 1);
 
       // Clear while disabled
@@ -62,8 +59,9 @@ void main() {
       expect(logger.history.length, 0);
 
       // Re-enable and add new logs
-      logger.enable();
-      logger.info('Test log 2');
+      logger
+        ..enable()
+        ..info('Test log 2');
       expect(logger.history.length, 1);
     });
   });
