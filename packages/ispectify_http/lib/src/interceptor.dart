@@ -76,9 +76,11 @@ class ISpectHttpInterceptor extends InterceptorContract {
             : request.headers)
         : null;
     final redactedBody = settings.printRequestData
-        ? (request is Request
-            ? (useRedaction ? _redactor.redact(request.body) : request.body)
-            : null)
+        ? (request is MultipartRequest
+            ? _extractMultipartData(request, useRedaction)
+            : request is Request
+                ? (useRedaction ? _redactor.redact(request.body) : request.body)
+                : null)
         : null;
     _logger.logCustom(
       HttpRequestLog(
@@ -270,5 +272,37 @@ class ISpectHttpInterceptor extends InterceptorContract {
     }
 
     return response;
+  }
+
+  /// Extract multipart form data for logging
+  Map<String, dynamic> _extractMultipartData(
+      MultipartRequest request, bool useRedaction) {
+    final redactedFields = useRedaction
+        ? Map<String, Object?>.from(
+            (_redactor.redact(request.fields)! as Map).map(
+              (k, v) => MapEntry(k.toString(), v),
+            ),
+          )
+        : Map<String, Object?>.from(request.fields);
+
+    final filesList = request.files
+        .map(
+          (file) => {
+            'filename': file.filename,
+            'length': file.length,
+            'contentType': file.contentType.toString(),
+            'field': file.field,
+          },
+        )
+        .toList();
+
+    final redactedFiles = useRedaction
+        ? (_redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
+        : filesList.cast<Map<String, Object?>>();
+
+    return {
+      'fields': redactedFields,
+      'files': redactedFiles,
+    };
   }
 }

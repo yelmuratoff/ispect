@@ -531,4 +531,135 @@ void main() {
       }
     });
   });
+
+  group('Multipart Request Logging', () {
+    test('multipart request form data is logged when printRequestData=true',
+        () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          printRequestData: true,
+          enableRedaction: false,
+        ),
+      );
+
+      final request =
+          http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
+            ..fields['username'] = 'john_doe'
+            ..fields['email'] = 'john@example.com'
+            ..files.add(
+              http.MultipartFile.fromString(
+                'avatar',
+                'fake-image-data',
+                filename: 'profile.jpg',
+              ),
+            );
+
+      final future = inspector.stream
+          .where((e) => e is HttpRequestLog)
+          .cast<HttpRequestLog>()
+          .first;
+
+      await interceptor.interceptRequest(request: request);
+      final log = await future;
+
+      expect(log.body, isNotNull);
+      expect(log.body, isA<Map<String, dynamic>>());
+
+      final body = log.body as Map<String, dynamic>;
+      expect(body.containsKey('fields'), isTrue);
+      expect(body.containsKey('files'), isTrue);
+
+      final fields = body['fields'] as Map<String, dynamic>;
+      expect(fields['username'], equals('john_doe'));
+      expect(fields['email'], equals('john@example.com'));
+
+      final files = body['files'] as List<dynamic>;
+      expect(files.length, equals(1));
+      expect(files[0]['filename'], equals('profile.jpg'));
+      expect(files[0]['field'], equals('avatar'));
+    });
+
+    test('multipart request data is redacted when enableRedaction=true',
+        () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          printRequestData: true,
+          enableRedaction: true,
+        ),
+      );
+
+      final request =
+          http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
+            ..fields['username'] = 'john_doe'
+            ..fields['password'] = 'secret123'
+            ..fields['token'] = 'sensitive-token'
+            ..files.add(
+              http.MultipartFile.fromString(
+                'document',
+                'confidential-data',
+                filename: 'secret.pdf',
+              ),
+            );
+
+      final future = inspector.stream
+          .where((e) => e is HttpRequestLog)
+          .cast<HttpRequestLog>()
+          .first;
+
+      await interceptor.interceptRequest(request: request);
+      final log = await future;
+
+      expect(log.body, isNotNull);
+      final body = log.body as Map<String, dynamic>;
+
+      final fields = body['fields'] as Map<String, dynamic>;
+      // Non-sensitive field should remain
+      expect(fields['username'], equals('john_doe'));
+      // Sensitive fields should be redacted
+      expect(fields['password'], isNot(equals('secret123')));
+      expect(fields['token'], isNot(equals('sensitive-token')));
+
+      final files = body['files'] as List<dynamic>;
+      expect(files.length, equals(1));
+      // Filename should be redacted
+      expect(files[0]['filename'], isNot(equals('secret.pdf')));
+    });
+
+    test('multipart request data is not logged when printRequestData=false',
+        () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          printRequestData: false,
+          enableRedaction: false,
+        ),
+      );
+
+      final request =
+          http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
+            ..fields['username'] = 'john_doe'
+            ..files.add(
+              http.MultipartFile.fromString(
+                'avatar',
+                'fake-image-data',
+                filename: 'profile.jpg',
+              ),
+            );
+
+      final future = inspector.stream
+          .where((e) => e is HttpRequestLog)
+          .cast<HttpRequestLog>()
+          .first;
+
+      await interceptor.interceptRequest(request: request);
+      final log = await future;
+
+      expect(log.body, isNull);
+    });
+  });
 }
