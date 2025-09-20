@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -407,6 +409,125 @@ void main() {
       final additionalData = jsonResult['additionalData'];
       if (additionalData != null && additionalData is Map<String, dynamic>) {
         expect(additionalData['url'], isA<String>());
+      }
+    });
+  });
+
+  group('Redaction in JSON Export', () {
+    test(
+        'HttpResponseData.toJson redacts JSON body content when redaction enabled',
+        () {
+      final redactor = RedactionService();
+      final request =
+          http.Request('POST', Uri.parse('https://api.example.com/users'))
+            ..headers.addAll({'Content-Type': 'application/json'});
+
+      // Create response with sensitive data
+      final response = http.Response(
+        '{"userId": 123, "email": "user@example.com", "password": "secret123", "token": "abc123"}',
+        200,
+        headers: {'Content-Type': 'application/json'},
+        request: request,
+      );
+
+      final requestData = HttpRequestData(request);
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: requestData,
+        multipartRequest: null,
+      );
+
+      // Test without redaction - should contain sensitive data
+      final unredactedJson = responseData.toJson();
+      expect(unredactedJson['body'], contains('secret123'));
+      expect(unredactedJson['body'], contains('abc123'));
+
+      // Test with redaction - should not contain sensitive data
+      final redactedJson = responseData.toJson(
+        redactor: redactor,
+      );
+
+      // Parse the redacted JSON to verify content
+      final parsedBody = jsonDecode(redactedJson['body'] as String);
+      expect(parsedBody, isA<Map<String, dynamic>>());
+
+      // Sensitive data should be redacted (replaced with placeholders)
+      expect(parsedBody['password'], isNot(equals('secret123')));
+      expect(parsedBody['token'], isNot(equals('abc123')));
+
+      // Non-sensitive data should remain
+      expect(parsedBody['userId'], equals(123));
+    });
+
+    test('JSON export with redaction works end-to-end', () {
+      final redactor = RedactionService();
+      final request =
+          http.Request('POST', Uri.parse('https://api.example.com/users'))
+            ..headers.addAll({
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer secret-token-456',
+            });
+
+      final response = http.Response(
+        '{"data": {"user": {"id": 123, "email": "test@example.com", "password": "secret123"}}, "token": "session-789"}',
+        200,
+        headers: {'Content-Type': 'application/json'},
+        request: request,
+      );
+
+      final requestData = HttpRequestData(request);
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: requestData,
+        multipartRequest: null,
+      );
+
+      final log = HttpResponseLog(
+        'https://api.example.com/users',
+        method: 'POST',
+        url: 'https://api.example.com/users',
+        path: '/users',
+        statusCode: 200,
+        statusMessage: 'OK',
+        requestHeaders: request.headers,
+        headers: response.headers,
+        requestBody: {'name': 'John Doe'},
+        responseBody: {
+          'data': {
+            'user': {
+              'id': 123,
+              'email': 'test@example.com',
+              'password': 'secret123',
+            },
+          },
+          'token': 'session-789',
+        },
+        settings: const ISpectHttpInterceptorSettings(),
+        responseData: responseData,
+        redactor: redactor,
+      );
+
+      // Test that JSON export works without throwing
+      expect(() => jsonEncode(log.toJson()), returnsNormally);
+
+      final exportedJson = log.toJson();
+      expect(exportedJson, isNotNull);
+
+      // Verify that additionalData contains redacted content
+      final additionalData = exportedJson['additionalData'];
+      if (additionalData != null && additionalData is Map<String, dynamic>) {
+        final body = additionalData['body'];
+        if (body != null && body is String) {
+          // Parse the exported body to verify it's valid JSON
+          final parsedBody = jsonDecode(body);
+          expect(parsedBody, isA<Map<String, dynamic>>());
+
+          // The structure should be preserved but sensitive data redacted
+          expect(parsedBody['data'], isA<Map<String, dynamic>>());
+          expect(parsedBody['data']['user'], isA<Map<String, dynamic>>());
+        }
       }
     });
   });

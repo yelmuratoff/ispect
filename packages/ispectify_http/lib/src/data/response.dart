@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/request.dart';
@@ -41,7 +43,15 @@ class HttpResponseData {
       'is-redirect': baseResponse.isRedirect,
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
-      if (printResponseData && response != null) 'body': response!.body,
+      if (printResponseData && response != null)
+        'body': redactor != null
+            ? _getRedactedBody(
+                response!.body,
+                redactor,
+                ignoredValues,
+                ignoredKeys,
+              )
+            : response!.body,
       if (printResponseData && response != null && redactor == null)
         'body-bytes': response!.bodyBytes.toString(),
       if (printRequestData && multipartRequest != null)
@@ -73,17 +83,6 @@ class HttpResponseData {
           )
           .map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
-
-    // Redact string body when present
-    if (printResponseData && response != null && map['body'] is String) {
-      map['body'] = redactor.redact(
-        map['body'],
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
-
-    // Do not include raw body-bytes when redaction is enabled to prevent leaks
 
     // Redact multipart request fields/files and mask filenames
     if (printRequestData &&
@@ -120,5 +119,33 @@ class HttpResponseData {
     }
 
     return map;
+  }
+
+  /// Helper method to get redacted body content
+  static String _getRedactedBody(
+    String body,
+    RedactionService redactor,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  ) {
+    try {
+      // Try to parse as JSON and redact the parsed object
+      final parsed = jsonDecode(body);
+      final redacted = redactor.redact(
+        parsed,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+      // Return the redacted object as JSON string
+      return jsonEncode(redacted);
+    } catch (_) {
+      // If not valid JSON, redact as string
+      final redacted = redactor.redact(
+        body,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+      return redacted?.toString() ?? body;
+    }
   }
 }
