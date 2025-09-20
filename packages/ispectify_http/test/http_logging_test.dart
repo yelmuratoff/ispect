@@ -539,7 +539,6 @@ void main() {
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
-          printRequestData: true,
           enableRedaction: false,
         ),
       );
@@ -567,7 +566,7 @@ void main() {
       expect(log.body, isNotNull);
       expect(log.body, isA<Map<String, dynamic>>());
 
-      final body = log.body as Map<String, dynamic>;
+      final body = log.body! as Map<String, dynamic>;
       expect(body.containsKey('fields'), isTrue);
       expect(body.containsKey('files'), isTrue);
 
@@ -586,10 +585,6 @@ void main() {
       final inspector = ISpectify();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printRequestData: true,
-          enableRedaction: true,
-        ),
       );
 
       final request =
@@ -614,7 +609,7 @@ void main() {
       final log = await future;
 
       expect(log.body, isNotNull);
-      final body = log.body as Map<String, dynamic>;
+      final body = log.body! as Map<String, dynamic>;
 
       final fields = body['fields'] as Map<String, dynamic>;
       // Non-sensitive field should remain

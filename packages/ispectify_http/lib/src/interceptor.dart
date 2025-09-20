@@ -276,7 +276,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
 
   /// Extract multipart form data for logging
   Map<String, dynamic> _extractMultipartData(
-      MultipartRequest request, bool useRedaction) {
+      MultipartRequest request, bool useRedaction,) {
     final redactedFields = useRedaction
         ? Map<String, Object?>.from(
             (_redactor.redact(request.fields)! as Map).map(

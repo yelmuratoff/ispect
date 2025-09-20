@@ -185,12 +185,12 @@ class ISpectify {
         _errorHandler.handle(exception, stackTrace, message?.toString());
     if (data is ISpectifyError) {
       _observer?.onError(data);
-      _processLog(data);
+      _processLog(data, skipObserverNotification: true);
       return;
     }
     if (data is ISpectifyException) {
       _observer?.onException(data);
-      _processLog(data);
+      _processLog(data, skipObserverNotification: true);
       return;
     }
     _processLog(data);
@@ -444,14 +444,17 @@ class ISpectify {
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
-  void _processLog(ISpectifyData data) {
+  void _processLog(ISpectifyData data,
+      {bool skipObserverNotification = false,}) {
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;
 
-    if (data.isError) {
-      _observer?.onError(data);
-    } else {
-      _observer?.onLog(data);
+    if (!skipObserverNotification) {
+      if (data.isError) {
+        _observer?.onError(data);
+      } else {
+        _observer?.onLog(data);
+      }
     }
 
     _iSpectifyStreamController.add(data);
