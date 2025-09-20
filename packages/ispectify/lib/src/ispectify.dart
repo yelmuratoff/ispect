@@ -369,8 +369,8 @@ class ISpectify {
   }) {
     _processLog(
       AnalyticsLog(
-        analytics: analytics,
         '${event ?? 'Event'}: $message\nParameters: $parameters',
+        analytics: analytics,
       ),
     );
   }
@@ -444,8 +444,10 @@ class ISpectify {
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
-  void _processLog(ISpectifyData data,
-      {bool skipObserverNotification = false,}) {
+  void _processLog(
+    ISpectifyData data, {
+    bool skipObserverNotification = false,
+  }) {
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;
 
