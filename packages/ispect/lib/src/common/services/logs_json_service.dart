@@ -149,7 +149,8 @@ class LogsJsonService {
     bool includeMetadata = true,
   }) async {
     if (logs.isEmpty) {
-      throw ArgumentError('Cannot export empty logs list');
+      ISpect.logger.info('No logs to export. Skipping file creation.');
+      return;
     }
 
     final jsonContent =
@@ -174,7 +175,8 @@ class LogsJsonService {
     String fileType = 'json',
   }) async {
     if (filteredLogs.isEmpty) {
-      throw ArgumentError('Cannot export empty filtered logs list');
+      ISpect.logger.info('No filtered logs to export. Skipping file creation.');
+      return;
     }
 
     final exportData = _createFilteredExportData(logs, filteredLogs, filter);

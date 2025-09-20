@@ -12,6 +12,8 @@ void main() {
 
     setUp(() {
       service = const LogsJsonService();
+      // Initialize ISpect with a basic logger for testing
+      ISpect.initialize(ISpectify());
       sampleLogs = [
         ISpectifyData(
           'Test log message 1',
@@ -283,6 +285,28 @@ void main() {
       expect(importedLogs.length, equals(2));
       expect(importedLogs[0].message, equals('Valid log'));
       expect(importedLogs[1].message, equals('Another valid log'));
+    });
+
+    test('should handle empty logs gracefully in shareLogsAsJsonFile',
+        () async {
+      // Act & Assert - should not throw
+      await expectLater(
+        service.shareLogsAsJsonFile([]),
+        completes,
+      );
+    });
+
+    test(
+        'should handle empty filtered logs gracefully in shareFilteredLogsAsJsonFile',
+        () async {
+      // Arrange
+      final filter = ISpectifyFilter();
+
+      // Act & Assert - should not throw
+      await expectLater(
+        service.shareFilteredLogsAsJsonFile([], [], filter),
+        completes,
+      );
     });
   });
 }
