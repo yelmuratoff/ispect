@@ -19,6 +19,8 @@ class DioErrorData {
     Set<String>? ignoredKeys,
     bool printErrorData = true,
     bool printRequestData = true,
+    bool printRequestHeaders = true,
+    bool printResponseHeaders = true,
   }) =>
       {
         'type': exception?.type,
@@ -26,17 +28,23 @@ class DioErrorData {
         'stack-trace': exception?.stackTrace,
         'message': exception?.message,
         'request-options': redactor == null
-            ? requestData.toJson(printRequestData: printRequestData)
+            ? requestData.toJson(
+                printRequestData: printRequestData,
+                printRequestHeaders: printRequestHeaders,
+              )
             : requestData.toJson(
                 redactor: redactor,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
                 printRequestData: printRequestData,
+                printRequestHeaders: printRequestHeaders,
               ),
         'response': redactor == null
             ? responseData.toJson(
                 printResponseData: printErrorData,
                 printRequestData: printRequestData,
+                printResponseHeaders: printResponseHeaders,
+                printRequestHeaders: printRequestHeaders,
               )
             : responseData.toJson(
                 redactor: redactor,
@@ -44,6 +52,8 @@ class DioErrorData {
                 ignoredKeys: ignoredKeys,
                 printResponseData: printErrorData,
                 printRequestData: printRequestData,
+                printResponseHeaders: printResponseHeaders,
+                printRequestHeaders: printRequestHeaders,
               ),
       };
 }

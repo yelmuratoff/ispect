@@ -20,6 +20,7 @@ class DioRequestLog extends ISpectifyData {
           additionalData: requestData.toJson(
             redactor: redactor,
             printRequestData: settings.printRequestData,
+            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 

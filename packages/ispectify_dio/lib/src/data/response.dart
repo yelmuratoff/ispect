@@ -18,15 +18,22 @@ class DioResponseData {
     Set<String>? ignoredKeys,
     bool printResponseData = true,
     bool printRequestData = true,
+    bool printResponseHeaders = true,
+    bool printRequestHeaders = true,
   }) {
+    final headers = response?.headers;
     final map = <String, dynamic>{
       'request-options': redactor == null
-          ? requestData.toJson(printRequestData: printRequestData)
+          ? requestData.toJson(
+              printRequestData: printRequestData,
+              printRequestHeaders: printRequestHeaders,
+            )
           : requestData.toJson(
               redactor: redactor,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
               printRequestData: printRequestData,
+              printRequestHeaders: printRequestHeaders,
             ),
       'real-uri': response?.realUri.toString(),
       if (printResponseData) 'data': response?.data,
@@ -45,7 +52,7 @@ class DioResponseData {
                 },
               )
               .toList(),
-      'headers': response?.headers.map,
+      if (printResponseHeaders) 'headers': headers?.map,
     };
 
     if (redactor == null) {

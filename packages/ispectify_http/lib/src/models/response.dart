@@ -25,6 +25,8 @@ class HttpResponseLog extends ISpectifyData {
             redactor: redactor,
             printResponseData: settings.printResponseData,
             printRequestData: settings.printRequestData,
+            printResponseHeaders: settings.printResponseHeaders,
+            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 

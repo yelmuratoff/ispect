@@ -10,6 +10,7 @@ class HttpRequestData {
     RedactionService? redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    bool printRequestHeaders = true,
   }) {
     final map = <String, dynamic>{
       'url': requestOptions?.url,
@@ -18,13 +19,13 @@ class HttpRequestData {
       'persistent-connection': requestOptions?.persistentConnection,
       'follow-redirects': requestOptions?.followRedirects,
       'max-redirects': requestOptions?.maxRedirects,
-      'headers': requestOptions?.headers,
+      if (printRequestHeaders) 'headers': requestOptions?.headers,
       'finalized': requestOptions?.finalized,
     };
 
     if (redactor == null) return map;
 
-    final hdrs = requestOptions?.headers;
+    final hdrs = printRequestHeaders ? requestOptions?.headers : null;
     if (hdrs != null) {
       final red = redactor.redactHeaders(
         hdrs,

@@ -21,17 +21,22 @@ class HttpResponseData {
     Set<String>? ignoredKeys,
     bool printResponseData = true,
     bool printRequestData = true,
+    bool printResponseHeaders = true,
+    bool printRequestHeaders = true,
   }) {
     final map = <String, dynamic>{
       'url': baseResponse.request?.url,
       'status-code': baseResponse.statusCode,
       'status-message': baseResponse.reasonPhrase,
       'request-data': redactor == null
-          ? requestData.toJson()
+          ? requestData.toJson(
+              printRequestHeaders: printRequestHeaders,
+            )
           : requestData.toJson(
               redactor: redactor,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              printRequestHeaders: printRequestHeaders,
             ),
       'is-redirect': baseResponse.isRedirect,
       'content-length': baseResponse.contentLength,
@@ -53,19 +58,21 @@ class HttpResponseData {
               )
               .toList(),
         },
-      'headers': baseResponse.headers,
+      if (printResponseHeaders) 'headers': baseResponse.headers,
     };
 
     if (redactor == null) return map;
 
     // Redact headers (Map<String, String>) while preserving shape
-    map['headers'] = redactor
-        .redactHeaders(
-          baseResponse.headers,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        )
-        .map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    if (printResponseHeaders) {
+      map['headers'] = redactor
+          .redactHeaders(
+            baseResponse.headers,
+            ignoredValues: ignoredValues,
+            ignoredKeys: ignoredKeys,
+          )
+          .map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    }
 
     // Redact string body when present
     if (printResponseData && response != null && map['body'] is String) {

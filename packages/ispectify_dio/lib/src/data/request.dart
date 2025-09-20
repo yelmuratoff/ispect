@@ -11,6 +11,7 @@ class DioRequestData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     bool printRequestData = true,
+    bool printRequestHeaders = true,
   }) {
     final map = <String, dynamic>{
       'path': requestOptions.path,
@@ -18,7 +19,7 @@ class DioRequestData {
       'uri': requestOptions.uri.toString(),
       'method': requestOptions.method,
       if (printRequestData) 'data': requestOptions.data,
-      'headers': requestOptions.headers,
+      if (printRequestHeaders) 'headers': requestOptions.headers,
       'query-parameters': requestOptions.queryParameters,
       'extra': requestOptions.extra,
       'preserve-header-case': requestOptions.preserveHeaderCase,
@@ -43,7 +44,9 @@ class DioRequestData {
     // Apply redaction to known sensitive sections when a redactor is provided.
     final hasDataKey = map.containsKey('data');
     final Object? rawData = hasDataKey ? map['data'] : null;
-    final rawHeaders = (map['headers'] as Map).cast<String, dynamic>();
+    final rawHeaders = printRequestHeaders
+        ? (map['headers'] as Map).cast<String, dynamic>()
+        : null;
     final rawQuery = (map['query-parameters'] as Map).cast<String, dynamic>();
     final rawExtra = (map['extra'] as Map).cast<String, dynamic>();
 
@@ -54,11 +57,13 @@ class DioRequestData {
         ignoredKeys: ignoredKeys,
       );
     }
-    map['headers'] = redactor.redactHeaders(
-      rawHeaders,
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
+    if (rawHeaders != null) {
+      map['headers'] = redactor.redactHeaders(
+        rawHeaders,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+    }
     map['query-parameters'] = redactor.redact(
       rawQuery,
       ignoredValues: ignoredValues,

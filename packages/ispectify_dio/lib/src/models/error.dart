@@ -25,6 +25,8 @@ class DioErrorLog extends ISpectifyData {
             redactor: redactor,
             printErrorData: settings.printErrorData,
             printRequestData: settings.printRequestData,
+            printRequestHeaders: settings.printRequestHeaders,
+            printResponseHeaders: settings.printResponseHeaders,
           ),
         );
 

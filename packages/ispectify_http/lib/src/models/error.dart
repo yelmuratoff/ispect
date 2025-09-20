@@ -24,6 +24,8 @@ class HttpErrorLog extends ISpectifyData {
             redactor: redactor,
             printResponseData: settings.printErrorData,
             printRequestData: settings.printRequestData,
+            printResponseHeaders: settings.printErrorHeaders,
+            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 
