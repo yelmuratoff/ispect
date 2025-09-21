@@ -62,10 +62,16 @@ void main() {
     final testError = ArgumentError('Test error');
     logger.handle(exception: testError);
 
-    expect(_SpyObserver.errorCount, 1,
-        reason: 'onError should be called exactly once for Error',);
-    expect(_SpyObserver.exceptionCount, 0,
-        reason: 'onException should not be called for Error',);
+    expect(
+      _SpyObserver.errorCount,
+      1,
+      reason: 'onError should be called exactly once for Error',
+    );
+    expect(
+      _SpyObserver.exceptionCount,
+      0,
+      reason: 'onException should not be called for Error',
+    );
 
     // Reset counters
     _SpyObserver.errorCount = 0;
@@ -75,9 +81,15 @@ void main() {
     const testException = FormatException('Test exception');
     logger.handle(exception: testException);
 
-    expect(_SpyObserver.exceptionCount, 1,
-        reason: 'onException should be called exactly once for Exception',);
-    expect(_SpyObserver.errorCount, 0,
-        reason: 'onError should not be called for Exception',);
+    expect(
+      _SpyObserver.exceptionCount,
+      1,
+      reason: 'onException should be called exactly once for Exception',
+    );
+    expect(
+      _SpyObserver.errorCount,
+      0,
+      reason: 'onError should not be called for Exception',
+    );
   });
 }

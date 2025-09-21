@@ -24,9 +24,7 @@ void main() {
         data: {'ok': true},
       );
 
-      const settings = ISpectDioInterceptorSettings(
-        
-      );
+      const settings = ISpectDioInterceptorSettings();
 
       final log = DioResponseLog(
         'Test',
@@ -58,9 +56,7 @@ void main() {
         method: 'POST',
         headers: {'x-api-key': 'secret'},
       );
-      const settings = ISpectDioInterceptorSettings(
-        
-      );
+      const settings = ISpectDioInterceptorSettings();
 
       final log = DioRequestLog(
         'Test',
@@ -94,9 +90,7 @@ void main() {
       final ex =
           DioException(requestOptions: requestOptions, response: response);
 
-      const settings = ISpectDioInterceptorSettings(
-        
-      );
+      const settings = ISpectDioInterceptorSettings();
 
       final log = DioErrorLog(
         'err',
@@ -104,7 +98,9 @@ void main() {
           exception: ex,
           requestData: DioRequestData(requestOptions),
           responseData: DioResponseData(
-              response: response, requestData: DioRequestData(requestOptions),),
+            response: response,
+            requestData: DioRequestData(requestOptions),
+          ),
         ),
         settings: settings,
         method: 'GET',
