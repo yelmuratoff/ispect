@@ -80,9 +80,12 @@ class ISpectBlocObserver extends BlocObserver {
     }
     onBlocTransition?.call(bloc, transition);
     _logger.logCustom(
-      BlocStateLog(
+      BlocChangeLog(
         bloc: bloc,
-        transition: transition,
+        change: Change(
+          currentState: transition.currentState,
+          nextState: transition.nextState,
+        ),
         settings: settings,
       ),
     );
@@ -98,9 +101,13 @@ class ISpectBlocObserver extends BlocObserver {
     }
     onBlocChange?.call(bloc, change);
     _logger.logCustom(
-      BlocChangeLog(
-        bloc: bloc,
-        change: change,
+      BlocStateLog(
+        bloc: bloc as Bloc<dynamic, dynamic>,
+        transition: Transition(
+          currentState: change.currentState,
+          event: Object(),
+          nextState: change.nextState,
+        ),
         settings: settings,
       ),
     );
