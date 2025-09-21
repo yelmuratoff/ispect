@@ -95,24 +95,24 @@ class FileProcessingService {
       displayName: fileInfo.displayName,
       mimeType: fileInfo.mimeType,
       fileName: file.name,
-      format: fileName.endsWith('.json') ? FileFormat.json : FileFormat.text,
+      format: fileInfo.mimeType == 'application/json'
+          ? FileFormat.json
+          : FileFormat.text,
     );
   }
 
   /// Read content from platform file
   Future<String?> _readFileContent(PlatformFile file) async {
     try {
-      if (kIsWeb) {
-        // For web platform, use bytes
-        if (file.bytes != null) {
-          return utf8.decode(file.bytes!);
-        }
-      } else {
-        // For mobile platforms, use file path
-        if (file.path != null) {
-          final fileHandle = File(file.path!);
-          return await fileHandle.readAsString();
-        }
+      // Try bytes first (works for both web and mobile when available)
+      if (file.bytes != null) {
+        return utf8.decode(file.bytes!);
+      }
+
+      // Fallback to file path for mobile platforms
+      if (file.path != null) {
+        final fileHandle = File(file.path!);
+        return await fileHandle.readAsString();
       }
     } catch (e) {
       ISpect.logger.error('Error reading file content: $e');
@@ -248,4 +248,9 @@ class FileProcessingService {
 
   /// Get maximum file size in human readable format
   String get maxFileSizeFormatted => '${_maxFileSize ~/ (1024 * 1024)}MB';
+
+  /// Process a file for testing purposes (bypasses file picker validation)
+  @visibleForTesting
+  Future<FileProcessingResult> processFileForTesting(PlatformFile file) async =>
+      _processPickedFile(file);
 }
