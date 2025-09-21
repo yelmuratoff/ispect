@@ -337,10 +337,13 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     switch (_sessionCleanupStrategy) {
       case SessionCleanupStrategy.deleteOldest:
         await _cleanupByOldest(availableDates);
+        return;
       case SessionCleanupStrategy.deleteBySize:
         await _cleanupBySize(availableDates);
+        return;
       case SessionCleanupStrategy.archiveOldest:
         await _cleanupByArchiving(availableDates);
+        return;
     }
   }
 
