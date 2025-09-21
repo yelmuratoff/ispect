@@ -138,7 +138,7 @@ class SearchFilter implements Filter<ISpectifyData> {
 /// A composite filter that combines multiple filtering criteria.
 ///
 /// It allows filtering based on `titles`, `types`, and a `searchQuery`.
-/// All filters are combined with a logical OR operation.
+/// All filters are combined with a logical OR operation for search purposes.
 class ISpectifyFilter implements Filter<ISpectifyData> {
   /// Creates an `ISpectifyFilter` that combines title, type, and search filters.
   ISpectifyFilter({
@@ -180,12 +180,8 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     // Skip filtering if no filters are active
     if (_isEmpty) return true;
 
-    // Returns true if any filter matches the item
-    // Using for loop for better performance than .any()
-    for (final filter in _filters) {
-      if (filter.apply(item)) return true;
-    }
-    return false;
+    // Returns true if ANY filter matches the item (OR logic for search)
+    return _filters.any((filter) => filter.apply(item));
   }
 
   /// Returns a new instance of `ISpectifyFilter` with updated filtering criteria.
