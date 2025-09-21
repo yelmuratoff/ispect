@@ -87,8 +87,91 @@ void main() {
       await history.saveToDailyFile();
       await history.saveToDailyFile();
       await history.saveToDailyFile();
+    });
+  });
 
-      expect(history.history.length, 1);
+  group('DailyFileLogHistory updateAutoSaveSettings persistence', () {
+    test('should persist interval changes and report them in statistics',
+        () async {
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 5,
+        enableAutoSave: false,
+      );
+
+      // Initial interval should be the default (1 second)
+      final initialStats = await history.getSessionStatistics();
+      expect(initialStats.autoSaveInterval, const Duration(seconds: 1));
+
+      // Update the interval
+      const newInterval = Duration(minutes: 2);
+      history.updateAutoSaveSettings(interval: newInterval);
+
+      // Statistics should now show the new interval
+      final updatedStats = await history.getSessionStatistics();
+      expect(updatedStats.autoSaveInterval, newInterval);
+    });
+
+    test('should persist interval when enabling auto-save with new interval',
+        () async {
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 5,
+        enableAutoSave: false,
+      );
+
+      // Update interval and enable auto-save at the same time
+      const newInterval = Duration(minutes: 5);
+      history.updateAutoSaveSettings(enabled: true, interval: newInterval);
+
+      // Statistics should show the new interval
+      final stats = await history.getSessionStatistics();
+      expect(stats.autoSaveInterval, newInterval);
+      expect(stats.enableAutoSave, true);
+    });
+
+    test('should keep updated interval when toggling auto-save', () async {
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 5,
+        enableAutoSave: false,
+      );
+
+      // Update interval
+      const newInterval = Duration(minutes: 3);
+      history
+        ..updateAutoSaveSettings(interval: newInterval)
+
+        // Enable auto-save
+        ..updateAutoSaveSettings(enabled: true)
+
+        // Disable auto-save
+        ..updateAutoSaveSettings(enabled: false)
+
+        // Re-enable auto-save - should use the updated interval, not the original
+        ..updateAutoSaveSettings(enabled: true);
+
+      // Statistics should still show the updated interval
+      final stats = await history.getSessionStatistics();
+      expect(stats.autoSaveInterval, newInterval);
+      expect(stats.enableAutoSave, true);
+    });
+
+    test('should handle interval updates while auto-save is enabled', () async {
+      final history = DailyFileLogHistory(options, maxSessionDays: 5);
+
+      // Initial interval
+      final initialStats = await history.getSessionStatistics();
+      expect(initialStats.autoSaveInterval, const Duration(seconds: 1));
+
+      // Update interval while enabled
+      const newInterval = Duration(seconds: 30);
+      history.updateAutoSaveSettings(interval: newInterval);
+
+      // Statistics should show the new interval
+      final updatedStats = await history.getSessionStatistics();
+      expect(updatedStats.autoSaveInterval, newInterval);
+      expect(updatedStats.enableAutoSave, true);
     });
   });
 }

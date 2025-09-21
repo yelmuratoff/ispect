@@ -49,7 +49,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       RegExp(r'logs_(\d{4})-(\d{2})-(\d{2})\.json');
 
   final int _maxSessionDays;
-  final Duration _autoSaveInterval;
+  Duration _autoSaveInterval;
   final int _maxFileSize;
   final bool _enableCompression;
   final SessionCleanupStrategy _sessionCleanupStrategy;
@@ -874,13 +874,17 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Updates auto-save settings during runtime.
   @override
   void updateAutoSaveSettings({bool? enabled, Duration? interval}) {
+    // Update the stored interval if provided
+    if (interval != null) {
+      _autoSaveInterval = interval;
+    }
+
     if (enabled != null) {
       if (enabled && !_autoSaveEnabled) {
         // Enable auto-save
         _autoSaveEnabled = true;
-        final newInterval = interval ?? _autoSaveInterval;
         _autoSaveTimer?.cancel();
-        _autoSaveTimer = Timer.periodic(newInterval, (_) {
+        _autoSaveTimer = Timer.periodic(_autoSaveInterval, (_) {
           _performAutoSave();
         });
       } else if (!enabled && _autoSaveEnabled) {
@@ -892,7 +896,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     } else if (interval != null && _autoSaveEnabled) {
       // Update interval while keeping auto-save enabled
       _autoSaveTimer?.cancel();
-      _autoSaveTimer = Timer.periodic(interval, (_) {
+      _autoSaveTimer = Timer.periodic(_autoSaveInterval, (_) {
         _performAutoSave();
       });
     }
