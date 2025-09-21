@@ -10,7 +10,7 @@ import 'package:web/web.dart';
 /// - Usage example: `final logsFile = WebLogsFile(); await logsFile.createFile(logs);`
 /// - Edge case notes: Uses blob URLs for file identification, handles browser download limitations
 class WebLogsFile extends BaseLogsFile {
-  static final Map<String, String> _fileNames = <String, String>{};
+  static final Map<Blob, String> _fileNames = <Blob, String>{};
 
   @override
   bool get supportsNativeFiles => false;
@@ -61,8 +61,7 @@ class WebLogsFile extends BaseLogsFile {
 
   /// Stores filename metadata for later retrieval
   void _storeFileNameMetadata(Blob blob, String fileName) {
-    final blobUrl = URL.createObjectURL(blob);
-    _fileNames[blobUrl] = fileName;
+    _fileNames[blob] = fileName;
   }
 
   @override
@@ -98,7 +97,7 @@ class WebLogsFile extends BaseLogsFile {
 
     final url = URL.createObjectURL(file);
     URL.revokeObjectURL(url);
-    _fileNames.remove(url);
+    _fileNames.remove(file);
   }
 
   @override
@@ -113,8 +112,8 @@ class WebLogsFile extends BaseLogsFile {
       );
     }
 
+    final finalFileName = _determineFinalFileName(file, fileName, fileType);
     final url = URL.createObjectURL(file);
-    final finalFileName = _determineFinalFileName(url, fileName, fileType);
 
     _triggerBrowserDownload(url, finalFileName);
     URL.revokeObjectURL(url);
@@ -122,14 +121,14 @@ class WebLogsFile extends BaseLogsFile {
 
   /// Determines final filename for download
   String _determineFinalFileName(
-    String url,
+    Blob blob,
     String? fileName,
     String fileType,
   ) {
     if (fileName != null) {
       return _processCustomFileName(fileName, fileType);
     }
-    return _fileNames[url] ?? 'ispect_logs.json';
+    return _fileNames[blob] ?? 'ispect_logs.json';
   }
 
   /// Processes custom filename with timestamp if needed
