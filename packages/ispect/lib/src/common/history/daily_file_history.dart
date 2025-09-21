@@ -260,6 +260,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<void> saveToDailyFile() async {
     await _ensureDirectoryInitialized();
 
+    // Skip file persistence if maxSessionDays is 0 or negative
+    if (_maxSessionDays <= 0) return;
+
     if (history.isEmpty) return;
 
     final filePath = todaySessionPath;
