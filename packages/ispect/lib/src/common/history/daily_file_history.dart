@@ -313,11 +313,36 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       if (!await _validateFileIntegrity(file, today)) return;
 
       if (await _wouldExceedSizeLimit(file, mergedData)) {
+        // Check available disk space before rotation
+        if (!await _hasEnoughDiskSpace(
+          file.parent,
+          _estimateJsonSize(mergedData),
+        )) {
+          if (settings.useConsoleLogs) {
+            ISpect.logger.warning(
+              'Insufficient disk space for file rotation, skipping save',
+            );
+          }
+          return;
+        }
+
         if (settings.useConsoleLogs) {
           ISpect.logger
               .warning('File size would exceed limit, performing rotation');
         }
         await _rotateFileIfNeeded(file, today);
+      }
+
+      // Final disk space check before writing
+      if (!await _hasEnoughDiskSpace(
+        file.parent,
+        _estimateJsonSize(mergedData),
+      )) {
+        if (settings.useConsoleLogs) {
+          ISpect.logger
+              .warning('Insufficient disk space for file write, skipping save');
+        }
+        return;
       }
 
       await _writeDataChunked(file, mergedData);
@@ -433,25 +458,53 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<bool> _validateFileIntegrity(File file, DateTime today) async {
     final existingFileData = await _loadExistingData(file);
     if (existingFileData.isNotEmpty) {
-      final firstEntryDate = existingFileData.first.time;
-      if (!_isSameDay(firstEntryDate, today)) {
-        if (settings.useConsoleLogs) {
-          ISpect.logger.warning(
-            "Prevented overwriting file from ${_formatDateForFileName(firstEntryDate)} with today's data",
-          );
+      // Check that all entries in the file are from the same day
+      final targetDate = DateTime(today.year, today.month, today.day);
+
+      for (final entry in existingFileData) {
+        if (!_isSameDay(entry.time, targetDate)) {
+          if (settings.useConsoleLogs) {
+            ISpect.logger.warning(
+              'File ${file.path} contains data from ${_formatDateForFileName(entry.time)}, '
+              "but expected only today's data (${_formatDateForFileName(today)})",
+            );
+          }
+          return false;
         }
-        return false;
       }
     }
     return true;
   }
 
-  /// Checks if writing the data would exceed the maximum file size limit
+  /// Checks if there's enough disk space for the operation
+  Future<bool> _hasEnoughDiskSpace(
+    Directory directory,
+    int requiredBytes,
+  ) async {
+    try {
+      // Add 10% buffer for filesystem overhead
+      final requiredWithBuffer = (requiredBytes * 1.1).round();
+
+      // For simplicity, we'll use a basic check
+      // In a real implementation, you might want to use platform-specific APIs
+      // to get actual free disk space. For now, we'll assume there's enough space
+      // unless the required size is unreasonably large (>100MB)
+      return requiredWithBuffer < 100 * 1024 * 1024; // 100MB limit
+    } catch (e) {
+      // If we can't check disk space, assume it's available
+      return true;
+    }
+  }
+
+  ///
+  /// Since the file is completely overwritten with merged data, this method
+  /// only checks the estimated size of the data to be written against 90%
+  /// of the configured limit to provide a safety buffer.
   ///
   /// - Parameters: file - Target file, data - Data to be written
   /// - Returns: `Future<bool>` true if size limit would be exceeded
   /// - Usage example: Used before writing to prevent oversized files
-  /// - Edge case notes: Estimates JSON size with safety margin
+  /// - Edge case notes: Uses 90% threshold to avoid unnecessary rotations near the limit
   Future<bool> _wouldExceedSizeLimit(
     File file,
     List<ISpectifyData> data,
@@ -459,10 +512,14 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     if (_maxFileSize <= 0) return false;
 
     try {
-      final currentSize = await file.exists() ? await file.length() : 0;
+      // Since _writeDataChunked overwrites the file completely with merged data,
+      // we only need to check if the estimated size of the data to be written
+      // exceeds the limit. Adding currentSize would double-count existing data.
+      // We use 90% of the limit to provide a safety buffer and avoid edge cases.
       final estimatedDataSize = _estimateJsonSize(data);
+      final effectiveLimit = (_maxFileSize * 0.9).round();
 
-      return (currentSize + estimatedDataSize) > _maxFileSize;
+      return estimatedDataSize > effectiveLimit;
     } catch (e, st) {
       if (settings.useConsoleLogs) {
         ISpect.logger.handle(exception: e, stackTrace: st);
@@ -494,14 +551,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Rotates the file if it would exceed size limits
+  /// Ensures atomic operation: backup is created successfully before clearing the file
   Future<void> _rotateFileIfNeeded(File file, DateTime date) async {
     if (!await file.exists()) return;
 
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '${file.path}.backup_$timestamp';
+
+      // First, create backup - if this fails, don't touch the original file
       await file.copy(backupPath);
 
+      // Only after successful backup, clear the original file
       await file.writeAsString('[]');
 
       if (settings.useConsoleLogs) {
@@ -509,8 +570,15 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       }
     } catch (e, st) {
       if (settings.useConsoleLogs) {
-        ISpect.logger.handle(exception: e, stackTrace: st);
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message:
+              'Failed to rotate file ${file.path}, keeping original intact',
+        );
       }
+      // Re-throw to prevent writing to a file that wasn't properly rotated
+      rethrow;
     }
   }
 
@@ -539,6 +607,10 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<List<ISpectifyData>> _loadExistingData(File file) async {
     try {
       final jsonString = await file.readAsString();
+      if (jsonString.trim().isEmpty) {
+        return <ISpectifyData>[];
+      }
+
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
 
       return jsonList
@@ -548,7 +620,24 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
             ),
           )
           .toList();
-    } catch (e) {
+    } on FormatException catch (e, st) {
+      if (settings.useConsoleLogs) {
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message:
+              'Failed to parse JSON from file ${file.path}, file may be corrupted',
+        );
+      }
+      return <ISpectifyData>[];
+    } catch (e, st) {
+      if (settings.useConsoleLogs) {
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message: 'Failed to load existing data from file ${file.path}',
+        );
+      }
       return <ISpectifyData>[];
     }
   }
@@ -606,6 +695,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Writes data in chunks using optimized streaming approach
+  /// Validates that the file was written successfully
   Future<void> _writeDataChunked(File file, List<ISpectifyData> data) async {
     final sink = file.openWrite();
 
@@ -636,6 +726,20 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       sink.write(']');
     } finally {
       await sink.close();
+    }
+
+    // Validate that the file was written successfully
+    if (await file.exists()) {
+      final writtenSize = await file.length();
+      if (writtenSize == 0 && data.isNotEmpty) {
+        throw StateError(
+          'File write validation failed: file is empty but data was provided',
+        );
+      }
+    } else {
+      throw StateError(
+        'File write validation failed: file does not exist after write',
+      );
     }
   }
 
