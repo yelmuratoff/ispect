@@ -271,7 +271,19 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
     try {
       final availableDates = await getAvailableLogDates();
-      if (availableDates.length >= _maxSessionDays) {
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+
+      // Only trigger cleanup when adding a new date that would exceed the limit
+      // If today's file already exists, we're just updating it, so no cleanup needed
+      final todayExists = availableDates.any(
+        (date) =>
+            date.year == todayDate.year &&
+            date.month == todayDate.month &&
+            date.day == todayDate.day,
+      );
+
+      if (!todayExists && availableDates.length >= _maxSessionDays) {
         await _performSessionCleanup(availableDates);
       }
 
@@ -286,7 +298,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
       if (mergedData.isEmpty) return;
 
-      final today = DateTime.now();
+      // final today = DateTime.now(); // ← Remove duplicate declaration
       if (!_validateDataForDate(mergedData, today)) {
         if (settings.useConsoleLogs) {
           ISpect.logger
