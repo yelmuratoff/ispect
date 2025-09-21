@@ -51,6 +51,9 @@ class DefaultISpectifyHistory implements ILogHistory {
   void add(ISpectifyData data) {
     if (!settings.useHistory || !settings.enabled) return;
 
+    // If maxHistoryItems is 0 or negative, disable history
+    if (settings.maxHistoryItems <= 0) return;
+
     // Enforce max history size
     if (_history.length >= settings.maxHistoryItems) {
       _history.removeAt(0); // Remove oldest entry
@@ -62,6 +65,9 @@ class DefaultISpectifyHistory implements ILogHistory {
   /// This method is intended for testing purposes only.
   @visibleForTesting
   void addForTesting(ISpectifyData data) {
+    // If maxHistoryItems is 0 or negative, disable history
+    if (settings.maxHistoryItems <= 0) return;
+
     if (_history.length >= settings.maxHistoryItems) {
       _history.removeAt(0); // Remove oldest entry
     }
