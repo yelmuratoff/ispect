@@ -13,8 +13,11 @@ void main() {
   group('DailyFileLogHistory maxSessionDays edge cases', () {
     test('maxSessionDays = 0 should skip file persistence without crashing',
         () async {
-      final history = DailyFileLogHistory(options,
-          maxSessionDays: 0, enableAutoSave: false,);
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 0,
+        enableAutoSave: false,
+      );
 
       // Add some data
       final testData = ISpectifyData('Test log', key: 'test');
@@ -30,8 +33,11 @@ void main() {
 
     test('maxSessionDays = -1 should skip file persistence without crashing',
         () async {
-      final history = DailyFileLogHistory(options,
-          maxSessionDays: -1, enableAutoSave: false,);
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: -1,
+        enableAutoSave: false,
+      );
 
       // Add some data
       final testData = ISpectifyData('Test log', key: 'test');
@@ -46,8 +52,11 @@ void main() {
     });
 
     test('maxSessionDays > 0 should work normally', () async {
-      final history = DailyFileLogHistory(options,
-          maxSessionDays: 5, enableAutoSave: false,);
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 5,
+        enableAutoSave: false,
+      );
 
       // Add some data
       final testData = ISpectifyData('Test log', key: 'test');
@@ -62,8 +71,11 @@ void main() {
     });
 
     test('cleanup methods should handle edge cases gracefully', () async {
-      final history = DailyFileLogHistory(options,
-          maxSessionDays: 0, enableAutoSave: false,);
+      final history = DailyFileLogHistory(
+        options,
+        maxSessionDays: 0,
+        enableAutoSave: false,
+      );
 
       // Test that cleanup is not called when maxSessionDays <= 0
       // This is implicitly tested by the fact that saveToDailyFile doesn't crash
