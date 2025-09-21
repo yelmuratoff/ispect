@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/filter/logger_filter.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -59,8 +60,10 @@ void main() {
 
       expect(filter.apply(matchingBothData), true); // Matches title
       expect(filter.apply(titleOnlyData), true); // Matches title
-      expect(filter.apply(searchOnlyData),
-          true,); // Matches search (contains "Error" in title)
+      expect(
+        filter.apply(searchOnlyData),
+        true,
+      ); // Matches search (contains "Error" in title)
     });
 
     test('combining all three filters expands results (OR logic)', () {
@@ -81,8 +84,10 @@ void main() {
 
       expect(filter.apply(allMatchData), true); // Matches title
       expect(filter.apply(titleOnly), true); // Matches title
-      expect(filter.apply(searchOnly),
-          true,); // Matches search (title contains "Error"? Wait, let's check)
+      expect(
+        filter.apply(searchOnly),
+        true,
+      ); // Matches search (title contains "Error"? Wait, let's check)
       expect(filter.apply(typeOnly), true); // Matches type
     });
 
@@ -99,20 +104,96 @@ void main() {
       final copiedFilter = originalFilter.copyWith(searchQuery: 'test');
 
       // Original filter should still work
-      expect(originalFilter.apply(ISpectifyData('Info test', title: 'INFO')),
-          true,);
-      expect(originalFilter.apply(ISpectifyData('Error test', title: 'ERROR')),
-          false,);
+      expect(
+        originalFilter.apply(ISpectifyData('Info test', title: 'INFO')),
+        true,
+      );
+      expect(
+        originalFilter.apply(ISpectifyData('Error test', title: 'ERROR')),
+        false,
+      );
 
       // Copied filter should require either title OR search
-      expect(copiedFilter.apply(ISpectifyData('Info test', title: 'INFO')),
-          true,); // Matches title
-      expect(copiedFilter.apply(ISpectifyData('Info other', title: 'INFO')),
-          true,); // Matches title
-      expect(copiedFilter.apply(ISpectifyData('Error test', title: 'ERROR')),
-          true,); // Matches search (title contains "Error"? Wait, search is "test", title is "ERROR" - doesn't contain "test")
-      expect(copiedFilter.apply(ISpectifyData('Debug other', title: 'DEBUG')),
-          false,); // Matches neither
+      expect(
+        copiedFilter.apply(ISpectifyData('Info test', title: 'INFO')),
+        true,
+      ); // Matches title
+      expect(
+        copiedFilter.apply(ISpectifyData('Info other', title: 'INFO')),
+        true,
+      ); // Matches title
+      expect(
+        copiedFilter.apply(ISpectifyData('Error test', title: 'ERROR')),
+        true,
+      ); // Matches search (title contains "Error"? Wait, search is "test", title is "ERROR" - doesn't contain "test")
+      expect(
+        copiedFilter.apply(ISpectifyData('Debug other', title: 'DEBUG')),
+        false,
+      ); // Matches neither
+    });
+  });
+
+  group('LoggerFilter', () {
+    test('default filter allows all log levels', () {
+      final filter = LoggerFilter();
+
+      expect(filter.shouldLog('Critical message', LogLevel.critical), true);
+      expect(filter.shouldLog('Error message', LogLevel.error), true);
+      expect(filter.shouldLog('Warning message', LogLevel.warning), true);
+      expect(filter.shouldLog('Info message', LogLevel.info), true);
+      expect(filter.shouldLog('Debug message', LogLevel.debug), true);
+      expect(filter.shouldLog('Verbose message', LogLevel.verbose), true);
+    });
+
+    test('custom range filters correctly', () {
+      final filter = LoggerFilter(
+        minLevel: LogLevel.error,
+        maxLevel: LogLevel.warning,
+      );
+
+      expect(
+        filter.shouldLog('Critical message', LogLevel.critical),
+        false,
+      ); // Below range
+      expect(
+        filter.shouldLog('Error message', LogLevel.error),
+        true,
+      ); // In range
+      expect(
+        filter.shouldLog('Warning message', LogLevel.warning),
+        true,
+      ); // In range
+      expect(
+        filter.shouldLog('Info message', LogLevel.info),
+        false,
+      ); // Above range
+      expect(
+        filter.shouldLog('Debug message', LogLevel.debug),
+        false,
+      ); // Above range
+      expect(
+        filter.shouldLog('Verbose message', LogLevel.verbose),
+        false,
+      ); // Above range
+    });
+
+    test('throws ArgumentError for invalid range', () {
+      expect(
+        () =>
+            LoggerFilter(minLevel: LogLevel.debug, maxLevel: LogLevel.critical),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('single level filter works', () {
+      final filter = LoggerFilter(
+        minLevel: LogLevel.error,
+        maxLevel: LogLevel.error,
+      );
+
+      expect(filter.shouldLog('Critical message', LogLevel.critical), false);
+      expect(filter.shouldLog('Error message', LogLevel.error), true);
+      expect(filter.shouldLog('Warning message', LogLevel.warning), false);
     });
   });
 }
