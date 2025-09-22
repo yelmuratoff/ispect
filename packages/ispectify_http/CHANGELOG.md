@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.0-dev04
+## 4.4.0-dev05
 
 ### Added
 - New package `ispectify_db`: lightweight database logging with tracing and transaction markers.
