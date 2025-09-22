@@ -17,6 +17,7 @@ extension ISpectDataX on ISpectifyData {
     DateTime? time,
     AnsiPen? pen,
     String? key,
+    Map<String, dynamic>? additionalData,
   }) =>
       ISpectifyData(
         message ?? this.message,
@@ -28,6 +29,7 @@ extension ISpectDataX on ISpectifyData {
         time: time ?? this.time,
         pen: pen ?? this.pen,
         key: key ?? this.key,
+        additionalData: additionalData ?? this.additionalData,
       );
 
   /// Creates an exact duplicate of this `ISpectifyData` instance.
