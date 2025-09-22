@@ -132,6 +132,10 @@ extension ISpectifyLogTypeExt on ISpectifyLogType {
   LogLevel get level => switch (this) {
         ISpectifyLogType.error => LogLevel.error,
         ISpectifyLogType.critical => LogLevel.critical,
+        ISpectifyLogType.exception => LogLevel.error,
+        ISpectifyLogType.httpError => LogLevel.error,
+        ISpectifyLogType.riverpodFail => LogLevel.error,
+        ISpectifyLogType.dbError => LogLevel.error,
         ISpectifyLogType.info => LogLevel.info,
         ISpectifyLogType.debug => LogLevel.debug,
         ISpectifyLogType.verbose => LogLevel.verbose,

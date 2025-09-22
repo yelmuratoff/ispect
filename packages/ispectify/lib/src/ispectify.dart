@@ -201,23 +201,27 @@ class ISpectify {
   /// This is the primary logging method that other specialized methods use.
   ///
   /// - `message`: The main log message.
-  /// - `logLevel`: The severity level of the log.
+  /// - `logLevel`: The severity level of the log. If not provided, will be inferred from `type` or default to `LogLevel.debug`.
+  /// - `type`: The log type that may imply a specific severity level.
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
   void log(
     Object? message, {
-    LogLevel logLevel = LogLevel.debug,
+    LogLevel? logLevel,
     ISpectifyLogType? type,
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
   }) {
+    // Determine the appropriate log level
+    final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
+
     _handleLog(
       message: message,
       exception: exception,
       stackTrace: stackTrace,
-      logLevel: logLevel,
+      logLevel: effectiveLogLevel,
       pen: pen,
       type: type,
     );
