@@ -57,6 +57,7 @@ final class ISpectWSInterceptor implements WSInterceptor {
             path: uri?.path ?? '',
             body:
                 settings.printReceivedData ? bodyPayload : redactedOnlyMetrics,
+            settings: settings,
           ),
         _ => null,
       };
@@ -96,6 +97,7 @@ final class ISpectWSInterceptor implements WSInterceptor {
               },
         exception: e,
         stackTrace: s,
+        settings: settings,
       );
       if (settings.errorFilter?.call(errorLog) ?? true) {
         logger.logCustom(errorLog);

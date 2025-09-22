@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_ws/src/settings.dart';
 
 class WSReceivedLog extends ISpectifyData {
   WSReceivedLog(
@@ -7,10 +8,12 @@ class WSReceivedLog extends ISpectifyData {
     required this.url,
     required this.path,
     required this.body,
+    this.settings = const ISpectWSInterceptorSettings(),
   }) : super(
           title: getKey,
           key: getKey,
-          pen: (AnsiPen()..xterm(35)),
+          pen: (settings.receivedPen ?? AnsiPen()
+            ..xterm(35)),
           additionalData: {
             'type': type,
             'url': url,
@@ -23,6 +26,7 @@ class WSReceivedLog extends ISpectifyData {
   final String url;
   final String path;
   final Object? body;
+  final ISpectWSInterceptorSettings settings;
 
   static const getKey = 'ws-received';
 
