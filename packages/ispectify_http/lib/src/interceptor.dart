@@ -79,7 +79,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
         ? (request is MultipartRequest
             ? _extractMultipartData(request, useRedaction)
             : request is Request
-                ? (useRedaction ? _redactor.redact(request.body) : request.body)
+                ? _redactRequestBody(request.body, useRedaction)
                 : null)
         : null;
     _logger.logCustom(
@@ -306,5 +306,19 @@ class ISpectHttpInterceptor extends InterceptorContract {
       'fields': redactedFields,
       'files': redactedFiles,
     };
+  }
+
+  /// Redacts HTTP request body, attempting to parse JSON for proper redaction
+  Object? _redactRequestBody(String body, bool useRedaction) {
+    if (!useRedaction) return body;
+
+    // Try to parse as JSON first
+    try {
+      final jsonData = jsonDecode(body);
+      return _redactor.redact(jsonData);
+    } catch (_) {
+      // If not valid JSON, redact as string
+      return _redactor.redact(body);
+    }
   }
 }
