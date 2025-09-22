@@ -485,11 +485,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       // Add 10% buffer for filesystem overhead
       final requiredWithBuffer = (requiredBytes * 1.1).round();
 
-      // For simplicity, we'll use a basic check
-      // In a real implementation, you might want to use platform-specific APIs
-      // to get actual free disk space. For now, we'll assume there's enough space
-      // unless the required size is unreasonably large (>100MB)
-      return requiredWithBuffer < 100 * 1024 * 1024; // 100MB limit
+      // Check against the configured maximum file size limit
+      // This prevents runaway file growth while respecting user configuration
+      return requiredWithBuffer <= (_maxFileSize * 1.1).round();
     } catch (e) {
       // If we can't check disk space, assume it's available
       return true;
