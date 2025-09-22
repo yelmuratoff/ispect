@@ -48,8 +48,8 @@ class JiraSprint {
       'id': id,
       'self': self,
       'name': name,
-      'startDate': startDate?.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
+      'start_date': startDate?.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
       'state': state,
       'goal': goal,
     };
@@ -60,21 +60,17 @@ class JiraSprint {
         ? map[k] as T
         : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
     return JiraSprint(
-      id: cast<num>('id').toInt(),
-      self: cast<String>('self'),
-      name: cast<String>('name'),
-      startDate: map['startDate'] != null
-          ? DateTime.parse(cast<String>('startDate'))
-          : map['start_date'] != null
-              ? DateTime.parse(cast<String>('start_date'))
-              : null,
-      endDate: map['endDate'] != null
-          ? DateTime.parse(cast<String>('endDate'))
-          : map['end_date'] != null
-              ? DateTime.parse(cast<String>('end_date'))
-              : null,
-      state: cast<String>('state'),
-      goal: cast<String>('goal'),
+      id: cast<num?>('id')?.toInt() ?? 0,
+      self: cast<String?>('self') ?? '',
+      name: cast<String?>('name') ?? '',
+      startDate: map['start_date'] != null
+          ? DateTime.parse(cast<String>('start_date'))
+          : null,
+      endDate: map['end_date'] != null
+          ? DateTime.parse(cast<String>('end_date'))
+          : null,
+      state: cast<String?>('state') ?? '',
+      goal: cast<String?>('goal') ?? '',
     );
   }
 
