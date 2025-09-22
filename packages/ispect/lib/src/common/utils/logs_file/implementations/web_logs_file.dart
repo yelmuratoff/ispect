@@ -11,6 +11,7 @@ import 'package:web/web.dart';
 /// - Edge case notes: Uses blob URLs for file identification, handles browser download limitations
 class WebLogsFile extends BaseLogsFile {
   static final Map<Blob, String> _fileNames = <Blob, String>{};
+  static final Map<Blob, String> _objectUrls = <Blob, String>{};
 
   @override
   bool get supportsNativeFiles => false;
@@ -69,7 +70,16 @@ class WebLogsFile extends BaseLogsFile {
     if (file is! Blob) {
       throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
-    return URL.createObjectURL(file);
+
+    // Return cached URL if it exists
+    if (_objectUrls.containsKey(file)) {
+      return _objectUrls[file]!;
+    }
+
+    // Create new URL and cache it
+    final url = URL.createObjectURL(file);
+    _objectUrls[file] = url;
+    return url;
   }
 
   @override
@@ -95,8 +105,13 @@ class WebLogsFile extends BaseLogsFile {
       throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
     }
 
-    final url = URL.createObjectURL(file);
-    URL.revokeObjectURL(url);
+    // Revoke cached URL if it exists
+    final url = _objectUrls[file];
+    if (url != null) {
+      URL.revokeObjectURL(url);
+      _objectUrls.remove(file);
+    }
+
     _fileNames.remove(file);
   }
 
