@@ -9,7 +9,10 @@ void main() {
         logLevel: LogLevel.info,
         title: 'Test Title',
         key: 'test-key',
-        additionalData: {'key1': 'value1', 'key2': {'nested': 'value2'}},
+        additionalData: {
+          'key1': 'value1',
+          'key2': {'nested': 'value2'},
+        },
       );
 
       final copiedData = originalData.copy();
@@ -29,7 +32,10 @@ void main() {
     test('copyWith() preserves additionalData when no parameters provided', () {
       final originalData = ISpectifyData(
         'Test message',
-        additionalData: {'key1': 'value1', 'key2': {'nested': 'value2'}},
+        additionalData: {
+          'key1': 'value1',
+          'key2': {'nested': 'value2'},
+        },
       );
 
       final copiedData = originalData.copyWith();
@@ -49,10 +55,14 @@ void main() {
       );
 
       expect(copiedData.additionalData, equals(newAdditionalData));
-      expect(copiedData.additionalData, isNot(equals(originalData.additionalData)));
+      expect(
+        copiedData.additionalData,
+        isNot(equals(originalData.additionalData)),
+      );
     });
 
-    test('copyWith() preserves additionalData when other fields are changed', () {
+    test('copyWith() preserves additionalData when other fields are changed',
+        () {
       final originalData = ISpectifyData(
         'Original message',
         title: 'Original Title',
