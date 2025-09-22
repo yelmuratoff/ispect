@@ -308,17 +308,15 @@ class ISpectHttpInterceptor extends InterceptorContract {
     };
   }
 
-  /// Redacts HTTP request body, attempting to parse JSON for proper redaction
+  /// Processes HTTP request body, attempting to parse JSON for proper formatting and redaction
   Object? _redactRequestBody(String body, bool useRedaction) {
-    if (!useRedaction) return body;
-
-    // Try to parse as JSON first
+    // Try to parse as JSON first, regardless of redaction setting
     try {
       final jsonData = jsonDecode(body);
-      return _redactor.redact(jsonData);
+      return useRedaction ? _redactor.redact(jsonData) : jsonData;
     } catch (_) {
-      // If not valid JSON, redact as string
-      return _redactor.redact(body);
+      // If not valid JSON, handle as string
+      return useRedaction ? _redactor.redact(body) : body;
     }
   }
 }
