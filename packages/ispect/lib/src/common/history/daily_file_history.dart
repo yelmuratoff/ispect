@@ -647,51 +647,30 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Parameters: existing - Data from file, current - Data from memory
   /// - Returns: `List<ISpectifyData>` merged and deduplicated data
   /// - Usage example: Used during save operations to merge datasets
-  /// - Edge case notes: Uses optimized int-based map for O(1) operations, sorts by timestamp
+  /// - Edge case notes: Uses Set for proper deduplication of identical objects, sorts by timestamp
   List<ISpectifyData> _mergeHistoryData(
     List<ISpectifyData> existing,
     List<ISpectifyData> current,
   ) {
-    final merged = <int, ISpectifyData>{};
+    final merged = <ISpectifyData>{};
     final today = DateTime.now();
 
-    _addDataToMerged(merged, existing, today);
-    _addDataToMerged(merged, current, today);
-
-    final result = merged.values.toList()
-      ..sort((a, b) => a.time.compareTo(b.time));
-    return result;
-  }
-
-  /// Adds data to merged map with deduplication using optimized key generation
-  ///
-  /// - Parameters: merged - Target map, data - Source data, today - Filter date
-  /// - Returns: `void`
-  /// - Usage example: Used internally by _mergeHistoryData
-  /// - Edge case notes: Uses int-based key for O(1) operations instead of string concatenation
-  void _addDataToMerged(
-    Map<int, ISpectifyData> merged,
-    List<ISpectifyData> data,
-    DateTime today,
-  ) {
-    for (final item in data) {
+    // Add existing data (from file)
+    for (final item in existing) {
       if (_isSameDay(item.time, today)) {
-        final key = _generateOptimizedKey(item);
-        merged[key] = item;
+        merged.add(item);
       }
     }
-  }
 
-  /// Generates optimized integer key for deduplication
-  ///
-  /// - Parameters: item - Data item to generate key for
-  /// - Returns: `int` unique key based on timestamp and message hash
-  /// - Usage example: Used for efficient map operations
-  /// - Edge case notes: Combines timestamp and message hash for uniqueness
-  int _generateOptimizedKey(ISpectifyData item) {
-    final timeKey = item.time.millisecondsSinceEpoch;
-    final messageHash = item.message?.hashCode ?? 0;
-    return (timeKey << 16) ^ messageHash;
+    // Add current data (from memory), avoiding duplicates
+    for (final item in current) {
+      if (_isSameDay(item.time, today)) {
+        merged.add(item);
+      }
+    }
+
+    final result = merged.toList()..sort((a, b) => a.time.compareTo(b.time));
+    return result;
   }
 
   /// Writes data in chunks using optimized streaming approach
