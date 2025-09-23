@@ -48,8 +48,8 @@ class JiraSprint {
       'id': id,
       'self': self,
       'name': name,
-      'start_date': startDate?.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
       'state': state,
       'goal': goal,
     };
@@ -63,11 +63,11 @@ class JiraSprint {
       id: cast<num?>('id')?.toInt() ?? 0,
       self: cast<String?>('self') ?? '',
       name: cast<String?>('name') ?? '',
-      startDate: map['start_date'] != null
-          ? DateTime.parse(cast<String>('start_date'))
+      startDate: map['startDate'] != null
+          ? DateTime.parse(cast<String>('startDate'))
           : null,
-      endDate: map['end_date'] != null
-          ? DateTime.parse(cast<String>('end_date'))
+      endDate: map['endDate'] != null
+          ? DateTime.parse(cast<String>('endDate'))
           : null,
       state: cast<String?>('state') ?? '',
       goal: cast<String?>('goal') ?? '',
