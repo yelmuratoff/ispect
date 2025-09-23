@@ -22,10 +22,6 @@ class HttpErrorLog extends ISpectifyData {
           pen: settings.errorPen ?? (AnsiPen()..red()),
           additionalData: responseData?.toJson(
             redactor: redactor,
-            printResponseData: settings.printErrorData,
-            printRequestData: settings.printRequestData,
-            printResponseHeaders: settings.printErrorHeaders,
-            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 

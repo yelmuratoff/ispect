@@ -19,8 +19,6 @@ class DioRequestLog extends ISpectifyData {
           pen: settings.requestPen ?? (AnsiPen()..xterm(207)),
           additionalData: requestData.toJson(
             redactor: redactor,
-            printRequestData: settings.printRequestData,
-            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 

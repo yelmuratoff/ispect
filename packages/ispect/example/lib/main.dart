@@ -2,41 +2,20 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/src/core/localization/generated/app_localizations.dart';
 import 'package:ispect_example/src/cubit/test_cubit.dart';
-import 'package:ispect_example/src/bloc/counter_bloc.dart';
+import 'package:ispect_example/src/logs_file_example.dart';
 import 'package:ispect_example/src/theme_manager.dart';
-import 'package:ispect_example/src/ui/cards/parameters_card.dart';
-import 'package:ispect_example/src/ui/cards/network_card.dart';
-import 'package:ispect_example/src/ui/cards/logging_card.dart';
-import 'package:ispect_example/src/ui/cards/state_management_card.dart';
-import 'package:ispect_example/src/ui/cards/error_card.dart';
-import 'package:ispect_example/src/ui/cards/stream_card.dart';
-import 'package:ispect_example/src/services/log_generation_service.dart';
-import 'package:ispect_example/src/riverpod/demo_settings_provider.dart';
-import 'package:ispect_example/src/riverpod/providers.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-// Simple locale provider
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
-  return LocaleNotifier();
-});
+import 'package:ispectify_dio/ispectify_dio.dart';
 
-class LocaleNotifier extends StateNotifier<Locale> {
-  LocaleNotifier() : super(const Locale('en', 'US'));
-
-  void setLocale(Locale locale) {
-    state = locale;
-  }
-
-  void toggleLanguage() {
-    state = state.languageCode == 'en'
-        ? const Locale('ru', 'RU')
-        : const Locale('en', 'US');
-  }
-}
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ws/ws.dart';
 
 final Dio dio = Dio(
   BaseOptions(
@@ -54,348 +33,548 @@ final Dio dummyDio = Dio(
 );
 
 void main() {
+  final options = ISpectifyOptions(
+    logTruncateLength: 500,
+  );
+  final ISpectify logger = ISpectifyFlutter.init(
+    options: options,
+    history: DailyFileLogHistory(options),
+  );
+
+  // debugRepaintRainbowEnabled = true;
+
   ISpect.run(
-    logger: ISpectifyFlutter.init(),
     () => runApp(
       ThemeProvider(
-        child: ProviderScope(
-          child: const MyApp(),
-        ),
+        child: App(logger: logger),
       ),
     ),
+    logger: logger,
+    isPrintLoggingEnabled: false,
+    onInit: () {
+      Bloc.observer = ISpectBlocObserver(
+        logger: logger,
+      );
+      client.interceptors.add(
+        ISpectHttpInterceptor(logger: logger),
+      );
+      dio.interceptors.add(
+        ISpectDioInterceptor(
+          logger: logger,
+          settings: const ISpectDioInterceptorSettings(
+              // requestFilter: (requestOptions) =>
+              //     requestOptions.path != '/post3s/1',
+              // responseFilter: (response) => response.statusCode != 404,
+              // errorFilter: (response) => response.response?.statusCode != 404,
+              // errorFilter: (response) {
+              //   return (response.message?.contains('This exception was thrown because')) == false;
+              // },
+              ),
+        ),
+      );
+      dummyDio.interceptors.add(
+        ISpectDioInterceptor(
+          logger: logger,
+        ),
+      );
+    },
+    onInitialized: () {},
   );
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+class App extends StatefulWidget {
+  final ISpectify logger;
+  const App({super.key, required this.logger});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ThemeProvider.themeMode(context);
-    final locale = ref.watch(localeProvider);
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  final _controller = DraggablePanelController();
+  final _observer = ISpectNavigatorObserver(
+    isLogModals: true,
+  );
+
+  static const Locale locale = Locale('ru');
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addPositionListener(
+      (x, y) {
+        debugPrint('x: $x, y: $y');
+      },
+    );
+    _controller.setPosition(
+      x: 500,
+      y: 500,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeMode themeMode = ThemeProvider.themeMode(context);
 
     return MaterialApp(
-      title: 'ISpect Demo',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: themeMode,
+      navigatorObservers: [_observer],
       locale: locale,
+      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         ExampleGeneratedLocalization.delegate,
       ]),
-      home: const Home(),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: themeMode,
       builder: (context, child) {
-        return ISpectBuilder(
-          child: child!,
+        child = ISpectBuilder(
+          theme: const ISpectTheme(
+            pageTitle: 'ISpect',
+          ),
+          observer: _observer,
+          controller: _controller,
+          options: ISpectOptions(
+            locale: locale,
+            panelButtons: [
+              DraggablePanelButtonItem(
+                icon: Icons.copy_rounded,
+                label: 'Token',
+                description: 'Copy token to clipboard',
+                onTap: (context) {
+                  _controller.toggle(context);
+                  debugPrint('Token copied');
+                },
+              ),
+            ],
+            panelItems: [
+              DraggablePanelItem(
+                icon: Icons.home,
+                enableBadge: false,
+                description: 'Print home',
+                onTap: (context) {
+                  debugPrint('Home');
+                },
+              ),
+            ],
+            actionItems: [
+              ISpectActionItem(
+                title: 'Test',
+                icon: Icons.account_tree_rounded,
+                onTap: (context) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(
+                          title: const Text('Test'),
+                        ),
+                        body: const Center(
+                          child: Text('Test'),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          child: child ?? const SizedBox(),
         );
+        return child;
       },
+      home: const _Home(),
     );
   }
 }
 
-class Home extends ConsumerWidget {
-  const Home({super.key});
+class _Home extends StatefulWidget {
+  const _Home();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(demoSettingsProvider);
-    final logService = ref.watch(logGenerationServiceProvider);
-    final testCubit = ref.watch(testCubitProvider);
-    final counterBloc = ref.watch(counterBlocProvider);
-    final currentLocale = ref.watch(localeProvider);
+  State<_Home> createState() => _HomeState();
+}
+
+typedef _ButtonConfig = ({String label, VoidCallback onPressed});
+
+class _HomeState extends State<_Home> {
+  final TestCubit _testBloc = TestCubit();
+
+  @override
+  void dispose() {
+    _testBloc.close();
+    super.dispose();
+  }
+
+  List<_ButtonConfig> _buildButtonConfigs(
+    BuildContext context,
+    ISpectScopeModel iSpect,
+  ) {
+    return <_ButtonConfig>[
+      (
+        label: 'All logs',
+        onPressed: () {
+          ISpect.logger.critical('critical');
+          ISpect.logger.debug('debug');
+          ISpect.logger.error('error');
+          ISpect.logger.good('good');
+          ISpect.logger.handle(
+              exception: Exception('exception'),
+              stackTrace: StackTrace.current);
+          ISpect.logger.info('info');
+          ISpect.logger.log('log');
+          ISpect.logger.print('print');
+          ISpect.logger.route('route');
+          ISpect.logger.track('track');
+          ISpect.logger.verbose('verbose');
+          ISpect.logger.warning('warning');
+        },
+      ),
+      (
+        label: 'Mock Nested Map with Depth IDs',
+        onPressed: () {
+          const int depth = 5000;
+          Map<String, dynamic> nested = {
+            'id': depth,
+            'value': 'Item $depth',
+          };
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {'id': i, 'value': 'Item $i', 'nested': nested};
+          }
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: nested,
+            statusCode: 200,
+          );
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectDioInterceptor) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Mock Nested List with Depth IDs',
+        onPressed: () {
+          const int depth = 10000;
+
+          Map<String, dynamic> nested = {
+            'id': depth,
+            'value': 'Item $depth',
+          };
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {
+              'id': i,
+              'value': 'Item $i',
+              'nested': nested,
+            };
+          }
+
+          final List<Map<String, dynamic>> largeList = List.generate(
+              10000, (index) => {'id': index, 'value': 'Item $index'});
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: largeList,
+            statusCode: 200,
+          );
+
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectDioInterceptor) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Connect to WebSocket',
+        onPressed: () {
+          // Using a non-existent WebSocket URL to trigger a connection error.
+          const url = String.fromEnvironment(
+            'URL',
+            defaultValue: 'wss://echo.plugfox.dev:443/non-existent-path',
+          );
+
+          final interceptor = ISpectWSInterceptor(logger: ISpect.logger);
+
+          final client = WebSocketClient(
+            WebSocketOptions.common(
+              connectionRetryInterval: (
+                min: const Duration(milliseconds: 500),
+                max: const Duration(seconds: 15),
+              ),
+              interceptors: [interceptor],
+            ),
+          );
+
+          interceptor.setClient(client);
+
+          client
+            ..connect(url)
+            ..add('Hello')
+            ..add('world!');
+
+          // Adding a client-side error by trying to send data after closing the connection.
+          Timer(const Duration(seconds: 1), () async {
+            await client.close();
+            try {
+              unawaited(client.add('This will fail'));
+            } catch (e) {
+              // This error will be caught by the interceptor.
+            }
+            // ignore: avoid_print
+            print('Metrics:\n${client.metrics}');
+            client.close();
+          });
+        },
+      ),
+      (
+        label: 'Mock Large JSON Response',
+        onPressed: () {
+          final List<Map<String, dynamic>> largeList = List.generate(
+              10000, (index) => {'id': index, 'value': 'Item $index'});
+          ISpect.logger.print(largeList.toString());
+        },
+      ),
+      (
+        label: 'Test Cubit',
+        onPressed: () {
+          _testBloc.load(
+            data: 'Test data',
+          );
+        },
+      ),
+      (
+        label: 'Send HTTP request (http package)',
+        onPressed: () async {
+          await client
+              .get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+        },
+      ),
+      (
+        label: 'Send error HTTP request (http package)',
+        onPressed: () async {
+          await client.get(
+              Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'));
+        },
+      ),
+      (
+        label: 'Toggle theme',
+        onPressed: () {
+          ThemeProvider.toggleTheme(context);
+        },
+      ),
+      (
+        label: 'Toggle ISpect',
+        onPressed: () {
+          ISpect.logger.track(
+            'Toggle',
+            analytics: 'amplitude',
+            event: 'ISpect',
+            parameters: {
+              'isISpectEnabled': iSpect.isISpectEnabled,
+            },
+          );
+          iSpect.toggleISpect();
+        },
+      ),
+      (
+        label: 'Send HTTP request',
+        onPressed: () {
+          dio.get<dynamic>(
+            '/posts/1',
+          );
+        },
+      ),
+      (
+        label: 'Send HTTP request with error',
+        onPressed: () {
+          dio.get<dynamic>('/post3s/1');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token',
+        onPressed: () {
+          dio.options.headers.addAll({
+            'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
+          });
+          dio.get<dynamic>('/posts/1');
+          dio.options.headers.remove('Authorization');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token (http)',
+        onPressed: () async {
+          await client.get(
+              Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+              headers: {
+                'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
+              });
+        },
+      ),
+      (
+        label: 'Upload file to dummy server',
+        onPressed: () {
+          final FormData formData = FormData();
+          formData.files.add(MapEntry(
+            'file',
+            MultipartFile.fromBytes(
+              [1, 2, 3],
+              filename: 'file.txt',
+            ),
+          ));
+
+          dummyDio.post<dynamic>(
+            '/api/v1/files/upload',
+            data: formData,
+          );
+        },
+      ),
+      (
+        label: 'Upload file to dummy server (http)',
+        onPressed: () {
+          final List<int> bytes = [1, 2, 3]; // File data as bytes
+          const String filename = 'file.txt';
+
+          final http_interceptor.MultipartRequest request =
+              http_interceptor.MultipartRequest(
+            'POST',
+            Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
+          );
+
+          request.files.add(http_interceptor.MultipartFile.fromBytes(
+            'file', // Field name
+            bytes,
+            filename: filename,
+          ));
+
+          client.send(request);
+        },
+      ),
+      (
+        label: 'Throw exception',
+        onPressed: () {
+          throw Exception('Test exception');
+        },
+      ),
+      (
+        label: 'Go to second page',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const _SecondPage(),
+              settings: const RouteSettings(name: 'SecondPage'),
+            ),
+          );
+        },
+      ),
+      (
+        label: 'Log 10000 items',
+        onPressed: () {
+          for (int i = 0; i < 10000; i++) {
+            ISpect.logger.info('Item $i');
+          }
+        },
+      ),
+      (
+        label: 'Logs File',
+        onPressed: () async {
+          await LogsFileExample.createAndHandleLogsFile();
+          await LogsFileExample.createMultipleLogsFiles();
+          await LogsFileExample.demonstrateCleanup();
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ISpectScopeModel iSpect = ISpect.read(context);
+    final List<_ButtonConfig> buttonConfigs =
+        _buildButtonConfigs(context, iSpect);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ISpect Demo'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              ThemeProvider.themeMode(context) == ThemeMode.dark
-                  ? Icons.light_mode
-                  : Icons.dark_mode,
-            ),
-            onPressed: () => ThemeProvider.toggleTheme(context),
-            tooltip: ThemeProvider.themeMode(context) == ThemeMode.dark
-                ? 'Switch to Light Mode'
-                : 'Switch to Dark Mode',
-          ),
-          IconButton(
-            icon: Text(
-              currentLocale.languageCode.toUpperCase(),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            onPressed: () => ref.read(localeProvider.notifier).toggleLanguage(),
-            tooltip: 'Toggle Language',
-          ),
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () => _showLanguageDialog(context, ref),
-            tooltip: 'Change Language',
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettingsDialog(context, ref),
-          ),
-        ],
+        title: Text(
+          ExampleGeneratedLocalization.of(context)!.app_title,
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ParametersCard(
-              requestCount: settings.requestCount,
-              itemCount: settings.itemCount,
-              nestingDepth: settings.nestingDepth,
-              payloadSize: settings.payloadSize,
-              wsMessageSize: settings.wsMessageSize,
-              loopDelayMs: settings.loopDelayMs,
-              httpMethod: settings.httpMethod,
-              preset: settings.preset,
-              useAuthHeader: settings.useAuthHeader,
-              randomize: settings.randomize,
-              onRequestCountChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateRequestCount(value),
-              onItemCountChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateItemCount(value),
-              onNestingDepthChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateNestingDepth(value),
-              onPayloadSizeChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updatePayloadSize(value),
-              onWsMessageSizeChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateWsMessageSize(value),
-              onLoopDelayMsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateLoopDelayMs(value),
-              onHttpMethodChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateHttpMethod(value),
-              onPresetChanged: (value) =>
-                  ref.read(demoSettingsProvider.notifier).updatePreset(value),
-              onUseAuthHeaderChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateUseAuthHeader(value),
-              onRandomizeChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateRandomize(value),
-            ),
-            const SizedBox(height: 16),
-            NetworkCard(
-              enableHttp: settings.enableHttp,
-              httpSendSuccess: settings.httpSendSuccess,
-              httpSendErrors: settings.httpSendErrors,
-              enableWs: settings.enableWs,
-              enableFileUploads: settings.enableFileUploads,
-              onEnableHttpChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableHttp(value),
-              onHttpSendSuccessChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateHttpSendSuccess(value),
-              onHttpSendErrorsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateHttpSendErrors(value),
-              onEnableWsChanged: (value) =>
-                  ref.read(demoSettingsProvider.notifier).updateEnableWs(value),
-              onEnableFileUploadsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableFileUploads(value),
-            ),
-            const SizedBox(height: 16),
-            LoggingCard(
-              enableLogging: settings.enableLogging,
-              enableAnalytics: settings.enableAnalytics,
-              enableRoutes: settings.enableRoutes,
-              onEnableLoggingChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableLogging(value),
-              onEnableAnalyticsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableAnalytics(value),
-              onEnableRoutesChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableRoutes(value),
-            ),
-            const SizedBox(height: 16),
-            StateManagementCard(
-              enableBlocEvents: settings.enableBlocEvents,
-              enableRiverpod: settings.enableRiverpod,
-              onEnableBlocEventsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableBlocEvents(value),
-              onEnableRiverpodChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableRiverpod(value),
-            ),
-            const SizedBox(height: 16),
-            ErrorCard(
-              enableExceptions: settings.enableExceptions,
-              onEnableExceptionsChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateEnableExceptions(value),
-            ),
-            const SizedBox(height: 16),
-            StreamCard(
-              streamMode: settings.streamMode,
-              intervalMs: settings.streamIntervalMs,
-              onStreamModeChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateStreamMode(value),
-              onIntervalChanged: (value) => ref
-                  .read(demoSettingsProvider.notifier)
-                  .updateStreamIntervalMs(value),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _executeActions(
-                  context, ref, logService, testCubit, counterBloc),
-              child: const Text('Execute Actions'),
-            ),
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: buttonConfigs.expand(
+              (config) {
+                final Widget button = FilledButton(
+                  onPressed: config.onPressed,
+                  child: Text(config.label),
+                );
+                if (config.label == 'Test Cubit') {
+                  return [
+                    BlocBuilder<TestCubit, TestState>(
+                      bloc: _testBloc,
+                      builder: (context, state) => FilledButton(
+                        onPressed: config.onPressed,
+                        child: Text(config.label),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ];
+                }
+                return [
+                  button,
+                  const SizedBox(height: 10),
+                ];
+              },
+            ).toList()
+              ..removeLast(),
+          ),
         ),
       ),
     );
   }
+}
 
-  void _showSettingsDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Settings'),
-        content: const Text('Settings dialog placeholder'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
+class _SecondPage extends StatelessWidget {
+  const _SecondPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Second Page'),
       ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('English'),
-              onTap: () {
-                ref
-                    .read(localeProvider.notifier)
-                    .setLocale(const Locale('en', 'US'));
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              title: const Text('Русский'),
-              onTap: () {
-                ref
-                    .read(localeProvider.notifier)
-                    .setLocale(const Locale('ru', 'RU'));
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+      body: Center(
+        child: FilledButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const _Home(),
+              ),
+            );
+          },
+          child: const Text('Go to Home'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
       ),
     );
-  }
-
-  Future<void> _executeActions(
-    BuildContext context,
-    WidgetRef ref,
-    LogGenerationService logService,
-    TestCubit testCubit,
-    CounterBloc counterBloc,
-  ) async {
-    final settings = ref.read(demoSettingsProvider);
-
-    if (settings.enableHttp) {
-      await logService.generateHttpRequests(
-        requestCount: settings.requestCount,
-        httpMethod: settings.httpMethod,
-        randomize: settings.randomize,
-        useAuthHeader: settings.useAuthHeader,
-        httpSendSuccess: settings.httpSendSuccess,
-        httpSendErrors: settings.httpSendErrors,
-        payloadSize: settings.payloadSize,
-        loopDelayMs: settings.loopDelayMs,
-      );
-    }
-
-    if (settings.enableWs) {
-      await logService.generateWebSocketActions(
-        itemCount: settings.itemCount,
-        wsMessageSize: settings.wsMessageSize,
-        randomize: settings.randomize,
-        loopDelayMs: settings.loopDelayMs,
-      );
-    }
-
-    if (settings.enableLogging) {
-      await logService.generateLogs(
-        itemCount: settings.itemCount,
-        randomize: settings.randomize,
-        loopDelayMs: settings.loopDelayMs,
-        useAuthHeader: settings.useAuthHeader,
-        httpSendSuccess: settings.httpSendSuccess,
-        httpSendErrors: settings.httpSendErrors,
-      );
-    }
-
-    if (settings.enableExceptions) {
-      await logService.generateExceptions(
-        requestCount: settings.requestCount,
-      );
-    }
-
-    if (settings.enableFileUploads) {
-      await logService.generateFileUploads(
-        requestCount: settings.requestCount,
-      );
-    }
-
-    if (settings.enableAnalytics) {
-      await logService.generateAnalytics(
-        itemCount: settings.itemCount,
-      );
-    }
-
-    if (settings.enableRoutes) {
-      await logService.generateRoutes(
-        requestCount: settings.requestCount,
-      );
-    }
-
-    if (settings.enableBlocEvents) {
-      await logService.generateBlocEvents(
-        itemCount: settings.itemCount,
-        loopDelayMs: settings.loopDelayMs,
-        testCubit: testCubit,
-        counterBloc: counterBloc,
-      );
-    }
-
-    if (settings.enableRiverpod) {
-      await logService.generateRiverpodActions(
-        itemCount: settings.itemCount,
-        loopDelayMs: settings.loopDelayMs,
-      );
-    }
   }
 }

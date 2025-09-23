@@ -246,9 +246,21 @@ class ISpectHttpInterceptor extends InterceptorContract {
         final redacted = settings.enableRedaction
             ? _redactor.redact(responseBodyData)
             : responseBodyData;
-        return (redacted as Map<String, dynamic>?) ??
-            (responseBodyData as Map<Object?, Object?>)
-                .map((k, v) => MapEntry(k.toString(), v));
+
+        // Handle the redacted result properly
+        if (redacted is Map<String, dynamic>) {
+          return redacted;
+        } else if (redacted is Map<Object?, Object?>) {
+          // Convert Map<Object?, Object?> to Map<String, dynamic>
+          return redacted.map((k, v) => MapEntry(k.toString(), v));
+        } else if (responseBodyData is Map<String, dynamic>) {
+          // Fallback to original data if redaction failed
+          return responseBodyData;
+        } else {
+          // Convert original data if it's not String-keyed
+          final raw = responseBodyData as Map<Object?, Object?>;
+          return raw.map((k, v) => MapEntry(k.toString(), v));
+        }
       } catch (_) {
         final raw = responseBodyData as Map<Object?, Object?>;
         return raw.map((k, v) => MapEntry(k.toString(), v));

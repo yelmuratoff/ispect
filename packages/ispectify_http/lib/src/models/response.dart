@@ -23,10 +23,6 @@ class HttpResponseLog extends ISpectifyData {
           pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
           additionalData: responseData?.toJson(
             redactor: redactor,
-            printResponseData: settings.printResponseData,
-            printRequestData: settings.printRequestData,
-            printResponseHeaders: settings.printResponseHeaders,
-            printRequestHeaders: settings.printRequestHeaders,
           ),
         );
 

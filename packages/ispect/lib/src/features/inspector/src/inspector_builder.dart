@@ -187,6 +187,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           return ISpectScopeController(
             model: model,
             child: Navigator(
+              key: const ValueKey('ISpectNavigator'),
               observers: [ISpectNavigatorObserver()],
               pages: [MaterialPage(child: currentChild)],
               onDidRemovePage: (_) {},

@@ -687,7 +687,8 @@ void main() {
 
       await interceptor.interceptResponse(response: successResponse);
       await Future<void>.delayed(
-          const Duration(milliseconds: 10)); // Allow async processing
+        const Duration(milliseconds: 10),
+      ); // Allow async processing
 
       // Should be null because 2xx response was filtered out
       expect(successLog, isNull);
@@ -744,7 +745,8 @@ void main() {
 
       await interceptor.interceptResponse(response: notFoundResponse);
       await Future<void>.delayed(
-          const Duration(milliseconds: 10)); // Allow async processing
+        const Duration(milliseconds: 10),
+      ); // Allow async processing
 
       // Should be null because 404 was filtered out by errorFilter
       expect(notFoundLog, isNull);
@@ -770,6 +772,51 @@ void main() {
       // Should be logged because errorFilter allows 500 errors
       expect(serverErrorLog, isNotNull);
       expect(serverErrorLog.statusCode, 500);
+    });
+
+    test('error body redaction works correctly', () async {
+      final redactor = RedactionService();
+      // Note: 'password' and 'token' are already in default sensitive keys,
+      // so no need to configure them explicitly
+
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        redactor: redactor,
+      );
+
+      // Test error response with sensitive data
+      final request =
+          http.Request('POST', Uri.parse('https://api.example.com/login'));
+      final errorResponse = http.Response(
+        '{"error": "Invalid credentials", "password": "secret123", "token": "abc123token"}',
+        401,
+        request: request,
+      );
+
+      final errorFuture = inspector.stream
+          .where((e) => e is HttpErrorLog)
+          .cast<HttpErrorLog>()
+          .first;
+
+      await interceptor.interceptResponse(response: errorResponse);
+      final errorLog = await errorFuture;
+
+      // Should be logged and redacted
+      expect(errorLog, isNotNull);
+      expect(errorLog.statusCode, 401);
+      expect(errorLog.body, isNotNull);
+
+      final body = errorLog.body!;
+      expect(body, contains('error'));
+      expect(body['error'], 'Invalid credentials');
+
+      // Sensitive fields should be redacted
+      expect(body, contains('password'));
+      expect(body['password'], contains('[REDACTED]'));
+
+      expect(body, contains('token'));
+      expect(body['token'], contains('[REDACTED]'));
     });
   });
 }

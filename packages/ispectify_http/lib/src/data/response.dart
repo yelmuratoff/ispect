@@ -21,29 +21,22 @@ class HttpResponseData {
     RedactionService? redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
-    bool printResponseData = true,
-    bool printRequestData = true,
-    bool printResponseHeaders = true,
-    bool printRequestHeaders = true,
   }) {
     final map = <String, dynamic>{
       'url': baseResponse.request?.url.toString(),
       'status-code': baseResponse.statusCode,
       'status-message': baseResponse.reasonPhrase,
       'request-data': redactor == null
-          ? requestData.toJson(
-              printRequestHeaders: printRequestHeaders,
-            )
+          ? requestData.toJson()
           : requestData.toJson(
               redactor: redactor,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
-              printRequestHeaders: printRequestHeaders,
             ),
       'is-redirect': baseResponse.isRedirect,
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
-      if (printResponseData && response != null)
+      if (response != null)
         'body': redactor != null
             ? _getRedactedBody(
                 response!.body,
@@ -52,9 +45,9 @@ class HttpResponseData {
                 ignoredKeys,
               )
             : response!.body,
-      if (printResponseData && response != null && redactor == null)
+      if (response != null && redactor == null)
         'body-bytes': response!.bodyBytes.toString(),
-      if (printRequestData && multipartRequest != null)
+      if (multipartRequest != null)
         'multipart-request': {
           'fields': multipartRequest!.fields,
           'files': multipartRequest!.files
@@ -68,26 +61,23 @@ class HttpResponseData {
               )
               .toList(),
         },
-      if (printResponseHeaders) 'headers': baseResponse.headers,
+      'headers': baseResponse.headers,
     };
 
     if (redactor == null) return map;
 
     // Redact headers (Map<String, String>) while preserving shape
-    if (printResponseHeaders) {
-      map['headers'] = redactor
-          .redactHeaders(
-            baseResponse.headers,
-            ignoredValues: ignoredValues,
-            ignoredKeys: ignoredKeys,
-          )
-          .map((k, v) => MapEntry(k, v?.toString() ?? ''));
-    }
+
+    map['headers'] = redactor
+        .redactHeaders(
+          baseResponse.headers,
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        )
+        .map((k, v) => MapEntry(k, v?.toString() ?? ''));
 
     // Redact multipart request fields/files and mask filenames
-    if (printRequestData &&
-        multipartRequest != null &&
-        map['multipart-request'] is Map) {
+    if (multipartRequest != null && map['multipart-request'] is Map) {
       final mp = Map<String, dynamic>.from(
         map['multipart-request'] as Map,
       );

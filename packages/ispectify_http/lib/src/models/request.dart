@@ -18,8 +18,8 @@ class HttpRequestLog extends ISpectifyData {
             'method': method,
             'url': url,
             'path': path,
-            if (settings.printRequestHeaders) 'headers': headers,
-            if (settings.printRequestData) 'body': body,
+            'headers': headers,
+            'body': body,
           },
         );
 
