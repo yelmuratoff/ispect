@@ -686,14 +686,16 @@ void main() {
           .listen((log) => successLog = log);
 
       await interceptor.interceptResponse(response: successResponse);
-      await Future<void>.delayed(const Duration(milliseconds: 10)); // Allow async processing
+      await Future<void>.delayed(
+          const Duration(milliseconds: 10)); // Allow async processing
 
       // Should be null because 2xx response was filtered out
       expect(successLog, isNull);
       await successSubscription.cancel();
 
       // Test 4xx error response - should NOT be filtered out despite responseFilter
-      final errorRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final errorRequest =
+          http.Request('GET', Uri.parse('https://example.com/api'));
       final errorResponse = http.Response(
         '{"error": "Not found"}',
         404,
@@ -726,7 +728,8 @@ void main() {
       );
 
       // Test 404 error - should be filtered out by errorFilter
-      final notFoundRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final notFoundRequest =
+          http.Request('GET', Uri.parse('https://example.com/api'));
       final notFoundResponse = http.Response(
         '{"error": "Not found"}',
         404,
@@ -740,14 +743,16 @@ void main() {
           .listen((log) => notFoundLog = log);
 
       await interceptor.interceptResponse(response: notFoundResponse);
-      await Future<void>.delayed(const Duration(milliseconds: 10)); // Allow async processing
+      await Future<void>.delayed(
+          const Duration(milliseconds: 10)); // Allow async processing
 
       // Should be null because 404 was filtered out by errorFilter
       expect(notFoundLog, isNull);
       await notFoundSubscription.cancel();
 
       // Test 500 error - should be logged
-      final serverErrorRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final serverErrorRequest =
+          http.Request('GET', Uri.parse('https://example.com/api'));
       final serverErrorResponse = http.Response(
         '{"error": "Internal server error"}',
         500,
@@ -770,7 +775,8 @@ void main() {
 }
 
 // Helper filter functions for testing
-bool _skip2xxResponses(http.BaseResponse response) => response.statusCode < 200 || response.statusCode >= 300;
+bool _skip2xxResponses(http.BaseResponse response) =>
+    response.statusCode < 200 || response.statusCode >= 300;
 bool _allowAllErrors(http.BaseResponse response) => true;
 bool _allowAllResponses(http.BaseResponse response) => true;
 bool _skip404Errors(http.BaseResponse response) => response.statusCode != 404;

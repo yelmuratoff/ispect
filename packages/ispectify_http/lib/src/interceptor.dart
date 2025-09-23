@@ -90,7 +90,8 @@ class ISpectHttpInterceptor extends InterceptorContract {
   }) async {
     // For error responses, defer to error filter instead of response filter
     // This prevents responseFilter from suppressing error logging
-    final isErrorResponse = response.statusCode >= 400 && response.statusCode < 600;
+    final isErrorResponse =
+        response.statusCode >= 400 && response.statusCode < 600;
     if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
     if (isErrorResponse && !_shouldProcessError(response)) return response;
 
