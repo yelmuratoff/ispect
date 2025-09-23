@@ -657,4 +657,120 @@ void main() {
       expect(log.body, isNull);
     });
   });
+
+  group('Response and Error Filtering', () {
+    test('responseFilter does not suppress error logging', () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          // Configure responseFilter to skip 2xx responses
+          responseFilter: _skip2xxResponses,
+          // Configure errorFilter to allow all errors
+          errorFilter: _allowAllErrors,
+        ),
+      );
+
+      // Test 2xx response - should be filtered out
+      final request = http.Request('GET', Uri.parse('https://example.com/api'));
+      final successResponse = http.Response(
+        '{"success": true}',
+        200,
+        request: request,
+      );
+
+      HttpResponseLog? successLog;
+      final successSubscription = inspector.stream
+          .where((e) => e is HttpResponseLog)
+          .cast<HttpResponseLog>()
+          .listen((log) => successLog = log);
+
+      await interceptor.interceptResponse(response: successResponse);
+      await Future<void>.delayed(const Duration(milliseconds: 10)); // Allow async processing
+
+      // Should be null because 2xx response was filtered out
+      expect(successLog, isNull);
+      await successSubscription.cancel();
+
+      // Test 4xx error response - should NOT be filtered out despite responseFilter
+      final errorRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final errorResponse = http.Response(
+        '{"error": "Not found"}',
+        404,
+        request: errorRequest,
+      );
+
+      final errorFuture = inspector.stream
+          .where((e) => e is HttpErrorLog)
+          .cast<HttpErrorLog>()
+          .first;
+
+      await interceptor.interceptResponse(response: errorResponse);
+      final errorLog = await errorFuture;
+
+      // Should be logged because errorFilter allows it
+      expect(errorLog, isNotNull);
+      expect(errorLog.statusCode, 404);
+    });
+
+    test('errorFilter can still suppress specific errors', () async {
+      final inspector = ISpectify();
+      final interceptor = ISpectHttpInterceptor(
+        logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          // Allow all responses
+          responseFilter: _allowAllResponses,
+          // Skip 404 errors specifically
+          errorFilter: _skip404Errors,
+        ),
+      );
+
+      // Test 404 error - should be filtered out by errorFilter
+      final notFoundRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final notFoundResponse = http.Response(
+        '{"error": "Not found"}',
+        404,
+        request: notFoundRequest,
+      );
+
+      HttpErrorLog? notFoundLog;
+      final notFoundSubscription = inspector.stream
+          .where((e) => e is HttpErrorLog)
+          .cast<HttpErrorLog>()
+          .listen((log) => notFoundLog = log);
+
+      await interceptor.interceptResponse(response: notFoundResponse);
+      await Future<void>.delayed(const Duration(milliseconds: 10)); // Allow async processing
+
+      // Should be null because 404 was filtered out by errorFilter
+      expect(notFoundLog, isNull);
+      await notFoundSubscription.cancel();
+
+      // Test 500 error - should be logged
+      final serverErrorRequest = http.Request('GET', Uri.parse('https://example.com/api'));
+      final serverErrorResponse = http.Response(
+        '{"error": "Internal server error"}',
+        500,
+        request: serverErrorRequest,
+      );
+
+      final serverErrorFuture = inspector.stream
+          .where((e) => e is HttpErrorLog)
+          .cast<HttpErrorLog>()
+          .first;
+
+      await interceptor.interceptResponse(response: serverErrorResponse);
+      final serverErrorLog = await serverErrorFuture;
+
+      // Should be logged because errorFilter allows 500 errors
+      expect(serverErrorLog, isNotNull);
+      expect(serverErrorLog.statusCode, 500);
+    });
+  });
 }
+
+// Helper filter functions for testing
+bool _skip2xxResponses(http.BaseResponse response) => response.statusCode < 200 || response.statusCode >= 300;
+bool _allowAllErrors(http.BaseResponse response) => true;
+bool _allowAllResponses(http.BaseResponse response) => true;
+bool _skip404Errors(http.BaseResponse response) => response.statusCode != 404;

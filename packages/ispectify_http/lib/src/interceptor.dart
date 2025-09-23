@@ -88,7 +88,11 @@ class ISpectHttpInterceptor extends InterceptorContract {
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
-    if (!_shouldProcessResponse(response)) return response;
+    // For error responses, defer to error filter instead of response filter
+    // This prevents responseFilter from suppressing error logging
+    final isErrorResponse = response.statusCode >= 400 && response.statusCode < 600;
+    if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
+    if (isErrorResponse && !_shouldProcessError(response)) return response;
 
     final message = response.request?.url.toString() ?? '';
     final useRedaction = settings.enableRedaction;
@@ -110,9 +114,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
           : null,
     );
 
-    if (response.statusCode >= 400 && response.statusCode < 600) {
-      if (!_shouldProcessError(response)) return response;
-
+    if (isErrorResponse) {
       final errorBodyMap = _processErrorBody(responseBodyData, requestBodyData);
 
       _logger.logCustom(
