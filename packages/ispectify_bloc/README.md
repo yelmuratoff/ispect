@@ -134,7 +134,7 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.4.0-dev06
+  ispectify_bloc: ^4.4.0-dev07
 ```
 
 ## Security & Production Guidelines
