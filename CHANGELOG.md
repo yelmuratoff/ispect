@@ -4,6 +4,7 @@
 
 ### Added
 - New package `ispectify_db`: lightweight database logging with tracing and transaction markers.
+- cURL command copy functionality for HTTP logs in the log card, supporting both Dio and HTTP interceptors.
 
 ### Enhancements
 - Stronger and more consistent redaction across HTTP/Dio/WS (incl. Base64/Base64URL, Unicode-friendly); versions synced across packages.
