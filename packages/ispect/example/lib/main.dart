@@ -122,8 +122,8 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final ThemeMode themeMode = ThemeProvider.themeMode(context);
 
-    return MaterialApp(
-      navigatorObservers: [_observer],
+    return MaterialApp.router(
+      routerConfig: _AppRouter(_observer).routerConfig,
       locale: locale,
       supportedLocales: ExampleGeneratedLocalization.supportedLocales,
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
@@ -177,6 +177,7 @@ class _AppState extends State<App> {
                 title: 'Test',
                 icon: Icons.account_tree_rounded,
                 onTap: (context) {
+                  // For router, we can use context.go or similar, but since no package, use Navigator
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => Scaffold(
@@ -197,8 +198,90 @@ class _AppState extends State<App> {
         );
         return child;
       },
-      home: const _Home(),
     );
+  }
+}
+
+class _AppRouter {
+  _AppRouter(this.observer) {
+    _AppRouterDelegate._observer = observer;
+  }
+
+  final ISpectNavigatorObserver observer;
+
+  static final _AppRouterDelegate _delegate = _AppRouterDelegate();
+
+  RouterConfig<Object> get routerConfig => RouterConfig(
+        routerDelegate: _delegate,
+        routeInformationParser: _AppRouteInformationParser(),
+        routeInformationProvider: PlatformRouteInformationProvider(
+          initialRouteInformation: RouteInformation(uri: Uri.parse('/')),
+        ),
+      );
+}
+
+class _AppRouteInformationParser extends RouteInformationParser<String> {
+  @override
+  Future<String> parseRouteInformation(
+      RouteInformation routeInformation) async {
+    return routeInformation.uri.toString();
+  }
+
+  @override
+  RouteInformation restoreRouteInformation(String configuration) {
+    return RouteInformation(uri: Uri.parse(configuration));
+  }
+}
+
+class _AppRouterDelegate extends RouterDelegate<String>
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin<String> {
+  static ISpectNavigatorObserver? _observer;
+
+  @override
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  String _currentRoute = '/';
+
+  @override
+  String get currentConfiguration => _currentRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: navigatorKey,
+      observers: _observer != null ? [_observer!] : [],
+      onDidRemovePage: (page) {
+        _currentRoute = '/';
+        notifyListeners();
+      },
+      pages: [
+        const MaterialPage(
+          key: ValueKey('/'),
+          child: _Home(),
+        ),
+        if (_currentRoute == '/second')
+          const MaterialPage(
+            key: ValueKey('/second'),
+            child: _SecondPage(),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Future<void> setNewRoutePath(String configuration) async {
+    _currentRoute = configuration;
+    notifyListeners();
+  }
+
+  void goToSecondPage() {
+    _currentRoute = '/second';
+    notifyListeners();
+  }
+
+  void goToHome() {
+    _currentRoute = '/';
+    notifyListeners();
   }
 }
 
@@ -497,12 +580,7 @@ class _HomeState extends State<_Home> {
       (
         label: 'Go to second page',
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const _SecondPage(),
-              settings: const RouteSettings(name: 'SecondPage'),
-            ),
-          );
+          _AppRouter._delegate.goToSecondPage();
         },
       ),
       (
@@ -586,11 +664,7 @@ class _SecondPage extends StatelessWidget {
       body: Center(
         child: FilledButton(
           onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const _Home(),
-              ),
-            );
+            _AppRouter._delegate.goToHome();
           },
           child: const Text('Go to Home'),
         ),
