@@ -245,6 +245,26 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
+        label: 'Show modal bottom sheet',
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            builder: (context) => SizedBox(
+              height: 300,
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      (
         label: 'Mock Nested Map with Depth IDs',
         onPressed: () {
           const int depth = 5000;
