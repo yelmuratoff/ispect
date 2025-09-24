@@ -7,17 +7,6 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dar
 class ThemeSchemeScreen extends StatelessWidget {
   const ThemeSchemeScreen({super.key});
 
-  Future<void> push(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => this,
-        settings: const RouteSettings(
-          name: 'Theme Scheme Screen',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

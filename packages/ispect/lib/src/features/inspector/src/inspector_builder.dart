@@ -189,12 +189,15 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
           return ISpectScopeController(
             model: model,
-            child: Navigator(
-              key: _navigatorKey,
-              observers: [ISpectNavigatorObserver()],
-              pages: [MaterialPage(child: currentChild)],
-              onDidRemovePage: (_) {},
-            ),
+            child: widget.observer != null
+                ? currentChild
+                : Navigator(
+                    key: _navigatorKey,
+                    observers: [
+                      ISpectNavigatorObserver(),
+                    ],
+                    pages: [MaterialPage(child: currentChild)],
+                  ),
           );
         },
       );

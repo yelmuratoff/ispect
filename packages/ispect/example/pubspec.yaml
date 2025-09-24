@@ -38,6 +38,7 @@ dependencies:
   flutter_bloc: ^9.1.0
   http_interceptor: ^2.0.0
   flutter_riverpod: ^2.5.1
+  auto_route:
 
   # Use local paths through dependency_overrides
   ispect: ^4.4.0-dev08
@@ -53,7 +54,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
+  build_runner: ^2.7.0
+  build: ^3.0.2
+  auto_route_generator: ^10.2.4
 
 flutter:
   uses-material-design: true

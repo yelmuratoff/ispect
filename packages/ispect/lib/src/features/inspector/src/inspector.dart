@@ -485,7 +485,17 @@ class InspectorState extends State<Inspector> {
                     DraggablePanelItem(
                       icon: Icons.color_lens_rounded,
                       enableBadge: false,
-                      onTap: const ThemeSchemeScreen().push,
+                      onTap: (context) {
+                        _pushToScreen(
+                          MaterialPageRoute<dynamic>(
+                            builder: (_) => const ThemeSchemeScreen(),
+                            settings: const RouteSettings(
+                              name: 'Theme & Scheme Screen',
+                            ),
+                          ),
+                          null,
+                        );
+                      },
                       description: context.ispectL10n.viewThemeScheme,
                     ),
                   ...widget.options.panelItems,
@@ -652,23 +662,35 @@ class InspectorState extends State<Inspector> {
       ),
     );
     if (_controller.inLoggerPage) {
-      if (widget.observer?.navigator == null) {
-        Navigator.of(context).pop();
-      } else {
-        widget.observer?.navigator?.pop();
-      }
+      await _popScreen();
     } else {
-      if (widget.observer?.navigator == null) {
-        _controller.setInLoggerPage(isLoggerPage: true);
-        await Navigator.of(context).push(iSpectScreen).then((_) {
-          _controller.setInLoggerPage(isLoggerPage: false);
-        });
-      } else {
-        _controller.setInLoggerPage(isLoggerPage: true);
-        await widget.observer?.navigator?.push(iSpectScreen).then((_) {
-          _controller.setInLoggerPage(isLoggerPage: false);
-        });
-      }
+      _controller.setInLoggerPage(isLoggerPage: true);
+      await _pushToScreen(iSpectScreen, () {
+        _controller.setInLoggerPage(isLoggerPage: false);
+      });
+    }
+  }
+
+  Future<void> _pushToScreen(
+    MaterialPageRoute<dynamic> screen,
+    VoidCallback? then,
+  ) async {
+    if (widget.observer?.navigator == null) {
+      await Navigator.of(context).push(screen).then((_) {
+        then?.call();
+      });
+    } else {
+      await widget.observer?.navigator?.push(screen).then((_) {
+        then?.call();
+      });
+    }
+  }
+
+  Future<void> _popScreen() async {
+    if (widget.observer?.navigator == null) {
+      Navigator.of(context).pop();
+    } else {
+      widget.observer?.navigator?.pop();
     }
   }
 }
