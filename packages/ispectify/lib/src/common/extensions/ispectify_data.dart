@@ -94,7 +94,6 @@ StackTrace: $stackTraceText]''';
   bool get isHttpLog => [
         ISpectifyLogType.httpRequest.key,
         ISpectifyLogType.httpResponse.key,
-        ISpectifyLogType.httpError.key,
       ].contains(key);
 
   bool get isRouteLog => key == ISpectifyLogType.route.key;

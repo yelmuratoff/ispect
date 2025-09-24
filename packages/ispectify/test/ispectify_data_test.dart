@@ -103,18 +103,47 @@ void main() {
       expect(curl, contains("-d '{\"key\": \"value\"}'"));
     });
 
-    test('curlCommand handles missing data gracefully', () {
+    test('curlCommand generates cURL for HTTP response logs', () {
       final data = ISpectifyData(
-        'Test request',
-        key: 'http-request',
+        'Response received',
+        key: 'http-response',
         additionalData: {
-          'method': 'GET',
-          'uri': 'https://example.com',
+          'request-options': {
+            'method': 'POST',
+            'uri': 'https://example.com/api',
+            'headers': {'Content-Type': 'application/json'},
+            'data': '{"key": "value"}',
+          },
         },
       );
 
       final curl = data.curlCommand;
-      expect(curl, equals('curl -X GET "https://example.com"'));
+      expect(curl, isNotNull);
+      expect(curl, contains('curl -X POST "https://example.com/api"'));
+      expect(curl, contains('-H "Content-Type: application/json"'));
+      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+    });
+
+    test('curlCommand generates cURL for HTTP error logs', () {
+      final data = ISpectifyData(
+        'Request failed',
+        key: 'http-error',
+        additionalData: {
+          'request-options': {
+            'method': 'GET',
+            'uri': 'https://example.com/fail',
+            'headers': {'Authorization': 'Bearer token'},
+          },
+        },
+      );
+
+      final curl = data.curlCommand;
+      expect(
+        curl,
+        equals(
+          'curl -X GET "https://example.com/fail" -H "Authorization: Bearer token"',
+        ),
+      );
     });
   });
 }

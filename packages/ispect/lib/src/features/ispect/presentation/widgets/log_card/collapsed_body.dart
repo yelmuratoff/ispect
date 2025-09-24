@@ -81,10 +81,9 @@ class CollapsedBody extends StatelessWidget {
             onPressed: onCopyTap,
           ),
           const Gap(4),
-          // CURL COPY
           if (isHTTP) ...[
             SquareIconButton(
-              icon: Icons.copy_rounded,
+              icon: Icons.terminal_rounded,
               color: color,
               onPressed: onCopyCurlTap,
             ),

@@ -24,6 +24,7 @@ class HttpResponseData {
   }) {
     final map = <String, dynamic>{
       'url': baseResponse.request?.url.toString(),
+      'method': baseResponse.request?.method,
       'status-code': baseResponse.statusCode,
       'status-message': baseResponse.reasonPhrase,
       'request-data': redactor == null

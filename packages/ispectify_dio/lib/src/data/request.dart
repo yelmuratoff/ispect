@@ -14,7 +14,7 @@ class DioRequestData {
     final map = <String, dynamic>{
       'path': requestOptions.path,
       'base-url': requestOptions.baseUrl,
-      'uri': requestOptions.uri.toString(),
+      'url': requestOptions.uri.toString(),
       'method': requestOptions.method,
       'data': requestOptions.data,
       'headers': requestOptions.headers,
