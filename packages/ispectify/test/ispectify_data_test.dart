@@ -78,5 +78,43 @@ void main() {
       expect(copiedData.title, equals('New Title'));
       expect(copiedData.additionalData, equals(originalData.additionalData));
     });
+
+    test('curlCommand returns null for non-HTTP logs', () {
+      final data = ISpectifyData('Test message');
+      expect(data.curlCommand, isNull);
+    });
+
+    test('curlCommand generates cURL for HTTP request logs', () {
+      final data = ISpectifyData(
+        'Test request',
+        key: 'http-request',
+        additionalData: {
+          'method': 'POST',
+          'uri': 'https://example.com/api',
+          'headers': {'Content-Type': 'application/json'},
+          'data': '{"key": "value"}',
+        },
+      );
+
+      final curl = data.curlCommand;
+      expect(curl, isNotNull);
+      expect(curl, contains('curl -X POST "https://example.com/api"'));
+      expect(curl, contains('-H "Content-Type: application/json"'));
+      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+    });
+
+    test('curlCommand handles missing data gracefully', () {
+      final data = ISpectifyData(
+        'Test request',
+        key: 'http-request',
+        additionalData: {
+          'method': 'GET',
+          'uri': 'https://example.com',
+        },
+      );
+
+      final curl = data.curlCommand;
+      expect(curl, equals('curl -X GET "https://example.com"'));
+    });
   });
 }

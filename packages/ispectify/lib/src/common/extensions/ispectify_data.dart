@@ -99,6 +99,13 @@ StackTrace: $stackTraceText]''';
 
   bool get isRouteLog => key == ISpectifyLogType.route.key;
 
+  /// Generates a cURL command for HTTP request logs.
+  ///
+  /// Returns the cURL command as a string if the log contains HTTP request data,
+  /// otherwise returns `null`.
+  String? get curlCommand =>
+      isHttpLog ? CurlUtils.generateCurl(additionalData) : null;
+
   /// Retrieves the type of exception or error, if applicable.
   ///
   /// Returns `null` for non-error logs.
