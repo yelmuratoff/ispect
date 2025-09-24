@@ -8,6 +8,9 @@ import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
 
+final GlobalKey<NavigatorState> _navigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'ISpectNavigatorKey');
+
 /// A widget that wraps your app with ISpect debugging tools.
 ///
 /// **⚠️ WARNING: Never include in production builds - contains sensitive debug data.**
@@ -186,13 +189,12 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
           return ISpectScopeController(
             model: model,
-            child: currentChild,
-            // child: Navigator(
-            //   key: const ValueKey('ISpectNavigator'),
-            //   observers: [ISpectNavigatorObserver()],
-            //   pages: [MaterialPage(child: currentChild)],
-            //   onDidRemovePage: (_) {},
-            // ),
+            child: Navigator(
+              key: _navigatorKey,
+              observers: [ISpectNavigatorObserver()],
+              pages: [MaterialPage(child: currentChild)],
+              onDidRemovePage: (_) {},
+            ),
           );
         },
       );

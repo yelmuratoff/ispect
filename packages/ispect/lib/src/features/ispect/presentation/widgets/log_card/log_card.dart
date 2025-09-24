@@ -104,7 +104,7 @@ class _LogCardHeader extends StatelessWidget {
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,
-              isHTTP: data.isHttpLog,
+              isHTTP: data.key == ISpectifyLogType.httpRequest.key,
               onCopyCurlTap: () {
                 final curl = data.curlCommand;
                 if (curl != null) {

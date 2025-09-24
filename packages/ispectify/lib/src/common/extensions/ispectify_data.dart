@@ -102,8 +102,9 @@ StackTrace: $stackTraceText]''';
   ///
   /// Returns the cURL command as a string if the log contains HTTP request data,
   /// otherwise returns `null`.
-  String? get curlCommand =>
-      isHttpLog ? CurlUtils.generateCurl(additionalData) : null;
+  String? get curlCommand => key == ISpectifyLogType.httpRequest.key
+      ? CurlUtils.generateCurl(additionalData)
+      : null;
 
   /// Retrieves the type of exception or error, if applicable.
   ///
