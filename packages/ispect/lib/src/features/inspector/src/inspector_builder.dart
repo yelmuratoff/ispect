@@ -197,6 +197,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                       ISpectNavigatorObserver(),
                     ],
                     pages: [MaterialPage(child: currentChild)],
+                    onDidRemovePage: (page) {},
                   ),
           );
         },
