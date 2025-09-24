@@ -1,6 +1,6 @@
 name: ispect_jira
 description: Jira ticket creation integration for ISpect debugging toolkit
-version: 4.4.0-dev08
+version: 4.4.0-dev09
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -22,7 +22,7 @@ dependencies:
   intl: ^0.20.0
 
   atlassian_apis: ^0.15.0
-  ispect: ^4.4.0-dev08
+  ispect: ^4.4.0-dev09
   flutter_bloc: ^9.1.0
   # Align meta with core package to reduce duplication.
   meta: ^1.16.0
