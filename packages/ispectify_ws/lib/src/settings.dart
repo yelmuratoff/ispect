@@ -5,7 +5,7 @@ import 'package:ispectify_ws/ispectify_ws.dart';
 class ISpectWSInterceptorSettings {
   const ISpectWSInterceptorSettings({
     this.enabled = true,
-    this.enableRedaction = true,
+    this.enableRedaction = false,
     this.printReceivedData = true,
     this.printReceivedMessage = true,
     this.printErrorData = true,

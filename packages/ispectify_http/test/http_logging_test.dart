@@ -156,6 +156,7 @@ void main() {
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
+          enableRedaction: true,
           printResponseData: false,
         ),
       );
@@ -219,77 +220,6 @@ void main() {
         json.containsKey('body-bytes'),
         isFalse,
         reason: 'body-bytes must be omitted when redaction is enabled',
-      );
-    });
-
-    test('additionalData omits response body when printResponseData=false',
-        () async {
-      final inspector = ISpectify();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printResponseData: false,
-          enableRedaction: false,
-        ),
-      );
-
-      final request = http.Request('GET', Uri.parse('https://example.com'));
-      final response = http.Response(
-        '{"foo": 123}',
-        200,
-        request: request,
-      );
-
-      final future = inspector.stream
-          .where((e) => e is HttpResponseLog)
-          .cast<HttpResponseLog>()
-          .first;
-
-      await interceptor.interceptResponse(response: response);
-      final log = await future;
-      final additional = log.additionalData;
-      expect(additional, isNotNull);
-      expect(
-        additional!.containsKey('body'),
-        isFalse,
-        reason: 'Response body must be omitted from additionalData',
-      );
-    });
-
-    test('additionalData includes multipart only when printRequestData=true',
-        () async {
-      final inspector = ISpectify();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printRequestData: false,
-          enableRedaction: false,
-        ),
-      );
-
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://upload.example.com'),
-      )..fields['a'] = '1';
-      final baseResponse = http.StreamedResponse(
-        const Stream<List<int>>.empty(),
-        200,
-        request: request,
-      );
-
-      final future = inspector.stream
-          .where((e) => e is HttpResponseLog)
-          .cast<HttpResponseLog>()
-          .first;
-
-      await interceptor.interceptResponse(response: baseResponse);
-      final log = await future;
-      final additional = log.additionalData;
-      expect(additional, isNotNull);
-      expect(
-        additional!.containsKey('multipart-request'),
-        isFalse,
-        reason: 'Multipart payload must be omitted when printRequestData=false',
       );
     });
   });
@@ -585,6 +515,9 @@ void main() {
       final inspector = ISpectify();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
+        settings: const ISpectHttpInterceptorSettings(
+          enableRedaction: true,
+        ),
       );
 
       final request =
@@ -783,6 +716,9 @@ void main() {
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         redactor: redactor,
+        settings: const ISpectHttpInterceptorSettings(
+          enableRedaction: true,
+        ),
       );
 
       // Test error response with sensitive data

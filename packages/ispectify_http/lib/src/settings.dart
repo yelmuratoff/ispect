@@ -5,7 +5,7 @@ import 'package:ispectify/ispectify.dart';
 class ISpectHttpInterceptorSettings {
   const ISpectHttpInterceptorSettings({
     this.enabled = true,
-    this.enableRedaction = true,
+    this.enableRedaction = false,
     this.printResponseData = true,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,

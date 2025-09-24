@@ -19,6 +19,7 @@ analyzer:
     avoid_slow_async_io: error
     use_key_in_widget_constructors: error
     comment_references: ignore
+    avoid_redundant_argument_values: ignore
 
 linter:
   rules:
