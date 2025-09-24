@@ -39,16 +39,6 @@ class LogsScreen extends StatefulWidget {
   final ISpectOptions options;
   final ISpectNavigatorObserver? navigatorObserver;
 
-  /// Pushes this screen onto the navigation stack
-  void push(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => this,
-        settings: const RouteSettings(name: 'ISpect Screen'),
-      ),
-    );
-  }
-
   @override
   State<LogsScreen> createState() => _LogsScreenState();
 }

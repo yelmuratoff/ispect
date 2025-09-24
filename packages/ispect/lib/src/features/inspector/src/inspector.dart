@@ -662,10 +662,11 @@ class InspectorState extends State<Inspector> {
       ),
     );
     if (_controller.inLoggerPage) {
-      await _popScreen();
+      widget.observer.pop(context);
     } else {
       _controller.setInLoggerPage(isLoggerPage: true);
-      await _pushToScreen(iSpectScreen, () {
+
+      await widget.observer.push(context, iSpectScreen).then((_) {
         _controller.setInLoggerPage(isLoggerPage: false);
       });
     }
@@ -683,14 +684,6 @@ class InspectorState extends State<Inspector> {
       await widget.observer?.navigator?.push(screen).then((_) {
         then?.call();
       });
-    }
-  }
-
-  Future<void> _popScreen() async {
-    if (widget.observer?.navigator == null) {
-      Navigator.of(context).pop();
-    } else {
-      widget.observer?.navigator?.pop();
     }
   }
 }

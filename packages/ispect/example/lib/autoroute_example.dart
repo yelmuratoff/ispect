@@ -24,7 +24,9 @@ class NestedNavigationApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       localizationsDelegates: ISpectLocalizations.delegates(),
-      routerConfig: nestedRouter.config(),
+      routerConfig: nestedRouter.config(
+        navigatorObservers: () => [observer],
+      ),
       builder: (context, child) =>
           ISpectBuilder(observer: observer, child: child!),
     );
@@ -35,14 +37,8 @@ class NestedNavigationApp extends StatelessWidget {
 class NestedRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
-        AutoRoute(
-          initial: true,
-          page: HostRoute.page,
-          children: [
-            AutoRoute(page: FirstRoute.page, initial: true),
-            AutoRoute(page: SecondRoute.page),
-          ],
-        ),
+        AutoRoute(page: FirstRoute.page, initial: true),
+        AutoRoute(page: SecondRoute.page),
       ];
 }
 
@@ -56,9 +52,6 @@ class HostScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Host Screen'),
         leading: AutoLeadingButton(),
-      ),
-      body: AutoRouter(
-        navigatorObservers: () => [observer],
       ),
     );
   }
@@ -90,6 +83,7 @@ class SecondScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
               onPressed: () => context.maybePop(),
