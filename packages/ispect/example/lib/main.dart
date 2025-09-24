@@ -38,17 +38,18 @@ void main() {
   );
   final ISpectify logger = ISpectifyFlutter.init(
     options: options,
-    history: DailyFileLogHistory(options),
+    // history: DailyFileLogHistory(options),
   );
 
-  // debugRepaintRainbowEnabled = true;
-
   ISpect.run(
-    () => runApp(
-      ThemeProvider(
-        child: App(logger: logger),
-      ),
-    ),
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(
+        ThemeProvider(
+          child: App(logger: logger),
+        ),
+      );
+    },
     logger: logger,
     isPrintLoggingEnabled: false,
     onInit: () {
@@ -78,7 +79,6 @@ void main() {
         ),
       );
     },
-    onInitialized: () {},
   );
 }
 

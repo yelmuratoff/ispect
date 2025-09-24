@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:ispect/ispect.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Optimized daily file-based log history implementation
 ///
@@ -126,7 +125,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Usage example: Used for Android/iOS platforms
   /// - Edge case notes: Creates directory in system temp with app subdirectory
   Future<String> _getMobileCacheDirectory() async {
-    final tempDir = await getTemporaryDirectory();
+    final tempDir = Directory.systemTemp;
     final appCacheDir = Directory('${tempDir.path}/ispect_cache');
 
     if (!await appCacheDir.exists()) {
