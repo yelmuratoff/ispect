@@ -1,10 +1,8 @@
 # TODO
 
 ## Core
-- [ ] Add test coverage
 - [ ] Handle runtime config changes and initial values with persistence (web: localStorage; mobile/desktop: SharedPreferences)
 - [ ] Performance improvements (virtualized lists, throttling, buffer limits)
-- [ ] Copy cURL command for API requests
 
 ## Packages
 ### ispect
@@ -18,3 +16,4 @@
 - [x] Add CI/CD
 - [x] Redact secrets and sensitive values (headers/body)
 - [x] Redact headers/body; detect binary payloads
+- [x] Copy cURL command for API requests
