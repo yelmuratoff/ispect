@@ -26,6 +26,9 @@ final Map<String, String> _defaultTitles = {
   ISpectifyLogType.analytics.key: 'analytics',
   ISpectifyLogType.provider.key: 'provider',
   ISpectifyLogType.print.key: 'print',
+  ISpectifyLogType.dbQuery.key: 'db-query',
+  ISpectifyLogType.dbResult.key: 'db-result',
+  ISpectifyLogType.dbError.key: 'db-error',
 };
 
 /// Default ANSI colors for ISpectify log types.
@@ -34,7 +37,7 @@ final Map<String, AnsiPen> _defaultColors = {
   ISpectifyLogType.warning.key: AnsiPen()..xterm(172),
   ISpectifyLogType.verbose.key: AnsiPen()..xterm(08),
   ISpectifyLogType.info.key: AnsiPen()..blue(),
-  ISpectifyLogType.debug.key: AnsiPen()..blue(),
+  ISpectifyLogType.debug.key: AnsiPen()..gray(),
   ISpectifyLogType.error.key: AnsiPen()..red(),
   ISpectifyLogType.exception.key: AnsiPen()..red(),
   ISpectifyLogType.httpError.key: AnsiPen()..red(),
@@ -54,6 +57,9 @@ final Map<String, AnsiPen> _defaultColors = {
   ISpectifyLogType.analytics.key: AnsiPen()..yellow(),
   ISpectifyLogType.provider.key: AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
   ISpectifyLogType.print.key: AnsiPen()..blue(),
+  ISpectifyLogType.dbQuery.key: AnsiPen()..blue(),
+  ISpectifyLogType.dbResult.key: AnsiPen()..green(),
+  ISpectifyLogType.dbError.key: AnsiPen()..red(),
 };
 
 /// Fallback color for logs without a predefined color.

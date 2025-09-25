@@ -27,7 +27,7 @@
 
 ## TL;DR
 
-Drop-in Flutter debug panel: network + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
+Drop-in Flutter debug panel: network + database + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
 
 ## Interface Preview
 
@@ -58,18 +58,20 @@ Modular packages. Include only what you use:
 | [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP capture | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
 | [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | http package capture | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
 | [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) | Database operations | [![pub](https://img.shields.io/pub/v/ispectify_db.svg)](https://pub.dev/packages/ispectify_db) |
 | [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
 | [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira issue export | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## Overview
 
-> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications.
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications. Includes network, database, performance, UI, and device tools.
 
-Provides network, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
+Provides network, database, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
 
 ### Key Features
 
 - Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Database Logging: Passive DB operation tracing with duration, errors, redaction
 - Logging: Advanced logging system with categorization and filtering
 - Performance Analysis: Real-time performance metrics and monitoring
 - UI Inspector: Widget hierarchy inspection with color picker and layout analysis
@@ -126,7 +128,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.3.6
+  ispect: ^4.4.0
 ```
 
 ## Security & Production Guidelines
@@ -399,7 +401,7 @@ flutter build apk --flavor production # ISpect automatically disabled
 
 ## Integration Guides
 
-ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, state management, WebSocket connections, and navigation.
+ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, database operations, state management, WebSocket connections, and navigation.
 
 ### Required Dependencies
 
@@ -408,20 +410,23 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.3.6
+  ispect: ^4.4.0
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.3.6      # For Dio HTTP client
-  ispectify_http: ^4.3.6     # For standard HTTP package
+  ispectify_dio: ^4.4.0      # For Dio HTTP client
+  ispectify_http: ^4.4.0     # For standard HTTP package
+  
+  # Database integration
+  ispectify_db: ^4.4.0       # For database operation logging
   
   # WebSocket integration
-  ispectify_ws: ^4.3.6       # For WebSocket monitoring
+  ispectify_ws: ^4.4.0       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.3.6     # For BLoC state management
+  ispectify_bloc: ^4.4.0     # For BLoC state management
   
   # Optional: Jira integration
-  ispect_jira: ^4.3.6        # For automated bug reporting
+  ispect_jira: ^4.4.0        # For automated bug reporting
 ```
 
 ### HTTP Integration
@@ -432,7 +437,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.3.6
+  ispectify_dio: ^4.4.0
 ```
 
 ```dart
@@ -471,7 +476,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.3.6
+  ispectify_http: ^4.4.0
 ```
 
 ```dart
@@ -516,13 +521,47 @@ ISpect.run(
 );
 ```
 
+### Database Integration
+
+For database operation logging, use the `ispectify_db` package:
+
+```yaml
+dependencies:
+  ispectify_db: ^4.4.0
+```
+
+```dart
+import 'package:sqflite/sqflite.dart';
+import 'package:ispectify_db/ispectify_db.dart';
+
+// Configure database logging
+ISpectDbCore.config = const ISpectDbConfig(
+  sampleRate: 1.0,
+  redact: true,
+  attachStackOnError: true,
+  enableTransactionMarkers: false,
+  slowQueryThreshold: Duration(milliseconds: 400),
+);
+
+// Log database operations
+final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+  source: 'sqflite',
+  operation: 'query',
+  statement: 'SELECT * FROM users WHERE id = ?',
+  args: [userId],
+  table: 'users',
+  run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
+  projectResult: (rows) => {'rows': rows.length},
+);
+```
+
 ### WebSocket Integration
 
 For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.3.6
+  ispectify_ws: ^4.4.0
 ```
 
 ```dart
@@ -556,7 +595,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.6
+  ispectify_bloc: ^4.4.0
 ```
 
 ```dart
@@ -567,7 +606,7 @@ ISpect.run(
   () => runApp(MyApp()),
   logger: iSpectify,
   onInit: () {
-    Bloc.observer = ISpecBlocObserver(
+    Bloc.observer = ISpectBlocObserver(
       logger: iSpectify,
     );
   },
@@ -669,6 +708,16 @@ redactor.ignoreValues(['<placeholder>']);
 final interceptor = ISpectWSInterceptor(logger: iSpectify, redactor: redactor);
 ```
 
+#### Database Example
+
+```dart
+// Database redaction is configured globally
+ISpectDbCore.config = const ISpectDbConfig(
+  redact: true,
+  redactKeys: ['password', 'token', 'secret'],
+);
+```
+
 Redaction masks data in headers, bodies, WS messages, and query parameters. Avoid embedding real secrets in code.
 
 ### Log Filtering and Customization
@@ -685,6 +734,9 @@ ISpectBuilder(
       LogDescription(key: 'http-request', isDisabled: false),
       LogDescription(key: 'http-response', isDisabled: false),
       LogDescription(key: 'http-error', isDisabled: false),
+      LogDescription(key: 'db-query', isDisabled: false),
+      LogDescription(key: 'db-result', isDisabled: false),
+      LogDescription(key: 'db-error', isDisabled: false),
       LogDescription(key: 'route', isDisabled: false),
       LogDescription(key: 'print', isDisabled: true),
       LogDescription(key: 'analytics', isDisabled: true),
@@ -694,7 +746,7 @@ ISpectBuilder(
 )
 ```
 
-Available log keys: `bloc-*`, `http-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
+Available log keys: `bloc-*`, `http-*`, `db-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
 
 ## Examples
 
@@ -714,6 +766,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) - Dio HTTP client integration
 - [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) - Standard HTTP client integration
 - [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) - WebSocket connection monitoring
+- [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) - Database operation logging
 - [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) - BLoC state management integration
 - [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) - Jira ticket creation integration
 

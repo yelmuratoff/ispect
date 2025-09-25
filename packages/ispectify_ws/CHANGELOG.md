@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.4.0
+
+### Added
+- New package `ispectify_db`: lightweight database logging with tracing and transaction markers.
+- cURL command copy functionality for HTTP logs in the log card, supporting both Dio and HTTP interceptors.
+
+### Enhancements
+- Stronger and more consistent redaction across HTTP/Dio/WS (incl. Base64/Base64URL, Unicode-friendly); versions synced across packages.
+
+### Fixed
+- ispectify_http: use `responseBody` in logs; separate request/response data; preserve non-Map error payloads; redact multipart fields/files (filenames masked).
+- ispectify_dio: redact `FormData` in request/response (filenames masked); mark error logs with `LogLevel.error`.
+- ispectify_ws: mark error logs with `LogLevel.error`.
+- ispectify_db: no commit after rollback; correct log levels; safer `additionalData.value`.
+- core: fix `_handleLog` constructor argument order.
+
+### Tests
+- HTTP: response body usage, array error payloads, multipart redaction.
+- DB: rollback emits no commit; error/success log level assertions.
+
 ## 4.3.6
 - Documentation updates
 

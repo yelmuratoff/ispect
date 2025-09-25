@@ -1,0 +1,21 @@
+name: ispectify_db_example
+publish_to: "none"
+description: Example app demonstrating passive DB logging with ispectify_db
+version: 0.1.0
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependency_overrides:
+  ispectify:
+    path: ../../ispectify
+
+dependencies:
+  ispectify: ^4.4.0
+  ispectify_db:
+    path: ..
+  collection: ^1.18.0
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.14

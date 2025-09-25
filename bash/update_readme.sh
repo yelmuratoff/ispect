@@ -87,8 +87,8 @@ validate_package() {
         return 1
     fi
     
-    # Check required fields
-    local required_fields=("package_name" "title" "description" "version")
+    # Check required fields (version comes from version.config, so not required here)
+    local required_fields=("package_name" "title" "description")
     for field in "${required_fields[@]}"; do
         if ! jq -e ".$field" "$config_file" >/dev/null 2>&1; then
             echo -e "${RED}❌ Missing required field '$field' in config${NC}"

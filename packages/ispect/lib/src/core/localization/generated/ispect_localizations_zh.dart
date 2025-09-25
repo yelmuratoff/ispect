@@ -656,4 +656,19 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get loading => '加载中';
+
+  @override
+  String get wsSentLogDesc => 'WebSocket 发送消息日志';
+
+  @override
+  String get wsReceivedLogDesc => 'WebSocket 接收消息日志';
+
+  @override
+  String get dbQueryLogDesc => '数据库查询日志';
+
+  @override
+  String get dbResultLogDesc => '数据库结果日志';
+
+  @override
+  String get dbErrorLogDesc => '数据库错误日志';
 }

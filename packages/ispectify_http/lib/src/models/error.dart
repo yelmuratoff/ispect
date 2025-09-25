@@ -18,8 +18,11 @@ class HttpErrorLog extends ISpectifyData {
     this.redactor,
   }) : super(
           key: getKey,
+          logLevel: LogLevel.error,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: responseData?.toJson(redactor: redactor),
+          additionalData: responseData?.toJson(
+            redactor: redactor,
+          ),
         );
 
   final String? method;

@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:meta/meta.dart';
 export 'file_log/file_log_history.dart';
 
 /// An abstract class representing a log history storage.
@@ -43,16 +44,30 @@ class DefaultISpectifyHistory implements ILogHistory {
 
   @override
   void clear() {
-    if (settings.useHistory) {
-      _history.clear();
-    }
+    _history.clear();
   }
 
   @override
   void add(ISpectifyData data) {
     if (!settings.useHistory || !settings.enabled) return;
 
+    // If maxHistoryItems is 0 or negative, disable history
+    if (settings.maxHistoryItems <= 0) return;
+
     // Enforce max history size
+    if (_history.length >= settings.maxHistoryItems) {
+      _history.removeAt(0); // Remove oldest entry
+    }
+    _history.add(data);
+  }
+
+  /// Adds data to history bypassing the useHistory check.
+  /// This method is intended for testing purposes only.
+  @visibleForTesting
+  void addForTesting(ISpectifyData data) {
+    // If maxHistoryItems is 0 or negative, disable history
+    if (settings.maxHistoryItems <= 0) return;
+
     if (_history.length >= settings.maxHistoryItems) {
       _history.removeAt(0); // Remove oldest entry
     }

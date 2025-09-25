@@ -95,24 +95,24 @@ class FileProcessingService {
       displayName: fileInfo.displayName,
       mimeType: fileInfo.mimeType,
       fileName: file.name,
-      format: fileName.endsWith('.json') ? FileFormat.json : FileFormat.text,
+      format: fileInfo.mimeType == 'application/json'
+          ? FileFormat.json
+          : FileFormat.text,
     );
   }
 
   /// Read content from platform file
   Future<String?> _readFileContent(PlatformFile file) async {
     try {
-      if (kIsWeb) {
-        // For web platform, use bytes
-        if (file.bytes != null) {
-          return utf8.decode(file.bytes!);
-        }
-      } else {
-        // For mobile platforms, use file path
-        if (file.path != null) {
-          final fileHandle = File(file.path!);
-          return await fileHandle.readAsString();
-        }
+      // Try bytes first (works for both web and mobile when available)
+      if (file.bytes != null) {
+        return utf8.decode(file.bytes!);
+      }
+
+      // Fallback to file path for mobile platforms
+      if (file.path != null) {
+        final fileHandle = File(file.path!);
+        return await fileHandle.readAsString();
       }
     } catch (e) {
       ISpect.logger.error('Error reading file content: $e');
@@ -185,31 +185,22 @@ class FileProcessingService {
     String content,
     FileFormat format,
   ) {
-    var displayName = 'Pasted Content';
-    var mimeType = 'text/plain';
-
     // Set display name and MIME type based on format
     switch (format) {
       case FileFormat.json:
-        displayName = 'JSON';
-        mimeType = 'application/json';
-
-        // Validate JSON structure
+        // Validate JSON structure but keep JSON MIME regardless
         try {
           jsonDecode(content);
+          return (displayName: 'JSON', mimeType: 'application/json');
         } catch (e) {
-          displayName = 'JSON (Invalid)';
+          return (displayName: 'JSON (Invalid)', mimeType: 'application/json');
         }
       case FileFormat.text:
-        displayName = 'Text';
-        mimeType = 'text/plain';
+        return (displayName: 'Text', mimeType: 'text/plain');
       case FileFormat.auto:
-        // This case should not occur as format should be detected before calling this method
-        displayName = 'Text';
-        mimeType = 'text/plain';
+        // Should not occur as format should be detected before calling this method
+        return (displayName: 'Text', mimeType: 'text/plain');
     }
-
-    return (displayName: displayName, mimeType: mimeType);
   }
 
   /// Detect content format based on content analysis
@@ -257,4 +248,9 @@ class FileProcessingService {
 
   /// Get maximum file size in human readable format
   String get maxFileSizeFormatted => '${_maxFileSize ~/ (1024 * 1024)}MB';
+
+  /// Process a file for testing purposes (bypasses file picker validation)
+  @visibleForTesting
+  Future<FileProcessingResult> processFileForTesting(PlatformFile file) async =>
+      _processPickedFile(file);
 }

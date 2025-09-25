@@ -16,7 +16,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
     _redactor = redactor ?? RedactionService();
   }
 
-  late ISpectify _logger;
+  late final ISpectify _logger;
   late RedactionService _redactor;
 
   /// `ISpectHttpInterceptor` settings and customization
@@ -57,29 +57,19 @@ class ISpectHttpInterceptor extends InterceptorContract {
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
-    if (!settings.enabled) {
-      return request;
-    }
+    if (!_shouldProcessRequest(request)) return request;
 
-    final accepted = settings.requestFilter?.call(request) ?? true;
-    if (!accepted) {
-      return request;
-    }
-
-    final message = '${request.url}';
+    final message = request.url.toString();
     final useRedaction = settings.enableRedaction;
+
     final redactedHeaders = settings.printRequestHeaders
-        ? (useRedaction
-            ? _redactor
-                .redactHeaders(request.headers)
-                .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-            : request.headers)
+        ? _redactHeaders(request.headers, useRedaction)
         : null;
+
     final redactedBody = settings.printRequestData
-        ? (request is Request
-            ? (useRedaction ? _redactor.redact(request.body) : request.body)
-            : null)
+        ? _processRequestBody(request, useRedaction)
         : null;
+
     _logger.logCustom(
       HttpRequestLog(
         message,
@@ -98,53 +88,35 @@ class ISpectHttpInterceptor extends InterceptorContract {
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
-    if (!settings.enabled) {
-      return response;
-    }
+    // For error responses, defer to error filter instead of response filter
+    // This prevents responseFilter from suppressing error logging
+    final isErrorResponse =
+        response.statusCode >= 400 && response.statusCode < 600;
+    if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
+    if (isErrorResponse && !_shouldProcessError(response)) return response;
 
-    final accepted = settings.responseFilter?.call(response) ?? true;
-    if (!accepted) {
-      return response;
-    }
+    final message = response.request?.url.toString() ?? '';
+    final useRedaction = settings.enableRedaction;
 
-    final message = '${response.request?.url}';
-    Map<String, dynamic>? body;
+    // Process response body if needed
+    final responseBodyData = _processResponseBody(response, useRedaction);
 
-    if (response is Response && settings.printResponseData) {
-      try {
-        body = (settings.enableRedaction
-            ? _redactor.redact(jsonDecode(response.body))
-            : jsonDecode(response.body)) as Map<String, dynamic>?;
-      } catch (_) {
-        body = {
-          'raw': settings.enableRedaction
-              ? _redactor.redact(response.body)
-              : response.body,
-        };
-      }
-    } else if (response.request is MultipartRequest &&
-        settings.printRequestData) {
-      final request = response.request! as MultipartRequest;
-      body = {
-        'fields': request.fields,
-        'files': request.files
-            .map(
-              (file) => {
-                'filename': file.filename,
-                'length': file.length,
-                'contentType': file.contentType,
-                'field': file.field,
-              },
-            )
-            .toList(),
-      };
-    }
+    // Process request body for multipart requests
+    final requestBodyData =
+        _processMultipartRequestBody(response, useRedaction);
 
-    if (response.statusCode >= 400 && response.statusCode < 600) {
-      final errorAccepted = settings.errorFilter?.call(response) ?? true;
-      if (!errorAccepted) {
-        return response;
-      }
+    // Create response data object
+    final responseData = HttpResponseData(
+      baseResponse: response,
+      requestData: HttpRequestData(response.request),
+      response: response is Response ? response : null,
+      multipartRequest: response.request is MultipartRequest
+          ? response.request! as MultipartRequest
+          : null,
+    );
+
+    if (isErrorResponse) {
+      final errorBodyMap = _processErrorBody(responseBodyData, requestBodyData);
 
       _logger.logCustom(
         HttpErrorLog(
@@ -157,29 +129,17 @@ class ISpectHttpInterceptor extends InterceptorContract {
           statusMessage:
               settings.printErrorMessage ? response.reasonPhrase : null,
           requestHeaders: settings.printRequestHeaders
-              ? (settings.enableRedaction
-                  ? _redactor
-                      .redactHeaders(response.request?.headers ?? const {})
-                      .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-                  : (response.request?.headers ?? const {}))
+              ? _redactHeaders(
+                  response.request?.headers ?? const {},
+                  useRedaction,
+                )
               : null,
           headers: settings.printErrorHeaders
-              ? (settings.enableRedaction
-                  ? _redactor
-                      .redactHeaders(response.headers)
-                      .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-                  : response.headers)
+              ? _redactHeaders(response.headers, useRedaction)
               : null,
-          body: body ?? const {},
-          responseData: HttpResponseData(
-            baseResponse: response,
-            requestData: HttpRequestData(response.request),
-            response: response is Response ? response : null,
-            multipartRequest: response.request is MultipartRequest
-                ? response.request! as MultipartRequest
-                : null,
-          ),
-          redactor: settings.enableRedaction ? _redactor : null,
+          body: errorBodyMap,
+          responseData: responseData,
+          redactor: useRedaction ? _redactor : null,
         ),
       );
     } else {
@@ -193,41 +153,183 @@ class ISpectHttpInterceptor extends InterceptorContract {
           statusMessage:
               settings.printResponseMessage ? response.reasonPhrase : null,
           requestHeaders: settings.printRequestHeaders
-              ? (settings.enableRedaction
-                  ? _redactor
-                      .redactHeaders(response.request?.headers ?? const {})
-                      .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-                  : (response.request?.headers ?? const {}))
+              ? _redactHeaders(
+                  response.request?.headers ?? const {},
+                  useRedaction,
+                )
               : null,
           headers: settings.printResponseHeaders
-              ? (settings.enableRedaction
-                  ? _redactor
-                      .redactHeaders(response.headers)
-                      .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-                  : response.headers)
+              ? _redactHeaders(response.headers, useRedaction)
               : null,
-          requestBody: settings.printRequestData
-              ? body?.map((k, v) => MapEntry(k, _redactor.redact(v)))
-              : null,
-          responseBody: settings.printResponseData
-              ? (settings.enableRedaction
-                  ? _redactor.redact(response)
-                  : response)
-              : null,
+          requestBody: settings.printRequestData ? requestBodyData : null,
+          responseBody: settings.printResponseData ? responseBodyData : null,
           settings: settings,
-          responseData: HttpResponseData(
-            baseResponse: response,
-            requestData: HttpRequestData(response.request),
-            response: response is Response ? response : null,
-            multipartRequest: response.request is MultipartRequest
-                ? response.request! as MultipartRequest
-                : null,
-          ),
-          redactor: settings.enableRedaction ? _redactor : null,
+          responseData: responseData,
+          redactor: useRedaction ? _redactor : null,
         ),
       );
     }
 
     return response;
+  }
+
+  bool _shouldProcessRequest(BaseRequest request) {
+    if (!settings.enabled) return false;
+    return settings.requestFilter?.call(request) ?? true;
+  }
+
+  bool _shouldProcessResponse(BaseResponse response) {
+    if (!settings.enabled) return false;
+    return settings.responseFilter?.call(response) ?? true;
+  }
+
+  bool _shouldProcessError(BaseResponse response) {
+    if (!settings.enabled) return false;
+    return settings.errorFilter?.call(response) ?? true;
+  }
+
+  Map<String, String> _redactHeaders(
+    Map<String, String> headers,
+    bool useRedaction,
+  ) =>
+      useRedaction
+          ? _redactor
+              .redactHeaders(headers)
+              .map((k, v) => MapEntry(k, v?.toString() ?? ''))
+          : headers;
+
+  Object? _processRequestBody(BaseRequest request, bool useRedaction) {
+    if (request is MultipartRequest) {
+      return _extractMultipartData(request, useRedaction);
+    }
+    if (request is Request) {
+      return _redactRequestBody(request.body, useRedaction);
+    }
+    return null;
+  }
+
+  Object? _processResponseBody(BaseResponse response, bool useRedaction) {
+    if (response is! Response) return null;
+
+    final shouldDecodeBody = settings.printResponseData ||
+        ((response.statusCode >= 400 && response.statusCode < 600) &&
+            settings.printErrorData);
+
+    if (!shouldDecodeBody) return null;
+
+    try {
+      final decoded = jsonDecode(response.body);
+      return useRedaction ? _redactor.redact(decoded) : decoded;
+    } catch (_) {
+      return useRedaction ? _redactor.redact(response.body) : response.body;
+    }
+  }
+
+  Map<String, dynamic>? _processMultipartRequestBody(
+    BaseResponse response,
+    bool useRedaction,
+  ) {
+    if (response.request is! MultipartRequest || !settings.printRequestData) {
+      return null;
+    }
+
+    final request = response.request! as MultipartRequest;
+    return _extractMultipartData(request, useRedaction);
+  }
+
+  Map<String, dynamic> _processErrorBody(
+    Object? responseBodyData,
+    Map<String, dynamic>? requestBodyData,
+  ) {
+    if (responseBodyData is Map) {
+      try {
+        final redacted = settings.enableRedaction
+            ? _redactor.redact(responseBodyData)
+            : responseBodyData;
+
+        // Handle the redacted result properly
+        if (redacted is Map<String, dynamic>) {
+          return redacted;
+        } else if (redacted is Map<Object?, Object?>) {
+          // Convert Map<Object?, Object?> to Map<String, dynamic>
+          return redacted.map((k, v) => MapEntry(k.toString(), v));
+        } else if (responseBodyData is Map<String, dynamic>) {
+          // Fallback to original data if redaction failed
+          return responseBodyData;
+        } else {
+          // Convert original data if it's not String-keyed
+          final raw = responseBodyData as Map<Object?, Object?>;
+          return raw.map((k, v) => MapEntry(k.toString(), v));
+        }
+      } catch (_) {
+        final raw = responseBodyData as Map<Object?, Object?>;
+        return raw.map((k, v) => MapEntry(k.toString(), v));
+      }
+    }
+
+    if (responseBodyData is Iterable) {
+      final iterable = settings.enableRedaction
+          ? _redactor.redact(responseBodyData)
+          : responseBodyData;
+      return <String, dynamic>{'data': iterable};
+    }
+
+    if (responseBodyData is String) {
+      return <String, dynamic>{
+        'raw': settings.enableRedaction
+            ? _redactor.redact(responseBodyData)
+            : responseBodyData,
+      };
+    }
+
+    if (responseBodyData != null) {
+      return <String, dynamic>{'raw': responseBodyData.toString()};
+    }
+
+    return requestBodyData ?? <String, dynamic>{};
+  }
+
+  /// Extract multipart form data for logging
+  Map<String, dynamic> _extractMultipartData(
+    MultipartRequest request,
+    bool useRedaction,
+  ) {
+    final redactedFields = useRedaction
+        ? Map<String, Object?>.from(
+            (_redactor.redact(request.fields)! as Map).map(
+              (k, v) => MapEntry(k.toString(), v),
+            ),
+          )
+        : Map<String, Object?>.from(request.fields);
+
+    final filesList = request.files
+        .map(
+          (file) => {
+            'filename': file.filename,
+            'length': file.length,
+            'contentType': file.contentType.toString(),
+            'field': file.field,
+          },
+        )
+        .toList();
+
+    final redactedFiles = useRedaction
+        ? (_redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
+        : filesList.cast<Map<String, Object?>>();
+
+    return {
+      'fields': redactedFields,
+      'files': redactedFiles,
+    };
+  }
+
+  /// Processes HTTP request body, attempting to parse JSON for proper formatting and redaction
+  Object? _redactRequestBody(String body, bool useRedaction) {
+    try {
+      final jsonData = jsonDecode(body);
+      return useRedaction ? _redactor.redact(jsonData) : jsonData;
+    } catch (_) {
+      return useRedaction ? _redactor.redact(body) : body;
+    }
   }
 }

@@ -165,5 +165,10 @@
    "error": "错误",
    "ok": "确定",
    "fileSize": "文件大小",
-   "loading": "加载中"
+   "loading": "加载中",
+   "wsSentLogDesc": "WebSocket 发送消息日志",
+   "wsReceivedLogDesc": "WebSocket 接收消息日志",
+   "dbQueryLogDesc": "数据库查询日志",
+   "dbResultLogDesc": "数据库结果日志",
+   "dbErrorLogDesc": "数据库错误日志"
 }

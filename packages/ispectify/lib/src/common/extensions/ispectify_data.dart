@@ -17,6 +17,7 @@ extension ISpectDataX on ISpectifyData {
     DateTime? time,
     AnsiPen? pen,
     String? key,
+    Map<String, dynamic>? additionalData,
   }) =>
       ISpectifyData(
         message ?? this.message,
@@ -28,6 +29,7 @@ extension ISpectDataX on ISpectifyData {
         time: time ?? this.time,
         pen: pen ?? this.pen,
         key: key ?? this.key,
+        additionalData: additionalData ?? this.additionalData,
       );
 
   /// Creates an exact duplicate of this `ISpectifyData` instance.
@@ -92,10 +94,17 @@ StackTrace: $stackTraceText]''';
   bool get isHttpLog => [
         ISpectifyLogType.httpRequest.key,
         ISpectifyLogType.httpResponse.key,
-        ISpectifyLogType.httpError.key,
       ].contains(key);
 
   bool get isRouteLog => key == ISpectifyLogType.route.key;
+
+  /// Generates a cURL command for HTTP request logs.
+  ///
+  /// Returns the cURL command as a string if the log contains HTTP request data,
+  /// otherwise returns `null`.
+  String? get curlCommand => key == ISpectifyLogType.httpRequest.key
+      ? CurlUtils.generateCurl(additionalData)
+      : null;
 
   /// Retrieves the type of exception or error, if applicable.
   ///

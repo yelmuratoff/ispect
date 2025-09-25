@@ -253,7 +253,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get otherLogsForDevelopers =>
-      'Басқа журналдарды әзірлеушілер қолданады';
+      'Other logs are already being used by developers';
 
   @override
   String get pageNotFound => 'Ой, бұл жолдағы бет';
@@ -681,4 +681,19 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get loading => 'Жүктеу';
+
+  @override
+  String get wsSentLogDesc => 'WebSocket жіберілген хабарламалар журналы';
+
+  @override
+  String get wsReceivedLogDesc => 'WebSocket қабылданған хабарламалар журналы';
+
+  @override
+  String get dbQueryLogDesc => 'Дерекқор сұранымдары журналы';
+
+  @override
+  String get dbResultLogDesc => 'Дерекқор нәтижелері журналы';
+
+  @override
+  String get dbErrorLogDesc => 'Дерекқор қателері журналы';
 }

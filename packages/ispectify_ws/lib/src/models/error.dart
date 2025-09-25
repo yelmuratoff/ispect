@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_ws/src/settings.dart';
 
 class WSErrorLog extends ISpectifyData {
   WSErrorLog(
@@ -9,10 +10,13 @@ class WSErrorLog extends ISpectifyData {
     required this.body,
     super.exception,
     super.stackTrace,
+    this.settings = const ISpectWSInterceptorSettings(),
   }) : super(
           title: getKey,
           key: getKey,
-          pen: (AnsiPen()..red()),
+          logLevel: LogLevel.error,
+          pen: (settings.errorPen ?? AnsiPen()
+            ..red()),
           additionalData: {
             'type': type,
             'url': url,
@@ -25,6 +29,7 @@ class WSErrorLog extends ISpectifyData {
   final String url;
   final String path;
   final Object? body;
+  final ISpectWSInterceptorSettings settings;
 
   static const getKey = 'ws-error';
 

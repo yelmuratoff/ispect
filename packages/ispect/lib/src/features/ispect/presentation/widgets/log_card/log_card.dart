@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 
@@ -96,13 +97,20 @@ class _LogCardHeader extends StatelessWidget {
                         log: data as RouteLog,
                       ).push(context)
                   : null,
-              onHttpTap: () => JsonScreen(
+              onExpandTap: () => JsonScreen(
                 data: data.toJson(),
                 truncatedData: data.toJson(truncated: true),
               ).push(context),
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,
+              isHTTP: data.key == ISpectifyLogType.httpRequest.key,
+              onCopyCurlTap: () {
+                final curl = data.curlCommand;
+                if (curl != null) {
+                  copyClipboard(context, value: curl);
+                }
+              },
             ),
           ),
         ),

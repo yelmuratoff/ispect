@@ -5,8 +5,8 @@ class BlocCloseLog extends ISpectifyData {
   BlocCloseLog({
     required this.bloc,
   }) : super(
-          key: getKey,
           '${bloc.runtimeType} closed',
+          key: getKey,
           title: getKey,
         );
 

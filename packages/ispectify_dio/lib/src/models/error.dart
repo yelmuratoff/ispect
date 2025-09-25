@@ -19,8 +19,11 @@ class DioErrorLog extends ISpectifyData {
   }) : super(
           key: getKey,
           title: getKey,
+          logLevel: LogLevel.error,
           pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: errorData.toJson(redactor: redactor),
+          additionalData: errorData.toJson(
+            redactor: redactor,
+          ),
         );
 
   final String? method;
@@ -45,8 +48,11 @@ class DioErrorLog extends ISpectifyData {
       buffer.write('\nStatus: $statusCode');
     }
 
-    if (settings.printErrorMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
+    if (settings.printErrorMessage &&
+        (statusMessage != null || errorData.exception?.message != null)) {
+      buffer.write(
+        '\nMessage: ${statusMessage ?? errorData.exception?.message ?? ''}',
+      );
     }
 
     if (settings.printErrorData && body != null) {

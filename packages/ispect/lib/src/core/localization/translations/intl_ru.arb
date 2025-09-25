@@ -198,5 +198,10 @@
    "error": "Ошибка",
    "ok": "ОК",
    "fileSize": "Размер файла",
-   "loading": "Загрузка"
+   "loading": "Загрузка",
+   "wsSentLogDesc": "Лог отправленного сообщения WebSocket",
+   "wsReceivedLogDesc": "Лог полученного сообщения WebSocket",
+   "dbQueryLogDesc": "Лог запроса к базе данных",
+   "dbResultLogDesc": "Лог результата базы данных",
+   "dbErrorLogDesc": "Лог ошибки базы данных"
 }

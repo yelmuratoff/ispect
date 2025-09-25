@@ -12,8 +12,11 @@ class HttpRequestData {
     Set<String>? ignoredKeys,
   }) {
     final map = <String, dynamic>{
-      'url': requestOptions?.url,
+      'url': requestOptions?.url.toString(),
       'method': requestOptions?.method,
+      'data': (requestOptions is Request)
+          ? (requestOptions! as Request).body
+          : null,
       'content-length': requestOptions?.contentLength,
       'persistent-connection': requestOptions?.persistentConnection,
       'follow-redirects': requestOptions?.followRedirects,

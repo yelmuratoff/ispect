@@ -668,4 +668,19 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get loading => 'تحميل';
+
+  @override
+  String get wsSentLogDesc => 'سجل رسائل WebSocket المُرسلة';
+
+  @override
+  String get wsReceivedLogDesc => 'سجل رسائل WebSocket المستلمة';
+
+  @override
+  String get dbQueryLogDesc => 'سجل استعلامات قاعدة البيانات';
+
+  @override
+  String get dbResultLogDesc => 'سجل نتائج قاعدة البيانات';
+
+  @override
+  String get dbErrorLogDesc => 'سجل أخطاء قاعدة البيانات';
 }

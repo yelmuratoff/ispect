@@ -684,5 +684,20 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get fileSize => 'Dateigröße';
 
   @override
-  String get loading => 'Laden';
+  String get loading => 'Wird geladen';
+
+  @override
+  String get wsSentLogDesc => 'Protokoll gesendeter WebSocket-Nachrichten';
+
+  @override
+  String get wsReceivedLogDesc => 'Protokoll empfangener WebSocket-Nachrichten';
+
+  @override
+  String get dbQueryLogDesc => 'Protokoll der Datenbankabfragen';
+
+  @override
+  String get dbResultLogDesc => 'Protokoll der Datenbankergebnisse';
+
+  @override
+  String get dbErrorLogDesc => 'Protokoll der Datenbankfehler';
 }

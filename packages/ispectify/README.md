@@ -267,7 +267,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.3.6
+  ispectify: ^4.4.0
 ```
 
 ## Security & Production Guidelines
@@ -489,6 +489,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ispect](../ispect) - Main debugging interface
 - [ispectify_dio](../ispectify_dio) - Dio HTTP client integration
 - [ispectify_http](../ispectify_http) - Standard HTTP client integration
+- [ispectify_db](../ispectify_db) - Database operation logging
 - [ispectify_bloc](../ispectify_bloc) - BLoC state management integration
 
 ---

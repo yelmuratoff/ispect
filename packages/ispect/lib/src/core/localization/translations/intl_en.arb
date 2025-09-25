@@ -198,5 +198,10 @@
    "error": "Error",
    "ok": "OK",
    "fileSize": "File size",
-   "loading": "Loading"
+   "loading": "Loading",
+   "wsSentLogDesc": "WebSocket sent message log",
+   "wsReceivedLogDesc": "WebSocket received message log",
+   "dbQueryLogDesc": "Database query log",
+   "dbResultLogDesc": "Database result log",
+   "dbErrorLogDesc": "Database error log"
 }

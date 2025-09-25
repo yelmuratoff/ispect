@@ -89,10 +89,19 @@ class ISpectifyData {
   String? get errorText => error != null ? '\n$error'.truncate() : '';
 
   /// Returns the log message as a string, or an empty string if `null`.
-  String? get messageText => message.truncate();
+  String get messageText => message.truncate() ?? '';
 
   /// Returns the formatted timestamp of the log entry.
   String get formattedTime => ISpectifyDateTimeFormatter(time).format;
+
+  bool get isError {
+    final isErrorLog =
+        (logLevel == LogLevel.error || logLevel == LogLevel.critical) ||
+            ISpectifyLogType.values.any(
+              (t) => t.key == key && t.isErrorType,
+            );
+    return isErrorLog;
+  }
 
   @override
   bool operator ==(Object other) {

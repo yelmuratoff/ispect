@@ -332,6 +332,10 @@ class ISpectViewController extends ChangeNotifier {
     String fileType = 'json',
   }) async {
     final filteredLogs = applyCurrentFilters(logs);
+    if (filteredLogs.isEmpty) {
+      ISpect.logger.info('No logs match the active filters. Skipping export.');
+      return;
+    }
     await _logsJsonService.shareFilteredLogsAsJsonFile(
       logs,
       filteredLogs,
@@ -345,6 +349,10 @@ class ISpectViewController extends ChangeNotifier {
   ///
   /// Exports all logs in JSON format for complete backup.
   Future<void> shareAllLogsAsJsonFile(List<ISpectifyData> logs) async {
+    if (logs.isEmpty) {
+      ISpect.logger.info('No logs to export. Skipping file creation.');
+      return;
+    }
     await _logsJsonService.shareLogsAsJsonFile(
       logs,
       fileName: 'ispect_all_logs_${DateTime.now().millisecondsSinceEpoch}',

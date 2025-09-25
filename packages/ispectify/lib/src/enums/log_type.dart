@@ -73,6 +73,10 @@ enum ISpectifyLogType {
   riverpodDispose('riverpod-dispose'),
   riverpodFail('riverpod-fail'),
 
+  dbQuery('db-query'),
+  dbResult('db-result'),
+  dbError('db-error'),
+
   route('route'),
   good('good'),
   analytics('analytics'),
@@ -80,6 +84,7 @@ enum ISpectifyLogType {
   print('print');
 
   const ISpectifyLogType(this.key);
+
   final String key;
 
   /// Converts a `LogLevel` to its corresponding [ISpectifyLogType].
@@ -100,6 +105,17 @@ enum ISpectifyLogType {
 
   static Set<String> get keys =>
       ISpectifyLogType.values.map((e) => e.key).toSet();
+
+  bool get isErrorType => switch (this) {
+        ISpectifyLogType.error ||
+        ISpectifyLogType.critical ||
+        ISpectifyLogType.exception ||
+        ISpectifyLogType.httpError ||
+        ISpectifyLogType.riverpodFail ||
+        ISpectifyLogType.dbError =>
+          true,
+        _ => false,
+      };
 }
 
 extension ISpectifyLogTypeExt on ISpectifyLogType {
@@ -116,6 +132,10 @@ extension ISpectifyLogTypeExt on ISpectifyLogType {
   LogLevel get level => switch (this) {
         ISpectifyLogType.error => LogLevel.error,
         ISpectifyLogType.critical => LogLevel.critical,
+        ISpectifyLogType.exception => LogLevel.error,
+        ISpectifyLogType.httpError => LogLevel.error,
+        ISpectifyLogType.riverpodFail => LogLevel.error,
+        ISpectifyLogType.dbError => LogLevel.error,
         ISpectifyLogType.info => LogLevel.info,
         ISpectifyLogType.debug => LogLevel.debug,
         ISpectifyLogType.verbose => LogLevel.verbose,

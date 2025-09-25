@@ -21,7 +21,9 @@ class HttpResponseLog extends ISpectifyData {
           key: getKey,
           title: getKey,
           pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
-          additionalData: responseData?.toJson(redactor: redactor),
+          additionalData: responseData?.toJson(
+            redactor: redactor,
+          ),
         );
 
   final String? method;
@@ -48,9 +50,9 @@ class HttpResponseLog extends ISpectifyData {
       buffer.write('\nMessage: $statusMessage');
     }
 
-    if (settings.printResponseData && requestBody != null) {
+    if (settings.printResponseData && responseBody != null) {
       final prettyData = JsonTruncatorService.pretty(
-        requestBody,
+        responseBody,
       );
       buffer.write('\nData: $prettyData');
     }

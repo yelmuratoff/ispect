@@ -44,12 +44,14 @@ class ISpectifyLogger {
 
   /// Logs a message at a specified level with optional ANSI color pen.
   void log(Object? msg, {LogLevel? level, AnsiPen? pen}) {
+    final selectedLevel = level ?? LogLevel.debug;
+
     if (!settings.enable ||
-        !(_filter?.shouldLog(msg, level ?? LogLevel.debug) ?? true)) {
+        selectedLevel.index > settings.level.index ||
+        !(_filter?.shouldLog(msg, selectedLevel) ?? true)) {
       return;
     }
 
-    final selectedLevel = level ?? LogLevel.debug;
     final selectedPen =
         pen ?? settings.colors[selectedLevel] ?? (AnsiPen()..gray());
 

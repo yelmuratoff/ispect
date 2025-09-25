@@ -8,10 +8,10 @@ class BlocEventLog extends ISpectifyData {
     required this.event,
     required this.settings,
   }) : super(
-          key: getKey,
           settings.printEventFullData
               ? '${bloc.runtimeType} receive event:\n$event'
               : '${bloc.runtimeType} receive event: ${event.runtimeType}',
+          key: getKey,
           title: getKey,
         );
 

@@ -686,4 +686,19 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get loading => 'Chargement';
+
+  @override
+  String get wsSentLogDesc => 'Journal des messages WebSocket envoyés';
+
+  @override
+  String get wsReceivedLogDesc => 'Journal des messages WebSocket reçus';
+
+  @override
+  String get dbQueryLogDesc => 'Journal des requêtes à la base de données';
+
+  @override
+  String get dbResultLogDesc => 'Journal des résultats de la base de données';
+
+  @override
+  String get dbErrorLogDesc => 'Journal des erreurs de la base de données';
 }

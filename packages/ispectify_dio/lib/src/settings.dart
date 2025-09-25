@@ -5,7 +5,7 @@ import 'package:ispectify/ispectify.dart';
 class ISpectDioInterceptorSettings {
   const ISpectDioInterceptorSettings({
     this.enabled = true,
-    this.enableRedaction = true,
+    this.enableRedaction = false,
     this.printResponseData = true,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,
@@ -98,6 +98,7 @@ class ISpectDioInterceptorSettings {
   final bool Function(DioException response)? errorFilter;
 
   ISpectDioInterceptorSettings copyWith({
+    bool? enabled,
     bool? enableRedaction,
     bool? printResponseData,
     bool? printResponseHeaders,
@@ -115,6 +116,7 @@ class ISpectDioInterceptorSettings {
     bool Function(DioException response)? errorFilter,
   }) =>
       ISpectDioInterceptorSettings(
+        enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,

@@ -51,6 +51,7 @@ class LoggerSettings {
   /// If a parameter is `null`, the existing value is preserved.
   LoggerSettings copyWith({
     Map<LogLevel, AnsiPen>? colors,
+    bool? enable,
     String? defaultTitle,
     LogLevel? level,
     String? lineSymbol,
@@ -59,6 +60,7 @@ class LoggerSettings {
   }) =>
       LoggerSettings(
         colors: colors ?? this.colors,
+        enable: enable ?? this.enable,
         defaultTitle: defaultTitle ?? this.defaultTitle,
         level: level ?? this.level,
         lineSymbol: lineSymbol ?? this.lineSymbol,

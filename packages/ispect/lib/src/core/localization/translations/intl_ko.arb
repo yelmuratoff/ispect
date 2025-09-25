@@ -198,5 +198,10 @@
    "error": "오류",
    "ok": "확인",
    "fileSize": "파일 크기",
-   "loading": "로딩 중"
+   "loading": "로딩 중",
+   "wsSentLogDesc": "웹소켓 전송 메시지 로그",
+   "wsReceivedLogDesc": "웹소켓 수신 메시지 로그",
+   "dbQueryLogDesc": "데이터베이스 쿼리 로그",
+   "dbResultLogDesc": "데이터베이스 결과 로그",
+   "dbErrorLogDesc": "데이터베이스 오류 로그"
 }

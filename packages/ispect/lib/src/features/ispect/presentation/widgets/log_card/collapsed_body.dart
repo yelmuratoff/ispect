@@ -7,11 +7,13 @@ class CollapsedBody extends StatelessWidget {
     required this.title,
     required this.dateTime,
     required this.onCopyTap,
-    required this.onHttpTap,
+    required this.onCopyCurlTap,
+    required this.onExpandTap,
     required this.onRouteTap,
     required this.message,
     required this.errorMessage,
     required this.expanded,
+    required this.isHTTP,
     super.key,
   });
 
@@ -20,12 +22,14 @@ class CollapsedBody extends StatelessWidget {
   final String? title;
   final String dateTime;
   final VoidCallback? onCopyTap;
-  final VoidCallback? onHttpTap;
+  final VoidCallback? onCopyCurlTap;
+  final VoidCallback? onExpandTap;
   final VoidCallback? onRouteTap;
 
   final String? message;
   final String? errorMessage;
   final bool expanded;
+  final bool isHTTP;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -77,10 +81,18 @@ class CollapsedBody extends StatelessWidget {
             onPressed: onCopyTap,
           ),
           const Gap(4),
+          if (isHTTP) ...[
+            SquareIconButton(
+              icon: Icons.terminal_rounded,
+              color: color,
+              onPressed: onCopyCurlTap,
+            ),
+            const Gap(4),
+          ],
           SquareIconButton(
             icon: Icons.zoom_out_map_rounded,
             color: color,
-            onPressed: onHttpTap,
+            onPressed: onExpandTap,
           ),
         ],
       );

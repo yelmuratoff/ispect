@@ -198,5 +198,10 @@
    "error": "エラー",
    "ok": "OK",
    "fileSize": "ファイルサイズ",
-   "loading": "読み込み中"
+   "loading": "読み込み中",
+   "wsSentLogDesc": "WebSocket 送信メッセージのログ",
+   "wsReceivedLogDesc": "WebSocket 受信メッセージのログ",
+   "dbQueryLogDesc": "データベースクエリのログ",
+   "dbResultLogDesc": "データベース結果のログ",
+   "dbErrorLogDesc": "データベースエラーのログ"
 }

@@ -678,4 +678,19 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get loading => 'Загрузка';
+
+  @override
+  String get wsSentLogDesc => 'Лог отправленного сообщения WebSocket';
+
+  @override
+  String get wsReceivedLogDesc => 'Лог полученного сообщения WebSocket';
+
+  @override
+  String get dbQueryLogDesc => 'Лог запроса к базе данных';
+
+  @override
+  String get dbResultLogDesc => 'Лог результата базы данных';
+
+  @override
+  String get dbErrorLogDesc => 'Лог ошибки базы данных';
 }

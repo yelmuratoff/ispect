@@ -6,7 +6,7 @@ import 'package:ispectify_dio/src/settings.dart';
 
 /// `Dio` http client logger on [ISpectify] base
 ///
-/// `logger` filed is current [ISpectify] instance.
+/// `logger` field is current [ISpectify] instance.
 /// Provide your instance if your application used `ISpectify` as default logger
 /// Common ISpectify instance will be used by default
 class ISpectDioInterceptor extends Interceptor {
@@ -20,8 +20,8 @@ class ISpectDioInterceptor extends Interceptor {
     _redactor = redactor ?? RedactionService();
   }
 
-  late ISpectify _logger;
-  late RedactionService _redactor;
+  late final ISpectify _logger;
+  late final RedactionService _redactor;
 
   /// `ISpectDioInterceptor` settings and customization
   ISpectDioInterceptorSettings settings;
@@ -67,44 +67,26 @@ class ISpectDioInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) {
     super.onRequest(options, handler);
-    if (!settings.enabled) {
-      return;
-    }
-    final accepted = settings.requestFilter?.call(options) ?? true;
-    if (!accepted) {
-      return;
-    }
-    try {
-      final message = '${options.uri}';
+    if (!_shouldProcessRequest(options)) return;
 
-      // Redact headers and body safely before logging
-      final useRedaction = settings.enableRedaction;
-      final redactedHeaders = useRedaction
-          ? _redactor.redactHeaders(options.headers)
-          : options.headers;
-      final Object? redactedBody;
-      if (options.data is FormData) {
-        redactedBody = '[form-data]';
-      } else {
-        redactedBody =
-            useRedaction ? _redactor.redact(options.data) : options.data;
-      }
+    final useRedaction = settings.enableRedaction;
+    final message = options.uri.toString();
 
-      final httpLog = DioRequestLog(
-        message,
-        method: options.method,
-        url: options.uri.toString(),
-        path: options.uri.path,
-        headers: redactedHeaders,
-        body: redactedBody,
-        settings: settings,
-        requestData: DioRequestData(options),
-        redactor: useRedaction ? _redactor : null,
-      );
-      _logger.logCustom(httpLog);
-    } catch (_) {
-      //pass
-    }
+    final redactedHeaders = _redactHeaders(options.headers, useRedaction);
+    final redactedBody = _redactBody(options.data, useRedaction);
+
+    final httpLog = DioRequestLog(
+      message,
+      method: options.method,
+      url: options.uri.toString(),
+      path: options.uri.path,
+      headers: redactedHeaders,
+      body: redactedBody,
+      settings: settings,
+      requestData: DioRequestData(options),
+      redactor: useRedaction ? _redactor : null,
+    );
+    _logger.logCustom(httpLog);
   }
 
   @override
@@ -113,175 +95,182 @@ class ISpectDioInterceptor extends Interceptor {
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
-    if (!settings.enabled) {
-      return;
-    }
-    final accepted = settings.responseFilter?.call(response) ?? true;
-    if (!accepted) {
-      return;
-    }
-    try {
-      final message = '${response.requestOptions.uri}';
+    if (!_shouldProcessResponse(response)) return;
 
-      //
-      // <--- Request data --->
-      //
-      final useRedaction = settings.enableRedaction;
-      Map<String, dynamic>? requestBody;
-      if (response.requestOptions.data is FormData) {
-        final formData = response.requestOptions.data as FormData;
-        final fields = formData.fields;
-        final files = formData.files
-            .map(
-              (e) => {
-                'key': e.key,
-                'filename': e.value.filename,
-                'contentType': e.value.contentType,
-                'length': e.value.length,
-                'headers': e.value.headers,
-              },
-            )
-            .toList();
-        requestBody = {
-          'fields': fields,
-          'files': files,
-        };
-      } else {
-        final Object? reqData = response.requestOptions.data;
-        final red = useRedaction ? _redactor.redact(reqData) : reqData;
-        requestBody = red is Map<String, dynamic> ? red : {'data': red};
-      }
+    final useRedaction = settings.enableRedaction;
+    final message = response.requestOptions.uri.toString();
 
-      //
-      // <--- Response data --->
-      //
-      Object? responseBody;
-      if (response.data is FormData) {
-        final formData = response.data as FormData;
-        final fields = formData.fields;
-        final files = formData.files
-            .map(
-              (e) => {
-                'key': e.key,
-                'filename': e.value.filename,
-                'contentType': e.value.contentType,
-                'length': e.value.length,
-                'headers': e.value.headers,
-              },
-            )
-            .toList();
-        responseBody = {
-          'fields': fields,
-          'files': files,
-        };
-      } else {
-        responseBody =
-            useRedaction ? _redactor.redact(response.data) : response.data;
-      }
+    // Request data processing
+    final requestBody = _processRequestData(
+      response.requestOptions.data,
+      useRedaction,
+    );
 
-      final httpLog = DioResponseLog(
-        message,
-        settings: settings,
-        method: response.requestOptions.method,
-        url: response.requestOptions.uri.toString(),
-        path: response.requestOptions.uri.path,
-        statusCode: response.statusCode,
-        statusMessage: response.statusMessage,
-        requestHeaders: useRedaction
-            ? _redactor
-                .redactHeaders(response.requestOptions.headers)
-                .map((k, v) => MapEntry(k, v?.toString()))
-            : response.requestOptions.headers
-                .map((k, v) => MapEntry(k, v.toString())),
-        headers: useRedaction
-            ? _redactor
-                .redactHeaders(
-                  response.headers.map
-                      .map((key, value) => MapEntry(key, value.toString())),
-                )
-                .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-            : response.headers.map
-                .map((key, value) => MapEntry(key, value.toString())),
-        requestBody: requestBody,
-        responseBody: responseBody,
-        responseData: DioResponseData(
-          response: response,
-          requestData: DioRequestData(response.requestOptions),
-        ),
-        redactor: useRedaction ? _redactor : null,
-      );
-      _logger.logCustom(httpLog);
-    } catch (_) {
-      //pass
-    }
+    // Response data processing
+    final responseBody = _redactBody(response.data, useRedaction);
+
+    final httpLog = DioResponseLog(
+      message,
+      settings: settings,
+      method: response.requestOptions.method,
+      url: response.requestOptions.uri.toString(),
+      path: response.requestOptions.uri.path,
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      requestHeaders: _redactHeaders(
+        response.requestOptions.headers,
+        useRedaction,
+      ),
+      headers: _redactHeaders(response.headers.map, useRedaction),
+      requestBody: requestBody,
+      responseBody: responseBody,
+      responseData: DioResponseData(
+        response: response,
+        requestData: DioRequestData(response.requestOptions),
+      ),
+      redactor: useRedaction ? _redactor : null,
+    );
+    _logger.logCustom(httpLog);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
-    if (!settings.enabled) {
-      return;
-    }
-    final accepted = settings.errorFilter?.call(err) ?? true;
-    if (!accepted) {
-      return;
-    }
-    try {
-      final message = '${err.requestOptions.uri}';
-      final useRedaction = settings.enableRedaction;
-      Map<String, dynamic> data;
-      if (err.response?.data is Map<String, dynamic>) {
-        data = (useRedaction
-                ? _redactor.redact(err.response?.data)
-                : err.response?.data) as Map<String, dynamic>? ??
-            <String, dynamic>{};
-      } else {
-        data = {
-          'data': useRedaction
-              ? _redactor.redact(err.response?.data)
-              : err.response?.data,
-        };
-      }
-      final requestData = DioRequestData(err.requestOptions);
-      final httpErrorLog = DioErrorLog(
-        message,
-        method: err.requestOptions.method,
-        url: err.requestOptions.uri.toString(),
-        path: err.requestOptions.uri.path,
-        statusCode: err.response?.statusCode,
-        statusMessage: err.response?.statusMessage,
-        requestHeaders: useRedaction
-            ? _redactor
-                .redactHeaders(err.requestOptions.headers)
-                .map((k, v) => MapEntry(k, v?.toString()))
-            : err.requestOptions.headers
-                .map((k, v) => MapEntry(k, v.toString())),
-        headers: err.response == null
-            ? null
-            : (useRedaction
-                ? _redactor
-                    .redactHeaders(
-                      err.response!.headers.map
-                          .map((key, value) => MapEntry(key, value.toString())),
-                    )
-                    .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-                : err.response!.headers.map
-                    .map((key, value) => MapEntry(key, value.toString()))),
-        body: data,
-        settings: settings,
-        errorData: DioErrorData(
-          exception: err,
-          requestData: requestData,
-          responseData: DioResponseData(
-            response: err.response,
-            requestData: requestData,
-          ),
+    if (!_shouldProcessError(err)) return;
+
+    final useRedaction = settings.enableRedaction;
+    final message = err.requestOptions.uri.toString();
+
+    final data = _processErrorData(err.response?.data, useRedaction);
+    final requestData = DioRequestData(err.requestOptions);
+
+    final httpErrorLog = DioErrorLog(
+      message,
+      method: err.requestOptions.method,
+      url: err.requestOptions.uri.toString(),
+      path: err.requestOptions.uri.path,
+      statusCode: err.response?.statusCode,
+      statusMessage: err.response?.statusMessage,
+      requestHeaders: _redactHeaders(
+        err.requestOptions.headers.map(
+          (key, value) => MapEntry(key, value.toString()),
         ),
-        redactor: useRedaction ? _redactor : null,
-      );
-      _logger.logCustom(httpErrorLog);
-    } catch (_) {
-      //pass
+        useRedaction,
+      ).map((key, value) => MapEntry(key, value?.toString())),
+      headers: err.response == null
+          ? null
+          : _redactHeaders(
+              err.response!.headers.map.map(
+                (key, value) => MapEntry(key, value.toString()),
+              ),
+              useRedaction,
+            ).map((key, value) => MapEntry(key, value?.toString() ?? '')),
+      body: data,
+      settings: settings,
+      errorData: DioErrorData(
+        exception: err,
+        requestData: requestData,
+        responseData: DioResponseData(
+          response: err.response,
+          requestData: requestData,
+        ),
+      ),
+      redactor: useRedaction ? _redactor : null,
+    );
+    _logger.logCustom(httpErrorLog);
+  }
+
+  bool _shouldProcessRequest(RequestOptions options) {
+    if (!settings.enabled) return false;
+    return settings.requestFilter?.call(options) ?? true;
+  }
+
+  bool _shouldProcessResponse(Response<dynamic> response) {
+    if (!settings.enabled) return false;
+    return settings.responseFilter?.call(response) ?? true;
+  }
+
+  bool _shouldProcessError(DioException err) {
+    if (!settings.enabled) return false;
+    return settings.errorFilter?.call(err) ?? true;
+  }
+
+  Map<String, dynamic> _redactHeaders(
+    Map<String, dynamic> headers,
+    bool useRedaction,
+  ) =>
+      useRedaction ? _redactor.redactHeaders(headers) : headers;
+
+  Object? _redactBody(Object? data, bool useRedaction) {
+    if (data is FormData) {
+      return _extractFormData(data, useRedaction);
     }
+    return useRedaction ? _redactor.redact(data) : data;
+  }
+
+  Map<String, dynamic>? _processRequestData(
+    Object? data,
+    bool useRedaction,
+  ) {
+    if (data is FormData) {
+      return _extractFormData(data, useRedaction);
+    }
+    final redacted = useRedaction ? _redactor.redact(data) : data;
+    return redacted is Map<String, dynamic> ? redacted : {'data': redacted};
+  }
+
+  Map<String, dynamic> _processErrorData(
+    Object? data,
+    bool useRedaction,
+  ) {
+    if (data is Map<String, dynamic>) {
+      final redacted = useRedaction ? _redactor.redact(data) : data;
+      return (redacted as Map<String, dynamic>?) ?? <String, dynamic>{};
+    }
+    return {
+      'data': useRedaction ? _redactor.redact(data) : data,
+    };
+  }
+
+  /// Extracts FormData fields and files into a structured format for logging
+  Map<String, dynamic> _extractFormData(FormData formData, bool useRedaction) {
+    final rawFields = <String, Object?>{};
+    for (final entry in formData.fields) {
+      final existing = rawFields[entry.key];
+      if (existing == null) {
+        rawFields[entry.key] = entry.value;
+      } else if (existing is List) {
+        existing.add(entry.value);
+      } else {
+        rawFields[entry.key] = [existing, entry.value];
+      }
+    }
+
+    final rawFiles = formData.files
+        .map(
+          (e) => {
+            'key': e.key,
+            'filename': e.value.filename,
+            'contentType': e.value.contentType,
+            'length': e.value.length,
+            'headers': e.value.headers,
+          },
+        )
+        .toList();
+
+    final redFields = useRedaction
+        ? (_redactor.redact(rawFields)! as Map).map(
+            (key, value) => MapEntry(key.toString(), value),
+          )
+        : rawFields;
+
+    final redFiles = useRedaction
+        ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
+        : rawFiles.cast<Map<String, Object?>>();
+
+    return {
+      'fields': redFields,
+      'files': redFiles,
+    };
   }
 }

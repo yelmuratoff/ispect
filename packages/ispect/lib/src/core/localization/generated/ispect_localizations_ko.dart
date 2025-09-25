@@ -656,4 +656,19 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get loading => '로딩 중';
+
+  @override
+  String get wsSentLogDesc => '웹소켓 전송 메시지 로그';
+
+  @override
+  String get wsReceivedLogDesc => '웹소켓 수신 메시지 로그';
+
+  @override
+  String get dbQueryLogDesc => '데이터베이스 쿼리 로그';
+
+  @override
+  String get dbResultLogDesc => '데이터베이스 결과 로그';
+
+  @override
+  String get dbErrorLogDesc => '데이터베이스 오류 로그';
 }

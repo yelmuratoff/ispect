@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run ispectify package tests",
+      "type": "shell",
+      "command": "dart test packages/ispectify/test/curl_utils_test.dart",
+      "args": [],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Run ispectify curl utils tests",
+      "type": "shell",
+      "command": "cd packages/ispectify && dart test test/curl_utils_test.dart",
+      "args": [],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Re-run curl utils tests",
+      "type": "shell",
+      "command": "cd packages/ispectify && dart test test/curl_utils_test.dart",
+      "args": [],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Run ispectify_http tests",
+      "type": "shell",
+      "command": "cd packages/ispectify_http && dart test",
+      "args": [],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Re-run ispectify_http tests after filtering additionalData",
+      "type": "shell",
+      "command": "cd packages/ispectify_http && dart test",
+      "args": [],
+      "isBackground": false,
+      "group": "build"
+    }
+  ]
+}

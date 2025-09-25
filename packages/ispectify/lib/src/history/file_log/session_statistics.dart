@@ -99,7 +99,9 @@ Session Statistics:
     if (bytes == 0) return '0 B';
 
     const suffixes = ['B', 'KB', 'MB', 'GB'];
-    final i = (bytes.bitLength - 1) ~/ 10;
+    var i = (bytes.bitLength - 1) ~/ 10;
+    if (i < 0) i = 0;
+    if (i >= suffixes.length) i = suffixes.length - 1;
     final value = bytes / (1 << (i * 10));
 
     return '${value.toStringAsFixed(1)} ${suffixes[i]}';

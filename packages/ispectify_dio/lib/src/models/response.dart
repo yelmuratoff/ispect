@@ -21,7 +21,9 @@ class DioResponseLog extends ISpectifyData {
           key: getKey,
           title: getKey,
           pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
-          additionalData: responseData.toJson(redactor: redactor),
+          additionalData: responseData.toJson(
+            redactor: redactor,
+          ),
         );
 
   final String? method;
@@ -30,7 +32,7 @@ class DioResponseLog extends ISpectifyData {
   final int? statusCode;
   final String? statusMessage;
   final Map<String, dynamic>? requestHeaders;
-  final Map<String, String>? headers;
+  final Map<String, dynamic>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
   final ISpectDioInterceptorSettings settings;
@@ -41,7 +43,7 @@ class DioResponseLog extends ISpectifyData {
 
   @override
   String get textMessage {
-    final buffer = StringBuffer('[$method] $message')
+    final buffer = StringBuffer('[$getKey] [$method] $message')
       ..write('\nStatus: $statusCode');
 
     if (settings.printResponseMessage && statusMessage != null) {

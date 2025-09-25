@@ -5,8 +5,8 @@ class BlocCreateLog extends ISpectifyData {
   BlocCreateLog({
     required this.bloc,
   }) : super(
-          key: getKey,
           '${bloc.runtimeType} created',
+          key: getKey,
           title: getKey,
         );
 

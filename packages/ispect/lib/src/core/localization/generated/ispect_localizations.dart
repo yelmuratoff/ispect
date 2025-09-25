@@ -1312,6 +1312,36 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Loading'**
   String get loading;
+
+  /// No description provided for @wsSentLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket sent message log'**
+  String get wsSentLogDesc;
+
+  /// No description provided for @wsReceivedLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket received message log'**
+  String get wsReceivedLogDesc;
+
+  /// No description provided for @dbQueryLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Database query log'**
+  String get dbQueryLogDesc;
+
+  /// No description provided for @dbResultLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Database result log'**
+  String get dbResultLogDesc;
+
+  /// No description provided for @dbErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Database error log'**
+  String get dbErrorLogDesc;
 }
 
 class _ISpectGeneratedLocalizationDelegate

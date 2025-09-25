@@ -101,9 +101,29 @@ class ISpectify {
     _options = options ?? _options;
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
-    _errorHandler = errorHandler ?? ISpectifyErrorHandler(_options);
-    _history =
-        history ?? DefaultISpectifyHistory(_options, history: _history.history);
+    if (errorHandler != null) {
+      _errorHandler = errorHandler;
+    } else {
+      // Preserve any injected custom error handler implementation.
+      // If current handler is the default implementation, rebuild it to reflect new options.
+      if (_errorHandler.runtimeType == ISpectifyErrorHandler) {
+        _errorHandler = ISpectifyErrorHandler(_options);
+      }
+      // Otherwise keep existing custom error handler as-is.
+    }
+    if (history != null) {
+      _history = history;
+    } else {
+      // Preserve any injected custom history implementation.
+      // If current history is the default in-memory implementation, rebuild it to reflect new options.
+      if (_history is DefaultISpectifyHistory) {
+        _history = DefaultISpectifyHistory(
+          _options,
+          history: _history.history,
+        );
+      }
+      // Otherwise keep existing custom history instance as-is.
+    }
   }
 
   /// Stream controller for broadcasting log events.
@@ -165,12 +185,12 @@ class ISpectify {
         _errorHandler.handle(exception, stackTrace, message?.toString());
     if (data is ISpectifyError) {
       _observer?.onError(data);
-      _processLog(data);
+      _processLog(data, skipObserverNotification: true);
       return;
     }
     if (data is ISpectifyException) {
       _observer?.onException(data);
-      _processLog(data);
+      _processLog(data, skipObserverNotification: true);
       return;
     }
     _processLog(data);
@@ -181,23 +201,29 @@ class ISpectify {
   /// This is the primary logging method that other specialized methods use.
   ///
   /// - `message`: The main log message.
-  /// - `logLevel`: The severity level of the log.
+  /// - `logLevel`: The severity level of the log. If not provided, will be inferred from `type` or default to `LogLevel.debug`.
+  /// - `type`: The log type that may imply a specific severity level.
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
   void log(
     Object? message, {
-    LogLevel logLevel = LogLevel.debug,
+    LogLevel? logLevel,
+    ISpectifyLogType? type,
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
   }) {
+    // Determine the appropriate log level
+    final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
+
     _handleLog(
       message: message,
       exception: exception,
       stackTrace: stackTrace,
-      logLevel: logLevel,
+      logLevel: effectiveLogLevel,
       pen: pen,
+      type: type,
     );
   }
 
@@ -206,7 +232,9 @@ class ISpectify {
   /// This allows for creating fully customized log entries.
   ///
   /// - `log`: The custom log data to process.
-  void logCustom(ISpectifyData log) => _processLog(log);
+  void logCustom(ISpectifyData log) {
+    _processLog(log);
+  }
 
   /// Creates a critical level log entry.
   ///
@@ -225,6 +253,7 @@ class ISpectify {
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.critical,
+      type: ISpectifyLogType.critical,
     );
   }
 
@@ -240,6 +269,8 @@ class ISpectify {
   ) {
     _handleLog(
       message: msg,
+      logLevel: LogLevel.debug,
+      type: ISpectifyLogType.debug,
     );
   }
 
@@ -260,6 +291,7 @@ class ISpectify {
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.error,
+      type: ISpectifyLogType.error,
     );
   }
 
@@ -276,6 +308,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.info,
+      type: ISpectifyLogType.info,
     );
   }
 
@@ -292,6 +325,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.verbose,
+      type: ISpectifyLogType.verbose,
     );
   }
 
@@ -308,6 +342,7 @@ class ISpectify {
     _handleLog(
       message: msg,
       logLevel: LogLevel.warning,
+      type: ISpectifyLogType.warning,
     );
   }
 
@@ -338,8 +373,8 @@ class ISpectify {
   }) {
     _processLog(
       AnalyticsLog(
-        analytics: analytics,
         '${event ?? 'Event'}: $message\nParameters: $parameters',
+        analytics: analytics,
       ),
     );
   }
@@ -380,19 +415,21 @@ class ISpectify {
     Object? message,
     Object? exception,
     StackTrace? stackTrace,
+    ISpectifyLogType? type,
     LogLevel? logLevel,
     AnsiPen? pen,
   }) {
-    final type = ISpectifyLogType.fromLogLevel(logLevel);
+    final logType = type ?? ISpectifyLogType.fromLogLevel(logLevel);
     final data = ISpectifyData(
-      key: type.key,
       message?.toString() ?? '',
-      title: _options.titleByKey(type.key),
+      key: logType.key,
+      title: _options.titleByKey(logType.key),
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? _options.penByKey(type.key),
+      pen: pen ?? _options.penByKey(logType.key),
       logLevel: logLevel,
     );
+
     _processLog(data);
   }
 
@@ -411,14 +448,19 @@ class ISpectify {
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
-  void _processLog(ISpectifyData data, {bool isError = false}) {
+  void _processLog(
+    ISpectifyData data, {
+    bool skipObserverNotification = false,
+  }) {
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;
 
-    if (isError) {
-      _observer?.onError(data);
-    } else {
-      _observer?.onLog(data);
+    if (!skipObserverNotification) {
+      if (data.isError) {
+        _observer?.onError(data);
+      } else {
+        _observer?.onLog(data);
+      }
     }
 
     _iSpectifyStreamController.add(data);
@@ -429,7 +471,7 @@ class ISpectify {
         '${data.header}${data.textMessage}'.truncate(
           maxLength: _options.logTruncateLength,
         ),
-        level: data.logLevel ?? (isError ? LogLevel.error : null),
+        level: data.logLevel ?? (data.isError ? LogLevel.error : null),
         pen: data.pen ?? _options.penByKey(data.key),
       );
     }

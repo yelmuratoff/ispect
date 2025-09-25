@@ -17,20 +17,20 @@ final class ISpectConstants {
   static const typeIcons = {
     /// Base logs section
     'error': Icons.error_outline_rounded,
-    'critical': Icons.error_outline_rounded,
+    'critical': Icons.new_releases_rounded,
     'info': Icons.info_outline_rounded,
     'debug': Icons.bug_report_outlined,
-    'verbose': Icons.bug_report_outlined,
+    'verbose': Icons.subject,
     'warning': Icons.warning_amber_rounded,
-    'exception': Icons.error_outline_rounded,
+    'exception': Icons.report_rounded,
     'good': Icons.check_circle_outline_rounded,
     'print': Icons.print_outlined,
-    'analytics': Icons.track_changes_rounded,
+    'analytics': Icons.insights,
 
     /// Http section
     'http-error': Icons.http_rounded,
-    'http-request': Icons.http_rounded,
-    'http-response': Icons.http_rounded,
+    'http-request': Icons.call_made_rounded,
+    'http-response': Icons.call_received_rounded,
 
     /// Bloc section
     'bloc-event': Icons.event_note_rounded,
@@ -50,6 +50,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Icons.call_made_rounded,
     'ws-received': Icons.call_received_rounded,
+
+    /// Database
+    'db-query': Icons.storage_rounded,
+    'db-result': Icons.dataset_rounded,
+    'db-error': Icons.error_outline_rounded,
   };
 
   static const lightTypeColors = {
@@ -67,8 +72,8 @@ final class ISpectConstants {
 
     /// Http section
     'http-error': Color.fromARGB(255, 192, 38, 38),
-    'http-request': Color.fromARGB(255, 162, 0, 190),
-    'http-response': Color.fromARGB(255, 0, 158, 66),
+    'http-request': Color(0xFF9C27B0),
+    'http-response': Color(0xFF00C853),
 
     /// Bloc section
     'bloc-event': Color.fromARGB(255, 25, 118, 210),
@@ -88,6 +93,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color.fromARGB(255, 162, 0, 190),
     'ws-received': Color.fromARGB(255, 0, 158, 66),
+
+    /// Database
+    'db-query': Color.fromARGB(255, 25, 118, 210),
+    'db-result': Color.fromARGB(255, 56, 142, 60),
+    'db-error': Color.fromARGB(255, 192, 38, 38),
   };
 
   static const darkTypeColors = {
@@ -126,6 +136,11 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color(0xFFF602C1),
     'ws-received': Color(0xFF26FF3C),
+
+    /// Database
+    'db-query': Color.fromARGB(255, 66, 165, 245),
+    'db-result': Color.fromARGB(255, 120, 230, 129),
+    'db-error': Color.fromARGB(255, 239, 83, 80),
   };
 
   /// Converts default log descriptions into a list of `LogDescription`.
@@ -224,10 +239,25 @@ final class ISpectConstants {
         key: 'route',
         description: l10n.routeLogDesc,
       ),
-      const LogDescription(key: 'ws-sent', description: 'l10n.wsSentLogDesc'),
-      const LogDescription(
+      LogDescription(
+        key: 'ws-sent',
+        description: l10n.wsSentLogDesc,
+      ),
+      LogDescription(
         key: 'ws-received',
-        description: 'l10n.wsReceivedLogDesc',
+        description: l10n.wsReceivedLogDesc,
+      ),
+      LogDescription(
+        key: 'db-query',
+        description: l10n.dbQueryLogDesc,
+      ),
+      LogDescription(
+        key: 'db-result',
+        description: l10n.dbResultLogDesc,
+      ),
+      LogDescription(
+        key: 'db-error',
+        description: l10n.dbErrorLogDesc,
       ),
     ];
   }

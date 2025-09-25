@@ -67,7 +67,7 @@ ISpect.run(
   logger: iSpectify,
   onInit: () {
     // Set up BLoC observer for automatic logging
-    Bloc.observer = ISpecBlocObserver(
+    Bloc.observer = ISpectBlocObserver(
       logger: iSpectify,
     );
   },
@@ -134,7 +134,7 @@ Add ispectify_bloc to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.3.6
+  ispectify_bloc: ^4.4.0
 ```
 
 ## Security & Production Guidelines
@@ -175,7 +175,7 @@ void _initializeWithISpect() {
     logger: iSpectify,
     onInit: () {
       // Set up BLoC observer only in development/staging
-      Bloc.observer = ISpecBlocObserver(
+      Bloc.observer = ISpectBlocObserver(
         logger: iSpectify,
       );
     },

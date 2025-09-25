@@ -17,6 +17,7 @@ class DioResponseData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
+    final headers = response?.headers;
     final map = <String, dynamic>{
       'request-options': redactor == null
           ? requestData.toJson()
@@ -25,22 +26,25 @@ class DioResponseData {
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
             ),
-      'real-uri': response?.realUri.toString(),
+      'url': response?.realUri.toString(),
+      'method': response?.requestOptions.method,
       'data': response?.data,
       'status-code': response?.statusCode,
       'status-message': response?.statusMessage,
       'extra': response?.extra,
       'is-redirect': response?.isRedirect,
-      'redirects': response?.redirects
-          .map(
-            (e) => {
-              'location': e.location,
-              'status-code': e.statusCode,
-              'method': e.method,
-            },
-          )
-          .toList(),
-      'headers': response?.headers.map,
+      'redirects': response?.redirects == null
+          ? null
+          : response!.redirects
+              .map(
+                (e) => {
+                  'location': e.location,
+                  'status-code': e.statusCode,
+                  'method': e.method,
+                },
+              )
+              .toList(),
+      'headers': headers?.map,
     };
 
     if (redactor == null) {
@@ -48,11 +52,13 @@ class DioResponseData {
     }
 
     // Redact response-level fields
+
     map['data'] = redactor.redact(
       map['data'],
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
+
     final hdrs = (map['headers'] as Map?)?.cast<String, dynamic>();
     if (hdrs != null) {
       map['headers'] = redactor.redactHeaders(

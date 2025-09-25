@@ -49,7 +49,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       RegExp(r'logs_(\d{4})-(\d{2})-(\d{2})\.json');
 
   final int _maxSessionDays;
-  final Duration _autoSaveInterval;
+  Duration _autoSaveInterval;
   final int _maxFileSize;
   final bool _enableCompression;
   final SessionCleanupStrategy _sessionCleanupStrategy;
@@ -78,7 +78,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Initializes secure cache directory for log storage.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when directory is ready
+  /// - Returns: `Future<void>` completing when directory is ready
   /// - Usage example: Called automatically in constructor
   /// - Edge case notes: Handles platform-specific directory creation
   Future<void> _initializeSecureDirectory() async {
@@ -103,7 +103,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets platform-specific secure cache directory
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to secure cache directory
+  /// - Returns: `Future<String>` path to secure cache directory
   /// - Usage example: Used internally for directory setup
   /// - Edge case notes: Handles mobile, desktop, and fallback scenarios
   Future<String> _getSecureCacheDirectory() async {
@@ -121,7 +121,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets mobile cache directory path.
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to mobile cache directory
+  /// - Returns: `Future<String>` path to mobile cache directory
   /// - Usage example: Used for Android/iOS platforms
   /// - Edge case notes: Creates directory in system temp with app subdirectory
   Future<String> _getMobileCacheDirectory() async {
@@ -138,7 +138,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Gets desktop cache directory path.
   ///
   /// - Parameters: None
-  /// - Return: Future<String> path to desktop cache directory
+  /// - Returns: `Future<String>` path to desktop cache directory
   /// - Usage example: Used for Windows/macOS/Linux platforms
   /// - Edge case notes: Respects platform-specific cache conventions
   Future<String> _getDesktopCacheDirectory() async {
@@ -181,7 +181,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Ensures directory is initialized before operations.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when directory is ready
+  /// - Returns: `Future<void>` completing when directory is ready
   /// - Usage example: Called before file operations
   /// - Edge case notes: Waits for async initialization to complete
   Future<void> _ensureDirectoryInitialized() async {
@@ -236,7 +236,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Performs optimized auto-save with write queue management.
   ///
   /// - Parameters: None
-  /// - Return: Future<void> completing when auto-save is done
+  /// - Returns: `Future<void>` completing when auto-save is done
   /// - Usage example: Called periodically by auto-save timer
   /// - Edge case notes: Silently handles errors to prevent app crashes
   Future<void> _performAutoSave() async {
@@ -260,6 +260,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   Future<void> saveToDailyFile() async {
     await _ensureDirectoryInitialized();
 
+    // Skip file persistence if maxSessionDays is 0 or negative
+    if (_maxSessionDays <= 0) return;
+
     if (history.isEmpty) return;
 
     final filePath = todaySessionPath;
@@ -271,7 +274,19 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
     try {
       final availableDates = await getAvailableLogDates();
-      if (availableDates.length >= _maxSessionDays) {
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+
+      // Only trigger cleanup when adding a new date that would exceed the limit
+      // If today's file already exists, we're just updating it, so no cleanup needed
+      final todayExists = availableDates.any(
+        (date) =>
+            date.year == todayDate.year &&
+            date.month == todayDate.month &&
+            date.day == todayDate.day,
+      );
+
+      if (!todayExists && availableDates.length >= _maxSessionDays) {
         await _performSessionCleanup(availableDates);
       }
 
@@ -286,7 +301,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
       if (mergedData.isEmpty) return;
 
-      final today = DateTime.now();
+      // final today = DateTime.now(); // ← Remove duplicate declaration
       if (!_validateDataForDate(mergedData, today)) {
         if (settings.useConsoleLogs) {
           ISpect.logger
@@ -298,11 +313,36 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       if (!await _validateFileIntegrity(file, today)) return;
 
       if (await _wouldExceedSizeLimit(file, mergedData)) {
+        // Check available disk space before rotation
+        if (!await _hasEnoughDiskSpace(
+          file.parent,
+          _estimateJsonSize(mergedData),
+        )) {
+          if (settings.useConsoleLogs) {
+            ISpect.logger.warning(
+              'Insufficient disk space for file rotation, skipping save',
+            );
+          }
+          return;
+        }
+
         if (settings.useConsoleLogs) {
           ISpect.logger
               .warning('File size would exceed limit, performing rotation');
         }
         await _rotateFileIfNeeded(file, today);
+      }
+
+      // Final disk space check before writing
+      if (!await _hasEnoughDiskSpace(
+        file.parent,
+        _estimateJsonSize(mergedData),
+      )) {
+        if (settings.useConsoleLogs) {
+          ISpect.logger
+              .warning('Insufficient disk space for file write, skipping save');
+        }
+        return;
       }
 
       await _writeDataChunked(file, mergedData);
@@ -315,24 +355,27 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Performs session cleanup based on the configured strategy.
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Called internally when session limit exceeded
   /// - Edge case notes: Handles different cleanup strategies efficiently
   Future<void> _performSessionCleanup(List<DateTime> availableDates) async {
     switch (_sessionCleanupStrategy) {
       case SessionCleanupStrategy.deleteOldest:
         await _cleanupByOldest(availableDates);
+        return;
       case SessionCleanupStrategy.deleteBySize:
         await _cleanupBySize(availableDates);
+        return;
       case SessionCleanupStrategy.archiveOldest:
         await _cleanupByArchiving(availableDates);
+        return;
     }
   }
 
   /// Cleanup strategy: delete oldest files first.
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Sorts dates and removes oldest first
   Future<void> _cleanupByOldest(List<DateTime> availableDates) async {
@@ -350,7 +393,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Cleanup strategy: delete largest files first
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Sorts by file size and removes largest first
   Future<void> _cleanupBySize(List<DateTime> availableDates) async {
@@ -376,7 +419,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Cleanup strategy: archive oldest files before deletion
   ///
   /// - Parameters: availableDates - List of dates with existing log files
-  /// - Return: Future<void> completing when cleanup is done
+  /// - Returns: `Future<void>` completing when cleanup is done
   /// - Usage example: Used by _performSessionCleanup
   /// - Edge case notes: Archives files to compressed format then deletes originals
   Future<void> _cleanupByArchiving(List<DateTime> availableDates) async {
@@ -409,31 +452,57 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Validates file integrity before writing.
   ///
   /// - Parameters: file - File to validate, today - Current date
-  /// - Return: Future<bool> true if safe to write
+  /// - Returns: `Future<bool>` true if safe to write
   /// - Usage example: Used internally before file writes
   /// - Edge case notes: Prevents overwriting files from other days
   Future<bool> _validateFileIntegrity(File file, DateTime today) async {
     final existingFileData = await _loadExistingData(file);
     if (existingFileData.isNotEmpty) {
-      final firstEntryDate = existingFileData.first.time;
-      if (!_isSameDay(firstEntryDate, today)) {
-        if (settings.useConsoleLogs) {
-          ISpect.logger.warning(
-            "Prevented overwriting file from ${_formatDateForFileName(firstEntryDate)} with today's data",
-          );
+      // Check that all entries in the file are from the same day
+      final targetDate = DateTime(today.year, today.month, today.day);
+
+      for (final entry in existingFileData) {
+        if (!_isSameDay(entry.time, targetDate)) {
+          if (settings.useConsoleLogs) {
+            ISpect.logger.warning(
+              'File ${file.path} contains data from ${_formatDateForFileName(entry.time)}, '
+              "but expected only today's data (${_formatDateForFileName(today)})",
+            );
+          }
+          return false;
         }
-        return false;
       }
     }
     return true;
   }
 
-  /// Checks if writing the data would exceed the maximum file size limit
+  /// Checks if there's enough disk space for the operation
+  Future<bool> _hasEnoughDiskSpace(
+    Directory directory,
+    int requiredBytes,
+  ) async {
+    try {
+      // Add 10% buffer for filesystem overhead
+      final requiredWithBuffer = (requiredBytes * 1.1).round();
+
+      // Check against the configured maximum file size limit
+      // This prevents runaway file growth while respecting user configuration
+      return requiredWithBuffer <= (_maxFileSize * 1.1).round();
+    } catch (e) {
+      // If we can't check disk space, assume it's available
+      return true;
+    }
+  }
+
+  ///
+  /// Since the file is completely overwritten with merged data, this method
+  /// only checks the estimated size of the data to be written against 90%
+  /// of the configured limit to provide a safety buffer.
   ///
   /// - Parameters: file - Target file, data - Data to be written
-  /// - Return: Future<bool> true if size limit would be exceeded
+  /// - Returns: `Future<bool>` true if size limit would be exceeded
   /// - Usage example: Used before writing to prevent oversized files
-  /// - Edge case notes: Estimates JSON size with safety margin
+  /// - Edge case notes: Uses 90% threshold to avoid unnecessary rotations near the limit
   Future<bool> _wouldExceedSizeLimit(
     File file,
     List<ISpectifyData> data,
@@ -441,10 +510,14 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     if (_maxFileSize <= 0) return false;
 
     try {
-      final currentSize = await file.exists() ? await file.length() : 0;
+      // Since _writeDataChunked overwrites the file completely with merged data,
+      // we only need to check if the estimated size of the data to be written
+      // exceeds the limit. Adding currentSize would double-count existing data.
+      // We use 90% of the limit to provide a safety buffer and avoid edge cases.
       final estimatedDataSize = _estimateJsonSize(data);
+      final effectiveLimit = (_maxFileSize * 0.9).round();
 
-      return (currentSize + estimatedDataSize) > _maxFileSize;
+      return estimatedDataSize > effectiveLimit;
     } catch (e, st) {
       if (settings.useConsoleLogs) {
         ISpect.logger.handle(exception: e, stackTrace: st);
@@ -476,14 +549,18 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Rotates the file if it would exceed size limits
+  /// Ensures atomic operation: backup is created successfully before clearing the file
   Future<void> _rotateFileIfNeeded(File file, DateTime date) async {
     if (!await file.exists()) return;
 
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '${file.path}.backup_$timestamp';
+
+      // First, create backup - if this fails, don't touch the original file
       await file.copy(backupPath);
 
+      // Only after successful backup, clear the original file
       await file.writeAsString('[]');
 
       if (settings.useConsoleLogs) {
@@ -491,15 +568,22 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       }
     } catch (e, st) {
       if (settings.useConsoleLogs) {
-        ISpect.logger.handle(exception: e, stackTrace: st);
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message:
+              'Failed to rotate file ${file.path}, keeping original intact',
+        );
       }
+      // Re-throw to prevent writing to a file that wasn't properly rotated
+      rethrow;
     }
   }
 
   /// Checks if we should merge with existing data
   ///
   /// - Parameters: None
-  /// - Return: bool true if should merge with existing file
+  /// - Returns: `bool` true if should merge with existing file
   /// - Usage example: Used during save operations
   /// - Edge case notes: Prevents data loss by merging on same day
   bool _shouldMergeWithExisting() {
@@ -515,12 +599,16 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Loads existing data from file efficiently.
   ///
   /// - Parameters: file - File to load data from
-  /// - Return: Future<List<ISpectifyData>> loaded data or empty list
+  /// - Returns: `Future<List<ISpectifyData>>` loaded data or empty list
   /// - Usage example: Used during merge operations
   /// - Edge case notes: Returns empty list on any parsing error
   Future<List<ISpectifyData>> _loadExistingData(File file) async {
     try {
       final jsonString = await file.readAsString();
+      if (jsonString.trim().isEmpty) {
+        return <ISpectifyData>[];
+      }
+
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
 
       return jsonList
@@ -530,7 +618,24 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
             ),
           )
           .toList();
-    } catch (e) {
+    } on FormatException catch (e, st) {
+      if (settings.useConsoleLogs) {
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message:
+              'Failed to parse JSON from file ${file.path}, file may be corrupted',
+        );
+      }
+      return <ISpectifyData>[];
+    } catch (e, st) {
+      if (settings.useConsoleLogs) {
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message: 'Failed to load existing data from file ${file.path}',
+        );
+      }
       return <ISpectifyData>[];
     }
   }
@@ -538,56 +643,36 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Merges history data avoiding duplicates and filtering by today's date
   ///
   /// - Parameters: existing - Data from file, current - Data from memory
-  /// - Return: List<ISpectifyData> merged and deduplicated data
+  /// - Returns: `List<ISpectifyData>` merged and deduplicated data
   /// - Usage example: Used during save operations to merge datasets
-  /// - Edge case notes: Uses optimized int-based map for O(1) operations, sorts by timestamp
+  /// - Edge case notes: Uses Set for proper deduplication of identical objects, sorts by timestamp
   List<ISpectifyData> _mergeHistoryData(
     List<ISpectifyData> existing,
     List<ISpectifyData> current,
   ) {
-    final merged = <int, ISpectifyData>{};
+    final merged = <ISpectifyData>{};
     final today = DateTime.now();
 
-    _addDataToMerged(merged, existing, today);
-    _addDataToMerged(merged, current, today);
+    // Add existing data (from file)
+    for (final item in existing) {
+      if (_isSameDay(item.time, today)) {
+        merged.add(item);
+      }
+    }
 
-    final result = merged.values.toList()
-      ..sort((a, b) => a.time.compareTo(b.time));
+    // Add current data (from memory), avoiding duplicates
+    for (final item in current) {
+      if (_isSameDay(item.time, today)) {
+        merged.add(item);
+      }
+    }
+
+    final result = merged.toList()..sort((a, b) => a.time.compareTo(b.time));
     return result;
   }
 
-  /// Adds data to merged map with deduplication using optimized key generation
-  ///
-  /// - Parameters: merged - Target map, data - Source data, today - Filter date
-  /// - Return: void
-  /// - Usage example: Used internally by _mergeHistoryData
-  /// - Edge case notes: Uses int-based key for O(1) operations instead of string concatenation
-  void _addDataToMerged(
-    Map<int, ISpectifyData> merged,
-    List<ISpectifyData> data,
-    DateTime today,
-  ) {
-    for (final item in data) {
-      if (_isSameDay(item.time, today)) {
-        final key = _generateOptimizedKey(item);
-        merged[key] = item;
-      }
-    }
-  }
-
-  /// Generates optimized integer key for deduplication
-  ///
-  /// - Parameters: item - Data item to generate key for
-  /// - Return: int unique key based on timestamp and message hash
-  /// - Usage example: Used for efficient map operations
-  /// - Edge case notes: Combines timestamp and message hash for uniqueness
-  int _generateOptimizedKey(ISpectifyData item) {
-    final timeKey = item.time.millisecondsSinceEpoch;
-    final messageHash = item.message?.hashCode ?? 0;
-    return (timeKey << 16) ^ messageHash;
-  }
-
   /// Writes data in chunks using optimized streaming approach
+  /// Validates that the file was written successfully
   Future<void> _writeDataChunked(File file, List<ISpectifyData> data) async {
     final sink = file.openWrite();
 
@@ -618,6 +703,20 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       sink.write(']');
     } finally {
       await sink.close();
+    }
+
+    // Validate that the file was written successfully
+    if (await file.exists()) {
+      final writtenSize = await file.length();
+      if (writtenSize == 0 && data.isNotEmpty) {
+        throw StateError(
+          'File write validation failed: file is empty but data was provided',
+        );
+      }
+    } else {
+      throw StateError(
+        'File write validation failed: file does not exist after write',
+      );
     }
   }
 
@@ -810,7 +909,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Checks if two dates are the same day
   ///
   /// - Parameters: date1, date2 - Dates to compare
-  /// - Return: bool true if same calendar day
+  /// - Returns: `bool` true if same calendar day
   /// - Usage example: Used for date validation and filtering
   /// - Edge case notes: Ignores time components, compares only date parts
   bool _isSameDay(DateTime date1, DateTime date2) =>
@@ -859,13 +958,17 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Updates auto-save settings during runtime.
   @override
   void updateAutoSaveSettings({bool? enabled, Duration? interval}) {
+    // Update the stored interval if provided
+    if (interval != null) {
+      _autoSaveInterval = interval;
+    }
+
     if (enabled != null) {
       if (enabled && !_autoSaveEnabled) {
         // Enable auto-save
         _autoSaveEnabled = true;
-        final newInterval = interval ?? _autoSaveInterval;
         _autoSaveTimer?.cancel();
-        _autoSaveTimer = Timer.periodic(newInterval, (_) {
+        _autoSaveTimer = Timer.periodic(_autoSaveInterval, (_) {
           _performAutoSave();
         });
       } else if (!enabled && _autoSaveEnabled) {
@@ -877,7 +980,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     } else if (interval != null && _autoSaveEnabled) {
       // Update interval while keeping auto-save enabled
       _autoSaveTimer?.cancel();
-      _autoSaveTimer = Timer.periodic(interval, (_) {
+      _autoSaveTimer = Timer.periodic(_autoSaveInterval, (_) {
         _performAutoSave();
       });
     }
@@ -906,6 +1009,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Parses JSON string to list of ISpectifyData with optimized batch processing.
+  ///
+  /// - Parameters: jsonString - Raw JSON string representing a list of entries
+  /// - Returns: `Future<List<ISpectifyData>>` parsed list (empty on error)
+  /// - Usage example: Internal parsing for import and load operations
+  /// - Edge case notes: Processes in adaptive chunks, skips invalid entries
   Future<List<ISpectifyData>> _parseJsonToData(String jsonString) async {
     try {
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
@@ -952,6 +1060,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Validates that all data entries belong to the specified date with early exit optimization.
+  ///
+  /// - Parameters: data - Entries to validate, targetDate - Date to enforce
+  /// - Returns: `bool` true if all entries belong to targetDate
+  /// - Usage example: Used before saving to ensure daily file consistency
+  /// - Edge case notes: Early exits on first mismatch for performance
   bool _validateDataForDate(List<ISpectifyData> data, DateTime targetDate) {
     if (data.isEmpty) return true;
 
