@@ -54,7 +54,6 @@ class ISpectBuilder extends StatefulWidget {
     this.isISpectEnabled = kDebugMode,
     this.options,
     this.theme,
-    this.observer,
     this.feedbackTheme,
     this.feedBackDarkTheme,
     this.feedbackBuilder,
@@ -73,9 +72,6 @@ class ISpectBuilder extends StatefulWidget {
 
   /// Whether debugging tools are enabled. Set to false in production.
   final bool isISpectEnabled;
-
-  /// Navigation observer for route tracking.
-  final NavigatorObserver? observer;
 
   /// Light theme for feedback widget.
   final FeedbackThemeData? feedbackTheme;
@@ -187,7 +183,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
           return ISpectScopeController(
             model: model,
-            child: widget.observer != null
+            child: widget.options?.observer != null
                 ? currentChild
                 : Navigator(
                     key: _navigatorKey,

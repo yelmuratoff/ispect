@@ -27,8 +27,8 @@ class NestedNavigationApp extends StatelessWidget {
       routerConfig: nestedRouter.config(
         navigatorObservers: () => [observer],
       ),
-      builder: (context, child) =>
-          ISpectBuilder(observer: observer, child: child!),
+      builder: (context, child) => ISpectBuilder(
+          options: ISpectOptions(observer: observer), child: child!),
     );
   }
 }

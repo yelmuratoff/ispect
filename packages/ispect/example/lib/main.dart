@@ -147,7 +147,6 @@ class _AppState extends State<App> {
           theme: const ISpectTheme(
             pageTitle: 'ISpect',
           ),
-          observer: _observer,
           controller: _controller,
           options: ISpectOptions(
             locale: locale,

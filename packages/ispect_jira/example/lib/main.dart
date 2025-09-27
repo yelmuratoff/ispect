@@ -69,7 +69,6 @@ class _AppState extends State<App> {
       themeMode: themeMode,
       builder: (context, child) {
         child = ISpectBuilder(
-          observer: observer,
           options: ISpectOptions(
             locale: locale,
             panelButtons: [
