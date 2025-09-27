@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.1
+
+### Changes
+- `observer` parameter moved from `ISpectBuilder` to `ISpectOptions` for better consistency and usability.
+
 ## 4.4.0
 
 ### Added
