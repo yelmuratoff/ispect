@@ -63,7 +63,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           toolbarHeight: 60,
           leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.iSpect.observer.pop(context);
             },
             icon: const Icon(
               Icons.arrow_back_rounded,

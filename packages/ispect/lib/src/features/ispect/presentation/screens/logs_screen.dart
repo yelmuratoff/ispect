@@ -31,13 +31,11 @@ class LogsScreen extends StatefulWidget {
     super.key,
     this.appBarTitle,
     this.itemsBuilder,
-    this.navigatorObserver,
   });
 
   final String? appBarTitle;
   final ISpectifyDataBuilder? itemsBuilder;
   final ISpectOptions options;
-  final ISpectNavigatorObserver? navigatorObserver;
 
   @override
   State<LogsScreen> createState() => _LogsScreenState();
@@ -86,7 +84,6 @@ class _LogsScreenState extends State<LogsScreen> {
                   logsViewController: _logsViewController,
                   appBarTitle: widget.appBarTitle,
                   itemsBuilder: widget.itemsBuilder,
-                  navigatorObserver: widget.navigatorObserver,
                   onSettingsTap: () => _openLogsSettings(context),
                   onInfoTap: () => _showInfoBottomSheet(context),
                 ),
@@ -137,7 +134,9 @@ class _LogsScreenState extends State<LogsScreen> {
         _buildClearHistoryAction(context),
         _buildShareLogsAction(context),
         _buildAppInfoAction(context),
-        if (widget.navigatorObserver != null) _buildNavigationFlowAction(),
+        if (widget.options.observer != null &&
+            widget.options.observer is ISpectNavigatorObserver)
+          _buildNavigationFlowAction(),
         if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
         _buildLogViewerAction(),
         _buildAppDataAction(context),
@@ -209,7 +208,7 @@ class _LogsScreenState extends State<LogsScreen> {
         title: context.ispectL10n.navigationFlow,
         icon: Icons.route_rounded,
         onTap: (context) => ISpectNavigationFlowScreen(
-          observer: widget.navigatorObserver!,
+          observer: widget.options.observer! as ISpectNavigatorObserver,
         ).push(context),
       );
 
@@ -310,8 +309,8 @@ class _LogListItem extends StatelessWidget {
     required this.dividerColor,
     required this.onItemTapped,
     required this.onCopyPressed,
-    this.observer,
     this.customItemBuilder,
+    this.observer,
     super.key,
   });
 
@@ -393,7 +392,6 @@ class _MainLogsView extends StatelessWidget {
     required this.onInfoTap,
     this.appBarTitle,
     this.itemsBuilder,
-    this.navigatorObserver,
   });
 
   final List<ISpectifyData> logsData;
@@ -406,13 +404,13 @@ class _MainLogsView extends StatelessWidget {
   final VoidCallback onInfoTap;
   final String? appBarTitle;
   final ISpectifyDataBuilder? itemsBuilder;
-  final ISpectNavigatorObserver? navigatorObserver;
 
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
     final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
     final dividerColor = _getDividerColor(iSpectTheme, context);
+    final options = ISpect.read(context).options;
 
     return CustomScrollView(
       controller: logsScrollController,
@@ -459,13 +457,15 @@ class _MainLogsView extends StatelessWidget {
               isLastItem: index == filteredLogEntries.length - 1,
               dividerColor: dividerColor,
               customItemBuilder: itemsBuilder,
+              observer: options.observer is ISpectNavigatorObserver
+                  ? options.observer as ISpectNavigatorObserver?
+                  : null,
               onCopyPressed: () => logsViewController.copyLogEntryText(
                 context,
                 logEntry,
                 copyClipboard,
               ),
               onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
-              observer: navigatorObserver,
             );
           },
         ),

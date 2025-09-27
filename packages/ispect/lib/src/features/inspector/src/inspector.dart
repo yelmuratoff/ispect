@@ -50,7 +50,6 @@ class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,
     required this.options,
-    this.observer,
     super.key,
     this.backgroundColor,
     this.textColor,
@@ -92,7 +91,7 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
-  final NavigatorObserver? observer;
+
   final ISpectOptions options;
 
   final DraggablePanelController? controller;
@@ -185,8 +184,8 @@ class InspectorState extends State<Inspector> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.observer != null) {
-        ISpect.read(context).observer = widget.observer;
+      if (widget.options.observer != null) {
+        ISpect.read(context).observer = widget.options.observer;
       }
     });
   }
@@ -653,20 +652,17 @@ class InspectorState extends State<Inspector> {
         options: widget.options,
         appBarTitle: iSpect.theme.pageTitle,
         itemsBuilder: widget.options.itemsBuilder,
-        navigatorObserver: (widget.observer is ISpectNavigatorObserver
-            ? widget.observer as ISpectNavigatorObserver?
-            : null),
       ),
       settings: const RouteSettings(
         name: 'ISpect Screen',
       ),
     );
     if (_controller.inLoggerPage) {
-      widget.observer.pop(context);
+      widget.options.observer.pop(context);
     } else {
       _controller.setInLoggerPage(isLoggerPage: true);
 
-      await widget.observer.push(context, iSpectScreen).then((_) {
+      await widget.options.observer.push(context, iSpectScreen).then((_) {
         _controller.setInLoggerPage(isLoggerPage: false);
       });
     }
@@ -676,12 +672,12 @@ class InspectorState extends State<Inspector> {
     MaterialPageRoute<dynamic> screen,
     VoidCallback? then,
   ) async {
-    if (widget.observer?.navigator == null) {
+    if (widget.options.observer?.navigator == null) {
       await Navigator.of(context).push(screen).then((_) {
         then?.call();
       });
     } else {
-      await widget.observer?.navigator?.push(screen).then((_) {
+      await widget.options.observer?.navigator?.push(screen).then((_) {
         then?.call();
       });
     }

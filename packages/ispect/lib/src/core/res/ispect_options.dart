@@ -52,15 +52,16 @@ import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 final class ISpectOptions {
   const ISpectOptions({
     this.locale = const Locale('en'),
-    this.actionItems = const [],
-    this.panelItems = const [],
-    this.panelButtons = const [],
+    this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
     this.isFeedbackEnabled = true,
     this.isColorPickerEnabled = true,
     this.isThemeSchemaEnabled = true,
+    this.actionItems = const [],
+    this.panelItems = const [],
+    this.panelButtons = const [],
     this.itemsBuilder,
   });
 
@@ -68,6 +69,9 @@ final class ISpectOptions {
   ///
   /// Defaults to `Locale('en')`.
   final Locale locale;
+
+  /// A navigator observer to track navigation events within the app.
+  final NavigatorObserver? observer;
 
   /// Controls visibility of the log viewer page.
   ///
@@ -152,30 +156,33 @@ final class ISpectOptions {
   /// ```
   ISpectOptions copyWith({
     Locale? locale,
-    List<ISpectActionItem>? actionItems,
-    List<DraggablePanelItem>? panelItems,
-    List<DraggablePanelButtonItem>? panelButtons,
+    NavigatorObserver? observer,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,
     bool? isFeedbackEnabled,
     bool? isColorPickerEnabled,
     bool? isThemeSchemaEnabled,
+    List<ISpectActionItem>? actionItems,
+    List<DraggablePanelItem>? panelItems,
+    List<DraggablePanelButtonItem>? panelButtons,
     ISpectifyDataBuilder? itemsBuilder,
-  }) =>
-      ISpectOptions(
-        locale: locale ?? this.locale,
-        actionItems: actionItems ?? this.actionItems,
-        panelItems: panelItems ?? this.panelItems,
-        panelButtons: panelButtons ?? this.panelButtons,
-        isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
-        isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
-        isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
-        isFeedbackEnabled: isFeedbackEnabled ?? this.isFeedbackEnabled,
-        isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
-        isThemeSchemaEnabled: isThemeSchemaEnabled ?? this.isThemeSchemaEnabled,
-        itemsBuilder: itemsBuilder ?? this.itemsBuilder,
-      );
+  }) {
+    return ISpectOptions(
+      locale: locale ?? this.locale,
+      observer: observer ?? this.observer,
+      isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
+      isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
+      isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
+      isFeedbackEnabled: isFeedbackEnabled ?? this.isFeedbackEnabled,
+      isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
+      isThemeSchemaEnabled: isThemeSchemaEnabled ?? this.isThemeSchemaEnabled,
+      actionItems: actionItems ?? this.actionItems,
+      panelItems: panelItems ?? this.panelItems,
+      panelButtons: panelButtons ?? this.panelButtons,
+      itemsBuilder: itemsBuilder ?? this.itemsBuilder,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -184,6 +191,7 @@ final class ISpectOptions {
 
     return other is ISpectOptions &&
         other.locale == locale &&
+        other.observer == observer &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
         other.isInspectorEnabled == isInspectorEnabled &&
@@ -197,24 +205,26 @@ final class ISpectOptions {
   }
 
   @override
-  int get hashCode => Object.hash(
-        locale,
-        isLogPageEnabled,
-        isPerformanceEnabled,
-        isInspectorEnabled,
-        isFeedbackEnabled,
-        isColorPickerEnabled,
-        isThemeSchemaEnabled,
-        const DeepCollectionEquality().hash(actionItems),
-        const DeepCollectionEquality().hash(panelItems),
-        const DeepCollectionEquality().hash(panelButtons),
-        itemsBuilder,
-      );
+  int get hashCode {
+    return locale.hashCode ^
+        observer.hashCode ^
+        isLogPageEnabled.hashCode ^
+        isPerformanceEnabled.hashCode ^
+        isInspectorEnabled.hashCode ^
+        isFeedbackEnabled.hashCode ^
+        isColorPickerEnabled.hashCode ^
+        isThemeSchemaEnabled.hashCode ^
+        actionItems.hashCode ^
+        panelItems.hashCode ^
+        panelButtons.hashCode ^
+        itemsBuilder.hashCode;
+  }
 
   @override
   String toString() {
     return '''ISpectOptions(
       locale: $locale,
+      observer: $observer,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
       isInspectorEnabled: $isInspectorEnabled,
