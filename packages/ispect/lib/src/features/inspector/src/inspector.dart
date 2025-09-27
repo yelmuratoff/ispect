@@ -49,7 +49,6 @@ import 'package:share_plus/share_plus.dart';
 class Inspector extends StatefulWidget {
   const Inspector({
     required this.child,
-    required this.options,
     super.key,
     this.backgroundColor,
     this.textColor,
@@ -91,8 +90,6 @@ class Inspector extends StatefulWidget {
   final Color? textColor;
   final Color? selectedColor;
   final Color? selectedTextColor;
-
-  final ISpectOptions options;
 
   final DraggablePanelController? controller;
 
@@ -184,8 +181,8 @@ class InspectorState extends State<Inspector> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.options.observer != null) {
-        ISpect.read(context).observer = widget.options.observer;
+      if (context.iSpect.options.observer != null) {
+        ISpect.read(context).observer = context.iSpect.options.observer;
       }
     });
   }
@@ -239,7 +236,7 @@ class InspectorState extends State<Inspector> {
   // Inspector
 
   void _onInspectorStateChanged(bool isEnabled) {
-    if (!widget.options.isInspectorEnabled) {
+    if (!context.iSpect.options.isInspectorEnabled) {
       _inspectorStateNotifier.value = false;
       return;
     }
@@ -256,7 +253,7 @@ class InspectorState extends State<Inspector> {
   // Zoom
 
   void _onZoomStateChanged(bool isEnabled) {
-    if (!widget.options.isColorPickerEnabled) {
+    if (!context.iSpect.options.isColorPickerEnabled) {
       _zoomStateNotifier.value = false;
       return;
     }
@@ -429,7 +426,7 @@ class InspectorState extends State<Inspector> {
                     : context.ispectTheme.colorScheme.primary,
                 controller: _draggablePanelController,
                 items: [
-                  if (widget.options.isLogPageEnabled)
+                  if (context.iSpect.options.isLogPageEnabled)
                     DraggablePanelItem(
                       icon: _controller.inLoggerPage
                           ? Icons.undo_rounded
@@ -442,7 +439,7 @@ class InspectorState extends State<Inspector> {
                           ? context.ispectL10n.backToMainScreen
                           : context.ispectL10n.openLogViewer,
                     ),
-                  if (widget.options.isPerformanceEnabled)
+                  if (context.iSpect.options.isPerformanceEnabled)
                     DraggablePanelItem(
                       icon: Icons.monitor_heart_outlined,
                       enableBadge: iSpect.isPerformanceTrackingEnabled,
@@ -451,7 +448,7 @@ class InspectorState extends State<Inspector> {
                       },
                       description: context.ispectL10n.togglePerformanceTracking,
                     ),
-                  if (widget.options.isInspectorEnabled)
+                  if (context.iSpect.options.isInspectorEnabled)
                     DraggablePanelItem(
                       icon: Icons.format_shapes_rounded,
                       enableBadge: _inspectorStateNotifier.value,
@@ -462,7 +459,7 @@ class InspectorState extends State<Inspector> {
                       },
                       description: context.ispectL10n.inspectWidgets,
                     ),
-                  if (widget.options.isColorPickerEnabled)
+                  if (context.iSpect.options.isColorPickerEnabled)
                     DraggablePanelItem(
                       icon: Icons.colorize_rounded,
                       enableBadge: _zoomStateNotifier.value,
@@ -471,7 +468,7 @@ class InspectorState extends State<Inspector> {
                       },
                       description: context.ispectL10n.zoomPickColor,
                     ),
-                  if (widget.options.isFeedbackEnabled)
+                  if (context.iSpect.options.isFeedbackEnabled)
                     DraggablePanelItem(
                       icon: Icons.camera_alt_rounded,
                       enableBadge: feedback.isVisible,
@@ -480,26 +477,26 @@ class InspectorState extends State<Inspector> {
                       },
                       description: context.ispectL10n.takeScreenshotFeedback,
                     ),
-                  if (widget.options.isThemeSchemaEnabled)
+                  if (context.iSpect.options.isThemeSchemaEnabled)
                     DraggablePanelItem(
                       icon: Icons.color_lens_rounded,
                       enableBadge: false,
                       onTap: (context) {
-                        _pushToScreen(
+                        context.iSpect.observer.push(
+                          context,
                           MaterialPageRoute<dynamic>(
                             builder: (_) => const ThemeSchemeScreen(),
                             settings: const RouteSettings(
                               name: 'Theme & Scheme Screen',
                             ),
                           ),
-                          null,
                         );
                       },
                       description: context.ispectL10n.viewThemeScheme,
                     ),
-                  ...widget.options.panelItems,
+                  ...context.iSpect.options.panelItems,
                 ],
-                buttons: widget.options.panelButtons,
+                buttons: context.iSpect.options.panelButtons,
                 child: null,
               ),
             ),
@@ -541,7 +538,7 @@ class InspectorState extends State<Inspector> {
       );
 
   Widget _buildInspectorOverlay() {
-    if (!widget.options.isInspectorEnabled) {
+    if (!context.iSpect.options.isInspectorEnabled) {
       return const SizedBox.shrink();
     }
 
@@ -564,7 +561,7 @@ class InspectorState extends State<Inspector> {
   }
 
   Widget _buildColorPickerOverlay(Size screenSize) {
-    if (!widget.options.isColorPickerEnabled) {
+    if (!context.iSpect.options.isColorPickerEnabled) {
       return const SizedBox.shrink();
     }
 
@@ -649,36 +646,23 @@ class InspectorState extends State<Inspector> {
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
       builder: (_) => LogsScreen(
-        options: widget.options,
+        options: context.iSpect.options,
         appBarTitle: iSpect.theme.pageTitle,
-        itemsBuilder: widget.options.itemsBuilder,
+        itemsBuilder: context.iSpect.options.itemsBuilder,
       ),
       settings: const RouteSettings(
         name: 'ISpect Screen',
       ),
     );
     if (_controller.inLoggerPage) {
-      widget.options.observer.pop(context);
+      context.iSpect.options.observer.pop(context);
     } else {
       _controller.setInLoggerPage(isLoggerPage: true);
 
-      await widget.options.observer.push(context, iSpectScreen).then((_) {
+      await context.iSpect.options.observer
+          .push(context, iSpectScreen)
+          .then((_) {
         _controller.setInLoggerPage(isLoggerPage: false);
-      });
-    }
-  }
-
-  Future<void> _pushToScreen(
-    MaterialPageRoute<dynamic> screen,
-    VoidCallback? then,
-  ) async {
-    if (widget.options.observer?.navigator == null) {
-      await Navigator.of(context).push(screen).then((_) {
-        then?.call();
-      });
-    } else {
-      await widget.options.observer?.navigator?.push(screen).then((_) {
-        then?.call();
       });
     }
   }

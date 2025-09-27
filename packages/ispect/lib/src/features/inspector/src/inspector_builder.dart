@@ -122,7 +122,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
           // Add inspector to the widget tree.
           currentChild = Inspector(
-            options: model.options,
             isPanelVisible: model.isISpectEnabled,
             backgroundColor: adjustColorBrightness(
               theme.colorScheme.primaryContainer,
