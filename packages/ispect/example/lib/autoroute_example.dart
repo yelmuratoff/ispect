@@ -5,8 +5,6 @@ import 'package:ispect/ispect.dart';
 
 import 'autoroute_example.gr.dart';
 
-final observer = ISpectNavigatorObserver();
-
 void main() {
   final logger = ISpectifyFlutter.init();
   ISpect.run(
@@ -19,6 +17,7 @@ class NestedNavigationApp extends StatelessWidget {
   NestedNavigationApp({super.key});
 
   final nestedRouter = NestedRouter();
+  final observer = ISpectNavigatorObserver();
 
   @override
   Widget build(BuildContext context) {
