@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.2
+
+### Added
+- Added optional paramater `context` to `ISpectOptions`. This context is used to open `ISpect` screen.
+
 ## 4.4.1
 
 ### Changes

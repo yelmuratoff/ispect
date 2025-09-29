@@ -140,7 +140,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.4.1
+  ispectify_ws: ^4.4.2
 ```
 
 ## Security & Production Guidelines
