@@ -482,7 +482,7 @@ class InspectorState extends State<Inspector> {
                       icon: Icons.color_lens_rounded,
                       enableBadge: false,
                       onTap: (context) {
-                        context.iSpect.observer.push(
+                        context.iSpect.options.push(
                           context,
                           MaterialPageRoute<dynamic>(
                             builder: (_) => const ThemeSchemeScreen(),
@@ -655,13 +655,11 @@ class InspectorState extends State<Inspector> {
       ),
     );
     if (_controller.inLoggerPage) {
-      context.iSpect.options.observer.pop(context);
+      context.iSpect.options.pop(context);
     } else {
       _controller.setInLoggerPage(isLoggerPage: true);
 
-      await context.iSpect.options.observer
-          .push(context, iSpectScreen)
-          .then((_) {
+      await context.iSpect.options.push(context, iSpectScreen).then((_) {
         _controller.setInLoggerPage(isLoggerPage: false);
       });
     }

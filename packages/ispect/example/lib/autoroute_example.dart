@@ -19,6 +19,7 @@ class SecondNavObserver extends AutoRouterObserver {
   }
 }
 
+final observer = ISpectNavigatorObserver();
 void main() {
   final logger = ISpectifyFlutter.init();
   ISpect.run(
@@ -31,18 +32,23 @@ class NestedNavigationApp extends StatelessWidget {
   NestedNavigationApp({super.key});
 
   final nestedRouter = NestedRouter();
-  final observer = ISpectNavigatorObserver();
-  final secondObserver = SecondNavObserver();
+
+//   final secondObserver = SecondNavObserver();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       localizationsDelegates: ISpectLocalizations.delegates(),
       routerConfig: nestedRouter.config(
-        navigatorObservers: () => [secondObserver, observer],
+        navigatorObservers: () => [nestedRouter.observer, observer],
       ),
       builder: (context, child) => ISpectBuilder(
-          options: ISpectOptions(observer: observer), child: child!),
+        options: ISpectOptions(
+          observer: observer,
+          context: context,
+        ),
+        child: child!,
+      ),
     );
   }
 }
@@ -52,8 +58,12 @@ class NestedRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
         AutoRoute(page: FirstRoute.page, initial: true),
-        AutoRoute(page: SecondRoute.page),
+        AutoRoute(page: SecondRoute.page, children: [
+          AutoRoute(page: HostRoute.page),
+        ]),
       ];
+
+  SecondNavObserver get observer => SecondNavObserver();
 }
 
 @RoutePage()
@@ -72,15 +82,22 @@ class HostScreen extends StatelessWidget {
 }
 
 @RoutePage()
-class FirstScreen extends StatelessWidget {
+class FirstScreen extends StatefulWidget {
   const FirstScreen({super.key});
 
+  @override
+  State<FirstScreen> createState() => _FirstScreenState();
+}
+
+class _FirstScreenState extends State<FirstScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: ElevatedButton(
-          onPressed: () => context.pushRoute(SecondRoute()),
+          onPressed: () {
+            context.pushRoute(SecondRoute());
+          },
           child: Text('Go to second screen'),
         ),
       ),

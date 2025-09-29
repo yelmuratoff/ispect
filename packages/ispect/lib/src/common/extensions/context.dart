@@ -24,19 +24,41 @@ extension ISpectColorExtension on ThemeData {
 }
 
 extension NavigatorObserverExtension on NavigatorObserver? {
-  void pop(BuildContext context) {
-    if (this != null) {
-      this?.navigator?.pop();
+  // void pop(BuildContext context) {
+  //   if (this != null) {
+  //     this?.navigator?.pop();
+  //   } else {
+  //     Navigator.of(context).pop();
+  //   }
+  // }
+
+  // Future<void> push(BuildContext context, Route<dynamic> route) async {
+  //   if (this != null) {
+  //     await this?.navigator?.push(route);
+  //   } else {
+  //     await Navigator.of(context).push(route);
+  //   }
+  // }
+}
+
+extension OptionsExtension on ISpectOptions {
+  Future<void> push(BuildContext context, Route<dynamic> route) async {
+    if (observer != null) {
+      await observer?.navigator?.push(route);
+    } else if (this.context != null) {
+      await Navigator.of(this.context!).push(route);
     } else {
-      Navigator.of(context).pop();
+      await Navigator.of(context).push(route);
     }
   }
 
-  Future<void> push(BuildContext context, Route<dynamic> route) async {
-    if (this != null) {
-      await this?.navigator?.push(route);
+  void pop(BuildContext context) {
+    if (observer != null) {
+      observer?.navigator?.pop();
+    } else if (this.context != null) {
+      Navigator.of(this.context!).pop();
     } else {
-      await Navigator.of(context).push(route);
+      Navigator.of(context).pop();
     }
   }
 }

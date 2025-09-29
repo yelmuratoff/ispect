@@ -53,6 +53,7 @@ final class ISpectOptions {
   const ISpectOptions({
     this.locale = const Locale('en'),
     this.observer,
+    this.context,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
@@ -72,6 +73,8 @@ final class ISpectOptions {
 
   /// A navigator observer to track navigation events within the app.
   final NavigatorObserver? observer;
+
+  final BuildContext? context;
 
   /// Controls visibility of the log viewer page.
   ///
@@ -157,6 +160,7 @@ final class ISpectOptions {
   ISpectOptions copyWith({
     Locale? locale,
     NavigatorObserver? observer,
+    BuildContext? context,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,
@@ -171,6 +175,7 @@ final class ISpectOptions {
     return ISpectOptions(
       locale: locale ?? this.locale,
       observer: observer ?? this.observer,
+      context: context ?? this.context,
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
@@ -192,6 +197,7 @@ final class ISpectOptions {
     return other is ISpectOptions &&
         other.locale == locale &&
         other.observer == observer &&
+        other.context == context &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
         other.isInspectorEnabled == isInspectorEnabled &&
@@ -208,6 +214,7 @@ final class ISpectOptions {
   int get hashCode {
     return locale.hashCode ^
         observer.hashCode ^
+        context.hashCode ^
         isLogPageEnabled.hashCode ^
         isPerformanceEnabled.hashCode ^
         isInspectorEnabled.hashCode ^
@@ -225,6 +232,7 @@ final class ISpectOptions {
     return '''ISpectOptions(
       locale: $locale,
       observer: $observer,
+      context: $context,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
       isInspectorEnabled: $isInspectorEnabled,
