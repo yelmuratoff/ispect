@@ -5,6 +5,20 @@ import 'package:ispect/ispect.dart';
 
 import 'autoroute_example.gr.dart';
 
+class SecondNavObserver extends AutoRouterObserver {
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+    debugPrint('SecondNavObserver: Pushed ${route.settings.name}');
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    super.didPop(route, previousRoute);
+    debugPrint('SecondNavObserver: Popped ${route.settings.name}');
+  }
+}
+
 void main() {
   final logger = ISpectifyFlutter.init();
   ISpect.run(
@@ -18,13 +32,14 @@ class NestedNavigationApp extends StatelessWidget {
 
   final nestedRouter = NestedRouter();
   final observer = ISpectNavigatorObserver();
+  final secondObserver = SecondNavObserver();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       localizationsDelegates: ISpectLocalizations.delegates(),
       routerConfig: nestedRouter.config(
-        navigatorObservers: () => [observer],
+        navigatorObservers: () => [secondObserver, observer],
       ),
       builder: (context, child) => ISpectBuilder(
           options: ISpectOptions(observer: observer), child: child!),
