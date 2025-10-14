@@ -9,7 +9,7 @@ import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {
   const JsonScreen({
@@ -38,7 +38,9 @@ class JsonScreen extends StatefulWidget {
 class _JsonScreenState extends State<JsonScreen> {
   final _store = JsonExplorerStore();
   final _searchController = TextEditingController();
-  final _itemScrollController = ItemScrollController();
+
+  final _scrollController = ScrollController();
+  final _listController = ListController();
 
   late JsonExplorerTheme _jsonTheme;
 
@@ -62,7 +64,9 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     _searchDebounceTimer?.cancel();
+    _listController.dispose();
     _store.dispose();
     super.dispose();
   }
@@ -172,7 +176,8 @@ class _JsonScreenState extends State<JsonScreen> {
                 child: JsonExplorer(
                   store: _store,
                   nodes: _store.displayNodes,
-                  itemScrollController: _itemScrollController,
+                  listController: _listController,
+                  scrollController: _scrollController,
                   theme: _jsonTheme,
                 ),
               ),
@@ -221,11 +226,15 @@ class _JsonScreenState extends State<JsonScreen> {
     }
   }
 
-  Future<void> _scrollToIndex(int index) => _itemScrollController.scrollTo(
-        index: index,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-      );
+  Future<void> _scrollToIndex(int index) async {
+    _listController.animateToItem(
+      index: index,
+      duration: (estimatedDistance) => const Duration(milliseconds: 250),
+      curve: (estimatedDistance) => Curves.easeOutCubic,
+      scrollController: _scrollController,
+      alignment: 0.5,
+    );
+  }
 }
 
 class _SearchNavigationPanel extends StatelessWidget {
