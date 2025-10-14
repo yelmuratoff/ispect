@@ -10,7 +10,6 @@
 
 ### Added
 - New `ISpectShareRequest`, `ISpectShareCallback`, and `ISpectOpenFileCallback` contracts to keep integrations package-free.
-- Optional `ISpectOptions.deviceInfoProvider` and `ISpectOptions.packageInfoProvider` hooks for supplying custom metadata.
 
 ## 4.4.2
 
