@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
+final observer = ISpectNavigatorObserver();
+
 void main() async {
   ISpect.run(() => runApp(const MyApp()), logger: ISpectifyFlutter.init());
 }
@@ -20,6 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [observer],
       localizationsDelegates: ISpectLocalizations.delegates(),
       theme: ThemeData(
         useMaterial3: true,
@@ -43,7 +46,10 @@ class MyApp extends StatelessWidget {
       ),
       home: const MyHomePage(title: 'ISpect File Viewer'),
       builder: (context, child) {
-        child = ISpectBuilder(child: child!);
+        child = ISpectBuilder(
+          options: ISpectOptions(observer: observer),
+          child: child!,
+        );
         return child; // Ensure child is not null
       },
     );

@@ -33,8 +33,6 @@ class NestedNavigationApp extends StatelessWidget {
 
   final nestedRouter = NestedRouter();
 
-//   final secondObserver = SecondNavObserver();
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
@@ -42,12 +40,14 @@ class NestedNavigationApp extends StatelessWidget {
       routerConfig: nestedRouter.config(
         navigatorObservers: () => [nestedRouter.observer, observer],
       ),
-      builder: (context, child) => ISpectBuilder(
-        options: ISpectOptions(
-          observer: observer,
-        ),
-        child: child!,
-      ),
+      builder: (context, child) {
+        return ISpectBuilder(
+          options: ISpectOptions(
+            observer: observer,
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }

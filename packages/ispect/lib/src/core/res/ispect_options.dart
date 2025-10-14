@@ -52,14 +52,12 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 @immutable
 final class ISpectOptions {
   const ISpectOptions({
-    required this.observer,
     this.locale = const Locale('en'),
+    required this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
-    this.isFeedbackEnabled = true,
     this.isColorPickerEnabled = true,
-    this.isThemeSchemaEnabled = true,
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
@@ -95,23 +93,11 @@ final class ISpectOptions {
   /// Defaults to `true`.
   final bool isInspectorEnabled;
 
-  /// Controls visibility of the feedback reporting tool.
-  ///
-  /// When `true`, users can access feedback and reporting features.
-  /// Defaults to `true`.
-  final bool isFeedbackEnabled;
-
   /// Controls visibility of the color picker tool.
   ///
   /// When `true`, the color picker utility will be available.
   /// Defaults to `true`.
   final bool isColorPickerEnabled;
-
-  /// Controls visibility of the theme schema inspector.
-  ///
-  /// When `true`, theme and color scheme inspection tools will be available.
-  /// Defaults to `true`.
-  final bool isThemeSchemaEnabled;
 
   /// A list of custom action items that can be triggered in `ISpect`.
   ///
@@ -183,9 +169,7 @@ final class ISpectOptions {
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,
-    bool? isFeedbackEnabled,
     bool? isColorPickerEnabled,
-    bool? isThemeSchemaEnabled,
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
@@ -200,9 +184,7 @@ final class ISpectOptions {
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
-      isFeedbackEnabled: isFeedbackEnabled ?? this.isFeedbackEnabled,
       isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
-      isThemeSchemaEnabled: isThemeSchemaEnabled ?? this.isThemeSchemaEnabled,
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
@@ -224,9 +206,7 @@ final class ISpectOptions {
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
         other.isInspectorEnabled == isInspectorEnabled &&
-        other.isFeedbackEnabled == isFeedbackEnabled &&
         other.isColorPickerEnabled == isColorPickerEnabled &&
-        other.isThemeSchemaEnabled == isThemeSchemaEnabled &&
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
@@ -243,9 +223,7 @@ final class ISpectOptions {
         isLogPageEnabled.hashCode ^
         isPerformanceEnabled.hashCode ^
         isInspectorEnabled.hashCode ^
-        isFeedbackEnabled.hashCode ^
         isColorPickerEnabled.hashCode ^
-        isThemeSchemaEnabled.hashCode ^
         actionItems.hashCode ^
         panelItems.hashCode ^
         panelButtons.hashCode ^
@@ -263,9 +241,7 @@ final class ISpectOptions {
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
       isInspectorEnabled: $isInspectorEnabled,
-      isFeedbackEnabled: $isFeedbackEnabled,
       isColorPickerEnabled: $isColorPickerEnabled,
-      isThemeSchemaEnabled: $isThemeSchemaEnabled,
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
