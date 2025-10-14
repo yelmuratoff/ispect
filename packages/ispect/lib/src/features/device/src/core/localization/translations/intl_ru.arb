@@ -1,7 +1,0 @@
-{
-   "@@locale": "ru",
-   "cacheSize": "Размер кэша: {size}",
-   "clearCache": "Очистить кэш",
-   "appData": "Данные приложения",
-   "totalFilesCount": "Всего файлов: {count}"
-}

@@ -136,13 +136,11 @@ class _LogsScreenState extends State<LogsScreen> {
         _buildExpandLogsAction(context),
         _buildClearHistoryAction(context),
         if (widget.options.onShare != null) _buildShareLogsAction(context),
-        _buildAppInfoAction(context),
         if (widget.options.observer != null &&
             widget.options.observer is ISpectNavigatorObserver)
           _buildNavigationFlowAction(),
         if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
         _buildLogViewerAction(),
-        _buildAppDataAction(context),
         ...widget.options.actionItems,
       ];
 
@@ -200,13 +198,6 @@ class _LogsScreenState extends State<LogsScreen> {
         icon: Icons.ios_share_outlined,
       );
 
-  ISpectActionItem _buildAppInfoAction(BuildContext context) =>
-      ISpectActionItem(
-        title: context.ispectL10n.appInfo,
-        icon: Icons.info_rounded,
-        onTap: (context) => const AppInfoScreen().push(context),
-      );
-
   ISpectActionItem _buildNavigationFlowAction() => ISpectActionItem(
         title: context.ispectL10n.navigationFlow,
         icon: Icons.route_rounded,
@@ -227,13 +218,6 @@ class _LogsScreenState extends State<LogsScreen> {
         title: context.ispectL10n.logViewer,
         icon: Icons.developer_mode_rounded,
         onTap: (context) => _showFileOptionsDialog(),
-      );
-
-  ISpectActionItem _buildAppDataAction(BuildContext context) =>
-      ISpectActionItem(
-        title: context.ispectL10n.appData,
-        icon: Icons.data_usage_rounded,
-        onTap: (context) => const AppDataScreen().push(context),
       );
 
   Future<void> _showFileOptionsDialog() async {

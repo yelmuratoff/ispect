@@ -120,10 +120,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ..options = (widget.options ?? model.options).copyWith(
         onShare: widget.onShare ?? widget.options?.onShare,
         onOpenFile: widget.onOpenFile ?? widget.options?.onOpenFile,
-        deviceInfoProvider:
-            widget.deviceInfoProvider ?? widget.options?.deviceInfoProvider,
-        packageInfoProvider:
-            widget.packageInfoProvider ?? widget.options?.packageInfoProvider,
       )
       ..theme = widget.theme ?? model.theme;
   }

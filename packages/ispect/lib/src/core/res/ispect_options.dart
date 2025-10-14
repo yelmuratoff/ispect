@@ -67,8 +67,6 @@ final class ISpectOptions {
     this.itemsBuilder,
     this.onShare,
     this.onOpenFile,
-    this.deviceInfoProvider,
-    this.packageInfoProvider,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -162,16 +160,6 @@ final class ISpectOptions {
   /// when no callback is supplied.
   final ISpectOpenFileCallback? onOpenFile;
 
-  /// Provides device information for the App Info screen.
-  ///
-  /// When omitted, ISpect supplies a lightweight fallback using native APIs.
-  final ISpectInfoProvider? deviceInfoProvider;
-
-  /// Provides package/application information for the App Info screen.
-  ///
-  /// When omitted, a minimal build summary is shown instead.
-  final ISpectInfoProvider? packageInfoProvider;
-
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -220,8 +208,6 @@ final class ISpectOptions {
       itemsBuilder: itemsBuilder ?? this.itemsBuilder,
       onShare: onShare ?? this.onShare,
       onOpenFile: onOpenFile ?? this.onOpenFile,
-      deviceInfoProvider: deviceInfoProvider ?? this.deviceInfoProvider,
-      packageInfoProvider: packageInfoProvider ?? this.packageInfoProvider,
     );
   }
 
@@ -245,9 +231,7 @@ final class ISpectOptions {
         listEquals(other.panelButtons, panelButtons) &&
         other.itemsBuilder == itemsBuilder &&
         other.onShare == onShare &&
-        other.onOpenFile == onOpenFile &&
-        other.deviceInfoProvider == deviceInfoProvider &&
-        other.packageInfoProvider == packageInfoProvider;
+        other.onOpenFile == onOpenFile;
   }
 
   @override
@@ -266,9 +250,7 @@ final class ISpectOptions {
         panelButtons.hashCode ^
         itemsBuilder.hashCode ^
         onShare.hashCode ^
-        onOpenFile.hashCode ^
-        deviceInfoProvider.hashCode ^
-        packageInfoProvider.hashCode;
+        onOpenFile.hashCode;
   }
 
   @override
@@ -288,9 +270,7 @@ final class ISpectOptions {
       panelButtons: $panelButtons,
       itemsBuilder: $itemsBuilder,
       onShare: $onShare,
-      onOpenFile: $onOpenFile,
-      deviceInfoProvider: $deviceInfoProvider,
-      packageInfoProvider: $packageInfoProvider,
+      onOpenFile: $onOpenFile
     )''';
   }
 }

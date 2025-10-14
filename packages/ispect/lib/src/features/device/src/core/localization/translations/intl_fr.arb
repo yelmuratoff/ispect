@@ -1,7 +1,0 @@
-{
-   "@@locale": "fr",
-   "cacheSize": "Taille du cache : {size}",
-   "clearCache": "Vider le cache",
-   "appData": "Données de l'application",
-   "totalFilesCount": "Nombre total de fichiers : {count}"
-}
