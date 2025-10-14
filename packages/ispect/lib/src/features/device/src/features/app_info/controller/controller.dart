@@ -1,57 +1,72 @@
 part of '../app_info_screen.dart';
 
 class AppInfoController extends ChangeNotifier {
-  static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
+  Map<String, dynamic>? _packageInfo;
+  Map<String, dynamic>? _deviceInfo;
 
-  PackageInfo? _packageInfo;
-  BaseDeviceInfo? _baseDeviceInfo;
-
-  PackageInfo? get packageInfo => _packageInfo;
-  BaseDeviceInfo? get deviceInfo => _baseDeviceInfo;
+  Map<String, dynamic>? get packageInfo => _packageInfo;
+  Map<String, dynamic>? get deviceInfo => _deviceInfo;
 
   Future<void> loadAll({
     required BuildContext context,
+    required ISpectOptions options,
   }) async {
     try {
-      await _loadPackageInfo(
-        context: context,
-      );
-      _baseDeviceInfo = await _deviceInfo.deviceInfo;
-    } on Exception catch (e, st) {
-      ISpect.logger.handle(exception: e, stackTrace: st);
+      _packageInfo = await _resolvePackageInfo(options);
+      _deviceInfo = await _resolveDeviceInfo(options);
+    } on Exception catch (error, stackTrace) {
+      ISpect.logger.handle(exception: error, stackTrace: stackTrace);
       if (context.mounted) {
         await ISpectToaster.showErrorToast(
           context,
-          title: e.toString(),
+          title: error.toString(),
         );
       }
     }
+
     notifyListeners();
   }
 
-  Future<void> _loadPackageInfo({
-    required BuildContext context,
-  }) async {
-    try {
-      _packageInfo = await PackageInfo.fromPlatform();
-      notifyListeners();
-    } on Exception catch (e, st) {
-      ISpect.logger.handle(exception: e, stackTrace: st);
-      if (context.mounted) {
-        await ISpectToaster.showErrorToast(
-          context,
-          title: e.toString(),
-        );
-      }
+  Future<Map<String, dynamic>> _resolvePackageInfo(
+    ISpectOptions options,
+  ) async {
+    final provider = options.packageInfoProvider;
+    if (provider != null) {
+      final data = await provider();
+      if (data.isNotEmpty) return data;
     }
+
+    const buildMode = kReleaseMode
+        ? 'release'
+        : kProfileMode
+            ? 'profile'
+            : 'debug';
+
+    return <String, dynamic>{
+      'message':
+          'Configure ISpectOptions.packageInfoProvider for detailed metadata.',
+      'buildMode': buildMode,
+      'platform': defaultTargetPlatform.name,
+    };
+  }
+
+  Future<Map<String, dynamic>> _resolveDeviceInfo(
+    ISpectOptions options,
+  ) async {
+    final provider = options.deviceInfoProvider;
+    if (provider != null) {
+      final data = await provider();
+      if (data.isNotEmpty) return data;
+    }
+
+    return collectDeviceInfo();
   }
 
   Future<String> allData() async {
     final data = <String, dynamic>{
-      'package_info': _packageInfo?.data,
-      'device_info': _baseDeviceInfo?.data,
+      'package_info': _packageInfo,
+      'device_info': _deviceInfo,
     };
-    final prettyData = JsonTruncatorService.pretty(data);
-    return prettyData;
+    return JsonTruncatorService.pretty(data);
   }
 }

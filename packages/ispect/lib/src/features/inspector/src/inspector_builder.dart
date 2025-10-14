@@ -58,6 +58,8 @@ class ISpectBuilder extends StatefulWidget {
     this.controller,
     this.onShare,
     this.onOpenFile,
+    this.deviceInfoProvider,
+    this.packageInfoProvider,
     super.key,
   });
 
@@ -95,6 +97,12 @@ class ISpectBuilder extends StatefulWidget {
   /// Custom handler invoked when ISpect needs to open a file path.
   final ISpectOpenFileCallback? onOpenFile;
 
+  /// Custom provider for device info displayed in the App Info screen.
+  final ISpectInfoProvider? deviceInfoProvider;
+
+  /// Custom provider for package info displayed in the App Info screen.
+  final ISpectInfoProvider? packageInfoProvider;
+
   @override
   State<ISpectBuilder> createState() => _ISpectBuilderState();
 }
@@ -112,6 +120,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ..options = (widget.options ?? model.options).copyWith(
         onShare: widget.onShare ?? widget.options?.onShare,
         onOpenFile: widget.onOpenFile ?? widget.options?.onOpenFile,
+        deviceInfoProvider:
+            widget.deviceInfoProvider ?? widget.options?.deviceInfoProvider,
+        packageInfoProvider:
+            widget.packageInfoProvider ?? widget.options?.packageInfoProvider,
       )
       ..theme = widget.theme ?? model.theme;
   }

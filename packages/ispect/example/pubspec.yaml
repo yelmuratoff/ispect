@@ -49,7 +49,6 @@ dependencies:
   ispectify_ws: ^4.4.3-dev01
   ispectify_db: ^4.4.3-dev01
 
-  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,12 @@
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/device/src/utils/device_info_collector.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 part 'controller/controller.dart';
 part 'widgets/device_info_body.dart';
@@ -32,18 +32,28 @@ class AppInfoScreen extends StatefulWidget {
 class _AppInfoScreenState extends State<AppInfoScreen> {
   final _controller = AppInfoController();
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.loadAll(
-      context: context,
-    );
-  }
+  bool _didRequestLoad = false;
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didRequestLoad) return;
+    _didRequestLoad = true;
+
+    final options = ISpect.read(context).options;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _controller.loadAll(
+        context: context,
+        options: options,
+      );
+    });
   }
 
   @override
@@ -79,11 +89,11 @@ class _AppInfoScreenState extends State<AppInfoScreen> {
           children: [
             const Gap(10),
             DeviceInfoBody(
-              data: _controller.deviceInfo?.data,
+              data: _controller.deviceInfo,
             ),
             const Gap(10),
             PackageInfoBody(
-              data: _controller.packageInfo?.data,
+              data: _controller.packageInfo,
             ),
           ],
         ),

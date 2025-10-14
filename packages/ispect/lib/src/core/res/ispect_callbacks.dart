@@ -1,6 +1,10 @@
+import 'dart:async';
+
 typedef ISpectShareCallback = Future<void> Function(ISpectShareRequest request);
 
 typedef ISpectOpenFileCallback = Future<void> Function(String path);
+
+typedef ISpectInfoProvider = FutureOr<Map<String, dynamic>> Function();
 
 /// Describes content to pass into a custom share handler.
 final class ISpectShareRequest {
