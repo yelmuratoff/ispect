@@ -191,15 +191,16 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
           return ISpectScopeController(
             model: model,
-            child: widget.options?.observer != null
-                ? currentChild
-                : Navigator(
-                    observers: [
-                      ISpectNavigatorObserver(),
-                    ],
-                    pages: [MaterialPage(child: currentChild)],
-                    onDidRemovePage: (page) {},
-                  ),
+            child: currentChild,
+            // child: widget.options?.observer != null
+            //     ? currentChild
+            //     : Navigator(
+            //         observers: [
+            //           ISpectNavigatorObserver(),
+            //         ],
+            //         pages: [MaterialPage(child: currentChild)],
+            //         onDidRemovePage: (page) {},
+            //       ),
           );
         },
       );

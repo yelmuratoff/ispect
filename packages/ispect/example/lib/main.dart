@@ -152,6 +152,7 @@ class _AppState extends State<App> {
           controller: _controller,
           options: ISpectOptions(
             locale: locale,
+            observer: _observer,
             onLoadLogContent: (context) async {
               // Here you can load log content.
               // For example, from a file using file_picker.

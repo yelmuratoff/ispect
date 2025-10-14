@@ -70,6 +70,7 @@ class _AppState extends State<App> {
       builder: (context, child) {
         child = ISpectBuilder(
           options: ISpectOptions(
+            observer: observer,
             locale: locale,
             panelButtons: [
               DraggablePanelButtonItem(
