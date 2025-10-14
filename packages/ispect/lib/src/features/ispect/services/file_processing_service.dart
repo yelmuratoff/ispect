@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 
 import 'package:ispect/src/features/ispect/domain/models/file_format.dart';
@@ -46,14 +47,30 @@ class FileProcessingService {
               error: 'Multiple files selected, please select one at a time',
               format: FileFormat.text,
             );
-    } catch (e) {
+    } on PlatformException catch (e, st) {
+      ISpect.logger.handle(exception: e, stackTrace: st);
+      final errorMessage = _mapPlatformException(e);
+      return FileProcessingResult.failure(
+        fileName: 'Unknown',
+        error: errorMessage,
+        format: FileFormat.text,
+      );
+    } catch (e, st) {
       ISpect.logger.error('Error in file picker: $e');
+      ISpect.logger.handle(exception: e, stackTrace: st);
       return FileProcessingResult.failure(
         fileName: 'Unknown',
         error: 'Error opening file picker: $e',
         format: FileFormat.text,
       );
     }
+  }
+
+  String _mapPlatformException(PlatformException exception) {
+    if (exception.code == 'ENTITLEMENT_NOT_FOUND') {
+      return 'Missing macOS file read entitlement. Update the host app entitlements with either the Read-Only or Read-Write capability to allow file picking.';
+    }
+    return exception.message ?? 'Unable to open the file picker.';
   }
 
   /// Process a single picked file
