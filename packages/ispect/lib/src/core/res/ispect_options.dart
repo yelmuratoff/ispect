@@ -7,6 +7,7 @@ import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// feature toggles, action items, and panel configurations.
@@ -64,6 +65,8 @@ final class ISpectOptions {
     this.panelItems = const [],
     this.panelButtons = const [],
     this.itemsBuilder,
+    this.onShare,
+    this.onOpenFile,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -144,6 +147,19 @@ final class ISpectOptions {
   /// within the ISpect interface, enabling advanced customization scenarios.
   final ISpectifyDataBuilder? itemsBuilder;
 
+  /// Custom handler for share actions triggered inside ISpect.
+  ///
+  /// When provided, built-in share buttons delegate to this callback instead of
+  /// relying on external packages. If omitted, share-related UI is hidden.
+  final ISpectShareCallback? onShare;
+
+  /// Custom handler for file opening actions triggered inside ISpect.
+  ///
+  /// When provided, locations that previously relied on external packages will
+  /// call this callback with a file system path. UI that requires it is hidden
+  /// when no callback is supplied.
+  final ISpectOpenFileCallback? onOpenFile;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -171,6 +187,8 @@ final class ISpectOptions {
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
     ISpectifyDataBuilder? itemsBuilder,
+    ISpectShareCallback? onShare,
+    ISpectOpenFileCallback? onOpenFile,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
@@ -186,6 +204,8 @@ final class ISpectOptions {
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
       itemsBuilder: itemsBuilder ?? this.itemsBuilder,
+      onShare: onShare ?? this.onShare,
+      onOpenFile: onOpenFile ?? this.onOpenFile,
     );
   }
 
@@ -207,7 +227,9 @@ final class ISpectOptions {
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
-        other.itemsBuilder == itemsBuilder;
+        other.itemsBuilder == itemsBuilder &&
+        other.onShare == onShare &&
+        other.onOpenFile == onOpenFile;
   }
 
   @override
@@ -224,7 +246,9 @@ final class ISpectOptions {
         actionItems.hashCode ^
         panelItems.hashCode ^
         panelButtons.hashCode ^
-        itemsBuilder.hashCode;
+        itemsBuilder.hashCode ^
+        onShare.hashCode ^
+        onOpenFile.hashCode;
   }
 
   @override
@@ -243,6 +267,8 @@ final class ISpectOptions {
       panelItems: $panelItems,
       panelButtons: $panelButtons,
       itemsBuilder: $itemsBuilder,
-      )''';
+      onShare: $onShare,
+      onOpenFile: $onOpenFile,
+    )''';
   }
 }

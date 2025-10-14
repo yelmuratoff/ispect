@@ -105,15 +105,16 @@ class _JsonScreenState extends State<JsonScreen> {
                     icon: const Icon(Icons.unfold_less_rounded),
                     onPressed: _store.collapseAll,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.share_rounded),
-                    onPressed: () async {
-                      await ISpectShareLogBottomSheet(
-                        data: widget.data,
-                        truncatedData: widget.truncatedData ?? widget.data,
-                      ).show(context);
-                    },
-                  ),
+                  if (context.iSpect.options.onShare != null)
+                    IconButton(
+                      icon: const Icon(Icons.share_rounded),
+                      onPressed: () async {
+                        await ISpectShareLogBottomSheet(
+                          data: widget.data,
+                          truncatedData: widget.truncatedData ?? widget.data,
+                        ).show(context);
+                      },
+                    ),
                 ],
               ),
             ),

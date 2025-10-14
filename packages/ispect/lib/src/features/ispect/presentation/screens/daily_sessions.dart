@@ -8,7 +8,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/list_screen.dart';
-import 'package:open_filex/open_filex.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});
@@ -47,7 +46,12 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
       return;
     }
 
-    await OpenFilex.open(history.sessionDirectory);
+    final openFile = context.iSpect.options.onOpenFile;
+    if (openFile == null) {
+      return;
+    }
+
+    await openFile(history.sessionDirectory);
 
     // copyClipboard(
     //   context,
@@ -109,11 +113,12 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           ),
           actionsPadding: const EdgeInsets.only(right: 12),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.open_in_new_rounded),
-              onPressed: _openPath,
-              tooltip: context.ispectL10n.openPath,
-            ),
+            if (context.iSpect.options.onOpenFile != null)
+              IconButton(
+                icon: const Icon(Icons.open_in_new_rounded),
+                onPressed: _openPath,
+                tooltip: context.ispectL10n.openPath,
+              ),
             IconButton(
               icon: const Icon(Icons.copy_all_rounded),
               onPressed: _copyPathToClipboard,
@@ -190,7 +195,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
               name: 'ISpect Daily Session Logs',
               arguments: {'date': session.toIso8601String()},
             ),
-            builder: (_) => LogsV2Screen(sessionDate: session),
+            builder: (_) => LogsV2Screen(
+              sessionDate: session,
+              onShare: context.iSpect.options.onShare,
+            ),
           ),
         ),
       );
@@ -287,14 +295,15 @@ class _SessionListTileState extends State<_SessionListTile> {
           mainAxisSize: MainAxisSize.min,
           spacing: 8,
           children: [
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.open_in_new_rounded),
-              onPressed: () {
-                _navigateToSession(widget.session);
-              },
-            ),
+            if (context.iSpect.options.onOpenFile != null)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.open_in_new_rounded),
+                onPressed: () {
+                  _navigateToSession(widget.session);
+                },
+              ),
             const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 14,
@@ -306,9 +315,10 @@ class _SessionListTileState extends State<_SessionListTile> {
 
   Future<void> _navigateToSession(DateTime session) async {
     final fileLogHistory = ISpect.logger.fileLogHistory;
+    final openFile = context.iSpect.options.onOpenFile;
     final path = await fileLogHistory?.getLogPathByDate(session);
-    if (path != null) {
-      unawaited(OpenFilex.open(path));
+    if (path != null && openFile != null) {
+      unawaited(openFile(path));
     }
   }
 }

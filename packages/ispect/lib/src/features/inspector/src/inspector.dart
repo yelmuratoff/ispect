@@ -12,6 +12,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/builder/multi_value_listenable.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
@@ -22,7 +23,6 @@ import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/
 import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_screen.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// `Inspector` can wrap any [child], and will display its control panel and
 /// information overlay on top of that `child`.
@@ -625,13 +625,25 @@ class InspectorState extends State<Inspector> {
           );
           return;
         }
-        final screenshotFilePath =
+
+        final shareCallback = context.iSpect.options.onShare;
+        if (shareCallback == null) {
+          unawaited(
+            ISpectToaster.showErrorToast(
+              context,
+              title: 'Share handler is not configured.',
+            ),
+          );
+          return;
+        }
+
+        final screenshotFile =
             await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
 
-        await SharePlus.instance.share(
-          ShareParams(
+        await shareCallback(
+          ISpectShareRequest(
             text: feedback.text,
-            files: [screenshotFilePath],
+            filePaths: [screenshotFile.path],
           ),
         );
       });

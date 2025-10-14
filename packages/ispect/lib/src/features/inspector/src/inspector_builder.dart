@@ -4,6 +4,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/builder/feedback_builder.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
@@ -55,6 +56,8 @@ class ISpectBuilder extends StatefulWidget {
     this.feedBackDarkTheme,
     this.feedbackBuilder,
     this.controller,
+    this.onShare,
+    this.onOpenFile,
     super.key,
   });
 
@@ -86,6 +89,12 @@ class ISpectBuilder extends StatefulWidget {
   /// Controller for the draggable debug panel.
   final DraggablePanelController? controller;
 
+  /// Custom handler invoked when ISpect needs to share content.
+  final ISpectShareCallback? onShare;
+
+  /// Custom handler invoked when ISpect needs to open a file path.
+  final ISpectOpenFileCallback? onOpenFile;
+
   @override
   State<ISpectBuilder> createState() => _ISpectBuilderState();
 }
@@ -100,7 +109,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     model
       ..isISpectEnabled = widget.isISpectEnabled
-      ..options = widget.options ?? model.options
+      ..options = (widget.options ?? model.options).copyWith(
+        onShare: widget.onShare ?? widget.options?.onShare,
+        onOpenFile: widget.onOpenFile ?? widget.options?.onOpenFile,
+      )
       ..theme = widget.theme ?? model.theme;
   }
 

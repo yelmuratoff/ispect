@@ -45,12 +45,15 @@ class _LogsScreenState extends State<LogsScreen> {
   final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
-  late final _logsViewController = ISpectViewController();
+  late final ISpectViewController _logsViewController;
   final _fileService = FileProcessingService();
 
   @override
   void initState() {
     super.initState();
+    _logsViewController = ISpectViewController(
+      onShare: widget.options.onShare,
+    );
     _logsViewController.toggleExpandedLogs();
   }
 
@@ -132,7 +135,7 @@ class _LogsScreenState extends State<LogsScreen> {
         _buildCopyAllLogsAction(context),
         _buildExpandLogsAction(context),
         _buildClearHistoryAction(context),
-        _buildShareLogsAction(context),
+        if (widget.options.onShare != null) _buildShareLogsAction(context),
         _buildAppInfoAction(context),
         if (widget.options.observer != null &&
             widget.options.observer is ISpectNavigatorObserver)

@@ -1,5 +1,17 @@
 # Changelog
 
+# Changelog
+
+## 4.4.3-dev01
+
+### Changes
+- Removed hard dependency on `share_plus` by introducing configurable share callbacks; all share flows now rely on `ISpectOptions.onShare`.
+- Removed `open_filex` usage in favor of an optional `ISpectOptions.onOpenFile` callback.
+- Conditionally render share/open actions across UI so buttons disappear when callbacks are not supplied.
+
+### Added
+- New `ISpectShareRequest`, `ISpectShareCallback`, and `ISpectOpenFileCallback` contracts to keep integrations package-free.
+
 ## 4.4.2
 
 ### Added

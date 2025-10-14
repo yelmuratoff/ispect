@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:web/web.dart';
 
 /// Web platform implementation for log file operations.
@@ -120,6 +121,7 @@ class WebLogsFile extends BaseLogsFile {
     Object file, {
     String? fileName,
     String fileType = 'json',
+    ISpectShareCallback? onShare,
   }) async {
     if (file is! Blob) {
       throw ArgumentError(

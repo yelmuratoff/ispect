@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 Object? _toEncodable(dynamic object) {
   if (object is Uri) {
@@ -145,6 +146,7 @@ class LogsJsonService {
   /// - Edge case notes: Validates non-empty logs, combines export and download operations
   Future<void> shareLogsAsJsonFile(
     List<ISpectifyData> logs, {
+    required ISpectShareCallback onShare,
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
   }) async {
@@ -158,6 +160,7 @@ class LogsJsonService {
     await LogsFileFactory.downloadFile(
       jsonContent,
       fileName: fileName,
+      onShare: onShare,
     );
   }
 
@@ -171,6 +174,7 @@ class LogsJsonService {
     List<ISpectifyData> logs,
     List<ISpectifyData> filteredLogs,
     ISpectifyFilter filter, {
+    required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
   }) async {
@@ -187,6 +191,7 @@ class LogsJsonService {
       jsonContent,
       fileName: fileName,
       fileType: fileType,
+      onShare: onShare,
     );
   }
 

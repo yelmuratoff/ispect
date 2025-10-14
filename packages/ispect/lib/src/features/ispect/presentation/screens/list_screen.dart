@@ -8,6 +8,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 
@@ -24,12 +25,14 @@ class LogsV2Screen extends StatefulWidget {
     this.appBarTitle,
     this.sessionPath,
     this.sessionDate,
+    this.onShare,
   });
 
   final String? appBarTitle;
   final List<ISpectifyData>? logs;
   final String? sessionPath;
   final DateTime? sessionDate;
+  final ISpectShareCallback? onShare;
 
   /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
@@ -49,12 +52,13 @@ class _LogsScreenState extends State<LogsV2Screen> {
   final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
-  late final _logsViewController = ISpectViewController();
+  late final ISpectViewController _logsViewController;
   final List<ISpectifyData> _logs = [];
 
   @override
   void initState() {
     super.initState();
+    _logsViewController = ISpectViewController(onShare: widget.onShare);
     _logsViewController.toggleExpandedLogs();
     getLogs();
   }

@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/device/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/features/device/src/services/cache/cache_manager.dart';
 import 'package:ispect/src/features/device/src/services/file/file_service.dart';
-import 'package:open_filex/open_filex.dart';
 
 part 'view/view.dart';
 part 'controller/controller.dart';

@@ -149,15 +149,17 @@ class _FileListItem extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  OpenFilex.open(file.path);
-                },
-                icon: const Icon(Icons.open_in_new_rounded),
-              ),
-              const Gap(8),
+              if (context.iSpect.options.onOpenFile != null) ...[
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    context.iSpect.options.onOpenFile?.call(file.path);
+                  },
+                  icon: const Icon(Icons.open_in_new_rounded),
+                ),
+                const Gap(8),
+              ],
               IconButton(
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,

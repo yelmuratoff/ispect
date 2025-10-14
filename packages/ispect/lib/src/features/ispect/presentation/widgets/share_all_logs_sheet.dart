@@ -105,63 +105,70 @@ class _InfoDescription extends StatelessWidget {
   final ISpectViewController controller;
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          _Header(title: context.ispectL10n.share),
-          const Gap(16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    controller.shareLogsAsFile(ISpect.logger.history);
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.share_rounded,
+  Widget build(BuildContext context) {
+    final shareCallback = context.iSpect.options.onShare;
+    if (shareCallback == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        _Header(title: context.ispectL10n.share),
+        const Gap(16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  controller.shareLogsAsFile(ISpect.logger.history);
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.share_rounded,
+                    ),
+                    const Gap(8),
+                    Flexible(
+                      child: Text(
+                        '${context.ispectL10n.shareLogsFile} (JSON)',
                       ),
-                      const Gap(8),
-                      Flexible(
-                        child: Text(
-                          '${context.ispectL10n.shareLogsFile} (JSON)',
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    controller.shareLogsAsFile(
-                      ISpect.logger.history,
-                      fileType: 'txt',
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.share_rounded,
+            ),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  controller.shareLogsAsFile(
+                    ISpect.logger.history,
+                    fileType: 'txt',
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.share_rounded,
+                    ),
+                    const Gap(8),
+                    Flexible(
+                      child: Text(
+                        '${context.ispectL10n.shareLogsFile} (txt)',
                       ),
-                      const Gap(8),
-                      Flexible(
-                        child: Text(
-                          '${context.ispectL10n.shareLogsFile} (txt)',
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      );
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class _Header extends StatelessWidget {

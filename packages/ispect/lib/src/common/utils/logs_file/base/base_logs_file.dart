@@ -1,3 +1,5 @@
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
+
 /// Abstract base class for cross-platform log file operations.
 ///
 /// Provides a unified interface for creating and managing log files
@@ -45,6 +47,7 @@ abstract class BaseLogsFile {
     Object file, {
     String? fileName,
     String fileType = 'json',
+    ISpectShareCallback? onShare,
   });
 
   /// Creates and immediately downloads/shares a log file.
@@ -58,9 +61,15 @@ abstract class BaseLogsFile {
     String logs, {
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
+    ISpectShareCallback? onShare,
   }) async {
     final file = await createFile(logs, fileName: fileName, fileType: fileType);
-    await downloadFile(file, fileName: fileName, fileType: fileType);
+    await downloadFile(
+      file,
+      fileName: fileName,
+      fileType: fileType,
+      onShare: onShare,
+    );
   }
 
   /// Checks if the platform supports native file operations.

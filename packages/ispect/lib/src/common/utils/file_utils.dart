@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// A utility class for file-related operations.
 ///
@@ -15,7 +14,7 @@ final class ISpectFileUtils {
   const ISpectFileUtils._();
 
   /// Writes the given `feedbackScreenshot` (as `Uint8List`) to a temporary storage location
-  /// and returns an `XFile` instance pointing to the stored file.
+  /// and returns a `File` instance pointing to the stored file.
   ///
   /// ### Parameters:
   /// - `feedbackScreenshot`: The raw image bytes to be saved as a file.
@@ -29,7 +28,7 @@ final class ISpectFileUtils {
   /// ### Example:
   /// ```dart
   /// Uint8List screenshotBytes = await captureScreenshot();
-  /// XFile screenshotFile = await ISpectFileUtils.writeImageToStorage(screenshotBytes);
+  /// File screenshotFile = await ISpectFileUtils.writeImageToStorage(screenshotBytes);
   /// print("Screenshot saved at: ${screenshotFile.path}");
   /// ```
   ///
@@ -38,7 +37,7 @@ final class ISpectFileUtils {
   /// consider using `getApplicationDocumentsDirectory()`.
   ///
   /// Throws an `IOException` if file creation or writing fails.
-  static Future<XFile> writeImageToStorage(Uint8List feedbackScreenshot) async {
+  static Future<File> writeImageToStorage(Uint8List feedbackScreenshot) async {
     // Retrieve the system's temporary directory.
     final output = await getTemporaryDirectory();
 
@@ -50,7 +49,7 @@ final class ISpectFileUtils {
     final screenshotFile = File(screenshotFilePath);
     await screenshotFile.writeAsBytes(feedbackScreenshot);
 
-    // Return the saved file as an `XFile` instance.
-    return XFile(screenshotFilePath, bytes: feedbackScreenshot);
+    // Return the saved file reference.
+    return screenshotFile;
   }
 }

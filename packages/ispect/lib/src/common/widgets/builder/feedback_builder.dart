@@ -123,35 +123,38 @@ class _StringFeedbackState extends State<StringFeedback> {
               ],
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              TextButton(
-                key: const Key('submit_feedback_button'),
-                style: TextButton.styleFrom(
-                  foregroundColor:
-                      FeedbackTheme.of(context).activeFeedbackModeColor,
-                  backgroundColor:
-                      context.ispectTheme.colorScheme.primaryContainer,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.share_rounded),
-                    const Gap(8),
-                    Text(
-                      context.ispectL10n.share,
+          if (context.iSpect.options.onShare != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  key: const Key('submit_feedback_button'),
+                  style: TextButton.styleFrom(
+                    foregroundColor:
+                        FeedbackTheme.of(context).activeFeedbackModeColor,
+                    backgroundColor:
+                        context.ispectTheme.colorScheme.primaryContainer,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
-                  ],
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.share_rounded),
+                      const Gap(8),
+                      Text(
+                        context.ispectL10n.share,
+                      ),
+                    ],
+                  ),
+                  onPressed: () => widget.onSubmit(_controller.text),
                 ),
-                onPressed: () => widget.onSubmit(_controller.text),
-              ),
-            ],
-          ),
+              ],
+            ),
           const Gap(32),
         ],
       );
