@@ -23,24 +23,6 @@ extension ISpectColorExtension on ThemeData {
   Color get textColor => colorScheme.onSurface;
 }
 
-extension NavigatorObserverExtension on NavigatorObserver? {
-  // void pop(BuildContext context) {
-  //   if (this != null) {
-  //     this?.navigator?.pop();
-  //   } else {
-  //     Navigator.of(context).pop();
-  //   }
-  // }
-
-  // Future<void> push(BuildContext context, Route<dynamic> route) async {
-  //   if (this != null) {
-  //     await this?.navigator?.push(route);
-  //   } else {
-  //     await Navigator.of(context).push(route);
-  //   }
-  // }
-}
-
 extension OptionsExtension on ISpectOptions {
   Future<void> push(BuildContext context, Route<dynamic> route) async {
     if (observer != null) {

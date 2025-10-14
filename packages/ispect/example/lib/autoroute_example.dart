@@ -45,7 +45,6 @@ class NestedNavigationApp extends StatelessWidget {
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
           observer: observer,
-          context: context,
         ),
         child: child!,
       ),
