@@ -46,7 +46,6 @@ dependencies:
   # UI
   draggable_panel: ^1.2.0
   super_sliver_list: ^0.4.1
-  file_picker: ^10.2.0
 
 dev_dependencies:
   flutter_test:

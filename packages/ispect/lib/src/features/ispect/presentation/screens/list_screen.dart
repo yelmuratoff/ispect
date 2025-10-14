@@ -8,7 +8,6 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
-import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 

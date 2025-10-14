@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 /// Controller for managing the state of ISpectify views.
 ///

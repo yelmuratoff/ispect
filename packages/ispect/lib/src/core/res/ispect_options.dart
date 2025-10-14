@@ -67,6 +67,7 @@ final class ISpectOptions {
     this.itemsBuilder,
     this.onShare,
     this.onOpenFile,
+    this.onLoadLogContent,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -160,6 +161,12 @@ final class ISpectOptions {
   /// when no callback is supplied.
   final ISpectOpenFileCallback? onOpenFile;
 
+  /// Custom loader invoked when the log viewer needs raw content from a file.
+  ///
+  /// When omitted, ISpect relies solely on the paste flow. Return `null` to
+  /// cancel the loading operation without showing an error.
+  final ISpectLoadLogContentCallback? onLoadLogContent;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -189,8 +196,7 @@ final class ISpectOptions {
     ISpectifyDataBuilder? itemsBuilder,
     ISpectShareCallback? onShare,
     ISpectOpenFileCallback? onOpenFile,
-    ISpectInfoProvider? deviceInfoProvider,
-    ISpectInfoProvider? packageInfoProvider,
+    ISpectLoadLogContentCallback? onLoadLogContent,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
@@ -208,6 +214,7 @@ final class ISpectOptions {
       itemsBuilder: itemsBuilder ?? this.itemsBuilder,
       onShare: onShare ?? this.onShare,
       onOpenFile: onOpenFile ?? this.onOpenFile,
+      onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
     );
   }
 
@@ -231,7 +238,8 @@ final class ISpectOptions {
         listEquals(other.panelButtons, panelButtons) &&
         other.itemsBuilder == itemsBuilder &&
         other.onShare == onShare &&
-        other.onOpenFile == onOpenFile;
+        other.onOpenFile == onOpenFile &&
+        other.onLoadLogContent == onLoadLogContent;
   }
 
   @override
@@ -250,7 +258,8 @@ final class ISpectOptions {
         panelButtons.hashCode ^
         itemsBuilder.hashCode ^
         onShare.hashCode ^
-        onOpenFile.hashCode;
+        onOpenFile.hashCode ^
+        onLoadLogContent.hashCode;
   }
 
   @override
@@ -270,7 +279,8 @@ final class ISpectOptions {
       panelButtons: $panelButtons,
       itemsBuilder: $itemsBuilder,
       onShare: $onShare,
-      onOpenFile: $onOpenFile
+      onOpenFile: $onOpenFile,
+      onLoadLogContent: $onLoadLogContent
     )''';
   }
 }

@@ -38,6 +38,8 @@ dependencies:
   flutter_bloc: ^9.1.0
   http_interceptor: ^2.0.0
   flutter_riverpod: ^2.5.1
+  share_plus: ^12.0.0
+  open_filex: ^4.7.0
   auto_route:
 
   # Use local paths through dependency_overrides
@@ -48,7 +50,6 @@ dependencies:
   ispect_jira: ^4.4.3-dev01
   ispectify_ws: ^4.4.3-dev01
   ispectify_db: ^4.4.3-dev01
-
 
 dev_dependencies:
   flutter_test:

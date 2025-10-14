@@ -15,6 +15,8 @@ import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:ws/ws.dart';
 
 final Dio dio = Dio(
@@ -150,6 +152,30 @@ class _AppState extends State<App> {
           controller: _controller,
           options: ISpectOptions(
             locale: locale,
+            onLoadLogContent: (context) async {
+              // Here you can load log content.
+              // For example, from a file using file_picker.
+              return 'Loaded log content from callback';
+            },
+            onOpenFile: (path) async {
+              // Here you can handle opening the file.
+              // For example, using open_filex package.
+              await OpenFilex.open(path);
+            },
+            onShare: (ISpectShareRequest request) async {
+              // Here you can handle sharing the content.
+              // For example, using share_plus package.
+              final filesPath = request.filePaths;
+              final files = <XFile>[];
+              for (final path in filesPath) {
+                files.add(XFile(path));
+              }
+              await SharePlus.instance.share(ShareParams(
+                text: request.text,
+                subject: request.subject,
+                files: files,
+              ));
+            },
             panelButtons: [
               DraggablePanelButtonItem(
                 icon: Icons.copy_rounded,

@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 Object? _toEncodable(dynamic object) {
   if (object is Uri) {

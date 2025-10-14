@@ -12,7 +12,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/builder/multi_value_listenable.dart';
-import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';

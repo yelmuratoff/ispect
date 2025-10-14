@@ -9,7 +9,6 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
-import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
@@ -217,19 +216,34 @@ class _LogsScreenState extends State<LogsScreen> {
   ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
         title: context.ispectL10n.logViewer,
         icon: Icons.developer_mode_rounded,
-        onTap: (context) => _showFileOptionsDialog(),
+        onTap: (_) => _handleLogViewerTap(),
       );
 
-  Future<void> _showFileOptionsDialog() async {
+  Future<void> _handleLogViewerTap() async {
     if (!mounted) return;
-    await showDialog<void>(
+    final loader = widget.options.onLoadLogContent;
+    if (loader == null) {
+      _showPasteDialog();
+      return;
+    }
+
+    final choice = await showDialog<_LogSourceChoice>(
       context: context,
-      builder: (context) => _FileOptionsDialog(
-        onPasteContent: _showPasteDialog,
-        onPickFiles: _pickFiles,
-        fileService: _fileService,
-      ),
+      builder: (_) => const _LogSourceDialog(),
     );
+
+    if (!mounted || choice == null) {
+      return;
+    }
+
+    if (choice == _LogSourceChoice.external) {
+      await _loadContentFromCallback();
+      return;
+    }
+
+    if (choice == _LogSourceChoice.paste) {
+      _showPasteDialog();
+    }
   }
 
   void _showPasteDialog() {
@@ -242,36 +256,48 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  Future<void> _pickFiles() async {
-    final result = await _fileService.pickAndProcessFiles();
+  Future<void> _processPastedContent(String content) async {
+    await _handleRawContent(content);
+  }
 
-    if (!mounted) return;
+  Future<void> _loadContentFromCallback() async {
+    final loader = widget.options.onLoadLogContent;
+    if (loader == null) {
+      return;
+    }
+
+    String? content;
+    try {
+      content = await loader(context);
+    } catch (error, stackTrace) {
+      ISpect.logger.handle(exception: error, stackTrace: stackTrace);
+      if (!mounted) {
+        return;
+      }
+      _showContentProcessingError('Failed to load log content');
+      return;
+    }
+
+    if (!mounted || content == null) {
+      return;
+    }
+
+    await _handleRawContent(content);
+  }
+
+  Future<void> _handleRawContent(String content) async {
+    final result = _fileService.processPastedContent(content);
+
+    if (!mounted) {
+      return;
+    }
 
     if (result.success) {
       await result.action(context);
-    } else {
-      _showFileProcessingError(result);
+      return;
     }
-  }
 
-  void _showFileProcessingError(FileProcessingResult result) {
-    final errorMessage = result.error?.toString() ?? '';
-
-    ISpectToaster.showErrorToast(
-      context,
-      title: 'File Processing Error',
-      message: errorMessage,
-    );
-  }
-
-  void _processPastedContent(String content) {
-    final result = _fileService.processPastedContent(content);
-
-    if (result.success) {
-      result.action(context);
-    } else {
-      _showContentProcessingError(result.error);
-    }
+    _showContentProcessingError(result.error);
   }
 
   void _showContentProcessingError(String? error) {
@@ -488,64 +514,33 @@ class _DetailView extends StatelessWidget {
       );
 }
 
-/// Dialog widget for selecting file loading options
-class _FileOptionsDialog extends StatelessWidget {
-  const _FileOptionsDialog({
-    required this.onPasteContent,
-    required this.onPickFiles,
-    required this.fileService,
-  });
 
-  final VoidCallback onPasteContent;
-  final VoidCallback onPickFiles;
-  final FileProcessingService fileService;
+enum _LogSourceChoice { external, paste }
+
+class _LogSourceDialog extends StatelessWidget {
+  const _LogSourceDialog();
 
   @override
   Widget build(BuildContext context) => AlertDialog(
         title: Text(context.ispectL10n.loadFileContent),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${context.ispectL10n.chooseHowToLoadYourFile}:',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const Gap(16),
-              _FileOptionTile(
-                icon: Icons.content_paste,
-                title: context.ispectL10n.pasteContent,
-                subtitle: context.ispectL10n.pasteTxtOrJsonHere,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onPasteContent();
-                },
-              ),
-              const Gap(16),
-              _FileOptionTile(
-                icon: Icons.file_open,
-                title: context.ispectL10n.pickFiles,
-                subtitle: context.ispectL10n.selectTxtOrJsonFromDevice,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onPickFiles();
-                },
-              ),
-              const Gap(8),
-              const Divider(),
-              const Gap(8),
-              _FileOptionHint(
-                text: context.ispectL10n.onlyExtensionsSupported(
-                  fileService.supportedExtensions
-                      .map((e) => '.$e')
-                      .join(' ${context.ispectL10n.and} '),
-                  fileService.maxFileSizeFormatted,
-                ),
-                color: Colors.orange,
-              ),
-            ],
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.file_open),
+              title: Text(context.ispectL10n.loadFileContent),
+              subtitle: Text(context.ispectL10n.selectTxtOrJsonFromDevice),
+              onTap: () => Navigator.of(context).pop(_LogSourceChoice.external),
+            ),
+            const Gap(16),
+            ListTile(
+              leading: const Icon(Icons.content_paste),
+              title: Text(context.ispectL10n.pasteContent),
+              subtitle: Text(context.ispectL10n.pasteTxtOrJsonHere),
+              onTap: () => Navigator.of(context).pop(_LogSourceChoice.paste),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -556,48 +551,6 @@ class _FileOptionsDialog extends StatelessWidget {
       );
 }
 
-/// Reusable tile widget for file options
-class _FileOptionTile extends StatelessWidget {
-  const _FileOptionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => ListTile(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-        ),
-        leading: Icon(icon),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: onTap,
-      );
-}
-
-/// Hint text widget for file options
-class _FileOptionHint extends StatelessWidget {
-  const _FileOptionHint({
-    required this.text,
-    required this.color,
-  });
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(fontSize: 12, color: color),
-      );
-}
 
 /// Dialog widget for pasting file content
 class _PasteContentDialog extends StatefulWidget {
@@ -605,7 +558,7 @@ class _PasteContentDialog extends StatefulWidget {
     required this.onContentProcessed,
   });
 
-  final void Function(String content) onContentProcessed;
+  final Future<void> Function(String content) onContentProcessed;
 
   @override
   State<_PasteContentDialog> createState() => _PasteContentDialogState();
@@ -674,9 +627,9 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
           ),
           ElevatedButton(
             onPressed: _hasContent
-                ? () {
+                ? () async {
                     Navigator.of(context).pop();
-                    widget.onContentProcessed(_controller.text);
+                    await widget.onContentProcessed(_controller.text);
                   }
                 : null,
             child: Text(context.ispectL10n.process),

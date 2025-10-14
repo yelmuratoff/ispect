@@ -4,7 +4,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
 import 'package:ispect/src/common/widgets/builder/feedback_builder.dart';
-import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/features/inspector/inspector.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect/src/features/snapshot/feedback_plus.dart';
@@ -58,8 +57,6 @@ class ISpectBuilder extends StatefulWidget {
     this.controller,
     this.onShare,
     this.onOpenFile,
-    this.deviceInfoProvider,
-    this.packageInfoProvider,
     super.key,
   });
 
@@ -96,12 +93,6 @@ class ISpectBuilder extends StatefulWidget {
 
   /// Custom handler invoked when ISpect needs to open a file path.
   final ISpectOpenFileCallback? onOpenFile;
-
-  /// Custom provider for device info displayed in the App Info screen.
-  final ISpectInfoProvider? deviceInfoProvider;
-
-  /// Custom provider for package info displayed in the App Info screen.
-  final ISpectInfoProvider? packageInfoProvider;
 
   @override
   State<ISpectBuilder> createState() => _ISpectBuilderState();
