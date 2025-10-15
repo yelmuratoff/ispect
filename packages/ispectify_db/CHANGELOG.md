@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.3-dev01
+## 4.4.3-dev02
 
 ### Changes
 - Removed hard dependency on `share_plus` by introducing configurable share callbacks; all share flows now rely on `ISpectOptions.onShare`.
@@ -8,9 +8,11 @@
 - Conditionally render share/open actions across UI so buttons disappear when callbacks are not supplied.
 - Eliminated external `provider`, `device_info_plus`, and `package_info_plus` dependencies; JSON explorer now ships with an internal selector and App Info surfaces rely on optional callbacks or Flutter APIs.
 - Feedback builder and `ispect_jira` package removed to streamline core functionality.
+- Updated descriptions of log tags in the info bottom sheet for clarity and consistency.
 
 ### Added
 - New `ISpectShareRequest`, `ISpectShareCallback`, and `ISpectOpenFileCallback` contracts to keep integrations package-free.
+- Added `bloc-done` event logging to `ispectify_bloc` for comprehensive BLoC lifecycle tracking.
 
 ## 4.4.2
 
