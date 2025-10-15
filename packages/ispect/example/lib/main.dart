@@ -501,6 +501,20 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
+        label: 'Get last log',
+        onPressed: () async {
+          final lastLog = ISpect.logger.history.last;
+          ISpect.logger.info('Last log: ${lastLog.toJson()}');
+        },
+      ),
+      (
+        label: 'Get first log',
+        onPressed: () async {
+          final firstLog = ISpect.logger.history.first;
+          ISpect.logger.info('Last log: ${firstLog.toJson()}');
+        },
+      ),
+      (
         label: 'Send HTTP request (http package)',
         onPressed: () async {
           await client
