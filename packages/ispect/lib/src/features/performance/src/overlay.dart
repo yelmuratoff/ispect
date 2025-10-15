@@ -362,53 +362,56 @@ class _PerformanceChart extends StatelessWidget {
         : Duration(microseconds: total.inMicroseconds ~/ samples.length);
     final fps = samples.isEmpty ? 0 : 1e6 / avg.inMicroseconds;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _OverlayPainter(
-              samples,
-              sampleSize,
-              targetFrameTime,
-              barRangeMax,
-              color,
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          child: Padding(
-            padding: const EdgeInsets.all(2),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'max ${maxDuration.ms}ms\n',
-                    style: TextStyle(
-                      color: maxDuration <= targetFrameTime
-                          ? null
-                          : const Color.fromARGB(255, 255, 151, 144),
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'avg ${avg.ms}ms\n',
-                    style: TextStyle(
-                      color: avg <= targetFrameTime
-                          ? null
-                          : const Color.fromARGB(255, 255, 151, 144),
-                    ),
-                  ),
-                  TextSpan(
-                    text: '$type ${fps.toStringAsFixed(1)} FPS',
-                  ),
-                ],
-                style: textStyle,
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _OverlayPainter(
+                samples,
+                sampleSize,
+                targetFrameTime,
+                barRangeMax,
+                color,
               ),
             ),
           ),
-        ),
-      ],
+          Positioned(
+            bottom: 0,
+            left: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'max ${maxDuration.ms}ms\n',
+                      style: TextStyle(
+                        color: maxDuration <= targetFrameTime
+                            ? null
+                            : const Color.fromARGB(255, 255, 151, 144),
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'avg ${avg.ms}ms\n',
+                      style: TextStyle(
+                        color: avg <= targetFrameTime
+                            ? null
+                            : const Color.fromARGB(255, 255, 151, 144),
+                      ),
+                    ),
+                    TextSpan(
+                      text: '$type ${fps.toStringAsFixed(1)} FPS',
+                    ),
+                  ],
+                  style: textStyle,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
