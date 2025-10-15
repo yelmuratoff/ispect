@@ -41,26 +41,17 @@ class CombinedOverlayWidget extends StatelessWidget {
     final borderColor = colorScheme.inverseSurface.withValues(alpha: 0.2);
     final textColor = getTextColorOnBackground(color);
 
-    return SizedBox.square(
-      dimension: overlaySize,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.fromBorderSide(
-            BorderSide(
-              color: borderColor,
-              width: 20,
-              strokeAlign: BorderSide.strokeAlignOutside,
-            ),
-          ),
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: SizedBox.square(
+        dimension: overlaySize,
         child: DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.fromBorderSide(
               BorderSide(
-                color: color,
-                width: 18,
+                color: borderColor,
+                width: 20,
                 strokeAlign: BorderSide.strokeAlignOutside,
               ),
             ),
@@ -70,84 +61,96 @@ class CombinedOverlayWidget extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.fromBorderSide(
                 BorderSide(
-                  color: borderColor,
-                  width: 2,
+                  color: color,
+                  width: 18,
                   strokeAlign: BorderSide.strokeAlignOutside,
                 ),
               ),
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 12,
-                  color: Colors.black12,
-                  spreadRadius: 1,
-                ),
-              ],
             ),
-            child: ClipOval(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(
-                      isComplex: true,
-                      willChange: true,
-                      painter: _ZoomPainter(
-                        image: image,
-                        imageOffset: imageOffset,
-                        overlayOffset: overlayOffset,
-                        overlaySize: overlaySize,
-                        zoomScale: zoomScale,
-                        pixelRatio: pixelRatio,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.fromBorderSide(
+                  BorderSide(
+                    color: borderColor,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  ),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 12,
+                    color: Colors.black12,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        isComplex: true,
+                        willChange: true,
+                        painter: _ZoomPainter(
+                          image: image,
+                          imageOffset: imageOffset,
+                          overlayOffset: overlayOffset,
+                          overlaySize: overlaySize,
+                          zoomScale: zoomScale,
+                          pixelRatio: pixelRatio,
+                        ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: const Alignment(0, -0.8),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: color,
-                          border: Border.all(
-                            color: textColor.withValues(alpha: 0.2),
+                    Align(
+                      alignment: const Alignment(0, -0.8),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: color,
+                            border: Border.all(
+                              color: textColor.withValues(alpha: 0.2),
+                            ),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            colorToHexString(color),
-                            style: TextStyle(
-                              color: textColor.withValues(alpha: 0.5),
-                              fontSize: 12,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              colorToHexString(color),
+                              style: TextStyle(
+                                color: textColor.withValues(alpha: 0.5),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: const Alignment(0, -0.8),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _ZoomLevelDisplay(zoomScale: zoomScale),
+                    Align(
+                      alignment: const Alignment(0, -0.8),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _ZoomLevelDisplay(zoomScale: zoomScale),
+                      ),
                     ),
-                  ),
-                  Center(
-                    child: SizedBox.square(
-                      dimension: 10,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: textColor.withValues(alpha: 0.2),
-                            width: 2,
+                    Center(
+                      child: SizedBox.square(
+                        dimension: 10,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: textColor.withValues(alpha: 0.2),
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
