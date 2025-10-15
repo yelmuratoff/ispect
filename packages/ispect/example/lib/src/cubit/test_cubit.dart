@@ -12,6 +12,11 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       await Future.delayed(const Duration(seconds: 1));
       emit(TestLoaded(event.data));
     });
+    on<LoadEventWithError>((event, emit) async {
+      emit(TestLoading());
+      await Future.delayed(const Duration(seconds: 1));
+      throw Exception('Simulated error');
+    });
   }
 
   void load({required String data}) {
@@ -19,8 +24,7 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   }
 
   void loadWithError() {
-    add(LoadEvent('This will cause an error'));
-    throw Exception('Test exception in loadWithError');
+    add(const LoadEventWithError('error'));
   }
 }
 
@@ -32,6 +36,22 @@ sealed class TestEvent {
 class LoadEvent extends TestEvent {
   final String data;
   const LoadEvent(this.data);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is LoadEvent && other.data == data;
+  }
+
+  @override
+  int get hashCode => data.hashCode;
+}
+
+@immutable
+class LoadEventWithError extends TestEvent {
+  final String data;
+  const LoadEventWithError(this.data);
 
   @override
   bool operator ==(Object other) {

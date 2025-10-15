@@ -39,6 +39,7 @@ final class ISpectConstants {
     'bloc-create': Icons.add_rounded,
     'bloc-state': Icons.change_circle_rounded,
     'bloc-done': Icons.check_circle_outline_rounded,
+    'bloc-error': Icons.error_outline_rounded,
 
     'riverpod-add': Icons.add_rounded,
     'riverpod-update': Icons.refresh_rounded,
@@ -83,6 +84,7 @@ final class ISpectConstants {
     'bloc-create': Color.fromARGB(255, 56, 142, 60),
     'bloc-state': Color.fromARGB(255, 0, 105, 135),
     'bloc-done': Color.fromARGB(255, 56, 142, 60),
+    'bloc-error': Color.fromARGB(255, 192, 38, 38),
 
     'riverpod-add': Color.fromARGB(255, 56, 142, 60),
     'riverpod-update': Color.fromARGB(255, 0, 105, 135),
@@ -127,6 +129,7 @@ final class ISpectConstants {
     'bloc-create': Color.fromARGB(255, 120, 230, 129),
     'bloc-state': Color.fromARGB(255, 0, 125, 160),
     'bloc-done': Color.fromARGB(255, 120, 230, 129),
+    'bloc-error': Color.fromARGB(255, 239, 83, 80),
 
     'riverpod-add': Color.fromARGB(255, 120, 230, 129),
     'riverpod-update': Color.fromARGB(255, 120, 180, 190),

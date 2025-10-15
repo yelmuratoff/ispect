@@ -18,6 +18,7 @@ final Map<String, AnsiPen> _defaultColors = {
   ISpectifyLogType.blocClose.key: AnsiPen()..xterm(198),
   ISpectifyLogType.blocState.key: AnsiPen()..xterm(38),
   ISpectifyLogType.blocDone.key: AnsiPen()..green(),
+  ISpectifyLogType.blocError.key: AnsiPen()..red(),
   ISpectifyLogType.riverpodAdd.key: AnsiPen()..xterm(51),
   ISpectifyLogType.riverpodUpdate.key: AnsiPen()..xterm(49),
   ISpectifyLogType.riverpodDispose.key: AnsiPen()..xterm(198),
