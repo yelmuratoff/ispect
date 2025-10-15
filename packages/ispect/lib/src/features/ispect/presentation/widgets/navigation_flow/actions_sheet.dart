@@ -94,37 +94,39 @@ class _ActionsSheetContent extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        final String text;
-                        if (transition == null) {
-                          text = items.transitionsText();
-                        } else {
-                          text = items.transitionsToId(
-                            transition!.id,
-                            isTruncated: false,
+                  if (context.iSpect.options.onShare != null)
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          final String text;
+                          if (transition == null) {
+                            text = items.transitionsText();
+                          } else {
+                            text = items.transitionsToId(
+                              transition!.id,
+                              isTruncated: false,
+                            );
+                          }
+                          LogsFileFactory.downloadFile(
+                            text,
+                            fileName: 'ispect_navigation_flow',
+                            onShare: context.iSpect.options.onShare,
                           );
-                        }
-                        LogsFileFactory.downloadFile(
-                          text,
-                          fileName: 'ispect_navigation_flow',
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.share_rounded),
-                          const Gap(8),
-                          Flexible(
-                            child: Text(context.ispectL10n.shareLogFull),
-                          ),
-                        ],
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.share_rounded),
+                            const Gap(8),
+                            Flexible(
+                              child: Text(context.ispectL10n.shareLogFull),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                   SizedBox(
                     height: 48,
                     child: ElevatedButton(

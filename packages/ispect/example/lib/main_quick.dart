@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
+
+final observer = ISpectNavigatorObserver();
 
 void main() {
   // Initialize ISpectify for logging
@@ -21,10 +25,35 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         // Add your localization delegates here
       ]),
+      navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
+          observer: observer,
           locale: const Locale('en'),
-          isFeedbackEnabled: true,
+          onLoadLogContent: (context) async {
+            // Here you can load log content.
+            // For example, from a file using file_picker.
+            return 'Loaded log content from callback';
+          },
+          onOpenFile: (path) async {
+            // Here you can handle opening the file.
+            // For example, using open_filex package.
+            await OpenFilex.open(path);
+          },
+          onShare: (ISpectShareRequest request) async {
+            // Here you can handle sharing the content.
+            // For example, using share_plus package.
+            final filesPath = request.filePaths;
+            final files = <XFile>[];
+            for (final path in filesPath) {
+              files.add(XFile(path));
+            }
+            await SharePlus.instance.share(ShareParams(
+              text: request.text,
+              subject: request.subject,
+              files: files,
+            ));
+          },
           actionItems: [
             ISpectActionItem(
                 onTap: (BuildContext context) {},

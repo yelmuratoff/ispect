@@ -8,6 +8,8 @@ import 'package:ispect/ispect.dart';
 /// - Usage example: final controller = ISpectViewController();
 /// - Edge case notes: Handles null data gracefully with caching
 class ISpectViewController extends ChangeNotifier {
+  ISpectViewController({ISpectShareCallback? onShare}) : _onShare = onShare;
+
   ISpectifyFilter _filter = ISpectifyFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
@@ -15,6 +17,8 @@ class ISpectViewController extends ChangeNotifier {
 
   // JSON service for logs export/import
   final LogsJsonService _logsJsonService = const LogsJsonService();
+
+  final ISpectShareCallback? _onShare;
 
   // Filter cache properties
   List<String>? _cachedTitles;
@@ -131,8 +135,10 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Downloads logs as a file.
-  Future<void> downloadLogsFile(String logs) async =>
-      LogsFileFactory.downloadFile(logs);
+  Future<void> downloadLogsFile(String logs) async {
+    final shareCallback = _ensureShareCallback();
+    await LogsFileFactory.downloadFile(logs, onShare: shareCallback);
+  }
 
   /// Forces a UI update.
   void update() => notifyListeners();
@@ -331,6 +337,7 @@ class ISpectViewController extends ChangeNotifier {
     List<ISpectifyData> logs, {
     String fileType = 'json',
   }) async {
+    final shareCallback = _ensureShareCallback();
     final filteredLogs = applyCurrentFilters(logs);
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No logs match the active filters. Skipping export.');
@@ -342,6 +349,7 @@ class ISpectViewController extends ChangeNotifier {
       filter,
       fileName: 'ispect_logs_${DateTime.now().millisecondsSinceEpoch}',
       fileType: fileType,
+      onShare: shareCallback,
     );
   }
 
@@ -349,6 +357,7 @@ class ISpectViewController extends ChangeNotifier {
   ///
   /// Exports all logs in JSON format for complete backup.
   Future<void> shareAllLogsAsJsonFile(List<ISpectifyData> logs) async {
+    final shareCallback = _ensureShareCallback();
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
       return;
@@ -356,6 +365,7 @@ class ISpectViewController extends ChangeNotifier {
     await _logsJsonService.shareLogsAsJsonFile(
       logs,
       fileName: 'ispect_all_logs_${DateTime.now().millisecondsSinceEpoch}',
+      onShare: shareCallback,
     );
   }
 
@@ -369,4 +379,14 @@ class ISpectViewController extends ChangeNotifier {
   /// Validates if JSON content is valid for logs import.
   bool validateLogsJsonContent(String jsonContent) =>
       _logsJsonService.validateJsonStructure(jsonContent);
+
+  ISpectShareCallback _ensureShareCallback() {
+    final shareCallback = _onShare;
+    if (shareCallback == null) {
+      throw StateError(
+        'Share callback is not configured. Provide onShare when constructing ISpectBuilder.',
+      );
+    }
+    return shareCallback;
+  }
 }

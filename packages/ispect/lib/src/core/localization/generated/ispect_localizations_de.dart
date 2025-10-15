@@ -56,23 +56,26 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get blocCloseLogDesc =>
-      'Ein Tag, das zum Protokollieren des Schließens eines BLoC verwendet wird';
+      'Die Komponente wurde geschlossen und wird nicht mehr aktualisiert';
 
   @override
   String get blocCreateLogDesc =>
-      'Ein Tag, das zum Protokollieren der Erstellung eines BLoC verwendet wird';
+      'Die Komponente wurde initialisiert und hat mit der Arbeit begonnen';
 
   @override
   String get blocEventLogDesc =>
-      'Ein Tag, das zum Protokollieren der Verarbeitung eines Ereignisses in einem BLoC verwendet wird';
+      'Ein Befehl zum Ausführen einer Aktion wurde empfangen';
 
   @override
   String get blocTransitionLogDesc =>
-      'Ein Tag, das zum Protokollieren von Zustandsübergängen in einem BLoC verwendet wird';
+      'Der Zustand hat sich als Reaktion auf einen Befehl geändert';
 
   @override
   String get blocStateLogDesc =>
-      'Ein Tag, das zum Protokollieren des aktuellen Zustands in einem BLoC verwendet wird';
+      'Der Zustand hat sich geändert (funktioniert für Befehle und direkte Updates)';
+
+  @override
+  String get blocDoneLogDesc => 'Die Befehlsverarbeitung ist abgeschlossen';
 
   @override
   String get buildVersion => 'Build-Version';

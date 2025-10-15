@@ -214,7 +214,7 @@ String _replacePackageVersions(String content, String version) {
   try {
     // Matches dependency declarations inside YAML/code blocks for listed packages with semantic version
     final depPattern = RegExp(
-      r'\b(ispectify_dio|ispectify_http|ispectify_ws|ispectify_bloc|ispectify_db|ispectify|ispect_jira|ispect)\s*:\s*\^?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?',
+      r'\b(ispectify_dio|ispectify_http|ispectify_ws|ispectify_bloc|ispectify_db|ispectify|ispect)\s*:\s*\^?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?',
     );
 
     content = content.replaceAllMapped(depPattern, (match) {

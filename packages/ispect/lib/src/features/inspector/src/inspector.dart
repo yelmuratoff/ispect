@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/widgets/builder/multi_value_listenable.dart';
 import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/inspector/overlay.dart';
 import 'package:ispect/src/features/inspector/src/keyboard_handler.dart';
@@ -20,9 +19,6 @@ import 'package:ispect/src/features/inspector/src/widgets/color_picker/color_pic
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/zoomable_color_picker/overlay.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/theme_scheme_screen.dart';
-import 'package:ispect/src/features/snapshot/feedback_plus.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// `Inspector` can wrap any [child], and will display its control panel and
 /// information overlay on top of that `child`.
@@ -395,7 +391,6 @@ class InspectorState extends State<Inspector> {
     }
 
     final iSpect = ISpect.read(context);
-    final feedback = BetterFeedback.of(context);
     final screenSize = MediaQuery.sizeOf(context);
 
     return Stack(
@@ -411,7 +406,6 @@ class InspectorState extends State<Inspector> {
           AnimatedBuilder(
             animation: Listenable.merge([
               _controller,
-              feedback,
             ]),
             builder: (_, __) => MultiValueListenableBuilder(
               valueListenables: [
@@ -467,32 +461,6 @@ class InspectorState extends State<Inspector> {
                         _onZoomStateChanged(!_zoomStateNotifier.value);
                       },
                       description: context.ispectL10n.zoomPickColor,
-                    ),
-                  if (context.iSpect.options.isFeedbackEnabled)
-                    DraggablePanelItem(
-                      icon: Icons.camera_alt_rounded,
-                      enableBadge: feedback.isVisible,
-                      onTap: (_) {
-                        _toggleFeedback(feedback, context);
-                      },
-                      description: context.ispectL10n.takeScreenshotFeedback,
-                    ),
-                  if (context.iSpect.options.isThemeSchemaEnabled)
-                    DraggablePanelItem(
-                      icon: Icons.color_lens_rounded,
-                      enableBadge: false,
-                      onTap: (context) {
-                        context.iSpect.options.push(
-                          context,
-                          MaterialPageRoute<dynamic>(
-                            builder: (_) => const ThemeSchemeScreen(),
-                            settings: const RouteSettings(
-                              name: 'Theme & Scheme Screen',
-                            ),
-                          ),
-                        );
-                      },
-                      description: context.ispectL10n.viewThemeScheme,
                     ),
                   ...context.iSpect.options.panelItems,
                 ],
@@ -611,35 +579,6 @@ class InspectorState extends State<Inspector> {
         );
       },
     );
-  }
-
-  void _toggleFeedback(FeedbackController feedback, BuildContext context) {
-    if (!feedback.isVisible) {
-      feedback.show((feedback) async {
-        if (feedback.text.isEmpty) {
-          unawaited(
-            ISpectToaster.showErrorToast(
-              context,
-              title: 'The feedback text cannot be empty.',
-            ),
-          );
-          return;
-        }
-        final screenshotFilePath =
-            await ISpectFileUtils.writeImageToStorage(feedback.screenshot);
-
-        await SharePlus.instance.share(
-          ShareParams(
-            text: feedback.text,
-            files: [screenshotFilePath],
-          ),
-        );
-      });
-    } else {
-      feedback.hide();
-    }
-    // ignore: avoid_empty_blocks
-    setState(() {});
   }
 
   Future<void> _launchInfospect(BuildContext context) async {

@@ -113,14 +113,18 @@ class _InfoDescription extends StatelessWidget {
   final Map<String, dynamic> truncatedData;
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          _Header(title: context.ispectL10n.share),
-          const Gap(16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
+  Widget build(BuildContext context) {
+    final shareCallback = context.iSpect.options.onShare;
+
+    return Column(
+      children: [
+        _Header(title: context.ispectL10n.share),
+        const Gap(16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (shareCallback != null)
               SizedBox(
                 height: 48,
                 child: ElevatedButton(
@@ -136,6 +140,7 @@ class _InfoDescription extends StatelessWidget {
                     LogsFileFactory.downloadFile(
                       valueToShare,
                       fileName: 'ispect_log',
+                      onShare: shareCallback,
                     );
                   },
                   child: Row(
@@ -149,40 +154,41 @@ class _InfoDescription extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final valueToShare = JsonTruncatorService.pretty(
-                      truncatedData,
-                    );
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  final valueToShare = JsonTruncatorService.pretty(
+                    truncatedData,
+                  );
 
-                    Navigator.of(context).pop();
+                  Navigator.of(context).pop();
 
-                    copyClipboard(
-                      context,
-                      value: valueToShare,
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.copy_rounded,
+                  copyClipboard(
+                    context,
+                    value: valueToShare,
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.copy_rounded,
+                    ),
+                    const Gap(8),
+                    Flexible(
+                      child: Text(
+                        context.ispectL10n.copyToClipboardTruncated,
                       ),
-                      const Gap(8),
-                      Flexible(
-                        child: Text(
-                          context.ispectL10n.copyToClipboardTruncated,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      );
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class _Header extends StatelessWidget {

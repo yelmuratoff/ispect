@@ -11,7 +11,7 @@ dependency_overrides:
     path: ../../ispectify
 
 dependencies:
-  ispectify: ^4.4.2
+  ispectify: ^4.4.6
   ispectify_db:
     path: ..
   collection: ^1.18.0

@@ -8,8 +8,8 @@ import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
-import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {
   const JsonScreen({
@@ -38,7 +38,9 @@ class JsonScreen extends StatefulWidget {
 class _JsonScreenState extends State<JsonScreen> {
   final _store = JsonExplorerStore();
   final _searchController = TextEditingController();
-  final _itemScrollController = ItemScrollController();
+
+  final _scrollController = ScrollController();
+  final _listController = ListController();
 
   late JsonExplorerTheme _jsonTheme;
 
@@ -62,7 +64,9 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     _searchDebounceTimer?.cancel();
+    _listController.dispose();
     _store.dispose();
     super.dispose();
   }
@@ -81,30 +85,29 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    return ChangeNotifierProvider.value(
-      value: _store,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: iSpect.theme.backgroundColor(context),
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: iSpect.theme.backgroundColor(context),
-        appBar: AppBar(
-          scrolledUnderElevation: 0,
-          backgroundColor: iSpect.theme.backgroundColor(context),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.unfold_more_rounded),
-                    onPressed: _store.expandAll,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.unfold_less_rounded),
-                    onPressed: _store.collapseAll,
-                  ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.unfold_more_rounded),
+                  onPressed: _store.expandAll,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.unfold_less_rounded),
+                  onPressed: _store.collapseAll,
+                ),
+                if (context.iSpect.options.onShare != null)
                   IconButton(
                     icon: const Icon(Icons.share_rounded),
                     onPressed: () async {
@@ -114,70 +117,74 @@ class _JsonScreenState extends State<JsonScreen> {
                       ).show(context);
                     },
                   ),
-                ],
-              ),
+              ],
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            const Gap(12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SearchBar(
-                      constraints: const BoxConstraints(minHeight: 45),
-                      shape: const WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
-                        ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          const Gap(12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SearchBar(
+                    constraints: const BoxConstraints(minHeight: 45),
+                    shape: const WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
-                      leading: const Icon(Icons.search),
-                      onChanged: _onSearchChanged,
-                      hintText: context.ispectL10n.search,
-                      controller: _searchController,
-                      elevation: WidgetStateProperty.all(0),
                     ),
+                    leading: const Icon(Icons.search),
+                    onChanged: _onSearchChanged,
+                    hintText: context.ispectL10n.search,
+                    controller: _searchController,
+                    elevation: WidgetStateProperty.all(0),
                   ),
-                  const Gap(8),
-                  Selector<JsonExplorerStore, ({int count, int focusedIndex})>(
-                    selector: (_, store) => (
-                      count: store.searchResults.length,
-                      focusedIndex: store.focusedSearchResultIndex,
-                    ),
-                    builder: (context, searchData, child) {
-                      if (searchData.count == 0) {
-                        return const SizedBox.shrink();
-                      }
-                      return _SearchNavigationPanel(
-                        store: _store,
-                        scrollToSearchMatch: _scrollToSearchMatch,
-                        searchFocusText:
-                            '${searchData.focusedIndex + 1} of ${searchData.count}',
-                      );
-                    },
+                ),
+                const Gap(8),
+                JsonStoreSelector<({int count, int focusedIndex})>(
+                  store: _store,
+                  selector: (store) => (
+                    count: store.searchResults.length,
+                    focusedIndex: store.focusedSearchResultIndex,
                   ),
-                ],
-              ),
+                  builder: (context, searchData) {
+                    final count = searchData.count;
+                    final focusedIndex = searchData.focusedIndex;
+                    if (count == 0) {
+                      return const SizedBox.shrink();
+                    }
+                    return _SearchNavigationPanel(
+                      store: _store,
+                      scrollToSearchMatch: _scrollToSearchMatch,
+                      searchFocusText: '${focusedIndex + 1} of $count',
+                    );
+                  },
+                ),
+              ],
             ),
-            const Gap(12),
-            Expanded(
-              child: Consumer<JsonExplorerStore>(
-                builder: (context, model, child) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: JsonExplorer(
-                    nodes: model.displayNodes,
-                    itemScrollController: _itemScrollController,
-                    theme: _jsonTheme,
-                  ),
+          ),
+          const Gap(12),
+          Expanded(
+            child: AnimatedBuilder(
+              animation: _store,
+              builder: (context, _) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: JsonExplorer(
+                  store: _store,
+                  nodes: _store.displayNodes,
+                  listController: _listController,
+                  scrollController: _scrollController,
+                  theme: _jsonTheme,
                 ),
               ),
             ),
-            const Gap(32),
-          ],
-        ),
+          ),
+          const Gap(32),
+        ],
       ),
     );
   }
@@ -219,11 +226,15 @@ class _JsonScreenState extends State<JsonScreen> {
     }
   }
 
-  Future<void> _scrollToIndex(int index) => _itemScrollController.scrollTo(
-        index: index,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-      );
+  Future<void> _scrollToIndex(int index) async {
+    _listController.animateToItem(
+      index: index,
+      duration: (estimatedDistance) => const Duration(milliseconds: 250),
+      curve: (estimatedDistance) => Curves.easeOutCubic,
+      scrollController: _scrollController,
+      alignment: 0.5,
+    );
+  }
 }
 
 class _SearchNavigationPanel extends StatelessWidget {

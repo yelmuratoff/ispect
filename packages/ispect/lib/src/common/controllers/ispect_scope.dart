@@ -16,12 +16,12 @@ class ISpectScopeModel extends ChangeNotifier {
   ISpectScopeModel({
     bool isISpectEnabled = false,
     bool isPerformanceTrackingEnabled = false,
-    ISpectOptions options = const ISpectOptions(),
+    ISpectOptions? options,
     ISpectTheme theme = const ISpectTheme(),
     this.observer,
   })  : _isISpectEnabled = isISpectEnabled,
         _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
-        _options = options,
+        _options = options ?? ISpectOptions(observer: observer),
         _theme = theme;
 
   // Private fields to store state

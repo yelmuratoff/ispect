@@ -291,7 +291,10 @@ void main() {
         () async {
       // Act & Assert - should not throw
       await expectLater(
-        service.shareLogsAsJsonFile([]),
+        service.shareLogsAsJsonFile(
+          [],
+          onShare: (_) async {},
+        ),
         completes,
       );
     });
@@ -304,7 +307,12 @@ void main() {
 
       // Act & Assert - should not throw
       await expectLater(
-        service.shareFilteredLogsAsJsonFile([], [], filter),
+        service.shareFilteredLogsAsJsonFile(
+          [],
+          [],
+          filter,
+          onShare: (_) async {},
+        ),
         completes,
       );
     });

@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'All logs copied in buffer';
 
   @override
-  String get analyticsLogDesc =>
-      'The log of sending events to the analytics service';
+  String get analyticsLogDesc => 'Event tracked and sent to analytics';
 
   @override
   String get apiToken => 'API token';
@@ -55,24 +54,24 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get basicSettings => 'Basic settings';
 
   @override
-  String get blocCloseLogDesc =>
-      'A tag used for logging the event of BLoC closure';
+  String get blocCloseLogDesc => 'Component closed and will no longer update';
 
   @override
   String get blocCreateLogDesc =>
-      'A tag used for logging the event of BLoC creation';
+      'Component was initialized and started working';
 
   @override
-  String get blocEventLogDesc =>
-      'A tag used for logging the processing of an event in BLoC';
+  String get blocEventLogDesc => 'Received a command to do something';
 
   @override
-  String get blocTransitionLogDesc =>
-      'A tag used for logging state transitions in BLoC';
+  String get blocTransitionLogDesc => 'Changed state in response to a command';
 
   @override
   String get blocStateLogDesc =>
-      'A tag used for logging the current state in BLoC';
+      'State changed (works for both commands and direct updates)';
+
+  @override
+  String get blocDoneLogDesc => 'Finished processing a command';
 
   @override
   String get buildVersion => 'Build version';
@@ -130,15 +129,14 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Creating issue';
 
   @override
-  String get criticalLogDesc =>
-      'A tag used for logging critical errors or events that require immediate attention';
+  String get criticalLogDesc => 'Critical error that needs immediate attention';
 
   @override
   String get data => 'Data';
 
   @override
   String get debugLogDesc =>
-      'A tag used for logging debug information to analyze the application\'s behavior';
+      'Technical details for developers to analyze behavior';
 
   @override
   String get description => 'Description';
@@ -158,8 +156,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Error on clearing cache';
 
   @override
-  String get errorLogDesc =>
-      'A tag used for logging errors that occur in the application';
+  String get errorLogDesc => 'Something went wrong in the app';
 
   @override
   String get errorMessage => 'Error message';
@@ -168,8 +165,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get errorType => 'Error type';
 
   @override
-  String get exceptionLogDesc =>
-      'A tag used for logging exceptions occurring in the application';
+  String get exceptionLogDesc => 'Unexpected error occurred';
 
   @override
   String get expandLogs => 'Expand logs';
@@ -196,8 +192,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get goToLogger => 'Go to logger';
 
   @override
-  String get goodLogDesc =>
-      'A tag used for logging successful operations or positive events in the application';
+  String get goodLogDesc => 'Operation completed successfully';
 
   @override
   String get headers => 'Headers';
@@ -206,17 +201,16 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get hidePanel => 'Hide panel';
 
   @override
-  String get httpErrorLogDesc => 'Server request error log';
+  String get httpErrorLogDesc => 'Server request failed';
 
   @override
-  String get httpRequestLogDesc => 'Server request log';
+  String get httpRequestLogDesc => 'Request sent to server';
 
   @override
-  String get httpResponseLogDesc => 'Server response log';
+  String get httpResponseLogDesc => 'Response received from server';
 
   @override
-  String get infoLogDesc =>
-      'A tag used for logging informational messages about the application\'s operation';
+  String get infoLogDesc => 'General information about what\'s happening';
 
   @override
   String get initializationFailed => 'Initialization failed';
@@ -276,7 +270,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'Now, please select a project';
 
   @override
-  String get printLogDesc => 'The log of the standard print method in Flutter';
+  String get printLogDesc => 'Message printed to console';
 
   @override
   String get projectDomain => 'Project domain';
@@ -294,19 +288,19 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get reverseLogs => 'Reverse logs';
 
   @override
-  String get riverpodAddLogDesc => 'Provider addition log';
+  String get riverpodAddLogDesc => 'Data provider created';
 
   @override
-  String get riverpodDisposeLogDesc => 'Provider disposal log';
+  String get riverpodDisposeLogDesc => 'Data provider removed';
 
   @override
-  String get riverpodFailLogDesc => 'Provider error log';
+  String get riverpodFailLogDesc => 'Data provider encountered an error';
 
   @override
-  String get riverpodUpdateLogDesc => 'Provider update log';
+  String get riverpodUpdateLogDesc => 'Data provider updated';
 
   @override
-  String get routeLogDesc => 'Screen navigation log';
+  String get routeLogDesc => 'Navigated to a different screen';
 
   @override
   String get search => 'Search';
@@ -529,15 +523,13 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get userEmail => 'User email';
 
   @override
-  String get verboseLogDesc =>
-      'A tag used for logging detailed information for in-depth application analysis';
+  String get verboseLogDesc => 'Detailed technical information for debugging';
 
   @override
   String get viewAndManageData => 'Viewing and managing application data';
 
   @override
-  String get warningLogDesc =>
-      'A tag used for logging warning messages about potential issues in the application';
+  String get warningLogDesc => 'Potential issue that might cause problems';
 
   @override
   String get you => 'You';
@@ -679,17 +671,18 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get loading => 'Loading';
 
   @override
-  String get wsSentLogDesc => 'WebSocket sent message log';
+  String get wsSentLogDesc => 'Message sent through WebSocket connection';
 
   @override
-  String get wsReceivedLogDesc => 'WebSocket received message log';
+  String get wsReceivedLogDesc =>
+      'Message received through WebSocket connection';
 
   @override
-  String get dbQueryLogDesc => 'Database query log';
+  String get dbQueryLogDesc => 'Database request executed';
 
   @override
-  String get dbResultLogDesc => 'Database result log';
+  String get dbResultLogDesc => 'Database returned results';
 
   @override
-  String get dbErrorLogDesc => 'Database error log';
+  String get dbErrorLogDesc => 'Database operation failed';
 }

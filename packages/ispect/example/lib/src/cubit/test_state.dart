@@ -11,3 +11,9 @@ final class TestLoaded extends TestState {
 
   TestLoaded(this.data);
 }
+
+final class TestError extends TestState {
+  final String message;
+
+  TestError(this.message);
+}

@@ -158,7 +158,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @analyticsLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'The log of sending events to the analytics service'**
+  /// **'Event tracked and sent to analytics'**
   String get analyticsLogDesc;
 
   /// No description provided for @apiToken.
@@ -212,32 +212,38 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @blocCloseLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging the event of BLoC closure'**
+  /// **'Component closed and will no longer update'**
   String get blocCloseLogDesc;
 
   /// No description provided for @blocCreateLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging the event of BLoC creation'**
+  /// **'Component was initialized and started working'**
   String get blocCreateLogDesc;
 
   /// No description provided for @blocEventLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging the processing of an event in BLoC'**
+  /// **'Received a command to do something'**
   String get blocEventLogDesc;
 
   /// No description provided for @blocTransitionLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging state transitions in BLoC'**
+  /// **'Changed state in response to a command'**
   String get blocTransitionLogDesc;
 
   /// No description provided for @blocStateLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging the current state in BLoC'**
+  /// **'State changed (works for both commands and direct updates)'**
   String get blocStateLogDesc;
+
+  /// No description provided for @blocDoneLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished processing a command'**
+  String get blocDoneLogDesc;
 
   /// No description provided for @buildVersion.
   ///
@@ -344,7 +350,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @criticalLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging critical errors or events that require immediate attention'**
+  /// **'Critical error that needs immediate attention'**
   String get criticalLogDesc;
 
   /// No description provided for @data.
@@ -356,7 +362,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @debugLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging debug information to analyze the application\'s behavior'**
+  /// **'Technical details for developers to analyze behavior'**
   String get debugLogDesc;
 
   /// No description provided for @description.
@@ -392,7 +398,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @errorLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging errors that occur in the application'**
+  /// **'Something went wrong in the app'**
   String get errorLogDesc;
 
   /// No description provided for @errorMessage.
@@ -410,7 +416,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @exceptionLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging exceptions occurring in the application'**
+  /// **'Unexpected error occurred'**
   String get exceptionLogDesc;
 
   /// No description provided for @expandLogs.
@@ -464,7 +470,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @goodLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging successful operations or positive events in the application'**
+  /// **'Operation completed successfully'**
   String get goodLogDesc;
 
   /// No description provided for @headers.
@@ -482,25 +488,25 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @httpErrorLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Server request error log'**
+  /// **'Server request failed'**
   String get httpErrorLogDesc;
 
   /// No description provided for @httpRequestLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Server request log'**
+  /// **'Request sent to server'**
   String get httpRequestLogDesc;
 
   /// No description provided for @httpResponseLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Server response log'**
+  /// **'Response received from server'**
   String get httpResponseLogDesc;
 
   /// No description provided for @infoLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging informational messages about the application\'s operation'**
+  /// **'General information about what\'s happening'**
   String get infoLogDesc;
 
   /// No description provided for @initializationFailed.
@@ -614,7 +620,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @printLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'The log of the standard print method in Flutter'**
+  /// **'Message printed to console'**
   String get printLogDesc;
 
   /// No description provided for @projectDomain.
@@ -650,31 +656,31 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @riverpodAddLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Provider addition log'**
+  /// **'Data provider created'**
   String get riverpodAddLogDesc;
 
   /// No description provided for @riverpodDisposeLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Provider disposal log'**
+  /// **'Data provider removed'**
   String get riverpodDisposeLogDesc;
 
   /// No description provided for @riverpodFailLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Provider error log'**
+  /// **'Data provider encountered an error'**
   String get riverpodFailLogDesc;
 
   /// No description provided for @riverpodUpdateLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Provider update log'**
+  /// **'Data provider updated'**
   String get riverpodUpdateLogDesc;
 
   /// No description provided for @routeLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Screen navigation log'**
+  /// **'Navigated to a different screen'**
   String get routeLogDesc;
 
   /// No description provided for @search.
@@ -1034,7 +1040,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @verboseLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging detailed information for in-depth application analysis'**
+  /// **'Detailed technical information for debugging'**
   String get verboseLogDesc;
 
   /// No description provided for @viewAndManageData.
@@ -1046,7 +1052,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @warningLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'A tag used for logging warning messages about potential issues in the application'**
+  /// **'Potential issue that might cause problems'**
   String get warningLogDesc;
 
   /// No description provided for @you.
@@ -1316,31 +1322,31 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @wsSentLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'WebSocket sent message log'**
+  /// **'Message sent through WebSocket connection'**
   String get wsSentLogDesc;
 
   /// No description provided for @wsReceivedLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'WebSocket received message log'**
+  /// **'Message received through WebSocket connection'**
   String get wsReceivedLogDesc;
 
   /// No description provided for @dbQueryLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Database query log'**
+  /// **'Database request executed'**
   String get dbQueryLogDesc;
 
   /// No description provided for @dbResultLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Database result log'**
+  /// **'Database returned results'**
   String get dbResultLogDesc;
 
   /// No description provided for @dbErrorLogDesc.
   ///
   /// In en, this message translates to:
-  /// **'Database error log'**
+  /// **'Database operation failed'**
   String get dbErrorLogDesc;
 }
 

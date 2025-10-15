@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
+import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/json_attribute.dart';
-import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 /// Signature for a function that creates a widget based on a
 /// `NodeViewModelState` state.
@@ -36,39 +36,19 @@ class PropertyOverrides {
 
 /// A widget to display a list of Json nodes.
 ///
-/// The `JsonExplorerStore` handles the state of the data structure, so a
-/// `JsonExplorerStore` must be available through a [Provider] for this widget
-/// to fully function, without it, expand and collapse will not work properly.
+/// The `JsonExplorerStore` handles the state; pass it directly to the widget
+/// and listen to updates to rebuild as needed.
 ///
-/// {@tool snippet}
-/// ```dart
-/// JsonExplorerStore store;
-/// // ...
-/// ChangeNotifierProvider.value(
-///   value: store,
-///   child:
-/// // ...
-/// ```
-/// {@end-tool}
-///
-/// And then a `JsonExplorer` can be built using the store data structure:
 /// {@tool snippet}
 /// ```dart
 /// Widget build(BuildContext context) {
-///   return Scaffold(
-///     appBar: AppBar(
-///       title: Text(widget.title),
-///     ),
-///     body: SafeArea(
-///       minimum: const EdgeInsets.all(16),
-///       child: ChangeNotifierProvider.value(
-///         value: store,
-///         child: Consumer<JsonExplorerStore>(
-///           builder: (context, state, child) => JsonExplorer(
-///             nodes: state.displayNodes,
-///           ),
-///         ),
-///       ),
+///   final store = JsonExplorerStore();
+///   // ... populate store
+///   return AnimatedBuilder(
+///     animation: store,
+///     builder: (context, _) => JsonExplorer(
+///       store: store,
+///       nodes: store.displayNodes,
 ///     ),
 ///   );
 /// }
@@ -77,9 +57,10 @@ class PropertyOverrides {
 class JsonExplorer extends StatelessWidget {
   const JsonExplorer({
     required this.nodes,
+    required this.store,
     super.key,
-    this.itemScrollController,
-    this.itemPositionsListener,
+    this.listController,
+    this.scrollController,
     this.rootInformationBuilder,
     this.collapsableToggleBuilder,
     this.trailingBuilder,
@@ -98,14 +79,10 @@ class JsonExplorer extends StatelessWidget {
   /// See also:
   /// * `JsonExplorerStore`
   final Iterable<NodeViewModelState> nodes;
+  final JsonExplorerStore store;
 
-  /// Use to control the scroll.
-  ///
-  /// Used to jump or scroll to a particular position.
-  final ItemScrollController? itemScrollController;
-
-  /// Use to listen to scroll position changes.
-  final ItemPositionsListener? itemPositionsListener;
+  final ListController? listController;
+  final ScrollController? scrollController;
 
   /// Theme used to render the widgets.
   ///
@@ -162,14 +139,15 @@ class JsonExplorer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SelectionArea(
-        child: ScrollablePositionedList.builder(
+        child: SuperListView.builder(
           itemCount: nodes.length,
-          itemScrollController: itemScrollController,
-          itemPositionsListener: itemPositionsListener,
+          controller: scrollController,
+          listController: listController,
           itemBuilder: (context, index) {
             final node = nodes.elementAt(index);
             return _JsonAttributeItem(
               node: node,
+              store: store,
               theme: theme,
               rootInformationBuilder: rootInformationBuilder,
               collapsableToggleBuilder: collapsableToggleBuilder,
@@ -192,6 +170,7 @@ class JsonExplorer extends StatelessWidget {
 class _JsonAttributeItem extends StatelessWidget {
   const _JsonAttributeItem({
     required this.node,
+    required this.store,
     required this.theme,
     this.rootInformationBuilder,
     this.collapsableToggleBuilder,
@@ -205,6 +184,7 @@ class _JsonAttributeItem extends StatelessWidget {
   });
 
   final NodeViewModelState node;
+  final JsonExplorerStore store;
   final JsonExplorerTheme theme;
   final NodeBuilder? rootInformationBuilder;
   final NodeBuilder? collapsableToggleBuilder;
@@ -230,6 +210,7 @@ class _JsonAttributeItem extends StatelessWidget {
       itemSpacing: itemSpacing,
       theme: theme,
       maxRootNodeWidth: maxRootNodeWidth,
+      store: store,
     );
 
     return AnimatedBuilder(

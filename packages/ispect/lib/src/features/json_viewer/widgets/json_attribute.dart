@@ -9,11 +9,12 @@ import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/json_card.dart';
 import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
-import 'package:provider/provider.dart';
+import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
 
 class JsonAttribute extends StatefulWidget {
   const JsonAttribute({
     required this.node,
+    required this.store,
     required this.theme,
     super.key,
     this.rootInformationBuilder,
@@ -29,6 +30,7 @@ class JsonAttribute extends StatefulWidget {
 
   /// Node to be displayed.
   final NodeViewModelState node;
+  final JsonExplorerStore store;
 
   /// A builder to add a widget as a suffix for root nodes.
   ///
@@ -117,78 +119,126 @@ class _JsonAttributeState extends State<JsonAttribute> {
       _cachedHasInteraction ??= widget.node.isRoot || _valueStyle.onTap != null;
 
   @override
-  Widget build(BuildContext context) {
-    final searchTerm =
-        context.select<JsonExplorerStore, String>((store) => store.searchTerm);
+  Widget build(BuildContext context) => JsonStoreSelector<
+          ({
+            String searchTerm,
+            bool hasSearchResults,
+            int? focusedKeyMatchIndex,
+            int? focusedValueMatchIndex,
+          })>(
+        store: widget.store,
+        selector: (store) {
+          final hasResults = store.searchResults.isNotEmpty;
+          int? focusedKeyIndex;
+          int? focusedValueIndex;
 
-    return MouseRegion(
-      cursor: _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
-      onEnter: (_) => _handleMouseEnter(),
-      onExit: (_) => _handleMouseExit(),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _hasInteraction ? () => _handleTap(context, _valueStyle) : null,
-        child: AnimatedBuilder(
-          animation: widget.node,
-          builder: (context, _) => RepaintBoundary(
-            child: Padding(
-              padding: _kBottomPadding,
-              child: Row(
-                crossAxisAlignment: widget.node.isRoot
-                    ? CrossAxisAlignment.center
-                    : CrossAxisAlignment.start,
-                children: [
-                  SelectionContainer.disabled(
-                    child: _IndentationWidget(
-                      depth: widget.node.treeDepth,
-                      indentationPadding: widget.theme.indentationPadding,
-                      color: widget.theme.indentationLineColor,
+          if (hasResults && store.focusedSearchResult.node == widget.node) {
+            if (store.focusedSearchResult.matchLocation ==
+                SearchMatchLocation.key) {
+              focusedKeyIndex = store.focusedSearchResult.matchIndex;
+            } else if (store.focusedSearchResult.matchLocation ==
+                SearchMatchLocation.value) {
+              focusedValueIndex = store.focusedSearchResult.matchIndex;
+            }
+          }
+
+          return (
+            searchTerm: store.searchTerm,
+            hasSearchResults: hasResults,
+            focusedKeyMatchIndex: focusedKeyIndex,
+            focusedValueMatchIndex: focusedValueIndex,
+          );
+        },
+        builder: (context, searchData) {
+          final valueStyle = _valueStyle;
+
+          return MouseRegion(
+            cursor:
+                _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
+            onEnter: (_) => _handleMouseEnter(),
+            onExit: (_) => _handleMouseExit(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _hasInteraction
+                  ? () => _handleTap(context, valueStyle)
+                  : null,
+              child: AnimatedBuilder(
+                animation: widget.node,
+                builder: (context, _) => RepaintBoundary(
+                  child: Padding(
+                    padding: _kBottomPadding,
+                    child: Row(
+                      crossAxisAlignment: widget.node.isRoot
+                          ? CrossAxisAlignment.center
+                          : CrossAxisAlignment.start,
+                      children: [
+                        SelectionContainer.disabled(
+                          child: _IndentationWidget(
+                            depth: widget.node.treeDepth,
+                            indentationPadding: widget.theme.indentationPadding,
+                            color: widget.theme.indentationLineColor,
+                          ),
+                        ),
+                        if (widget.node.isRoot &&
+                            widget.node.children.isNotEmpty)
+                          const SelectionContainer.disabled(
+                            child: SizedBox(
+                              width: 24,
+                              child: _ToggleButton(),
+                            ),
+                          ),
+                        _buildNodeKey(
+                          context,
+                          searchData.searchTerm,
+                          searchData.hasSearchResults,
+                          searchData.focusedKeyMatchIndex,
+                        ),
+                        const SizedBox(
+                          width: 8,
+                          child: _KeySeparatorText(),
+                        ),
+                        if (widget.node.value is List)
+                          _ArraySuffixWidget(
+                            length: widget.node.children.length,
+                            style: widget.theme.rootKeyTextStyle,
+                          ),
+                        if (widget.node.value is Map ||
+                            widget.node.value is Set)
+                          _MapSuffixWidget(
+                            length: widget.node.children.length,
+                            style: widget.theme.rootKeyTextStyle,
+                          ),
+                        if (widget.node.isRoot)
+                          SelectionContainer.disabled(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: _CopyButton(
+                                node: widget.node,
+                                theme: widget.theme,
+                              ),
+                            ),
+                          ),
+                        if (widget.node.isRoot)
+                          _buildRootInformation(context)
+                        else
+                          _buildPropertyValue(
+                            context,
+                            searchData.searchTerm,
+                            searchData.hasSearchResults,
+                            searchData.focusedValueMatchIndex,
+                            valueStyle,
+                          ),
+                        if (widget.trailingBuilder != null)
+                          widget.trailingBuilder!(context, widget.node),
+                      ],
                     ),
                   ),
-                  if (widget.node.isRoot && widget.node.children.isNotEmpty)
-                    const SelectionContainer.disabled(
-                      child: SizedBox(
-                        width: 24,
-                        child: _ToggleButton(),
-                      ),
-                    ),
-                  _buildNodeKey(context, searchTerm),
-                  const SizedBox(
-                    width: 8,
-                    child: _KeySeparatorText(),
-                  ),
-                  if (widget.node.value is List)
-                    _ArraySuffixWidget(
-                      length: widget.node.children.length,
-                      style: widget.theme.rootKeyTextStyle,
-                    ),
-                  if (widget.node.value is Map || widget.node.value is Set)
-                    _MapSuffixWidget(
-                      length: widget.node.children.length,
-                      style: widget.theme.rootKeyTextStyle,
-                    ),
-                  if (widget.node.isRoot)
-                    SelectionContainer.disabled(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child:
-                            _CopyButton(node: widget.node, theme: widget.theme),
-                      ),
-                    ),
-                  if (widget.node.isRoot)
-                    _buildRootInformation(context)
-                  else
-                    _buildPropertyValue(context, searchTerm, _valueStyle),
-                  if (widget.trailingBuilder != null)
-                    widget.trailingBuilder!(context, widget.node),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
+          );
+        },
+      );
 
   void _handleMouseEnter() {
     widget.node
@@ -210,7 +260,12 @@ class _JsonAttributeState extends State<JsonAttribute> {
     }
   }
 
-  Widget _buildNodeKey(BuildContext context, String searchTerm) {
+  Widget _buildNodeKey(
+    BuildContext context,
+    String searchTerm,
+    bool hasSearchResults,
+    int? focusedMatchIndex,
+  ) {
     final nodeKey = _RootNodeWidget(
       key: ValueKey('${widget.node.key}-${widget.node.isRoot}'),
       node: widget.node,
@@ -218,6 +273,8 @@ class _JsonAttributeState extends State<JsonAttribute> {
       propertyNameFormatter: widget.propertyNameFormatter,
       searchTerm: searchTerm,
       theme: widget.theme,
+      hasSearchResults: hasSearchResults,
+      focusedSearchMatchIndex: focusedMatchIndex,
     );
 
     final jsonCard = JsonCard(
@@ -248,6 +305,8 @@ class _JsonAttributeState extends State<JsonAttribute> {
   Widget _buildPropertyValue(
     BuildContext context,
     String searchTerm,
+    bool hasSearchResults,
+    int? focusedMatchIndex,
     PropertyOverrides valueStyle,
   ) =>
       Expanded(
@@ -261,21 +320,18 @@ class _JsonAttributeState extends State<JsonAttribute> {
           searchHighlightStyle: widget.theme.valueSearchHighlightTextStyle,
           focusedSearchHighlightStyle:
               widget.theme.focusedValueSearchHighlightTextStyle,
+          hasSearchResults: hasSearchResults,
+          focusedSearchMatchIndex: focusedMatchIndex,
         ),
       );
 
   void _onNodeTap(BuildContext context) {
     if (!widget.node.isRoot) return;
 
-    final jsonExplorerStore = Provider.of<JsonExplorerStore>(
-      context,
-      listen: false,
-    );
-
     if (widget.node.isCollapsed) {
-      jsonExplorerStore.expandNode(widget.node);
+      widget.store.expandNode(widget.node);
     } else {
-      jsonExplorerStore.collapseNode(widget.node);
+      widget.store.collapseNode(widget.node);
     }
   }
 }
@@ -456,6 +512,8 @@ class _RootNodeWidget extends StatelessWidget {
     required this.rootNameFormatter,
     required this.propertyNameFormatter,
     required this.theme,
+    required this.hasSearchResults,
+    required this.focusedSearchMatchIndex,
     super.key,
   });
 
@@ -464,6 +522,8 @@ class _RootNodeWidget extends StatelessWidget {
   final Formatter? rootNameFormatter;
   final Formatter? propertyNameFormatter;
   final JsonExplorerTheme theme;
+  final bool hasSearchResults;
+  final int? focusedSearchMatchIndex;
 
   String _keyName() {
     if (node.isRoot) {
@@ -474,35 +534,13 @@ class _RootNodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Combine all selectors into one to reduce context lookups
-    final storeData = context.select<
-        JsonExplorerStore,
-        ({
-          bool hasSearchResults,
-          int? focusedSearchMatchIndex,
-        })>((store) {
-      final hasResults = store.searchResults.isNotEmpty;
-      int? focusedIndex;
-
-      if (hasResults &&
-          store.focusedSearchResult.node == node &&
-          store.focusedSearchResult.matchLocation == SearchMatchLocation.key) {
-        focusedIndex = store.focusedSearchResult.matchIndex;
-      }
-
-      return (
-        hasSearchResults: hasResults,
-        focusedSearchMatchIndex: focusedIndex,
-      );
-    });
-
     final attributeKeyStyle =
         node.isRoot ? theme.rootKeyTextStyle : theme.propertyKeyTextStyle;
 
     // Memoize text value
     final text = _keyName();
 
-    if (!storeData.hasSearchResults) {
+    if (!hasSearchResults) {
       return Row(
         children: [
           Text(
@@ -520,7 +558,7 @@ class _RootNodeWidget extends StatelessWidget {
       style: attributeKeyStyle,
       primaryMatchStyle: theme.focusedKeySearchNodeHighlightTextStyle,
       secondaryMatchStyle: theme.keySearchHighlightTextStyle,
-      focusedSearchMatchIndex: storeData.focusedSearchMatchIndex,
+      focusedSearchMatchIndex: focusedSearchMatchIndex,
     );
   }
 }
@@ -534,6 +572,8 @@ class _PropertyNodeWidget extends StatelessWidget {
     required this.style,
     required this.searchHighlightStyle,
     required this.focusedSearchHighlightStyle,
+    required this.hasSearchResults,
+    required this.focusedSearchMatchIndex,
     super.key,
   });
 
@@ -543,6 +583,8 @@ class _PropertyNodeWidget extends StatelessWidget {
   final TextStyle style;
   final TextStyle searchHighlightStyle;
   final TextStyle focusedSearchHighlightStyle;
+  final bool hasSearchResults;
+  final int? focusedSearchMatchIndex;
 
 // Use a cached value if possible - this could be further optimized with a memo
   String _formatValue() =>
@@ -553,29 +595,6 @@ class _PropertyNodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Combine all selectors to reduce context lookups and rebuilds
-    final storeData = context.select<
-        JsonExplorerStore,
-        ({
-          bool hasSearchResults,
-          int? focusedSearchMatchIndex,
-        })>((store) {
-      final hasResults = store.searchResults.isNotEmpty;
-      int? focusedIndex;
-
-      if (hasResults &&
-          store.focusedSearchResult.node == node &&
-          store.focusedSearchResult.matchLocation ==
-              SearchMatchLocation.value) {
-        focusedIndex = store.focusedSearchResult.matchIndex;
-      }
-
-      return (
-        hasSearchResults: hasResults,
-        focusedSearchMatchIndex: focusedIndex,
-      );
-    });
-
     // Cache computations
     final text = _formatValue();
     final valueColor = JsonColorsUtils.valueColorByKey(
@@ -584,14 +603,14 @@ class _PropertyNodeWidget extends StatelessWidget {
       node.value,
     );
 
-    if (!storeData.hasSearchResults) {
+    if (!hasSearchResults) {
       return _buildSimpleValue(text, valueColor);
     }
 
     return _buildHighlightedValue(
       text,
       valueColor,
-      storeData.focusedSearchMatchIndex,
+      focusedSearchMatchIndex,
     );
   }
 

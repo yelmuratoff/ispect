@@ -24,12 +24,14 @@ class LogsV2Screen extends StatefulWidget {
     this.appBarTitle,
     this.sessionPath,
     this.sessionDate,
+    this.onShare,
   });
 
   final String? appBarTitle;
   final List<ISpectifyData>? logs;
   final String? sessionPath;
   final DateTime? sessionDate;
+  final ISpectShareCallback? onShare;
 
   /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
@@ -49,12 +51,13 @@ class _LogsScreenState extends State<LogsV2Screen> {
   final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
-  late final _logsViewController = ISpectViewController();
+  late final ISpectViewController _logsViewController;
   final List<ISpectifyData> _logs = [];
 
   @override
   void initState() {
     super.initState();
+    _logsViewController = ISpectViewController(onShare: widget.onShare);
     _logsViewController.toggleExpandedLogs();
     getLogs();
   }
@@ -265,7 +268,8 @@ class _MainLogsView extends StatelessWidget {
               statusIcon:
                   iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
               statusColor:
-                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key),
+                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
+                      Colors.grey,
               isExpanded: logsViewController.activeData?.hashCode ==
                       logEntry.hashCode ||
                   logsViewController.expandedLogs,

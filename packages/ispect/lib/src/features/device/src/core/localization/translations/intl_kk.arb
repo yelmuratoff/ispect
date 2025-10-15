@@ -1,7 +1,0 @@
-{
-   "@@locale": "kk",
-   "cacheSize": "Кэш өлшемі: {size}",
-   "clearCache": "Кэшті тазарту",
-   "appData": "Қолданба деректері",
-   "totalFilesCount": "Файлдар саны: {count}"
-}

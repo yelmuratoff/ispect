@@ -29,6 +29,21 @@
 
 No adapters required (yet) — call one or two methods. Minimal API, maximum flexibility. Redaction, sampling, truncation, SQL digest, slow query mark, transaction markers.
 
+## Interface Preview
+
+<div align="center">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_request.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_response.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/inspector.png?raw=true" width="160" />
+</div>
+
+<div align="center">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
+</div>
+
 ## 🏗️ Architecture
 
 ispectify_db integrates with the ISpect logging ecosystem:
@@ -112,7 +127,7 @@ Add ispectify_db to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.2
+  ispectify_db: ^4.4.6
 ```
 
 ## Security & Production Guidelines

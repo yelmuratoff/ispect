@@ -65,11 +65,7 @@ StackTrace: $stackTraceText]''';
   ///
   /// Returns `null` if no valid stack trace is available.
   String? get stackTraceLogText {
-    if ((this is ISpectifyError ||
-            this is ISpectifyException ||
-            message == 'FlutterErrorDetails') &&
-        stackTrace != null &&
-        stackTrace.toString().isNotEmpty) {
+    if (isError && stackTrace != null && stackTrace.toString().isNotEmpty) {
       return 'StackTrace:\n$stackTrace'.truncate();
     }
     return null;

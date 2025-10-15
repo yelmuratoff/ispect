@@ -1,21 +1,41 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocChangeLog extends ISpectifyData {
-  BlocChangeLog({
-    required this.bloc,
-    required this.change,
+/// Log emitted when a Bloc transitions from one state to another in response to an event.
+///
+/// Corresponds to [BlocObserver.onTransition].
+/// Called before the bloc's state is updated.
+/// Includes the triggering event, current state, and next state.
+/// Only applies to Bloc (not Cubit), as transitions require events.
+final class BlocTransitionLog extends BlocLifecycleLog {
+  BlocTransitionLog({
+    required Bloc<dynamic, dynamic> super.bloc,
+    required this.transition,
     required this.settings,
   }) : super(
-          '''${bloc.runtimeType} changed\nCURRENT state: ${change.currentState.runtimeType}\nNEXT state: ${change.nextState.runtimeType}''',
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () {
+            final eventPayload = settings.printEventFullData
+                ? transition.event
+                : transition.event.runtimeType;
+            final currentPayload = settings.printStateFullData
+                ? transition.currentState
+                : transition.currentState.runtimeType;
+            final nextPayload = settings.printStateFullData
+                ? transition.nextState
+                : transition.nextState.runtimeType;
+            return '${bloc.runtimeType} transitioned from $currentPayload to $nextPayload'
+                '\nEVENT: $eventPayload';
+          },
+          additionalData: <String, dynamic>{
+            'event': transition.event,
+            'currentState': transition.currentState,
+            'nextState': transition.nextState,
+          },
         );
 
-  final BlocBase<dynamic> bloc;
-  final Change<dynamic> change;
+  final Transition<dynamic, dynamic> transition;
   final ISpectBlocSettings settings;
 
-  static const getKey = 'bloc-transition';
+  static const String logKey = 'bloc-transition';
 }

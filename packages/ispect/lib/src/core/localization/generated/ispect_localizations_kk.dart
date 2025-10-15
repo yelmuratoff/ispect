@@ -28,8 +28,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
 
   @override
-  String get analyticsLogDesc =>
-      'Журнал оқиғаларды талдау қызметіне жіберу логы';
+  String get analyticsLogDesc => 'Оқиға қадағаланды және аналитикаға жіберілді';
 
   @override
   String get apiToken => 'API токен';
@@ -56,24 +55,24 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get basicSettings => 'Негізгі баптаулар';
 
   @override
-  String get blocCloseLogDesc =>
-      'BLoC жабылу сәтін логтау үшін қолданылатын тег';
+  String get blocCloseLogDesc => 'Компонент жабылды және енді жаңартылмайды';
 
   @override
   String get blocCreateLogDesc =>
-      'BLoC құрылу сәтін логтау үшін қолданылатын тег';
+      'Компонент инициализацияланды және жұмысты бастады';
 
   @override
-  String get blocEventLogDesc =>
-      'BLoC-тағы оқиғаны өңдеу сәтін логтау үшін қолданылатын тег';
+  String get blocEventLogDesc => 'Бірдеңе істеу командасы алынды';
 
   @override
-  String get blocTransitionLogDesc =>
-      'BLoC-тағы күйлер арасындағы ауысуларды логтау үшін қолданылатын тег';
+  String get blocTransitionLogDesc => 'Командаға жауап ретінде күй өзгерді';
 
   @override
   String get blocStateLogDesc =>
-      'BLoC-тағы ағымдағы күйді логтау үшін қолданылатын тег';
+      'Күй өзгерді (командалар мен тікелей жаңартулар үшін жұмыс істейді)';
+
+  @override
+  String get blocDoneLogDesc => 'Команданы өңдеу аяқталды';
 
   @override
   String get buildVersion => 'Құрастыру нұсқасы';
@@ -253,7 +252,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get otherLogsForDevelopers =>
-      'Other logs are already being used by developers';
+      'Басқа жазбалар әзірлеушілер үшін қолданылуда';
 
   @override
   String get pageNotFound => 'Ой, бұл жолдағы бет';
@@ -363,12 +362,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String iSpectifyBlocClosesCount(Object text) {
-    return 'BLoC closes count: $text';
+    return 'BLoC жабулар саны: $text';
   }
 
   @override
   String iSpectifyBlocCreatesCount(Object text) {
-    return 'BLoC creates count: $text';
+    return 'BLoC құрулар саны: $text';
   }
 
   @override

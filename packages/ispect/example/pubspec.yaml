@@ -17,8 +17,6 @@ dependency_overrides:
     path: ../../ispectify_bloc
   ispectify_dio:
     path: ../../ispectify_dio
-  ispect_jira:
-    path: ../../ispect_jira
   ispectify_ws:
     path: ../../ispectify_ws
   ispectify_db:
@@ -38,18 +36,17 @@ dependencies:
   flutter_bloc: ^9.1.0
   http_interceptor: ^2.0.0
   flutter_riverpod: ^2.5.1
+  share_plus: ^12.0.0
+  open_filex: ^4.7.0
   auto_route:
 
   # Use local paths through dependency_overrides
-  ispect: ^4.4.2
-  ispectify_dio: ^4.4.2
-  ispectify_http: ^4.4.2
-  ispectify_bloc: ^4.4.2
-  ispect_jira: ^4.4.2
-  ispectify_ws: ^4.4.2
-  ispectify_db: ^4.4.2
-
-  provider: ^6.1.2
+  ispect: ^4.4.6
+  ispectify_dio: ^4.4.6
+  ispectify_http: ^4.4.6
+  ispectify_bloc: ^4.4.6
+  ispectify_ws: ^4.4.6
+  ispectify_db: ^4.4.6
 
 dev_dependencies:
   flutter_test:

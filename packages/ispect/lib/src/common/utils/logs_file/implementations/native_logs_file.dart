@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// Native platform implementation for log file operations.
 ///
@@ -122,15 +122,22 @@ class NativeLogsFile extends BaseLogsFile {
     Object file, {
     String? fileName,
     String fileType = 'json',
+    ISpectShareCallback? onShare,
   }) async {
     if (file is! File) {
       throw ArgumentError('Expected File instance, got ${file.runtimeType}');
     }
 
+    if (onShare == null) {
+      throw StateError(
+        'Share callback is not provided. Supply an onShare callback via ISpectBuilder.',
+      );
+    }
+
     try {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
+      await onShare(
+        ISpectShareRequest(
+          filePaths: [file.path],
           text: 'ISpect Application Logs',
           subject: 'Application Logs - ${DateTime.now().toIso8601String()}',
         ),
@@ -148,12 +155,13 @@ class NativeLogsFile extends BaseLogsFile {
   /// - Edge case notes: Creates temporary file, handles sharing errors
   static Future<void> createAndShareLogs(
     String logs, {
+    required ISpectShareCallback onShare,
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
   }) async {
     try {
       final file = await _createTemporaryFile(logs, fileName, fileType);
-      await _shareFile(file);
+      await _shareFile(file, onShare: onShare);
     } catch (e) {
       throw Exception('Failed to create and share log file: $e');
     }
@@ -176,10 +184,13 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   /// Shares file through system dialog
-  static Future<void> _shareFile(File file) async {
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
+  static Future<void> _shareFile(
+    File file, {
+    required ISpectShareCallback onShare,
+  }) async {
+    await onShare(
+      ISpectShareRequest(
+        filePaths: [file.path],
         text: 'ISpect Application Logs',
         subject: 'Application Logs - ${DateTime.now().toIso8601String()}',
       ),

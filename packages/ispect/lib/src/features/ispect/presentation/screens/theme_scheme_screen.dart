@@ -554,11 +554,18 @@ class _RadioMenuWidget extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   @override
-  Widget build(BuildContext context) => RadioMenuButton<String>(
-        onChanged: onChanged,
-        value: value,
-        groupValue: groupValue,
-        child: const Text('Radio Menu Button'),
+  Widget build(BuildContext context) => Row(
+        children: [
+          // ignore: deprecated_member_use
+          Radio<String>(
+            value: value,
+            // ignore: deprecated_member_use
+            groupValue: groupValue,
+            // ignore: deprecated_member_use
+            onChanged: onChanged,
+          ),
+          const Text('Radio Menu Button'),
+        ],
       );
 }
 
@@ -647,9 +654,12 @@ class _RadioControlRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
+          // ignore: deprecated_member_use
           Radio<String>(
             value: 'option1',
+            // ignore: deprecated_member_use
             groupValue: groupValue,
+            // ignore: deprecated_member_use
             onChanged: onChanged,
           ),
           const Text('Radio'),

@@ -314,7 +314,7 @@ class LogGenerationService {
   Future<void> generateBlocEvents({
     required int itemCount,
     required int loopDelayMs,
-    required TestCubit testCubit,
+    required TestBloc testCubit,
     required CounterBloc counterBloc,
   }) async {
     for (int i = 0; i < itemCount; i++) {

@@ -7,6 +7,7 @@ import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// feature toggles, action items, and panel configurations.
@@ -52,18 +53,18 @@ import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 final class ISpectOptions {
   const ISpectOptions({
     this.locale = const Locale('en'),
-    this.observer,
-    this.context,
+    required this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
-    this.isFeedbackEnabled = true,
     this.isColorPickerEnabled = true,
-    this.isThemeSchemaEnabled = true,
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
     this.itemsBuilder,
+    this.onShare,
+    this.onOpenFile,
+    this.onLoadLogContent,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -73,8 +74,6 @@ final class ISpectOptions {
 
   /// A navigator observer to track navigation events within the app.
   final NavigatorObserver? observer;
-
-  final BuildContext? context;
 
   /// Controls visibility of the log viewer page.
   ///
@@ -94,23 +93,11 @@ final class ISpectOptions {
   /// Defaults to `true`.
   final bool isInspectorEnabled;
 
-  /// Controls visibility of the feedback reporting tool.
-  ///
-  /// When `true`, users can access feedback and reporting features.
-  /// Defaults to `true`.
-  final bool isFeedbackEnabled;
-
   /// Controls visibility of the color picker tool.
   ///
   /// When `true`, the color picker utility will be available.
   /// Defaults to `true`.
   final bool isColorPickerEnabled;
-
-  /// Controls visibility of the theme schema inspector.
-  ///
-  /// When `true`, theme and color scheme inspection tools will be available.
-  /// Defaults to `true`.
-  final bool isThemeSchemaEnabled;
 
   /// A list of custom action items that can be triggered in `ISpect`.
   ///
@@ -144,6 +131,25 @@ final class ISpectOptions {
   /// within the ISpect interface, enabling advanced customization scenarios.
   final ISpectifyDataBuilder? itemsBuilder;
 
+  /// Custom handler for share actions triggered inside ISpect.
+  ///
+  /// When provided, built-in share buttons delegate to this callback instead of
+  /// relying on external packages. If omitted, share-related UI is hidden.
+  final ISpectShareCallback? onShare;
+
+  /// Custom handler for file opening actions triggered inside ISpect.
+  ///
+  /// When provided, locations that previously relied on external packages will
+  /// call this callback with a file system path. UI that requires it is hidden
+  /// when no callback is supplied.
+  final ISpectOpenFileCallback? onOpenFile;
+
+  /// Custom loader invoked when the log viewer needs raw content from a file.
+  ///
+  /// When omitted, ISpect relies solely on the paste flow. Return `null` to
+  /// cancel the loading operation without showing an error.
+  final ISpectLoadLogContentCallback? onLoadLogContent;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -160,32 +166,32 @@ final class ISpectOptions {
   ISpectOptions copyWith({
     Locale? locale,
     NavigatorObserver? observer,
-    BuildContext? context,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,
-    bool? isFeedbackEnabled,
     bool? isColorPickerEnabled,
-    bool? isThemeSchemaEnabled,
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
     ISpectifyDataBuilder? itemsBuilder,
+    ISpectShareCallback? onShare,
+    ISpectOpenFileCallback? onOpenFile,
+    ISpectLoadLogContentCallback? onLoadLogContent,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
       observer: observer ?? this.observer,
-      context: context ?? this.context,
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
-      isFeedbackEnabled: isFeedbackEnabled ?? this.isFeedbackEnabled,
       isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
-      isThemeSchemaEnabled: isThemeSchemaEnabled ?? this.isThemeSchemaEnabled,
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
       itemsBuilder: itemsBuilder ?? this.itemsBuilder,
+      onShare: onShare ?? this.onShare,
+      onOpenFile: onOpenFile ?? this.onOpenFile,
+      onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
     );
   }
 
@@ -197,34 +203,34 @@ final class ISpectOptions {
     return other is ISpectOptions &&
         other.locale == locale &&
         other.observer == observer &&
-        other.context == context &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
         other.isInspectorEnabled == isInspectorEnabled &&
-        other.isFeedbackEnabled == isFeedbackEnabled &&
         other.isColorPickerEnabled == isColorPickerEnabled &&
-        other.isThemeSchemaEnabled == isThemeSchemaEnabled &&
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
-        other.itemsBuilder == itemsBuilder;
+        other.itemsBuilder == itemsBuilder &&
+        other.onShare == onShare &&
+        other.onOpenFile == onOpenFile &&
+        other.onLoadLogContent == onLoadLogContent;
   }
 
   @override
   int get hashCode {
     return locale.hashCode ^
         observer.hashCode ^
-        context.hashCode ^
         isLogPageEnabled.hashCode ^
         isPerformanceEnabled.hashCode ^
         isInspectorEnabled.hashCode ^
-        isFeedbackEnabled.hashCode ^
         isColorPickerEnabled.hashCode ^
-        isThemeSchemaEnabled.hashCode ^
         actionItems.hashCode ^
         panelItems.hashCode ^
         panelButtons.hashCode ^
-        itemsBuilder.hashCode;
+        itemsBuilder.hashCode ^
+        onShare.hashCode ^
+        onOpenFile.hashCode ^
+        onLoadLogContent.hashCode;
   }
 
   @override
@@ -232,17 +238,17 @@ final class ISpectOptions {
     return '''ISpectOptions(
       locale: $locale,
       observer: $observer,
-      context: $context,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
       isInspectorEnabled: $isInspectorEnabled,
-      isFeedbackEnabled: $isFeedbackEnabled,
       isColorPickerEnabled: $isColorPickerEnabled,
-      isThemeSchemaEnabled: $isThemeSchemaEnabled,
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
       itemsBuilder: $itemsBuilder,
+      onShare: $onShare,
+      onOpenFile: $onOpenFile,
+      onLoadLogContent: $onLoadLogContent,
       )''';
   }
 }

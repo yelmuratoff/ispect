@@ -1,7 +1,0 @@
-{
-   "@@locale": "zh",
-   "cacheSize": "缓存大小：{size}",
-   "clearCache": "清除缓存",
-   "appData": "应用数据",
-   "totalFilesCount": "文件总数：{count}"
-}

@@ -1,22 +1,17 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
+part of 'base.dart';
 
-class BlocCreateLog extends ISpectifyData {
+/// Log emitted when a Bloc or Cubit is instantiated.
+///
+/// Corresponds to [BlocObserver.onCreate].
+/// Useful for tracking when lazy-loaded blocs are created.
+final class BlocCreateLog extends BlocLifecycleLog {
   BlocCreateLog({
-    required this.bloc,
+    required super.bloc,
   }) : super(
-          '${bloc.runtimeType} created',
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () => '${bloc.runtimeType} created',
         );
 
-  final BlocBase<dynamic> bloc;
-
-  static const getKey = 'bloc-create';
-
-  @override
-  String get textMessage {
-    final sb = StringBuffer()..write(message);
-    return sb.toString();
-  }
+  static const String logKey = 'bloc-create';
 }

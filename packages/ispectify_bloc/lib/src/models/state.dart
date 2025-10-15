@@ -1,21 +1,35 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocStateLog extends ISpectifyData {
+/// Log emitted when a Bloc or Cubit's state changes.
+///
+/// Corresponds to [BlocObserver.onChange].
+/// Called before the bloc's state is updated with the new value.
+/// Includes current and next states, but NOT the triggering event (use [BlocTransitionLog] for that).
+final class BlocStateLog extends BlocLifecycleLog {
   BlocStateLog({
-    required this.bloc,
+    required super.bloc,
     required this.change,
     required this.settings,
   }) : super(
-          '''${bloc.runtimeType} changed\nCURRENT state: ${change.currentState.runtimeType}\nNEXT state: ${change.nextState.runtimeType}''',
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () {
+            final currentPayload = settings.printStateFullData
+                ? change.currentState
+                : change.currentState.runtimeType;
+            final nextPayload = settings.printStateFullData
+                ? change.nextState
+                : change.nextState.runtimeType;
+            return '${bloc.runtimeType} changed from $currentPayload to $nextPayload';
+          },
+          additionalData: <String, dynamic>{
+            'current-state': change.currentState,
+            'next-state': change.nextState,
+          },
         );
 
-  final BlocBase<dynamic> bloc;
   final Change<dynamic> change;
   final ISpectBlocSettings settings;
 
-  static const getKey = 'bloc-state';
+  static const String logKey = 'bloc-state';
 }

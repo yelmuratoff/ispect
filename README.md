@@ -41,10 +41,7 @@ Drop-in Flutter debug panel: network + database + logs + performance + UI inspec
 
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/feedback.png?raw=true" width="160" />
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/device_info.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/info.png?raw=true" width="160" />
 </div>
 
 ## 🏗️ Architecture
@@ -60,7 +57,6 @@ Modular packages. Include only what you use:
 | [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
 | [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) | Database operations | [![pub](https://img.shields.io/pub/v/ispectify_db.svg)](https://pub.dev/packages/ispectify_db) |
 | [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
-| [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) | Jira issue export | [![pub](https://img.shields.io/pub/v/ispect_jira.svg)](https://pub.dev/packages/ispect_jira) |
 
 ## Overview
 
@@ -128,7 +124,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.4.2
+  ispect: ^4.4.6
 ```
 
 ## Security & Production Guidelines
@@ -399,6 +395,60 @@ flutter build apk --dart-define=ENABLE_ISPECT=false --dart-define=ENVIRONMENT=pr
 flutter build apk --flavor production # ISpect automatically disabled
 ```
 
+### Custom Callbacks
+
+ISpect supports custom callback functions to extend its functionality for file operations, content loading, and sharing. These callbacks allow you to integrate with platform-specific packages and handle operations according to your app's requirements.
+
+```dart
+ISpectBuilder(
+  options: ISpectOptions(
+    // ... other options ...
+    onLoadLogContent: (context) async {
+      // Here you can load log content.
+      // For example, from a file using file_picker.
+      return 'Loaded log content from callback';
+    },
+    onOpenFile: (path) async {
+      // Here you can handle opening the file.
+      // For example, using open_filex package.
+      await OpenFilex.open(path);
+    },
+    onShare: (ISpectShareRequest request) async {
+      // Here you can handle sharing the content.
+      // For example, using share_plus package.
+      final filesPath = request.filePaths;
+      final files = <XFile>[];
+      for (final path in filesPath) {
+        files.add(XFile(path));
+      }
+      await SharePlus.instance.share(ShareParams(
+        text: request.text,
+        subject: request.subject,
+        files: files,
+      ));
+    },
+  ),
+  child: child,
+)
+```
+
+**Callback Descriptions:**
+
+- **`onLoadLogContent`**: Called when ISpect needs to load additional log content. Return a string with the content to be displayed. Useful for loading logs from external sources like files or network.
+
+- **`onOpenFile`**: Triggered when a user wants to open a file from within ISpect. Implement platform-specific file opening logic here.
+
+- **`onShare`**: Handles sharing operations when users want to export logs, screenshots, or other data. The `ISpectShareRequest` contains file paths, text content, and subject for sharing.
+
+**Integration Examples:**
+
+For file operations, consider using:
+- `file_picker` for selecting files to load
+- `open_filex` or `open_file` for opening files on device
+- `share_plus` for cross-platform sharing functionality
+
+These callbacks are only called when ISpect is enabled, ensuring no impact on production builds.
+
 ## Integration Guides
 
 ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, database operations, state management, WebSocket connections, and navigation.
@@ -410,23 +460,21 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.4.2
+  ispect: ^4.4.6
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.4.2      # For Dio HTTP client
-  ispectify_http: ^4.4.2     # For standard HTTP package
+  ispectify_dio: ^4.4.6      # For Dio HTTP client
+  ispectify_http: ^4.4.6     # For standard HTTP package
   
   # Database integration
-  ispectify_db: ^4.4.2       # For database operation logging
+  ispectify_db: ^4.4.6       # For database operation logging
   
   # WebSocket integration
-  ispectify_ws: ^4.4.2       # For WebSocket monitoring
+  ispectify_ws: ^4.4.6       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.4.2     # For BLoC state management
+  ispectify_bloc: ^4.4.6     # For BLoC state management
   
-  # Optional: Jira integration
-  ispect_jira: ^4.4.2        # For automated bug reporting
 ```
 
 ### HTTP Integration
@@ -437,7 +485,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.4.2
+  ispectify_dio: ^4.4.6
 ```
 
 ```dart
@@ -476,7 +524,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.4.2
+  ispectify_http: ^4.4.6
 ```
 
 ```dart
@@ -527,7 +575,7 @@ For database operation logging, use the `ispectify_db` package:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.2
+  ispectify_db: ^4.4.6
 ```
 
 ```dart
@@ -561,7 +609,7 @@ For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.4.2
+  ispectify_ws: ^4.4.6
 ```
 
 ```dart
@@ -595,7 +643,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.4.2
+  ispectify_bloc: ^4.4.6
 ```
 
 ```dart
@@ -768,7 +816,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) - WebSocket connection monitoring
 - [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) - Database operation logging
 - [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) - BLoC state management integration
-- [ispect_jira](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect_jira) - Jira ticket creation integration
 
 ---
 

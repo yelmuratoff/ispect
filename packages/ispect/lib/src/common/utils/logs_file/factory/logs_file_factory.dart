@@ -1,6 +1,7 @@
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
 import 'package:ispect/src/common/utils/logs_file/factory/native_factory.dart'
     if (dart.library.js_interop) 'package:ispect/src/common/utils/logs_file/factory/web_factory.dart';
+import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 /// Factory class for creating platform-appropriate log file handlers.
 ///
@@ -70,12 +71,14 @@ class LogsFileFactory {
     String logs, {
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
+    ISpectShareCallback? onShare,
   }) async {
     final handler = create();
     await handler.createAndDownloadFile(
       logs,
       fileName: fileName,
       fileType: fileType,
+      onShare: onShare,
     );
   }
 }

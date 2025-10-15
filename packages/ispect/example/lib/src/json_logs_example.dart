@@ -65,6 +65,7 @@ class _JsonLogsExampleState extends State<JsonLogsExample> {
       // Export all logs
       await _jsonService.shareLogsAsJsonFile(
         _sampleLogs,
+        onShare: (_) async {},
         fileName: 'sample_logs_export',
         includeMetadata: true,
       );
@@ -102,6 +103,7 @@ class _JsonLogsExampleState extends State<JsonLogsExample> {
         _sampleLogs,
         filteredLogs,
         errorFilter,
+        onShare: (_) async {},
         fileName: 'error_logs_only',
       );
 
@@ -161,6 +163,7 @@ class _JsonLogsExampleState extends State<JsonLogsExample> {
       // Using the JSON service directly
       await _jsonService.shareLogsAsJsonFile(
         _sampleLogs,
+        onShare: (_) async {},
         fileName: 'direct_service_export',
       );
 

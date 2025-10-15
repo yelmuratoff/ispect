@@ -34,6 +34,6 @@ final logGenerationServiceProvider = Provider<LogGenerationService>((ref) {
 
 final streamServiceProvider = Provider<StreamService>((ref) => StreamService());
 
-final testCubitProvider = Provider<TestCubit>((ref) => TestCubit());
+final testCubitProvider = Provider<TestBloc>((ref) => TestBloc());
 
 final counterBlocProvider = Provider<CounterBloc>((ref) => CounterBloc());

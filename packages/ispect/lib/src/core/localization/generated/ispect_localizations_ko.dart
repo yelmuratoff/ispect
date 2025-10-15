@@ -54,19 +54,22 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get basicSettings => '기본 설정';
 
   @override
-  String get blocCloseLogDesc => 'BLoC 종료 이벤트를 기록하는 데 사용되는 태그';
+  String get blocCloseLogDesc => '구성 요소가 닫히고 더 이상 업데이트되지 않습니다';
 
   @override
-  String get blocCreateLogDesc => 'BLoC 생성 이벤트를 기록하는 데 사용되는 태그';
+  String get blocCreateLogDesc => '구성 요소가 초기화되고 작업을 시작했습니다';
 
   @override
-  String get blocEventLogDesc => 'BLoC에서 이벤트 처리를 기록하는 데 사용되는 태그';
+  String get blocEventLogDesc => '무언가를 수행하라는 명령을 받았습니다';
 
   @override
-  String get blocTransitionLogDesc => 'BLoC에서 상태 전환을 기록하는 데 사용되는 태그';
+  String get blocTransitionLogDesc => '명령에 응답하여 상태가 변경되었습니다';
 
   @override
-  String get blocStateLogDesc => 'BLoC에서 현재 상태를 기록하는 데 사용되는 태그';
+  String get blocStateLogDesc => '상태가 변경되었습니다(명령 및 직접 업데이트 모두에서 작동)';
+
+  @override
+  String get blocDoneLogDesc => '명령 처리가 완료되었습니다';
 
   @override
   String get buildVersion => '빌드 버전';
