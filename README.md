@@ -395,6 +395,60 @@ flutter build apk --dart-define=ENABLE_ISPECT=false --dart-define=ENVIRONMENT=pr
 flutter build apk --flavor production # ISpect automatically disabled
 ```
 
+### Custom Callbacks
+
+ISpect supports custom callback functions to extend its functionality for file operations, content loading, and sharing. These callbacks allow you to integrate with platform-specific packages and handle operations according to your app's requirements.
+
+```dart
+ISpectBuilder(
+  options: ISpectOptions(
+    // ... other options ...
+    onLoadLogContent: (context) async {
+      // Here you can load log content.
+      // For example, from a file using file_picker.
+      return 'Loaded log content from callback';
+    },
+    onOpenFile: (path) async {
+      // Here you can handle opening the file.
+      // For example, using open_filex package.
+      await OpenFilex.open(path);
+    },
+    onShare: (ISpectShareRequest request) async {
+      // Here you can handle sharing the content.
+      // For example, using share_plus package.
+      final filesPath = request.filePaths;
+      final files = <XFile>[];
+      for (final path in filesPath) {
+        files.add(XFile(path));
+      }
+      await SharePlus.instance.share(ShareParams(
+        text: request.text,
+        subject: request.subject,
+        files: files,
+      ));
+    },
+  ),
+  child: child,
+)
+```
+
+**Callback Descriptions:**
+
+- **`onLoadLogContent`**: Called when ISpect needs to load additional log content. Return a string with the content to be displayed. Useful for loading logs from external sources like files or network.
+
+- **`onOpenFile`**: Triggered when a user wants to open a file from within ISpect. Implement platform-specific file opening logic here.
+
+- **`onShare`**: Handles sharing operations when users want to export logs, screenshots, or other data. The `ISpectShareRequest` contains file paths, text content, and subject for sharing.
+
+**Integration Examples:**
+
+For file operations, consider using:
+- `file_picker` for selecting files to load
+- `open_filex` or `open_file` for opening files on device
+- `share_plus` for cross-platform sharing functionality
+
+These callbacks are only called when ISpect is enabled, ensuring no impact on production builds.
+
 ## Integration Guides
 
 ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, database operations, state management, WebSocket connections, and navigation.
@@ -421,7 +475,6 @@ dependencies:
   # State management integration
   ispectify_bloc: ^4.4.6     # For BLoC state management
   
-  # For automated bug reporting
 ```
 
 ### HTTP Integration
