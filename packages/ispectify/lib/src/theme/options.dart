@@ -1,37 +1,5 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Default log type titles for ISpectify logging.
-final Map<String, String> _defaultTitles = {
-  ISpectifyLogType.critical.key: 'critical',
-  ISpectifyLogType.warning.key: 'warning',
-  ISpectifyLogType.verbose.key: 'verbose',
-  ISpectifyLogType.info.key: 'info',
-  ISpectifyLogType.debug.key: 'debug',
-  ISpectifyLogType.error.key: 'error',
-  ISpectifyLogType.exception.key: 'exception',
-  ISpectifyLogType.httpError.key: 'http-error',
-  ISpectifyLogType.httpRequest.key: 'http-request',
-  ISpectifyLogType.httpResponse.key: 'http-response',
-  ISpectifyLogType.blocEvent.key: 'bloc-event',
-  ISpectifyLogType.blocTransition.key: 'bloc-transition',
-  ISpectifyLogType.blocCreate.key: 'bloc-create',
-  ISpectifyLogType.blocClose.key: 'bloc-close',
-  ISpectifyLogType.blocDone.key: 'bloc-done',
-  ISpectifyLogType.blocState.key: 'bloc-state',
-  ISpectifyLogType.riverpodAdd.key: 'riverpod-add',
-  ISpectifyLogType.riverpodUpdate.key: 'riverpod-update',
-  ISpectifyLogType.riverpodDispose.key: 'riverpod-dispose',
-  ISpectifyLogType.riverpodFail.key: 'riverpod-fail',
-  ISpectifyLogType.route.key: 'route',
-  ISpectifyLogType.good.key: 'good',
-  ISpectifyLogType.analytics.key: 'analytics',
-  ISpectifyLogType.provider.key: 'provider',
-  ISpectifyLogType.print.key: 'print',
-  ISpectifyLogType.dbQuery.key: 'db-query',
-  ISpectifyLogType.dbResult.key: 'db-result',
-  ISpectifyLogType.dbError.key: 'db-error',
-};
-
 /// Default ANSI colors for ISpectify log types.
 final Map<String, AnsiPen> _defaultColors = {
   ISpectifyLogType.critical.key: AnsiPen()..red(),
@@ -94,7 +62,7 @@ class ISpectifyOptions {
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,
-        titles = {..._defaultTitles, if (titles != null) ...titles},
+        titles = {if (titles != null) ...titles},
         colors = {..._defaultColors, if (colors != null) ...colors};
 
   /// Whether log history is enabled.
