@@ -8,7 +8,23 @@ class BlocStateLog extends ISpectifyData {
     required this.change,
     required this.settings,
   }) : super(
-          '''${bloc.runtimeType} changed\nCURRENT state: ${change.currentState.runtimeType}\nNEXT state: ${change.nextState.runtimeType}''',
+          () {
+            final buffer = StringBuffer()
+              ..write('${bloc.runtimeType} emitted a change')
+              ..write('\nCURRENT state: ')
+              ..write(
+                settings.printStateFullData
+                    ? change.currentState
+                    : change.currentState.runtimeType,
+              )
+              ..write('\nNEXT state: ')
+              ..write(
+                settings.printStateFullData
+                    ? change.nextState
+                    : change.nextState.runtimeType,
+              );
+            return buffer.toString();
+          }(),
           key: getKey,
           title: getKey,
         );

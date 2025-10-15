@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_bloc/src/models/_models.dart';
+import 'package:ispectify_bloc/src/settings.dart';
 
 /// `BLoC` logger on `ISpectify` base
 ///
@@ -18,12 +18,12 @@ class ISpectBlocObserver extends BlocObserver {
     this.onBlocError,
     this.onBlocCreate,
     this.onBlocClose,
-    this.filters = const [],
-  }) {
+    Iterable<String> filters = const <String>[],
+  }) : filters = List<String>.unmodifiable(filters) {
     _logger = logger ?? ISpectify();
   }
 
-  late ISpectify _logger;
+  late final ISpectify _logger;
   final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
   final void Function(
     Bloc<dynamic, dynamic> bloc,
@@ -41,12 +41,49 @@ class ISpectBlocObserver extends BlocObserver {
   final ISpectBlocSettings settings;
   final List<String> filters;
 
+  bool _isFiltered(Object? candidate) {
+    if (filters.isEmpty) {
+      return false;
+    }
+    final candidateString = candidate?.toString();
+    if (candidateString == null || candidateString.isEmpty) {
+      return false;
+    }
+    for (final pattern in filters) {
+      if (candidateString.contains(pattern)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _shouldLog({
+    required bool toggle,
+    required Object? candidate,
+  }) {
+    if (!settings.enabled || !toggle) {
+      return false;
+    }
+    return !_isFiltered(candidate);
+  }
+
+  void _logUnhandledError(
+    BlocBase<dynamic> bloc,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    onBlocError?.call(bloc, error, stackTrace);
+    _logger.error(
+      '${bloc.runtimeType}',
+      exception: error,
+      stackTrace: stackTrace,
+    );
+  }
+
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    final eventString = event.toString();
-    final isFilterContains = filters.any(eventString.contains);
-    if (!settings.enabled || !settings.printEvents || isFilterContains) {
+    if (!_shouldLog(toggle: settings.printEvents, candidate: event)) {
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
@@ -69,9 +106,7 @@ class ISpectBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    final transitionString = transition.toString();
-    final isFilterContains = filters.any(transitionString.contains);
-    if (!settings.enabled || !settings.printTransitions || isFilterContains) {
+    if (!_shouldLog(toggle: settings.printTransitions, candidate: transition)) {
       return;
     }
     final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
@@ -80,12 +115,9 @@ class ISpectBlocObserver extends BlocObserver {
     }
     onBlocTransition?.call(bloc, transition);
     _logger.logCustom(
-      BlocChangeLog(
+      BlocTransitionLog(
         bloc: bloc,
-        change: Change(
-          currentState: transition.currentState,
-          nextState: transition.nextState,
-        ),
+        transition: transition,
         settings: settings,
       ),
     );
@@ -94,9 +126,11 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    final changeString = change.toString();
-    final isFilterContains = filters.any(changeString.contains);
-    if (!settings.enabled || !settings.printChanges || isFilterContains) {
+    if (!_shouldLog(toggle: settings.printChanges, candidate: change)) {
+      return;
+    }
+    final accepted = settings.changeFilter?.call(bloc, change) ?? true;
+    if (!accepted) {
       return;
     }
     onBlocChange?.call(bloc, change);
@@ -112,25 +146,16 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    final errorAsString = error.toString();
-    final isFilterContains = filters.any(errorAsString.contains);
-    if (!settings.enabled || isFilterContains) {
+    if (!_shouldLog(toggle: true, candidate: error)) {
       return;
     }
-    onBlocError?.call(bloc, error, stackTrace);
-    _logger.error(
-      '${bloc.runtimeType}',
-      exception: error,
-      stackTrace: stackTrace,
-    );
+    _logUnhandledError(bloc, error, stackTrace);
   }
 
   @override
   void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    final blocAsString = bloc.toString();
-    final isFilterContains = filters.any(blocAsString.contains);
-    if (!settings.enabled || !settings.printCreations || isFilterContains) {
+    if (!_shouldLog(toggle: settings.printCreations, candidate: bloc)) {
       return;
     }
     onBlocCreate?.call(bloc);
@@ -140,12 +165,39 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
-    final blocAsString = bloc.toString();
-    final isFilterContains = filters.any(blocAsString.contains);
-    if (!settings.enabled || !settings.printClosings || isFilterContains) {
+    if (!_shouldLog(toggle: settings.printClosings, candidate: bloc)) {
       return;
     }
     onBlocClose?.call(bloc);
     _logger.logCustom(BlocCloseLog(bloc: bloc));
+  }
+
+  @override
+  void onDone(
+    Bloc<dynamic, dynamic> bloc,
+    Object? event, [
+    Object? error,
+    StackTrace? stackTrace,
+  ]) {
+    super.onDone(bloc, event, error, stackTrace);
+    final isEnabled = settings.enabled && !_isFiltered(bloc);
+    if (!isEnabled) {
+      return;
+    }
+    if (error != null && stackTrace != null) {
+      _logUnhandledError(bloc, error, stackTrace);
+    }
+    if (!settings.printCompletions) {
+      return;
+    }
+    _logger.logCustom(
+      BlocDoneLog(
+        bloc: bloc,
+        settings: settings,
+        event: event,
+        error: error,
+        stackTrace: stackTrace,
+      ),
+    );
   }
 }

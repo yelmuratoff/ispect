@@ -13,7 +13,7 @@ dependency_overrides:
 
 dependencies:
   ispectify: ^4.4.3-dev01
-  bloc: ^9.0.0
+  bloc: ^9.1.0
   meta: ^1.8.0
 
 dev_dependencies:
