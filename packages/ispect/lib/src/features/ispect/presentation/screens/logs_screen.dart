@@ -17,6 +17,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_car
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/ispect/services/file_processing_service.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
@@ -449,7 +450,7 @@ class _MainLogsView extends StatelessWidget {
               child: _EmptyLogsWidget(),
             ),
           ),
-        SliverList.builder(
+        SuperSliverList.builder(
           itemCount: filteredLogEntries.length,
           itemBuilder: (context, index) {
             final logEntry = logsViewController.getLogEntryAtIndex(
