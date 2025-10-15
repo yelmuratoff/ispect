@@ -15,8 +15,7 @@ readme_generator/
     ├── ispectify.json
     ├── ispectify_dio.json
     ├── ispectify_http.json
-    ├── ispectify_bloc.json
-    └── ispect_jira.json
+    └── ispectify_bloc.json 
 
 bash/
 └── update_readme.sh       # CLI wrapper script

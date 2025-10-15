@@ -22,7 +22,6 @@ PACKAGES=(
 	ispectify_ws       # depends on ispectify
    ispectify_db      # depends on ispectify
 	ispect             # core panel depends on ispectify + integrations (dev)
-	ispect_jira        # optional addon
 )
 
 MODE_DRY_RUN=0

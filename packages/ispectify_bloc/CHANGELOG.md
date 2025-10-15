@@ -1,13 +1,13 @@
 # Changelog
 
-# Changelog
-
 ## 4.4.3-dev01
 
 ### Changes
 - Removed hard dependency on `share_plus` by introducing configurable share callbacks; all share flows now rely on `ISpectOptions.onShare`.
 - Removed `open_filex` usage in favor of an optional `ISpectOptions.onOpenFile` callback.
 - Conditionally render share/open actions across UI so buttons disappear when callbacks are not supplied.
+- Eliminated external `provider`, `device_info_plus`, and `package_info_plus` dependencies; JSON explorer now ships with an internal selector and App Info surfaces rely on optional callbacks or Flutter APIs.
+- Feedback builder and `ispect_jira` package removed to streamline core functionality.
 
 ### Added
 - New `ISpectShareRequest`, `ISpectShareCallback`, and `ISpectOpenFileCallback` contracts to keep integrations package-free.

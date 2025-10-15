@@ -52,9 +52,9 @@ ISpectifyBloc integrates BLoC state management with the ISpectify logging system
 - State Change Logging: Automatic logging of all BLoC state changes
 - Event Tracking: Detailed event logging with parameters
 - Transition Monitoring: Complete state transition tracking
-- Error Handling: BLoC error logging with stack traces and typed records
+- Error Handling: BLoC error logging with stack traces
 - Performance Metrics: State change timing and performance tracking
-- Configurable: Flexible filtering, presets, and formatting options
+- Configurable: Flexible filtering and formatting options
 
 ## Configuration Options
 
@@ -101,26 +101,10 @@ ISpectBuilder(
         key: 'bloc-state',
         isDisabled: true, // Disable state logs
       ),
-      LogDescription(
-        key: 'bloc-error',
-        isDisabled: true, // Disable error logs
-      ),
     ],
   ),
   child: child,
 )
-```
-
-### Settings Presets and Overrides
-
-```dart
-final observer = ISpectBlocObserver(
-  settings: ISpectBlocSettings.verbose.copyWith(
-    printErrors: false, // Disable runtime error forwarding (e.g. for tests)
-    eventFilter: (bloc, event) => event is! SecretEvent,
-  ),
-  filters: ['AuthBloc'],
-);
 ```
 
 ### Using with Different BLoC Types
