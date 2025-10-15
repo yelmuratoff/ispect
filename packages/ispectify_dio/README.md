@@ -29,6 +29,21 @@
 
 Capture Dio HTTP traffic with structured request/response/error logging.
 
+## Interface Preview
+
+<div align="center">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/panel.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/logs.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_request.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/detailed_http_response.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/inspector.png?raw=true" width="160" />
+</div>
+
+<div align="center">
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/color_picker.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
+</div>
+
 ## 🏗️ Architecture
 
 ISpectifyDio integrates with the Dio HTTP client through interceptors:
@@ -144,7 +159,7 @@ Add ispectify_dio to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.4.4
+  ispectify_dio: ^4.4.5
 ```
 
 ## Security & Production Guidelines

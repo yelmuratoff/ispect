@@ -1,6 +1,6 @@
 name: ispectify
 description: Foundation logging system for ISpect toolkit (based on Talker)
-version: 4.4.4
+version: 4.4.5
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
