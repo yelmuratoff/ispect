@@ -112,7 +112,7 @@ Add ispectify_db to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.3
+  ispectify_db: ^4.4.4
 ```
 
 ## Security & Production Guidelines
