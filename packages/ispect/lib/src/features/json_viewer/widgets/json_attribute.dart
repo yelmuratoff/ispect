@@ -120,120 +120,125 @@ class _JsonAttributeState extends State<JsonAttribute> {
 
   @override
   Widget build(BuildContext context) => JsonStoreSelector<
-        ({
-          String searchTerm,
-          bool hasSearchResults,
-          int? focusedKeyMatchIndex,
-          int? focusedValueMatchIndex,
-        })>(
-      store: widget.store,
-      selector: (store) {
-        final hasResults = store.searchResults.isNotEmpty;
-        int? focusedKeyIndex;
-        int? focusedValueIndex;
+          ({
+            String searchTerm,
+            bool hasSearchResults,
+            int? focusedKeyMatchIndex,
+            int? focusedValueMatchIndex,
+          })>(
+        store: widget.store,
+        selector: (store) {
+          final hasResults = store.searchResults.isNotEmpty;
+          int? focusedKeyIndex;
+          int? focusedValueIndex;
 
-        if (hasResults && store.focusedSearchResult.node == widget.node) {
-          if (store.focusedSearchResult.matchLocation ==
-              SearchMatchLocation.key) {
-            focusedKeyIndex = store.focusedSearchResult.matchIndex;
-          } else if (store.focusedSearchResult.matchLocation ==
-              SearchMatchLocation.value) {
-            focusedValueIndex = store.focusedSearchResult.matchIndex;
+          if (hasResults && store.focusedSearchResult.node == widget.node) {
+            if (store.focusedSearchResult.matchLocation ==
+                SearchMatchLocation.key) {
+              focusedKeyIndex = store.focusedSearchResult.matchIndex;
+            } else if (store.focusedSearchResult.matchLocation ==
+                SearchMatchLocation.value) {
+              focusedValueIndex = store.focusedSearchResult.matchIndex;
+            }
           }
-        }
 
-        return (
-          searchTerm: store.searchTerm,
-          hasSearchResults: hasResults,
-          focusedKeyMatchIndex: focusedKeyIndex,
-          focusedValueMatchIndex: focusedValueIndex,
-        );
-      },
-      builder: (context, searchData) {
-        final valueStyle = _valueStyle;
+          return (
+            searchTerm: store.searchTerm,
+            hasSearchResults: hasResults,
+            focusedKeyMatchIndex: focusedKeyIndex,
+            focusedValueMatchIndex: focusedValueIndex,
+          );
+        },
+        builder: (context, searchData) {
+          final valueStyle = _valueStyle;
 
-        return MouseRegion(
-          cursor: _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
-          onEnter: (_) => _handleMouseEnter(),
-          onExit: (_) => _handleMouseExit(),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _hasInteraction ? () => _handleTap(context, valueStyle) : null,
-            child: AnimatedBuilder(
-              animation: widget.node,
-              builder: (context, _) => RepaintBoundary(
-                child: Padding(
-                  padding: _kBottomPadding,
-                  child: Row(
-                    crossAxisAlignment: widget.node.isRoot
-                        ? CrossAxisAlignment.center
-                        : CrossAxisAlignment.start,
-                    children: [
-                      SelectionContainer.disabled(
-                        child: _IndentationWidget(
-                          depth: widget.node.treeDepth,
-                          indentationPadding: widget.theme.indentationPadding,
-                          color: widget.theme.indentationLineColor,
-                        ),
-                      ),
-                      if (widget.node.isRoot && widget.node.children.isNotEmpty)
-                        const SelectionContainer.disabled(
-                          child: SizedBox(
-                            width: 24,
-                            child: _ToggleButton(),
+          return MouseRegion(
+            cursor:
+                _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
+            onEnter: (_) => _handleMouseEnter(),
+            onExit: (_) => _handleMouseExit(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _hasInteraction
+                  ? () => _handleTap(context, valueStyle)
+                  : null,
+              child: AnimatedBuilder(
+                animation: widget.node,
+                builder: (context, _) => RepaintBoundary(
+                  child: Padding(
+                    padding: _kBottomPadding,
+                    child: Row(
+                      crossAxisAlignment: widget.node.isRoot
+                          ? CrossAxisAlignment.center
+                          : CrossAxisAlignment.start,
+                      children: [
+                        SelectionContainer.disabled(
+                          child: _IndentationWidget(
+                            depth: widget.node.treeDepth,
+                            indentationPadding: widget.theme.indentationPadding,
+                            color: widget.theme.indentationLineColor,
                           ),
                         ),
-                      _buildNodeKey(
-                        context,
-                        searchData.searchTerm,
-                        searchData.hasSearchResults,
-                        searchData.focusedKeyMatchIndex,
-                      ),
-                      const SizedBox(
-                        width: 8,
-                        child: _KeySeparatorText(),
-                      ),
-                      if (widget.node.value is List)
-                        _ArraySuffixWidget(
-                          length: widget.node.children.length,
-                          style: widget.theme.rootKeyTextStyle,
-                        ),
-                      if (widget.node.value is Map || widget.node.value is Set)
-                        _MapSuffixWidget(
-                          length: widget.node.children.length,
-                          style: widget.theme.rootKeyTextStyle,
-                        ),
-                      if (widget.node.isRoot)
-                        SelectionContainer.disabled(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: _CopyButton(
-                              node: widget.node,
-                              theme: widget.theme,
+                        if (widget.node.isRoot &&
+                            widget.node.children.isNotEmpty)
+                          const SelectionContainer.disabled(
+                            child: SizedBox(
+                              width: 24,
+                              child: _ToggleButton(),
                             ),
                           ),
-                        ),
-                      if (widget.node.isRoot)
-                        _buildRootInformation(context)
-                      else
-                        _buildPropertyValue(
+                        _buildNodeKey(
                           context,
                           searchData.searchTerm,
                           searchData.hasSearchResults,
-                          searchData.focusedValueMatchIndex,
-                          valueStyle,
+                          searchData.focusedKeyMatchIndex,
                         ),
-                      if (widget.trailingBuilder != null)
-                        widget.trailingBuilder!(context, widget.node),
-                    ],
+                        const SizedBox(
+                          width: 8,
+                          child: _KeySeparatorText(),
+                        ),
+                        if (widget.node.value is List)
+                          _ArraySuffixWidget(
+                            length: widget.node.children.length,
+                            style: widget.theme.rootKeyTextStyle,
+                          ),
+                        if (widget.node.value is Map ||
+                            widget.node.value is Set)
+                          _MapSuffixWidget(
+                            length: widget.node.children.length,
+                            style: widget.theme.rootKeyTextStyle,
+                          ),
+                        if (widget.node.isRoot)
+                          SelectionContainer.disabled(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: _CopyButton(
+                                node: widget.node,
+                                theme: widget.theme,
+                              ),
+                            ),
+                          ),
+                        if (widget.node.isRoot)
+                          _buildRootInformation(context)
+                        else
+                          _buildPropertyValue(
+                            context,
+                            searchData.searchTerm,
+                            searchData.hasSearchResults,
+                            searchData.focusedValueMatchIndex,
+                            valueStyle,
+                          ),
+                        if (widget.trailingBuilder != null)
+                          widget.trailingBuilder!(context, widget.node),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
 
   void _handleMouseEnter() {
     widget.node

@@ -514,7 +514,6 @@ class _DetailView extends StatelessWidget {
       );
 }
 
-
 enum _LogSourceChoice { external, paste }
 
 class _LogSourceDialog extends StatelessWidget {
@@ -550,7 +549,6 @@ class _LogSourceDialog extends StatelessWidget {
         ],
       );
 }
-
 
 /// Dialog widget for pasting file content
 class _PasteContentDialog extends StatefulWidget {
