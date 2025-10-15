@@ -1,37 +1,32 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocStateLog extends ISpectifyData {
+final class BlocStateLog extends BlocLifecycleLog {
   BlocStateLog({
-    required this.bloc,
+    required super.bloc,
     required this.change,
     required this.settings,
   }) : super(
-          () {
-            final buffer = StringBuffer()
-              ..write('${bloc.runtimeType} emitted a change')
-              ..write('\nCURRENT state: ')
-              ..write(
-                settings.printStateFullData
-                    ? change.currentState
-                    : change.currentState.runtimeType,
-              )
-              ..write('\nNEXT state: ')
-              ..write(
-                settings.printStateFullData
-                    ? change.nextState
-                    : change.nextState.runtimeType,
-              );
-            return buffer.toString();
-          }(),
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () {
+            final currentPayload = settings.printStateFullData
+                ? change.currentState
+                : change.currentState.runtimeType;
+            final nextPayload = settings.printStateFullData
+                ? change.nextState
+                : change.nextState.runtimeType;
+            return '${bloc.runtimeType} emitted a change'
+                '\nCURRENT state: $currentPayload'
+                '\nNEXT state: $nextPayload';
+          },
+          additionalData: <String, dynamic>{
+            'currentState': change.currentState,
+            'nextState': change.nextState,
+          },
         );
 
-  final BlocBase<dynamic> bloc;
   final Change<dynamic> change;
   final ISpectBlocSettings settings;
 
-  static const getKey = 'bloc-state';
+  static const String logKey = 'bloc-state';
 }

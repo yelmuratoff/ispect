@@ -28,12 +28,27 @@ class ISpectBlocSettings {
     this.printCompletions = true,
     this.printCreations = true,
     this.printClosings = true,
+    this.printErrors = true,
     this.printEventFullData = true,
     this.printStateFullData = false,
     this.transitionFilter,
     this.eventFilter,
     this.changeFilter,
   });
+
+  /// Turns off all logging.
+  static const ISpectBlocSettings silent = ISpectBlocSettings(enabled: false);
+
+  /// Logs creation, transitions, and errors only.
+  static const ISpectBlocSettings minimal = ISpectBlocSettings(
+    printChanges: false,
+    printCompletions: false,
+  );
+
+  /// Logs every lifecycle event with full payloads.
+  static const ISpectBlocSettings verbose = ISpectBlocSettings(
+    printStateFullData: true,
+  );
 
   /// Whether logging is enabled.
   final bool enabled;
@@ -55,6 +70,9 @@ class ISpectBlocSettings {
 
   /// Whether to log Bloc closing events.
   final bool printClosings;
+
+  /// Whether to log Bloc errors.
+  final bool printErrors;
 
   /// Whether to log full event payloads instead of only the runtime type.
   final bool printEventFullData;
@@ -79,4 +97,36 @@ class ISpectBlocSettings {
   /// If provided, this function is called for each change. If it returns `true`,
   /// the change is logged; otherwise, it is skipped.
   final ISpectBlocChangeFilter? changeFilter;
+
+  /// Returns a copy with the provided overrides.
+  ISpectBlocSettings copyWith({
+    bool? enabled,
+    bool? printEvents,
+    bool? printTransitions,
+    bool? printChanges,
+    bool? printCompletions,
+    bool? printCreations,
+    bool? printClosings,
+    bool? printErrors,
+    bool? printEventFullData,
+    bool? printStateFullData,
+    ISpectBlocTransitionFilter? transitionFilter,
+    ISpectBlocEventFilter? eventFilter,
+    ISpectBlocChangeFilter? changeFilter,
+  }) =>
+      ISpectBlocSettings(
+        enabled: enabled ?? this.enabled,
+        printEvents: printEvents ?? this.printEvents,
+        printTransitions: printTransitions ?? this.printTransitions,
+        printChanges: printChanges ?? this.printChanges,
+        printCompletions: printCompletions ?? this.printCompletions,
+        printCreations: printCreations ?? this.printCreations,
+        printClosings: printClosings ?? this.printClosings,
+        printErrors: printErrors ?? this.printErrors,
+        printEventFullData: printEventFullData ?? this.printEventFullData,
+        printStateFullData: printStateFullData ?? this.printStateFullData,
+        transitionFilter: transitionFilter ?? this.transitionFilter,
+        eventFilter: eventFilter ?? this.eventFilter,
+        changeFilter: changeFilter ?? this.changeFilter,
+      );
 }

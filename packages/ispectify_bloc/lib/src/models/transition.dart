@@ -1,37 +1,27 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocTransitionLog extends ISpectifyData {
+final class BlocTransitionLog extends BlocLifecycleLog {
   BlocTransitionLog({
-    required this.bloc,
+    required Bloc<dynamic, dynamic> super.bloc,
     required this.transition,
     required this.settings,
   }) : super(
-          () {
-            final buffer = StringBuffer()
-              ..write('${bloc.runtimeType} processed ')
-              ..write(
-                settings.printEventFullData
-                    ? transition.event
-                    : transition.event.runtimeType,
-              )
-              ..write('\nCURRENT state: ')
-              ..write(
-                settings.printStateFullData
-                    ? transition.currentState
-                    : transition.currentState.runtimeType,
-              )
-              ..write('\nNEXT state: ')
-              ..write(
-                settings.printStateFullData
-                    ? transition.nextState
-                    : transition.nextState.runtimeType,
-              );
-            return buffer.toString();
-          }(),
           key: logKey,
           title: logKey,
+          messageBuilder: () {
+            final eventPayload = settings.printEventFullData
+                ? transition.event
+                : transition.event.runtimeType;
+            final currentPayload = settings.printStateFullData
+                ? transition.currentState
+                : transition.currentState.runtimeType;
+            final nextPayload = settings.printStateFullData
+                ? transition.nextState
+                : transition.nextState.runtimeType;
+            return '${bloc.runtimeType} processed $eventPayload'
+                '\nCURRENT state: $currentPayload'
+                '\nNEXT state: $nextPayload';
+          },
           additionalData: <String, dynamic>{
             'event': transition.event,
             'currentState': transition.currentState,
@@ -39,7 +29,6 @@ class BlocTransitionLog extends ISpectifyData {
           },
         );
 
-  final Bloc<dynamic, dynamic> bloc;
   final Transition<dynamic, dynamic> transition;
   final ISpectBlocSettings settings;
 

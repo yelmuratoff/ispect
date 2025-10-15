@@ -1,29 +1,26 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocEventLog extends ISpectifyData {
+final class BlocEventLog extends BlocLifecycleLog {
   BlocEventLog({
-    required this.bloc,
+    required Bloc<dynamic, dynamic> super.bloc,
     required this.event,
     required this.settings,
   }) : super(
-          settings.printEventFullData
-              ? '${bloc.runtimeType} receive event:\n$event'
-              : '${bloc.runtimeType} receive event: ${event.runtimeType}',
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () {
+            final payload = settings.printEventFullData
+                ? event
+                : event?.runtimeType ?? 'null';
+            return '${bloc.runtimeType} received event: $payload';
+          },
+          additionalData: <String, dynamic>{
+            if (event != null) 'event': event,
+          },
         );
 
-  final Bloc<dynamic, dynamic> bloc;
   final Object? event;
   final ISpectBlocSettings settings;
 
-  static const getKey = 'bloc-event';
-
-  @override
-  String get textMessage {
-    final sb = StringBuffer()..write(message);
-    return sb.toString();
-  }
+  static const String logKey = 'bloc-event';
 }

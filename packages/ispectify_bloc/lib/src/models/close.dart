@@ -1,22 +1,13 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
+part of 'base.dart';
 
-class BlocCloseLog extends ISpectifyData {
+final class BlocCloseLog extends BlocLifecycleLog {
   BlocCloseLog({
-    required this.bloc,
+    required super.bloc,
   }) : super(
-          '${bloc.runtimeType} closed',
-          key: getKey,
-          title: getKey,
+          key: logKey,
+          title: logKey,
+          messageBuilder: () => '${bloc.runtimeType} closed',
         );
 
-  final BlocBase<dynamic> bloc;
-
-  static const getKey = 'bloc-close';
-
-  @override
-  String get textMessage {
-    final sb = StringBuffer()..write(message);
-    return sb.toString();
-  }
+  static const String logKey = 'bloc-close';
 }

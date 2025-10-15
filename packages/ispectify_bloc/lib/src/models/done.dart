@@ -1,29 +1,27 @@
-import 'package:bloc/bloc.dart';
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/settings.dart';
+part of 'base.dart';
 
-class BlocDoneLog extends ISpectifyData {
+final class BlocDoneLog extends BlocLifecycleLog {
   BlocDoneLog({
-    required this.bloc,
+    required Bloc<dynamic, dynamic> super.bloc,
     required this.settings,
     required this.event,
+    required this.hasError,
     Object? error,
     StackTrace? stackTrace,
   }) : super(
-          () {
-            final buffer = StringBuffer()
-              ..write('${bloc.runtimeType} completed handler');
-            if (event != null) {
-              buffer
-                ..write(' for ')
-                ..write(
-                  settings.printEventFullData ? event : event.runtimeType,
-                );
-            }
-            return buffer.toString();
-          }(),
           key: logKey,
           title: logKey,
+          messageBuilder: () {
+            final payload = settings.printEventFullData
+                ? event
+                : event?.runtimeType ?? 'null';
+            final subject = event == null
+                ? bloc.runtimeType
+                : '${bloc.runtimeType} ← $payload';
+            return hasError
+                ? '$subject handler failed'
+                : '$subject handler completed';
+          },
           exception: error is Exception ? error : null,
           error: error is Error ? error : null,
           stackTrace: stackTrace != null && stackTrace != StackTrace.empty
@@ -31,15 +29,16 @@ class BlocDoneLog extends ISpectifyData {
               : null,
           additionalData: <String, dynamic>{
             if (event != null) 'event': event,
+            'completedWithError': hasError,
             if (error != null) 'error': error,
             if (stackTrace != null && stackTrace != StackTrace.empty)
               'stackTrace': stackTrace,
           },
         );
 
-  final Bloc<dynamic, dynamic> bloc;
   final ISpectBlocSettings settings;
   final Object? event;
+  final bool hasError;
 
   static const String logKey = 'bloc-done';
 }

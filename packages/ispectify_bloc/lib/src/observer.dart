@@ -3,6 +3,31 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/models/_models.dart';
 import 'package:ispectify_bloc/src/settings.dart';
 
+typedef BlocEventCallback = void Function(
+  Bloc<dynamic, dynamic> bloc,
+  Object? event,
+);
+
+typedef BlocTransitionCallback = void Function(
+  Bloc<dynamic, dynamic> bloc,
+  Transition<dynamic, dynamic> transition,
+);
+
+typedef BlocChangeCallback = void Function(
+  BlocBase<dynamic> bloc,
+  Change<dynamic> change,
+);
+
+typedef BlocErrorCallback = void Function(
+  BlocBase<dynamic> bloc,
+  Object error,
+  StackTrace stackTrace,
+);
+
+typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
+
+typedef BlocFilterPredicate = bool Function(Object? candidate);
+
 /// `BLoC` logger on `ISpectify` base
 ///
 /// `logger` field is the current `ISpectify` instance.
@@ -18,35 +43,37 @@ class ISpectBlocObserver extends BlocObserver {
     this.onBlocError,
     this.onBlocCreate,
     this.onBlocClose,
-    Iterable<String> filters = const <String>[],
-  }) : filters = List<String>.unmodifiable(filters) {
+    Iterable<Pattern> filters = const <Pattern>[],
+    this.filterPredicate,
+  }) : filters = List<Pattern>.unmodifiable(filters) {
     _logger = logger ?? ISpectify();
   }
 
   late final ISpectify _logger;
-  final void Function(Bloc<dynamic, dynamic> bloc, Object? event)? onBlocEvent;
-  final void Function(
-    Bloc<dynamic, dynamic> bloc,
-    Transition<dynamic, dynamic> transition,
-  )? onBlocTransition;
-  final void Function(BlocBase<dynamic> bloc, Change<dynamic> change)?
-      onBlocChange;
-  final void Function(
-    BlocBase<dynamic> bloc,
-    Object error,
-    StackTrace stackTrace,
-  )? onBlocError;
-  final void Function(BlocBase<dynamic> bloc)? onBlocCreate;
-  final void Function(BlocBase<dynamic> bloc)? onBlocClose;
+  final BlocEventCallback? onBlocEvent;
+  final BlocTransitionCallback? onBlocTransition;
+  final BlocChangeCallback? onBlocChange;
+  final BlocErrorCallback? onBlocError;
+  final BlocLifecycleCallback? onBlocCreate;
+  final BlocLifecycleCallback? onBlocClose;
   final ISpectBlocSettings settings;
-  final List<String> filters;
+  final List<Pattern> filters;
+  final BlocFilterPredicate? filterPredicate;
 
   bool _isFiltered(Object? candidate) {
+    if (filterPredicate?.call(candidate) ?? false) {
+      return true;
+    }
     if (filters.isEmpty) {
       return false;
     }
-    final candidateString = candidate?.toString();
-    if (candidateString == null || candidateString.isEmpty) {
+    final candidateString = switch (candidate) {
+      final String value => value,
+      final BlocBase<dynamic> bloc => bloc.runtimeType.toString(),
+      final Type type => type.toString(),
+      _ => candidate?.toString() ?? '',
+    };
+    if (candidateString.isEmpty) {
       return false;
     }
     for (final pattern in filters) {
@@ -73,11 +100,19 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace stackTrace,
   ) {
     onBlocError?.call(bloc, error, stackTrace);
-    _logger.error(
-      '${bloc.runtimeType}',
-      exception: error,
-      stackTrace: stackTrace,
-    );
+    _logger
+      ..error(
+        '${bloc.runtimeType}',
+        exception: error,
+        stackTrace: stackTrace,
+      )
+      ..logCustom(
+        BlocErrorLog(
+          bloc: bloc,
+          thrown: error,
+          stackTrace: stackTrace,
+        ),
+      );
   }
 
   @override
@@ -146,7 +181,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    if (!_shouldLog(toggle: true, candidate: error)) {
+    if (!_shouldLog(toggle: settings.printErrors, candidate: error)) {
       return;
     }
     _logUnhandledError(bloc, error, stackTrace);
@@ -184,8 +219,8 @@ class ISpectBlocObserver extends BlocObserver {
     if (!isEnabled) {
       return;
     }
-    if (error != null && stackTrace != null) {
-      _logUnhandledError(bloc, error, stackTrace);
+    if (error != null && settings.printErrors) {
+      _logUnhandledError(bloc, error, stackTrace ?? StackTrace.empty);
     }
     if (!settings.printCompletions) {
       return;
@@ -195,6 +230,7 @@ class ISpectBlocObserver extends BlocObserver {
         bloc: bloc,
         settings: settings,
         event: event,
+        hasError: error != null,
         error: error,
         stackTrace: stackTrace,
       ),
