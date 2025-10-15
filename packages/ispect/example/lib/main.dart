@@ -495,7 +495,7 @@ class _HomeState extends State<_Home> {
         onPressed: () async {
           final testCubit = TestBloc();
           testCubit.load(data: 'Test data');
-          // testCubit.loadWithError();
+          testCubit.loadWithError();
           await Future<void>.delayed(const Duration(seconds: 2));
           testCubit.close();
         },
