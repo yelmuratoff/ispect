@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.5
+## 4.4.6
 
 ### Changes
 - Removed hard dependency on `share_plus` by introducing configurable share callbacks; all share flows now rely on `ISpectOptions.onShare`.

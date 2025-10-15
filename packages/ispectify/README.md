@@ -282,7 +282,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.4.5
+  ispectify: ^4.4.6
 ```
 
 ## Security & Production Guidelines
