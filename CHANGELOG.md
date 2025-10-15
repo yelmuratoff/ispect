@@ -13,6 +13,7 @@
 ### Added
 - New `ISpectShareRequest`, `ISpectShareCallback`, and `ISpectOpenFileCallback` contracts to keep integrations package-free.
 - Added `bloc-done` event logging to `ispectify_bloc` for comprehensive BLoC lifecycle tracking.
+- Added `SuperSliverList` support in JSON/logs viewer for improved performance with large datasets.
 
 ## 4.4.2
 
