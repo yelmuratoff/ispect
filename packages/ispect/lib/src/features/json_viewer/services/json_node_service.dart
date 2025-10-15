@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 
-/// Interface for node expansion operations following ISP
+/// Interface for node expansion operations
 abstract interface class NodeExpansionService {
   List<NodeViewModelState> expandNode(
     NodeViewModelState node,
@@ -16,7 +16,7 @@ abstract interface class NodeExpansionService {
   );
 }
 
-/// Interface for bulk node operations following ISP
+/// Interface for bulk node operations
 abstract interface class BulkNodeService {
   List<NodeViewModelState> expandAll(
     UnmodifiableListView<NodeViewModelState> allNodes,
@@ -28,13 +28,13 @@ abstract interface class BulkNodeService {
   );
 }
 
-/// Interface for node navigation operations following ISP
+/// Interface for node navigation operations
 abstract interface class NodeNavigationService {
   void expandParentNodes(NodeViewModelState node);
   void expandSearchResults(List<SearchResult> searchResults);
 }
 
-/// Interface for node analysis operations following ISP
+/// Interface for node analysis operations
 abstract interface class NodeAnalysisService {
   Object? getDirectChildren(NodeViewModelState node);
   int countVisibleChildren(NodeViewModelState node);
