@@ -23,8 +23,8 @@ final class BlocStateLog extends BlocLifecycleLog {
             return '${bloc.runtimeType} changed from $currentPayload to $nextPayload';
           },
           additionalData: <String, dynamic>{
-            'currentState': change.currentState,
-            'nextState': change.nextState,
+            'current-state': change.currentState,
+            'next-state': change.nextState,
           },
         );
 

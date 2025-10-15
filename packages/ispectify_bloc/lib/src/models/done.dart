@@ -31,12 +31,10 @@ final class BlocDoneLog extends BlocLifecycleLog {
           stackTrace: stackTrace != null && stackTrace != StackTrace.empty
               ? stackTrace
               : null,
+          logLevel: hasError ? LogLevel.error : LogLevel.info,
           additionalData: <String, dynamic>{
             if (event != null) 'event': event,
-            'completedWithError': hasError,
-            if (error != null) 'error': error,
-            if (stackTrace != null && stackTrace != StackTrace.empty)
-              'stackTrace': stackTrace,
+            'completed-with-error': hasError,
           },
         );
 

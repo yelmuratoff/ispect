@@ -26,6 +26,7 @@ sealed class BlocLifecycleLog extends ISpectifyData {
     Object? exception,
     Error? error,
     StackTrace? stackTrace,
+    LogLevel? logLevel,
   })  : _messageBuilder = messageBuilder,
         super(
           '',
@@ -33,6 +34,7 @@ sealed class BlocLifecycleLog extends ISpectifyData {
           error: error,
           stackTrace: stackTrace,
           additionalData: additionalData,
+          logLevel: logLevel,
         );
 
   /// The originating Bloc or Cubit.

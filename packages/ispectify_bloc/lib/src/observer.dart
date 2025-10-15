@@ -100,19 +100,13 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace stackTrace,
   ) {
     onBlocError?.call(bloc, error, stackTrace);
-    _logger
-      ..error(
-        '${bloc.runtimeType}',
-        exception: error,
+    _logger.logCustom(
+      BlocErrorLog(
+        bloc: bloc,
+        thrown: error,
         stackTrace: stackTrace,
-      )
-      ..logCustom(
-        BlocErrorLog(
-          bloc: bloc,
-          thrown: error,
-          stackTrace: stackTrace,
-        ),
-      );
+      ),
+    );
   }
 
   @override
@@ -219,10 +213,7 @@ class ISpectBlocObserver extends BlocObserver {
     if (!isEnabled) {
       return;
     }
-    if (error != null && settings.printErrors) {
-      _logUnhandledError(bloc, error, stackTrace ?? StackTrace.empty);
-    }
-    if (!settings.printCompletions) {
+    if (!settings.printCompletions || error != null) {
       return;
     }
     _logger.logCustom(

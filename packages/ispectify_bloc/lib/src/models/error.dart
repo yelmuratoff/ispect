@@ -22,11 +22,7 @@ final class BlocErrorLog extends BlocLifecycleLog {
           stackTrace: stackTrace != null && stackTrace != StackTrace.empty
               ? stackTrace
               : null,
-          additionalData: <String, dynamic>{
-            'error': thrown,
-            if (stackTrace != null && stackTrace != StackTrace.empty)
-              'stackTrace': stackTrace,
-          },
+          logLevel: LogLevel.error,
         );
 
   final Object thrown;
