@@ -27,7 +27,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Все записи скопированы в буфер обмена';
 
   @override
-  String get analyticsLogDesc => 'Лог отправки событий в сервис аналитики';
+  String get analyticsLogDesc => 'Событие отслежено и отправлено в аналитику';
 
   @override
   String get apiToken => 'API токен';
@@ -55,23 +55,24 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get blocCloseLogDesc =>
-      'Тег для логирования события, связанного с моментом закрытия BLoC';
+      'Компонент закрылся и больше не будет обновляться';
 
   @override
   String get blocCreateLogDesc =>
-      'Тег для логирования события, связанного с моментом создания BLoC';
+      'Компонент был инициализирован и начал работу';
 
   @override
-  String get blocEventLogDesc =>
-      'Тег для логирования события, связанного с обработкой события в BLoC';
+  String get blocEventLogDesc => 'Получена команда что-то сделать';
 
   @override
-  String get blocTransitionLogDesc =>
-      'Тег для логирования переходов между состояниями в BLoC';
+  String get blocTransitionLogDesc => 'Состояние изменилось в ответ на команду';
 
   @override
   String get blocStateLogDesc =>
-      'Тег для логирования текущего состояния в BLoC';
+      'Состояние изменилось (работает для команд и прямых обновлений)';
+
+  @override
+  String get blocDoneLogDesc => 'Обработка команды завершена';
 
   @override
   String get buildVersion => 'Версия сборки';
@@ -130,14 +131,14 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Тег для логирования критических ошибок или событий, требующих немедленного внимания';
+      'Критическая ошибка требующая немедленного внимания';
 
   @override
   String get data => 'Данные';
 
   @override
   String get debugLogDesc =>
-      'Тег для логирования отладочной информации для анализа работы приложения';
+      'Технические детали для разработчиков для анализа поведения';
 
   @override
   String get description => 'Описание';
@@ -157,8 +158,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Ошибка при очистке кэша';
 
   @override
-  String get errorLogDesc =>
-      'Тег для логирования ошибок, возникших в приложении';
+  String get errorLogDesc => 'Что-то пошло не так в приложении';
 
   @override
   String get errorMessage => 'Текст ошибки';
@@ -167,8 +167,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get errorType => 'Тип ошибки';
 
   @override
-  String get exceptionLogDesc =>
-      'Тег для логирования исключений, возникающих в приложении';
+  String get exceptionLogDesc => 'Произошла неожиданная ошибка';
 
   @override
   String get expandLogs => 'Развернуть журнал';
@@ -189,36 +188,34 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get fullURL => 'Полная ссылка';
 
   @override
-  String get generateReport => 'Сгенерировать отчет';
+  String get generateReport => 'Генерация отчёта';
 
   @override
   String get goToLogger => 'Перейти к журналу';
 
   @override
-  String get goodLogDesc =>
-      'Тег для логирования успешных операций или позитивных событий в приложении';
+  String get goodLogDesc => 'Операция завершена успешно';
 
   @override
-  String get headers => 'Headers';
+  String get headers => 'Заголовки';
 
   @override
   String get hidePanel => 'Скрыть панель';
 
   @override
-  String get httpErrorLogDesc => 'Лог ошибки при отправке запроса на сервер';
+  String get httpErrorLogDesc => 'Запрос к серверу завершился ошибкой';
 
   @override
-  String get httpRequestLogDesc => 'Лог отправленного запроса на сервер';
+  String get httpRequestLogDesc => 'Запрос отправлен на сервер';
 
   @override
-  String get httpResponseLogDesc => 'Лог ответа сервера на отправленный запрос';
+  String get httpResponseLogDesc => 'Получен ответ от сервера';
 
   @override
-  String get infoLogDesc =>
-      'Тег для логирования информационных сообщений о работе приложения';
+  String get infoLogDesc => 'Общая информация о том, что происходит';
 
   @override
-  String get initializationFailed => 'Ошибка инициализации';
+  String get initializationFailed => 'Инициализация не удалась';
 
   @override
   String get issueCreated => 'Задача успешно создана';
@@ -269,16 +266,16 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get pleaseCheckAuthCred =>
-      'Произошла ошибка. Пожалуйста, перепроверьте данные авторизации.';
+      'Произошла ошибка. Пожалуйста, проверьте данные авторизации.';
 
   @override
-  String get pleaseSelectYourProject => 'Теперь, пожалуйста выберите проект';
+  String get pleaseSelectYourProject => 'Теперь, пожалуйста, выберите проект';
 
   @override
-  String get printLogDesc => 'Лог стандартного print метода у Flutter';
+  String get printLogDesc => 'Сообщение выведено в консоль';
 
   @override
-  String get projectDomain => 'Домент проекта';
+  String get projectDomain => 'Домен проекта';
 
   @override
   String get projectWasSelected => 'Проект выбран';
@@ -290,22 +287,22 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get retry => 'Повторить';
 
   @override
-  String get reverseLogs => 'Инвертировать журнал';
+  String get reverseLogs => 'Обратный порядок журнала';
 
   @override
-  String get riverpodAddLogDesc => 'Лог добавления провайдера';
+  String get riverpodAddLogDesc => 'Провайдер данных создан';
 
   @override
-  String get riverpodDisposeLogDesc => 'Лог удаления провайдера';
+  String get riverpodDisposeLogDesc => 'Провайдер данных удалён';
 
   @override
-  String get riverpodFailLogDesc => 'Лог ошибки при работе с провайдером';
+  String get riverpodFailLogDesc => 'Провайдер данных столкнулся с ошибкой';
 
   @override
-  String get riverpodUpdateLogDesc => 'Лог обновления провайдера';
+  String get riverpodUpdateLogDesc => 'Провайдер данных обновлён';
 
   @override
-  String get routeLogDesc => 'Лог навигации между экранами';
+  String get routeLogDesc => 'Выполнен переход на другой экран';
 
   @override
   String get search => 'Поиск';
@@ -360,12 +357,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String iSpectifyBlocClosesCount(Object text) {
-    return 'BLoC closes count: $text';
+    return 'Количество закрытий BLoC: $text';
   }
 
   @override
   String iSpectifyBlocCreatesCount(Object text) {
-    return 'BLoC creates count: $text';
+    return 'Количество созданий BLoC: $text';
   }
 
   @override
@@ -525,18 +522,17 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get useHistory => 'Использовать историю';
 
   @override
-  String get userEmail => 'Электронная почта';
+  String get userEmail => 'Email пользователя';
 
   @override
-  String get verboseLogDesc =>
-      'Тег для логирования детализированной информации для глубокого анализа приложения';
+  String get verboseLogDesc => 'Подробная техническая информация для отладки';
 
   @override
   String get viewAndManageData => 'Просмотр и управление данными приложения';
 
   @override
   String get warningLogDesc =>
-      'Тег для логирования предупреждающих сообщений о потенциальных проблемах в приложении';
+      'Потенциальная проблема которая может вызвать сбои';
 
   @override
   String get you => 'Вы';
@@ -680,17 +676,18 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get loading => 'Загрузка';
 
   @override
-  String get wsSentLogDesc => 'Лог отправленного сообщения WebSocket';
+  String get wsSentLogDesc => 'Сообщение отправлено через WebSocket соединение';
 
   @override
-  String get wsReceivedLogDesc => 'Лог полученного сообщения WebSocket';
+  String get wsReceivedLogDesc =>
+      'Сообщение получено через WebSocket соединение';
 
   @override
-  String get dbQueryLogDesc => 'Лог запроса к базе данных';
+  String get dbQueryLogDesc => 'Запрос к базе данных выполнен';
 
   @override
-  String get dbResultLogDesc => 'Лог результата базы данных';
+  String get dbResultLogDesc => 'База данных вернула результаты';
 
   @override
-  String get dbErrorLogDesc => 'Лог ошибки базы данных';
+  String get dbErrorLogDesc => 'Операция с базой данных завершилась ошибкой';
 }

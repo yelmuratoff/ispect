@@ -56,23 +56,25 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get blocCloseLogDesc =>
-      'Etiqueta usada para registrar el cierre de un BLoC';
+      'El componente se cerró y ya no se actualizará';
 
   @override
   String get blocCreateLogDesc =>
-      'Etiqueta usada para registrar la creación de un BLoC';
+      'El componente se inicializó y comenzó a funcionar';
 
   @override
-  String get blocEventLogDesc =>
-      'Etiqueta usada para registrar el procesamiento de un evento en BLoC';
+  String get blocEventLogDesc => 'Se recibió un comando para hacer algo';
 
   @override
   String get blocTransitionLogDesc =>
-      'Etiqueta usada para registrar transiciones de estado en BLoC';
+      'El estado cambió en respuesta a un comando';
 
   @override
   String get blocStateLogDesc =>
-      'Etiqueta usada para registrar el estado actual en BLoC';
+      'El estado cambió (funciona para comandos y actualizaciones directas)';
+
+  @override
+  String get blocDoneLogDesc => 'Se completó el procesamiento del comando';
 
   @override
   String get buildVersion => 'Versión de compilación';

@@ -101,6 +101,10 @@ ISpectBuilder(
         key: 'bloc-state',
         isDisabled: true, // Disable state logs
       ),
+      LogDescription(
+        key: 'bloc-done',
+        isDisabled: true, // Disable done logs
+      ),
     ],
   ),
   child: child,

@@ -54,20 +54,23 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get basicSettings => 'الإعدادات الأساسية';
 
   @override
-  String get blocCloseLogDesc => 'علامة تُستخدم لتسجيل إغلاق BLoC';
+  String get blocCloseLogDesc => 'تم إغلاق المكون ولن يتم تحديثه بعد الآن';
 
   @override
-  String get blocCreateLogDesc => 'علامة تُستخدم لتسجيل إنشاء BLoC';
+  String get blocCreateLogDesc => 'تم تهيئة المكون وبدأ العمل';
 
   @override
-  String get blocEventLogDesc => 'علامة تُستخدم لتسجيل معالجة حدث في BLoC';
+  String get blocEventLogDesc => 'تم استلام أمر لفعل شيء ما';
 
   @override
-  String get blocTransitionLogDesc =>
-      'علامة تُستخدم لتسجيل الانتقالات الحالية في BLoC';
+  String get blocTransitionLogDesc => 'تغيرت الحالة استجابة للأمر';
 
   @override
-  String get blocStateLogDesc => 'علامة تُستخدم لتسجيل الحالة الحالية في BLoC';
+  String get blocStateLogDesc =>
+      'تغيرت الحالة (يعمل للأوامر والتحديثات المباشرة)';
+
+  @override
+  String get blocDoneLogDesc => 'اكتملت معالجة الأمر';
 
   @override
   String get buildVersion => 'إصدار البناء';

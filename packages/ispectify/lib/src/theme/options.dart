@@ -16,6 +16,7 @@ final Map<String, String> _defaultTitles = {
   ISpectifyLogType.blocTransition.key: 'bloc-transition',
   ISpectifyLogType.blocCreate.key: 'bloc-create',
   ISpectifyLogType.blocClose.key: 'bloc-close',
+  ISpectifyLogType.blocDone.key: 'bloc-done',
   ISpectifyLogType.blocState.key: 'bloc-state',
   ISpectifyLogType.riverpodAdd.key: 'riverpod-add',
   ISpectifyLogType.riverpodUpdate.key: 'riverpod-update',

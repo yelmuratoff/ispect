@@ -38,6 +38,7 @@ final class ISpectConstants {
     'bloc-close': Icons.close_rounded,
     'bloc-create': Icons.add_rounded,
     'bloc-state': Icons.change_circle_rounded,
+    'bloc-done': Icons.check_circle_outline_rounded,
 
     'riverpod-add': Icons.add_rounded,
     'riverpod-update': Icons.refresh_rounded,
@@ -81,6 +82,7 @@ final class ISpectConstants {
     'bloc-close': Color.fromARGB(255, 192, 38, 38),
     'bloc-create': Color.fromARGB(255, 56, 142, 60),
     'bloc-state': Color.fromARGB(255, 0, 105, 135),
+    'bloc-done': Color.fromARGB(255, 56, 142, 60),
 
     'riverpod-add': Color.fromARGB(255, 56, 142, 60),
     'riverpod-update': Color.fromARGB(255, 0, 105, 135),
@@ -124,6 +126,7 @@ final class ISpectConstants {
     'bloc-close': Color(0xFFFF005F),
     'bloc-create': Color.fromARGB(255, 120, 230, 129),
     'bloc-state': Color.fromARGB(255, 0, 125, 160),
+    'bloc-done': Color.fromARGB(255, 120, 230, 129),
 
     'riverpod-add': Color.fromARGB(255, 120, 230, 129),
     'riverpod-update': Color.fromARGB(255, 120, 180, 190),
@@ -206,6 +209,10 @@ final class ISpectConstants {
       LogDescription(
         key: 'bloc-transition',
         description: l10n.blocTransitionLogDesc,
+      ),
+      LogDescription(
+        key: 'bloc-done',
+        description: l10n.blocDoneLogDesc,
       ),
       LogDescription(
         key: 'bloc-close',

@@ -5,3 +5,4 @@ output-dir: lib/src/core/localization/generated
 template-arb-file: intl_en.arb
 output-localization-file: ispect_localizations.dart
 synthetic-package: false
+untranslated-messages-file: untranslated.json

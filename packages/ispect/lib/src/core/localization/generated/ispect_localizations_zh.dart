@@ -54,19 +54,22 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get basicSettings => '基本设置';
 
   @override
-  String get blocCloseLogDesc => '用于记录 BLoC 关闭事件的日志标签';
+  String get blocCloseLogDesc => '组件已关闭，不再更新';
 
   @override
-  String get blocCreateLogDesc => '用于记录 BLoC 创建事件的日志标签';
+  String get blocCreateLogDesc => '组件已初始化并开始工作';
 
   @override
-  String get blocEventLogDesc => '用于记录 BLoC 处理事件的日志标签';
+  String get blocEventLogDesc => '收到执行某项操作的命令';
 
   @override
-  String get blocTransitionLogDesc => '用于记录 BLoC 状态转换的日志标签';
+  String get blocTransitionLogDesc => '状态响应命令而改变';
 
   @override
-  String get blocStateLogDesc => '用于记录 BLoC 当前状态的日志标签';
+  String get blocStateLogDesc => '状态已更改（适用于命令和直接更新）';
+
+  @override
+  String get blocDoneLogDesc => '命令处理已完成';
 
   @override
   String get buildVersion => '构建版本';
@@ -347,141 +350,141 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String iSpectifyBlocClosesCount(Object text) {
-    return 'BLoC closes count: $text';
+    return 'BLoC 关闭次数: $text';
   }
 
   @override
   String iSpectifyBlocCreatesCount(Object text) {
-    return 'BLoC creates count: $text';
+    return 'BLoC 创建次数: $text';
   }
 
   @override
   String iSpectifyBlocEventsCount(Object text) {
-    return 'BLoC events count: $text';
+    return 'BLoC 事件次数: $text';
   }
 
   @override
   String iSpectifyBlocTransitionCount(Object text) {
-    return 'BLoC transitions count: $text';
+    return 'BLoC 转换次数: $text';
   }
 
   @override
   String iSpectifyHttpFailuresCount(Object text) {
-    return 'HTTP failure logs count: $text';
+    return 'HTTP 失败日志数: $text';
   }
 
   @override
   String iSpectifyHttpRequestsCount(Object text) {
-    return 'HTTP request logs count: $text';
+    return 'HTTP 请求日志数: $text';
   }
 
   @override
   String iSpectifyHttpResponsesCount(Object text) {
-    return 'HTTP response logs count: $text';
+    return 'HTTP 响应日志数: $text';
   }
 
   @override
-  String get iSpectifyLogsInfo => 'Info about logs';
+  String get iSpectifyLogsInfo => '日志信息';
 
   @override
   String iSpectifyRiverpodAddCount(Object text) {
-    return 'Riverpod adds count: $text';
+    return 'Riverpod 添加次数: $text';
   }
 
   @override
   String iSpectifyRiverpodDisposeCount(Object text) {
-    return 'Riverpod disposes count: $text';
+    return 'Riverpod 销毁次数: $text';
   }
 
   @override
   String iSpectifyRiverpodFailsCount(Object text) {
-    return 'Riverpod fails count: $text';
+    return 'Riverpod 失败次数: $text';
   }
 
   @override
   String iSpectifyRiverpodUpdateCount(Object text) {
-    return 'Riverpod updates count: $text';
+    return 'Riverpod 更新次数: $text';
   }
 
   @override
-  String get iSpectifyTypeAnalytics => 'Event logging method';
+  String get iSpectifyTypeAnalytics => '事件日志方法';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
-    return 'Number of track logs: $text';
+    return '跟踪日志数: $text';
   }
 
   @override
   String get iSpectifyTypeBloc => 'BLoC';
 
   @override
-  String get iSpectifyTypeDebug => 'Verbose & debug';
+  String get iSpectifyTypeDebug => '详细和调试';
 
   @override
   String iSpectifyTypeDebugCount(Object text) {
-    return 'Verbose and debug logs count: $text';
+    return '详细和调试日志数: $text';
   }
 
   @override
-  String get iSpectifyTypeErrors => 'Errors';
+  String get iSpectifyTypeErrors => '错误';
 
   @override
   String iSpectifyTypeErrorsCount(Object text) {
-    return 'Error logs count: $text';
+    return '错误日志数: $text';
   }
 
   @override
-  String get iSpectifyTypeExceptions => 'Exceptions';
+  String get iSpectifyTypeExceptions => '异常';
 
   @override
   String iSpectifyTypeExceptionsCount(Object text) {
-    return 'Exception logs count: $text';
+    return '异常日志数: $text';
   }
 
   @override
-  String get iSpectifyTypeGood => 'Good';
+  String get iSpectifyTypeGood => '成功';
 
   @override
   String iSpectifyTypeGoodCount(Object text) {
-    return 'Good logs count: $text';
+    return '成功日志数: $text';
   }
 
   @override
-  String get iSpectifyTypeHttp => 'HTTP requests';
+  String get iSpectifyTypeHttp => 'HTTP 请求';
 
   @override
-  String get iSpectifyTypeInfo => 'Info';
+  String get iSpectifyTypeInfo => '信息';
 
   @override
   String iSpectifyTypeInfoCount(Object text) {
-    return 'Info logs count: $text';
+    return '信息日志数: $text';
   }
 
   @override
-  String get iSpectifyTypePrint => 'Print method';
+  String get iSpectifyTypePrint => '打印方法';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
-    return 'Print method logs count: $text';
+    return '打印方法日志数: $text';
   }
 
   @override
-  String get iSpectifyTypeProvider => 'Providers';
+  String get iSpectifyTypeProvider => '提供者';
 
   @override
   String iSpectifyTypeProviderCount(Object text) {
-    return 'Provider logs count: $text';
+    return '提供者日志数: $text';
   }
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';
 
   @override
-  String get iSpectifyTypeWarnings => 'Warnings';
+  String get iSpectifyTypeWarnings => '警告';
 
   @override
   String iSpectifyTypeWarningsCount(Object text) {
-    return 'Warning logs count: $text';
+    return '警告日志数: $text';
   }
 
   @override

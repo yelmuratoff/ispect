@@ -321,7 +321,7 @@ class _Home extends StatefulWidget {
 typedef _ButtonConfig = ({String label, VoidCallback onPressed});
 
 class _HomeState extends State<_Home> {
-  final TestCubit _testBloc = TestCubit();
+  final TestBloc _testBloc = TestBloc();
 
   @override
   void dispose() {
@@ -491,6 +491,16 @@ class _HomeState extends State<_Home> {
         },
       ),
       (
+        label: 'All Bloc logs',
+        onPressed: () async {
+          final testCubit = TestBloc();
+          testCubit.load(data: 'Test data');
+          // testCubit.loadWithError();
+          await Future<void>.delayed(const Duration(seconds: 2));
+          testCubit.close();
+        },
+      ),
+      (
         label: 'Send HTTP request (http package)',
         onPressed: () async {
           await client
@@ -654,7 +664,7 @@ class _HomeState extends State<_Home> {
                 );
                 if (config.label == 'Test Cubit') {
                   return [
-                    BlocBuilder<TestCubit, TestState>(
+                    BlocBuilder<TestBloc, TestState>(
                       bloc: _testBloc,
                       builder: (context, state) => FilledButton(
                         onPressed: config.onPressed,

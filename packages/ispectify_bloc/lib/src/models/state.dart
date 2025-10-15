@@ -1,5 +1,10 @@
 part of 'base.dart';
 
+/// Log emitted when a Bloc or Cubit's state changes.
+///
+/// Corresponds to [BlocObserver.onChange].
+/// Called before the bloc's state is updated with the new value.
+/// Includes current and next states, but NOT the triggering event (use [BlocTransitionLog] for that).
 final class BlocStateLog extends BlocLifecycleLog {
   BlocStateLog({
     required super.bloc,
@@ -15,9 +20,7 @@ final class BlocStateLog extends BlocLifecycleLog {
             final nextPayload = settings.printStateFullData
                 ? change.nextState
                 : change.nextState.runtimeType;
-            return '${bloc.runtimeType} emitted a change'
-                '\nCURRENT state: $currentPayload'
-                '\nNEXT state: $nextPayload';
+            return '${bloc.runtimeType} changed from $currentPayload to $nextPayload';
           },
           additionalData: <String, dynamic>{
             'currentState': change.currentState,

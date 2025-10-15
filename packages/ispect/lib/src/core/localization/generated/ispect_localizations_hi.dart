@@ -54,24 +54,23 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get basicSettings => 'मूल सेटिंग्स';
 
   @override
-  String get blocCloseLogDesc =>
-      'BLoC बंद करने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocCloseLogDesc => 'घटक बंद हो गया है और अब अपडेट नहीं होगा';
 
   @override
-  String get blocCreateLogDesc =>
-      'BLoC बनाने की घटना को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocCreateLogDesc => 'घटक को आरंभ किया गया और काम शुरू कर दिया';
 
   @override
-  String get blocEventLogDesc =>
-      'BLoC में ईवेंट प्रोसेसिंग को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocEventLogDesc => 'कुछ करने का आदेश प्राप्त हुआ';
 
   @override
-  String get blocTransitionLogDesc =>
-      'BLoC में स्थिति परिवर्तन को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get blocTransitionLogDesc => 'आदेश के जवाब में स्थिति बदल गई';
 
   @override
   String get blocStateLogDesc =>
-      'BLoC में वर्तमान स्थिति को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+      'स्थिति बदल गई (आदेश और सीधे अपडेट दोनों के लिए काम करता है)';
+
+  @override
+  String get blocDoneLogDesc => 'आदेश प्रसंस्करण पूरा हो गया';
 
   @override
   String get buildVersion => 'बिल्ड संस्करण';

@@ -1,5 +1,10 @@
 part of 'base.dart';
 
+/// Log emitted when an event handler completes (successfully or with error).
+///
+/// Corresponds to [BlocObserver.onDone].
+/// Called after an event handler finishes processing, regardless of success or failure.
+/// May include error details if the handler threw an exception.
 final class BlocDoneLog extends BlocLifecycleLog {
   BlocDoneLog({
     required Bloc<dynamic, dynamic> super.bloc,
@@ -15,12 +20,11 @@ final class BlocDoneLog extends BlocLifecycleLog {
             final payload = settings.printEventFullData
                 ? event
                 : event?.runtimeType ?? 'null';
-            final subject = event == null
-                ? bloc.runtimeType
-                : '${bloc.runtimeType} ← $payload';
-            return hasError
-                ? '$subject handler failed'
-                : '$subject handler completed';
+            final status = hasError ? 'failed' : 'completed';
+            return event == null
+                ? '${bloc.runtimeType} event handler $status'
+                : '${bloc.runtimeType} event handler $status'
+                    '\nEVENT: $payload';
           },
           exception: error is Exception ? error : null,
           error: error is Error ? error : null,

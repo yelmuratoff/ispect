@@ -29,7 +29,7 @@ class ISpectBlocSettings {
     this.printCreations = true,
     this.printClosings = true,
     this.printErrors = true,
-    this.printEventFullData = true,
+    this.printEventFullData = false,
     this.printStateFullData = false,
     this.transitionFilter,
     this.eventFilter,
