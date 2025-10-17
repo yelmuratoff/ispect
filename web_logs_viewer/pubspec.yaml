@@ -15,8 +15,8 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
-  ispect: ^4.2.1-dev05
-  file_picker: ^10.2.0
+  ispect: ^4.4.6
+  file_picker: ^10.3.3
   super_drag_and_drop: ^0.9.1
   collection: any
 
