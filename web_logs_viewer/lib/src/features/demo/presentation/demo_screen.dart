@@ -4,15 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
-import 'package:ispectify_http/ispectify_http.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
 import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
 import 'package:web_logs_viewer/src/core/utils/load_file_example.dart';
@@ -28,263 +24,16 @@ final http_interceptor.InterceptedClient client =
 
 final Dio dummyDio = Dio(BaseOptions(baseUrl: 'https://api.escuelajs.co'));
 
-void main() {
-  final options = ISpectifyOptions(logTruncateLength: 500);
-  final ISpectify logger = ISpectifyFlutter.init(
-    options: options,
-    // history: DailyFileLogHistory(options),
-  );
-
-  ISpect.run(
-    () {
-      WidgetsFlutterBinding.ensureInitialized();
-      runApp(ThemeProvider(child: App(logger: logger)));
-    },
-    logger: logger,
-    isPrintLoggingEnabled: false,
-    onInit: () {
-      Bloc.observer = ISpectBlocObserver(logger: logger);
-      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
-      dio.interceptors.add(
-        ISpectDioInterceptor(
-          logger: logger,
-          settings: const ISpectDioInterceptorSettings(
-            // requestFilter: (requestOptions) =>
-            //     requestOptions.path != '/post3s/1',
-            // responseFilter: (response) => response.statusCode != 404,
-            // errorFilter: (response) => response.response?.statusCode != 404,
-            // errorFilter: (response) {
-            //   return (response.message?.contains('This exception was thrown because')) == false;
-            // },
-          ),
-        ),
-      );
-      dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
-    },
-  );
-}
-
-class App extends StatefulWidget {
-  final ISpectify logger;
-  const App({super.key, required this.logger});
+class DemoScreen extends StatefulWidget {
+  const DemoScreen({super.key});
 
   @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  final _controller = DraggablePanelController();
-  final _observer = ISpectNavigatorObserver(isLogModals: true);
-
-  static const Locale locale = Locale('ru');
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addPositionListener((x, y) {
-      debugPrint('x: $x, y: $y');
-    });
-    _controller.setPosition(x: 500, y: 500);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeMode themeMode = ThemeProvider.themeMode(context);
-
-    return MaterialApp.router(
-      routerConfig: _AppRouter(_observer).routerConfig,
-      locale: locale,
-      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
-      localizationsDelegates: ISpectLocalizations.delegates(
-        delegates: [ExampleGeneratedLocalization.delegate],
-      ),
-      theme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-      ),
-      darkTheme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-      ),
-      themeMode: themeMode,
-      builder: (context, child) {
-        child = ISpectBuilder(
-          theme: const ISpectTheme(pageTitle: 'ISpect'),
-          controller: _controller,
-          options: ISpectOptions(
-            locale: locale,
-            observer: _observer,
-            onLoadLogContent: (context) async {
-              // Here you can load log content.
-              // For example, from a file using file_picker.
-              return 'Loaded log content from callback';
-            },
-            onOpenFile: (path) async {
-              // Here you can handle opening the file.
-              // For example, using open_filex package.
-              await OpenFilex.open(path);
-            },
-            onShare: (ISpectShareRequest request) async {
-              // Here you can handle sharing the content.
-              // For example, using share_plus package.
-              final filesPath = request.filePaths;
-              final files = <XFile>[];
-              for (final path in filesPath) {
-                files.add(XFile(path));
-              }
-              await SharePlus.instance.share(
-                ShareParams(
-                  text: request.text,
-                  subject: request.subject,
-                  files: files,
-                ),
-              );
-            },
-            panelButtons: [
-              DraggablePanelButtonItem(
-                icon: Icons.copy_rounded,
-                label: 'Token',
-                description: 'Copy token to clipboard',
-                onTap: (context) {
-                  _controller.toggle(context);
-                  debugPrint('Token copied');
-                },
-              ),
-            ],
-            panelItems: [
-              DraggablePanelItem(
-                icon: Icons.home,
-                enableBadge: false,
-                description: 'Print home',
-                onTap: (context) {
-                  debugPrint('Home');
-                },
-              ),
-            ],
-            actionItems: [
-              ISpectActionItem(
-                title: 'Test',
-                icon: Icons.account_tree_rounded,
-                onTap: (context) {
-                  // For router, we can use context.go or similar, but since no package, use Navigator
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => Scaffold(
-                        appBar: AppBar(title: const Text('Test')),
-                        body: const Center(child: Text('Test')),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          child: child ?? const SizedBox(),
-        );
-        return child;
-      },
-    );
-  }
-}
-
-class _AppRouter {
-  _AppRouter(this.observer) {
-    _AppRouterDelegate._observer = observer;
-  }
-
-  final ISpectNavigatorObserver observer;
-
-  static final _AppRouterDelegate _delegate = _AppRouterDelegate();
-
-  RouterConfig<Object> get routerConfig => RouterConfig(
-    routerDelegate: _delegate,
-    routeInformationParser: _AppRouteInformationParser(),
-    routeInformationProvider: PlatformRouteInformationProvider(
-      initialRouteInformation: RouteInformation(uri: Uri.parse('/')),
-    ),
-  );
-}
-
-class _AppRouteInformationParser extends RouteInformationParser<String> {
-  @override
-  Future<String> parseRouteInformation(
-    RouteInformation routeInformation,
-  ) async {
-    return routeInformation.uri.toString();
-  }
-
-  @override
-  RouteInformation restoreRouteInformation(String configuration) {
-    return RouteInformation(uri: Uri.parse(configuration));
-  }
-}
-
-class _AppRouterDelegate extends RouterDelegate<String>
-    with ChangeNotifier, PopNavigatorRouterDelegateMixin<String> {
-  static ISpectNavigatorObserver? _observer;
-
-  @override
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-  String _currentRoute = '/';
-
-  @override
-  String get currentConfiguration => _currentRoute;
-
-  @override
-  Widget build(BuildContext context) {
-    return Navigator(
-      key: navigatorKey,
-      observers: _observer != null ? [_observer!] : [],
-      onDidRemovePage: (page) {
-        _currentRoute = '/';
-        notifyListeners();
-      },
-      pages: [
-        const MaterialPage(key: ValueKey('/'), child: _Home()),
-        if (_currentRoute == '/second')
-          const MaterialPage(key: ValueKey('/second'), child: _SecondPage()),
-      ],
-    );
-  }
-
-  @override
-  Future<void> setNewRoutePath(String configuration) async {
-    _currentRoute = configuration;
-    notifyListeners();
-  }
-
-  void goToSecondPage() {
-    _currentRoute = '/second';
-    notifyListeners();
-  }
-
-  void goToHome() {
-    _currentRoute = '/';
-    notifyListeners();
-  }
-}
-
-class _Home extends StatefulWidget {
-  const _Home();
-
-  @override
-  State<_Home> createState() => _HomeState();
+  State<DemoScreen> createState() => DemoScreenState();
 }
 
 typedef _ButtonConfig = ({String label, VoidCallback onPressed});
 
-class _HomeState extends State<_Home> {
+class DemoScreenState extends State<DemoScreen> {
   final TestBloc _testBloc = TestBloc();
 
   @override
@@ -579,12 +328,7 @@ class _HomeState extends State<_Home> {
           throw Exception('Test exception');
         },
       ),
-      (
-        label: 'Go to second page',
-        onPressed: () {
-          _AppRouter._delegate.goToSecondPage();
-        },
-      ),
+
       (
         label: 'Log 10000 items',
         onPressed: () {
@@ -642,25 +386,6 @@ class _HomeState extends State<_Home> {
               return [button, const SizedBox(height: 10)];
             }).toList()..removeLast(),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SecondPage extends StatelessWidget {
-  const _SecondPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Second Page')),
-      body: Center(
-        child: FilledButton(
-          onPressed: () {
-            _AppRouter._delegate.goToHome();
-          },
-          child: const Text('Go to Home'),
         ),
       ),
     );

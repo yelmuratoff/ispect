@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:ispectify_http/ispectify_http.dart';
+import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
+import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
+import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart';
 
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  ISpect.run(() => runApp(const MyApp()), logger: ISpectifyFlutter.init());
+  final logger = ISpectifyFlutter.init();
+  ISpect.run(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(const MyApp());
+    },
+    logger: logger,
+    onInit: () {
+      Bloc.observer = ISpectBlocObserver(logger: logger);
+      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
+      dio.interceptors.add(ISpectDioInterceptor(logger: logger));
+      dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -14,34 +34,55 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorObservers: [observer],
-      localizationsDelegates: ISpectLocalizations.delegates(),
-      theme: ThemeData(
-        useMaterial3: true,
-        snackBarTheme: const SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
+    return ThemeProvider(
+      child: MaterialApp(
+        navigatorObservers: [observer],
+        localizationsDelegates: ISpectLocalizations.delegates(
+          delegates: [ExampleGeneratedLocalization.delegate],
         ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
+        supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+        theme: ThemeData(
+          useMaterial3: true,
+          snackBarTheme: const SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+          ),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          ),
         ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
+
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
+          snackBarTheme: const SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+          ),
         ),
-        snackBarTheme: const SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
+        home: const FileViewerPage(title: 'ISpect File Viewer'),
+        builder: (context, child) => ISpectBuilder(
+          isISpectEnabled: true,
+          options: ISpectOptions(
+            observer: observer,
+            panelItems: [
+              DraggablePanelItem(
+                icon: Icons.bug_report,
+                enableBadge: false,
+                description: 'Open Demo Screen',
+                onTap: (_) {
+                  observer.navigator?.push(
+                    MaterialPageRoute(builder: (context) => DemoScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          child: child!,
         ),
-      ),
-      home: const FileViewerPage(title: 'ISpect File Viewer'),
-      builder: (context, child) => ISpectBuilder(
-        isISpectEnabled: true,
-        options: ISpectOptions(observer: observer),
-        child: child!,
       ),
     );
   }
