@@ -25,4 +25,3 @@ flutter run -d chrome
 - Изменениях в папке `web_logs_viewer/`
 - Пуше в ветку `main`
 
-Подробности в [DEPLOYMENT.md](DEPLOYMENT.md)

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io' show File;
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
@@ -47,6 +46,7 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'ISpect File Viewer'),
       builder: (context, child) {
         child = ISpectBuilder(
+          isISpectEnabled: true,
           options: ISpectOptions(observer: observer),
           child: child!,
         );
@@ -1562,11 +1562,10 @@ class _DropZoneState extends State<_DropZone>
                     data: {
                       'display_name': displayName,
                       'mime_type': mimeType,
-                      'file_name': file.fileName ?? 'unknown',
-                      'size': fileLength != null
-                          ? _formatFileSize(fileLength)
-                          : 'unknown',
-                      'fileName': file ?? 'unknown',
+                      'file_name': file.fileName,
+                      if (fileLength != null)
+                        'size': _formatFileSize(fileLength),
+
                       'content': data,
                     },
                   ),
@@ -1700,23 +1699,15 @@ class _DropZoneState extends State<_DropZone>
             }
           }
         } else {
-          // For mobile platforms, use file path
-          if (file.path != null) {
-            try {
-              final File fileHandle = File(file.path!);
-              content = await fileHandle.readAsString();
-            } catch (e) {
-              ISpect.logger.error('Error reading file from path: $e');
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error reading file: ${file.name}'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-              continue;
-            }
-          }
+          // For mobile platforms, file reading from path is not supported in web
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('File reading from path is not supported on web'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          continue;
         }
 
         if (content == null || content.isEmpty) {
