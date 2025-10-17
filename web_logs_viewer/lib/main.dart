@@ -10,8 +10,6 @@ import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart'
 
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
-final observer = ISpectNavigatorObserver();
-
 void main() {
   final logger = ISpectifyFlutter.init();
   ISpect.run(
@@ -38,6 +36,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final draggablePanelController = DraggablePanelController();
+  final observer = ISpectNavigatorObserver();
 
   @override
   void dispose() {
@@ -54,6 +53,7 @@ class _MyAppState extends State<MyApp> {
           delegates: [ExampleGeneratedLocalization.delegate],
         ),
         supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+        themeMode: ThemeMode.light,
         theme: ThemeData(
           useMaterial3: true,
           snackBarTheme: const SnackBarThemeData(
@@ -62,17 +62,6 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
             brightness: Brightness.light,
-          ),
-        ),
-
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-          snackBarTheme: const SnackBarThemeData(
-            behavior: SnackBarBehavior.floating,
           ),
         ),
         home: const FileViewerPage(title: 'ISpect File Viewer'),
