@@ -1,9 +1,5 @@
 # TODO
 
-## Packages
-### ispectify
-- [ ] OpenTelemetry/OTLP exporter
-
 ---
 
 ## Done

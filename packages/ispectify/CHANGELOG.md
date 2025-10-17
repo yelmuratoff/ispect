@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.4.7
+
+### Added
+- Web Live Demo link to README.md
+
+### Changes
+- Other minor updates and improvements.
+
 ## 4.4.6
 
 ### Changes
