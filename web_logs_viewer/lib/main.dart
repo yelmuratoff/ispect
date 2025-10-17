@@ -10,8 +10,6 @@ import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart'
 
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
-final observer = ISpectNavigatorObserver();
-
 void main() {
   final logger = ISpectifyFlutter.init();
   ISpect.run(
@@ -38,6 +36,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final draggablePanelController = DraggablePanelController();
+  final observer = ISpectNavigatorObserver();
 
   @override
   void dispose() {
