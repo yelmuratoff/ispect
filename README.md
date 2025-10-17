@@ -44,7 +44,11 @@ Drop-in Flutter debug panel: network + database + logs + performance + UI inspec
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
 </div>
 
-## 🏗️ Architecture
+## Live Web Demo
+
+Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](https://yelmuratoff.github.io/ispect/) to drag and drop an ISpect log file and explore its contents interactively.
+
+##  Architecture
 
 Modular packages. Include only what you use:
 
@@ -124,7 +128,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.4.6
+  ispect: ^4.4.7
 ```
 
 ## Security & Production Guidelines
@@ -460,20 +464,20 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.4.6
+  ispect: ^4.4.7
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.4.6      # For Dio HTTP client
-  ispectify_http: ^4.4.6     # For standard HTTP package
+  ispectify_dio: ^4.4.7      # For Dio HTTP client
+  ispectify_http: ^4.4.7     # For standard HTTP package
   
   # Database integration
-  ispectify_db: ^4.4.6       # For database operation logging
+  ispectify_db: ^4.4.7       # For database operation logging
   
   # WebSocket integration
-  ispectify_ws: ^4.4.6       # For WebSocket monitoring
+  ispectify_ws: ^4.4.7       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.4.6     # For BLoC state management
+  ispectify_bloc: ^4.4.7     # For BLoC state management
   
 ```
 
@@ -485,7 +489,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.4.6
+  ispectify_dio: ^4.4.7
 ```
 
 ```dart
@@ -524,7 +528,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.4.6
+  ispectify_http: ^4.4.7
 ```
 
 ```dart
@@ -575,7 +579,7 @@ For database operation logging, use the `ispectify_db` package:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.6
+  ispectify_db: ^4.4.7
 ```
 
 ```dart
@@ -609,7 +613,7 @@ For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.4.6
+  ispectify_ws: ^4.4.7
 ```
 
 ```dart
@@ -643,7 +647,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.4.6
+  ispectify_bloc: ^4.4.7
 ```
 
 ```dart

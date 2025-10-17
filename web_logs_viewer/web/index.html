@@ -3,16 +3,16 @@
 <head>
   <!--
     Base href set for GitHub Pages deployment.
-    For local development: use "/" 
+    For local development: use "/"
     For GitHub Pages: use "/ispect/"
   -->
-  <base href="/ispect/">
-  
   <script>
-    // Auto-detect environment and adjust base href if needed
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      document.querySelector('base').href = '/';
-    }
+    // Auto-detect environment and set base href before it's used
+    var isLocal = window.location.hostname === 'localhost' ||
+                  window.location.hostname === '127.0.0.1' ||
+                  window.location.hostname === '';
+    var baseHref = isLocal ? '/' : '/ispect/';
+    document.write('<base href="' + baseHref + '">');
   </script>
 
   <meta charset="UTF-8">

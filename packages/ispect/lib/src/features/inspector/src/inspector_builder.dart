@@ -49,8 +49,6 @@ class ISpectBuilder extends StatefulWidget {
     this.isISpectEnabled = kDebugMode,
     this.theme,
     this.controller,
-    this.onShare,
-    this.onOpenFile,
     super.key,
   });
 
@@ -69,12 +67,6 @@ class ISpectBuilder extends StatefulWidget {
   /// Controller for the draggable debug panel.
   final DraggablePanelController? controller;
 
-  /// Custom handler invoked when ISpect needs to share content.
-  final ISpectShareCallback? onShare;
-
-  /// Custom handler invoked when ISpect needs to open a file path.
-  final ISpectOpenFileCallback? onOpenFile;
-
   @override
   State<ISpectBuilder> createState() => _ISpectBuilderState();
 }
@@ -90,8 +82,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     model
       ..isISpectEnabled = widget.isISpectEnabled
       ..options = (widget.options ?? model.options).copyWith(
-        onShare: widget.onShare ?? widget.options?.onShare,
-        onOpenFile: widget.onOpenFile ?? widget.options?.onOpenFile,
+        onShare: widget.options?.onShare,
+        onOpenFile: widget.options?.onOpenFile,
       )
       ..theme = widget.theme ?? model.theme;
   }
@@ -128,15 +120,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           return ISpectScopeController(
             model: model,
             child: currentChild,
-            // child: widget.options?.observer != null
-            //     ? currentChild
-            //     : Navigator(
-            //         observers: [
-            //           ISpectNavigatorObserver(),
-            //         ],
-            //         pages: [MaterialPage(child: currentChild)],
-            //         onDidRemovePage: (page) {},
-            //       ),
           );
         },
       );

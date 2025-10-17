@@ -44,7 +44,11 @@ No adapters required (yet) — call one or two methods. Minimal API, maximum fle
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
 </div>
 
-## 🏗️ Architecture
+## Live Web Demo
+
+Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](https://yelmuratoff.github.io/ispect/) to drag and drop an ISpect log file and explore its contents interactively.
+
+##  Architecture
 
 ispectify_db integrates with the ISpect logging ecosystem:
 
@@ -127,7 +131,7 @@ Add ispectify_db to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.6
+  ispectify_db: ^4.4.7
 ```
 
 ## Security & Production Guidelines
