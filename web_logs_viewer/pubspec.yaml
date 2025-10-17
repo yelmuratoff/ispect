@@ -32,6 +32,8 @@ dependencies:
   ispectify_ws: ^4.4.7
   ispectify_db: ^4.4.7
 
+  iconsax_plus: ^1.0.0
+
   file_picker: ^10.3.3
   super_drag_and_drop: ^0.9.1
   collection: any

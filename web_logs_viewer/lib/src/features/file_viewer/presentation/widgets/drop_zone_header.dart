@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 
 class DropZoneHeader extends StatelessWidget {
   const DropZoneHeader({
@@ -26,8 +27,9 @@ class DropZoneHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Row(
+            spacing: 8,
             children: [
-              Icon(Icons.folder_open),
+              Icon(IconsaxPlusLinear.folder_open, size: 20),
               Text(
                 'Drop Zone',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -42,7 +44,10 @@ class DropZoneHeader extends StatelessWidget {
                 Flexible(
                   child: FilledButton.icon(
                     onPressed: onLoadFile,
-                    icon: const Icon(Icons.upload_file_rounded, size: 16),
+                    icon: const Icon(
+                      IconsaxPlusLinear.document_upload,
+                      size: 16,
+                    ),
                     label: const Text(
                       'Load File',
                       maxLines: 1,
@@ -54,7 +59,10 @@ class DropZoneHeader extends StatelessWidget {
                   Flexible(
                     child: ElevatedButton.icon(
                       onPressed: onClear,
-                      icon: const Icon(Icons.clear, size: 16),
+                      icon: const Icon(
+                        IconsaxPlusLinear.close_square,
+                        size: 16,
+                      ),
                       label: const Text(
                         'Clear',
                         maxLines: 1,

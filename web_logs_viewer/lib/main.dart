@@ -29,8 +29,21 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final draggablePanelController = DraggablePanelController();
+
+  @override
+  void dispose() {
+    draggablePanelController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,14 +78,16 @@ class MyApp extends StatelessWidget {
         home: const FileViewerPage(title: 'ISpect File Viewer'),
         builder: (context, child) => ISpectBuilder(
           isISpectEnabled: true,
+          controller: draggablePanelController,
           options: ISpectOptions(
             observer: observer,
-            panelItems: [
-              DraggablePanelItem(
-                icon: Icons.bug_report,
-                enableBadge: false,
+            panelButtons: [
+              DraggablePanelButtonItem(
+                icon: Icons.bug_report_outlined,
+                label: 'Demo Screen',
                 description: 'Open Demo Screen',
                 onTap: (_) {
+                  draggablePanelController.toggle(context);
                   observer.navigator?.push(
                     MaterialPageRoute(builder: (context) => DemoScreen()),
                   );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:ispect/ispect.dart';
 
 import 'package:ispectify_dio/ispectify_dio.dart';
@@ -359,6 +360,12 @@ class DemoScreenState extends State<DemoScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+        leading: IconButton(
+          icon: const Icon(IconsaxPlusLinear.arrow_left),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(

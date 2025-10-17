@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 
 class FileOptionsDialog extends StatelessWidget {
   const FileOptionsDialog({
@@ -24,7 +25,12 @@ class FileOptionsDialog extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ListTile(
-            leading: const Icon(Icons.content_paste),
+            leading: const Icon(IconsaxPlusLinear.document_normal),
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
             title: const Text('Paste Content'),
             subtitle: const Text(
               'Copy .txt or .json file content and paste it here',
@@ -36,7 +42,12 @@ class FileOptionsDialog extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ListTile(
-            leading: const Icon(Icons.content_paste),
+            dense: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            leading: const Icon(IconsaxPlusLinear.folder_open),
             title: const Text('Pick Files'),
             subtitle: const Text('Select .txt or .json files from your device'),
             onTap: () {
