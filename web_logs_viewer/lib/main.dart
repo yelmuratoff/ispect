@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> {
           delegates: [ExampleGeneratedLocalization.delegate],
         ),
         supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+        themeMode: ThemeMode.light,
         theme: ThemeData(
           useMaterial3: true,
           snackBarTheme: const SnackBarThemeData(
