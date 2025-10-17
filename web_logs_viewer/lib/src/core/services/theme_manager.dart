@@ -9,14 +9,14 @@ class ThemeProvider extends StatefulWidget {
   State createState() => _ThemeProviderState();
 
   static ThemeMode themeMode(BuildContext context) {
-    final inheritedTheme =
-        context.dependOnInheritedWidgetOfExactType<InheritedTheme>();
+    final inheritedTheme = context
+        .dependOnInheritedWidgetOfExactType<InheritedTheme>();
     return inheritedTheme!.themeMode;
   }
 
   static void toggleTheme(BuildContext context) {
-    final inheritedTheme =
-        context.dependOnInheritedWidgetOfExactType<InheritedTheme>();
+    final inheritedTheme = context
+        .dependOnInheritedWidgetOfExactType<InheritedTheme>();
     inheritedTheme!.toggleTheme();
   }
 }
@@ -28,8 +28,9 @@ class _ThemeProviderState extends State<ThemeProvider> {
 
   void toggleTheme() {
     setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+      _themeMode = _themeMode == ThemeMode.dark
+          ? ThemeMode.light
+          : ThemeMode.dark;
     });
   }
 

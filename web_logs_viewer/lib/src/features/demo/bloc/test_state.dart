@@ -1,4 +1,4 @@
-part of 'test_cubit.dart';
+part of 'test_bloc.dart';
 
 sealed class TestState {}
 

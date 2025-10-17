@@ -1,0 +1,668 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispect/ispect.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
+
+import 'package:ispectify_dio/ispectify_dio.dart';
+
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
+import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
+import 'package:web_logs_viewer/src/core/utils/load_file_example.dart';
+import 'package:web_logs_viewer/src/features/demo/bloc/test_bloc.dart';
+import 'package:ws/ws.dart';
+
+final Dio dio = Dio(
+  BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com'),
+);
+
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
+
+final Dio dummyDio = Dio(BaseOptions(baseUrl: 'https://api.escuelajs.co'));
+
+void main() {
+  final options = ISpectifyOptions(logTruncateLength: 500);
+  final ISpectify logger = ISpectifyFlutter.init(
+    options: options,
+    // history: DailyFileLogHistory(options),
+  );
+
+  ISpect.run(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(ThemeProvider(child: App(logger: logger)));
+    },
+    logger: logger,
+    isPrintLoggingEnabled: false,
+    onInit: () {
+      Bloc.observer = ISpectBlocObserver(logger: logger);
+      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
+      dio.interceptors.add(
+        ISpectDioInterceptor(
+          logger: logger,
+          settings: const ISpectDioInterceptorSettings(
+            // requestFilter: (requestOptions) =>
+            //     requestOptions.path != '/post3s/1',
+            // responseFilter: (response) => response.statusCode != 404,
+            // errorFilter: (response) => response.response?.statusCode != 404,
+            // errorFilter: (response) {
+            //   return (response.message?.contains('This exception was thrown because')) == false;
+            // },
+          ),
+        ),
+      );
+      dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+    },
+  );
+}
+
+class App extends StatefulWidget {
+  final ISpectify logger;
+  const App({super.key, required this.logger});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  final _controller = DraggablePanelController();
+  final _observer = ISpectNavigatorObserver(isLogModals: true);
+
+  static const Locale locale = Locale('ru');
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addPositionListener((x, y) {
+      debugPrint('x: $x, y: $y');
+    });
+    _controller.setPosition(x: 500, y: 500);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeMode themeMode = ThemeProvider.themeMode(context);
+
+    return MaterialApp.router(
+      routerConfig: _AppRouter(_observer).routerConfig,
+      locale: locale,
+      supportedLocales: ExampleGeneratedLocalization.supportedLocales,
+      localizationsDelegates: ISpectLocalizations.delegates(
+        delegates: [ExampleGeneratedLocalization.delegate],
+      ),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: themeMode,
+      builder: (context, child) {
+        child = ISpectBuilder(
+          theme: const ISpectTheme(pageTitle: 'ISpect'),
+          controller: _controller,
+          options: ISpectOptions(
+            locale: locale,
+            observer: _observer,
+            onLoadLogContent: (context) async {
+              // Here you can load log content.
+              // For example, from a file using file_picker.
+              return 'Loaded log content from callback';
+            },
+            onOpenFile: (path) async {
+              // Here you can handle opening the file.
+              // For example, using open_filex package.
+              await OpenFilex.open(path);
+            },
+            onShare: (ISpectShareRequest request) async {
+              // Here you can handle sharing the content.
+              // For example, using share_plus package.
+              final filesPath = request.filePaths;
+              final files = <XFile>[];
+              for (final path in filesPath) {
+                files.add(XFile(path));
+              }
+              await SharePlus.instance.share(
+                ShareParams(
+                  text: request.text,
+                  subject: request.subject,
+                  files: files,
+                ),
+              );
+            },
+            panelButtons: [
+              DraggablePanelButtonItem(
+                icon: Icons.copy_rounded,
+                label: 'Token',
+                description: 'Copy token to clipboard',
+                onTap: (context) {
+                  _controller.toggle(context);
+                  debugPrint('Token copied');
+                },
+              ),
+            ],
+            panelItems: [
+              DraggablePanelItem(
+                icon: Icons.home,
+                enableBadge: false,
+                description: 'Print home',
+                onTap: (context) {
+                  debugPrint('Home');
+                },
+              ),
+            ],
+            actionItems: [
+              ISpectActionItem(
+                title: 'Test',
+                icon: Icons.account_tree_rounded,
+                onTap: (context) {
+                  // For router, we can use context.go or similar, but since no package, use Navigator
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(title: const Text('Test')),
+                        body: const Center(child: Text('Test')),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          child: child ?? const SizedBox(),
+        );
+        return child;
+      },
+    );
+  }
+}
+
+class _AppRouter {
+  _AppRouter(this.observer) {
+    _AppRouterDelegate._observer = observer;
+  }
+
+  final ISpectNavigatorObserver observer;
+
+  static final _AppRouterDelegate _delegate = _AppRouterDelegate();
+
+  RouterConfig<Object> get routerConfig => RouterConfig(
+    routerDelegate: _delegate,
+    routeInformationParser: _AppRouteInformationParser(),
+    routeInformationProvider: PlatformRouteInformationProvider(
+      initialRouteInformation: RouteInformation(uri: Uri.parse('/')),
+    ),
+  );
+}
+
+class _AppRouteInformationParser extends RouteInformationParser<String> {
+  @override
+  Future<String> parseRouteInformation(
+    RouteInformation routeInformation,
+  ) async {
+    return routeInformation.uri.toString();
+  }
+
+  @override
+  RouteInformation restoreRouteInformation(String configuration) {
+    return RouteInformation(uri: Uri.parse(configuration));
+  }
+}
+
+class _AppRouterDelegate extends RouterDelegate<String>
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin<String> {
+  static ISpectNavigatorObserver? _observer;
+
+  @override
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  String _currentRoute = '/';
+
+  @override
+  String get currentConfiguration => _currentRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: navigatorKey,
+      observers: _observer != null ? [_observer!] : [],
+      onDidRemovePage: (page) {
+        _currentRoute = '/';
+        notifyListeners();
+      },
+      pages: [
+        const MaterialPage(key: ValueKey('/'), child: _Home()),
+        if (_currentRoute == '/second')
+          const MaterialPage(key: ValueKey('/second'), child: _SecondPage()),
+      ],
+    );
+  }
+
+  @override
+  Future<void> setNewRoutePath(String configuration) async {
+    _currentRoute = configuration;
+    notifyListeners();
+  }
+
+  void goToSecondPage() {
+    _currentRoute = '/second';
+    notifyListeners();
+  }
+
+  void goToHome() {
+    _currentRoute = '/';
+    notifyListeners();
+  }
+}
+
+class _Home extends StatefulWidget {
+  const _Home();
+
+  @override
+  State<_Home> createState() => _HomeState();
+}
+
+typedef _ButtonConfig = ({String label, VoidCallback onPressed});
+
+class _HomeState extends State<_Home> {
+  final TestBloc _testBloc = TestBloc();
+
+  @override
+  void dispose() {
+    _testBloc.close();
+    super.dispose();
+  }
+
+  List<_ButtonConfig> _buildButtonConfigs(
+    BuildContext context,
+    ISpectScopeModel iSpect,
+  ) {
+    return <_ButtonConfig>[
+      (
+        label: 'All logs',
+        onPressed: () {
+          ISpect.logger.critical('critical');
+          ISpect.logger.debug('debug');
+          ISpect.logger.error('error');
+          ISpect.logger.good('good');
+          ISpect.logger.handle(
+            exception: Exception('exception'),
+            stackTrace: StackTrace.current,
+          );
+          ISpect.logger.info('info');
+          ISpect.logger.log('log');
+          ISpect.logger.print('print');
+          ISpect.logger.route('route');
+          ISpect.logger.track('track');
+          ISpect.logger.verbose('verbose');
+          ISpect.logger.warning('warning');
+        },
+      ),
+      (
+        label: 'Show modal bottom sheet',
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            builder: (context) => SizedBox(
+              height: 300,
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      (
+        label: 'Mock Nested Map with Depth IDs',
+        onPressed: () {
+          const int depth = 5000;
+          Map<String, dynamic> nested = {'id': depth, 'value': 'Item $depth'};
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {'id': i, 'value': 'Item $i', 'nested': nested};
+          }
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: nested,
+            statusCode: 200,
+          );
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectDioInterceptor) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Mock Nested List with Depth IDs',
+        onPressed: () {
+          const int depth = 10000;
+
+          Map<String, dynamic> nested = {'id': depth, 'value': 'Item $depth'};
+
+          for (int i = depth - 1; i >= 0; i--) {
+            nested = {'id': i, 'value': 'Item $i', 'nested': nested};
+          }
+
+          final List<Map<String, dynamic>> largeList = List.generate(
+            10000,
+            (index) => {'id': index, 'value': 'Item $index'},
+          );
+
+          final Response<dynamic> response = Response(
+            requestOptions: RequestOptions(path: '/mock-nested-id'),
+            data: largeList,
+            statusCode: 200,
+          );
+
+          for (final Interceptor interceptor in dio.interceptors) {
+            if (interceptor is ISpectDioInterceptor) {
+              interceptor.onResponse(response, ResponseInterceptorHandler());
+            }
+          }
+        },
+      ),
+      (
+        label: 'Connect to WebSocket',
+        onPressed: () {
+          // Using a non-existent WebSocket URL to trigger a connection error.
+          const url = String.fromEnvironment(
+            'URL',
+            defaultValue: 'wss://echo.plugfox.dev:443/non-existent-path',
+          );
+
+          final interceptor = ISpectWSInterceptor(logger: ISpect.logger);
+
+          final client = WebSocketClient(
+            WebSocketOptions.common(
+              connectionRetryInterval: (
+                min: const Duration(milliseconds: 500),
+                max: const Duration(seconds: 15),
+              ),
+              interceptors: [interceptor],
+            ),
+          );
+
+          interceptor.setClient(client);
+
+          client
+            ..connect(url)
+            ..add('Hello')
+            ..add('world!');
+
+          // Adding a client-side error by trying to send data after closing the connection.
+          Timer(const Duration(seconds: 1), () async {
+            await client.close();
+            try {
+              unawaited(client.add('This will fail'));
+            } catch (e) {
+              // This error will be caught by the interceptor.
+            }
+            // ignore: avoid_print
+            print('Metrics:\n${client.metrics}');
+            client.close();
+          });
+        },
+      ),
+      (
+        label: 'Mock Large JSON Response',
+        onPressed: () {
+          final List<Map<String, dynamic>> largeList = List.generate(
+            10000,
+            (index) => {'id': index, 'value': 'Item $index'},
+          );
+          ISpect.logger.print(largeList.toString());
+        },
+      ),
+      (
+        label: 'Test Cubit',
+        onPressed: () {
+          _testBloc.load(data: 'Test data');
+        },
+      ),
+      (
+        label: 'All Bloc logs',
+        onPressed: () async {
+          final testCubit = TestBloc();
+          testCubit.load(data: 'Test data');
+          testCubit.loadWithError();
+          await Future<void>.delayed(const Duration(seconds: 2));
+          testCubit.close();
+        },
+      ),
+      (
+        label: 'Get last log',
+        onPressed: () async {
+          final lastLog = ISpect.logger.history.last;
+          ISpect.logger.info('Last log: ${lastLog.toJson()}');
+        },
+      ),
+      (
+        label: 'Get first log',
+        onPressed: () async {
+          final firstLog = ISpect.logger.history.first;
+          ISpect.logger.info('Last log: ${firstLog.toJson()}');
+        },
+      ),
+      (
+        label: 'Send HTTP request (http package)',
+        onPressed: () async {
+          await client.get(
+            Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+          );
+        },
+      ),
+      (
+        label: 'Send error HTTP request (http package)',
+        onPressed: () async {
+          await client.get(
+            Uri.parse('https://jsonplaceholder.typicode.com/po2323sts/1'),
+          );
+        },
+      ),
+      (
+        label: 'Toggle theme',
+        onPressed: () {
+          ThemeProvider.toggleTheme(context);
+        },
+      ),
+      (
+        label: 'Toggle ISpect',
+        onPressed: () {
+          ISpect.logger.track(
+            'Toggle',
+            analytics: 'amplitude',
+            event: 'ISpect',
+            parameters: {'isISpectEnabled': iSpect.isISpectEnabled},
+          );
+          iSpect.toggleISpect();
+        },
+      ),
+      (
+        label: 'Send HTTP request',
+        onPressed: () {
+          dio.get<dynamic>('/posts/1');
+        },
+      ),
+      (
+        label: 'Send HTTP request with error',
+        onPressed: () {
+          dio.get<dynamic>('/post3s/1');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token',
+        onPressed: () {
+          dio.options.headers.addAll({
+            'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
+          });
+          dio.get<dynamic>('/posts/1');
+          dio.options.headers.remove('Authorization');
+        },
+      ),
+      (
+        label: 'Send HTTP request with Token (http)',
+        onPressed: () async {
+          await client.get(
+            Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+            headers: {'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw'},
+          );
+        },
+      ),
+      (
+        label: 'Upload file to dummy server',
+        onPressed: () {
+          final FormData formData = FormData();
+          formData.files.add(
+            MapEntry(
+              'file',
+              MultipartFile.fromBytes([1, 2, 3], filename: 'file.txt'),
+            ),
+          );
+
+          dummyDio.post<dynamic>('/api/v1/files/upload', data: formData);
+        },
+      ),
+      (
+        label: 'Upload file to dummy server (http)',
+        onPressed: () {
+          final List<int> bytes = [1, 2, 3]; // File data as bytes
+          const String filename = 'file.txt';
+
+          final http_interceptor.MultipartRequest request =
+              http_interceptor.MultipartRequest(
+                'POST',
+                Uri.parse('https://api.escuelajs.co/api/v1/files/upload'),
+              );
+
+          request.files.add(
+            http_interceptor.MultipartFile.fromBytes(
+              'file', // Field name
+              bytes,
+              filename: filename,
+            ),
+          );
+
+          client.send(request);
+        },
+      ),
+      (
+        label: 'Throw exception',
+        onPressed: () {
+          throw Exception('Test exception');
+        },
+      ),
+      (
+        label: 'Go to second page',
+        onPressed: () {
+          _AppRouter._delegate.goToSecondPage();
+        },
+      ),
+      (
+        label: 'Log 10000 items',
+        onPressed: () {
+          for (int i = 0; i < 10000; i++) {
+            ISpect.logger.info('Item $i');
+          }
+        },
+      ),
+      (
+        label: 'Logs File',
+        onPressed: () async {
+          await LogsFileExample.createAndHandleLogsFile();
+          await LogsFileExample.createMultipleLogsFiles();
+          await LogsFileExample.demonstrateCleanup();
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ISpectScopeModel iSpect = ISpect.read(context);
+    final List<_ButtonConfig> buttonConfigs = _buildButtonConfigs(
+      context,
+      iSpect,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: buttonConfigs.expand((config) {
+              final Widget button = FilledButton(
+                onPressed: config.onPressed,
+                child: Text(config.label),
+              );
+              if (config.label == 'Test Cubit') {
+                return [
+                  BlocBuilder<TestBloc, TestState>(
+                    bloc: _testBloc,
+                    builder: (context, state) => FilledButton(
+                      onPressed: config.onPressed,
+                      child: Text(config.label),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ];
+              }
+              return [button, const SizedBox(height: 10)];
+            }).toList()..removeLast(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondPage extends StatelessWidget {
+  const _SecondPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Second Page')),
+      body: Center(
+        child: FilledButton(
+          onPressed: () {
+            _AppRouter._delegate.goToHome();
+          },
+          child: const Text('Go to Home'),
+        ),
+      ),
+    );
+  }
+}

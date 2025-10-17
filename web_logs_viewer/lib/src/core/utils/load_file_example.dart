@@ -13,7 +13,8 @@ class LogsFileExample {
   static Future<void> createAndHandleLogsFile() async {
     try {
       // Step 1: Create logs content
-      final logsContent = '''
+      final logsContent =
+          '''
 === ISpect Application Logs ===
 Timestamp: ${DateTime.now()}
 Platform: ${defaultTargetPlatform.name}
@@ -24,7 +25,7 @@ Web: $kIsWeb
 [ERROR] Sample error for demonstration
 [INFO] Logs file creation completed
       '''
-          .trim();
+              .trim();
 
       // Step 2: Create the log file (works on ALL platforms)
       final logFile = await LogsFileFactory.createLogsFile(
