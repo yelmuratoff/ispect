@@ -65,17 +65,6 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.light,
           ),
         ),
-
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-          snackBarTheme: const SnackBarThemeData(
-            behavior: SnackBarBehavior.floating,
-          ),
-        ),
         home: const FileViewerPage(title: 'ISpect File Viewer'),
         builder: (context, child) => ISpectBuilder(
           isISpectEnabled: true,
