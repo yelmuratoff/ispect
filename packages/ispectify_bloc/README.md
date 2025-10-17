@@ -44,7 +44,11 @@ Observe BLoC/Cubit events, transitions, states with selective filtering.
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
 </div>
 
-## 🏗️ Architecture
+## Live Web Demo
+
+Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](https://yelmuratoff.github.io/ispect/) to drag and drop an ISpect log file and explore its contents interactively.
+
+##  Architecture
 
 ISpectifyBloc integrates with the BLoC library through observers:
 

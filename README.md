@@ -44,7 +44,11 @@ Drop-in Flutter debug panel: network + database + logs + performance + UI inspec
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
 </div>
 
-## 🏗️ Architecture
+## Live Web Demo
+
+Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](https://yelmuratoff.github.io/ispect/) to drag and drop an ISpect log file and explore its contents interactively.
+
+##  Architecture
 
 Modular packages. Include only what you use:
 
