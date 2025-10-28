@@ -46,7 +46,7 @@ class _LogsScreenState extends State<LogsScreen> {
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
-  final _fileService = FileProcessingService();
+  static const _fileService = FileProcessingService();
 
   @override
   void initState() {

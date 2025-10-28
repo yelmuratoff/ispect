@@ -163,6 +163,7 @@ class ErrorHandlerService {
   /// Handles print statements in zones with appropriate filtering.
   void handleZonePrint(
     Zone parent,
+    ZoneDelegate zoneDelegate,
     Zone zone,
     String line, {
     required bool isPrintLoggingEnabled,
@@ -171,7 +172,7 @@ class ErrorHandlerService {
     if (isPrintLoggingEnabled && !_containsAnsi(line)) {
       logger.print(line);
     } else if (isFlutterPrintEnabled) {
-      parent.print(zone, line);
+      parent.print(line);
     }
   }
 

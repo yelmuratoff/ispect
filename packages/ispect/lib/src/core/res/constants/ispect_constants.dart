@@ -16,31 +16,31 @@ final class ISpectConstants {
 
   // UI Constants for consistent spacing and sizing
   /// Standard icon size for log cards
-  static const double logCardIconSize = 16.0;
+  static const double logCardIconSize = 16;
 
   /// Standard icon button dimension
-  static const double iconButtonDimension = 24.0;
+  static const double iconButtonDimension = 24;
 
   /// Standard icon button icon size
-  static const double iconButtonIconSize = 16.0;
+  static const double iconButtonIconSize = 16;
 
   /// Standard border radius
-  static const double standardBorderRadius = 8.0;
+  static const double standardBorderRadius = 8;
 
   /// Large border radius for containers
-  static const double largeBorderRadius = 10.0;
+  static const double largeBorderRadius = 10;
 
   /// Snackbar border radius
-  static const double snackbarBorderRadius = 16.0;
+  static const double snackbarBorderRadius = 16;
 
   /// Standard horizontal padding
-  static const double standardHorizontalPadding = 12.0;
+  static const double standardHorizontalPadding = 12;
 
   /// Standard vertical padding
-  static const double standardVerticalPadding = 8.0;
+  static const double standardVerticalPadding = 8;
 
   /// Standard gap size
-  static const double standardGap = 6.0;
+  static const double standardGap = 6;
 
   /// Animation duration in milliseconds
   static const int animationDurationMs = 150;

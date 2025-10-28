@@ -6,7 +6,7 @@ void main() {
   late FileProcessingService service;
 
   setUp(() {
-    service = FileProcessingService();
+    service = const FileProcessingService();
   });
 
   group('FileProcessingService', () {

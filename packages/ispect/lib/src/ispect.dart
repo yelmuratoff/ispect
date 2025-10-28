@@ -12,7 +12,6 @@ final class ISpect {
 
   static late ISpectify _logger;
   static bool _isInitialized = false;
-  static List<String> _filters = [];
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
@@ -38,7 +37,6 @@ final class ISpect {
   /// Disposes current ISpect state (useful for testing or hot restart).
   static void dispose() {
     _isInitialized = false;
-    _filters = [];
     _errorHandler = null;
   }
 
@@ -64,7 +62,6 @@ final class ISpect {
     List<String> filters = const [],
   }) {
     initialize(logger);
-    _filters = filters;
     _errorHandler = ErrorHandlerService(logger: logger, filters: filters);
 
     _errorHandler!.setupErrorHandling(
@@ -115,9 +112,10 @@ final class ISpect {
         );
       },
       zoneSpecification: ZoneSpecification(
-        print: (parent, zone, line) {
+        print: (parent, zoneDelegate, zone, line) {
           _errorHandler?.handleZonePrint(
             parent,
+            zoneDelegate,
             zone,
             line,
             isPrintLoggingEnabled: isPrintLoggingEnabled,
