@@ -23,12 +23,22 @@ class ISpectColumnBuilder extends StatelessWidget {
   final int itemCount;
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: crossAxisAlignment,
-        mainAxisSize: mainAxisSize,
-        mainAxisAlignment: mainAxisAlignment,
-        verticalDirection: verticalDirection,
-        children:
-            List.generate(itemCount, (index) => itemBuilder(context, index)),
-      );
+  Widget build(BuildContext context) {
+    final children = List<Widget>.filled(
+      itemCount,
+      const SizedBox.shrink(),
+    );
+
+    for (var i = 0; i < itemCount; i++) {
+      children[i] = itemBuilder(context, i);
+    }
+
+    return Column(
+      crossAxisAlignment: crossAxisAlignment,
+      mainAxisSize: mainAxisSize,
+      mainAxisAlignment: mainAxisAlignment,
+      verticalDirection: verticalDirection,
+      children: children,
+    );
+  }
 }

@@ -147,7 +147,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                 itemBuilder: (context, index) {
                   final session = _dates[index];
                   return _SessionListTile(
-                    key: ValueKey(session.hashCode),
+                    key: ObjectKey(session),
                     session: session,
                     history: widget.history!,
                     onTap: () => _navigateToSession(session),

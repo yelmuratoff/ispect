@@ -458,7 +458,7 @@ class _MainLogsView extends StatelessWidget {
               index,
             );
             return _LogListItem(
-              key: ValueKey('${logEntry.hashCode}_$index'),
+              key: ObjectKey(logEntry),
               logData: logEntry,
               itemIndex: index,
               statusIcon:
