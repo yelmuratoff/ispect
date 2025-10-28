@@ -71,41 +71,39 @@ class DefaultNodeExpansionService implements NodeExpansionService {
     }
 
     final nodeIndex = displayNodes.indexOf(node) + 1;
-    final children = _countVisibleChildren(node) - 1;
+    final childrenCount = _countVisibleChildren(node) - 1;
 
     node.collapse();
-    displayNodes.removeRange(nodeIndex, nodeIndex + children);
+    displayNodes.removeRange(nodeIndex, nodeIndex + childrenCount);
     return displayNodes;
   }
 
-  Object? _getDirectChildren(NodeViewModelState node) {
-    if (node.isClass) {
-      return node.value as Map<String, NodeViewModelState>?;
-    } else if (node.isArray) {
-      return node.value as List<NodeViewModelState>?;
-    }
-    return null;
-  }
+  Object? _getDirectChildren(NodeViewModelState node) => switch (node) {
+        _ when node.isClass => node.value as Map<String, NodeViewModelState>?,
+        _ when node.isArray => node.value as List<NodeViewModelState>?,
+        _ => null,
+      };
 
   int _countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
 
-    var count = 1;
-
-    if (node.isClass && !node.isCollapsed) {
-      final children = node.value! as Map<String, NodeViewModelState>;
-      for (final child in children.values) {
-        count += _countVisibleChildren(child);
-      }
-    } else if (node.isArray && !node.isCollapsed) {
-      final children = node.value! as List<NodeViewModelState>;
-      for (final child in children) {
-        count += _countVisibleChildren(child);
-      }
-    }
-
-    return count;
+    return 1 +
+        switch (node) {
+          _ when node.isClass && !node.isCollapsed => _countChildrenInMap(
+              node.value! as Map<String, NodeViewModelState>,
+            ),
+          _ when node.isArray && !node.isCollapsed => _countChildrenInList(
+              node.value! as List<NodeViewModelState>,
+            ),
+          _ => 0,
+        };
   }
+
+  int _countChildrenInMap(Map<String, NodeViewModelState> children) =>
+      children.values.fold(0, (sum, child) => sum + _countVisibleChildren(child));
+
+  int _countChildrenInList(List<NodeViewModelState> children) =>
+      children.fold(0, (sum, child) => sum + _countVisibleChildren(child));
 }
 
 /// Concrete implementation for bulk node operations
@@ -164,51 +162,40 @@ class DefaultNodeNavigationService implements NodeNavigationService {
 /// Concrete implementation for node analysis operations
 class DefaultNodeAnalysisService implements NodeAnalysisService {
   @override
-  Object? getDirectChildren(NodeViewModelState node) {
-    if (node.isClass) {
-      return node.value as Map<String, NodeViewModelState>?;
-    } else if (node.isArray) {
-      return node.value as List<NodeViewModelState>?;
-    }
-    return null;
-  }
+  Object? getDirectChildren(NodeViewModelState node) => switch (node) {
+        _ when node.isClass => node.value as Map<String, NodeViewModelState>?,
+        _ when node.isArray => node.value as List<NodeViewModelState>?,
+        _ => null,
+      };
 
   @override
   int countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
 
-    var count = 1;
-
-    if (node.isClass && !node.isCollapsed) {
-      final children = node.value! as Map<String, NodeViewModelState>;
-      for (final child in children.values) {
-        count += countVisibleChildren(child);
-      }
-    } else if (node.isArray && !node.isCollapsed) {
-      final children = node.value! as List<NodeViewModelState>;
-      for (final child in children) {
-        count += countVisibleChildren(child);
-      }
-    }
-
-    return count;
+    return 1 +
+        switch (node) {
+          _ when node.isClass && !node.isCollapsed => _countMapChildren(
+              node.value! as Map<String, NodeViewModelState>,
+            ),
+          _ when node.isArray && !node.isCollapsed => _countListChildren(
+              node.value! as List<NodeViewModelState>,
+            ),
+          _ => 0,
+        };
   }
+
+  int _countMapChildren(Map<String, NodeViewModelState> children) =>
+      children.values.fold(0, (sum, child) => sum + countVisibleChildren(child));
+
+  int _countListChildren(List<NodeViewModelState> children) =>
+      children.fold(0, (sum, child) => sum + countVisibleChildren(child));
 
   @override
   int countVisibleChildrenCached(
     NodeViewModelState node,
     Map<int, int> cache,
-  ) {
-    final nodeHash = node.hashCode;
-    final cached = cache[nodeHash];
-    if (cached != null) {
-      return cached;
-    }
-
-    final count = countVisibleChildren(node);
-    cache[nodeHash] = count;
-    return count;
-  }
+  ) =>
+      cache.putIfAbsent(node.hashCode, () => countVisibleChildren(node));
 }
 
 /// Facade service that combines all node operations following Facade pattern

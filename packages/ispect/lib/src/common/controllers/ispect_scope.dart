@@ -30,45 +30,42 @@ class ISpectScopeModel extends ChangeNotifier {
   ISpectOptions _options;
   ISpectTheme _theme;
 
-  /// Indicates whether ISpect is enabled.
-  bool get isISpectEnabled => _isISpectEnabled;
-  set isISpectEnabled(bool value) {
-    if (_isISpectEnabled != value) {
-      _isISpectEnabled = value;
+  /// Helper method to update a value and notify listeners if changed.
+  void _updateValue<T>(T currentValue, T newValue, void Function(T) setter) {
+    if (currentValue != newValue) {
+      setter(newValue);
       notifyListeners();
     }
   }
+
+  /// Indicates whether ISpect is enabled.
+  bool get isISpectEnabled => _isISpectEnabled;
+  set isISpectEnabled(bool value) =>
+      _updateValue(_isISpectEnabled, value, (v) => _isISpectEnabled = v);
 
   /// Indicates whether performance tracking is enabled.
   bool get isPerformanceTrackingEnabled => _isPerformanceTrackingEnabled;
-  set isPerformanceTrackingEnabled(bool value) {
-    if (_isPerformanceTrackingEnabled != value) {
-      _isPerformanceTrackingEnabled = value;
-      notifyListeners();
-    }
-  }
+  set isPerformanceTrackingEnabled(bool value) => _updateValue(
+        _isPerformanceTrackingEnabled,
+        value,
+        (v) => _isPerformanceTrackingEnabled = v,
+      );
 
   /// Configuration options for ISpect.
   ISpectOptions get options => _options;
-  set options(ISpectOptions value) {
-    if (_options != value) {
-      _options = value;
-      notifyListeners();
-    }
-  }
+  set options(ISpectOptions value) =>
+      _updateValue(_options, value, (v) => _options = v);
 
   /// Theming settings for ISpect.
   ISpectTheme get theme => _theme;
   set theme(ISpectTheme value) {
-    if (_theme != value) {
-      _theme = value.copyWith(
-        logIcons: {
-          ...ISpectConstants.typeIcons, // Default icons
-          ...value.logIcons, // Custom user-defined icons
-        },
-      );
-      notifyListeners();
-    }
+    final updatedTheme = value.copyWith(
+      logIcons: {
+        ...ISpectConstants.typeIcons, // Default icons
+        ...value.logIcons, // Custom user-defined icons
+      },
+    );
+    _updateValue(_theme, updatedTheme, (v) => _theme = v);
   }
 
   /// A navigator observer for tracking navigation events.
