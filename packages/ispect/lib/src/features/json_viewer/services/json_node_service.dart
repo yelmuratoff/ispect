@@ -23,7 +23,6 @@ mixin NodeHelperMixin {
       children.fold(0, (sum, child) => sum + counter(child));
 }
 
-
 /// Interface for node expansion operations
 abstract interface class NodeExpansionService {
   List<NodeViewModelState> expandNode(
@@ -106,13 +105,11 @@ class DefaultNodeExpansionService
 
     return 1 +
         switch (node) {
-          _ when node.isClass && !node.isCollapsed =>
-            countChildrenInIterable(
+          _ when node.isClass && !node.isCollapsed => countChildrenInIterable(
               (node.value! as Map<String, NodeViewModelState>).values,
               _countVisibleChildren,
             ),
-          _ when node.isArray && !node.isCollapsed =>
-            countChildrenInIterable(
+          _ when node.isArray && !node.isCollapsed => countChildrenInIterable(
               node.value! as List<NodeViewModelState>,
               _countVisibleChildren,
             ),
@@ -189,13 +186,11 @@ class DefaultNodeAnalysisService
 
     return 1 +
         switch (node) {
-          _ when node.isClass && !node.isCollapsed =>
-            countChildrenInIterable(
+          _ when node.isClass && !node.isCollapsed => countChildrenInIterable(
               (node.value! as Map<String, NodeViewModelState>).values,
               countVisibleChildren,
             ),
-          _ when node.isArray && !node.isCollapsed =>
-            countChildrenInIterable(
+          _ when node.isArray && !node.isCollapsed => countChildrenInIterable(
               node.value! as List<NodeViewModelState>,
               countVisibleChildren,
             ),

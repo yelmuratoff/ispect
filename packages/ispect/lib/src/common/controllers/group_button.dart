@@ -85,8 +85,9 @@ class GroupButtonController extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<int> _removeDisabledIndexes(List<int> indexes) =>
-      indexes.where((e) => !disabledIndexes.contains(e)).toList(growable: false);
+  List<int> _removeDisabledIndexes(List<int> indexes) => indexes
+      .where((e) => !disabledIndexes.contains(e))
+      .toList(growable: false);
 
   bool _isDisabled(int i, {bool withCallBack = false}) {
     final isDisabled = _disabledIndexes.contains(i);
