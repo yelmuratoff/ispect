@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:ispectify/ispectify.dart';
 
 /// Simple cache for filtered log data.
@@ -15,21 +17,24 @@ class FilterCache {
   /// - `filter`: The filter to apply
   /// - `generation`: Current data generation number (incremented on changes)
   ///
-  /// Returns cached data if the generation and filter match,
-  /// otherwise applies the filter and caches the result.
+  /// Returns an unmodifiable view of cached data if the generation and filter match,
+  /// otherwise applies the filter, caches the result, and returns an unmodifiable view.
+  ///
+  /// The returned list is wrapped in [UnmodifiableListView] to prevent
+  /// accidental modifications that would bypass the cache.
   List<ISpectifyData> getFiltered(
     List<ISpectifyData> data,
     ISpectifyFilter filter,
     int generation,
   ) {
     if (_isCacheValid(filter, generation)) {
-      return _cachedData;
+      return UnmodifiableListView(_cachedData);
     }
 
     _cachedData = data.where(filter.apply).toList(growable: false);
     _lastFilter = filter;
     _cacheGeneration = generation;
-    return _cachedData;
+    return UnmodifiableListView(_cachedData);
   }
 
   /// Checks if the cache is valid for the given filter and generation.

@@ -422,7 +422,7 @@ class _MainLogsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
-    final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
+    final titles = logsViewController.getTitles(logsData);
     final dividerColor = _getDividerColor(iSpectTheme, context);
     final options = ISpect.read(context).options;
 
@@ -434,8 +434,8 @@ class _MainLogsView extends StatelessWidget {
           focusNode: searchFocusNode,
           title: appBarTitle,
           titlesController: titleFiltersController,
-          titles: allTitles,
-          uniqTitles: uniqueTitles,
+          titles: titles.all,
+          uniqTitles: titles.unique,
           controller: logsViewController,
           onSettingsTap: onSettingsTap,
           onInfoTap: onInfoTap,

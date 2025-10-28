@@ -230,7 +230,7 @@ class _MainLogsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
-    final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
+    final titles = logsViewController.getTitles(logsData);
 
     return CustomScrollView(
       controller: logsScrollController,
@@ -240,8 +240,8 @@ class _MainLogsView extends StatelessWidget {
           focusNode: searchFocusNode,
           title: appBarTitle,
           titlesController: titleFiltersController,
-          titles: allTitles,
-          uniqTitles: uniqueTitles,
+          titles: titles.all,
+          uniqTitles: titles.unique,
           controller: logsViewController,
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),

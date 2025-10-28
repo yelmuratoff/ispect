@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
 
+/// Result type for getTitles method with named fields for clarity.
+///
+/// - `all`: All non-null titles from logs (currently same as unique)
+/// - `unique`: Unique titles from logs (deduplicated set)
+typedef TitlesResult = ({List<String> all, List<String> unique});
+
 /// Controller for managing the state of ISpectify views.
 ///
 /// - Parameters: None required for initialization
@@ -249,7 +255,17 @@ class ISpectViewController extends ChangeNotifier {
   ///
   /// Optimized to use a single-pass iteration instead of creating
   /// intermediate lists, reducing time complexity from O(2n) to O(n).
-  (List<String>, List<String>) getTitles(List<ISpectifyData> logsData) {
+  ///
+  /// Returns a named record with:
+  /// - `all`: All unique titles (for backward compatibility)
+  /// - `unique`: Unique titles (deduplicated)
+  ///
+  /// Example:
+  /// ```dart
+  /// final titles = controller.getTitles(logs);
+  /// print('Found ${titles.unique.length} unique titles');
+  /// ```
+  TitlesResult getTitles(List<ISpectifyData> logsData) {
     // Simple length-based cache check
     final currentLength = logsData.length;
 
@@ -257,7 +273,7 @@ class ISpectViewController extends ChangeNotifier {
     if (_lastTitlesDataHash == currentLength &&
         _cachedAllTitles != null &&
         _cachedUniqueTitles != null) {
-      return (_cachedAllTitles!, _cachedUniqueTitles!);
+      return (all: _cachedAllTitles!, unique: _cachedUniqueTitles!);
     }
 
     // Single-pass extraction using Set for uniqueness
@@ -276,7 +292,7 @@ class ISpectViewController extends ChangeNotifier {
     _cachedUniqueTitles = uniqueTitles;
     _lastTitlesDataHash = currentLength;
 
-    return (uniqueTitles, uniqueTitles);
+    return (all: uniqueTitles, unique: uniqueTitles);
   }
 
   /// Handles tap on a log item, toggling its selection state.
