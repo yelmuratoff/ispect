@@ -180,20 +180,14 @@ class ISpectDioInterceptor extends Interceptor {
     _logger.logCustom(httpErrorLog);
   }
 
-  bool _shouldProcessRequest(RequestOptions options) {
-    if (!settings.enabled) return false;
-    return settings.requestFilter?.call(options) ?? true;
-  }
+  bool _shouldProcessRequest(RequestOptions options) =>
+      settings.enabled && (settings.requestFilter?.call(options) ?? true);
 
-  bool _shouldProcessResponse(Response<dynamic> response) {
-    if (!settings.enabled) return false;
-    return settings.responseFilter?.call(response) ?? true;
-  }
+  bool _shouldProcessResponse(Response<dynamic> response) =>
+      settings.enabled && (settings.responseFilter?.call(response) ?? true);
 
-  bool _shouldProcessError(DioException err) {
-    if (!settings.enabled) return false;
-    return settings.errorFilter?.call(err) ?? true;
-  }
+  bool _shouldProcessError(DioException err) =>
+      settings.enabled && (settings.errorFilter?.call(err) ?? true);
 
   Map<String, dynamic> _redactHeaders(
     Map<String, dynamic> headers,
@@ -201,33 +195,38 @@ class ISpectDioInterceptor extends Interceptor {
   ) =>
       useRedaction ? _redactor.redactHeaders(headers) : headers;
 
-  Object? _redactBody(Object? data, bool useRedaction) {
-    if (data is FormData) {
-      return _extractFormData(data, useRedaction);
-    }
-    return useRedaction ? _redactor.redact(data) : data;
-  }
+  Object? _redactBody(Object? data, bool useRedaction) => data is FormData
+      ? _extractFormData(data, useRedaction)
+      : (useRedaction ? _redactor.redact(data) : data);
 
   Map<String, dynamic>? _processRequestData(
     Object? data,
     bool useRedaction,
   ) {
+    // Handle FormData specially
     if (data is FormData) {
       return _extractFormData(data, useRedaction);
     }
+
+    // Redact and convert to proper format
     final redacted = useRedaction ? _redactor.redact(data) : data;
-    return redacted is Map<String, dynamic> ? redacted : {'data': redacted};
+    return redacted is Map<String, dynamic>
+        ? redacted
+        : <String, dynamic>{'data': redacted};
   }
 
   Map<String, dynamic> _processErrorData(
     Object? data,
     bool useRedaction,
   ) {
+    // Handle Map type
     if (data is Map<String, dynamic>) {
       final redacted = useRedaction ? _redactor.redact(data) : data;
       return (redacted as Map<String, dynamic>?) ?? <String, dynamic>{};
     }
-    return {
+
+    // Wrap other types in data field
+    return <String, dynamic>{
       'data': useRedaction ? _redactor.redact(data) : data,
     };
   }

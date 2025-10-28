@@ -183,17 +183,18 @@ class ISpectify {
   }) {
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
-    if (data is ISpectifyError) {
-      _observer?.onError(data);
-      _processLog(data, skipObserverNotification: true);
-      return;
+
+    // Handle specific log types with observer notifications
+    switch (data) {
+      case ISpectifyError():
+        _observer?.onError(data);
+        _processLog(data, skipObserverNotification: true);
+      case ISpectifyException():
+        _observer?.onException(data);
+        _processLog(data, skipObserverNotification: true);
+      default:
+        _processLog(data);
     }
-    if (data is ISpectifyException) {
-      _observer?.onException(data);
-      _processLog(data, skipObserverNotification: true);
-      return;
-    }
-    _processLog(data);
   }
 
   /// Creates a log entry with custom parameters.

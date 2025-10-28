@@ -599,7 +599,9 @@ class InspectorState extends State<Inspector> {
       _controller.setInLoggerPage(isLoggerPage: true);
 
       await context.iSpect.options.push(context, iSpectScreen).then((_) {
-        _controller.setInLoggerPage(isLoggerPage: false);
+        if (context.mounted) {
+          _controller.setInLoggerPage(isLoggerPage: false);
+        }
       });
     }
   }

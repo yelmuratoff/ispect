@@ -173,20 +173,14 @@ class ISpectHttpInterceptor extends InterceptorContract {
     return response;
   }
 
-  bool _shouldProcessRequest(BaseRequest request) {
-    if (!settings.enabled) return false;
-    return settings.requestFilter?.call(request) ?? true;
-  }
+  bool _shouldProcessRequest(BaseRequest request) =>
+      settings.enabled && (settings.requestFilter?.call(request) ?? true);
 
-  bool _shouldProcessResponse(BaseResponse response) {
-    if (!settings.enabled) return false;
-    return settings.responseFilter?.call(response) ?? true;
-  }
+  bool _shouldProcessResponse(BaseResponse response) =>
+      settings.enabled && (settings.responseFilter?.call(response) ?? true);
 
-  bool _shouldProcessError(BaseResponse response) {
-    if (!settings.enabled) return false;
-    return settings.errorFilter?.call(response) ?? true;
-  }
+  bool _shouldProcessError(BaseResponse response) =>
+      settings.enabled && (settings.errorFilter?.call(response) ?? true);
 
   Map<String, String> _redactHeaders(
     Map<String, String> headers,
@@ -198,15 +192,12 @@ class ISpectHttpInterceptor extends InterceptorContract {
               .map((k, v) => MapEntry(k, v?.toString() ?? ''))
           : headers;
 
-  Object? _processRequestBody(BaseRequest request, bool useRedaction) {
-    if (request is MultipartRequest) {
-      return _extractMultipartData(request, useRedaction);
-    }
-    if (request is Request) {
-      return _redactRequestBody(request.body, useRedaction);
-    }
-    return null;
-  }
+  Object? _processRequestBody(BaseRequest request, bool useRedaction) =>
+      switch (request) {
+        MultipartRequest() => _extractMultipartData(request, useRedaction),
+        Request() => _redactRequestBody(request.body, useRedaction),
+        _ => null,
+      };
 
   Object? _processResponseBody(BaseResponse response, bool useRedaction) {
     if (response is! Response) return null;
@@ -241,52 +232,56 @@ class ISpectHttpInterceptor extends InterceptorContract {
     Object? responseBodyData,
     Map<String, dynamic>? requestBodyData,
   ) {
+    // Early return if no response body data
+    if (responseBodyData == null) {
+      return requestBodyData ?? <String, dynamic>{};
+    }
+
+    // Handle Map type
     if (responseBodyData is Map) {
-      try {
-        final redacted = settings.enableRedaction
-            ? _redactor.redact(responseBodyData)
-            : responseBodyData;
-
-        // Handle the redacted result properly
-        if (redacted is Map<String, dynamic>) {
-          return redacted;
-        } else if (redacted is Map<Object?, Object?>) {
-          // Convert Map<Object?, Object?> to Map<String, dynamic>
-          return redacted.map((k, v) => MapEntry(k.toString(), v));
-        } else if (responseBodyData is Map<String, dynamic>) {
-          // Fallback to original data if redaction failed
-          return responseBodyData;
-        } else {
-          // Convert original data if it's not String-keyed
-          final raw = responseBodyData as Map<Object?, Object?>;
-          return raw.map((k, v) => MapEntry(k.toString(), v));
-        }
-      } catch (_) {
-        final raw = responseBodyData as Map<Object?, Object?>;
-        return raw.map((k, v) => MapEntry(k.toString(), v));
-      }
+      return _processMapErrorBody(responseBodyData);
     }
 
+    // Handle Iterable type
     if (responseBodyData is Iterable) {
-      final iterable = settings.enableRedaction
-          ? _redactor.redact(responseBodyData)
-          : responseBodyData;
-      return <String, dynamic>{'data': iterable};
+      return _processIterableErrorBody(responseBodyData);
     }
 
+    // Handle String type
     if (responseBodyData is String) {
-      return <String, dynamic>{
-        'raw': settings.enableRedaction
-            ? _redactor.redact(responseBodyData)
-            : responseBodyData,
-      };
+      return _processStringErrorBody(responseBodyData);
     }
 
-    if (responseBodyData != null) {
-      return <String, dynamic>{'raw': responseBodyData.toString()};
-    }
+    // Fallback for other types
+    return <String, dynamic>{'raw': responseBodyData.toString()};
+  }
 
-    return requestBodyData ?? <String, dynamic>{};
+  Map<String, dynamic> _processMapErrorBody(Map<dynamic, dynamic> data) {
+    try {
+      final redacted = settings.enableRedaction ? _redactor.redact(data) : data;
+
+      // Guard clause: if already correct type, return early
+      if (redacted is Map<String, dynamic>) {
+        return redacted;
+      }
+
+      // Convert to correct type
+      final mapToConvert = redacted is Map ? redacted : data;
+      return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
+    } catch (_) {
+      // Fallback: convert original data
+      return data.map((k, v) => MapEntry(k.toString(), v));
+    }
+  }
+
+  Map<String, dynamic> _processIterableErrorBody(Iterable<dynamic> data) {
+    final processed = settings.enableRedaction ? _redactor.redact(data) : data;
+    return <String, dynamic>{'data': processed};
+  }
+
+  Map<String, dynamic> _processStringErrorBody(String data) {
+    final processed = settings.enableRedaction ? _redactor.redact(data) : data;
+    return <String, dynamic>{'raw': processed};
   }
 
   /// Extract multipart form data for logging
