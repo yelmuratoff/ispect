@@ -153,10 +153,8 @@ class SquareIconButton extends StatelessWidget {
           iconSize: ISpectConstants.iconButtonIconSize,
           style: IconButton.styleFrom(
             padding: const EdgeInsets.all(4),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(ISpectConstants.standardBorderRadius),
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: DecorationUtils.standardBorderRadius,
             ),
             backgroundColor: color.withValues(
               alpha: ISpectConstants.iconButtonBackgroundOpacity,
@@ -185,14 +183,7 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(
-            alpha: ISpectConstants.iconButtonBackgroundOpacity,
-          ),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(ISpectConstants.standardBorderRadius),
-          ),
-        ),
+        decoration: DecorationUtils.roundedBackground(color: color),
         child: Padding(
           padding: const EdgeInsets.all(4),
           child: Icon(

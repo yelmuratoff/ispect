@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
@@ -213,10 +214,7 @@ class _LazyStackTraceBody extends StatelessWidget {
         child: SizedBox(
           width: double.maxFinite,
           child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              border: Border.all(color: color),
-            ),
+            decoration: DecorationUtils.roundedBorder(color: color),
             child: Padding(
               padding: const EdgeInsets.all(6),
               child: SelectableText(
@@ -251,12 +249,7 @@ class _LogContentContainer extends StatelessWidget {
         width: double.maxFinite,
         child: DecoratedBox(
           decoration: hasStackTrace
-              ? BoxDecoration(
-                  border: Border.all(color: color),
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(ISpectConstants.largeBorderRadius),
-                  ),
-                )
+              ? DecorationUtils.roundedBorder(color: color)
               : const BoxDecoration(),
           child: Padding(
             padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,
