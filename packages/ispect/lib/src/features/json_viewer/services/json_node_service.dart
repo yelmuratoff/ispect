@@ -144,8 +144,9 @@ class DefaultBulkNodeService implements BulkNodeService {
     }
 
     // Filter to keep only root nodes
-    final rootNodes =
-        displayNodes.where((node) => node.treeDepth == 0).toList();
+    final rootNodes = displayNodes
+        .where((node) => node.treeDepth == 0)
+        .toList(growable: false);
 
     displayNodes
       ..clear()

@@ -752,7 +752,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         final loadedData = await _parseJsonToData(jsonString);
 
         clear();
-        loadedData.forEach(add);
+        for (final data in loadedData) {
+          add(data);
+        }
       } catch (e, st) {
         if (settings.useConsoleLogs) {
           ISpect.logger.handle(exception: e, stackTrace: st);
@@ -802,7 +804,9 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
     try {
       final loadedData = await _parseJsonToData(jsonString);
 
-      loadedData.forEach(add);
+      for (final data in loadedData) {
+        add(data);
+      }
     } catch (e, st) {
       if (settings.useConsoleLogs) {
         ISpect.logger.handle(exception: e, stackTrace: st);

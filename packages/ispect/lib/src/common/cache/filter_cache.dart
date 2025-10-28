@@ -26,7 +26,7 @@ class FilterCache {
       return _cachedData;
     }
 
-    _cachedData = data.where(filter.apply).toList();
+    _cachedData = data.where(filter.apply).toList(growable: false);
     _lastFilter = filter;
     _cacheGeneration = generation;
     return _cachedData;

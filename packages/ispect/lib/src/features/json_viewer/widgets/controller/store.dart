@@ -237,7 +237,7 @@ class JsonExplorerStore extends ChangeNotifier {
   /// Expands all the parent nodes of each search result.
   void expandSearchResults() {
     _nodeService.expandSearchResults(
-      searchResults.cast<SearchResult>().toList(),
+      searchResults.cast<SearchResult>().toList(growable: false),
     );
   }
 

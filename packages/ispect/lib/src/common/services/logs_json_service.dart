@@ -202,7 +202,7 @@ class LogsJsonService {
   ) =>
       {
         'metadata': _createFilteredMetadata(logs, filteredLogs, filter),
-        'logs': filteredLogs.map((log) => log.toJson()).toList(),
+        'logs': filteredLogs.map((log) => log.toJson()).toList(growable: false),
       };
 
   /// Creates metadata for filtered export including filter information

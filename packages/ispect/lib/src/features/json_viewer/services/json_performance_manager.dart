@@ -264,37 +264,38 @@ class JsonPerformanceManager implements UniversalPerformanceManager {
 
     if (_enableMetrics && _metrics.isNotEmpty) {
       report.writeln('\n--- Metrics ---');
-      _metrics.forEach((key, value) {
-        report.writeln('$key: ${value.toStringAsFixed(2)}');
-      });
+      for (final entry in _metrics.entries) {
+        report.writeln('${entry.key}: ${entry.value.toStringAsFixed(2)}');
+      }
     }
 
     if (_enableTiming && _completedTimings.isNotEmpty) {
       report.writeln('\n--- Timings ---');
-      _completedTimings.forEach((key, duration) {
-        report.writeln('$key: ${duration.inMilliseconds}ms');
-      });
+      for (final entry in _completedTimings.entries) {
+        report.writeln('${entry.key}: ${entry.value.inMilliseconds}ms');
+      }
     }
 
     if (_enableMemoryTracking && _memoryStats.isNotEmpty) {
       report.writeln('\n--- Memory Stats ---');
-      _memoryStats.forEach((key, size) {
-        final sizeKb = (size / 1024).toStringAsFixed(2);
-        report.writeln('$key: ${sizeKb}KB');
-      });
+      for (final entry in _memoryStats.entries) {
+        final sizeKb = (entry.value / 1024).toStringAsFixed(2);
+        report.writeln('${entry.key}: ${sizeKb}KB');
+      }
     }
 
     if (_enableAlerting && _alerts.isNotEmpty) {
       report.writeln('\n--- Alerts ---');
-
-      _alerts.forEach(report.writeln);
+      for (final alert in _alerts) {
+        report.writeln(alert);
+      }
     }
 
     final poolStats = _objectPool.getPoolStatistics();
     report.writeln('\n--- Object Pool Stats ---');
-    poolStats.forEach((key, count) {
-      report.writeln('$key: $count objects');
-    });
+    for (final entry in poolStats.entries) {
+      report.writeln('${entry.key}: ${entry.value} objects');
+    }
 
     report.writeln('==================================');
     debugPrint(report.toString());

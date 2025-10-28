@@ -181,6 +181,8 @@ class ISpectTheme {
     }
 
     // Return only enabled descriptions
-    return descMap.values.where((desc) => !desc.isDisabled).toList();
+    return descMap.values
+        .where((desc) => !desc.isDisabled)
+        .toList(growable: false);
   }
 }

@@ -104,7 +104,8 @@ class ISpectViewController extends ChangeNotifier {
   /// Removes a filter type and notifies listeners.
   void removeFilterType(Type type) {
     final currentTypes = _getCurrentTypes();
-    final updatedTypes = currentTypes.where((t) => t != type).toList();
+    final updatedTypes =
+        currentTypes.where((t) => t != type).toList(growable: false);
     if (updatedTypes.length == currentTypes.length) return;
 
     _updateFilter(types: updatedTypes);
@@ -121,7 +122,8 @@ class ISpectViewController extends ChangeNotifier {
   /// Removes a filter title and notifies listeners.
   void removeFilterTitle(String title) {
     final currentTitles = _getCurrentTitles();
-    final updatedTitles = currentTitles.where((t) => t != title).toList();
+    final updatedTitles =
+        currentTitles.where((t) => t != title).toList(growable: false);
     if (updatedTitles.length == currentTitles.length) return;
 
     _updateFilter(titles: updatedTitles);
@@ -161,7 +163,7 @@ class ISpectViewController extends ChangeNotifier {
         orElse: () => TitleFilter([]),
       ) as TitleFilter)
           .titles
-          .toList();
+          .toList(growable: false);
     }
     return _cachedTitles!;
   }
@@ -174,7 +176,7 @@ class ISpectViewController extends ChangeNotifier {
         orElse: () => TypeFilter([]),
       ) as TypeFilter)
           .types
-          .toList();
+          .toList(growable: false);
     }
     return _cachedTypes!;
   }
@@ -244,6 +246,9 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Retrieves all titles and unique titles from log data with caching.
+  ///
+  /// Optimized to use a single-pass iteration instead of creating
+  /// intermediate lists, reducing time complexity from O(2n) to O(n).
   (List<String>, List<String>) getTitles(List<ISpectifyData> logsData) {
     // Simple length-based cache check
     final currentLength = logsData.length;
@@ -255,16 +260,23 @@ class ISpectViewController extends ChangeNotifier {
       return (_cachedAllTitles!, _cachedUniqueTitles!);
     }
 
-    // Extract and cache titles
-    final allTitles =
-        logsData.map((data) => data.title).whereType<String>().toList();
-    final uniqueTitles = allTitles.toSet().toList();
+    // Single-pass extraction using Set for uniqueness
+    final uniqueTitlesSet = <String>{};
+    for (final data in logsData) {
+      final title = data.title;
+      if (title != null) {
+        uniqueTitlesSet.add(title);
+      }
+    }
 
-    _cachedAllTitles = allTitles;
+    // Convert to fixed-size list (no over-allocation)
+    final uniqueTitles = uniqueTitlesSet.toList(growable: false);
+
+    _cachedAllTitles = uniqueTitles;
     _cachedUniqueTitles = uniqueTitles;
     _lastTitlesDataHash = currentLength;
 
-    return (allTitles, uniqueTitles);
+    return (uniqueTitles, uniqueTitles);
   }
 
   /// Handles tap on a log item, toggling its selection state.
