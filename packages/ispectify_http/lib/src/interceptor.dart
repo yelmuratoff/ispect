@@ -6,21 +6,21 @@ import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/models/_models.dart';
 import 'package:ispectify_http/src/settings.dart';
 
-class ISpectHttpInterceptor extends InterceptorContract {
+class ISpectHttpInterceptor extends InterceptorContract
+    with BaseNetworkInterceptor {
   ISpectHttpInterceptor({
     ISpectify? logger,
     this.settings = const ISpectHttpInterceptorSettings(),
     RedactionService? redactor,
   }) {
-    _logger = logger ?? ISpectify();
-    _redactor = redactor ?? RedactionService();
+    initializeInterceptor(logger: logger, redactor: redactor);
   }
-
-  late final ISpectify _logger;
-  late RedactionService _redactor;
 
   /// `ISpectHttpInterceptor` settings and customization
   ISpectHttpInterceptorSettings settings;
+
+  @override
+  bool get enableRedaction => settings.enableRedaction;
 
   /// Method to update `settings` of [ISpectHttpInterceptor]
   void configure({
@@ -50,7 +50,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
       responsePen: responsePen,
       errorPen: errorPen,
     );
-    if (redactor != null) _redactor = redactor;
+    if (redactor != null) this.redactor = redactor;
   }
 
   @override
@@ -70,7 +70,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
         ? _processRequestBody(request, useRedaction)
         : null;
 
-    _logger.logCustom(
+    logger.logCustom(
       HttpRequestLog(
         message,
         method: request.method,
@@ -118,7 +118,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
     if (isErrorResponse) {
       final errorBodyMap = _processErrorBody(responseBodyData, requestBodyData);
 
-      _logger.logCustom(
+      logger.logCustom(
         HttpErrorLog(
           message,
           method: response.request?.method,
@@ -139,11 +139,11 @@ class ISpectHttpInterceptor extends InterceptorContract {
               : null,
           body: errorBodyMap,
           responseData: responseData,
-          redactor: useRedaction ? _redactor : null,
+          redactor: useRedaction ? redactor : null,
         ),
       );
     } else {
-      _logger.logCustom(
+      logger.logCustom(
         HttpResponseLog(
           message,
           method: response.request?.method,
@@ -165,7 +165,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
           responseBody: settings.printResponseData ? responseBodyData : null,
           settings: settings,
           responseData: responseData,
-          redactor: useRedaction ? _redactor : null,
+          redactor: useRedaction ? redactor : null,
         ),
       );
     }
@@ -182,15 +182,17 @@ class ISpectHttpInterceptor extends InterceptorContract {
   bool _shouldProcessError(BaseResponse response) =>
       settings.enabled && (settings.errorFilter?.call(response) ?? true);
 
+  /// Extracts HTTP request body with proper redaction.
+  ///
+  /// Delegates to [redactHeaders] from mixin for headers processing.
   Map<String, String> _redactHeaders(
     Map<String, String> headers,
     bool useRedaction,
-  ) =>
-      useRedaction
-          ? _redactor
-              .redactHeaders(headers)
-              .map((k, v) => MapEntry(k, v?.toString() ?? ''))
-          : headers;
+  ) {
+    final headersMap = headers.map((k, v) => MapEntry(k, v as Object?));
+    final redacted = redactHeaders(headersMap, useRedaction: useRedaction);
+    return redacted.map((k, v) => MapEntry(k, v?.toString() ?? ''));
+  }
 
   Object? _processRequestBody(BaseRequest request, bool useRedaction) =>
       switch (request) {
@@ -210,9 +212,9 @@ class ISpectHttpInterceptor extends InterceptorContract {
 
     try {
       final decoded = jsonDecode(response.body);
-      return useRedaction ? _redactor.redact(decoded) : decoded;
+      return useRedaction ? redactor.redact(decoded) : decoded;
     } catch (_) {
-      return useRedaction ? _redactor.redact(response.body) : response.body;
+      return useRedaction ? redactor.redact(response.body) : response.body;
     }
   }
 
@@ -228,61 +230,32 @@ class ISpectHttpInterceptor extends InterceptorContract {
     return _extractMultipartData(request, useRedaction);
   }
 
+  /// Processes error body with improved type safety using pattern matching.
   Map<String, dynamic> _processErrorBody(
     Object? responseBodyData,
     Map<String, dynamic>? requestBodyData,
-  ) {
-    // Early return if no response body data
-    if (responseBodyData == null) {
-      return requestBodyData ?? <String, dynamic>{};
-    }
+  ) =>
+      switch (responseBodyData) {
+        null => requestBodyData ?? <String, dynamic>{},
+        final Map<String, dynamic> map => _processMapErrorBody(map),
+        final Map<dynamic, dynamic> map => _convertToTypedMap(map),
+        final Iterable<dynamic> iter => <String, dynamic>{
+            'data': _maybeRedact(iter),
+          },
+        final String str => <String, dynamic>{'raw': _maybeRedact(str)},
+        _ => <String, dynamic>{'raw': responseBodyData.toString()},
+      };
 
-    // Handle Map type
-    if (responseBodyData is Map) {
-      return _processMapErrorBody(responseBodyData);
-    }
+  /// Redacts data if redaction is enabled, otherwise returns original.
+  Object? _maybeRedact(Object? data) =>
+      maybeRedact(data, useRedaction: settings.enableRedaction);
 
-    // Handle Iterable type
-    if (responseBodyData is Iterable) {
-      return _processIterableErrorBody(responseBodyData);
-    }
+  /// Converts untyped Map to Map<String, dynamic>.
+  Map<String, dynamic> _convertToTypedMap(Map<dynamic, dynamic> map) =>
+      convertToTypedMap(map);
 
-    // Handle String type
-    if (responseBodyData is String) {
-      return _processStringErrorBody(responseBodyData);
-    }
-
-    // Fallback for other types
-    return <String, dynamic>{'raw': responseBodyData.toString()};
-  }
-
-  Map<String, dynamic> _processMapErrorBody(Map<dynamic, dynamic> data) {
-    try {
-      final redacted = settings.enableRedaction ? _redactor.redact(data) : data;
-
-      // Guard clause: if already correct type, return early
-      if (redacted is Map<String, dynamic>) {
-        return redacted;
-      }
-
-      // Convert to correct type
-      final mapToConvert = redacted is Map ? redacted : data;
-      return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
-    } catch (_) {
-      // Fallback: convert original data
-      return data.map((k, v) => MapEntry(k.toString(), v));
-    }
-  }
-
-  Map<String, dynamic> _processIterableErrorBody(Iterable<dynamic> data) {
-    final processed = settings.enableRedaction ? _redactor.redact(data) : data;
-    return <String, dynamic>{'data': processed};
-  }
-
-  Map<String, dynamic> _processStringErrorBody(String data) {
-    final processed = settings.enableRedaction ? _redactor.redact(data) : data;
-    return <String, dynamic>{'raw': processed};
-  }
+  Map<String, dynamic> _processMapErrorBody(Map<dynamic, dynamic> data) =>
+      processMapData(data, useRedaction: settings.enableRedaction);
 
   /// Extract multipart form data for logging
   Map<String, dynamic> _extractMultipartData(
@@ -291,7 +264,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
   ) {
     final redactedFields = useRedaction
         ? Map<String, Object?>.from(
-            (_redactor.redact(request.fields)! as Map).map(
+            (redactor.redact(request.fields)! as Map).map(
               (k, v) => MapEntry(k.toString(), v),
             ),
           )
@@ -309,7 +282,7 @@ class ISpectHttpInterceptor extends InterceptorContract {
         .toList();
 
     final redactedFiles = useRedaction
-        ? (_redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
+        ? (redactor.redact(filesList)! as List).cast<Map<String, Object?>>()
         : filesList.cast<Map<String, Object?>>();
 
     return {
@@ -322,9 +295,9 @@ class ISpectHttpInterceptor extends InterceptorContract {
   Object? _redactRequestBody(String body, bool useRedaction) {
     try {
       final jsonData = jsonDecode(body);
-      return useRedaction ? _redactor.redact(jsonData) : jsonData;
+      return useRedaction ? redactor.redact(jsonData) : jsonData;
     } catch (_) {
-      return useRedaction ? _redactor.redact(body) : body;
+      return useRedaction ? redactor.redact(body) : body;
     }
   }
 }

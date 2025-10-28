@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/cache/filter_cache.dart';
 
 /// Controller for managing the state of ISpectify views.
 ///
@@ -26,16 +29,17 @@ class ISpectViewController extends ChangeNotifier {
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
 
-  // Data filtering cache
-  List<ISpectifyData> _cachedFilteredData = <ISpectifyData>[];
-  int _lastProcessedDataLength = 0;
-  ISpectifyFilter? _lastAppliedFilter;
-  int? _lastDataHash;
+  // Simplified data filtering cache using generation-based approach
+  final _filterCache = FilterCache();
+  int _dataGeneration = 0;
 
   // Titles cache
   List<String>? _cachedAllTitles;
   List<String>? _cachedUniqueTitles;
   int? _lastTitlesDataHash;
+
+  // Debounce timer for search query updates
+  Timer? _filterDebounce;
 
   /// Retrieves the current log filter.
   ISpectifyFilter get filter => _filter;
@@ -77,10 +81,16 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Updates the filter's search query and notifies listeners.
+  ///
+  /// Uses debouncing to avoid excessive filtering on rapid input changes.
+  /// The filter update is delayed by 300ms after the last query change.
   void updateFilterSearchQuery(String query) {
-    _filter = _filter.copyWith(searchQuery: query);
-    _invalidateFilterCache();
-    notifyListeners();
+    _filterDebounce?.cancel();
+    _filterDebounce = Timer(const Duration(milliseconds: 300), () {
+      _filter = _filter.copyWith(searchQuery: query);
+      _invalidateFilterCache();
+      notifyListeners();
+    });
   }
 
   /// Adds a new filter type and notifies listeners.
@@ -190,65 +200,56 @@ class ISpectViewController extends ChangeNotifier {
     _cachedSearchQuery = null;
   }
 
-  /// Applies current filters to log data with caching for performance.
+  /// Applies current filters to log data with intelligent caching for performance.
+  ///
+  /// This method implements a generation-based caching strategy:
+  /// 1. Checks if generation number matches (cache hit)
+  /// 2. Applies filter only if cache is invalid
+  /// 3. Updates cache with results
+  ///
+  /// **Performance Characteristics:**
+  /// - O(1) for cache hits (when filter and data haven't changed)
+  /// - O(n) for cache misses where n = number of logs
+  ///
+  /// **Cache Invalidation:**
+  /// - Filter changes automatically invalidate via [filter] setter
+  /// - Data changes require manual call to [onDataChanged]
+  ///
+  /// **Thread Safety:**
+  /// This method is NOT thread-safe. Always call from the same isolate.
+  ///
+  /// {@tool snippet}
+  /// Example usage:
+  /// ```dart
+  /// final filtered = controller.applyCurrentFilters(allLogs);
+  /// print('Filtered ${filtered.length} logs from ${allLogs.length} total');
+  /// ```
+  /// {@end-tool}
+  ///
+  /// See also:
+  /// * [ISpectifyFilter], which defines filter behavior
+  /// * [FilterCache], which implements the caching logic
+  /// * [onDataChanged], which invalidates cache when data changes
   List<ISpectifyData> applyCurrentFilters(List<ISpectifyData> logsData) {
     if (logsData.isEmpty) return <ISpectifyData>[];
-
-    final currentFilter = filter;
-    final currentDataHash = _calculateDataHash(logsData);
-
-    // Return cached result if data and filter haven't changed
-    if (_isCacheValid(logsData, currentFilter, currentDataHash)) {
-      return _cachedFilteredData;
-    }
-
-    // Apply filter and update cache
-    final filteredData = logsData.where(currentFilter.apply).toList();
-    _updateFilterCache(logsData, currentFilter, currentDataHash, filteredData);
-
-    return filteredData;
+    return _filterCache.getFiltered(logsData, filter, _dataGeneration);
   }
 
-  /// Checks if the current cache is valid.
-  bool _isCacheValid(
-    List<ISpectifyData> logsData,
-    ISpectifyFilter currentFilter,
-    int currentDataHash,
-  ) =>
-      logsData.length == _lastProcessedDataLength &&
-      _cachedFilteredData.isNotEmpty &&
-      _lastDataHash == currentDataHash &&
-      _lastAppliedFilter == currentFilter;
-
-  /// Updates the filter cache with new data.
-  void _updateFilterCache(
-    List<ISpectifyData> logsData,
-    ISpectifyFilter currentFilter,
-    int currentDataHash,
-    List<ISpectifyData> filteredData,
-  ) {
-    _cachedFilteredData = filteredData;
-    _lastProcessedDataLength = logsData.length;
-    _lastAppliedFilter = currentFilter;
-    _lastDataHash = currentDataHash;
-  }
-
-  /// Calculates a hash for the given data list for cache validation.
-  int _calculateDataHash(List<ISpectifyData> data) {
-    if (data.isEmpty) return 0;
-    return Object.hashAll([
-      data.length,
-      data.first.hashCode,
-      data.last.hashCode,
-    ]);
+  /// Invalidates the filter cache and increments data generation.
+  ///
+  /// Call this when the underlying data changes (not just the filter).
+  void onDataChanged() {
+    _dataGeneration++;
+    _filterCache.invalidate();
   }
 
   /// Retrieves all titles and unique titles from log data with caching.
   (List<String>, List<String>) getTitles(List<ISpectifyData> logsData) {
-    final currentHash = _calculateDataHash(logsData);
+    // Simple length-based cache check
+    final currentLength = logsData.length;
 
-    // Return cached titles if data hasn't changed
-    if (_lastTitlesDataHash == currentHash &&
+    // Return cached titles if data length hasn't changed
+    if (_lastTitlesDataHash == currentLength &&
         _cachedAllTitles != null &&
         _cachedUniqueTitles != null) {
       return (_cachedAllTitles!, _cachedUniqueTitles!);
@@ -261,7 +262,7 @@ class ISpectViewController extends ChangeNotifier {
 
     _cachedAllTitles = allTitles;
     _cachedUniqueTitles = uniqueTitles;
-    _lastTitlesDataHash = currentHash;
+    _lastTitlesDataHash = currentLength;
 
     return (allTitles, uniqueTitles);
   }
@@ -388,5 +389,11 @@ class ISpectViewController extends ChangeNotifier {
       );
     }
     return shareCallback;
+  }
+
+  @override
+  void dispose() {
+    _filterDebounce?.cancel();
+    super.dispose();
   }
 }

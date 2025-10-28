@@ -9,19 +9,15 @@ import 'package:ispectify_dio/src/settings.dart';
 /// `logger` field is current [ISpectify] instance.
 /// Provide your instance if your application used `ISpectify` as default logger
 /// Common ISpectify instance will be used by default
-class ISpectDioInterceptor extends Interceptor {
+class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectDioInterceptor({
     ISpectify? logger,
     this.settings = const ISpectDioInterceptorSettings(),
     this.addonId,
     RedactionService? redactor,
   }) {
-    _logger = logger ?? ISpectify();
-    _redactor = redactor ?? RedactionService();
+    initializeInterceptor(logger: logger, redactor: redactor);
   }
-
-  late final ISpectify _logger;
-  late final RedactionService _redactor;
 
   /// `ISpectDioInterceptor` settings and customization
   ISpectDioInterceptorSettings settings;
@@ -29,6 +25,9 @@ class ISpectDioInterceptor extends Interceptor {
   /// ISpectify addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
+
+  @override
+  bool get enableRedaction => settings.enableRedaction;
 
   /// Method to update `settings` of [ISpectDioInterceptor]
   void configure({
@@ -58,7 +57,7 @@ class ISpectDioInterceptor extends Interceptor {
       responsePen: responsePen,
       errorPen: errorPen,
     );
-    if (redactor != null) _redactor = redactor;
+    if (redactor != null) this.redactor = redactor;
   }
 
   @override
@@ -84,9 +83,9 @@ class ISpectDioInterceptor extends Interceptor {
       body: redactedBody,
       settings: settings,
       requestData: DioRequestData(options),
-      redactor: useRedaction ? _redactor : null,
+      redactor: useRedaction ? redactor : null,
     );
-    _logger.logCustom(httpLog);
+    logger.logCustom(httpLog);
   }
 
   @override
@@ -128,9 +127,9 @@ class ISpectDioInterceptor extends Interceptor {
         response: response,
         requestData: DioRequestData(response.requestOptions),
       ),
-      redactor: useRedaction ? _redactor : null,
+      redactor: useRedaction ? redactor : null,
     );
-    _logger.logCustom(httpLog);
+    logger.logCustom(httpLog);
   }
 
   @override
@@ -175,9 +174,9 @@ class ISpectDioInterceptor extends Interceptor {
           requestData: requestData,
         ),
       ),
-      redactor: useRedaction ? _redactor : null,
+      redactor: useRedaction ? redactor : null,
     );
-    _logger.logCustom(httpErrorLog);
+    logger.logCustom(httpErrorLog);
   }
 
   bool _shouldProcessRequest(RequestOptions options) =>
@@ -193,11 +192,11 @@ class ISpectDioInterceptor extends Interceptor {
     Map<String, dynamic> headers,
     bool useRedaction,
   ) =>
-      useRedaction ? _redactor.redactHeaders(headers) : headers;
+      redactHeaders(headers, useRedaction: useRedaction);
 
   Object? _redactBody(Object? data, bool useRedaction) => data is FormData
       ? _extractFormData(data, useRedaction)
-      : (useRedaction ? _redactor.redact(data) : data);
+      : redactBody(data, useRedaction: useRedaction);
 
   Map<String, dynamic>? _processRequestData(
     Object? data,
@@ -209,27 +208,45 @@ class ISpectDioInterceptor extends Interceptor {
     }
 
     // Redact and convert to proper format
-    final redacted = useRedaction ? _redactor.redact(data) : data;
+    final redacted = redactBody(data, useRedaction: useRedaction);
     return redacted is Map<String, dynamic>
         ? redacted
         : <String, dynamic>{'data': redacted};
   }
 
+  /// Processes error data with improved type safety using pattern matching.
   Map<String, dynamic> _processErrorData(
     Object? data,
     bool useRedaction,
-  ) {
-    // Handle Map type
-    if (data is Map<String, dynamic>) {
-      final redacted = useRedaction ? _redactor.redact(data) : data;
-      return (redacted as Map<String, dynamic>?) ?? <String, dynamic>{};
-    }
+  ) =>
+      switch (data) {
+        null => <String, dynamic>{},
+        final Map<String, dynamic> map => _maybeRedactMap(map, useRedaction),
+        final Map<dynamic, dynamic> map =>
+          _convertAndRedactMap(map, useRedaction),
+        _ => <String, dynamic>{'data': _maybeRedact(data, useRedaction)},
+      };
 
-    // Wrap other types in data field
-    return <String, dynamic>{
-      'data': useRedaction ? _redactor.redact(data) : data,
-    };
+  /// Redacts a typed map if redaction is enabled.
+  Map<String, dynamic> _maybeRedactMap(
+    Map<String, dynamic> map,
+    bool useRedaction,
+  ) {
+    if (!useRedaction) return map;
+    final redacted = redactor.redact(map);
+    return redacted is Map<String, dynamic> ? redacted : <String, dynamic>{};
   }
+
+  /// Converts untyped map and redacts if needed.
+  Map<String, dynamic> _convertAndRedactMap(
+    Map<dynamic, dynamic> map,
+    bool useRedaction,
+  ) =>
+      processMapData(map, useRedaction: useRedaction);
+
+  /// Redacts data if redaction is enabled.
+  Object? _maybeRedact(Object? data, bool useRedaction) =>
+      maybeRedact(data, useRedaction: useRedaction);
 
   /// Extracts FormData fields and files into a structured format for logging
   Map<String, dynamic> _extractFormData(FormData formData, bool useRedaction) {
@@ -258,13 +275,13 @@ class ISpectDioInterceptor extends Interceptor {
         .toList();
 
     final redFields = useRedaction
-        ? (_redactor.redact(rawFields)! as Map).map(
+        ? (redactor.redact(rawFields)! as Map).map(
             (key, value) => MapEntry(key.toString(), value),
           )
         : rawFields;
 
     final redFiles = useRedaction
-        ? (_redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
+        ? (redactor.redact(rawFiles)! as List).cast<Map<String, Object?>>()
         : rawFiles.cast<Map<String, Object?>>();
 
     return {

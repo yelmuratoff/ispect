@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/factory/log_factory.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
@@ -249,13 +250,14 @@ class ISpectify {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _handleLog(
+    final log = LogFactory.createLog(
+      level: LogLevel.critical,
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
-      logLevel: LogLevel.critical,
-      type: ISpectifyLogType.critical,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates a debug level log entry.
@@ -263,16 +265,13 @@ class ISpectify {
   /// Debug logs are for detailed information useful during development.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
-  void debug(
-    Object? msg,
-  ) {
-    _handleLog(
+  void debug(Object? msg) {
+    final log = LogFactory.createLog(
+      level: LogLevel.debug,
       message: msg,
-      logLevel: LogLevel.debug,
-      type: ISpectifyLogType.debug,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates an error level log entry.
@@ -287,13 +286,14 @@ class ISpectify {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    _handleLog(
+    final log = LogFactory.createLog(
+      level: LogLevel.error,
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
-      logLevel: LogLevel.error,
-      type: ISpectifyLogType.error,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates an info level log entry.
@@ -301,16 +301,13 @@ class ISpectify {
   /// Info logs are for general information about system operation.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
-  void info(
-    Object? msg,
-  ) {
-    _handleLog(
+  void info(Object? msg) {
+    final log = LogFactory.createLog(
+      level: LogLevel.info,
       message: msg,
-      logLevel: LogLevel.info,
-      type: ISpectifyLogType.info,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates a verbose level log entry.
@@ -318,16 +315,13 @@ class ISpectify {
   /// Verbose logs contain the most detailed information.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
-  void verbose(
-    Object? msg,
-  ) {
-    _handleLog(
+  void verbose(Object? msg) {
+    final log = LogFactory.createLog(
+      level: LogLevel.verbose,
       message: msg,
-      logLevel: LogLevel.verbose,
-      type: ISpectifyLogType.verbose,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates a warning level log entry.
@@ -335,16 +329,13 @@ class ISpectify {
   /// Warning logs indicate potential issues that aren't errors.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
-  void warning(
-    Object? msg,
-  ) {
-    _handleLog(
+  void warning(Object? msg) {
+    final log = LogFactory.createLog(
+      level: LogLevel.warning,
       message: msg,
-      logLevel: LogLevel.warning,
-      type: ISpectifyLogType.warning,
+      options: _options,
     );
+    _processLog(log);
   }
 
   /// Creates a "good" log entry.

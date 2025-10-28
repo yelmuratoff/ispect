@@ -94,13 +94,24 @@ StackTrace: $stackTraceText]''';
 
   bool get isRouteLog => key == ISpectifyLogType.route.key;
 
-  /// Generates a cURL command for HTTP request logs.
+  /// Generates a cURL command for HTTP logs (request, response, or error).
   ///
   /// Returns the cURL command as a string if the log contains HTTP request data,
   /// otherwise returns `null`.
-  String? get curlCommand => key == ISpectifyLogType.httpRequest.key
-      ? CurlUtils.generateCurl(additionalData)
-      : null;
+  String? get curlCommand {
+    if (key == ISpectifyLogType.httpRequest.key) {
+      return CurlUtils.generateCurl(additionalData);
+    } else if (key == ISpectifyLogType.httpResponse.key ||
+        key == ISpectifyLogType.httpError.key) {
+      // For response/error logs, extract request-options from additionalData
+      final requestOptions =
+          additionalData?['request-options'] as Map<String, dynamic>?;
+      return requestOptions != null
+          ? CurlUtils.generateCurl(requestOptions)
+          : null;
+    }
+    return null;
+  }
 
   /// Retrieves the type of exception or error, if applicable.
   ///

@@ -1,5 +1,6 @@
 export 'package:ansicolor/ansicolor.dart';
 
+export 'src/common/base_interceptor.dart';
 export 'src/common/extensions/ispectify_data.dart';
 export 'src/enums/log_type.dart';
 export 'src/filter/filter.dart';

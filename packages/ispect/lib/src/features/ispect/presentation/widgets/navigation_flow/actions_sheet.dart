@@ -5,6 +5,7 @@ import 'package:ispect/src/common/observers/route_extension.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 class ISpectNavigationFlowActionsSheet extends StatelessWidget {
@@ -88,7 +89,7 @@ class _ActionsSheetContent extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _Header(title: context.ispectL10n.share),
+              ISpectBottomSheetHeader(title: context.ispectL10n.share),
               const Gap(16),
               Wrap(
                 spacing: 8,
@@ -164,34 +165,6 @@ class _ActionsSheetContent extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: theme.textColor,
-          ),
-        ),
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: theme.textColor),
-        ),
-      ],
     );
   }
 }
