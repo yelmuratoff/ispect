@@ -14,6 +14,52 @@ final class ISpectConstants {
 
   static const hidden = 'Hidden';
 
+  // UI Constants for consistent spacing and sizing
+  /// Standard icon size for log cards
+  static const double logCardIconSize = 16.0;
+
+  /// Standard icon button dimension
+  static const double iconButtonDimension = 24.0;
+
+  /// Standard icon button icon size
+  static const double iconButtonIconSize = 16.0;
+
+  /// Standard border radius
+  static const double standardBorderRadius = 8.0;
+
+  /// Large border radius for containers
+  static const double largeBorderRadius = 10.0;
+
+  /// Snackbar border radius
+  static const double snackbarBorderRadius = 16.0;
+
+  /// Standard horizontal padding
+  static const double standardHorizontalPadding = 12.0;
+
+  /// Standard vertical padding
+  static const double standardVerticalPadding = 8.0;
+
+  /// Standard gap size
+  static const double standardGap = 6.0;
+
+  /// Animation duration in milliseconds
+  static const int animationDurationMs = 150;
+
+  /// Max lines for selectable text in stack traces
+  static const int stackTraceMaxLines = 50;
+
+  /// Standard opacity for background colors
+  static const double standardBackgroundOpacity = 0.08;
+
+  /// Standard opacity for icon buttons
+  static const double iconButtonBackgroundOpacity = 0.1;
+
+  /// Standard opacity for disabled elements
+  static const double disabledOpacity = 0.5;
+
+  /// Toast background color
+  static const Color toastBackgroundColor = Color.fromARGB(255, 49, 49, 49);
+
   static const typeIcons = {
     /// Base logs section
     'error': Icons.error_outline_rounded,

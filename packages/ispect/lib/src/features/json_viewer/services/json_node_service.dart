@@ -229,6 +229,9 @@ class JsonNodeService
             navigationService ?? DefaultNodeNavigationService(),
         _analysisService = analysisService ?? DefaultNodeAnalysisService();
 
+  // Singleton instance for static methods
+  static final JsonNodeService _instance = JsonNodeService();
+
   final NodeExpansionService _expansionService;
   final BulkNodeService _bulkService;
   final NodeNavigationService _navigationService;
@@ -288,45 +291,45 @@ class JsonNodeService
   ) =>
       _analysisService.countVisibleChildrenCached(node, cache);
 
-  // Static methods for backward compatibility
+  // Static methods delegate to singleton instance to avoid duplication
   static List<NodeViewModelState> expandNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) =>
-      DefaultNodeExpansionService().expandNode(node, displayNodes);
+      _instance.expandNode(node, displayNodes);
 
   static List<NodeViewModelState> collapseNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) =>
-      DefaultNodeExpansionService().collapseNode(node, displayNodes);
+      _instance.collapseNode(node, displayNodes);
 
   static List<NodeViewModelState> expandAllStatic(
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) =>
-      DefaultBulkNodeService().expandAll(allNodes);
+      _instance.expandAll(allNodes);
 
   static List<NodeViewModelState> collapseAllStatic(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) =>
-      DefaultBulkNodeService().collapseAll(displayNodes, allNodes);
+      _instance.collapseAll(displayNodes, allNodes);
 
   static void expandParentNodesStatic(NodeViewModelState node) =>
-      DefaultNodeNavigationService().expandParentNodes(node);
+      _instance.expandParentNodes(node);
 
   static void expandSearchResultsStatic(List<SearchResult> searchResults) =>
-      DefaultNodeNavigationService().expandSearchResults(searchResults);
+      _instance.expandSearchResults(searchResults);
 
   static Object? getDirectChildrenStatic(NodeViewModelState node) =>
-      DefaultNodeAnalysisService().getDirectChildren(node);
+      _instance.getDirectChildren(node);
 
   static int countVisibleChildrenStatic(NodeViewModelState node) =>
-      DefaultNodeAnalysisService().countVisibleChildren(node);
+      _instance.countVisibleChildren(node);
 
   static int countVisibleChildrenCachedStatic(
     NodeViewModelState node,
     Map<int, int> cache,
   ) =>
-      DefaultNodeAnalysisService().countVisibleChildrenCached(node, cache);
+      _instance.countVisibleChildrenCached(node, cache);
 }

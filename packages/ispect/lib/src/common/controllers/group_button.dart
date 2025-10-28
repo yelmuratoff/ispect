@@ -98,19 +98,13 @@ class GroupButtonController extends ChangeNotifier {
 
   /// Enable buttons by indexes in checkbox and radio type
   void enableIndexes(List<int> indexes) {
-    // ignore: prefer_foreach
-    for (final i in indexes) {
-      _disabledIndexes.remove(i);
-    }
+    _disabledIndexes.removeAll(indexes);
     notifyListeners();
   }
 
   /// Disable buttons by indexes in checkbox and radio type
   void disableIndexes(List<int> indexes) {
-    // ignore: prefer_foreach
-    for (final i in indexes) {
-      _disabledIndexes.add(i);
-    }
+    _disabledIndexes.addAll(indexes);
     notifyListeners();
   }
 }
