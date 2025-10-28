@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
+import 'package:ispect/src/common/services/error_handler_service.dart';
 import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -12,6 +13,7 @@ final class ISpect {
   static late ISpectify _logger;
   static bool _isInitialized = false;
   static List<String> _filters = [];
+  static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
   static ISpectify get logger {
@@ -37,6 +39,7 @@ final class ISpect {
   static void dispose() {
     _isInitialized = false;
     _filters = [];
+    _errorHandler = null;
   }
 
   /// Reads the `ISpectScopeModel` from the widget tree.
@@ -62,8 +65,9 @@ final class ISpect {
   }) {
     initialize(logger);
     _filters = filters;
+    _errorHandler = ErrorHandlerService(logger: logger, filters: filters);
 
-    _setupErrorHandling(
+    _errorHandler!.setupErrorHandling(
       options: options,
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
@@ -102,113 +106,25 @@ final class ISpect {
     runZonedGuarded(
       callback,
       (error, stackTrace) {
-        onZonedError?.call(error, stackTrace);
-        if (_shouldHandleError(error.toString(), stackTrace.toString())) {
-          logger.handle(
-            message: 'Zoned error caught',
-            exception: error,
-            stackTrace: stackTrace,
-          );
-          if (isUncaughtErrorsHandlingEnabled) {
-            onUncaughtErrors?.call(<dynamic>[error, stackTrace]);
-          }
-        }
+        _errorHandler?.handleZoneError(
+          error,
+          stackTrace,
+          onZonedError: onZonedError,
+          onUncaughtErrors: onUncaughtErrors,
+          isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+        );
       },
       zoneSpecification: ZoneSpecification(
-        print: (_, parent, zone, line) {
-          if (isPrintLoggingEnabled && !_containsAnsi(line)) {
-            logger.print(line);
-          } else if (isFlutterPrintEnabled) {
-            parent.print(zone, line);
-          }
+        print: (parent, zone, line) {
+          _errorHandler?.handleZonePrint(
+            parent,
+            zone,
+            line,
+            isPrintLoggingEnabled: isPrintLoggingEnabled,
+            isFlutterPrintEnabled: isFlutterPrintEnabled,
+          );
         },
       ),
     );
   }
-
-  /// Configures global Flutter and platform error handlers.
-  static void _setupErrorHandling({
-    required ISpectLogOptions options,
-    void Function(Object, StackTrace)? onPlatformDispatcherError,
-    void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
-    void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
-    void Function(List<dynamic>)? onUncaughtErrors,
-  }) {
-    logger.info('🚀 ISpect: Setting up error handling.');
-
-    if (options.isFlutterPresentHandlingEnabled) {
-      FlutterError.presentError = (details) {
-        void handleError() {
-          onPresentError?.call(details, details.stack);
-          if (_shouldHandleError(
-            details.exceptionAsString(),
-            details.stack.toString(),
-          )) {
-            logger.handle(
-              message: 'Flutter error presented',
-              exception: details,
-              stackTrace: details.stack,
-            );
-            if (options.isUncaughtErrorsHandlingEnabled) {
-              onUncaughtErrors?.call(<dynamic>[details, details.stack]);
-            }
-          }
-        }
-
-        // Try to use addPostFrameCallback, fallback to immediate execution
-        try {
-          WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
-        } catch (_) {
-          // If WidgetsBinding is not initialized, handle immediately
-          handleError();
-        }
-      };
-    }
-
-    if (options.isPlatformDispatcherHandlingEnabled) {
-      PlatformDispatcher.instance.onError = (error, stack) {
-        onPlatformDispatcherError?.call(error, stack);
-        if (_shouldHandleError(error.toString(), stack.toString())) {
-          logger.handle(
-            message: 'Platform error caught',
-            exception: error,
-            stackTrace: stack,
-          );
-          if (options.isUncaughtErrorsHandlingEnabled) {
-            onUncaughtErrors?.call(<dynamic>[error, stack]);
-          }
-        }
-        return true;
-      };
-    }
-
-    if (options.isFlutterErrorHandlingEnabled) {
-      FlutterError.onError = (details) {
-        onFlutterError?.call(details, details.stack);
-        if (_shouldHandleError(details.toString(), details.stack.toString())) {
-          logger.error(
-            'FlutterErrorDetails',
-            exception: details.toString(),
-            stackTrace: details.stack,
-          );
-          if (options.isUncaughtErrorsHandlingEnabled) {
-            onUncaughtErrors?.call(<dynamic>[details, details.stack]);
-          }
-        }
-      };
-    }
-
-    logger.good('✅ ISpect: Error handling set up.');
-  }
-
-  /// Determines whether the given error should be handled based on active filters.
-  static bool _shouldHandleError(String exception, String stack) =>
-      _filters.isEmpty ||
-      !_filters.any(
-        (filter) => exception.contains(filter) || stack.contains(filter),
-      );
-
-  /// Checks if a string contains ANSI escape sequences (e.g., for color).
-  static bool _containsAnsi(String line) =>
-      line.contains(RegExp(r'\x1B\[[0-9;]*[mGKH]'));
 }

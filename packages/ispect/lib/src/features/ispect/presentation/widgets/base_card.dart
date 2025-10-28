@@ -1,6 +1,7 @@
 // ignore_for_file: implementation_imports
 
 import 'package:flutter/material.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 class ISpectBaseCard extends StatelessWidget {
   const ISpectBaseCard({
@@ -8,7 +9,7 @@ class ISpectBaseCard extends StatelessWidget {
     required this.color,
     super.key,
     this.padding = const EdgeInsets.all(4),
-    this.backgroundColor = const Color.fromARGB(255, 49, 49, 49),
+    this.backgroundColor = ISpectConstants.toastBackgroundColor,
   });
 
   final Widget child;

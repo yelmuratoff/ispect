@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 
 part 'collapsed_body.dart';
@@ -32,9 +34,14 @@ class LogCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RepaintBoundary(
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          color:
-              isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
+          duration: const Duration(
+            milliseconds: ISpectConstants.animationDurationMs,
+          ),
+          color: isExpanded
+              ? color.withValues(
+                  alpha: ISpectConstants.standardBackgroundOpacity,
+                )
+              : Colors.transparent,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -84,7 +91,10 @@ class _LogCardHeader extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: ISpectConstants.standardHorizontalPadding,
+              vertical: ISpectConstants.standardVerticalPadding,
+            ),
             child: CollapsedBody(
               icon: icon,
               color: color,
@@ -204,15 +214,12 @@ class _LazyStackTraceBody extends StatelessWidget {
         child: SizedBox(
           width: double.maxFinite,
           child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              border: Border.all(color: color),
-            ),
+            decoration: DecorationUtils.roundedBorder(color: color),
             child: Padding(
               padding: const EdgeInsets.all(6),
               child: SelectableText(
                 stackTrace,
-                maxLines: 50,
+                maxLines: ISpectConstants.stackTraceMaxLines,
                 minLines: 1,
                 style: TextStyle(
                   color: color,
@@ -242,10 +249,7 @@ class _LogContentContainer extends StatelessWidget {
         width: double.maxFinite,
         child: DecoratedBox(
           decoration: hasStackTrace
-              ? BoxDecoration(
-                  border: Border.all(color: color),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                )
+              ? DecorationUtils.roundedBorder(color: color)
               : const BoxDecoration(),
           child: Padding(
             padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,

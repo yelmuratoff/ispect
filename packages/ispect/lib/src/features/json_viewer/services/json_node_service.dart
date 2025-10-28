@@ -3,6 +3,27 @@ import 'dart:collection';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 
+/// Base mixin providing common node manipulation utilities.
+///
+/// This mixin follows DRY principle by centralizing shared logic
+/// for getting direct children from nodes.
+mixin NodeHelperMixin {
+  /// Gets direct children of a node based on its type.
+  Object? getDirectChildrenHelper(NodeViewModelState node) => switch (node) {
+        _ when node.isClass => node.value as Map<String, NodeViewModelState>?,
+        _ when node.isArray => node.value as List<NodeViewModelState>?,
+        _ => null,
+      };
+
+  /// Counts visible children in any iterable collection.
+  int countChildrenInIterable(
+    Iterable<NodeViewModelState> children,
+    int Function(NodeViewModelState) counter,
+  ) =>
+      children.fold(0, (sum, child) => sum + counter(child));
+}
+
+
 /// Interface for node expansion operations
 abstract interface class NodeExpansionService {
   List<NodeViewModelState> expandNode(
@@ -42,7 +63,9 @@ abstract interface class NodeAnalysisService {
 }
 
 /// Concrete implementation for node expansion operations
-class DefaultNodeExpansionService implements NodeExpansionService {
+class DefaultNodeExpansionService
+    with NodeHelperMixin
+    implements NodeExpansionService {
   @override
   List<NodeViewModelState> expandNode(
     NodeViewModelState node,
@@ -53,7 +76,7 @@ class DefaultNodeExpansionService implements NodeExpansionService {
     }
 
     final nodeIndex = displayNodes.indexOf(node) + 1;
-    final children = _getDirectChildren(node);
+    final children = getDirectChildrenHelper(node);
     final flatChildren = JsonTreeFlattener.flatten(children);
 
     node.expand();
@@ -71,40 +94,30 @@ class DefaultNodeExpansionService implements NodeExpansionService {
     }
 
     final nodeIndex = displayNodes.indexOf(node) + 1;
-    final children = _countVisibleChildren(node) - 1;
+    final childrenCount = _countVisibleChildren(node) - 1;
 
     node.collapse();
-    displayNodes.removeRange(nodeIndex, nodeIndex + children);
+    displayNodes.removeRange(nodeIndex, nodeIndex + childrenCount);
     return displayNodes;
-  }
-
-  Object? _getDirectChildren(NodeViewModelState node) {
-    if (node.isClass) {
-      return node.value as Map<String, NodeViewModelState>?;
-    } else if (node.isArray) {
-      return node.value as List<NodeViewModelState>?;
-    }
-    return null;
   }
 
   int _countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
 
-    var count = 1;
-
-    if (node.isClass && !node.isCollapsed) {
-      final children = node.value! as Map<String, NodeViewModelState>;
-      for (final child in children.values) {
-        count += _countVisibleChildren(child);
-      }
-    } else if (node.isArray && !node.isCollapsed) {
-      final children = node.value! as List<NodeViewModelState>;
-      for (final child in children) {
-        count += _countVisibleChildren(child);
-      }
-    }
-
-    return count;
+    return 1 +
+        switch (node) {
+          _ when node.isClass && !node.isCollapsed =>
+            countChildrenInIterable(
+              (node.value! as Map<String, NodeViewModelState>).values,
+              _countVisibleChildren,
+            ),
+          _ when node.isArray && !node.isCollapsed =>
+            countChildrenInIterable(
+              node.value! as List<NodeViewModelState>,
+              _countVisibleChildren,
+            ),
+          _ => 0,
+        };
   }
 }
 
@@ -162,53 +175,39 @@ class DefaultNodeNavigationService implements NodeNavigationService {
 }
 
 /// Concrete implementation for node analysis operations
-class DefaultNodeAnalysisService implements NodeAnalysisService {
+class DefaultNodeAnalysisService
+    with NodeHelperMixin
+    implements NodeAnalysisService {
   @override
-  Object? getDirectChildren(NodeViewModelState node) {
-    if (node.isClass) {
-      return node.value as Map<String, NodeViewModelState>?;
-    } else if (node.isArray) {
-      return node.value as List<NodeViewModelState>?;
-    }
-    return null;
-  }
+  Object? getDirectChildren(NodeViewModelState node) =>
+      getDirectChildrenHelper(node);
 
   @override
   int countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
 
-    var count = 1;
-
-    if (node.isClass && !node.isCollapsed) {
-      final children = node.value! as Map<String, NodeViewModelState>;
-      for (final child in children.values) {
-        count += countVisibleChildren(child);
-      }
-    } else if (node.isArray && !node.isCollapsed) {
-      final children = node.value! as List<NodeViewModelState>;
-      for (final child in children) {
-        count += countVisibleChildren(child);
-      }
-    }
-
-    return count;
+    return 1 +
+        switch (node) {
+          _ when node.isClass && !node.isCollapsed =>
+            countChildrenInIterable(
+              (node.value! as Map<String, NodeViewModelState>).values,
+              countVisibleChildren,
+            ),
+          _ when node.isArray && !node.isCollapsed =>
+            countChildrenInIterable(
+              node.value! as List<NodeViewModelState>,
+              countVisibleChildren,
+            ),
+          _ => 0,
+        };
   }
 
   @override
   int countVisibleChildrenCached(
     NodeViewModelState node,
     Map<int, int> cache,
-  ) {
-    final nodeHash = node.hashCode;
-    final cached = cache[nodeHash];
-    if (cached != null) {
-      return cached;
-    }
-
-    final count = countVisibleChildren(node);
-    cache[nodeHash] = count;
-    return count;
-  }
+  ) =>
+      cache.putIfAbsent(node.hashCode, () => countVisibleChildren(node));
 }
 
 /// Facade service that combines all node operations following Facade pattern
@@ -228,6 +227,9 @@ class JsonNodeService
         _navigationService =
             navigationService ?? DefaultNodeNavigationService(),
         _analysisService = analysisService ?? DefaultNodeAnalysisService();
+
+  // Singleton instance for static methods
+  static final JsonNodeService _instance = JsonNodeService();
 
   final NodeExpansionService _expansionService;
   final BulkNodeService _bulkService;
@@ -288,45 +290,45 @@ class JsonNodeService
   ) =>
       _analysisService.countVisibleChildrenCached(node, cache);
 
-  // Static methods for backward compatibility
+  // Static methods delegate to singleton instance to avoid duplication
   static List<NodeViewModelState> expandNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) =>
-      DefaultNodeExpansionService().expandNode(node, displayNodes);
+      _instance.expandNode(node, displayNodes);
 
   static List<NodeViewModelState> collapseNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
   ) =>
-      DefaultNodeExpansionService().collapseNode(node, displayNodes);
+      _instance.collapseNode(node, displayNodes);
 
   static List<NodeViewModelState> expandAllStatic(
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) =>
-      DefaultBulkNodeService().expandAll(allNodes);
+      _instance.expandAll(allNodes);
 
   static List<NodeViewModelState> collapseAllStatic(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
   ) =>
-      DefaultBulkNodeService().collapseAll(displayNodes, allNodes);
+      _instance.collapseAll(displayNodes, allNodes);
 
   static void expandParentNodesStatic(NodeViewModelState node) =>
-      DefaultNodeNavigationService().expandParentNodes(node);
+      _instance.expandParentNodes(node);
 
   static void expandSearchResultsStatic(List<SearchResult> searchResults) =>
-      DefaultNodeNavigationService().expandSearchResults(searchResults);
+      _instance.expandSearchResults(searchResults);
 
   static Object? getDirectChildrenStatic(NodeViewModelState node) =>
-      DefaultNodeAnalysisService().getDirectChildren(node);
+      _instance.getDirectChildren(node);
 
   static int countVisibleChildrenStatic(NodeViewModelState node) =>
-      DefaultNodeAnalysisService().countVisibleChildren(node);
+      _instance.countVisibleChildren(node);
 
   static int countVisibleChildrenCachedStatic(
     NodeViewModelState node,
     Map<int, int> cache,
   ) =>
-      DefaultNodeAnalysisService().countVisibleChildrenCached(node, cache);
+      _instance.countVisibleChildrenCached(node, cache);
 }

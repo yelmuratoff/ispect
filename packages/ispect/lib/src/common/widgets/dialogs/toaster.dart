@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// A utility class for displaying various types of toast notifications using `SnackBar`.
 ///
@@ -162,8 +164,8 @@ final class ISpectToaster {
         backgroundColor: color,
         elevation: 0,
         behavior: SnackBarBehavior.fixed,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: DecorationUtils.snackbarBorderRadius,
         ),
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
         content: Column(
@@ -225,11 +227,11 @@ final class ISpectToaster {
 
     messenger.showSnackBar(
       SnackBar(
-        backgroundColor: const Color.fromARGB(255, 49, 49, 49),
+        backgroundColor: ISpectConstants.toastBackgroundColor,
         elevation: 0,
         behavior: SnackBarBehavior.fixed,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: DecorationUtils.snackbarBorderRadius,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,

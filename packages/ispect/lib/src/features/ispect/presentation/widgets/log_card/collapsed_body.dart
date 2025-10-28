@@ -43,7 +43,7 @@ class CollapsedBody extends StatelessWidget {
                 Row(
                   children: [
                     DecoratedLeadingIcon(icon: icon, color: color),
-                    const Gap(6),
+                    const Gap(ISpectConstants.standardGap),
                     Flexible(
                       child: Text(
                         '$title | $dateTime',
@@ -148,20 +148,23 @@ class SquareIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox.square(
-        dimension: 24,
+        dimension: ISpectConstants.iconButtonDimension,
         child: IconButton(
-          iconSize: 16,
+          iconSize: ISpectConstants.iconButtonIconSize,
           style: IconButton.styleFrom(
             padding: const EdgeInsets.all(4),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: DecorationUtils.standardBorderRadius,
             ),
-            backgroundColor: color.withValues(alpha: 0.1),
+            backgroundColor: color.withValues(
+              alpha: ISpectConstants.iconButtonBackgroundOpacity,
+            ),
           ),
           icon: Icon(
             icon,
-            color: context.ispectTheme.colorScheme.onSurface
-                .withValues(alpha: 0.5),
+            color: context.ispectTheme.colorScheme.onSurface.withValues(
+              alpha: ISpectConstants.disabledOpacity,
+            ),
           ),
           onPressed: onPressed,
         ),
@@ -180,16 +183,13 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-        ),
+        decoration: DecorationUtils.roundedBackground(color: color),
         child: Padding(
           padding: const EdgeInsets.all(4),
           child: Icon(
             icon,
             color: color,
-            size: 16,
+            size: ISpectConstants.logCardIconSize,
           ),
         ),
       );
