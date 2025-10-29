@@ -12,6 +12,27 @@ abstract class Filter<T> {
 }
 
 /// A filter that checks whether an `ISpectLogData` item matches
+/// any of the specified log type keys.
+class LogTypeKeyFilter implements Filter<ISpectLogData> {
+  /// Creates a filter with a set of log type keys.
+  ///
+  /// Converts the list to a Set for O(1) lookups.
+  LogTypeKeyFilter(List<String> keys) : keys = keys.toSet();
+
+  /// Creates a filter from a set of log type keys.
+  const LogTypeKeyFilter.fromSet(this.keys);
+
+  /// Set of log type keys used for filtering.
+  final Set<String> keys;
+
+  @override
+  bool apply(ISpectLogData item) {
+    final key = item.key;
+    return key != null && keys.contains(key);
+  }
+}
+
+/// A filter that checks whether an `ISpectLogData` item matches
 /// any of the specified titles.
 class TitleFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of titles.
@@ -137,17 +158,20 @@ class SearchFilter implements Filter<ISpectLogData> {
 
 /// A composite filter that combines multiple filtering criteria.
 ///
-/// It allows filtering based on `titles`, `types`, and a `searchQuery`.
+/// It allows filtering based on `titles`, `types`, `logTypeKeys`, and a `searchQuery`.
 /// All filters are combined with a logical OR operation for search purposes.
 class ISpectFilter implements Filter<ISpectLogData> {
-  /// Creates an `ISpectFilter` that combines title, type, and search filters.
+  /// Creates an `ISpectFilter` that combines title, type, log type key, and search filters.
   ISpectFilter({
     List<String> titles = const [],
     List<Type> types = const [],
+    List<String> logTypeKeys = const [],
     String? searchQuery,
-  })  : _filters = _buildFilters(titles, types, searchQuery),
-        _isEmpty =
-            titles.isEmpty && types.isEmpty && (searchQuery?.isEmpty ?? true);
+  })  : _filters = _buildFilters(titles, types, logTypeKeys, searchQuery),
+        _isEmpty = titles.isEmpty &&
+            types.isEmpty &&
+            logTypeKeys.isEmpty &&
+            (searchQuery?.isEmpty ?? true);
 
   /// List of individual filters applied.
   final List<Filter<ISpectLogData>> _filters;
@@ -162,12 +186,14 @@ class ISpectFilter implements Filter<ISpectLogData> {
   static List<Filter<ISpectLogData>> _buildFilters(
     List<String> titles,
     List<Type> types,
+    List<String> logTypeKeys,
     String? searchQuery,
   ) {
     final filters = <Filter<ISpectLogData>>[];
 
     if (titles.isNotEmpty) filters.add(TitleFilter(titles));
     if (types.isNotEmpty) filters.add(TypeFilter(types));
+    if (logTypeKeys.isNotEmpty) filters.add(LogTypeKeyFilter(logTypeKeys));
     if (searchQuery?.isNotEmpty ?? false) {
       filters.add(SearchFilter(searchQuery!));
     }
@@ -190,15 +216,18 @@ class ISpectFilter implements Filter<ISpectLogData> {
   ISpectFilter copyWith({
     List<String>? titles,
     List<Type>? types,
+    List<String>? logTypeKeys,
     String? searchQuery,
   }) {
     final newTitles = titles ?? _getExistingTitles();
     final newTypes = types ?? _getExistingTypes();
+    final newLogTypeKeys = logTypeKeys ?? _getExistingLogTypeKeys();
     final newSearchQuery = searchQuery ?? _getExistingSearchQuery();
 
     return ISpectFilter(
       titles: newTitles,
       types: newTypes,
+      logTypeKeys: newLogTypeKeys,
       searchQuery: newSearchQuery,
     );
   }
@@ -218,6 +247,16 @@ class ISpectFilter implements Filter<ISpectLogData> {
     for (final filter in _filters) {
       if (filter is TypeFilter) {
         return filter.types.toList();
+      }
+    }
+    return const [];
+  }
+
+  /// Retrieves existing log type keys from LogTypeKeyFilter if present.
+  List<String> _getExistingLogTypeKeys() {
+    for (final filter in _filters) {
+      if (filter is LogTypeKeyFilter) {
+        return filter.keys.toList();
       }
     }
     return const [];

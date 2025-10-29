@@ -6,6 +6,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
 class ISpectSettingsBottomSheet extends StatefulWidget {
@@ -56,10 +57,16 @@ class _ISpectLoggerSettingsBottomSheetState
     extends State<ISpectSettingsBottomSheet> {
   final _scrollController = ScrollController();
 
+  /// Current set of enabled log types. Empty means all types are enabled.
+  late Set<String> _enabledLogTypes;
+
   @override
   void initState() {
     super.initState();
     widget.logger.addListener(_handleUpdate);
+
+    // Initialize enabled log types from options.initialSettings
+    _enabledLogTypes = widget.options.initialSettings?.enabledLogTypes ?? {};
   }
 
   void _handleUpdate() {
@@ -75,6 +82,69 @@ class _ISpectLoggerSettingsBottomSheetState
     super.dispose();
   }
 
+  void _onLogTypeToggled(String logTypeKey, {required bool enabled}) {
+    setState(() {
+      if (enabled) {
+        if (_enabledLogTypes.isNotEmpty) {
+          _enabledLogTypes.add(logTypeKey);
+        }
+        // If all are disabled and we enable one, we need to start tracking
+        else {
+          // Enable only this one (disable others)
+          _enabledLogTypes = {logTypeKey};
+        }
+      } else {
+        if (_enabledLogTypes.isEmpty) {
+          // Currently all enabled, so we need to enable all except this one
+          _enabledLogTypes = ISpectLogType.values
+              .map((e) => e.key)
+              .where((key) => key != logTypeKey)
+              .toSet();
+        } else {
+          _enabledLogTypes.remove(logTypeKey);
+          // If we disabled the last one, switch back to "all enabled" mode
+          if (_enabledLogTypes.isEmpty) {
+            _enabledLogTypes = {};
+          }
+        }
+      }
+
+      _notifySettingsChanged();
+    });
+  }
+
+  void _onSettingChanged() {
+    _notifySettingsChanged();
+  }
+
+  void _notifySettingsChanged() {
+    final settings = ISpectSettingsState(
+      enabled: widget.logger.value.options.enabled,
+      useConsoleLogs: widget.logger.value.options.useConsoleLogs,
+      useHistory: widget.logger.value.options.useHistory,
+      enabledLogTypes: _enabledLogTypes,
+    );
+
+    widget.options.onSettingsChanged?.call(settings);
+
+    // Update filter if logger has one configured
+    _updateLoggerFilter();
+  }
+
+  void _updateLoggerFilter() {
+    // Create or update filter based on enabled log types
+    if (_enabledLogTypes.isEmpty) {
+      // All enabled - clear filter
+      widget.logger.value.configure();
+    } else {
+      // Apply filter for enabled log types
+      final filter = ISpectFilter(
+        logTypeKeys: _enabledLogTypes.toList(),
+      );
+      widget.logger.value.configure(filter: filter);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
@@ -87,6 +157,7 @@ class _ISpectLoggerSettingsBottomSheetState
           (enabled ? widget.logger.value.enable : widget.logger.value.disable)
               .call();
           widget.logger.notifyListeners();
+          _onSettingChanged();
         },
       ),
       ISpectSettingsCardItem(
@@ -101,6 +172,7 @@ class _ISpectLoggerSettingsBottomSheetState
             ),
           );
           widget.logger.notifyListeners();
+          _onSettingChanged();
         },
       ),
       ISpectSettingsCardItem(
@@ -115,6 +187,7 @@ class _ISpectLoggerSettingsBottomSheetState
             ),
           );
           widget.logger.notifyListeners();
+          _onSettingChanged();
         },
       ),
     ];
@@ -130,6 +203,8 @@ class _ISpectLoggerSettingsBottomSheetState
           settings: settings,
           scrollController: scrollController,
           actions: widget.actions,
+          enabledLogTypes: _enabledLogTypes,
+          onLogTypeToggled: _onLogTypeToggled,
         ),
       ),
       orElse: () => AlertDialog(
@@ -143,6 +218,8 @@ class _ISpectLoggerSettingsBottomSheetState
             settings: settings,
             scrollController: _scrollController,
             actions: widget.actions,
+            enabledLogTypes: _enabledLogTypes,
+            onLogTypeToggled: _onLogTypeToggled,
           ),
         ),
       ),
@@ -156,12 +233,17 @@ class _SettingsBody extends StatelessWidget {
     required this.settings,
     required this.scrollController,
     required this.actions,
+    required this.enabledLogTypes,
+    required this.onLogTypeToggled,
   });
 
   final ISpectScopeModel iSpect;
   final List<Widget> settings;
   final ScrollController scrollController;
   final List<ISpectActionItem> actions;
+  final Set<String> enabledLogTypes;
+  final void Function(String logTypeKey, {required bool enabled})
+      onLogTypeToggled;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -249,6 +331,12 @@ class _SettingsBody extends StatelessWidget {
                       },
                     ),
                   ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: LogTypeFilterSection(
+                  enabledLogTypes: enabledLogTypes,
+                  onLogTypeToggled: onLogTypeToggled,
                 ),
               ),
               const SliverFillRemaining(

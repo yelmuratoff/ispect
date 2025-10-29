@@ -65,6 +65,8 @@ final class ISpectOptions {
     this.onShare,
     this.onOpenFile,
     this.onLoadLogContent,
+    this.onSettingsChanged,
+    this.initialSettings,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -150,6 +152,43 @@ final class ISpectOptions {
   /// cancel the loading operation without showing an error.
   final ISpectLoadLogContentCallback? onLoadLogContent;
 
+  /// Called when ISpect settings change (logger options, enabled log types, etc.).
+  ///
+  /// Use this callback to persist settings to local storage and restore them
+  /// on next app launch.
+  ///
+  /// Example:
+  /// ```dart
+  /// onSettingsChanged: (settings) async {
+  ///   final prefs = await SharedPreferences.getInstance();
+  ///   await prefs.setString('ispect_settings', jsonEncode(settings.toJson()));
+  /// },
+  /// ```
+  final ISpectSettingsChangedCallback? onSettingsChanged;
+
+  /// Initial settings state to restore from local storage.
+  ///
+  /// Use this to restore previously saved settings when initializing ISpect.
+  ///
+  /// Example:
+  /// ```dart
+  /// final prefs = await SharedPreferences.getInstance();
+  /// final settingsJson = prefs.getString('ispect_settings');
+  /// final initialSettings = settingsJson != null
+  ///     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
+  ///     : null;
+  ///
+  /// ISpect.init(
+  ///   options: ISpectOptions(
+  ///     initialSettings: initialSettings,
+  ///     onSettingsChanged: (settings) async {
+  ///       await prefs.setString('ispect_settings', jsonEncode(settings.toJson()));
+  ///     },
+  ///   ),
+  /// );
+  /// ```
+  final ISpectSettingsState? initialSettings;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -177,6 +216,8 @@ final class ISpectOptions {
     ISpectShareCallback? onShare,
     ISpectOpenFileCallback? onOpenFile,
     ISpectLoadLogContentCallback? onLoadLogContent,
+    ISpectSettingsChangedCallback? onSettingsChanged,
+    ISpectSettingsState? initialSettings,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
@@ -192,6 +233,8 @@ final class ISpectOptions {
       onShare: onShare ?? this.onShare,
       onOpenFile: onOpenFile ?? this.onOpenFile,
       onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
+      onSettingsChanged: onSettingsChanged ?? this.onSettingsChanged,
+      initialSettings: initialSettings ?? this.initialSettings,
     );
   }
 
@@ -213,7 +256,9 @@ final class ISpectOptions {
         other.itemsBuilder == itemsBuilder &&
         other.onShare == onShare &&
         other.onOpenFile == onOpenFile &&
-        other.onLoadLogContent == onLoadLogContent;
+        other.onLoadLogContent == onLoadLogContent &&
+        other.onSettingsChanged == onSettingsChanged &&
+        other.initialSettings == initialSettings;
   }
 
   @override
@@ -230,7 +275,9 @@ final class ISpectOptions {
         itemsBuilder.hashCode ^
         onShare.hashCode ^
         onOpenFile.hashCode ^
-        onLoadLogContent.hashCode;
+        onLoadLogContent.hashCode ^
+        onSettingsChanged.hashCode ^
+        initialSettings.hashCode;
   }
 
   @override
@@ -249,6 +296,8 @@ final class ISpectOptions {
       onShare: $onShare,
       onOpenFile: $onOpenFile,
       onLoadLogContent: $onLoadLogContent,
+      onSettingsChanged: $onSettingsChanged,
+      initialSettings: $initialSettings,
       )''';
   }
 }

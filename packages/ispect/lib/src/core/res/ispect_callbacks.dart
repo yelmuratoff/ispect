@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ispectify/ispectify.dart';
 
 typedef ISpectShareCallback = Future<void> Function(ISpectShareRequest request);
 
@@ -12,6 +13,125 @@ typedef ISpectOpenFileCallback = Future<void> Function(String path);
 typedef ISpectLoadLogContentCallback = Future<String?> Function(
   BuildContext context,
 );
+
+/// Called when ISpect settings change (logger options, enabled log types, etc.).
+///
+/// Use this callback to persist settings to local storage and restore them
+/// on next app launch.
+///
+/// Example:
+/// ```dart
+/// onSettingsChanged: (settings) async {
+///   await storage.write('ispect_settings', settings.toJson());
+/// },
+/// ```
+typedef ISpectSettingsChangedCallback = void Function(
+  ISpectSettingsState settings,
+);
+
+/// Represents the current state of ISpect settings.
+///
+/// This class encapsulates all configurable settings including:
+/// - Logger enabled state
+/// - Console logs enabled state
+/// - History enabled state
+/// - Enabled/disabled log types for filtering
+///
+/// Can be serialized to JSON for persistence and restored on app restart.
+@immutable
+final class ISpectSettingsState {
+  const ISpectSettingsState({
+    required this.enabled,
+    required this.useConsoleLogs,
+    required this.useHistory,
+    this.enabledLogTypes = const {},
+  });
+
+  /// Whether logging is enabled globally.
+  final bool enabled;
+
+  /// Whether console logging is enabled.
+  final bool useConsoleLogs;
+
+  /// Whether log history storage is enabled.
+  final bool useHistory;
+
+  /// Set of enabled log type keys. If empty, all log types are enabled.
+  ///
+  /// Use [ISpectLogType.key] values to populate this set.
+  final Set<String> enabledLogTypes;
+
+  /// Returns true if all log types are enabled (no filtering).
+  bool get isAllLogTypesEnabled => enabledLogTypes.isEmpty;
+
+  /// Returns true if a specific log type is enabled.
+  bool isLogTypeEnabled(String logTypeKey) {
+    if (isAllLogTypesEnabled) return true;
+    return enabledLogTypes.contains(logTypeKey);
+  }
+
+  /// Converts settings to JSON for persistence.
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'useConsoleLogs': useConsoleLogs,
+        'useHistory': useHistory,
+        'enabledLogTypes': enabledLogTypes.toList(),
+      };
+
+  /// Creates settings from JSON.
+  factory ISpectSettingsState.fromJson(Map<String, dynamic> json) {
+    return ISpectSettingsState(
+      enabled: json['enabled'] as bool? ?? true,
+      useConsoleLogs: json['useConsoleLogs'] as bool? ?? true,
+      useHistory: json['useHistory'] as bool? ?? true,
+      enabledLogTypes: (json['enabledLogTypes'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toSet() ??
+          const {},
+    );
+  }
+
+  ISpectSettingsState copyWith({
+    bool? enabled,
+    bool? useConsoleLogs,
+    bool? useHistory,
+    Set<String>? enabledLogTypes,
+  }) {
+    return ISpectSettingsState(
+      enabled: enabled ?? this.enabled,
+      useConsoleLogs: useConsoleLogs ?? this.useConsoleLogs,
+      useHistory: useHistory ?? this.useHistory,
+      enabledLogTypes: enabledLogTypes ?? this.enabledLogTypes,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    final setEquals = const DeepCollectionEquality().equals;
+
+    return other is ISpectSettingsState &&
+        other.enabled == enabled &&
+        other.useConsoleLogs == useConsoleLogs &&
+        other.useHistory == useHistory &&
+        setEquals(other.enabledLogTypes, enabledLogTypes);
+  }
+
+  @override
+  int get hashCode =>
+      enabled.hashCode ^
+      useConsoleLogs.hashCode ^
+      useHistory.hashCode ^
+      enabledLogTypes.hashCode;
+
+  @override
+  String toString() => '''ISpectSettingsState(
+      enabled: $enabled,
+      useConsoleLogs: $useConsoleLogs,
+      useHistory: $useHistory,
+      enabledLogTypes: $enabledLogTypes,
+      )''';
+}
 
 /// Describes content to pass into a custom share handler.
 @immutable
