@@ -602,26 +602,34 @@ class _PropertyNodeWidget extends StatelessWidget {
       node.key,
       node.value,
     );
+    // Cache the TextStyle to avoid creating it twice
+    final valueStyle = style.copyWith(color: valueColor);
 
     if (!hasSearchResults) {
-      return _buildSimpleValue(text, valueColor);
+      return _buildSimpleValue(text, valueColor, valueStyle);
     }
 
     return _buildHighlightedValue(
       text,
       valueColor,
+      valueStyle,
       focusedSearchMatchIndex,
     );
   }
 
-  Widget _buildSimpleValue(String text, Color valueColor) => Row(
+  Widget _buildSimpleValue(
+    String text,
+    Color valueColor,
+    TextStyle valueStyle,
+  ) =>
+      Row(
         children: [
           Flexible(
             child: JsonCard(
               backgroundColor: valueColor,
               child: Text(
                 text,
-                style: style.copyWith(color: valueColor),
+                style: valueStyle,
               ),
             ),
           ),
@@ -631,6 +639,7 @@ class _PropertyNodeWidget extends StatelessWidget {
   Widget _buildHighlightedValue(
     String text,
     Color valueColor,
+    TextStyle valueStyle,
     int? focusedSearchMatchIndex,
   ) =>
       Row(
@@ -642,7 +651,7 @@ class _PropertyNodeWidget extends StatelessWidget {
                 key: ValueKey('highlight-value-$text'),
                 text: text,
                 highlightedText: searchTerm,
-                style: style.copyWith(color: valueColor),
+                style: valueStyle,
                 primaryMatchStyle: focusedSearchHighlightStyle,
                 secondaryMatchStyle: searchHighlightStyle,
                 focusedSearchMatchIndex: focusedSearchMatchIndex,
