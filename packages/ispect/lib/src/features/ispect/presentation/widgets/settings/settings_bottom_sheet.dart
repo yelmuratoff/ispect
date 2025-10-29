@@ -57,16 +57,30 @@ class _ISpectLoggerSettingsBottomSheetState
     extends State<ISpectSettingsBottomSheet> {
   final _scrollController = ScrollController();
 
-  /// Current set of enabled log types. Empty means all types are enabled.
-  late Set<String> _enabledLogTypes;
-
   @override
   void initState() {
     super.initState();
     widget.logger.addListener(_handleUpdate);
+    widget.controller.addListener(_handleUpdate);
 
-    // Initialize enabled log types from options.initialSettings
-    _enabledLogTypes = widget.options.initialSettings?.enabledLogTypes ?? {};
+    // Initialize settings in controller if not already set from options
+    final initialSettings = widget.options.initialSettings;
+    if (initialSettings != null &&
+        widget.controller.settings != initialSettings) {
+      widget.controller.updateSettings(initialSettings);
+      _applySettingsToLogger(initialSettings);
+    } else {
+      // Ensure controller has current logger state
+      final currentSettings = ISpectSettingsState(
+        enabled: widget.logger.value.options.enabled,
+        useConsoleLogs: widget.logger.value.options.useConsoleLogs,
+        useHistory: widget.logger.value.options.useHistory,
+        disabledLogTypes: widget.controller.settings.disabledLogTypes,
+      );
+      if (widget.controller.settings != currentSettings) {
+        widget.controller.updateSettings(currentSettings);
+      }
+    }
   }
 
   void _handleUpdate() {
@@ -78,116 +92,110 @@ class _ISpectLoggerSettingsBottomSheetState
   @override
   void dispose() {
     widget.logger.removeListener(_handleUpdate);
+    widget.controller.removeListener(_handleUpdate);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onLogTypeToggled(String logTypeKey, {required bool enabled}) {
-    setState(() {
-      if (enabled) {
-        if (_enabledLogTypes.isNotEmpty) {
-          _enabledLogTypes.add(logTypeKey);
-        }
-        // If all are disabled and we enable one, we need to start tracking
-        else {
-          // Enable only this one (disable others)
-          _enabledLogTypes = {logTypeKey};
-        }
-      } else {
-        if (_enabledLogTypes.isEmpty) {
-          // Currently all enabled, so we need to enable all except this one
-          _enabledLogTypes = ISpectLogType.values
-              .map((e) => e.key)
-              .where((key) => key != logTypeKey)
-              .toSet();
-        } else {
-          _enabledLogTypes.remove(logTypeKey);
-          // If we disabled the last one, switch back to "all enabled" mode
-          if (_enabledLogTypes.isEmpty) {
-            _enabledLogTypes = {};
-          }
-        }
-      }
+  /// Applies settings to the logger instance.
+  void _applySettingsToLogger(ISpectSettingsState settings) {
+    // Convert disabled types to enabled types for filter
+    final enabledTypes = settings.disabledLogTypes.isEmpty
+        ? <String>[] // Empty = no filter (all enabled)
+        : ISpectLogType.values
+            .map((e) => e.key)
+            .where((key) => !settings.disabledLogTypes.contains(key))
+            .toList();
 
-      _notifySettingsChanged();
-    });
-  }
-
-  void _onSettingChanged() {
-    _notifySettingsChanged();
-  }
-
-  void _notifySettingsChanged() {
-    final settings = ISpectSettingsState(
-      enabled: widget.logger.value.options.enabled,
-      useConsoleLogs: widget.logger.value.options.useConsoleLogs,
-      useHistory: widget.logger.value.options.useHistory,
-      enabledLogTypes: _enabledLogTypes,
+    widget.logger.value.configure(
+      options: widget.logger.value.options.copyWith(
+        enabled: settings.enabled,
+        useConsoleLogs: settings.useConsoleLogs,
+        useHistory: settings.useHistory,
+      ),
+      filter: enabledTypes.isNotEmpty
+          ? ISpectFilter(logTypeKeys: enabledTypes)
+          : null,
     );
-
-    widget.options.onSettingsChanged?.call(settings);
-
-    // Update filter if logger has one configured
-    _updateLoggerFilter();
+    widget.logger.notifyListeners();
   }
 
-  void _updateLoggerFilter() {
-    // Create or update filter based on enabled log types
-    if (_enabledLogTypes.isEmpty) {
-      // All enabled - clear filter
-      widget.logger.value.configure();
+  void _onSettingChanged(ISpectSettingsState newSettings) {
+    // Update controller state
+    widget.controller.updateSettings(newSettings);
+
+    // Apply to logger
+    _applySettingsToLogger(newSettings);
+
+    // Notify callback
+    widget.options.onSettingsChanged?.call(newSettings);
+  }
+
+  void _onLogTypeToggled(String logTypeKey, {required bool enabled}) {
+    final currentSettings = widget.controller.settings;
+    final currentDisabledTypes = currentSettings.disabledLogTypes;
+    Set<String> newDisabledTypes;
+
+    if (enabled) {
+      // User enabled this type, so remove from disabled set
+      newDisabledTypes = {...currentDisabledTypes}..remove(logTypeKey);
     } else {
-      // Apply filter for enabled log types
-      final filter = ISpectFilter(
-        logTypeKeys: _enabledLogTypes.toList(),
-      );
-      widget.logger.value.configure(filter: filter);
+      // User disabled this type, so add to disabled set
+      newDisabledTypes = {...currentDisabledTypes, logTypeKey};
     }
+
+    _onSettingChanged(
+      currentSettings.copyWith(disabledLogTypes: newDisabledTypes),
+    );
+  }
+
+  void _onSelectAll() {
+    // Enable all = clear disabled set
+    _onSettingChanged(
+      widget.controller.settings.copyWith(disabledLogTypes: <String>{}),
+    );
+  }
+
+  void _onDeselectAll() {
+    // Disable all = add all types to disabled set
+    final allLogTypes = ISpectLogType.values.map((e) => e.key).toSet();
+    _onSettingChanged(
+      widget.controller.settings.copyWith(disabledLogTypes: allLogTypes),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
+    final currentSettings = widget.controller.settings;
+
     final settings = <Widget>[
       ISpectSettingsCardItem(
         title: context.ispectL10n.enabled,
-        enabled: widget.logger.value.options.enabled,
+        enabled: currentSettings.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled ? widget.logger.value.enable : widget.logger.value.disable)
-              .call();
-          widget.logger.notifyListeners();
-          _onSettingChanged();
+          _onSettingChanged(currentSettings.copyWith(enabled: enabled));
         },
       ),
       ISpectSettingsCardItem(
-        canEdit: widget.logger.value.options.enabled,
+        canEdit: currentSettings.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.logger.value.options.useConsoleLogs,
+        enabled: currentSettings.useConsoleLogs,
         onChanged: (enabled) {
-          widget.logger.value.configure(
-            options: widget.logger.value.options.copyWith(
-              useConsoleLogs: enabled,
-            ),
+          _onSettingChanged(
+            currentSettings.copyWith(useConsoleLogs: enabled),
           );
-          widget.logger.notifyListeners();
-          _onSettingChanged();
         },
       ),
       ISpectSettingsCardItem(
-        canEdit: widget.logger.value.options.enabled,
+        canEdit: currentSettings.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.logger.value.options.useHistory,
+        enabled: currentSettings.useHistory,
         onChanged: (enabled) {
-          widget.logger.value.configure(
-            options: widget.logger.value.options.copyWith(
-              useHistory: enabled,
-            ),
-          );
-          widget.logger.notifyListeners();
-          _onSettingChanged();
+          _onSettingChanged(currentSettings.copyWith(useHistory: enabled));
         },
       ),
     ];
@@ -203,8 +211,10 @@ class _ISpectLoggerSettingsBottomSheetState
           settings: settings,
           scrollController: scrollController,
           actions: widget.actions,
-          enabledLogTypes: _enabledLogTypes,
+          disabledLogTypes: currentSettings.disabledLogTypes,
           onLogTypeToggled: _onLogTypeToggled,
+          onSelectAll: _onSelectAll,
+          onDeselectAll: _onDeselectAll,
         ),
       ),
       orElse: () => AlertDialog(
@@ -218,8 +228,10 @@ class _ISpectLoggerSettingsBottomSheetState
             settings: settings,
             scrollController: _scrollController,
             actions: widget.actions,
-            enabledLogTypes: _enabledLogTypes,
+            disabledLogTypes: currentSettings.disabledLogTypes,
             onLogTypeToggled: _onLogTypeToggled,
+            onSelectAll: _onSelectAll,
+            onDeselectAll: _onDeselectAll,
           ),
         ),
       ),
@@ -233,17 +245,21 @@ class _SettingsBody extends StatelessWidget {
     required this.settings,
     required this.scrollController,
     required this.actions,
-    required this.enabledLogTypes,
+    required this.disabledLogTypes,
     required this.onLogTypeToggled,
+    required this.onSelectAll,
+    required this.onDeselectAll,
   });
 
   final ISpectScopeModel iSpect;
   final List<Widget> settings;
   final ScrollController scrollController;
   final List<ISpectActionItem> actions;
-  final Set<String> enabledLogTypes;
+  final Set<String> disabledLogTypes;
   final void Function(String logTypeKey, {required bool enabled})
       onLogTypeToggled;
+  final VoidCallback onSelectAll;
+  final VoidCallback onDeselectAll;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -335,8 +351,10 @@ class _SettingsBody extends StatelessWidget {
               ),
               SliverToBoxAdapter(
                 child: LogTypeFilterSection(
-                  enabledLogTypes: enabledLogTypes,
+                  disabledLogTypes: disabledLogTypes,
                   onLogTypeToggled: onLogTypeToggled,
+                  onSelectAll: onSelectAll,
+                  onDeselectAll: onDeselectAll,
                 ),
               ),
               const SliverFillRemaining(

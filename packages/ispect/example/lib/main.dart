@@ -9,9 +9,16 @@ void main() {
   // Initialize ISpectLogger for logging
   final logger = ISpectFlutter.init();
 
+  // Example: Restore settings from storage (e.g., SharedPreferences)
+  // final prefs = await SharedPreferences.getInstance();
+  // final settingsJson = prefs.getString('ispect_settings');
+  // final initialSettings = settingsJson != null
+  //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
+  //     : null;
+
   // Wrap your app with ISpect
   ISpect.run(
-    () => runApp(MyApp()),
+    () => runApp(const MyApp()),
     logger: logger,
   );
 }
@@ -29,9 +36,26 @@ class MyApp extends StatelessWidget {
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
           observer: observer,
+
+          // This parameter is needed if you want the user to be able to manage settings
+          // Example: Restore initial settings from storage
+          // initialSettings: initialSettings,
+          initialSettings: const ISpectSettingsState(
+            disabledLogTypes: {
+              'warning',
+            },
+            enabled: true,
+            useConsoleLogs: true,
+            useHistory: true,
+          ),
           locale: const Locale('en'),
+
           onSettingsChanged: (settings) {
+            // Persist settings when they change
             ISpect.logger.print('ISpect settings changed: $settings');
+            // Example: Save to SharedPreferences
+            // final prefs = await SharedPreferences.getInstance();
+            // await prefs.setString('ispect_settings', jsonEncode(settings.toJson()));
           },
           onLoadLogContent: (context) async {
             // Here you can load log content.
@@ -123,6 +147,8 @@ class MyApp extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () {
               ISpect.logger.info('Button pressed!');
+              ISpect.logger.warning('Button pressed!');
+              ISpect.logger.error('Button pressed!');
             },
             child: const Text('Press me'),
           ),

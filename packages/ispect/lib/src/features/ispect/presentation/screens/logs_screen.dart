@@ -53,6 +53,7 @@ class _LogsScreenState extends State<LogsScreen> {
     super.initState();
     _logsViewController = ISpectViewController(
       onShare: widget.options.onShare,
+      initialSettings: widget.options.initialSettings,
     );
     _logsViewController.toggleExpandedLogs();
   }

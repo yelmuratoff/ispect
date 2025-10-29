@@ -35,7 +35,7 @@ typedef ISpectSettingsChangedCallback = void Function(
 /// - Logger enabled state
 /// - Console logs enabled state
 /// - History enabled state
-/// - Enabled/disabled log types for filtering
+/// - Disabled log types for filtering
 ///
 /// Can be serialized to JSON for persistence and restored on app restart.
 @immutable
@@ -44,7 +44,7 @@ final class ISpectSettingsState {
     required this.enabled,
     required this.useConsoleLogs,
     required this.useHistory,
-    this.enabledLogTypes = const {},
+    this.disabledLogTypes = const {},
   });
 
   /// Whether logging is enabled globally.
@@ -56,18 +56,17 @@ final class ISpectSettingsState {
   /// Whether log history storage is enabled.
   final bool useHistory;
 
-  /// Set of enabled log type keys. If empty, all log types are enabled.
+  /// Set of disabled log type keys. If empty, all log types are enabled.
   ///
   /// Use [ISpectLogType.key] values to populate this set.
-  final Set<String> enabledLogTypes;
+  final Set<String> disabledLogTypes;
 
-  /// Returns true if all log types are enabled (no filtering).
-  bool get isAllLogTypesEnabled => enabledLogTypes.isEmpty;
+  /// Returns true if all log types are enabled (no disabled types).
+  bool get isAllLogTypesEnabled => disabledLogTypes.isEmpty;
 
-  /// Returns true if a specific log type is enabled.
+  /// Returns true if a specific log type is enabled (not in disabled set).
   bool isLogTypeEnabled(String logTypeKey) {
-    if (isAllLogTypesEnabled) return true;
-    return enabledLogTypes.contains(logTypeKey);
+    return !disabledLogTypes.contains(logTypeKey);
   }
 
   /// Converts settings to JSON for persistence.
@@ -75,7 +74,7 @@ final class ISpectSettingsState {
         'enabled': enabled,
         'useConsoleLogs': useConsoleLogs,
         'useHistory': useHistory,
-        'enabledLogTypes': enabledLogTypes.toList(),
+        'disabledLogTypes': disabledLogTypes.toList(),
       };
 
   /// Creates settings from JSON.
@@ -84,7 +83,7 @@ final class ISpectSettingsState {
       enabled: json['enabled'] as bool? ?? true,
       useConsoleLogs: json['useConsoleLogs'] as bool? ?? true,
       useHistory: json['useHistory'] as bool? ?? true,
-      enabledLogTypes: (json['enabledLogTypes'] as List<dynamic>?)
+      disabledLogTypes: (json['disabledLogTypes'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toSet() ??
           const {},
@@ -95,13 +94,13 @@ final class ISpectSettingsState {
     bool? enabled,
     bool? useConsoleLogs,
     bool? useHistory,
-    Set<String>? enabledLogTypes,
+    Set<String>? disabledLogTypes,
   }) {
     return ISpectSettingsState(
       enabled: enabled ?? this.enabled,
       useConsoleLogs: useConsoleLogs ?? this.useConsoleLogs,
       useHistory: useHistory ?? this.useHistory,
-      enabledLogTypes: enabledLogTypes ?? this.enabledLogTypes,
+      disabledLogTypes: disabledLogTypes ?? this.disabledLogTypes,
     );
   }
 
@@ -114,7 +113,7 @@ final class ISpectSettingsState {
         other.enabled == enabled &&
         other.useConsoleLogs == useConsoleLogs &&
         other.useHistory == useHistory &&
-        setEquals(other.enabledLogTypes, enabledLogTypes);
+        setEquals(other.disabledLogTypes, disabledLogTypes);
   }
 
   @override
@@ -122,14 +121,14 @@ final class ISpectSettingsState {
       enabled.hashCode ^
       useConsoleLogs.hashCode ^
       useHistory.hashCode ^
-      enabledLogTypes.hashCode;
+      disabledLogTypes.hashCode;
 
   @override
   String toString() => '''ISpectSettingsState(
       enabled: $enabled,
       useConsoleLogs: $useConsoleLogs,
       useHistory: $useHistory,
-      enabledLogTypes: $enabledLogTypes,
+      disabledLogTypes: $disabledLogTypes,
       )''';
 }
 

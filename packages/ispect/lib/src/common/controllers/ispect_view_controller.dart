@@ -17,12 +17,25 @@ typedef TitlesResult = ({List<String> all, List<String> unique});
 /// - Usage example: final controller = ISpectViewController();
 /// - Edge case notes: Handles null data gracefully with caching
 class ISpectViewController extends ChangeNotifier {
-  ISpectViewController({ISpectShareCallback? onShare}) : _onShare = onShare;
+  ISpectViewController({
+    ISpectShareCallback? onShare,
+    ISpectSettingsState? initialSettings,
+  })  : _onShare = onShare,
+        _settings = initialSettings ??
+            const ISpectSettingsState(
+              enabled: true,
+              useConsoleLogs: true,
+              useHistory: true,
+              disabledLogTypes: {},
+            );
 
   ISpectFilter _filter = ISpectFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   ISpectLogData? _activeData;
+
+  // Current settings state
+  ISpectSettingsState _settings;
 
   // JSON service for logs export/import
   final LogsJsonService _logsJsonService = const LogsJsonService();
@@ -46,6 +59,16 @@ class ISpectViewController extends ChangeNotifier {
 
   // Debounce timer for search query updates
   Timer? _filterDebounce;
+
+  /// Retrieves current settings state.
+  ISpectSettingsState get settings => _settings;
+
+  /// Updates settings and notifies listeners.
+  void updateSettings(ISpectSettingsState newSettings) {
+    if (_settings == newSettings) return;
+    _settings = newSettings;
+    notifyListeners();
+  }
 
   /// Retrieves the current log filter.
   ISpectFilter get filter => _filter;

@@ -86,6 +86,34 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         onOpenFile: widget.options?.onOpenFile,
       )
       ..theme = widget.theme ?? model.theme;
+
+    // Apply initial settings to logger if provided
+    _applyInitialSettings();
+  }
+
+  /// Applies initial settings from options to the logger.
+  void _applyInitialSettings() {
+    final initialSettings = widget.options?.initialSettings;
+    if (initialSettings != null) {
+      // Convert disabled types to enabled types for filter
+      final enabledTypes = initialSettings.disabledLogTypes.isEmpty
+          ? <String>[] // Empty = no filter (all enabled)
+          : ISpectLogType.values
+              .map((e) => e.key)
+              .where((key) => !initialSettings.disabledLogTypes.contains(key))
+              .toList();
+
+      ISpect.logger.configure(
+        options: ISpect.logger.options.copyWith(
+          enabled: initialSettings.enabled,
+          useConsoleLogs: initialSettings.useConsoleLogs,
+          useHistory: initialSettings.useHistory,
+        ),
+        filter: enabledTypes.isNotEmpty
+            ? ISpectFilter(logTypeKeys: enabledTypes)
+            : null,
+      );
+    }
   }
 
   @override

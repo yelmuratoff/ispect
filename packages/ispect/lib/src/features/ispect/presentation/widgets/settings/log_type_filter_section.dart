@@ -8,21 +8,28 @@ import 'package:ispect/src/features/ispect/presentation/widgets/base_card.dart';
 /// to enable/disable specific log types for filtering.
 class LogTypeFilterSection extends StatelessWidget {
   const LogTypeFilterSection({
-    required this.enabledLogTypes,
+    required this.disabledLogTypes,
     required this.onLogTypeToggled,
+    required this.onSelectAll,
+    required this.onDeselectAll,
     super.key,
   });
 
-  /// Set of currently enabled log type keys.
-  /// If empty, all log types are enabled.
-  final Set<String> enabledLogTypes;
+  /// Set of disabled log type keys. If empty, all log types are enabled.
+  final Set<String> disabledLogTypes;
 
   /// Callback when a log type is toggled.
   final void Function(String logTypeKey, {required bool enabled})
       onLogTypeToggled;
 
-  /// Returns true if all log types are enabled.
-  bool get _isAllEnabled => enabledLogTypes.isEmpty;
+  /// Callback to select all log types.
+  final VoidCallback onSelectAll;
+
+  /// Callback to deselect all log types.
+  final VoidCallback onDeselectAll;
+
+  /// Returns true if all log types are enabled (no disabled types).
+  bool get _isAllEnabled => disabledLogTypes.isEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +51,7 @@ class LogTypeFilterSection extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: _isAllEnabled ? _selectAll : _deselectAll,
+                onPressed: _isAllEnabled ? onDeselectAll : onSelectAll,
                 child: Text(
                   _isAllEnabled ? 'Deselect All' : 'Select All',
                   style: TextStyle(
@@ -71,7 +78,8 @@ class LogTypeFilterSection extends StatelessWidget {
     ISpectScopeModel iSpect,
     LogDescription logType,
   ) {
-    final isEnabled = _isAllEnabled || enabledLogTypes.contains(logType.key);
+    // Type is enabled if NOT in disabled set
+    final isEnabled = !disabledLogTypes.contains(logType.key);
 
     return Column(
       children: [
@@ -92,14 +100,23 @@ class LogTypeFilterSection extends StatelessWidget {
               title: Row(
                 spacing: 4,
                 children: [
-                  Container(
-                    width: 6,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: context.iSpect.theme
-                          .getTypeColor(context, key: logType.key),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(ISpectConstants.standardBorderRadius),
+                  SizedBox.square(
+                    dimension: 24,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: context.iSpect.theme
+                            .getTypeColor(context, key: logType.key)
+                            ?.withValues(alpha: 0.2),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(ISpectConstants.standardBorderRadius),
+                        ),
+                      ),
+                      child: Icon(
+                        context.iSpect.theme
+                            .getTypeIcon(context, key: logType.key),
+                        size: 16,
+                        color: context.iSpect.theme
+                            .getTypeColor(context, key: logType.key),
                       ),
                     ),
                   ),
@@ -107,7 +124,8 @@ class LogTypeFilterSection extends StatelessWidget {
                   Text(
                     logType.key,
                     style: TextStyle(
-                      color: context.ispectTheme.textColor,
+                      color: context.iSpect.theme
+                          .getTypeColor(context, key: logType.key),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -134,19 +152,5 @@ class LogTypeFilterSection extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  void _selectAll() {
-    // Enable all log types by clearing the set
-    for (final logType in ISpectLogType.values) {
-      onLogTypeToggled(logType.key, enabled: true);
-    }
-  }
-
-  void _deselectAll() {
-    // Disable all log types
-    for (final logType in ISpectLogType.values) {
-      onLogTypeToggled(logType.key, enabled: false);
-    }
   }
 }
