@@ -83,11 +83,11 @@ ISpectLoggerBloc integrates BLoC state management with the ISpectLogger logging 
 // Initialize in ISpect.run onInit callback
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     // Set up BLoC observer for automatic logging
     Bloc.observer = ISpectBlocObserver(
-      logger: iSpectify,
+      logger: logger,
     );
   },
 );
@@ -187,15 +187,15 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectLogger iSpectify = ISpectFlutter.init();
+  final logger = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
-    logger: iSpectify,
+    logger: logger,
     onInit: () {
       // Set up BLoC observer only in development/staging
       Bloc.observer = ISpectBlocObserver(
-        logger: iSpectify,
+        logger: logger,
       );
     },
   );

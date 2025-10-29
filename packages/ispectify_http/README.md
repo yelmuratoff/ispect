@@ -86,10 +86,10 @@ final http_interceptor.InterceptedClient client =
 
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     client.interceptors.add(
-      ISpectHttpInterceptor(logger: iSpectify),
+      ISpectHttpInterceptor(logger: logger),
     );
   },
 );
@@ -103,7 +103,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 client.interceptors.add(
   ISpectHttpInterceptor(
-    logger: iSpectify,
+    logger: logger,
     settings: const ISpectHttpInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -115,7 +115,7 @@ redactor.ignoreValues(['sample-token']);
 
 client.interceptors.add(
   ISpectHttpInterceptor(
-    logger: iSpectify,
+    logger: logger,
     redactor: redactor,
   ),
 );
@@ -184,16 +184,16 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectLogger iSpectify = ISpectFlutter.init();
+  final logger = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
-    logger: iSpectify,
+    logger: logger,
     onInit: () {
       // Add ISpectLogger HTTP interceptor only in development/staging
       client.interceptors.add(
         ISpectHttpInterceptor(
-          logger: iSpectify,
+          logger: logger,
           settings: const ISpectHttpInterceptorSettings(
             enableRedaction: true, // Always enable redaction for security
           ),
@@ -255,15 +255,15 @@ class HttpClientFactory {
   static const bool _isEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   
   static http_interceptor.InterceptedClient createClient({
-    ISpectLogger? iSpectify,
+    ISpectLogger? logger,
   }) {
     final List<http_interceptor.InterceptorContract> interceptors = [];
     
     // Only add ISpect interceptor when enabled
-    if (_isEnabled && iSpectify != null) {
+    if (_isEnabled && logger != null) {
       interceptors.add(
         ISpectHttpInterceptor(
-          logger: iSpectify,
+          logger: logger,
           settings: const ISpectHttpInterceptorSettings(
             enableRedaction: true,
           ),
@@ -279,7 +279,7 @@ class HttpClientFactory {
 
 // Usage
 final client = HttpClientFactory.createClient(
-  iSpectify: ISpect.logger,
+  logger: ISpect.logger,
 );
 ```
 
@@ -313,11 +313,11 @@ class HttpConfig {
 ```dart
 void setupHttpInterceptors(
   http_interceptor.InterceptedClient client,
-  ISpectLogger? iSpectify,
+  ISpectLogger? logger,
 ) {
   const isISpectEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   
-  if (isISpectEnabled && iSpectify != null) {
+  if (isISpectEnabled && logger != null) {
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
@@ -325,7 +325,7 @@ void setupHttpInterceptors(
     
     client.interceptors.add(
       ISpectHttpInterceptor(
-        logger: iSpectify,
+        logger: logger,
         redactor: redactor,
         settings: HttpConfig.getSettings(),
       ),

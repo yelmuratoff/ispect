@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 Future<void> main() async {
-  final iSpectify = ISpectLogger(
+  final logger = ISpectLogger(
     options: ISpectLoggerOptions(
       customColors: {
         ISpectLogType.info.key: AnsiPen()..magenta(),
@@ -26,14 +26,14 @@ Future<void> main() async {
   try {
     throw Exception('Something went wrong');
   } catch (e, st) {
-    iSpectify.handle(
+    logger.handle(
       exception: e,
       stackTrace: st,
       message: 'Exception with',
     );
   }
 
-  iSpectify.logCustom(CustomLog('Something like your own service message'));
+  logger.logCustom(CustomLog('Something like your own service message'));
 }
 
 class CustomLog extends ISpectLogData {

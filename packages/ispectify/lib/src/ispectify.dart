@@ -193,15 +193,14 @@ class ISpectLogger {
   }
 
   /// Stream controller for broadcasting log events.
-  final _iSpectifyStreamController =
-      StreamController<ISpectLogData>.broadcast();
+  final _loggerStreamController = StreamController<ISpectLogData>.broadcast();
 
   /// Stream of log data that can be subscribed to for real-time monitoring.
   ///
   /// This stream broadcasts all log events that pass through the filter.
   /// Multiple listeners can subscribe to this stream.
-  Stream<ISpectLogData> get stream => _iSpectifyStreamController
-      .stream; // Removed redundant .asBroadcastStream()
+  Stream<ISpectLogData> get stream =>
+      _loggerStreamController.stream; // Removed redundant .asBroadcastStream()
 
   /// List of all log entries stored in history.
   List<ISpectLogData> get history => _history.history;
@@ -489,7 +488,7 @@ class ISpectLogger {
   /// 2. Verifies if the log entry passes the filter criteria using `_isApprovedByFilter`.
   /// 3. If the log is an error (`isError` is `true`), it triggers the `onError` callback
   ///    on the `_observer`. Otherwise, it triggers the `onLog` callback.
-  /// 4. Adds the log entry to the `_iSpectifyStreamController` stream.
+  /// 4. Adds the log entry to the `_loggerStreamController` stream.
   /// 5. Handles additional output processing via `_handleForOutputs`.
   /// 6. If console logging is enabled (`_options.useConsoleLogs`), logs the message
   ///    to the console using `_logger.log` with the appropriate log level and pen.
@@ -512,7 +511,7 @@ class ISpectLogger {
       }
     }
 
-    _iSpectifyStreamController.add(data);
+    _loggerStreamController.add(data);
     _handleForOutputs(data);
 
     if (_options.useConsoleLogs) {

@@ -90,11 +90,11 @@ final Dio dio = Dio(
 // Initialize in ISpect.run onInit callback
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     dio.interceptors.add(
       ISpectDioInterceptor(
-        logger: iSpectify,
+        logger: logger,
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
         ),
@@ -112,7 +112,7 @@ Redaction is enabled by default. Disable globally via settings or provide a cust
 // Disable redaction
 dio.interceptors.add(
   ISpectDioInterceptor(
-    logger: iSpectify,
+    logger: logger,
     settings: const ISpectDioInterceptorSettings(enableRedaction: false),
   ),
 );
@@ -124,7 +124,7 @@ redactor.ignoreValues(['sample-token']);
 
 dio.interceptors.add(
   ISpectDioInterceptor(
-    logger: iSpectify,
+    logger: logger,
     redactor: redactor,
   ),
 );
@@ -135,7 +135,7 @@ dio.interceptors.add(
 ```dart
 dio.interceptors.add(
   ISpectDioInterceptor(
-    logger: iSpectify,
+    logger: logger,
     settings: const ISpectDioInterceptorSettings(
       printRequestHeaders: true,
       // requestFilter: (requestOptions) =>
@@ -153,8 +153,8 @@ dio.interceptors.add(
 final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
 
-mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
-uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+mainDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+uploadDio.interceptors.add(ISpectDioInterceptor(logger: logger));
 ```
 
 ## Installation
@@ -203,16 +203,16 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectLogger iSpectify = ISpectFlutter.init();
+  final logger = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
-          logger: iSpectify,
+          logger: logger,
     onInit: () {
       // Add ISpectLogger Dio interceptor only in development/staging
       dio.interceptors.add(
         ISpectDioInterceptor(
-          logger: iSpectify,
+          logger: logger,
           settings: const ISpectDioInterceptorSettings(
             printRequestHeaders: true,
           ),
@@ -287,15 +287,15 @@ class DioFactory {
   
   static Dio createDio({
     String baseUrl = '',
-    ISpectLogger? iSpectify,
+    ISpectLogger? logger,
   }) {
     final dio = Dio(BaseOptions(baseUrl: baseUrl));
     
     // Only add interceptor when ISpect is enabled
-    if (_isEnabled && iSpectify != null) {
+    if (_isEnabled && logger != null) {
       dio.interceptors.add(
         ISpectDioInterceptor(
-          logger: iSpectify,
+          logger: logger,
           settings: ISpectDioInterceptorSettings(
             printRequestHeaders: kDebugMode,
             enableRedaction: true, // Keep redaction enabled outside development
@@ -311,7 +311,7 @@ class DioFactory {
 // Usage
 final dio = DioFactory.createDio(
   baseUrl: 'https://api.example.com',
-  iSpectify: ISpect.logger,
+  logger: ISpect.logger,
 );
 ```
 
@@ -349,10 +349,10 @@ class DioConfig {
 ### Conditional Interceptor Setup
 
 ```dart
-void setupDioInterceptors(Dio dio, ISpectLogger? iSpectify) {
+void setupDioInterceptors(Dio dio, ISpectLogger? logger) {
   const isISpectEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   
-  if (isISpectEnabled && iSpectify != null) {
+  if (isISpectEnabled && logger != null) {
     // Custom redactor for sensitive data
     final redactor = RedactionService();
     redactor.ignoreKeys(['authorization', 'x-api-key']);
@@ -360,7 +360,7 @@ void setupDioInterceptors(Dio dio, ISpectLogger? iSpectify) {
     
     dio.interceptors.add(
       ISpectDioInterceptor(
-        logger: iSpectify,
+        logger: logger,
         redactor: redactor,
         settings: DioConfig.getSettings(),
       ),

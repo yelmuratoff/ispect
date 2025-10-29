@@ -504,11 +504,11 @@ final Dio dio = Dio(
 
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     dio.interceptors.add(
       ISpectDioInterceptor(
-        logger: iSpectify,
+        logger: logger,
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
@@ -540,11 +540,11 @@ final http_interceptor.InterceptedClient client =
 
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     client.interceptors.add(
       ISpectHttpInterceptor(
-        logger: iSpectify,
+        logger: logger,
         settings: const ISpectHttpInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
@@ -565,10 +565,10 @@ final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
 
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
-    mainDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
-    uploadDio.interceptors.add(ISpectDioInterceptor(logger: iSpectify));
+    mainDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+    uploadDio.interceptors.add(ISpectDioInterceptor(logger: logger));
   },
 );
 ```
@@ -621,7 +621,7 @@ import 'package:ws/ws.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 
 final interceptor = ISpectWSInterceptor(
-  logger: iSpectify,
+  logger: logger,
   settings: const ISpectWSInterceptorSettings(
     enabled: true,
     printSentData: true,
@@ -656,10 +656,10 @@ import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 ISpect.run(
   () => runApp(MyApp()),
-  logger: iSpectify,
+  logger: logger,
   onInit: () {
     Bloc.observer = ISpectBlocObserver(
-      logger: iSpectify,
+      logger: logger,
     );
   },
 );
@@ -735,7 +735,7 @@ All integration packages support redaction. Prefer disabling only with synthetic
 
 ```dart
 final interceptor = ISpectDioInterceptor(
-  logger: iSpectify,
+  logger: logger,
   settings: const ISpectDioInterceptorSettings(
     enableRedaction: false, // Only if data is guaranteed non-sensitive
   ),
@@ -748,7 +748,7 @@ final interceptor = ISpectDioInterceptor(
 final redactor = RedactionService();
 redactor.ignoreKeys(['authorization', 'x-api-key']);
 redactor.ignoreValues(['<placeholder-secret>']);
-client.interceptors.add(ISpectHttpInterceptor(logger: iSpectify, redactor: redactor));
+client.interceptors.add(ISpectHttpInterceptor(logger: logger, redactor: redactor));
 ```
 
 #### WebSocket Example
@@ -757,7 +757,7 @@ client.interceptors.add(ISpectHttpInterceptor(logger: iSpectify, redactor: redac
 final redactor = RedactionService();
 redactor.ignoreKeys(['auth_token']);
 redactor.ignoreValues(['<placeholder>']);
-final interceptor = ISpectWSInterceptor(logger: iSpectify, redactor: redactor);
+final interceptor = ISpectWSInterceptor(logger: logger, redactor: redactor);
 ```
 
 #### Database Example
