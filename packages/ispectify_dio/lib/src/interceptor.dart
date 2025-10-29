@@ -70,7 +70,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     if (!_shouldProcessRequest(options)) return;
 
     final useRedaction = settings.enableRedaction;
-    logger.logCustom(
+    logger.logData(
       _buildRequestLog(
         options: options,
         useRedaction: useRedaction,
@@ -87,7 +87,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     if (!_shouldProcessResponse(response)) return;
 
     final useRedaction = settings.enableRedaction;
-    logger.logCustom(
+    logger.logData(
       _buildResponseLog(
         response: response,
         useRedaction: useRedaction,
@@ -101,7 +101,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     if (!_shouldProcessError(err)) return;
 
     final useRedaction = settings.enableRedaction;
-    logger.logCustom(
+    logger.logData(
       _buildErrorLog(
         error: err,
         useRedaction: useRedaction,

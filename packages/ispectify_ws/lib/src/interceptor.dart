@@ -52,12 +52,12 @@ final class ISpectWSInterceptor
       final safeData = _safeRedact(data, useRedaction);
       final log = _createLog(type, safeData, uri, useRedaction);
       if (log != null && _shouldLog(log)) {
-        logger.logCustom(log);
+        logger.logData(log);
       }
     } catch (e, s) {
       final errorLog = _createErrorLog(type, data, uri, e, s, useRedaction);
       if (_shouldLog(errorLog)) {
-        logger.logCustom(errorLog);
+        logger.logData(errorLog);
       }
     }
 

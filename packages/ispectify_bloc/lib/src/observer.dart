@@ -100,7 +100,7 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace stackTrace,
   ) {
     onBlocError?.call(bloc, error, stackTrace);
-    _logger.logCustom(
+    _logger.logData(
       BlocErrorLog(
         bloc: bloc,
         thrown: error,
@@ -120,7 +120,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocEvent?.call(bloc, event);
-    _logger.logCustom(
+    _logger.logData(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -143,7 +143,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocTransition?.call(bloc, transition);
-    _logger.logCustom(
+    _logger.logData(
       BlocTransitionLog(
         bloc: bloc,
         transition: transition,
@@ -163,7 +163,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocChange?.call(bloc, change);
-    _logger.logCustom(
+    _logger.logData(
       BlocStateLog(
         bloc: bloc,
         change: change,
@@ -188,7 +188,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocCreate?.call(bloc);
-    _logger.logCustom(BlocCreateLog(bloc: bloc));
+    _logger.logData(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -198,7 +198,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocClose?.call(bloc);
-    _logger.logCustom(BlocCloseLog(bloc: bloc));
+    _logger.logData(BlocCloseLog(bloc: bloc));
   }
 
   @override
@@ -216,7 +216,7 @@ class ISpectBlocObserver extends BlocObserver {
     if (!settings.printCompletions || error != null) {
       return;
     }
-    _logger.logCustom(
+    _logger.logData(
       BlocDoneLog(
         bloc: bloc,
         settings: settings,

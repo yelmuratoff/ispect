@@ -297,7 +297,7 @@ extension ISpectLoggerDb on ISpectLogger {
           : null,
     );
 
-    logCustom(data);
+    logData(data);
   }
 
   Future<T> dbTrace<T>({

@@ -33,7 +33,7 @@ Future<void> main() async {
     );
   }
 
-  logger.logCustom(CustomLog('Something like your own service message'));
+  logger.logData(CustomLog('Something like your own service message'));
 }
 
 class CustomLog extends ISpectLogData {

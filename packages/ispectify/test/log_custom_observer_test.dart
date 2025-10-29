@@ -30,7 +30,7 @@ void main() {
     _SpyObserver.logCount = 0;
   });
 
-  test('logCustom routes error-level custom logs to onError', () async {
+  test('logData routes error-level custom logs to onError', () async {
     final logger = ISpectLogger(observer: const _SpyObserver());
 
     // Subscribe before emitting to avoid missing broadcast events
@@ -45,8 +45,8 @@ void main() {
     final normal = ISpectLogData('Hello', key: ISpectLogType.info.key);
 
     logger
-      ..logCustom(httpErr)
-      ..logCustom(normal);
+      ..logData(httpErr)
+      ..logData(normal);
 
     await future;
 

@@ -7,7 +7,7 @@ class RecordingLogger extends ISpectLogger {
   final List<ISpectLogData> records = <ISpectLogData>[];
 
   @override
-  void logCustom(ISpectLogData data) {
+  void logData(ISpectLogData data) {
     records.add(data);
   }
 

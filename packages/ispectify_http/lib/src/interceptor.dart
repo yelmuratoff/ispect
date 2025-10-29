@@ -70,7 +70,7 @@ class ISpectHttpInterceptor extends InterceptorContract
         ? _requestBodyPayload(request, useRedaction)
         : null;
 
-    logger.logCustom(
+    logger.logData(
       HttpRequestLog(
         request.url.toString(),
         method: request.method,
@@ -117,7 +117,7 @@ class ISpectHttpInterceptor extends InterceptorContract
     );
 
     if (isErrorResponse) {
-      logger.logCustom(
+      logger.logData(
         HttpErrorLog(
           response.request?.url.toString() ?? '',
           method: response.request?.method,
@@ -139,7 +139,7 @@ class ISpectHttpInterceptor extends InterceptorContract
         ),
       );
     } else {
-      logger.logCustom(
+      logger.logData(
         HttpResponseLog(
           response.request?.url.toString() ?? '',
           method: response.request?.method,

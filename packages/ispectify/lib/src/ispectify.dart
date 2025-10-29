@@ -290,7 +290,7 @@ class ISpectLogger {
   /// This allows for creating fully customized log entries.
   ///
   /// - `log`: The custom log data to process.
-  void logCustom(ISpectLogData log) {
+  void logData(ISpectLogData log) {
     _processLog(log);
   }
 

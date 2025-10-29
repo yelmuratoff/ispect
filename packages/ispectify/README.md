@@ -277,7 +277,7 @@ class CustomLog extends ISpectLogData {
         );
 }
 
-logger.logCustom(CustomLog('This is a custom log message'));
+logger.logData(CustomLog('This is a custom log message'));
 ```
 
 ## Installation
@@ -382,7 +382,7 @@ class MyApp extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   if (kEnableISpectLogger) {
-                    ISpect.logger.logCustom(CustomLog('Custom log message'));
+                    ISpect.logger.logData(CustomLog('Custom log message'));
                   }
                 },
                 child: const Text('Log Custom'),

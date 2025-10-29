@@ -156,7 +156,7 @@ All network interceptors follow a consistent pattern:
 1. **Settings class**: Configures what to log
 2. **Interceptor class**: Implements framework-specific interface
 3. **Redaction support**: Masks sensitive data via `RedactionService`
-4. **Logger integration**: Calls `logger.logCustom()` with typed log models
+4. **Logger integration**: Calls `logger.logData()` with typed log models
 
 **Example** (`ispectify_dio/lib/src/interceptor.dart`):
 ```dart
@@ -171,7 +171,7 @@ class ISpectDioInterceptor extends Interceptor {
   }
 
   // Override onRequest, onResponse, onError
-  // Call _logger.logCustom() with DioRequestLog/DioResponseLog
+  // Call _logger.logData() with DioRequestLog/DioResponseLog
 }
 ```
 
@@ -190,7 +190,7 @@ State management and routing use observer pattern:
 class ISpectBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc bloc, Object? event) {
-    logger.logCustom(BlocEventLog(...));
+    logger.logData(BlocEventLog(...));
   }
 }
 
@@ -198,7 +198,7 @@ class ISpectBlocObserver extends BlocObserver {
 class ISpectNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route route, Route? previousRoute) {
-    logger.logCustom(RouteLog(...));
+    logger.logData(RouteLog(...));
   }
 }
 ```
