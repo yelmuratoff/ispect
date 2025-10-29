@@ -15,4 +15,9 @@ class ISpectifyException extends ISpectifyData {
 
   @override
   String get textMessage => '$messageText$exceptionText$stackTraceText';
+
+  @override
+  void notifyObserver(ISpectifyObserver observer) {
+    observer.onException(this);
+  }
 }

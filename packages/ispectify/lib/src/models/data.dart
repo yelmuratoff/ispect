@@ -103,6 +103,20 @@ class ISpectifyData {
     return isErrorLog;
   }
 
+  /// Notifies the observer about this log entry.
+  ///
+  /// This method uses polymorphic dispatch to call the appropriate observer method.
+  /// Subclasses can override this to customize which observer method is called.
+  ///
+  /// - `observer`: The observer to notify.
+  void notifyObserver(ISpectifyObserver observer) {
+    if (isError) {
+      observer.onError(this);
+    } else {
+      observer.onLog(this);
+    }
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

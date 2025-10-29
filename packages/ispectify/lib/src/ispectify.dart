@@ -60,6 +60,7 @@ class ISpectify {
     ILogHistory? history,
   ) {
     _filter = filter;
+    // ignore: deprecated_member_use_from_same_package
     _observer = observer;
     _options = settings ?? ISpectifyOptions();
     _logger = logger ?? ISpectifyLogger();
@@ -75,8 +76,71 @@ class ISpectify {
   late ISpectifyLogger _logger;
   late ISpectifyErrorHandler _errorHandler;
   late ISpectifyFilter? _filter;
-  late ISpectifyObserver? _observer;
+
+  /// List of observers that will be notified of log events.
+  final List<ISpectifyObserver> _observers = [];
+
+  /// Backward compatibility: Setter for single observer.
+  ///
+  /// Replaces all existing observers with the provided observer.
+  /// Use [addObserver] for adding multiple observers.
+  @Deprecated('Use addObserver() and removeObserver() for better control')
+  set _observer(ISpectifyObserver? observer) {
+    _observers.clear();
+    if (observer != null) {
+      _observers.add(observer);
+    }
+  }
+
+  /// Backward compatibility: Getter for single observer.
+  ///
+  /// Returns the first observer if any exist, otherwise null.
+  @Deprecated('Use addObserver() and removeObserver() for better control')
+  ISpectifyObserver? get _observer => _observers.isEmpty ? null : _observers.first;
+
   late ILogHistory _history;
+
+  // ======= OBSERVER METHODS =======
+
+  /// Adds an observer to be notified of log events.
+  ///
+  /// Multiple observers can be registered, and all will be notified.
+  ///
+  /// - `observer`: The observer to add.
+  void addObserver(ISpectifyObserver observer) {
+    if (!_observers.contains(observer)) {
+      _observers.add(observer);
+    }
+  }
+
+  /// Removes an observer from the list of registered observers.
+  ///
+  /// - `observer`: The observer to remove.
+  void removeObserver(ISpectifyObserver observer) {
+    _observers.remove(observer);
+  }
+
+  /// Removes all registered observers.
+  void clearObservers() {
+    _observers.clear();
+  }
+
+  /// Helper method to notify all observers with error handling.
+  ///
+  /// Wraps each observer call in a try-catch to prevent one failing
+  /// observer from affecting others.
+  void _notifyObservers(void Function(ISpectifyObserver) notify) {
+    for (final observer in _observers) {
+      try {
+        notify(observer);
+      } catch (e, st) {
+        _logger.log(
+          'Observer error: $e\n$st',
+          level: LogLevel.error,
+        );
+      }
+    }
+  }
 
   /// Reconfigures the inspector with new components.
   ///
@@ -100,6 +164,7 @@ class ISpectify {
   }) {
     _filter = filter ?? _filter; // Fixed null-aware assignment
     _options = options ?? _options;
+    // ignore: deprecated_member_use_from_same_package
     _observer = observer ?? _observer;
     _logger = logger ?? _logger;
     if (errorHandler != null) {
@@ -185,17 +250,9 @@ class ISpectify {
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
 
-    // Handle specific log types with observer notifications
-    switch (data) {
-      case ISpectifyError():
-        _observer?.onError(data);
-        _processLog(data, skipObserverNotification: true);
-      case ISpectifyException():
-        _observer?.onException(data);
-        _processLog(data, skipObserverNotification: true);
-      default:
-        _processLog(data);
-    }
+    // Use polymorphic dispatch to notify observers
+    _notifyObservers(data.notifyObserver);
+    _processLog(data, skipObserverNotification: true);
   }
 
   /// Creates a log entry with custom parameters.
@@ -449,9 +506,9 @@ class ISpectify {
 
     if (!skipObserverNotification) {
       if (data.isError) {
-        _observer?.onError(data);
+        _notifyObservers((observer) => observer.onError(data));
       } else {
-        _observer?.onLog(data);
+        _notifyObservers((observer) => observer.onLog(data));
       }
     }
 
