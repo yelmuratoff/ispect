@@ -64,7 +64,7 @@ final class ISpectWSInterceptor
     next(data);
   }
 
-  ISpectifyData? _createLog(
+  ISpectLogData? _createLog(
     String type,
     Object safeData,
     Uri? uri,
@@ -168,7 +168,7 @@ final class ISpectWSInterceptor
     return map;
   }
 
-  bool _shouldLog(ISpectifyData log) => switch (log) {
+  bool _shouldLog(ISpectLogData log) => switch (log) {
         WSSentLog() => settings.sentFilter?.call(log) ?? true,
         WSReceivedLog() => settings.receivedFilter?.call(log) ?? true,
         WSErrorLog() => settings.errorFilter?.call(log) ?? true,

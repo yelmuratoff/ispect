@@ -80,11 +80,11 @@ Provides network, database, performance, widget tree, logging and device insight
 - Cache Management: Application cache inspection and management
 
 ## Logging Configuration
-Core logging powered by ISpectify. Configure via `ISpectLoggerOptions` passed to the logger you supply into `ISpect.run`.
+Core logging powered by ISpectLogger. Configure via `ISpectLoggerOptions` passed to the logger you supply into `ISpect.run`.
 
 ### Typical Setup
 ```dart
-final logger = ISpectify(
+final logger = ISpectLogger(
   options: ISpectLoggerOptions(
     enabled: true,
     useHistory: true,
@@ -111,12 +111,12 @@ Stream subscribers still receive real-time events.
 ```dart
 class WarningsAndAbove implements ISpectFilter {
   @override
-  bool apply(ISpectifyData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
+  bool apply(ISpectLogData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
 }
-final logger = ISpectify(filter: WarningsAndAbove());
+final logger = ISpectLogger(filter: WarningsAndAbove());
 ```
 
-For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectify README.
+For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectLogger README.
 
 ## Internationalization
 - Bundled locales: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
@@ -196,8 +196,8 @@ void main() {
 }
 
 void _initializeISpect() {
-  // Initialize ISpectify for logging
-  final ISpectify logger = ISpectFlutter.init();
+  // Initialize ISpectLogger for logging
+  final ISpectLogger logger = ISpectFlutter.init();
 
   // Wrap your app with ISpect
   ISpect.run(

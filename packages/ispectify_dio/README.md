@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>Dio HTTP client integration for ISpectify logging system</strong></p>
+  <p><strong>Dio HTTP client integration for ISpectLogger logging system</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_dio">
@@ -50,7 +50,7 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectifyDio integrates with the Dio HTTP client through interceptors:
+ISpectLoggerDio integrates with the Dio HTTP client through interceptors:
 
 | Component | Description |
 |-----------|-----------|
@@ -62,9 +62,9 @@ ISpectifyDio integrates with the Dio HTTP client through interceptors:
 
 ## Overview
 
-> **ISpectify Dio** integrates the Dio HTTP client with the ISpectify logging system.
+> **ISpectLogger Dio** integrates the Dio HTTP client with the ISpectLogger logging system.
 
-ISpectifyDio integrates the Dio HTTP client with the ISpectify logging system for HTTP request monitoring.
+ISpectLoggerDio integrates the Dio HTTP client with the ISpectLogger logging system for HTTP request monitoring.
 
 ### Key Features
 
@@ -184,7 +184,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
-// Use dart define to control ISpectify Dio integration
+// Use dart define to control ISpectLogger Dio integration
 const bool kEnableISpectDio = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 final Dio dio = Dio(
@@ -203,13 +203,13 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectify iSpectify = ISpectFlutter.init();
+  final ISpectLogger iSpectify = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
           logger: iSpectify,
     onInit: () {
-      // Add ISpectify Dio interceptor only in development/staging
+      // Add ISpectLogger Dio interceptor only in development/staging
       dio.interceptors.add(
         ISpectDioInterceptor(
           logger: iSpectify,
@@ -229,7 +229,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('ISpectify Dio Example')),
+        appBar: AppBar(title: const Text('ISpectLogger Dio Example')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -287,7 +287,7 @@ class DioFactory {
   
   static Dio createDio({
     String baseUrl = '',
-    ISpectify? iSpectify,
+    ISpectLogger? iSpectify,
   }) {
     final dio = Dio(BaseOptions(baseUrl: baseUrl));
     
@@ -349,7 +349,7 @@ class DioConfig {
 ### Conditional Interceptor Setup
 
 ```dart
-void setupDioInterceptors(Dio dio, ISpectify? iSpectify) {
+void setupDioInterceptors(Dio dio, ISpectLogger? iSpectify) {
   const isISpectEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   
   if (isISpectEnabled && iSpectify != null) {

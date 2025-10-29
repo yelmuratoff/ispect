@@ -8,8 +8,8 @@ import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 /// `Dio` http client logger on [ISpectLogger] base
 ///
 /// `logger` field is current [ISpectLogger] instance.
-/// Provide your instance if your application used `ISpectify` as default logger
-/// Common ISpectify instance will be used by default
+/// Provide your instance if your application used `ISpectLogger` as default logger
+/// Common ISpectLogger instance will be used by default
 class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectDioInterceptor({
     ISpectLogger? logger,
@@ -23,7 +23,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   /// `ISpectDioInterceptor` settings and customization
   ISpectDioInterceptorSettings settings;
 
-  /// ISpectify addon functionality
+  /// ISpectLogger addon functionality
   /// addon id for create a lot of addons
   final String? addonId;
 

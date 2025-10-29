@@ -12,11 +12,11 @@ part 'event.dart';
 part 'state.dart';
 part 'transition.dart';
 
-/// Base class for all Bloc lifecycle logs emitted to ISpectify.
+/// Base class for all Bloc lifecycle logs emitted to ISpectLogger.
 ///
 /// Provides a shared contract for building messages lazily while keeping the
-/// underlying [ISpectifyData] immutable.
-sealed class BlocLifecycleLog extends ISpectifyData {
+/// underlying [ISpectLogData] immutable.
+sealed class BlocLifecycleLog extends ISpectLogData {
   BlocLifecycleLog({
     required this.bloc,
     required super.key,

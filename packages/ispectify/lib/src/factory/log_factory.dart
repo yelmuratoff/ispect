@@ -16,8 +16,8 @@ class LogFactory {
   /// - `pen`: Optional custom styling for console output
   /// - `options`: Configuration options for title and pen defaults
   ///
-  /// Returns an `ISpectifyData` instance configured according to the log level.
-  static ISpectifyData createLog({
+  /// Returns an `ISpectLogData` instance configured according to the log level.
+  static ISpectLogData createLog({
     required LogLevel level,
     required Object? message,
     Object? exception,
@@ -25,8 +25,8 @@ class LogFactory {
     AnsiPen? pen,
     ISpectLoggerOptions? options,
   }) {
-    final type = ISpectifyLogType.fromLogLevel(level);
-    return ISpectifyData(
+    final type = ISpectLogType.fromLogLevel(level);
+    return ISpectLogData(
       message?.toString() ?? '',
       key: type.key,
       title: options?.titleByKey(type.key),

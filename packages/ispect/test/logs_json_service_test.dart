@@ -8,14 +8,14 @@ import 'package:ispect/ispect.dart';
 void main() {
   group('LogsJsonService Tests', () {
     late LogsJsonService service;
-    late List<ISpectifyData> sampleLogs;
+    late List<ISpectLogData> sampleLogs;
 
     setUp(() {
       service = const LogsJsonService();
       // Initialize ISpect with a basic logger for testing
       ISpect.initialize(ISpectLogger());
       sampleLogs = [
-        ISpectifyData(
+        ISpectLogData(
           'Test log message 1',
           time: DateTime(2025, 1, 1, 12),
           logLevel: LogLevel.info,
@@ -23,7 +23,7 @@ void main() {
           key: 'test_key_1',
           additionalData: {'testData': 'value1'},
         ),
-        ISpectifyData(
+        ISpectLogData(
           'Test log message 2',
           time: DateTime(2025, 1, 1, 12, 1),
           logLevel: LogLevel.error,
@@ -32,7 +32,7 @@ void main() {
           exception: Exception('Test exception'),
           additionalData: {'errorCode': 500},
         ),
-        ISpectifyData(
+        ISpectLogData(
           'Test log message 3',
           time: DateTime(2025, 1, 1, 12, 2),
           logLevel: LogLevel.debug,
@@ -196,7 +196,7 @@ void main() {
 
     test('should handle logs with various data types', () async {
       // Arrange
-      final complexLog = ISpectifyData(
+      final complexLog = ISpectLogData(
         'Complex log with various data',
         time: DateTime(2025, 1, 1, 15, 30, 45),
         logLevel: LogLevel.warning,
@@ -230,7 +230,7 @@ void main() {
       // Arrange
       final orderedLogs = List.generate(
         10,
-        (index) => ISpectifyData(
+        (index) => ISpectLogData(
           'Log message $index',
           time: DateTime(2025, 1, 1, 12, index),
           key: 'key_$index',

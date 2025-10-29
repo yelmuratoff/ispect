@@ -34,7 +34,7 @@ class LogsScreen extends StatefulWidget {
   });
 
   final String? appBarTitle;
-  final ISpectifyDataBuilder? itemsBuilder;
+  final ISpectLogDataBuilder? itemsBuilder;
   final ISpectOptions options;
 
   @override
@@ -76,8 +76,8 @@ class _LogsScreenState extends State<LogsScreen> {
         builder: (_, __) => Row(
           children: [
             Expanded(
-              child: ISpectifyBuilder(
-                iSpectify: ISpect.logger,
+              child: ISpectLogsBuilder(
+                logger: ISpect.logger,
                 builder: (context, data) => _MainLogsView(
                   logsData: data,
                   iSpectTheme: iSpect,
@@ -121,10 +121,10 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   void _openLogsSettings(BuildContext context) {
-    final iSpectify = ValueNotifier(ISpect.logger);
+    final logger = ValueNotifier(ISpect.logger);
     ISpectSettingsBottomSheet(
       options: widget.options,
-      iSpectify: iSpectify,
+      logger: logger,
       controller: _logsViewController,
       actions: _buildSettingsActions(context),
     ).show(context);
@@ -328,7 +328,7 @@ class _LogListItem extends StatelessWidget {
     super.key,
   });
 
-  final ISpectifyData logData;
+  final ISpectLogData logData;
   final int itemIndex;
   final IconData statusIcon;
   final Color statusColor;
@@ -337,7 +337,7 @@ class _LogListItem extends StatelessWidget {
   final Color dividerColor;
   final VoidCallback onItemTapped;
   final VoidCallback onCopyPressed;
-  final ISpectifyDataBuilder? customItemBuilder;
+  final ISpectLogDataBuilder? customItemBuilder;
   final ISpectNavigatorObserver? observer;
 
   @override
@@ -408,7 +408,7 @@ class _MainLogsView extends StatelessWidget {
     this.itemsBuilder,
   });
 
-  final List<ISpectifyData> logsData;
+  final List<ISpectLogData> logsData;
   final ISpectScopeModel iSpectTheme;
   final GroupButtonController titleFiltersController;
   final FocusNode searchFocusNode;
@@ -417,7 +417,7 @@ class _MainLogsView extends StatelessWidget {
   final VoidCallback onSettingsTap;
   final VoidCallback onInfoTap;
   final String? appBarTitle;
-  final ISpectifyDataBuilder? itemsBuilder;
+  final ISpectLogDataBuilder? itemsBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -500,7 +500,7 @@ class _DetailView extends StatelessWidget {
     required this.onClose,
   });
 
-  final ISpectifyData activeData;
+  final ISpectLogData activeData;
   final VoidCallback onClose;
 
   @override

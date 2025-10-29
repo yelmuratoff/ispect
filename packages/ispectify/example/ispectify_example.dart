@@ -4,11 +4,11 @@ Future<void> main() async {
   final iSpectify = ISpectLogger(
     options: ISpectLoggerOptions(
       customColors: {
-        ISpectifyLogType.info.key: AnsiPen()..magenta(),
+        ISpectLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),
       },
       customTitles: {
-        ISpectifyLogType.info.key: 'i',
+        ISpectLogType.info.key: 'i',
         CustomLog.logKey: 'Custom',
       },
     ),
@@ -36,7 +36,7 @@ Future<void> main() async {
   iSpectify.logCustom(CustomLog('Something like your own service message'));
 }
 
-class CustomLog extends ISpectifyData {
+class CustomLog extends ISpectLogData {
   CustomLog(super.message);
 
   static const logKey = 'custom_log_key';

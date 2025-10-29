@@ -7,7 +7,7 @@ import 'package:ispectify/ispectify.dart';
 /// Uses a generation-based approach to track data changes,
 /// which is simpler and more performant than complex hash calculations.
 class FilterCache {
-  List<ISpectifyData> _cachedData = [];
+  List<ISpectLogData> _cachedData = [];
   ISpectFilter? _lastFilter;
   int _cacheGeneration = -1;
 
@@ -22,8 +22,8 @@ class FilterCache {
   ///
   /// The returned list is wrapped in [UnmodifiableListView] to prevent
   /// accidental modifications that would bypass the cache.
-  List<ISpectifyData> getFiltered(
-    List<ISpectifyData> data,
+  List<ISpectLogData> getFiltered(
+    List<ISpectLogData> data,
     ISpectFilter filter,
     int generation,
   ) {

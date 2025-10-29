@@ -81,10 +81,10 @@ ispectify_db provides passive logging for database operations without requiring 
 ### Core Methods
 
 - `ISpectDbCore.config = ISpectDbConfig(...)` — set global behavior
-- `ISpectify.db(...)` — emit a single DB event
-- `ISpectify.dbTrace<T>(...)` — wrap a Future and emit on completion
-- `ISpectify.dbStart(...)` / `ISpectify.dbEnd(...)` — manual span around code
-- `ISpectify.dbTransaction(...)` — run with shared transactionId
+- `ISpectLogger.db(...)` — emit a single DB event
+- `ISpectLogger.dbTrace<T>(...)` — wrap a Future and emit on completion
+- `ISpectLogger.dbStart(...)` / `ISpectLogger.dbEnd(...)` — manual span around code
+- `ISpectLogger.dbTransaction(...)` — run with shared transactionId
 
 ### Common Fields
 

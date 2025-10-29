@@ -20,7 +20,7 @@ void main() {
       );
 
       // Add some data
-      final testData = ISpectifyData('Test log', key: 'test');
+      final testData = ISpectLogData('Test log', key: 'test');
       history.add(testData);
       expect(history.history.length, 1);
 
@@ -40,7 +40,7 @@ void main() {
       );
 
       // Add some data
-      final testData = ISpectifyData('Test log', key: 'test');
+      final testData = ISpectLogData('Test log', key: 'test');
       history.add(testData);
       expect(history.history.length, 1);
 
@@ -59,7 +59,7 @@ void main() {
       );
 
       // Add some data
-      final testData = ISpectifyData('Test log', key: 'test');
+      final testData = ISpectLogData('Test log', key: 'test');
       history.add(testData);
       expect(history.history.length, 1);
 
@@ -80,7 +80,7 @@ void main() {
       // Test that cleanup is not called when maxSessionDays <= 0
       // This is implicitly tested by the fact that saveToDailyFile doesn't crash
 
-      final testData = ISpectifyData('Test log', key: 'test');
+      final testData = ISpectLogData('Test log', key: 'test');
       history.add(testData);
 
       // Multiple saves should not crash
@@ -184,7 +184,7 @@ void main() {
       );
 
       // Add data that would be under the limit
-      final testData = ISpectifyData('Small log entry', key: 'test');
+      final testData = ISpectLogData('Small log entry', key: 'test');
       history.add(testData);
 
       // This should succeed (no disk space error)
@@ -207,7 +207,7 @@ void main() {
       // Add a moderate amount of data that would be allowed under 200MB limit
       // but would be rejected under the old 100MB hardcoded limit
       for (var i = 0; i < 1000; i++) {
-        final testData = ISpectifyData(
+        final testData = ISpectLogData(
           'Log entry $i with some additional content to increase size',
           key: 'test_$i',
           additionalData: {'extra': 'data' * 100}, // Add some extra data
@@ -232,7 +232,7 @@ void main() {
       );
 
       // Add data that exceeds the limit
-      final largeData = ISpectifyData(
+      final largeData = ISpectLogData(
         'This is a very large log entry that should exceed the 1KB limit when serialized to JSON',
         key: 'large_test',
         additionalData: {'big_field': 'x' * 2000}, // Make it large

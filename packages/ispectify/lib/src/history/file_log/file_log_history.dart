@@ -113,10 +113,10 @@ abstract class FileLogHistory implements ILogHistory {
   /// Gets all logs for a specific date without modifying current history.
   ///
   /// - Parameters: date - The date to get logs for
-  /// - Return: Future<List<ISpectifyData>> logs for the date
+  /// - Return: Future<List<ISpectLogData>> logs for the date
   /// - Usage example: final logs = await fileHistory.getLogsByDate(date)
   /// - Edge case notes: Read-only operation, returns empty list if no file
-  Future<List<ISpectifyData>> getLogsByDate(DateTime date);
+  Future<List<ISpectLogData>> getLogsByDate(DateTime date);
 
   /// Gets the log file path for a specific date.
   ///
@@ -129,10 +129,10 @@ abstract class FileLogHistory implements ILogHistory {
   /// Gets all logs for a specific session file without modifying current history.
   ///
   /// - Parameters: sessionPath - Path to the session file
-  /// - Return: Future<List<ISpectifyData>> logs from the session
+  /// - Return: Future<List<ISpectLogData>> logs from the session
   /// - Usage example: final logs = await fileHistory.getLogsBySession(path)
   /// - Edge case notes: Read-only operation, returns empty list if no file
-  Future<List<ISpectifyData>> getLogsBySession(String sessionPath);
+  Future<List<ISpectLogData>> getLogsBySession(String sessionPath);
 
   /// Gets comprehensive session statistics.
   ///

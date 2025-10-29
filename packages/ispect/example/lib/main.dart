@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  // Initialize ISpectify for logging
+  // Initialize ISpectLogger for logging
   final logger = ISpectFlutter.init();
 
   // Wrap your app with ISpect

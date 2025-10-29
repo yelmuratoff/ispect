@@ -28,7 +28,7 @@ class LogsV2Screen extends StatefulWidget {
   });
 
   final String? appBarTitle;
-  final List<ISpectifyData>? logs;
+  final List<ISpectLogData>? logs;
   final String? sessionPath;
   final DateTime? sessionDate;
   final ISpectShareCallback? onShare;
@@ -52,7 +52,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
-  final List<ISpectifyData> _logs = [];
+  final List<ISpectLogData> _logs = [];
 
   @override
   void initState() {
@@ -145,7 +145,7 @@ class _LogListItem extends StatelessWidget {
     super.key,
   });
 
-  final ISpectifyData logData;
+  final ISpectLogData logData;
   final int itemIndex;
   final IconData statusIcon;
   final Color statusColor;
@@ -218,7 +218,7 @@ class _MainLogsView extends StatelessWidget {
     this.appBarTitle,
   });
 
-  final List<ISpectifyData> logsData;
+  final List<ISpectLogData> logsData;
   final ISpectScopeModel iSpectTheme;
   final GroupButtonController titleFiltersController;
   final FocusNode searchFocusNode;
@@ -300,7 +300,7 @@ class _DetailView extends StatelessWidget {
     required this.onClose,
   });
 
-  final ISpectifyData activeData;
+  final ISpectLogData activeData;
   final VoidCallback onClose;
 
   @override

@@ -33,7 +33,7 @@ class LogsJsonService {
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
   Future<String> exportToJson(
-    List<ISpectifyData> logs, {
+    List<ISpectLogData> logs, {
     bool includeMetadata = true,
   }) async {
     final exportData = <String, dynamic>{};
@@ -58,7 +58,7 @@ class LogsJsonService {
 
   /// Processes logs in chunks to prevent memory issues
   Future<List<Map<String, dynamic>>> _processLogsInChunks(
-    List<ISpectifyData> logs,
+    List<ISpectLogData> logs,
   ) async {
     final jsonLogs = <Map<String, dynamic>>[];
     const chunkSize = 50;
@@ -84,7 +84,7 @@ class LogsJsonService {
   /// - Return: List of imported log entries
   /// - Usage example: `final logs = await service.importFromJson(jsonContent);`
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
-  Future<List<ISpectifyData>> importFromJson(String jsonString) async {
+  Future<List<ISpectLogData>> importFromJson(String jsonString) async {
     try {
       final dynamic jsonData = jsonDecode(jsonString);
       final logsJson = _extractLogsFromJsonData(jsonData);
@@ -109,10 +109,10 @@ class LogsJsonService {
   }
 
   /// Processes imported logs in chunks to prevent UI freezing
-  Future<List<ISpectifyData>> _processImportedLogsInChunks(
+  Future<List<ISpectLogData>> _processImportedLogsInChunks(
     List<dynamic> logsJson,
   ) async {
-    final logs = <ISpectifyData>[];
+    final logs = <ISpectLogData>[];
     const chunkSize = 25;
 
     for (var i = 0; i < logsJson.length; i += chunkSize) {
@@ -120,7 +120,7 @@ class LogsJsonService {
 
       for (final logJson in chunk) {
         try {
-          final log = ISpectifyDataJsonUtils.fromJson(
+          final log = ISpectLogDataJsonUtils.fromJson(
             logJson as Map<String, dynamic>,
           );
           logs.add(log);
@@ -144,7 +144,7 @@ class LogsJsonService {
   /// - Usage example: `await service.shareLogsAsJsonFile(logs, fileName: 'my_logs');`
   /// - Edge case notes: Validates non-empty logs, combines export and download operations
   Future<void> shareLogsAsJsonFile(
-    List<ISpectifyData> logs, {
+    List<ISpectLogData> logs, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
@@ -170,8 +170,8 @@ class LogsJsonService {
   /// - Usage example: `await service.shareFilteredLogsAsJsonFile(allLogs, filteredLogs, currentFilter);`
   /// - Edge case notes: Includes filter metadata for context, validates non-empty filtered logs
   Future<void> shareFilteredLogsAsJsonFile(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
     ISpectFilter filter, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
@@ -196,8 +196,8 @@ class LogsJsonService {
 
   /// Creates export data structure for filtered logs
   Map<String, dynamic> _createFilteredExportData(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
     ISpectFilter filter,
   ) =>
       {
@@ -207,8 +207,8 @@ class LogsJsonService {
 
   /// Creates metadata for filtered export including filter information
   Map<String, dynamic> _createFilteredMetadata(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
     ISpectFilter filter,
   ) =>
       {

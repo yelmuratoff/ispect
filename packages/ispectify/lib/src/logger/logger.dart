@@ -80,7 +80,7 @@ class ISpectBaseLogger {
   /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Creates a new `ISpectifyLogger` instance with overridden properties.
+  /// Creates a new `ISpectLoggerLogger` instance with overridden properties.
   ISpectBaseLogger copyWith({
     LoggerSettings? settings,
     ILoggerFormatter? formatter,
@@ -96,5 +96,5 @@ class ISpectBaseLogger {
 
   @override
   String toString() =>
-      'ISpectifyLogger(enabled: ${settings.enable}, level: ${settings.level})';
+      'ISpectLoggerLogger(enabled: ${settings.enable}, level: ${settings.level})';
 }

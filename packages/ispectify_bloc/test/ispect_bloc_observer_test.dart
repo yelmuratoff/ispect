@@ -4,10 +4,10 @@ import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:test/test.dart';
 
 class RecordingLogger extends ISpectLogger {
-  final List<ISpectifyData> records = <ISpectifyData>[];
+  final List<ISpectLogData> records = <ISpectLogData>[];
 
   @override
-  void logCustom(ISpectifyData data) {
+  void logCustom(ISpectLogData data) {
     records.add(data);
   }
 
@@ -18,7 +18,7 @@ class RecordingLogger extends ISpectLogger {
     StackTrace? stackTrace,
   }) {
     records.add(
-      ISpectifyData(
+      ISpectLogData(
         msg?.toString(),
         exception: exception,
         stackTrace: stackTrace,

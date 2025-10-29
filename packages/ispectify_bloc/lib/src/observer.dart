@@ -28,11 +28,11 @@ typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
-/// `BLoC` logger on `ISpectify` base
+/// `BLoC` logger on `ISpectLogger` base
 ///
-/// `logger` field is the current `ISpectify` instance.
-/// Provide your instance if your application uses `ISpectify` as the default logger
-/// Common ISpectify instance will be used by default
+/// `logger` field is the current `ISpectLogger` instance.
+/// Provide your instance if your application uses `ISpectLogger` as the default logger
+/// Common ISpectLogger instance will be used by default
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,

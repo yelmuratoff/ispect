@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>WebSocket interceptor integration for ISpectify logging system using ws package</strong></p>
+  <p><strong>WebSocket interceptor integration for ISpectLogger logging system using ws package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_ws">
@@ -50,7 +50,7 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectifyWS integrates with the WebSocket client through interceptors:
+ISpectLoggerWS integrates with the WebSocket client through interceptors:
 
 | Component | Description |
 |-----------|-----------|
@@ -62,9 +62,9 @@ ISpectifyWS integrates with the WebSocket client through interceptors:
 
 ## Overview
 
-> **ISpectify WebSocket** integrates the ws package with the ISpectify logging system for WebSocket monitoring.
+> **ISpectLogger WebSocket** integrates the ws package with the ISpectLogger logging system for WebSocket monitoring.
 
-ISpectifyWS integrates the ws package with the ISpectify logging system for WebSocket monitoring.
+ISpectLoggerWS integrates the ws package with the ISpectLogger logging system for WebSocket monitoring.
 
 ### Key Features
 
@@ -181,7 +181,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 import 'package:ws/ws.dart';
 
-// Use dart define to control ISpectify WebSocket integration
+// Use dart define to control ISpectLogger WebSocket integration
 const bool kEnableISpectWS = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 void main() {

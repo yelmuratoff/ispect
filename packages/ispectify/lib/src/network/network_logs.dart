@@ -16,7 +16,7 @@ Map<String, dynamic> _mapFromEntries(
   return data;
 }
 
-class NetworkRequestLog extends ISpectifyData {
+class NetworkRequestLog extends ISpectLogData {
   NetworkRequestLog(
     super.message, {
     required this.method,
@@ -31,13 +31,13 @@ class NetworkRequestLog extends ISpectifyData {
   })  : _headers = headers,
         _body = body,
         _settings = settings,
-        _logKey = logKey ?? ISpectifyLogType.httpRequest.key,
+        _logKey = logKey ?? ISpectLogType.httpRequest.key,
         super(
-          key: logKey ?? ISpectifyLogType.httpRequest.key,
-          title: logKey ?? ISpectifyLogType.httpRequest.key,
+          key: logKey ?? ISpectLogType.httpRequest.key,
+          title: logKey ?? ISpectLogType.httpRequest.key,
           pen: pen ??
               settings.requestPen ??
-              ISpectifyLogType.httpRequest.defaultPen,
+              ISpectLogType.httpRequest.defaultPen,
           additionalData: metadata ??
               _mapFromEntries(
                 [
@@ -91,7 +91,7 @@ class NetworkRequestLog extends ISpectifyData {
   String get logKey => _logKey;
 }
 
-class NetworkResponseLog extends ISpectifyData {
+class NetworkResponseLog extends ISpectLogData {
   NetworkResponseLog(
     super.message, {
     required this.method,
@@ -112,13 +112,13 @@ class NetworkResponseLog extends ISpectifyData {
         _requestBody = requestBody,
         _responseBody = responseBody,
         _settings = settings,
-        _logKey = logKey ?? ISpectifyLogType.httpResponse.key,
+        _logKey = logKey ?? ISpectLogType.httpResponse.key,
         super(
-          key: logKey ?? ISpectifyLogType.httpResponse.key,
-          title: logKey ?? ISpectifyLogType.httpResponse.key,
+          key: logKey ?? ISpectLogType.httpResponse.key,
+          title: logKey ?? ISpectLogType.httpResponse.key,
           pen: pen ??
               settings.responsePen ??
-              ISpectifyLogType.httpResponse.defaultPen,
+              ISpectLogType.httpResponse.defaultPen,
           additionalData: metadata ??
               _mapFromEntries(
                 [
@@ -202,7 +202,7 @@ class NetworkResponseLog extends ISpectifyData {
   String get logKey => _logKey;
 }
 
-class NetworkErrorLog extends ISpectifyData {
+class NetworkErrorLog extends ISpectLogData {
   NetworkErrorLog(
     super.message, {
     required this.method,
@@ -223,12 +223,11 @@ class NetworkErrorLog extends ISpectifyData {
         _headers = headers,
         _body = body,
         _settings = settings,
-        _logKey = logKey ?? ISpectifyLogType.httpError.key,
+        _logKey = logKey ?? ISpectLogType.httpError.key,
         super(
-          key: logKey ?? ISpectifyLogType.httpError.key,
-          title: logKey ?? ISpectifyLogType.httpError.key,
-          pen:
-              pen ?? settings.errorPen ?? ISpectifyLogType.httpError.defaultPen,
+          key: logKey ?? ISpectLogType.httpError.key,
+          title: logKey ?? ISpectLogType.httpError.key,
+          pen: pen ?? settings.errorPen ?? ISpectLogType.httpError.defaultPen,
           logLevel: LogLevel.error,
           exception: capturedException,
           stackTrace: capturedStackTrace,

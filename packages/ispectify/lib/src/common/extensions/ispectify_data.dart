@@ -1,13 +1,13 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Extension on `ISpectifyData` for additional functionalities.
+/// Extension on `ISpectLogData` for additional functionalities.
 ///
 /// Provides utility methods to manipulate and format log data efficiently.
-extension ISpectDataX on ISpectifyData {
-  /// Returns a copy of this `ISpectifyData` with optional new values.
+extension ISpectDataX on ISpectLogData {
+  /// Returns a copy of this `ISpectLogData` with optional new values.
   ///
   /// If no parameters are provided, the original values are retained.
-  ISpectifyData copyWith({
+  ISpectLogData copyWith({
     String? message,
     LogLevel? logLevel,
     Object? exception,
@@ -19,7 +19,7 @@ extension ISpectDataX on ISpectifyData {
     String? key,
     Map<String, dynamic>? additionalData,
   }) =>
-      ISpectifyData(
+      ISpectLogData(
         message ?? this.message,
         logLevel: logLevel ?? this.logLevel,
         exception: exception ?? this.exception,
@@ -32,8 +32,8 @@ extension ISpectDataX on ISpectifyData {
         additionalData: additionalData ?? this.additionalData,
       );
 
-  /// Creates an exact duplicate of this `ISpectifyData` instance.
-  ISpectifyData copy() => copyWith();
+  /// Creates an exact duplicate of this `ISpectLogData` instance.
+  ISpectLogData copy() => copyWith();
 
   /// Generates a formatted summary text for logging.
   ///
@@ -88,21 +88,21 @@ StackTrace: $stackTraceText]''';
 
   /// Checks if this log entry is related to HTTP requests.
   bool get isHttpLog => [
-        ISpectifyLogType.httpRequest.key,
-        ISpectifyLogType.httpResponse.key,
+        ISpectLogType.httpRequest.key,
+        ISpectLogType.httpResponse.key,
       ].contains(key);
 
-  bool get isRouteLog => key == ISpectifyLogType.route.key;
+  bool get isRouteLog => key == ISpectLogType.route.key;
 
   /// Generates a cURL command for HTTP logs (request, response, or error).
   ///
   /// Returns the cURL command as a string if the log contains HTTP request data,
   /// otherwise returns `null`.
   String? get curlCommand {
-    if (key == ISpectifyLogType.httpRequest.key) {
+    if (key == ISpectLogType.httpRequest.key) {
       return CurlUtils.generateCurl(additionalData);
-    } else if (key == ISpectifyLogType.httpResponse.key ||
-        key == ISpectifyLogType.httpError.key) {
+    } else if (key == ISpectLogType.httpResponse.key ||
+        key == ISpectLogType.httpError.key) {
       // For response/error logs, extract request-options from additionalData
       final requestOptions =
           additionalData?['request-options'] as Map<String, dynamic>?;
@@ -117,7 +117,9 @@ StackTrace: $stackTraceText]''';
   ///
   /// Returns `null` for non-error logs.
   String? get typeText {
-    if (this is! ISpectifyError && this is! ISpectifyException) return null;
+    if (this is! ISpectLogError && this is! ISpectLogException) {
+      return null;
+    }
     return 'Type: ${exception?.runtimeType ?? error?.runtimeType ?? ''}';
   }
 }

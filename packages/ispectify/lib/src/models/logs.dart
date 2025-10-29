@@ -1,54 +1,54 @@
 import 'package:ispectify/ispectify.dart';
 
 /// `GoodLog` - This class contains the basic structure of the log.
-class GoodLog extends ISpectifyData {
+class GoodLog extends ISpectLogData {
   GoodLog(
     String super.message,
   ) : super(
-          key: ISpectifyLogType.good.key,
-          title: ISpectifyLogType.good.key,
+          key: ISpectLogType.good.key,
+          title: ISpectLogType.good.key,
         );
 }
 
 /// `AnalyticsLog` - This class contains the analytics log.
-class AnalyticsLog extends ISpectifyData {
+class AnalyticsLog extends ISpectLogData {
   AnalyticsLog(
     String super.message, {
     String? analytics,
   }) : super(
-          key: ISpectifyLogType.analytics.key,
-          title: analytics ?? ISpectifyLogType.analytics.key,
+          key: ISpectLogType.analytics.key,
+          title: analytics ?? ISpectLogType.analytics.key,
         );
 }
 
 /// `RouteLog` - This class contains the route log.
-class RouteLog extends ISpectifyData {
+class RouteLog extends ISpectLogData {
   RouteLog(
     String super.message, {
     this.transitionId,
   }) : super(
-          key: ISpectifyLogType.route.key,
-          title: ISpectifyLogType.route.key,
+          key: ISpectLogType.route.key,
+          title: ISpectLogType.route.key,
         );
 
   final String? transitionId;
 }
 
 /// `ProviderLog` - This class contains the provider log.
-class ProviderLog extends ISpectifyData {
+class ProviderLog extends ISpectLogData {
   ProviderLog(
     String super.message,
   ) : super(
-          key: ISpectifyLogType.provider.key,
-          title: ISpectifyLogType.provider.key,
+          key: ISpectLogType.provider.key,
+          title: ISpectLogType.provider.key,
         );
 }
 
 /// `PrintLog` - This class contains the print log.
-class PrintLog extends ISpectifyData {
+class PrintLog extends ISpectLogData {
   PrintLog(String super.message)
       : super(
-          key: ISpectifyLogType.print.key,
-          title: ISpectifyLogType.print.key,
+          key: ISpectLogType.print.key,
+          title: ISpectLogType.print.key,
         );
 }

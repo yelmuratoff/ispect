@@ -162,7 +162,7 @@ All network interceptors follow a consistent pattern:
 ```dart
 class ISpectDioInterceptor extends Interceptor {
   ISpectDioInterceptor({
-    ISpectify? logger,
+    ISpectLogger? logger,
     this.settings = const ISpectDioInterceptorSettings(),
     RedactionService? redactor,
   }) {

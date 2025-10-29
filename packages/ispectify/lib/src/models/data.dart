@@ -4,8 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// A model class representing a structured log entry.
-class ISpectifyData {
-  /// Creates an instance of `ISpectifyData` to store log details.
+class ISpectLogData {
+  /// Creates an instance of `ISpectLogData` to store log details.
   ///
   /// - `message`: The main log message.
   /// - `time`: The timestamp of the log entry. Defaults to `DateTime.now()`.
@@ -17,7 +17,7 @@ class ISpectifyData {
   /// - `pen`: ANSI color for styling logs.
   /// - `key`: A unique identifier for this log entry.
   /// - `additionalData`: Any extra metadata attached to the log.
-  ISpectifyData(
+  ISpectLogData(
     this.message, {
     DateTime? time,
     this.logLevel,
@@ -92,12 +92,12 @@ class ISpectifyData {
   String get messageText => message.truncate() ?? '';
 
   /// Returns the formatted timestamp of the log entry.
-  String get formattedTime => ISpectifyDateTimeFormatter(time).format;
+  String get formattedTime => ISpectDateTimeFormatter(time).format;
 
   bool get isError {
     final isErrorLog =
         (logLevel == LogLevel.error || logLevel == LogLevel.critical) ||
-            ISpectifyLogType.values.any(
+            ISpectLogType.values.any(
               (t) => t.key == key && t.isErrorType,
             );
     return isErrorLog;
@@ -122,7 +122,7 @@ class ISpectifyData {
     if (identical(this, other)) return true;
     final mapEquals = const DeepCollectionEquality().equals;
 
-    return other is ISpectifyData &&
+    return other is ISpectLogData &&
         other._time == _time &&
         other.key == key &&
         other.message == message &&
@@ -151,7 +151,7 @@ class ISpectifyData {
 
   @override
   String toString() {
-    return '''ISpectifyData(
+    return '''ISpectLogData(
       key: $key,
       message: $message,
       logLevel: $logLevel,

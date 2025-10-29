@@ -171,9 +171,9 @@
 - Add ability to open log files directly from the `ISpect` screen.
 
 ### Changes:
-- Rename `ISpectifyDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
-- Rename `ISpectifyHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
-- Rename `ISpectifyBlocObserver` to `ISpectBLocObserver` for consistency
+- Rename `ISpectLoggerDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
+- Rename `ISpectLoggerHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
+- Rename `ISpectLoggerBlocObserver` to `ISpectBLocObserver` for consistency
 - Rename `iSpectify` to `logger` and update related classes and documentation for consistency
 
 ## Draggable Panel
@@ -224,7 +224,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 
 ### Changes:
 - Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectFlutter.init, `ISpectJiraClient.initialize`)*
-- Rename `ISpectifyActionItem` to `ISpectActionItem` and update references in docs and examples
+- Rename `ISpectLoggerActionItem` to `ISpectActionItem` and update references in docs and examples
 - Add `ISpectPanelItem` and `ISpectPanelButtonItem` models and corresponding usage samples. `Records` -> `Models`
 - Refresh quick start and advanced feature code snippets to illustrate updated APIs and options
 - Unify headings *(Basic Setup, Custom Issue Creation, etc.)* and standardize sample app flows
@@ -376,8 +376,8 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - **Log Descriptions** - Added `logDescriptions` to `ISpectTheme` to add, modify, or disable descriptions in the info bottom sheet
 - **Theme Scheme Screen** - Included basic `Theme Scheme Screen` in the `ISpect` panel for testing
 
-### Updated ISpectify
-- **Documentation** - Comprehensive documentation added to the `ISpectify` class
+### Updated ISpectLogger
+- **Documentation** - Comprehensive documentation added to the `ISpectLogger` class
 - **Constructor Enhancement** - Modified to accept optional components (`logger`, `observer`, `options`, `filter`, `errorHandler`, `history`)
 - **Configuration Method** - Introduced `configure` method to update existing inspector instance configuration
 - **Internal Logic** - Updated to leverage new components and options effectively
@@ -424,9 +424,9 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 3.0.0
 
 ### BREAKING CHANGES
-- Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectify`
+- Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectLogger`
   - This was done to ease usage and reduce external dependencies
-  - You can now use `ISpectify` to log all application actions
+  - You can now use `ISpectLogger` to log all application actions
   
 - Separated main functions into different packages:
   - `ispect_ai` - For using `AI` as a log reporter and log description generator (useful for managers and testers)
@@ -467,7 +467,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 2.0.3
 
 ### Fixed
-- `setState` during build inside `ISpectScreen` (ISpectify)
+- `setState` during build inside `ISpectScreen` (ISpectLogger)
 
 ## 2.0.1
 
@@ -483,7 +483,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.9.8
 
 ### Updated
-- Upgraded `ISpectify` to v4.5.0
+- Upgraded `ISpectLogger` to v4.5.0
 
 ### Added
 - Enhanced customization for `track` method:
@@ -516,7 +516,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
         SuccessLog.logKey: const Color(0xFF880E4F),
       },
       logIcons: {
-        ISpectifyLogType.route.key: Icons.router_rounded,
+        ISpectLogType.route.key: Icons.router_rounded,
         SuccessLog.logKey: Icons.check_circle_rounded,
       },
     ),
@@ -724,7 +724,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.2.4
 
 ### Added
-- New options for `ISpectify` detailed monitor page: reverse all logs and toggle expansion
+- New options for `ISpectLogger` detailed monitor page: reverse all logs and toggle expansion
 - Moved performance tracker to `Draggable` button (removed from settings sheet)
 
 ## 1.2.3
@@ -736,7 +736,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.2.0
 
 ### Updated
-- Upgraded ISpectify to version 4.3.2
+- Upgraded ISpectLogger to version 4.3.2
 
 ## 1.1.8
 
@@ -752,7 +752,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.1.6
 
 ### Updated
-- Refactored Riverpod logs on ISpectify Page
+- Refactored Riverpod logs on ISpectLogger Page
 - Updated dependencies
 
 ## 1.1.5
@@ -761,7 +761,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Riverpod logs
 
 ### Updated
-- ISpectify Page and Feedback builder
+- ISpectLogger Page and Feedback builder
 
 ## 1.1.2
 
@@ -769,7 +769,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Light theme issues
 
 ### Removed
-- `ISpectifyScreenTheme` (use ISpectOptions theme properties instead)
+- `ISpectLoggerScreenTheme` (use ISpectOptions theme properties instead)
 
 ## 1.1.0
 
@@ -802,4 +802,4 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.0.0
 
 ### Initial Release
-- Wrapper around Inspector, ISpectify, and related functionality
+- Wrapper around Inspector, ISpectLogger, and related functionality

@@ -11,7 +11,7 @@ import 'package:ispect/ispect.dart';
 /// - Return: DailyFileLogHistory instance with secure storage
 /// - Usage example: `final history = DailyFileLogHistory(settings);`
 /// - Edge case notes: Handles platform-specific directories, auto-cleanup, memory optimization
-class DailyFileLogHistory extends DefaultISpectifyHistory
+class DailyFileLogHistory extends DefaultISpectLoggerHistory
     implements FileLogHistory {
   /// Creates a daily file-based log history manager
   ///
@@ -295,7 +295,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
       final existingData = (await file.exists() && _shouldMergeWithExisting())
           ? await _loadExistingData(file)
-          : <ISpectifyData>[];
+          : <ISpectLogData>[];
 
       final mergedData = _mergeHistoryData(existingData, history);
 
@@ -505,7 +505,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Edge case notes: Uses 90% threshold to avoid unnecessary rotations near the limit
   Future<bool> _wouldExceedSizeLimit(
     File file,
-    List<ISpectifyData> data,
+    List<ISpectLogData> data,
   ) async {
     if (_maxFileSize <= 0) return false;
 
@@ -527,7 +527,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   /// Estimates the JSON size of the data with safety margin
-  int _estimateJsonSize(List<ISpectifyData> data) {
+  int _estimateJsonSize(List<ISpectLogData> data) {
     if (data.isEmpty) return 0;
 
     final sampleSize = data.length > 10 ? 10 : data.length;
@@ -599,21 +599,21 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// Loads existing data from file efficiently.
   ///
   /// - Parameters: file - File to load data from
-  /// - Returns: `Future<List<ISpectifyData>>` loaded data or empty list
+  /// - Returns: `Future<List<ISpectLogData>>` loaded data or empty list
   /// - Usage example: Used during merge operations
   /// - Edge case notes: Returns empty list on any parsing error
-  Future<List<ISpectifyData>> _loadExistingData(File file) async {
+  Future<List<ISpectLogData>> _loadExistingData(File file) async {
     try {
       final jsonString = await file.readAsString();
       if (jsonString.trim().isEmpty) {
-        return <ISpectifyData>[];
+        return <ISpectLogData>[];
       }
 
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
 
       return jsonList
           .map(
-            (jsonEntry) => ISpectifyDataJsonUtils.fromJson(
+            (jsonEntry) => ISpectLogDataJsonUtils.fromJson(
               jsonEntry as Map<String, dynamic>,
             ),
           )
@@ -627,7 +627,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
               'Failed to parse JSON from file ${file.path}, file may be corrupted',
         );
       }
-      return <ISpectifyData>[];
+      return <ISpectLogData>[];
     } catch (e, st) {
       if (settings.useConsoleLogs) {
         ISpect.logger.handle(
@@ -636,21 +636,21 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
           message: 'Failed to load existing data from file ${file.path}',
         );
       }
-      return <ISpectifyData>[];
+      return <ISpectLogData>[];
     }
   }
 
   /// Merges history data avoiding duplicates and filtering by today's date
   ///
   /// - Parameters: existing - Data from file, current - Data from memory
-  /// - Returns: `List<ISpectifyData>` merged and deduplicated data
+  /// - Returns: `List<ISpectLogData>` merged and deduplicated data
   /// - Usage example: Used during save operations to merge datasets
   /// - Edge case notes: Uses Set for proper deduplication of identical objects, sorts by timestamp
-  List<ISpectifyData> _mergeHistoryData(
-    List<ISpectifyData> existing,
-    List<ISpectifyData> current,
+  List<ISpectLogData> _mergeHistoryData(
+    List<ISpectLogData> existing,
+    List<ISpectLogData> current,
   ) {
-    final merged = <ISpectifyData>{};
+    final merged = <ISpectLogData>{};
     final today = DateTime.now();
 
     // Add existing data (from file)
@@ -673,7 +673,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
 
   /// Writes data in chunks using optimized streaming approach
   /// Validates that the file was written successfully
-  Future<void> _writeDataChunked(File file, List<ISpectifyData> data) async {
+  Future<void> _writeDataChunked(File file, List<ISpectLogData> data) async {
     final sink = file.openWrite();
 
     try {
@@ -991,7 +991,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   @override
-  Future<List<ISpectifyData>> getLogsByDate(DateTime date) async {
+  Future<List<ISpectLogData>> getLogsByDate(DateTime date) async {
     await _ensureDirectoryInitialized();
 
     final filePath = _getDateFilePath(date);
@@ -1005,29 +1005,29 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         if (settings.useConsoleLogs) {
           ISpect.logger.handle(exception: e, stackTrace: st);
         }
-        return <ISpectifyData>[];
+        return <ISpectLogData>[];
       }
     }
 
-    return <ISpectifyData>[];
+    return <ISpectLogData>[];
   }
 
-  /// Parses JSON string to list of ISpectifyData with optimized batch processing.
+  /// Parses JSON string to list of ISpectLogData with optimized batch processing.
   ///
   /// - Parameters: jsonString - Raw JSON string representing a list of entries
-  /// - Returns: `Future<List<ISpectifyData>>` parsed list (empty on error)
+  /// - Returns: `Future<List<ISpectLogData>>` parsed list (empty on error)
   /// - Usage example: Internal parsing for import and load operations
   /// - Edge case notes: Processes in adaptive chunks, skips invalid entries
-  Future<List<ISpectifyData>> _parseJsonToData(String jsonString) async {
+  Future<List<ISpectLogData>> _parseJsonToData(String jsonString) async {
     try {
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
       final totalLength = jsonList.length;
 
-      if (totalLength == 0) return <ISpectifyData>[];
+      if (totalLength == 0) return <ISpectLogData>[];
 
       // Adaptive chunk size based on data size
       final chunkSize = totalLength > 1000 ? 50 : 25;
-      final result = <ISpectifyData>[];
+      final result = <ISpectLogData>[];
 
       for (var i = 0; i < totalLength; i += chunkSize) {
         final chunkEnd =
@@ -1036,7 +1036,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         // Process batch without creating intermediate collections
         for (var j = i; j < chunkEnd; j++) {
           try {
-            final entry = ISpectifyDataJsonUtils.fromJson(
+            final entry = ISpectLogDataJsonUtils.fromJson(
               jsonList[j] as Map<String, dynamic>,
             );
             result.add(entry);
@@ -1059,7 +1059,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
       if (settings.useConsoleLogs) {
         ISpect.logger.handle(exception: e, stackTrace: st);
       }
-      return <ISpectifyData>[];
+      return <ISpectLogData>[];
     }
   }
 
@@ -1069,7 +1069,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   /// - Returns: `bool` true if all entries belong to targetDate
   /// - Usage example: Used before saving to ensure daily file consistency
   /// - Edge case notes: Early exits on first mismatch for performance
-  bool _validateDataForDate(List<ISpectifyData> data, DateTime targetDate) {
+  bool _validateDataForDate(List<ISpectLogData> data, DateTime targetDate) {
     if (data.isEmpty) return true;
 
     final targetYear = targetDate.year;
@@ -1089,7 +1089,7 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
   }
 
   @override
-  Future<List<ISpectifyData>> getLogsBySession(String sessionPath) async {
+  Future<List<ISpectLogData>> getLogsBySession(String sessionPath) async {
     await _ensureDirectoryInitialized();
 
     final file = File(sessionPath);
@@ -1101,11 +1101,11 @@ class DailyFileLogHistory extends DefaultISpectifyHistory
         if (settings.useConsoleLogs) {
           ISpect.logger.handle(exception: e, stackTrace: st);
         }
-        return <ISpectifyData>[];
+        return <ISpectLogData>[];
       }
     }
 
-    return <ISpectifyData>[];
+    return <ISpectLogData>[];
   }
 
   @override

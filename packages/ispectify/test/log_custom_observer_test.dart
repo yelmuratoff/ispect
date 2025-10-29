@@ -8,17 +8,17 @@ class _SpyObserver implements ISpectObserver {
   static int logCount = 0;
 
   @override
-  void onError(ISpectifyData err) {
+  void onError(ISpectLogData err) {
     errorCount++;
   }
 
   @override
-  void onException(ISpectifyData err) {
+  void onException(ISpectLogData err) {
     exceptionCount++;
   }
 
   @override
-  void onLog(ISpectifyData log) {
+  void onLog(ISpectLogData log) {
     logCount++;
   }
 }
@@ -36,13 +36,13 @@ void main() {
     // Subscribe before emitting to avoid missing broadcast events
     final future = logger.stream.take(2).toList();
 
-    final httpErr = ISpectifyData(
+    final httpErr = ISpectLogData(
       'HTTP failed',
-      key: ISpectifyLogType.httpError.key,
+      key: ISpectLogType.httpError.key,
       logLevel: LogLevel.error,
     );
 
-    final normal = ISpectifyData('Hello', key: ISpectifyLogType.info.key);
+    final normal = ISpectLogData('Hello', key: ISpectLogType.info.key);
 
     logger
       ..logCustom(httpErr)

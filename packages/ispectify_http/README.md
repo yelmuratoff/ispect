@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>HTTP interceptor integration for ISpectify logging system using http_interceptor package</strong></p>
+  <p><strong>HTTP interceptor integration for ISpectLogger logging system using http_interceptor package</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_http">
@@ -50,7 +50,7 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectifyHttp integrates with the standard HTTP client through interceptors:
+ISpectLoggerHttp integrates with the standard HTTP client through interceptors:
 
 | Component | Description |
 |-----------|-----------|
@@ -62,9 +62,9 @@ ISpectifyHttp integrates with the standard HTTP client through interceptors:
 
 ## Overview
 
-> **ISpectify HTTP** integrates the http_interceptor package with the ISpectify logging system.
+> **ISpectLogger HTTP** integrates the http_interceptor package with the ISpectLogger logging system.
 
-ISpectifyHttp integrates the http_interceptor package with the ISpectify logging system for HTTP request monitoring.
+ISpectLoggerHttp integrates the http_interceptor package with the ISpectLogger logging system for HTTP request monitoring.
 
 ### Key Features
 
@@ -168,7 +168,7 @@ import 'package:ispect/ispect.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispectify_http/ispectify_http.dart';
 
-// Use dart define to control ISpectify HTTP integration
+// Use dart define to control ISpectLogger HTTP integration
 const bool kEnableISpectHttp = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 final http_interceptor.InterceptedClient client =
@@ -184,13 +184,13 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectify iSpectify = ISpectFlutter.init();
+  final ISpectLogger iSpectify = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
     logger: iSpectify,
     onInit: () {
-      // Add ISpectify HTTP interceptor only in development/staging
+      // Add ISpectLogger HTTP interceptor only in development/staging
       client.interceptors.add(
         ISpectHttpInterceptor(
           logger: iSpectify,
@@ -210,7 +210,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('ISpectify HTTP Example')),
+        appBar: AppBar(title: const Text('ISpectLogger HTTP Example')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -255,7 +255,7 @@ class HttpClientFactory {
   static const bool _isEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   
   static http_interceptor.InterceptedClient createClient({
-    ISpectify? iSpectify,
+    ISpectLogger? iSpectify,
   }) {
     final List<http_interceptor.InterceptorContract> interceptors = [];
     
@@ -313,7 +313,7 @@ class HttpConfig {
 ```dart
 void setupHttpInterceptors(
   http_interceptor.InterceptedClient client,
-  ISpectify? iSpectify,
+  ISpectLogger? iSpectify,
 ) {
   const isISpectEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
   

@@ -10,7 +10,7 @@ import 'package:ispect/src/common/cache/filter_cache.dart';
 /// - `unique`: Unique titles from logs (deduplicated set)
 typedef TitlesResult = ({List<String> all, List<String> unique});
 
-/// Controller for managing the state of ISpectify views.
+/// Controller for managing the state of ISpectLogger views.
 ///
 /// - Parameters: None required for initialization
 /// - Return: ISpectViewController instance
@@ -22,7 +22,7 @@ class ISpectViewController extends ChangeNotifier {
   ISpectFilter _filter = ISpectFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
-  ISpectifyData? _activeData;
+  ISpectLogData? _activeData;
 
   // JSON service for logs export/import
   final LogsJsonService _logsJsonService = const LogsJsonService();
@@ -59,10 +59,10 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Gets the currently active data.
-  ISpectifyData? get activeData => _activeData;
+  ISpectLogData? get activeData => _activeData;
 
   /// Sets the active data and notifies listeners if changed.
-  set activeData(ISpectifyData? data) {
+  set activeData(ISpectLogData? data) {
     if (_activeData == data) return;
     _activeData = data;
     notifyListeners();
@@ -238,8 +238,8 @@ class ISpectViewController extends ChangeNotifier {
   /// * [ISpectFilter], which defines filter behavior
   /// * [FilterCache], which implements the caching logic
   /// * [onDataChanged], which invalidates cache when data changes
-  List<ISpectifyData> applyCurrentFilters(List<ISpectifyData> logsData) {
-    if (logsData.isEmpty) return <ISpectifyData>[];
+  List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) {
+    if (logsData.isEmpty) return <ISpectLogData>[];
     return _filterCache.getFiltered(logsData, filter, _dataGeneration);
   }
 
@@ -265,7 +265,7 @@ class ISpectViewController extends ChangeNotifier {
   /// final titles = controller.getTitles(logs);
   /// print('Found ${titles.unique.length} unique titles');
   /// ```
-  TitlesResult getTitles(List<ISpectifyData> logsData) {
+  TitlesResult getTitles(List<ISpectLogData> logsData) {
     // Simple length-based cache check
     final currentLength = logsData.length;
 
@@ -296,7 +296,7 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Handles tap on a log item, toggling its selection state.
-  void handleLogItemTap(ISpectifyData logEntry) {
+  void handleLogItemTap(ISpectLogData logEntry) {
     activeData = activeData?.hashCode == logEntry.hashCode ? null : logEntry;
   }
 
@@ -310,8 +310,8 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   /// Retrieves log entry at the specified index, respecting sort order.
-  ISpectifyData getLogEntryAtIndex(
-    List<ISpectifyData> filteredEntries,
+  ISpectLogData getLogEntryAtIndex(
+    List<ISpectLogData> filteredEntries,
     int index,
   ) {
     final actualIndex =
@@ -322,7 +322,7 @@ class ISpectViewController extends ChangeNotifier {
   /// Copies log entry text to clipboard.
   void copyLogEntryText(
     BuildContext context,
-    ISpectifyData logEntry,
+    ISpectLogData logEntry,
     void Function(BuildContext, {required String value}) copyClipboard,
   ) {
     final text = logEntry.toJson(truncated: true).toString();
@@ -332,7 +332,7 @@ class ISpectViewController extends ChangeNotifier {
   /// Copies all logs to clipboard with specified formatting.
   void copyAllLogsToClipboard(
     BuildContext context,
-    List<ISpectifyData> logs,
+    List<ISpectLogData> logs,
     void Function(
       BuildContext, {
       required String value,
@@ -363,7 +363,7 @@ class ISpectViewController extends ChangeNotifier {
   /// Exports logs in structured JSON format with metadata including
   /// filter information for better context and import capabilities.
   Future<void> shareLogsAsFile(
-    List<ISpectifyData> logs, {
+    List<ISpectLogData> logs, {
     String fileType = 'json',
   }) async {
     final shareCallback = _ensureShareCallback();
@@ -385,7 +385,7 @@ class ISpectViewController extends ChangeNotifier {
   /// Shares all logs as JSON file without filtering.
   ///
   /// Exports all logs in JSON format for complete backup.
-  Future<void> shareAllLogsAsJsonFile(List<ISpectifyData> logs) async {
+  Future<void> shareAllLogsAsJsonFile(List<ISpectLogData> logs) async {
     final shareCallback = _ensureShareCallback();
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
@@ -402,7 +402,7 @@ class ISpectViewController extends ChangeNotifier {
   ///
   /// Parses JSON content and returns list of imported logs.
   /// Can be used to restore previously exported logs.
-  Future<List<ISpectifyData>> importLogsFromJson(String jsonContent) async =>
+  Future<List<ISpectLogData>> importLogsFromJson(String jsonContent) async =>
       _logsJsonService.importFromJson(jsonContent);
 
   /// Validates if JSON content is valid for logs import.

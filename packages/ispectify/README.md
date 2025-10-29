@@ -50,7 +50,7 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectify serves as the logging foundation for the ISpect ecosystem:
+ISpectLogger serves as the logging foundation for the ISpect ecosystem:
 
 | Component | Description |
 |-----------|-----------|
@@ -62,9 +62,9 @@ ISpectify serves as the logging foundation for the ISpect ecosystem:
 
 ## Overview
 
-> **ISpectify** is the foundation logging system that powers the ISpect debugging toolkit.
+> **ISpectLogger** is the foundation logging system that powers the ISpect debugging toolkit.
 
-ISpectify is the logging foundation for the ISpect ecosystem. It builds on the Talker logging library and adds features for debugging and monitoring Flutter applications.
+ISpectLogger is the logging foundation for the ISpect ecosystem. It builds on the Talker logging library and adds features for debugging and monitoring Flutter applications.
 
 ### Key Features
 
@@ -88,8 +88,8 @@ ISpectify is the logging foundation for the ISpect ecosystem. It builds on the T
 
 ### Disable Console Output
 ```dart
-final logger = ISpectify(
-  logger: ISpectifyLogger(
+final logger = ISpectLogger(
+  logger: ISpectLoggerLogger(
     settings: LoggerSettings(enableColors: false),
   ),
   options: ISpectLoggerOptions(useConsoleLogs: false),
@@ -99,20 +99,20 @@ Stdout stays clean; history + streams still work.
 
 ### Disable History (Stateless Mode)
 ```dart
-final logger = ISpectify(options: ISpectLoggerOptions(useHistory: false));
+final logger = ISpectLogger(options: ISpectLoggerOptions(useHistory: false));
 ```
 No retention; stream subscribers still receive real-time logs. Memory overhead minimal.
 
 ### Minimal Footprint (CI / Benchmarks)
 ```dart
-final logger = ISpectify(
+final logger = ISpectLogger(
   options: ISpectLoggerOptions(
     enabled: true,
     useConsoleLogs: true, // or false for JSON parsing scenarios
     useHistory: false,
     logTruncateLength: 400,
   ),
-  logger: ISpectifyLogger(
+  logger: ISpectLoggerLogger(
     settings: LoggerSettings(
       enableColors: false, // deterministic output
       maxLineWidth: 80,
@@ -141,7 +141,7 @@ Unknown keys fallback to the key string + gray pen.
 
 ### Dynamic Reconfigure (Hot)
 ```dart
-final i = ISpectify(...);
+final i = ISpectLogger(...);
 // Later
 i.configure(options: i.options.copyWith(useConsoleLogs: false));
 ```
@@ -152,10 +152,10 @@ Provide a filter implementation to drop noise early:
 ```dart
 class OnlyErrorsFilter implements ISpectFilter {
   @override
-  bool apply(ISpectifyData d) => d.logLevel?.priority >= LogLevel.error.priority;
+  bool apply(ISpectLogData d) => d.logLevel?.priority >= LogLevel.error.priority;
 }
 
-final logger = ISpectify(filter: OnlyErrorsFilter());
+final logger = ISpectLogger(filter: OnlyErrorsFilter());
 ```
 
 ### Route / Analytics / Provider Logs
@@ -196,7 +196,7 @@ Or adjust `logTruncateLength`.
 ### History Export (Pattern)
 History object: 
 ```dart
-final copy = logger.history; // List<ISpectifyData>
+final copy = logger.history; // List<ISpectLogData>
 ```
 Serialize manually (avoid bundling secrets). Provide redaction upstream before logging.
 
@@ -224,7 +224,7 @@ Use `maxLineWidth` to constrain horizontal noise; does not truncate content (tru
 Disable colors for: CI, log ingestion systems, snapshot testing. Keep colors locally for readability.
 
 ### Error / Exception Flow
-`logger.handle(exception)` decides between `ISpectifyError` and `ISpectifyException`; observer callbacks fire before streaming. Provide a custom `ISpectErrorHandler` to rewrite classification.
+`logger.handle(exception)` decides between `ISpectLogError` and `ISpectLogException`; observer callbacks fire before streaming. Provide a custom `ISpectErrorHandler` to rewrite classification.
 
 ### Zero-Allocation Path
 For ultra hot loops avoid string interpolation before checking `options.enabled`. Pattern: 
@@ -240,8 +240,8 @@ Use `ISpect.run` with `isZoneErrorHandlingEnabled` (default true) to automatical
 ### Settings
 
 ```dart
-final logger = ISpectify(
-    logger: ISpectifyLogger(
+final logger = ISpectLogger(
+    logger: ISpectLoggerLogger(
         settings: LoggerSettings(
       enableColors: false,
     )),
@@ -268,7 +268,7 @@ final logger = ISpectify(
 ### Custom Log Types
 
 ```dart
-class CustomLog extends ISpectifyData {
+class CustomLog extends ISpectLogData {
   CustomLog(
     String super.message,
   ) : super(
@@ -305,10 +305,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 
-// Use dart define to control ISpectify inclusion
-const bool kEnableISpectify = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+// Use dart define to control ISpectLogger inclusion
+const bool kEnableISpectLogger = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
-class CustomLog extends ISpectifyData {
+class CustomLog extends ISpectLogData {
   CustomLog(
     String super.message,
   ) : super(
@@ -318,12 +318,12 @@ class CustomLog extends ISpectifyData {
 }
 
 void main() {
-  ISpectify? logger;
+  ISpectLogger? logger;
   
-  if (kEnableISpectify) {
-    // Initialize ISpectify only in development/staging
-    logger = ISpectify(
-      logger: ISpectifyLogger(
+  if (kEnableISpectLogger) {
+    // Initialize ISpectLogger only in development/staging
+    logger = ISpectLogger(
+      logger: ISpectLoggerLogger(
           settings: LoggerSettings(
         enableColors: false,
       )),
@@ -346,7 +346,7 @@ void main() {
       ),
     );
 
-    logger.info('ISpectify initialized successfully');
+    logger.info('ISpectLogger initialized successfully');
 
     // Wrap your app with ISpect
     ISpect.run(
@@ -354,7 +354,7 @@ void main() {
       logger: logger,
     );
   } else {
-    // Production run without ISpectify
+    // Production run without ISpectLogger
     runApp(MyApp());
   }
 }
@@ -366,14 +366,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('ISpectify Example')),
+        appBar: AppBar(title: const Text('ISpectLogger Example')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
                 onPressed: () {
-                  if (kEnableISpectify) {
+                  if (kEnableISpectLogger) {
                     ISpect.logger.info('Info log message');
                   }
                 },
@@ -381,7 +381,7 @@ class MyApp extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (kEnableISpectify) {
+                  if (kEnableISpectLogger) {
                     ISpect.logger.logCustom(CustomLog('Custom log message'));
                   }
                 },
@@ -406,16 +406,16 @@ class MyApp extends StatelessWidget {
 // Create a logger wrapper that respects environment settings
 class SafeLogger {
   static const bool _isEnabled = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
-  static ISpectify? _instance;
+  static ISpectLogger? _instance;
   
-  static ISpectify? get instance {
+  static ISpectLogger? get instance {
     if (!_isEnabled) return null;
     return _instance ??= _createLogger();
   }
   
-  static ISpectify _createLogger() {
-    return ISpectify(
-      logger: ISpectifyLogger(
+  static ISpectLogger _createLogger() {
+    return ISpectLogger(
+      logger: ISpectLoggerLogger(
         settings: LoggerSettings(
           enableColors: kDebugMode, // Disable colors in headless/CI for cleaner output
         )
@@ -449,11 +449,11 @@ class SafeLogger {
 
 ```dart
 // Environment-specific logger configuration
-ISpectify createLogger() {
+ISpectLogger createLogger() {
   const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
   final bool isProd = environment == 'production';
-  return ISpectify(
-    logger: ISpectifyLogger(
+  return ISpectLogger(
+    logger: ISpectLoggerLogger(
       settings: LoggerSettings(
         enableColors: !isProd,
         lineLength: environment == 'development' ? 120 : 80,

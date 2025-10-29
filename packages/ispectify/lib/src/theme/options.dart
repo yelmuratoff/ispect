@@ -6,20 +6,20 @@ final AnsiPen _fallbackPen = AnsiPen()..gray();
 /// Helper function to get default pen for a log type key.
 AnsiPen? _getDefaultPenByKey(String key) {
   try {
-    final logType = ISpectifyLogType.values.firstWhere((e) => e.key == key);
+    final logType = ISpectLogType.values.firstWhere((e) => e.key == key);
     return logType.defaultPen;
   } catch (_) {
     return null;
   }
 }
 
-/// Configuration options for ISpectify logging.
+/// Configuration options for ISpectLogger logging.
 ///
 /// This class allows customization of logging behavior, including
 /// enabling/disabling logs, storing log history, and customizing
 /// log colors and titles.
 ///
-/// Color and title customization now uses the [ISpectifyLogTypeRegistry]
+/// Color and title customization now uses the [ISpectLogTypeRegistry]
 /// for better extensibility. Custom overrides can be provided via
 /// the [customTitles] and [customColors] parameters.
 class ISpectLoggerOptions {
@@ -88,7 +88,7 @@ class ISpectLoggerOptions {
 
   /// Retrieves the ANSI color associated with a given log type key.
   ///
-  /// First checks custom overrides, then built-in defaults from ISpectifyLogType,
+  /// First checks custom overrides, then built-in defaults from ISpectLogType,
   /// then provided fallback, finally falls back to default gray.
   AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) {
     if (key == null) return fallbackPen ?? _fallbackPen;

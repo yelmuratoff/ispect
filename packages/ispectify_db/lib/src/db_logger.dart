@@ -157,7 +157,7 @@ class ISpectDbToken {
   final String? transactionId;
 }
 
-extension ISpectifyDb on ISpectLogger {
+extension ISpectLoggerDb on ISpectLogger {
   void db({
     required String source,
     required String operation,
@@ -286,7 +286,7 @@ extension ISpectifyDb on ISpectLogger {
       'error': error?.toString(),
     });
 
-    final data = ISpectifyData(
+    final data = ISpectLogData(
       message,
       key: keyName,
       title: keyName,

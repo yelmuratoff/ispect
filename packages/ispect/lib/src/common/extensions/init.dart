@@ -3,17 +3,17 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Extension on `ISpectify` for Flutter-specific configurations.
+/// Extension on `ISpectLogger` for Flutter-specific configurations.
 ///
 /// This extension provides an initializer method with a default Flutter output
 /// handler that adapts logging behavior based on the target platform.
 extension ISpectFlutter on ISpectLogger {
-  /// Initializes an instance of `ISpectify` with Flutter-specific settings.
+  /// Initializes an instance of `ISpectLogger` with Flutter-specific settings.
   ///
   /// This method sets up logging, observation, filtering, and options, ensuring
   /// that the logger uses a platform-adaptive output method.
   ///
-  /// - `logger`: Custom logger instance (defaults to `ISpectifyLogger`).
+  /// - `logger`: Custom logger instance (defaults to `ISpectLoggerLogger`).
   /// - `observer`: Optional observer instance for event tracking.
   /// - `options`: Custom options for configuration.
   /// - `filter`: Optional filter instance for log filtering.
@@ -21,11 +21,11 @@ extension ISpectFlutter on ISpectLogger {
   /// ### Example:
   /// ```dart
   /// final inspector = ISpectFlutter.init();
-  /// inspector.log('Hello, ISpectify!');
+  /// inspector.log('Hello, ISpectLogger!');
   /// ```
   ///
   /// Returns:
-  /// A configured instance of `ISpectify` with adapted logging.
+  /// A configured instance of `ISpectLogger` with adapted logging.
   static ISpectLogger init({
     ISpectBaseLogger? logger,
     ISpectObserver? observer,

@@ -4,7 +4,7 @@ import 'package:ispectify/src/settings.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyLogger', () {
+  group('ISpectLoggerLogger', () {
     late List<String> loggedMessages;
 
     setUp(() {

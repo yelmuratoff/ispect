@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-class ISpectifyException extends ISpectifyData {
-  ISpectifyException(
+class ISpectLogException extends ISpectLogData {
+  ISpectLogException(
     Exception exception, {
     String? message,
     super.stackTrace,
@@ -9,7 +9,7 @@ class ISpectifyException extends ISpectifyData {
   }) : super(
           message,
           exception: exception,
-          key: ISpectifyLogType.exception.key,
+          key: ISpectLogType.exception.key,
           logLevel: LogLevel.error,
         );
 

@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>BLoC state management integration for ISpectify logging system</strong></p>
+  <p><strong>BLoC state management integration for ISpectLogger logging system</strong></p>
   
   <p>
     <a href="https://pub.dev/packages/ispectify_bloc">
@@ -50,7 +50,7 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectifyBloc integrates with the BLoC library through observers:
+ISpectLoggerBloc integrates with the BLoC library through observers:
 
 | Component | Description |
 |-----------|-----------|
@@ -62,9 +62,9 @@ ISpectifyBloc integrates with the BLoC library through observers:
 
 ## Overview
 
-> **ISpectify BLoC** integrates BLoC state management with the ISpectify logging system.
+> **ISpectLogger BLoC** integrates BLoC state management with the ISpectLogger logging system.
 
-ISpectifyBloc integrates BLoC state management with the ISpectify logging system for state change monitoring.
+ISpectLoggerBloc integrates BLoC state management with the ISpectLogger logging system for state change monitoring.
 
 ### Key Features
 
@@ -174,7 +174,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-// Use dart define to control ISpectify BLoC integration
+// Use dart define to control ISpectLogger BLoC integration
 const bool kEnableISpectBloc = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 void main() {
@@ -187,7 +187,7 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectify iSpectify = ISpectFlutter.init();
+  final ISpectLogger iSpectify = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),
@@ -234,7 +234,7 @@ class CounterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ISpectify BLoC Example')),
+      appBar: AppBar(title: const Text('ISpectLogger BLoC Example')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

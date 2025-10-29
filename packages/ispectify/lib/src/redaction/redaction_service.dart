@@ -30,7 +30,7 @@ class RedactionService {
         _placeholder = placeholder ?? '[REDACTED]',
         _redactBinary = redactBinary ?? true,
         _redactBase64 = redactBase64 ?? true,
-        _ignoredValues = {...?ignoredValues, ...ISpectifyLogType.keys},
+        _ignoredValues = {...?ignoredValues, ...ISpectLogType.keys},
         _ignoredKeyNamesLower = {
           ...?(ignoredKeys?.map((e) => e.toLowerCase())),
         },

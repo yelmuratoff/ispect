@@ -2,9 +2,9 @@
 ///
 /// Provides various time formatting styles, including full timestamps
 /// and time with milliseconds.
-class ISpectifyDateTimeFormatter {
-  /// Creates an instance of `ISpectifyDateTimeFormatter` with the given [date].
-  const ISpectifyDateTimeFormatter(this.date);
+class ISpectDateTimeFormatter {
+  /// Creates an instance of `ISpectDateTimeFormatter` with the given [date].
+  const ISpectDateTimeFormatter(this.date);
 
   /// The `DateTime` instance to be formatted.
   final DateTime? date;

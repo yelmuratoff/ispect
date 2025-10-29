@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
 
-typedef ISpectifyWidgetBuilder = Widget Function(
+typedef ISpectWidgetBuilder = Widget Function(
   BuildContext context,
-  List<ISpectifyData> data,
+  List<ISpectLogData> data,
 );
 
-/// Builder widget for ISpectify data streams.
-class ISpectifyBuilder extends StatefulWidget {
-  const ISpectifyBuilder({
-    required this.iSpectify,
+/// Builder widget for ISpectLogger data streams.
+class ISpectLogsBuilder extends StatefulWidget {
+  const ISpectLogsBuilder({
+    required this.logger,
     required this.builder,
     super.key,
   });
 
-  final ISpectLogger iSpectify;
-  final ISpectifyWidgetBuilder builder;
+  final ISpectLogger logger;
+  final ISpectWidgetBuilder builder;
 
   @override
-  State<ISpectifyBuilder> createState() => _ISpectifyBuilderState();
+  State<ISpectLogsBuilder> createState() => _ISpectLogsBuilderState();
 }
 
-class _ISpectifyBuilderState extends State<ISpectifyBuilder> {
-  List<ISpectifyData>? _lastData;
+class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
+  List<ISpectLogData>? _lastData;
   int _lastDataLength = 0;
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<ISpectifyData>(
-        stream: widget.iSpectify.stream,
+  Widget build(BuildContext context) => StreamBuilder<ISpectLogData>(
+        stream: widget.logger.stream,
         builder: (context, snapshot) {
-          final currentData = widget.iSpectify.history;
+          final currentData = widget.logger.history;
 
           if (_shouldRebuild(currentData)) {
             _lastData = List.from(currentData);
@@ -43,7 +43,7 @@ class _ISpectifyBuilderState extends State<ISpectifyBuilder> {
       );
 
   /// Determines if the widget should rebuild based on data changes.
-  bool _shouldRebuild(List<ISpectifyData> newData) {
+  bool _shouldRebuild(List<ISpectLogData> newData) {
     // Always rebuild if this is the first build
     if (_lastData == null) return true;
 

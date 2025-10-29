@@ -22,7 +22,7 @@ class LogCard extends StatelessWidget {
     super.key,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final IconData icon;
   final Color color;
   final int index;
@@ -79,7 +79,7 @@ class _LogCardHeader extends StatelessWidget {
 
   final IconData icon;
   final Color color;
-  final ISpectifyData data;
+  final ISpectLogData data;
   final bool isExpanded;
   final VoidCallback onTap;
   final VoidCallback? onCopyTap;
@@ -114,7 +114,7 @@ class _LogCardHeader extends StatelessWidget {
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,
-              isHTTP: data.key == ISpectifyLogType.httpRequest.key,
+              isHTTP: data.key == ISpectLogType.httpRequest.key,
               onCopyCurlTap: () {
                 final curl = data.curlCommand;
                 if (curl != null) {
@@ -133,7 +133,7 @@ class _ExpandedContent extends StatelessWidget {
     required this.color,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final Color color;
 
   @override
@@ -178,7 +178,7 @@ class _LazyExpandedBody extends StatelessWidget {
     required this.hasStackTrace,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final Color color;
   final bool hasStackTrace;
 

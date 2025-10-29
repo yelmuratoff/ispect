@@ -10,15 +10,15 @@ import 'package:ispect/src/features/ispect/presentation/widgets/settings/setting
 
 class ISpectSettingsBottomSheet extends StatefulWidget {
   const ISpectSettingsBottomSheet({
-    required this.iSpectify,
+    required this.logger,
     required this.options,
     required this.actions,
     required this.controller,
     super.key,
   });
 
-  /// ISpectify implementation
-  final ValueNotifier<ISpectLogger> iSpectify;
+  /// ISpectLogger implementation
+  final ValueNotifier<ISpectLogger> logger;
 
   /// Options for `ISpect`
   final ISpectOptions options;
@@ -49,17 +49,17 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
 
   @override
   State<ISpectSettingsBottomSheet> createState() =>
-      _ISpectifySettingsBottomSheetState();
+      _ISpectLoggerSettingsBottomSheetState();
 }
 
-class _ISpectifySettingsBottomSheetState
+class _ISpectLoggerSettingsBottomSheetState
     extends State<ISpectSettingsBottomSheet> {
   final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    widget.iSpectify.addListener(_handleUpdate);
+    widget.logger.addListener(_handleUpdate);
   }
 
   void _handleUpdate() {
@@ -70,7 +70,7 @@ class _ISpectifySettingsBottomSheetState
 
   @override
   void dispose() {
-    widget.iSpectify.removeListener(_handleUpdate);
+    widget.logger.removeListener(_handleUpdate);
     _scrollController.dispose();
     super.dispose();
   }
@@ -81,42 +81,40 @@ class _ISpectifySettingsBottomSheetState
     final settings = <Widget>[
       ISpectSettingsCardItem(
         title: context.ispectL10n.enabled,
-        enabled: widget.iSpectify.value.options.enabled,
+        enabled: widget.logger.value.options.enabled,
         backgroundColor: context.ispectTheme.cardColor,
         onChanged: (enabled) {
-          (enabled
-                  ? widget.iSpectify.value.enable
-                  : widget.iSpectify.value.disable)
+          (enabled ? widget.logger.value.enable : widget.logger.value.disable)
               .call();
-          widget.iSpectify.notifyListeners();
+          widget.logger.notifyListeners();
         },
       ),
       ISpectSettingsCardItem(
-        canEdit: widget.iSpectify.value.options.enabled,
+        canEdit: widget.logger.value.options.enabled,
         title: context.ispectL10n.useConsoleLogs,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.iSpectify.value.options.useConsoleLogs,
+        enabled: widget.logger.value.options.useConsoleLogs,
         onChanged: (enabled) {
-          widget.iSpectify.value.configure(
-            options: widget.iSpectify.value.options.copyWith(
+          widget.logger.value.configure(
+            options: widget.logger.value.options.copyWith(
               useConsoleLogs: enabled,
             ),
           );
-          widget.iSpectify.notifyListeners();
+          widget.logger.notifyListeners();
         },
       ),
       ISpectSettingsCardItem(
-        canEdit: widget.iSpectify.value.options.enabled,
+        canEdit: widget.logger.value.options.enabled,
         title: context.ispectL10n.useHistory,
         backgroundColor: context.ispectTheme.cardColor,
-        enabled: widget.iSpectify.value.options.useHistory,
+        enabled: widget.logger.value.options.useHistory,
         onChanged: (enabled) {
-          widget.iSpectify.value.configure(
-            options: widget.iSpectify.value.options.copyWith(
+          widget.logger.value.configure(
+            options: widget.logger.value.options.copyWith(
               useHistory: enabled,
             ),
           );
-          widget.iSpectify.notifyListeners();
+          widget.logger.notifyListeners();
         },
       ),
     ];

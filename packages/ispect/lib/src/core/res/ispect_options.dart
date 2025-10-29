@@ -129,7 +129,7 @@ final class ISpectOptions {
   ///
   /// When provided, this builder allows for custom rendering of data
   /// within the ISpect interface, enabling advanced customization scenarios.
-  final ISpectifyDataBuilder? itemsBuilder;
+  final ISpectLogDataBuilder? itemsBuilder;
 
   /// Custom handler for share actions triggered inside ISpect.
   ///
@@ -173,7 +173,7 @@ final class ISpectOptions {
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
-    ISpectifyDataBuilder? itemsBuilder,
+    ISpectLogDataBuilder? itemsBuilder,
     ISpectShareCallback? onShare,
     ISpectOpenFileCallback? onOpenFile,
     ISpectLoadLogContentCallback? onLoadLogContent,

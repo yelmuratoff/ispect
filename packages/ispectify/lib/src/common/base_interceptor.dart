@@ -21,7 +21,7 @@ mixin BaseNetworkInterceptor {
   ///
   /// Must be called in the implementing class's constructor.
   ///
-  /// - [logger]: The ISpectify instance to use for logging. Defaults to new instance.
+  /// - [logger]: The ISpectLogger instance to use for logging. Defaults to new instance.
   /// - [redactor]: The RedactionService for sensitive data masking. Defaults to new instance.
   void initializeInterceptor({
     ISpectLogger? logger,

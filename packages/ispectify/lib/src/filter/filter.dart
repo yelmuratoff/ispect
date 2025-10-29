@@ -11,9 +11,9 @@ abstract class Filter<T> {
   bool apply(T item);
 }
 
-/// A filter that checks whether an `ISpectifyData` item matches
+/// A filter that checks whether an `ISpectLogData` item matches
 /// any of the specified titles.
-class TitleFilter implements Filter<ISpectifyData> {
+class TitleFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of titles.
   ///
   /// Converts the list to a Set for O(1) lookups.
@@ -26,15 +26,15 @@ class TitleFilter implements Filter<ISpectifyData> {
   final Set<String> titles;
 
   @override
-  bool apply(ISpectifyData item) {
+  bool apply(ISpectLogData item) {
     final title = item.title;
     return title != null && titles.contains(title);
   }
 }
 
-/// A filter that checks whether an `ISpectifyData` item matches
+/// A filter that checks whether an `ISpectLogData` item matches
 /// any of the specified runtime types.
-class TypeFilter implements Filter<ISpectifyData> {
+class TypeFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of types.
   ///
   /// Converts the list to a Set for O(1) lookups.
@@ -47,12 +47,12 @@ class TypeFilter implements Filter<ISpectifyData> {
   final Set<Type> types;
 
   @override
-  bool apply(ISpectifyData item) => types.contains(item.runtimeType);
+  bool apply(ISpectLogData item) => types.contains(item.runtimeType);
 }
 
 /// A filter that performs a case-insensitive search within
-/// the `message`, [textMessage], or [additionalData] fields of [ISpectifyData].
-class SearchFilter implements Filter<ISpectifyData> {
+/// the `message`, [textMessage], or [additionalData] fields of [ISpectLogData].
+class SearchFilter implements Filter<ISpectLogData> {
   /// Creates a search filter with a specified `query`.
   SearchFilter(this.query) : _lowerQuery = query.toLowerCase();
 
@@ -63,7 +63,7 @@ class SearchFilter implements Filter<ISpectifyData> {
   final String _lowerQuery;
 
   @override
-  bool apply(ISpectifyData item) {
+  bool apply(ISpectLogData item) {
     // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
@@ -139,7 +139,7 @@ class SearchFilter implements Filter<ISpectifyData> {
 ///
 /// It allows filtering based on `titles`, `types`, and a `searchQuery`.
 /// All filters are combined with a logical OR operation for search purposes.
-class ISpectFilter implements Filter<ISpectifyData> {
+class ISpectFilter implements Filter<ISpectLogData> {
   /// Creates an `ISpectFilter` that combines title, type, and search filters.
   ISpectFilter({
     List<String> titles = const [],
@@ -150,21 +150,21 @@ class ISpectFilter implements Filter<ISpectifyData> {
             titles.isEmpty && types.isEmpty && (searchQuery?.isEmpty ?? true);
 
   /// List of individual filters applied.
-  final List<Filter<ISpectifyData>> _filters;
+  final List<Filter<ISpectLogData>> _filters;
 
   /// Getter for filters to provide read-only access.
-  List<Filter<ISpectifyData>> get filters => List.unmodifiable(_filters);
+  List<Filter<ISpectLogData>> get filters => List.unmodifiable(_filters);
 
   /// Indicates whether any filter is active.
   final bool _isEmpty;
 
   /// Builds a list of filters based on provided parameters.
-  static List<Filter<ISpectifyData>> _buildFilters(
+  static List<Filter<ISpectLogData>> _buildFilters(
     List<String> titles,
     List<Type> types,
     String? searchQuery,
   ) {
-    final filters = <Filter<ISpectifyData>>[];
+    final filters = <Filter<ISpectLogData>>[];
 
     if (titles.isNotEmpty) filters.add(TitleFilter(titles));
     if (types.isNotEmpty) filters.add(TypeFilter(types));
@@ -176,7 +176,7 @@ class ISpectFilter implements Filter<ISpectifyData> {
   }
 
   @override
-  bool apply(ISpectifyData item) {
+  bool apply(ISpectLogData item) {
     // Skip filtering if no filters are active
     if (_isEmpty) return true;
 

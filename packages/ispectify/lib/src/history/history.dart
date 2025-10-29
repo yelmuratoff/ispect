@@ -7,26 +7,26 @@ export 'file_log/file_log_history.dart';
 /// This defines a common interface for managing logged data.
 abstract interface class ILogHistory {
   /// A list of stored log entries.
-  List<ISpectifyData> get history;
+  List<ISpectLogData> get history;
 
   /// Clears the log history.
   void clear();
 
   /// Adds a new log entry to the history.
-  void add(ISpectifyData data);
+  void add(ISpectLogData data);
 }
 
 /// The default implementation of `ILogHistory` for managing log history.
 ///
 /// This class stores log entries in-memory and follows the configuration
 /// defined in `ISpectLoggerOptions`.
-class DefaultISpectifyHistory implements ILogHistory {
+class DefaultISpectLoggerHistory implements ILogHistory {
   /// Creates a log history manager with the given `settings`.
   ///
   /// Optionally, an initial `history` list can be provided.
-  DefaultISpectifyHistory(
+  DefaultISpectLoggerHistory(
     this.settings, {
-    List<ISpectifyData>? history,
+    List<ISpectLogData>? history,
   }) {
     if (history != null) {
       _history.addAll(history);
@@ -37,10 +37,10 @@ class DefaultISpectifyHistory implements ILogHistory {
   final ISpectLoggerOptions settings;
 
   /// Internal list to store log history.
-  final List<ISpectifyData> _history = [];
+  final List<ISpectLogData> _history = [];
 
   @override
-  List<ISpectifyData> get history => List.unmodifiable(_history);
+  List<ISpectLogData> get history => List.unmodifiable(_history);
 
   @override
   void clear() {
@@ -48,7 +48,7 @@ class DefaultISpectifyHistory implements ILogHistory {
   }
 
   @override
-  void add(ISpectifyData data) {
+  void add(ISpectLogData data) {
     if (!settings.useHistory || !settings.enabled) return;
 
     // If maxHistoryItems is 0 or negative, disable history
@@ -64,7 +64,7 @@ class DefaultISpectifyHistory implements ILogHistory {
   /// Adds data to history bypassing the useHistory check.
   /// This method is intended for testing purposes only.
   @visibleForTesting
-  void addForTesting(ISpectifyData data) {
+  void addForTesting(ISpectLogData data) {
     // If maxHistoryItems is 0 or negative, disable history
     if (settings.maxHistoryItems <= 0) return;
 

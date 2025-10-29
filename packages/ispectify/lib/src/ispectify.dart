@@ -26,7 +26,7 @@ import 'package:ispectify/src/factory/log_factory.dart';
 /// });
 /// ```
 class ISpectLogger {
-  /// Creates an instance of `ISpectify` with optional components.
+  /// Creates an instance of `ISpectLogger` with optional components.
   ///
   /// All parameters are optional and will be initialized with defaults if not provided.
   ///
@@ -53,7 +53,7 @@ class ISpectLogger {
   /// with provided or default components.
   void _init(
     ISpectFilter? filter,
-    ISpectLoggerOptions? settings,
+    ISpectLoggerOptions? options,
     ISpectBaseLogger? logger,
     ISpectObserver? observer,
     ISpectErrorHandler? errorHandler,
@@ -62,10 +62,10 @@ class ISpectLogger {
     _filter = filter;
     // ignore: deprecated_member_use_from_same_package
     _observer = observer;
-    _options = settings ?? ISpectLoggerOptions();
+    _options = options ?? ISpectLoggerOptions();
     _logger = logger ?? ISpectBaseLogger();
     _errorHandler = errorHandler ?? ISpectErrorHandler(_options);
-    _history = history ?? DefaultISpectifyHistory(_options);
+    _history = history ?? DefaultISpectLoggerHistory(_options);
   }
 
   late ISpectLoggerOptions _options;
@@ -182,8 +182,8 @@ class ISpectLogger {
     } else {
       // Preserve any injected custom history implementation.
       // If current history is the default in-memory implementation, rebuild it to reflect new options.
-      if (_history is DefaultISpectifyHistory) {
-        _history = DefaultISpectifyHistory(
+      if (_history is DefaultISpectLoggerHistory) {
+        _history = DefaultISpectLoggerHistory(
           _options,
           history: _history.history,
         );
@@ -194,17 +194,17 @@ class ISpectLogger {
 
   /// Stream controller for broadcasting log events.
   final _iSpectifyStreamController =
-      StreamController<ISpectifyData>.broadcast();
+      StreamController<ISpectLogData>.broadcast();
 
   /// Stream of log data that can be subscribed to for real-time monitoring.
   ///
   /// This stream broadcasts all log events that pass through the filter.
   /// Multiple listeners can subscribe to this stream.
-  Stream<ISpectifyData> get stream => _iSpectifyStreamController
+  Stream<ISpectLogData> get stream => _iSpectifyStreamController
       .stream; // Removed redundant .asBroadcastStream()
 
   /// List of all log entries stored in history.
-  List<ISpectifyData> get history => _history.history;
+  List<ISpectLogData> get history => _history.history;
 
   ILogHistory get logHistory => _history;
 
@@ -229,7 +229,7 @@ class ISpectLogger {
   /// Checks if a log entry is approved by the filter.
   ///
   /// Returns true if there is no filter or if the filter approves the log.
-  bool _isApprovedByFilter(ISpectifyData data) => _filter?.apply(data) ?? true;
+  bool _isApprovedByFilter(ISpectLogData data) => _filter?.apply(data) ?? true;
 
   // ======= LOGGING METHODS =======
 
@@ -268,7 +268,7 @@ class ISpectLogger {
   void log(
     Object? message, {
     LogLevel? logLevel,
-    ISpectifyLogType? type,
+    ISpectLogType? type,
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
@@ -286,12 +286,12 @@ class ISpectLogger {
     );
   }
 
-  /// Logs a custom `ISpectifyData` instance directly.
+  /// Logs a custom `ISpectLogData` instance directly.
   ///
   /// This allows for creating fully customized log entries.
   ///
   /// - `log`: The custom log data to process.
-  void logCustom(ISpectifyData log) {
+  void logCustom(ISpectLogData log) {
     _processLog(log);
   }
 
@@ -458,18 +458,18 @@ class ISpectLogger {
 
   /// Internal method to handle basic log creation.
   ///
-  /// This method creates a standard `ISpectifyData` instance and passes it
+  /// This method creates a standard `ISpectLogData` instance and passes it
   /// to `_handleLogData` for processing.
   void _handleLog({
     Object? message,
     Object? exception,
     StackTrace? stackTrace,
-    ISpectifyLogType? type,
+    ISpectLogType? type,
     LogLevel? logLevel,
     AnsiPen? pen,
   }) {
-    final logType = type ?? ISpectifyLogType.fromLogLevel(logLevel);
-    final data = ISpectifyData(
+    final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
+    final data = ISpectLogData(
       message?.toString() ?? '',
       key: logType.key,
       title: _options.titleByKey(logType.key),
@@ -482,7 +482,7 @@ class ISpectLogger {
     _processLog(data);
   }
 
-  /// Processes a log entry based on the provided `ISpectifyData`.
+  /// Processes a log entry based on the provided `ISpectLogData`.
   ///
   /// This method performs the following steps:
   /// 1. Checks if logging is enabled via the `_options.enabled` flag.
@@ -495,10 +495,10 @@ class ISpectLogger {
   ///    to the console using `_logger.log` with the appropriate log level and pen.
   ///
   /// Parameters:
-  /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
+  /// - `data`: The log entry to process, encapsulated in an `ISpectLogData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
   void _processLog(
-    ISpectifyData data, {
+    ISpectLogData data, {
     bool skipObserverNotification = false,
   }) {
     if (!_options.enabled) return;
@@ -530,7 +530,7 @@ class ISpectLogger {
   ///
   /// Currently, this only adds the log to history, but could be extended
   /// to handle other output destinations.
-  void _handleForOutputs(ISpectifyData data) {
+  void _handleForOutputs(ISpectLogData data) {
     _history.add(data);
   }
 }
