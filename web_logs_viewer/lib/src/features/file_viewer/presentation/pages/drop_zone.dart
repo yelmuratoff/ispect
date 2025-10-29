@@ -108,8 +108,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           _updateContent();
         });
       }
-    } catch (e) {
-      ISpect.logger.error('Error in _onPerformDrop: $e');
+    } catch (e, st) {
+      ISpect.logger.handle(
+        message: 'Error in _onPerformDrop',
+        exception: e,
+        stackTrace: st,
+      );
     }
   }
 
@@ -231,8 +235,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         if (kIsWeb && file.bytes != null) {
           try {
             content = utf8.decode(file.bytes!);
-          } catch (e) {
-            ISpect.logger.error('Error decoding file bytes: $e');
+          } catch (e, st) {
+            ISpect.logger.handle(
+              message: 'Error decoding file bytes',
+              exception: e,
+              stackTrace: st,
+            );
             _showSnackBar('Error reading file: ${file.name}', Colors.red);
             continue;
           }
@@ -286,8 +294,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           _showSnackBar('Loaded file: ${file.name}', Colors.green);
         }
       }
-    } catch (e) {
-      ISpect.logger.error('Error in file picker: $e');
+    } catch (e, st) {
+      ISpect.logger.handle(
+        message: 'Error in file picker',
+        exception: e,
+        stackTrace: st,
+      );
       if (mounted) {
         _showSnackBar('Error opening file picker: $e', Colors.red);
       }

@@ -175,8 +175,7 @@ class DemoScreenState extends State<DemoScreen> {
             } catch (e) {
               // This error will be caught by the interceptor.
             }
-            // ignore: avoid_print
-            print('Metrics:\n${client.metrics}');
+            ISpect.logger.info('Metrics:\n${client.metrics}');
             client.close();
           });
         },
