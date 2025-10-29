@@ -238,12 +238,17 @@ class JsonPerformanceManager implements UniversalPerformanceManager {
     for (final entry in metrics.entries) {
       final threshold = _alertThresholds[entry.key];
       if (threshold != null && entry.value > threshold) {
-        final alert = 'ALERT: ${entry.key} = ${entry.value.toStringAsFixed(2)} '
-            'exceeds threshold ${threshold.toStringAsFixed(2)}';
-        _alerts.add(alert);
+        final alert = StringBuffer('ALERT: ')
+          ..write(entry.key)
+          ..write(' = ')
+          ..write(entry.value.toStringAsFixed(2))
+          ..write(' exceeds threshold ')
+          ..write(threshold.toStringAsFixed(2));
+        final alertMessage = alert.toString();
+        _alerts.add(alertMessage);
 
         if (kDebugMode) {
-          debugPrint('[JsonPerformanceManager] $alert');
+          debugPrint('[JsonPerformanceManager] $alertMessage');
         }
       }
     }
@@ -265,14 +270,22 @@ class JsonPerformanceManager implements UniversalPerformanceManager {
     if (_enableMetrics && _metrics.isNotEmpty) {
       report.writeln('\n--- Metrics ---');
       for (final entry in _metrics.entries) {
-        report.writeln('${entry.key}: ${entry.value.toStringAsFixed(2)}');
+        report
+          ..write(entry.key)
+          ..write(': ')
+          ..write(entry.value.toStringAsFixed(2))
+          ..writeln();
       }
     }
 
     if (_enableTiming && _completedTimings.isNotEmpty) {
       report.writeln('\n--- Timings ---');
       for (final entry in _completedTimings.entries) {
-        report.writeln('${entry.key}: ${entry.value.inMilliseconds}ms');
+        report
+          ..write(entry.key)
+          ..write(': ')
+          ..write(entry.value.inMilliseconds)
+          ..writeln('ms');
       }
     }
 
@@ -280,7 +293,11 @@ class JsonPerformanceManager implements UniversalPerformanceManager {
       report.writeln('\n--- Memory Stats ---');
       for (final entry in _memoryStats.entries) {
         final sizeKb = (entry.value / 1024).toStringAsFixed(2);
-        report.writeln('${entry.key}: ${sizeKb}KB');
+        report
+          ..write(entry.key)
+          ..write(': ')
+          ..write(sizeKb)
+          ..writeln('KB');
       }
     }
 
@@ -294,7 +311,11 @@ class JsonPerformanceManager implements UniversalPerformanceManager {
     final poolStats = _objectPool.getPoolStatistics();
     report.writeln('\n--- Object Pool Stats ---');
     for (final entry in poolStats.entries) {
-      report.writeln('${entry.key}: ${entry.value} objects');
+      report
+        ..write(entry.key)
+        ..write(': ')
+        ..write(entry.value)
+        ..writeln(' objects');
     }
 
     report.writeln('==================================');

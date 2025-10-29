@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:ispect/src/common/utils/date_formatter.dart';
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:web/web.dart';
@@ -36,19 +37,9 @@ class WebLogsFile extends BaseLogsFile {
 
   /// Generates timestamped filename with proper sanitization
   String _generateFileNameWithTimestamp(String fileName, String fileType) {
-    final timestamp = _generateTimestamp();
+    final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = _sanitizeFileName(fileName);
     return '${safeFileName}_$timestamp.$fileType';
-  }
-
-  /// Creates timestamp string in YYYY-MM-DD_HH-mm-ss format
-  String _generateTimestamp() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-'
-        '${now.day.toString().padLeft(2, '0')}_'
-        '${now.hour.toString().padLeft(2, '0')}-'
-        '${now.minute.toString().padLeft(2, '0')}-'
-        '${now.second.toString().padLeft(2, '0')}';
   }
 
   /// Sanitizes filename for web compatibility
@@ -154,7 +145,7 @@ class WebLogsFile extends BaseLogsFile {
       return fileName;
     }
 
-    final timestamp = _generateTimestamp();
+    final timestamp = DateFormatter.nowAsFileTimestamp();
     return '${fileName}_$timestamp.$fileType';
   }
 

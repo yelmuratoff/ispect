@@ -59,12 +59,18 @@ class _ISpectifySettingsBottomSheetState
   @override
   void initState() {
     super.initState();
-    // ignore: avoid_empty_blocks
-    widget.iSpectify.addListener(() => setState(() {}));
+    widget.iSpectify.addListener(_handleUpdate);
+  }
+
+  void _handleUpdate() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    widget.iSpectify.removeListener(_handleUpdate);
     _scrollController.dispose();
     super.dispose();
   }
