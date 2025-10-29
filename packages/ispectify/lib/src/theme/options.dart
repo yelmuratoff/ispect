@@ -13,7 +13,6 @@ AnsiPen? _getDefaultPenByKey(String key) {
   }
 }
 
-
 /// Configuration options for ISpectify logging.
 ///
 /// This class allows customization of logging behavior, including
@@ -45,8 +44,10 @@ class ISpectifyOptions {
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,
-        _customTitles = customTitles != null ? Map.unmodifiable(customTitles) : null,
-        _customColors = customColors != null ? Map.unmodifiable(customColors) : null;
+        _customTitles =
+            customTitles != null ? Map.unmodifiable(customTitles) : null,
+        _customColors =
+            customColors != null ? Map.unmodifiable(customColors) : null;
 
   /// Whether log history is enabled.
   bool get useHistory => _useHistory && enabled;
@@ -103,7 +104,6 @@ class ISpectifyOptions {
     // 3. Use provided fallback or default
     return fallbackPen ?? _fallbackPen;
   }
-
 
   /// Creates a new `ISpectifyOptions` instance with modified properties.
   ///
