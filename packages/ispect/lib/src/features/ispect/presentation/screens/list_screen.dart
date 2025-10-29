@@ -59,7 +59,6 @@ class _LogsScreenState extends State<LogsV2Screen> {
     super.initState();
     _logsViewController = ISpectViewController(
       onShare: widget.onShare,
-      initialSettings: null, // Historical logs don't need initial settings
     );
     _logsViewController.toggleExpandedLogs();
     getLogs();

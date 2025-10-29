@@ -26,7 +26,6 @@ class ISpectViewController extends ChangeNotifier {
               enabled: true,
               useConsoleLogs: true,
               useHistory: true,
-              disabledLogTypes: {},
             );
 
   ISpectFilter _filter = ISpectFilter();
