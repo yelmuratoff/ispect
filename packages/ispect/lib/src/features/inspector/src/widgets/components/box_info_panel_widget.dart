@@ -143,7 +143,6 @@ class _InfoRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             child,
-            const SizedBox(height: 0),
             Text(
               subtitle,
               style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),

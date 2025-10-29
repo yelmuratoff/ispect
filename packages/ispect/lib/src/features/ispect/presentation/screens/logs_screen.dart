@@ -593,8 +593,8 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
   Widget build(BuildContext context) => AlertDialog(
         title: Text(context.ispectL10n.pasteContent),
         content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: MediaQuery.of(context).size.height * 0.6,
+          width: MediaQuery.sizeOf(context).width * 0.8,
+          height: MediaQuery.sizeOf(context).height * 0.6,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
