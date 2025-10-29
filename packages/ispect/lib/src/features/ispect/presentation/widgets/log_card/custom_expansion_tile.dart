@@ -973,11 +973,13 @@ class _ISpectExpansionTileState extends State<ISpectExpansionTile>
 }
 
 class _ExpansionTileDefaultsM2 extends ExpansionTileThemeData {
-  _ExpansionTileDefaultsM2(this.context);
+  _ExpansionTileDefaultsM2(this.context)
+      : _theme = Theme.of(context),
+        _colorScheme = Theme.of(context).colorScheme;
 
   final BuildContext context;
-  late final ThemeData _theme = Theme.of(context);
-  late final ColorScheme _colorScheme = _theme.colorScheme;
+  final ThemeData _theme;
+  final ColorScheme _colorScheme;
 
   @override
   Color? get textColor => _colorScheme.primary;
@@ -1001,11 +1003,11 @@ class _ExpansionTileDefaultsM2 extends ExpansionTileThemeData {
 
 // dart format off
 class _ExpansionTileDefaultsM3 extends ExpansionTileThemeData {
-  _ExpansionTileDefaultsM3(this.context);
+  _ExpansionTileDefaultsM3(this.context)
+      : _colors = Theme.of(context).colorScheme;
 
   final BuildContext context;
-  late final ThemeData _theme = Theme.of(context);
-  late final ColorScheme _colors = _theme.colorScheme;
+  final ColorScheme _colors;
 
   @override
   Color? get textColor => _colors.onSurface;

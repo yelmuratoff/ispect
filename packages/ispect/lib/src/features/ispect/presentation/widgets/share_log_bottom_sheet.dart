@@ -37,14 +37,6 @@ class ISpectShareLogBottomSheet extends StatefulWidget {
 }
 
 class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
         phone: () => DraggableScrollableSheet(
