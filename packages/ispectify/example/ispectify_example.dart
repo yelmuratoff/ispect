@@ -3,11 +3,11 @@ import 'package:ispectify/ispectify.dart';
 Future<void> main() async {
   final iSpectify = ISpectify(
     options: ISpectifyOptions(
-      colors: {
+      customColors: {
         ISpectifyLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),
       },
-      titles: {
+      customTitles: {
         ISpectifyLogType.info.key: 'i',
         CustomLog.logKey: 'Custom',
       },

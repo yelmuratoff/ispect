@@ -70,7 +70,7 @@ void main() {
 
       final log = await future;
       expect(log.body, isNotNull);
-      expect(log.body, contains('error'));
+      expect(log.body!['response'], contains('error'));
       expect(
         log.textMessage.contains('Invalid token'),
         isTrue,
@@ -141,9 +141,11 @@ void main() {
 
       final log = await future;
       expect(log.body, isNotNull);
-      expect(log.body, contains('data'));
-      final data = log.body!['data'];
-      expect(data, isA<List<dynamic>>());
+      final responseMap = log.body!['response'] as Map<String, dynamic>;
+      expect(responseMap['data'], isA<List<dynamic>>());
+      final data = responseMap['data'] as List<dynamic>;
+      expect(data, isNotEmpty);
+      expect(data.first, contains('field'));
       expect(
         log.textMessage.contains('email'),
         isTrue,
@@ -743,8 +745,8 @@ void main() {
       expect(errorLog.statusCode, 401);
       expect(errorLog.body, isNotNull);
 
-      final body = errorLog.body!;
-      expect(body, contains('error'));
+      final body = errorLog.body!['response'] as Map<String, dynamic>;
+      expect(body, isNotNull);
       expect(body['error'], 'Invalid credentials');
 
       // Sensitive fields should be redacted

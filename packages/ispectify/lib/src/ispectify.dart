@@ -96,7 +96,8 @@ class ISpectify {
   ///
   /// Returns the first observer if any exist, otherwise null.
   @Deprecated('Use addObserver() and removeObserver() for better control')
-  ISpectifyObserver? get _observer => _observers.isEmpty ? null : _observers.first;
+  ISpectifyObserver? get _observer =>
+      _observers.isEmpty ? null : _observers.first;
 
   late ILogHistory _history;
 

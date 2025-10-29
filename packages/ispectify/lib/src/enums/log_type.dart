@@ -138,10 +138,47 @@ extension ISpectifyLogTypeExt on ISpectifyLogType {
         ISpectifyLogType.httpError => LogLevel.error,
         ISpectifyLogType.riverpodFail => LogLevel.error,
         ISpectifyLogType.dbError => LogLevel.error,
+        ISpectifyLogType.blocError => LogLevel.error,
         ISpectifyLogType.info => LogLevel.info,
         ISpectifyLogType.debug => LogLevel.debug,
         ISpectifyLogType.verbose => LogLevel.verbose,
         ISpectifyLogType.warning => LogLevel.warning,
         _ => LogLevel.info,
+      };
+
+  /// Returns the default ANSI pen (color) for this log type.
+  ///
+  /// These are the built-in colors that will be used if no custom
+  /// override is provided via `ISpectifyOptions`.
+  AnsiPen get defaultPen => switch (this) {
+        ISpectifyLogType.critical => AnsiPen()..red(),
+        ISpectifyLogType.error => AnsiPen()..red(),
+        ISpectifyLogType.exception => AnsiPen()..red(),
+        ISpectifyLogType.httpError => AnsiPen()..red(),
+        ISpectifyLogType.blocError => AnsiPen()..red(),
+        ISpectifyLogType.riverpodFail => AnsiPen()..red(),
+        ISpectifyLogType.dbError => AnsiPen()..red(),
+        ISpectifyLogType.warning => AnsiPen()..xterm(172),
+        ISpectifyLogType.verbose => AnsiPen()..xterm(08),
+        ISpectifyLogType.info => AnsiPen()..blue(),
+        ISpectifyLogType.debug => AnsiPen()..gray(),
+        ISpectifyLogType.httpRequest => AnsiPen()..xterm(207),
+        ISpectifyLogType.httpResponse => AnsiPen()..xterm(35),
+        ISpectifyLogType.blocEvent => AnsiPen()..xterm(51),
+        ISpectifyLogType.blocTransition => AnsiPen()..xterm(49),
+        ISpectifyLogType.blocCreate => AnsiPen()..xterm(35),
+        ISpectifyLogType.blocClose => AnsiPen()..xterm(198),
+        ISpectifyLogType.blocState => AnsiPen()..xterm(38),
+        ISpectifyLogType.blocDone => AnsiPen()..green(),
+        ISpectifyLogType.riverpodAdd => AnsiPen()..xterm(51),
+        ISpectifyLogType.riverpodUpdate => AnsiPen()..xterm(49),
+        ISpectifyLogType.riverpodDispose => AnsiPen()..xterm(198),
+        ISpectifyLogType.route => AnsiPen()..xterm(135),
+        ISpectifyLogType.good => AnsiPen()..green(),
+        ISpectifyLogType.analytics => AnsiPen()..yellow(),
+        ISpectifyLogType.provider => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
+        ISpectifyLogType.print => AnsiPen()..blue(),
+        ISpectifyLogType.dbQuery => AnsiPen()..blue(),
+        ISpectifyLogType.dbResult => AnsiPen()..green(),
       };
 }

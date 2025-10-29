@@ -35,7 +35,7 @@ class NetworkRequestLog extends ISpectifyData {
         super(
           key: logKey ?? ISpectifyLogType.httpRequest.key,
           title: logKey ?? ISpectifyLogType.httpRequest.key,
-          pen: pen ?? settings.requestPen ?? (AnsiPen()..xterm(207)),
+          pen: pen ?? settings.requestPen ?? ISpectifyLogType.httpRequest.defaultPen,
           additionalData: metadata ??
               _mapFromEntries(
                 [
@@ -114,7 +114,7 @@ class NetworkResponseLog extends ISpectifyData {
         super(
           key: logKey ?? ISpectifyLogType.httpResponse.key,
           title: logKey ?? ISpectifyLogType.httpResponse.key,
-          pen: pen ?? settings.responsePen ?? (AnsiPen()..xterm(35)),
+          pen: pen ?? settings.responsePen ?? ISpectifyLogType.httpResponse.defaultPen,
           additionalData: metadata ??
               _mapFromEntries(
                 [
@@ -223,7 +223,7 @@ class NetworkErrorLog extends ISpectifyData {
         super(
           key: logKey ?? ISpectifyLogType.httpError.key,
           title: logKey ?? ISpectifyLogType.httpError.key,
-          pen: pen ?? settings.errorPen ?? (AnsiPen()..red()),
+          pen: pen ?? settings.errorPen ?? ISpectifyLogType.httpError.defaultPen,
           logLevel: LogLevel.error,
           exception: capturedException,
           stackTrace: capturedStackTrace,
