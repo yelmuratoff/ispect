@@ -30,6 +30,9 @@ class MyApp extends StatelessWidget {
         options: ISpectOptions(
           observer: observer,
           locale: const Locale('en'),
+          onSettingsChanged: (settings) {
+            ISpect.logger.print('ISpect settings changed: $settings');
+          },
           onLoadLogContent: (context) async {
             // Here you can load log content.
             // For example, from a file using file_picker.

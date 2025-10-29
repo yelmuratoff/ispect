@@ -116,6 +116,7 @@ final class ISpectConstants {
     'exception': Color.fromARGB(255, 211, 47, 47),
     'good': Color.fromARGB(255, 56, 142, 60),
     'print': Color.fromARGB(255, 25, 118, 210),
+    'provider': Color.fromARGB(255, 25, 118, 210),
     'analytics': Color.fromARGB(255, 182, 177, 25),
 
     /// Http section
@@ -161,6 +162,7 @@ final class ISpectConstants {
     'exception': Color.fromARGB(255, 239, 83, 80),
     'good': Color.fromARGB(255, 120, 230, 129),
     'print': Color.fromARGB(255, 66, 165, 245),
+    'provider': Color.fromARGB(255, 66, 165, 245),
     'analytics': Color.fromARGB(255, 255, 255, 0),
 
     /// Http section
@@ -236,6 +238,10 @@ final class ISpectConstants {
         description: l10n.printLogDesc,
       ),
       LogDescription(
+        key: 'provider',
+        description: l10n.providerLogDesc,
+      ),
+      LogDescription(
         key: 'analytics',
         description: l10n.analyticsLogDesc,
       ),
@@ -274,6 +280,10 @@ final class ISpectConstants {
       LogDescription(
         key: 'bloc-state',
         description: l10n.blocStateLogDesc,
+      ),
+      LogDescription(
+        key: 'bloc-error',
+        description: l10n.blocErrorLogDesc,
       ),
       LogDescription(
         key: 'riverpod-add',

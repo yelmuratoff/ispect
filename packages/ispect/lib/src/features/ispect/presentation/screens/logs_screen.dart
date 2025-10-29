@@ -12,7 +12,7 @@ import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/info_bottom_sheet.dart';
+
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
@@ -88,7 +88,6 @@ class _LogsScreenState extends State<LogsScreen> {
                   appBarTitle: widget.appBarTitle,
                   itemsBuilder: widget.itemsBuilder,
                   onSettingsTap: () => _openLogsSettings(context),
-                  onInfoTap: () => _showInfoBottomSheet(context),
                 ),
               ),
             ),
@@ -114,11 +113,6 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
       iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
-
-  Future<void> _showInfoBottomSheet(BuildContext context) async {
-    if (!mounted) return;
-    await const ISpectLogsInfoBottomSheet().show(context);
-  }
 
   void _openLogsSettings(BuildContext context) {
     final logger = ValueNotifier(ISpect.logger);
@@ -403,7 +397,6 @@ class _MainLogsView extends StatelessWidget {
     required this.logsScrollController,
     required this.logsViewController,
     required this.onSettingsTap,
-    required this.onInfoTap,
     this.appBarTitle,
     this.itemsBuilder,
   });
@@ -415,7 +408,6 @@ class _MainLogsView extends StatelessWidget {
   final ScrollController logsScrollController;
   final ISpectViewController logsViewController;
   final VoidCallback onSettingsTap;
-  final VoidCallback onInfoTap;
   final String? appBarTitle;
   final ISpectLogDataBuilder? itemsBuilder;
 
@@ -438,7 +430,6 @@ class _MainLogsView extends StatelessWidget {
           uniqTitles: titles.unique,
           controller: logsViewController,
           onSettingsTap: onSettingsTap,
-          onInfoTap: onInfoTap,
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
           backgroundColor: iSpectTheme.theme.backgroundColor(context),

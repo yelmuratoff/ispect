@@ -72,6 +72,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'コマンドの処理が完了しました';
 
   @override
+  String get blocErrorLogDesc => 'コマンド処理中にエラーが発生しました';
+
+  @override
   String get buildVersion => 'ビルドバージョン';
 
   @override
@@ -475,6 +478,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'プロバイダーログ数: $text';
   }
+
+  @override
+  String get providerLogDesc => '状態プロバイダーのアクティビティが記録されました';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

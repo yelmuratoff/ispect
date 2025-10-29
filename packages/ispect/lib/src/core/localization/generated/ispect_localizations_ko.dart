@@ -72,6 +72,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => '명령 처리가 완료되었습니다';
 
   @override
+  String get blocErrorLogDesc => '명령 처리 중 오류가 발생했습니다';
+
+  @override
   String get buildVersion => '빌드 버전';
 
   @override
@@ -475,6 +478,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return '프로바이더 로그 수: $text';
   }
+
+  @override
+  String get providerLogDesc => '상태 프로바이더 활동이 기록되었습니다';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

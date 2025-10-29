@@ -16,7 +16,6 @@ class ISpectAppBar extends StatefulWidget {
     required this.onToggleTitle,
     required this.focusNode,
     this.onSettingsTap,
-    this.onInfoTap,
     this.backgroundColor,
     super.key,
   });
@@ -30,7 +29,6 @@ class ISpectAppBar extends StatefulWidget {
   final List<String?> uniqTitles;
 
   final VoidCallback? onSettingsTap;
-  final VoidCallback? onInfoTap;
 
   final FocusNode focusNode;
 
@@ -73,15 +71,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           backgroundColor: widget.backgroundColor ??
               context.ispectTheme.scaffoldBackgroundColor,
           actions: [
-            if (widget.onInfoTap != null)
-              UnconstrainedBox(
-                child: IconButton(
-                  onPressed: widget.onInfoTap,
-                  icon: const Icon(
-                    Icons.info_outline_rounded,
-                  ),
-                ),
-              ),
             if (widget.onSettingsTap != null)
               UnconstrainedBox(
                 child: IconButton(

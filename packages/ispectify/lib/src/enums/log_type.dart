@@ -79,6 +79,9 @@ enum ISpectLogType {
   dbResult('db-result'),
   dbError('db-error'),
 
+  wsSent('ws-sent'),
+  wsReceived('ws-received'),
+
   route('route'),
   good('good'),
   analytics('analytics'),
@@ -103,6 +106,14 @@ enum ISpectLogType {
     if (logLevel == null) return ISpectLogType.debug;
 
     return ISpectLogType.values.firstWhere((e) => e.level == logLevel);
+  }
+
+  static ISpectLogType? fromKey(String key) {
+    try {
+      return ISpectLogType.values.firstWhere((e) => e.key == key);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Set<String> get keys => ISpectLogType.values.map((e) => e.key).toSet();
@@ -179,5 +190,7 @@ extension ISpectLogTypeExt on ISpectLogType {
         ISpectLogType.print => AnsiPen()..blue(),
         ISpectLogType.dbQuery => AnsiPen()..blue(),
         ISpectLogType.dbResult => AnsiPen()..green(),
+        ISpectLogType.wsSent => AnsiPen()..xterm(207),
+        ISpectLogType.wsReceived => AnsiPen()..xterm(35),
       };
 }

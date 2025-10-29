@@ -75,6 +75,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'Обработка команды завершена';
 
   @override
+  String get blocErrorLogDesc => 'Произошла ошибка при обработке команды';
+
+  @override
   String get buildVersion => 'Версия сборки';
 
   @override
@@ -482,6 +485,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'Количество записей провайдеров: $text';
   }
+
+  @override
+  String get providerLogDesc => 'Активность провайдера состояния залогирована';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';
