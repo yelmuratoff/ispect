@@ -6,7 +6,6 @@
 - Fluent API builders for interceptor settings configuration
 - Support for multiple observers with improved notification mechanism
 - Utility classes for payload sanitization and serialization
-- Comprehensive AI Coding Agent guide
 
 ### Changed
 - Unified logging interface across HTTP and WebSocket interceptors
