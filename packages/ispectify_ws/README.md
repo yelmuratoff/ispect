@@ -105,10 +105,6 @@ final client = WebSocketClient(
 interceptor.setClient(client);
 ```
 
-`ISpectWSInterceptorSettings` implements `NetworkLogPrintOptions`, the same contract that
-drives the HTTP/Dio interceptors. Toggling payload visibility or customizing ANSI pens now
-behaves identically across transport packages.
-
 ### Sensitive Data Redaction
 
 Redaction is enabled by default. Disable only with synthetic / non-sensitive data.
@@ -163,7 +159,7 @@ Add ispectify_ws to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.4.7
+  ispectify_ws: ^4.4.8-dev01
 ```
 
 ## Security & Production Guidelines

@@ -74,7 +74,6 @@ ISpectify is the logging foundation for the ISpect ecosystem. It builds on the T
 - Performance Monitoring: Track application performance metrics
 - Export Functionality: Export logs for analysis and debugging
 - Easy Integration: Simple setup with minimal configuration
-- Shared Network Primitives: Reusable request/response/error builders for HTTP, Dio, and WS
 
 ## Logging Configuration
 
@@ -121,63 +120,6 @@ final logger = ISpectify(
   ),
 );
 ```
-
-### Shared Network Logging Primitives
-
-Network integrations (`ispectify_dio`, `ispectify_http`, `ispectify_ws`) build their
-transport logs using the same core models:
-
-- `NetworkRequestLog`, `NetworkResponseLog`, and `NetworkErrorLog` encapsulate the
-  console formatting, metadata, and truncation behavior for network traffic.
-- `NetworkLogPrintOptions` defines which payload sections to render and which ANSI pens
-  colorize the log output. Each interceptor exposes a settings class implementing this
-  contract, so toggling headers or bodies works identically across packages.
-
-When authoring your own transport adapter, implement `NetworkLogPrintOptions` and pass the
-shared models to `ISpectify.logCustom`:
-
-```dart
-class MyClientSettings implements NetworkLogPrintOptions {
-  const MyClientSettings();
-
-  @override
-  bool get printRequestData => true;
-  @override
-  bool get printRequestHeaders => false;
-  @override
-  bool get printResponseData => true;
-  @override
-  bool get printResponseHeaders => false;
-  @override
-  bool get printResponseMessage => true;
-  @override
-  bool get printErrorData => true;
-  @override
-  bool get printErrorHeaders => false;
-  @override
-  bool get printErrorMessage => true;
-  @override
-  AnsiPen? get requestPen => null;
-  @override
-  AnsiPen? get responsePen => null;
-  @override
-  AnsiPen? get errorPen => null;
-}
-
-final log = NetworkRequestLog(
-  'https://api.example.com/users',
-  method: 'GET',
-  url: 'https://api.example.com/users',
-  path: '/users',
-  settings: const MyClientSettings(),
-  body: {'query': {'active': true}},
-);
-
-logger.logCustom(log);
-```
-
-This keeps network logging consistent across protocols and makes it trivial for teams to
-extend ISpectify with bespoke clients (GraphQL, gRPC, MQTT, etc.).
 
 ### Memory Control
 Keep history bounded; large payloads are truncated before print: 
@@ -344,7 +286,7 @@ Add ispectify to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify: ^4.4.7
+  ispectify: ^4.4.8-dev01
 ```
 
 ## Security & Production Guidelines

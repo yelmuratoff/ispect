@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.4.8-dev01
+
+### Added
+- Fluent API builders for interceptor settings configuration
+- Support for multiple observers with improved notification mechanism
+- Utility classes for payload sanitization and serialization
+- Comprehensive AI Coding Agent guide
+
+### Changed
+- Unified logging interface across HTTP and WebSocket interceptors
+- Improved filter update performance by ~70% with debouncing
+- Optimized widget rendering and list creation performance
+- Enhanced error handling and logging across all modules
+- Refactored observer handling mechanism
+- Updated UI components for better consistency and theming
+- Improved code organization and reduced duplication
+
+### Fixed
+- Improved type safety in HTTP and Dio interceptors
+- Enhanced null-safety in JSON selector
+- Better memory safety with unmodifiable cache views
+- Case-insensitive key comparison in redact method
+
 ## 4.4.7
 
 ### Added
