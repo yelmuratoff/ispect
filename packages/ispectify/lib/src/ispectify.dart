@@ -5,7 +5,7 @@ import 'package:ispectify/src/factory/log_factory.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
-/// `ISpectify` provides a comprehensive logging system with features such as:
+/// `ISpectLogger` provides a comprehensive logging system with features such as:
 /// - Multiple log levels (debug, info, warning, error, critical, verbose)
 /// - Custom log filtering
 /// - Error and exception handling
@@ -16,7 +16,7 @@ import 'package:ispectify/src/factory/log_factory.dart';
 /// ### Example usage:
 ///
 /// ```dart
-/// final inspector = ISpectify();
+/// final inspector = ISpectLogger();
 /// inspector.info('Application started');
 /// inspector.error('Failed to connect', NetworkException(), StackTrace.current);
 ///
@@ -25,7 +25,7 @@ import 'package:ispectify/src/factory/log_factory.dart';
 ///   // Handle log data
 /// });
 /// ```
-class ISpectify {
+class ISpectLogger {
   /// Creates an instance of `ISpectify` with optional components.
   ///
   /// All parameters are optional and will be initialized with defaults if not provided.
@@ -36,12 +36,12 @@ class ISpectify {
   /// - `filter`: For filtering which logs should be processed.
   /// - `errorHandler`: Custom error handling logic.
   /// - `history`: Custom implementation for storing log history.
-  ISpectify({
-    ISpectifyLogger? logger,
-    ISpectifyObserver? observer,
-    ISpectifyOptions? options,
-    ISpectifyFilter? filter,
-    ISpectifyErrorHandler? errorHandler,
+  ISpectLogger({
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectLoggerOptions? options,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
     _init(filter, options, logger, observer, errorHandler, history);
@@ -52,40 +52,40 @@ class ISpectify {
   /// This method is called from the constructor to set up the instance
   /// with provided or default components.
   void _init(
-    ISpectifyFilter? filter,
-    ISpectifyOptions? settings,
-    ISpectifyLogger? logger,
-    ISpectifyObserver? observer,
-    ISpectifyErrorHandler? errorHandler,
+    ISpectFilter? filter,
+    ISpectLoggerOptions? settings,
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   ) {
     _filter = filter;
     // ignore: deprecated_member_use_from_same_package
     _observer = observer;
-    _options = settings ?? ISpectifyOptions();
-    _logger = logger ?? ISpectifyLogger();
-    _errorHandler = errorHandler ?? ISpectifyErrorHandler(_options);
+    _options = settings ?? ISpectLoggerOptions();
+    _logger = logger ?? ISpectBaseLogger();
+    _errorHandler = errorHandler ?? ISpectErrorHandler(_options);
     _history = history ?? DefaultISpectifyHistory(_options);
   }
 
-  late ISpectifyOptions _options;
+  late ISpectLoggerOptions _options;
 
   /// Current configuration options for this inspector instance.
-  ISpectifyOptions get options => _options;
+  ISpectLoggerOptions get options => _options;
 
-  late ISpectifyLogger _logger;
-  late ISpectifyErrorHandler _errorHandler;
-  late ISpectifyFilter? _filter;
+  late ISpectBaseLogger _logger;
+  late ISpectErrorHandler _errorHandler;
+  late ISpectFilter? _filter;
 
   /// List of observers that will be notified of log events.
-  final List<ISpectifyObserver> _observers = [];
+  final List<ISpectObserver> _observers = [];
 
   /// Backward compatibility: Setter for single observer.
   ///
   /// Replaces all existing observers with the provided observer.
   /// Use [addObserver] for adding multiple observers.
   @Deprecated('Use addObserver() and removeObserver() for better control')
-  set _observer(ISpectifyObserver? observer) {
+  set _observer(ISpectObserver? observer) {
     _observers.clear();
     if (observer != null) {
       _observers.add(observer);
@@ -96,8 +96,7 @@ class ISpectify {
   ///
   /// Returns the first observer if any exist, otherwise null.
   @Deprecated('Use addObserver() and removeObserver() for better control')
-  ISpectifyObserver? get _observer =>
-      _observers.isEmpty ? null : _observers.first;
+  ISpectObserver? get _observer => _observers.isEmpty ? null : _observers.first;
 
   late ILogHistory _history;
 
@@ -108,7 +107,7 @@ class ISpectify {
   /// Multiple observers can be registered, and all will be notified.
   ///
   /// - `observer`: The observer to add.
-  void addObserver(ISpectifyObserver observer) {
+  void addObserver(ISpectObserver observer) {
     if (!_observers.contains(observer)) {
       _observers.add(observer);
     }
@@ -117,7 +116,7 @@ class ISpectify {
   /// Removes an observer from the list of registered observers.
   ///
   /// - `observer`: The observer to remove.
-  void removeObserver(ISpectifyObserver observer) {
+  void removeObserver(ISpectObserver observer) {
     _observers.remove(observer);
   }
 
@@ -130,7 +129,7 @@ class ISpectify {
   ///
   /// Wraps each observer call in a try-catch to prevent one failing
   /// observer from affecting others.
-  void _notifyObservers(void Function(ISpectifyObserver) notify) {
+  void _notifyObservers(void Function(ISpectObserver) notify) {
     for (final observer in _observers) {
       try {
         notify(observer);
@@ -156,11 +155,11 @@ class ISpectify {
   /// - `errorHandler`: New error handler implementation.
   /// - `history`: New history storage implementation.
   void configure({
-    ISpectifyLogger? logger,
-    ISpectifyOptions? options,
-    ISpectifyObserver? observer,
-    ISpectifyFilter? filter,
-    ISpectifyErrorHandler? errorHandler,
+    ISpectBaseLogger? logger,
+    ISpectLoggerOptions? options,
+    ISpectObserver? observer,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
     _filter = filter ?? _filter; // Fixed null-aware assignment
@@ -173,8 +172,8 @@ class ISpectify {
     } else {
       // Preserve any injected custom error handler implementation.
       // If current handler is the default implementation, rebuild it to reflect new options.
-      if (_errorHandler.runtimeType == ISpectifyErrorHandler) {
-        _errorHandler = ISpectifyErrorHandler(_options);
+      if (_errorHandler.runtimeType == ISpectErrorHandler) {
+        _errorHandler = ISpectErrorHandler(_options);
       }
       // Otherwise keep existing custom error handler as-is.
     }

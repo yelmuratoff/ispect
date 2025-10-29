@@ -18,7 +18,7 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
   });
 
   /// ISpectify implementation
-  final ValueNotifier<ISpectify> iSpectify;
+  final ValueNotifier<ISpectLogger> iSpectify;
 
   /// Options for `ISpect`
   final ISpectOptions options;

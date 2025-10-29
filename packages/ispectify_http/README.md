@@ -184,7 +184,7 @@ void main() {
 }
 
 void _initializeWithISpect() {
-  final ISpectify iSpectify = ISpectifyFlutter.init();
+  final ISpectify iSpectify = ISpectFlutter.init();
 
   ISpect.run(
     () => runApp(MyApp()),

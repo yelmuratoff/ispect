@@ -8,7 +8,7 @@ import 'package:ispectify/ispectify.dart';
 /// which is simpler and more performant than complex hash calculations.
 class FilterCache {
   List<ISpectifyData> _cachedData = [];
-  ISpectifyFilter? _lastFilter;
+  ISpectFilter? _lastFilter;
   int _cacheGeneration = -1;
 
   /// Gets filtered data, using cache if valid.
@@ -24,7 +24,7 @@ class FilterCache {
   /// accidental modifications that would bypass the cache.
   List<ISpectifyData> getFiltered(
     List<ISpectifyData> data,
-    ISpectifyFilter filter,
+    ISpectFilter filter,
     int generation,
   ) {
     if (_isCacheValid(filter, generation)) {
@@ -38,7 +38,7 @@ class FilterCache {
   }
 
   /// Checks if the cache is valid for the given filter and generation.
-  bool _isCacheValid(ISpectifyFilter filter, int generation) =>
+  bool _isCacheValid(ISpectFilter filter, int generation) =>
       _cacheGeneration == generation && _lastFilter == filter;
 
   /// Invalidates the cache, forcing a refresh on next access.

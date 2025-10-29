@@ -149,7 +149,7 @@ extension ISpectifyLogTypeExt on ISpectifyLogType {
   /// Returns the default ANSI pen (color) for this log type.
   ///
   /// These are the built-in colors that will be used if no custom
-  /// override is provided via `ISpectifyOptions`.
+  /// override is provided via `ISpectLoggerOptions`.
   AnsiPen get defaultPen => switch (this) {
         ISpectifyLogType.critical => AnsiPen()..red(),
         ISpectifyLogType.error => AnsiPen()..red(),

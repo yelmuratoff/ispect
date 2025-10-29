@@ -5,10 +5,10 @@ import 'package:ispectify_db/ispectify_db.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late ISpectify logger;
+  late ISpectLogger logger;
 
   setUp(() {
-    logger = ISpectify();
+    logger = ISpectLogger();
     ISpectDbCore.config = const ISpectDbConfig(
       sampleRate: null,
       redact: true,

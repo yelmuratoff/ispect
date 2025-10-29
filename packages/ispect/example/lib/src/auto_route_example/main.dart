@@ -7,7 +7,7 @@ import 'main.gr.dart';
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  final logger = ISpectifyFlutter.init();
+  final logger = ISpectFlutter.init();
 
   ISpect.run(
     logger: logger,

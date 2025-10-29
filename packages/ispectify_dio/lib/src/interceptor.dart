@@ -5,14 +5,14 @@ import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:ispectify_dio/src/settings.dart';
 import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 
-/// `Dio` http client logger on [ISpectify] base
+/// `Dio` http client logger on [ISpectLogger] base
 ///
-/// `logger` field is current [ISpectify] instance.
+/// `logger` field is current [ISpectLogger] instance.
 /// Provide your instance if your application used `ISpectify` as default logger
 /// Common ISpectify instance will be used by default
 class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectDioInterceptor({
-    ISpectify? logger,
+    ISpectLogger? logger,
     this.settings = const ISpectDioInterceptorSettings(),
     this.addonId,
     RedactionService? redactor,
@@ -186,18 +186,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   }) {
     final requestOptions = error.requestOptions;
     final response = error.response;
-    final requestHeaders = payload.headersOrNull(
-      requestOptions.headers,
-      enableRedaction: useRedaction,
-    )
+    final requestHeaders = payload
+        .headersOrNull(
+          requestOptions.headers,
+          enableRedaction: useRedaction,
+        )
         ?.map((key, value) => MapEntry(key, value?.toString()));
 
     final responseHeaders = response == null
         ? null
-        : payload.headersOrNull(
-            response.headers.map,
-            enableRedaction: useRedaction,
-          )
+        : payload
+            .headersOrNull(
+              response.headers.map,
+              enableRedaction: useRedaction,
+            )
             ?.map(
               (key, value) => MapEntry(
                 key,
@@ -241,8 +243,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     return map.isEmpty ? null : map;
   }
 
-  Object? _responseBodyPayload(Object? data, bool useRedaction) =>
-      payload.body(
+  Object? _responseBodyPayload(Object? data, bool useRedaction) => payload.body(
         data,
         enableRedaction: useRedaction,
         normalizer: (value) =>

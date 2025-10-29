@@ -7,7 +7,7 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// This extension provides an initializer method with a default Flutter output
 /// handler that adapts logging behavior based on the target platform.
-extension ISpectifyFlutter on ISpectify {
+extension ISpectFlutter on ISpectLogger {
   /// Initializes an instance of `ISpectify` with Flutter-specific settings.
   ///
   /// This method sets up logging, observation, filtering, and options, ensuring
@@ -20,21 +20,21 @@ extension ISpectifyFlutter on ISpectify {
   ///
   /// ### Example:
   /// ```dart
-  /// final inspector = ISpectifyFlutter.init();
+  /// final inspector = ISpectFlutter.init();
   /// inspector.log('Hello, ISpectify!');
   /// ```
   ///
   /// Returns:
   /// A configured instance of `ISpectify` with adapted logging.
-  static ISpectify init({
-    ISpectifyLogger? logger,
-    ISpectifyObserver? observer,
-    ISpectifyOptions? options,
-    ISpectifyFilter? filter,
+  static ISpectLogger init({
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectLoggerOptions? options,
+    ISpectFilter? filter,
     ILogHistory? history,
   }) =>
-      ISpectify(
-        logger: (logger ?? ISpectifyLogger()).copyWith(
+      ISpectLogger(
+        logger: (logger ?? ISpectBaseLogger()).copyWith(
           output: _defaultFlutterOutput,
         ),
         options: options,

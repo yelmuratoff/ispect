@@ -139,9 +139,9 @@ class SearchFilter implements Filter<ISpectifyData> {
 ///
 /// It allows filtering based on `titles`, `types`, and a `searchQuery`.
 /// All filters are combined with a logical OR operation for search purposes.
-class ISpectifyFilter implements Filter<ISpectifyData> {
-  /// Creates an `ISpectifyFilter` that combines title, type, and search filters.
-  ISpectifyFilter({
+class ISpectFilter implements Filter<ISpectifyData> {
+  /// Creates an `ISpectFilter` that combines title, type, and search filters.
+  ISpectFilter({
     List<String> titles = const [],
     List<Type> types = const [],
     String? searchQuery,
@@ -184,10 +184,10 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     return _filters.any((filter) => filter.apply(item));
   }
 
-  /// Returns a new instance of `ISpectifyFilter` with updated filtering criteria.
+  /// Returns a new instance of `ISpectFilter` with updated filtering criteria.
   ///
   /// If a parameter is `null`, the existing value is preserved.
-  ISpectifyFilter copyWith({
+  ISpectFilter copyWith({
     List<String>? titles,
     List<Type>? types,
     String? searchQuery,
@@ -196,7 +196,7 @@ class ISpectifyFilter implements Filter<ISpectifyData> {
     final newTypes = types ?? _getExistingTypes();
     final newSearchQuery = searchQuery ?? _getExistingSearchQuery();
 
-    return ISpectifyFilter(
+    return ISpectFilter(
       titles: newTitles,
       types: newTypes,
       searchQuery: newSearchQuery,

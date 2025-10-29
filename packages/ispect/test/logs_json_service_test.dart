@@ -13,7 +13,7 @@ void main() {
     setUp(() {
       service = const LogsJsonService();
       // Initialize ISpect with a basic logger for testing
-      ISpect.initialize(ISpectify());
+      ISpect.initialize(ISpectLogger());
       sampleLogs = [
         ISpectifyData(
           'Test log message 1',
@@ -303,7 +303,7 @@ void main() {
         'should handle empty filtered logs gracefully in shareFilteredLogsAsJsonFile',
         () async {
       // Arrange
-      final filter = ISpectifyFilter();
+      final filter = ISpectFilter();
 
       // Act & Assert - should not throw
       await expectLater(

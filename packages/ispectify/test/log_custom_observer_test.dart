@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
-class _SpyObserver implements ISpectifyObserver {
+class _SpyObserver implements ISpectObserver {
   const _SpyObserver();
   static int errorCount = 0;
   static int exceptionCount = 0;
@@ -31,7 +31,7 @@ void main() {
   });
 
   test('logCustom routes error-level custom logs to onError', () async {
-    final logger = ISpectify(observer: const _SpyObserver());
+    final logger = ISpectLogger(observer: const _SpyObserver());
 
     // Subscribe before emitting to avoid missing broadcast events
     final future = logger.stream.take(2).toList();
@@ -56,7 +56,7 @@ void main() {
 
   test('handle() calls observer methods only once per error/exception',
       () async {
-    final logger = ISpectify(observer: const _SpyObserver());
+    final logger = ISpectLogger(observer: const _SpyObserver());
 
     // Test Error handling
     final testError = ArgumentError('Test error');

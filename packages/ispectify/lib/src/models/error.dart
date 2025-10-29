@@ -17,7 +17,7 @@ class ISpectifyError extends ISpectifyData {
   String get textMessage => '$messageText$errorText$stackTraceText';
 
   @override
-  void notifyObserver(ISpectifyObserver observer) {
+  void notifyObserver(ISpectObserver observer) {
     observer.onError(this);
   }
 }

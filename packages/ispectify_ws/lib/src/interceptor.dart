@@ -6,7 +6,7 @@ final class ISpectWSInterceptor
     with BaseNetworkInterceptor
     implements WSInterceptor {
   ISpectWSInterceptor({
-    required ISpectify logger,
+    required ISpectLogger logger,
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
     RedactionService? redactor,

@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 /// Factory class for creating log entries with consistent configuration.
 ///
 /// This factory centralizes log creation logic and ensures all logs are
-/// created with proper settings from ISpectifyOptions.
+/// created with proper settings from ISpectLoggerOptions.
 class LogFactory {
   const LogFactory._();
 
@@ -23,7 +23,7 @@ class LogFactory {
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
-    ISpectifyOptions? options,
+    ISpectLoggerOptions? options,
   }) {
     final type = ISpectifyLogType.fromLogLevel(level);
     return ISpectifyData(

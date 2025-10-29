@@ -10,7 +10,7 @@ void main([List<String>? args]) {
     'URL',
     defaultValue: 'wss://echo.plugfox.dev:443/non-existent-path',
   );
-  final logger = ISpectify();
+  final logger = ISpectLogger();
 
   final interceptor = ISpectWSInterceptor(logger: logger);
 

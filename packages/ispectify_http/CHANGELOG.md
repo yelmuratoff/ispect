@@ -165,7 +165,7 @@
 
 ### Enhancements:
 
-- Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
+- Extend `ISpectFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
 - Add ability to open log files directly from the `ISpect` screen.
@@ -223,7 +223,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Expose new zoom configuration constants and helper methods in `InspectorState` for enhanced zoom and overlay management
 
 ### Changes:
-- Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectifyFlutter.init, `ISpectJiraClient.initialize`)*
+- Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectFlutter.init, `ISpectJiraClient.initialize`)*
 - Rename `ISpectifyActionItem` to `ISpectActionItem` and update references in docs and examples
 - Add `ISpectPanelItem` and `ISpectPanelButtonItem` models and corresponding usage samples. `Records` -> `Models`
 - Refresh quick start and advanced feature code snippets to illustrate updated APIs and options
@@ -337,7 +337,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ### Added
 - **Custom Performance Overlay** - Changed the approach and some improvements
 - **Enhanced Log Navigation** - Search, highlight, and expand/collapse functionality
-- **New Option: `logTruncateLength`** - Available in `ISpectifyOptions` for configurable log truncation
+- **New Option: `logTruncateLength`** - Available in `ISpectLoggerOptions` for configurable log truncation
 - **New Configuration: `ISpectHttpInterceptorSettings`** - Added to `ISpectHttpInterceptor` for improved setup flexibility
 
 ### Improved

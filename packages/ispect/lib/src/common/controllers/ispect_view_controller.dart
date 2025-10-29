@@ -19,7 +19,7 @@ typedef TitlesResult = ({List<String> all, List<String> unique});
 class ISpectViewController extends ChangeNotifier {
   ISpectViewController({ISpectShareCallback? onShare}) : _onShare = onShare;
 
-  ISpectifyFilter _filter = ISpectifyFilter();
+  ISpectFilter _filter = ISpectFilter();
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   ISpectifyData? _activeData;
@@ -48,10 +48,10 @@ class ISpectViewController extends ChangeNotifier {
   Timer? _filterDebounce;
 
   /// Retrieves the current log filter.
-  ISpectifyFilter get filter => _filter;
+  ISpectFilter get filter => _filter;
 
   /// Updates the log filter and notifies listeners.
-  set filter(ISpectifyFilter val) {
+  set filter(ISpectFilter val) {
     if (_filter == val) return;
     _filter = val;
     _invalidateFilterCache();
@@ -141,7 +141,7 @@ class ISpectViewController extends ChangeNotifier {
     List<Type>? types,
     String? searchQuery,
   }) {
-    final newFilter = ISpectifyFilter(
+    final newFilter = ISpectFilter(
       titles: titles ?? _getCurrentTitles(),
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
@@ -235,7 +235,7 @@ class ISpectViewController extends ChangeNotifier {
   /// {@end-tool}
   ///
   /// See also:
-  /// * [ISpectifyFilter], which defines filter behavior
+  /// * [ISpectFilter], which defines filter behavior
   /// * [FilterCache], which implements the caching logic
   /// * [onDataChanged], which invalidates cache when data changes
   List<ISpectifyData> applyCurrentFilters(List<ISpectifyData> logsData) {

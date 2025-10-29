@@ -16,11 +16,11 @@ class _ThrowingRedactor extends RedactionService {
 
 void main() {
   group('ISpectWSInterceptor', () {
-    late ISpectify logger;
+    late ISpectLogger logger;
     late ISpectWSInterceptor interceptor;
 
     setUp(() {
-      logger = ISpectify();
+      logger = ISpectLogger();
       interceptor = ISpectWSInterceptor(
         logger: logger,
       );

@@ -157,7 +157,7 @@ class ISpectDbToken {
   final String? transactionId;
 }
 
-extension ISpectifyDb on ISpectify {
+extension ISpectifyDb on ISpectLogger {
   void db({
     required String source,
     required String operation,

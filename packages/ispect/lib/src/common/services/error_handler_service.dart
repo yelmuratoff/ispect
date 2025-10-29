@@ -15,7 +15,7 @@ class ErrorHandlerService {
     required this.filters,
   });
 
-  final ISpectify logger;
+  final ISpectLogger logger;
   final List<String> filters;
 
   /// Configures global Flutter and platform error handlers.

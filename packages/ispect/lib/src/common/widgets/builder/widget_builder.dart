@@ -14,7 +14,7 @@ class ISpectifyBuilder extends StatefulWidget {
     super.key,
   });
 
-  final ISpectify iSpectify;
+  final ISpectLogger iSpectify;
   final ISpectifyWidgetBuilder builder;
 
   @override

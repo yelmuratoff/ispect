@@ -80,12 +80,12 @@ Provides network, database, performance, widget tree, logging and device insight
 - Cache Management: Application cache inspection and management
 
 ## Logging Configuration
-Core logging powered by ISpectify. Configure via `ISpectifyOptions` passed to the logger you supply into `ISpect.run`.
+Core logging powered by ISpectify. Configure via `ISpectLoggerOptions` passed to the logger you supply into `ISpect.run`.
 
 ### Typical Setup
 ```dart
 final logger = ISpectify(
-  options: ISpectifyOptions(
+  options: ISpectLoggerOptions(
     enabled: true,
     useHistory: true,
     useConsoleLogs: kDebugMode,
@@ -109,7 +109,7 @@ Stream subscribers still receive real-time events.
 
 ### Filter Example
 ```dart
-class WarningsAndAbove implements ISpectifyFilter {
+class WarningsAndAbove implements ISpectFilter {
   @override
   bool apply(ISpectifyData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
 }
@@ -153,7 +153,7 @@ void main() {
   }
 }
 void _bootstrapDebug() {
-  final logger = ISpectifyFlutter.init();
+  final logger = ISpectFlutter.init();
   ISpect.run(() => runApp(const MyApp()), logger: logger);
 }
 ```
@@ -197,7 +197,7 @@ void main() {
 
 void _initializeISpect() {
   // Initialize ISpectify for logging
-  final ISpectify logger = ISpectifyFlutter.init();
+  final ISpectify logger = ISpectFlutter.init();
 
   // Wrap your app with ISpect
   ISpect.run(
@@ -249,7 +249,7 @@ class MyApp extends StatelessWidget {
 const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
 void main() {
   if (!kEnableISpect) return runApp(const MyApp());
-  final logger = ISpectifyFlutter.init();
+  final logger = ISpectFlutter.init();
   ISpect.run(() => runApp(const MyApp()), logger: logger);
 }
 

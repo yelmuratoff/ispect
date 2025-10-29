@@ -1,12 +1,12 @@
 import 'package:ispectify/ispectify.dart';
 
 /// A utility class for handling errors and exceptions in ISpectify.
-class ISpectifyErrorHandler {
-  /// Creates an instance of `ISpectifyErrorHandler` with the given settings.
-  const ISpectifyErrorHandler(this.settings);
+class ISpectErrorHandler {
+  /// Creates an instance of `ISpectErrorHandler` with the given settings.
+  const ISpectErrorHandler(this.settings);
 
   /// Configuration settings for ISpectify.
-  final ISpectifyOptions settings;
+  final ISpectLoggerOptions settings;
 
   /// Handles various types of exceptions and errors, converting them into
   /// `ISpectifyData` objects for consistent error reporting.

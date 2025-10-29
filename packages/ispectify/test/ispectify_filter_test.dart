@@ -3,7 +3,7 @@ import 'package:ispectify/src/filter/logger_filter.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyFilter OR logic', () {
+  group('ISpectFilter OR logic', () {
     late ISpectifyData testData1;
     late ISpectifyData testData2;
     late ISpectifyData testData3;
@@ -15,7 +15,7 @@ void main() {
     });
 
     test('single filter works correctly', () {
-      final filter = ISpectifyFilter(titles: ['INFO']);
+      final filter = ISpectFilter(titles: ['INFO']);
 
       expect(filter.apply(testData1), true); // Matches title
       expect(filter.apply(testData2), false); // Doesn't match title
@@ -32,7 +32,7 @@ void main() {
           ISpectifyData('Debug message', key: 'debug', title: 'DEBUG');
 
       // Filter that requires either INFO title OR specific type
-      final filter = ISpectifyFilter(
+      final filter = ISpectFilter(
         titles: ['INFO'],
         types: [
           errorData.runtimeType,
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('combining title and search filters expands results (OR logic)', () {
-      final filter = ISpectifyFilter(
+      final filter = ISpectFilter(
         titles: ['INFO'],
         searchQuery: 'Error',
       );
@@ -67,7 +67,7 @@ void main() {
     });
 
     test('combining all three filters expands results (OR logic)', () {
-      final filter = ISpectifyFilter(
+      final filter = ISpectFilter(
         titles: ['INFO'],
         types: [ISpectifyData], // All data is this type
         searchQuery: 'special',
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('empty filter returns true for all items', () {
-      final filter = ISpectifyFilter();
+      final filter = ISpectFilter();
 
       expect(filter.apply(testData1), true);
       expect(filter.apply(testData2), true);
@@ -100,7 +100,7 @@ void main() {
     });
 
     test('copyWith preserves OR logic', () {
-      final originalFilter = ISpectifyFilter(titles: ['INFO']);
+      final originalFilter = ISpectFilter(titles: ['INFO']);
       final copiedFilter = originalFilter.copyWith(searchQuery: 'test');
 
       // Original filter should still work

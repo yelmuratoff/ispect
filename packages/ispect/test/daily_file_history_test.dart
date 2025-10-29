@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 
 void main() {
-  late ISpectifyOptions options;
+  late ISpectLoggerOptions options;
 
   setUp(() {
-    options = ISpectifyOptions();
+    options = ISpectLoggerOptions();
     // Initialize ISpect for testing
-    ISpect.initialize(ISpectify());
+    ISpect.initialize(ISpectLogger());
   });
 
   group('DailyFileLogHistory maxSessionDays edge cases', () {

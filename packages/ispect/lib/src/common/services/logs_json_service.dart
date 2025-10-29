@@ -172,7 +172,7 @@ class LogsJsonService {
   Future<void> shareFilteredLogsAsJsonFile(
     List<ISpectifyData> logs,
     List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter, {
+    ISpectFilter filter, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
@@ -198,7 +198,7 @@ class LogsJsonService {
   Map<String, dynamic> _createFilteredExportData(
     List<ISpectifyData> logs,
     List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter,
+    ISpectFilter filter,
   ) =>
       {
         'metadata': _createFilteredMetadata(logs, filteredLogs, filter),
@@ -209,7 +209,7 @@ class LogsJsonService {
   Map<String, dynamic> _createFilteredMetadata(
     List<ISpectifyData> logs,
     List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter,
+    ISpectFilter filter,
   ) =>
       {
         'exportedAt': DateTime.now().toIso8601String(),
@@ -220,7 +220,7 @@ class LogsJsonService {
       };
 
   /// Creates summary of applied filter
-  Map<String, dynamic> _createFilterSummary(ISpectifyFilter filter) => {
+  Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
         'hasSearchQuery':
             filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
         'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,

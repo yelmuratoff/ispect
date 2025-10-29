@@ -13,7 +13,7 @@ import 'package:ispectify/ispectify.dart';
 /// Implementing classes should use this mixin and call [initializeInterceptor]
 /// in their constructor to set up the logger and redactor.
 mixin BaseNetworkInterceptor {
-  late final ISpectify _logger;
+  late final ISpectLogger _logger;
   late RedactionService _redactor;
   late NetworkPayloadSanitizer _payloadSanitizer;
 
@@ -24,16 +24,16 @@ mixin BaseNetworkInterceptor {
   /// - [logger]: The ISpectify instance to use for logging. Defaults to new instance.
   /// - [redactor]: The RedactionService for sensitive data masking. Defaults to new instance.
   void initializeInterceptor({
-    ISpectify? logger,
+    ISpectLogger? logger,
     RedactionService? redactor,
   }) {
-    _logger = logger ?? ISpectify();
+    _logger = logger ?? ISpectLogger();
     _redactor = redactor ?? RedactionService();
     _payloadSanitizer = NetworkPayloadSanitizer(_redactor);
   }
 
   /// Gets the current logger instance.
-  ISpectify get logger => _logger;
+  ISpectLogger get logger => _logger;
 
   /// Gets the current redaction service.
   RedactionService get redactor => _redactor;

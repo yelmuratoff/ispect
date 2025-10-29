@@ -7,7 +7,7 @@ final observer = ISpectNavigatorObserver();
 
 void main() {
   // Initialize ISpectify for logging
-  final logger = ISpectifyFlutter.init();
+  final logger = ISpectFlutter.init();
 
   // Wrap your app with ISpect
   ISpect.run(

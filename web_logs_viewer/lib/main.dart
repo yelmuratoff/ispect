@@ -11,7 +11,7 @@ import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart'
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
 void main() {
-  final logger = ISpectifyFlutter.init();
+  final logger = ISpectFlutter.init();
   ISpect.run(
     () {
       WidgetsFlutterBinding.ensureInitialized();

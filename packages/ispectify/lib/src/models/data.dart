@@ -109,7 +109,7 @@ class ISpectifyData {
   /// Subclasses can override this to customize which observer method is called.
   ///
   /// - `observer`: The observer to notify.
-  void notifyObserver(ISpectifyObserver observer) {
+  void notifyObserver(ISpectObserver observer) {
     if (isError) {
       observer.onError(this);
     } else {

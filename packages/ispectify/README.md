@@ -77,7 +77,7 @@ ISpectify is the logging foundation for the ISpect ecosystem. It builds on the T
 
 ## Logging Configuration
 
-### Quick Flags (ISpectifyOptions)
+### Quick Flags (ISpectLoggerOptions)
 | Option | Default | Effect | Use Case |
 |--------|---------|--------|----------|
 | enabled | true | Global on/off | Feature flag / release build |
@@ -92,21 +92,21 @@ final logger = ISpectify(
   logger: ISpectifyLogger(
     settings: LoggerSettings(enableColors: false),
   ),
-  options: ISpectifyOptions(useConsoleLogs: false),
+  options: ISpectLoggerOptions(useConsoleLogs: false),
 );
 ```
 Stdout stays clean; history + streams still work.
 
 ### Disable History (Stateless Mode)
 ```dart
-final logger = ISpectify(options: ISpectifyOptions(useHistory: false));
+final logger = ISpectify(options: ISpectLoggerOptions(useHistory: false));
 ```
 No retention; stream subscribers still receive real-time logs. Memory overhead minimal.
 
 ### Minimal Footprint (CI / Benchmarks)
 ```dart
 final logger = ISpectify(
-  options: ISpectifyOptions(
+  options: ISpectLoggerOptions(
     enabled: true,
     useConsoleLogs: true, // or false for JSON parsing scenarios
     useHistory: false,
@@ -124,7 +124,7 @@ final logger = ISpectify(
 ### Memory Control
 Keep history bounded; large payloads are truncated before print: 
 ```dart
-ISpectifyOptions(
+ISpectLoggerOptions(
   maxHistoryItems: 2000,
   logTruncateLength: 2000,
 );
@@ -132,7 +132,7 @@ ISpectifyOptions(
 
 ### Custom Titles & Colors
 ```dart
-ISpectifyOptions(
+ISpectLoggerOptions(
   titles: { 'http-request': '➡ HTTP', 'http-response': '⬅ HTTP' },
   colors: { 'http-error': AnsiPen()..red(bg:true) },
 );
@@ -150,7 +150,7 @@ Existing stream listeners unaffected. History retained unless `useHistory` becom
 ### Filtering (Custom)
 Provide a filter implementation to drop noise early: 
 ```dart
-class OnlyErrorsFilter implements ISpectifyFilter {
+class OnlyErrorsFilter implements ISpectFilter {
   @override
   bool apply(ISpectifyData d) => d.logLevel?.priority >= LogLevel.error.priority;
 }
@@ -224,7 +224,7 @@ Use `maxLineWidth` to constrain horizontal noise; does not truncate content (tru
 Disable colors for: CI, log ingestion systems, snapshot testing. Keep colors locally for readability.
 
 ### Error / Exception Flow
-`logger.handle(exception)` decides between `ISpectifyError` and `ISpectifyException`; observer callbacks fire before streaming. Provide a custom `ISpectifyErrorHandler` to rewrite classification.
+`logger.handle(exception)` decides between `ISpectifyError` and `ISpectifyException`; observer callbacks fire before streaming. Provide a custom `ISpectErrorHandler` to rewrite classification.
 
 ### Zero-Allocation Path
 For ultra hot loops avoid string interpolation before checking `options.enabled`. Pattern: 
@@ -245,7 +245,7 @@ final logger = ISpectify(
         settings: LoggerSettings(
       enableColors: false,
     )),
-    options: ISpectifyOptions(
+    options: ISpectLoggerOptions(
       enabled: true,
       useHistory: true,
       useConsoleLogs: true,
@@ -327,7 +327,7 @@ void main() {
           settings: LoggerSettings(
         enableColors: false,
       )),
-      options: ISpectifyOptions(
+      options: ISpectLoggerOptions(
         enabled: true,
         useHistory: true,
         useConsoleLogs: true,
@@ -420,7 +420,7 @@ class SafeLogger {
           enableColors: kDebugMode, // Disable colors in headless/CI for cleaner output
         )
       ),
-      options: ISpectifyOptions(
+      options: ISpectLoggerOptions(
         enabled: true,
         useHistory: true,
         useConsoleLogs: kDebugMode,
@@ -459,7 +459,7 @@ ISpectify createLogger() {
         lineLength: environment == 'development' ? 120 : 80,
       )
     ),
-    options: ISpectifyOptions(
+    options: ISpectLoggerOptions(
       enabled: !isProd,
       useHistory: true,
       useConsoleLogs: environment == 'development',
@@ -481,7 +481,7 @@ ISpectify createLogger() {
 Large history buffers increase memory usage. Adjust for CI, tests, or low-end devices:
 
 ```dart
-ISpectifyOptions(
+ISpectLoggerOptions(
   maxHistoryItems: 2000, // Lower for constrained environments
   logTruncateLength: 4000, // Shorter entries reduce memory footprint
 );

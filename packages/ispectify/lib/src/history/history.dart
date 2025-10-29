@@ -19,7 +19,7 @@ abstract interface class ILogHistory {
 /// The default implementation of `ILogHistory` for managing log history.
 ///
 /// This class stores log entries in-memory and follows the configuration
-/// defined in `ISpectifyOptions`.
+/// defined in `ISpectLoggerOptions`.
 class DefaultISpectifyHistory implements ILogHistory {
   /// Creates a log history manager with the given `settings`.
   ///
@@ -34,7 +34,7 @@ class DefaultISpectifyHistory implements ILogHistory {
   }
 
   /// Configuration options for logging behavior.
-  final ISpectifyOptions settings;
+  final ISpectLoggerOptions settings;
 
   /// Internal list to store log history.
   final List<ISpectifyData> _history = [];

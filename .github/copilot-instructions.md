@@ -166,7 +166,7 @@ class ISpectDioInterceptor extends Interceptor {
     this.settings = const ISpectDioInterceptorSettings(),
     RedactionService? redactor,
   }) {
-    _logger = logger ?? ISpectify();
+    _logger = logger ?? ISpectLogger();
     _redactor = redactor ?? RedactionService();
   }
 
@@ -282,7 +282,7 @@ const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: f
 
 void main() {
   if (kEnableISpect) {
-    final logger = ISpectifyFlutter.init();
+    final logger = ISpectFlutter.init();
     ISpect.run(() => runApp(MyApp()), logger: logger);
   } else {
     runApp(const MyApp());

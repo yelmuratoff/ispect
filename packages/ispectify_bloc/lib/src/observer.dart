@@ -35,7 +35,7 @@ typedef BlocFilterPredicate = bool Function(Object? candidate);
 /// Common ISpectify instance will be used by default
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
-    ISpectify? logger,
+    ISpectLogger? logger,
     this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
@@ -46,10 +46,10 @@ class ISpectBlocObserver extends BlocObserver {
     Iterable<Pattern> filters = const <Pattern>[],
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
-    _logger = logger ?? ISpectify();
+    _logger = logger ?? ISpectLogger();
   }
 
-  late final ISpectify _logger;
+  late final ISpectLogger _logger;
   final BlocEventCallback? onBlocEvent;
   final BlocTransitionCallback? onBlocTransition;
   final BlocChangeCallback? onBlocChange;

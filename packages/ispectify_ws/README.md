@@ -81,7 +81,7 @@ ISpectifyWS integrates the ws package with the ISpectify logging system for WebS
 ### Basic Setup
 
 ```dart
-final logger = ISpectify();
+final logger = ISpectLogger();
 
 final interceptor = ISpectWSInterceptor(
   logger: logger,
@@ -195,7 +195,7 @@ void main() {
 }
 
 void _initializeWithISpect(String url) {
-  final logger = ISpectify();
+  final logger = ISpectLogger();
   final interceptor = ISpectWSInterceptor(
     logger: logger,
     settings: const ISpectWSInterceptorSettings(

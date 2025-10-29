@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectify clearHistory', () {
     test('clearHistory works when logging is disabled', () {
-      final logger = ISpectify()
+      final logger = ISpectLogger()
 
         // Add some logs to history
         ..info('Test log 1')
@@ -24,7 +24,7 @@ void main() {
         'DefaultISpectifyHistory.clear() works regardless of useHistory setting',
         () {
       // Test with useHistory = false
-      final optionsDisabled = ISpectifyOptions(useHistory: false);
+      final optionsDisabled = ISpectLoggerOptions(useHistory: false);
       final historyDisabled = DefaultISpectifyHistory(optionsDisabled);
 
       // Add items to history using test method
@@ -37,7 +37,7 @@ void main() {
       expect(historyDisabled.history.length, 0);
 
       // Test with useHistory = true but enabled = false
-      final optionsEnabledFalse = ISpectifyOptions(enabled: false);
+      final optionsEnabledFalse = ISpectLoggerOptions(enabled: false);
       final historyEnabledFalse = DefaultISpectifyHistory(optionsEnabledFalse)
         ..addForTesting(testData);
       expect(historyEnabledFalse.history.length, 1);
@@ -47,7 +47,7 @@ void main() {
     });
 
     test('clearHistory preserves history functionality after re-enabling', () {
-      final logger = ISpectify()
+      final logger = ISpectLogger()
 
         // Add logs and disable
         ..info('Test log 1')

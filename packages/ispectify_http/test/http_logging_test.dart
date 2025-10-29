@@ -48,7 +48,7 @@ void main() {
     test(
         'error payload preserved when printResponseData=false, printErrorData=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -78,7 +78,7 @@ void main() {
       );
     });
     test('logs parsed response body for success responses', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -116,7 +116,7 @@ void main() {
     });
 
     test('error logs preserve array bodies under data key', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -154,7 +154,7 @@ void main() {
     });
 
     test('multipart request fields/files are redacted when enabled', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -467,7 +467,7 @@ void main() {
   group('Multipart Request Logging', () {
     test('multipart request form data is logged when printRequestData=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -514,7 +514,7 @@ void main() {
 
     test('multipart request data is redacted when enableRedaction=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -561,7 +561,7 @@ void main() {
 
     test('multipart request data is not logged when printRequestData=false',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -595,7 +595,7 @@ void main() {
 
   group('Response and Error Filtering', () {
     test('responseFilter does not suppress error logging', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -652,7 +652,7 @@ void main() {
     });
 
     test('errorFilter can still suppress specific errors', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -714,7 +714,7 @@ void main() {
       // Note: 'password' and 'token' are already in default sensitive keys,
       // so no need to configure them explicitly
 
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         redactor: redactor,

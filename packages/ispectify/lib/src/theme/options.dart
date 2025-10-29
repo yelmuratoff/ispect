@@ -22,8 +22,8 @@ AnsiPen? _getDefaultPenByKey(String key) {
 /// Color and title customization now uses the [ISpectifyLogTypeRegistry]
 /// for better extensibility. Custom overrides can be provided via
 /// the [customTitles] and [customColors] parameters.
-class ISpectifyOptions {
-  /// Creates an instance of `ISpectifyOptions` with customizable settings.
+class ISpectLoggerOptions {
+  /// Creates an instance of `ISpectLoggerOptions` with customizable settings.
   ///
   /// - `enabled`: Whether logging is enabled.
   /// - `useHistory`: Whether to store logs in history.
@@ -32,7 +32,7 @@ class ISpectifyOptions {
   /// - `logTruncateLength`: Maximum length for log messages in console.
   /// - `customTitles`: Custom log titles that override registry defaults.
   /// - `customColors`: Custom log colors that override registry defaults.
-  ISpectifyOptions({
+  ISpectLoggerOptions({
     this.enabled = true,
     bool useHistory = true,
     bool useConsoleLogs = true,
@@ -105,10 +105,10 @@ class ISpectifyOptions {
     return fallbackPen ?? _fallbackPen;
   }
 
-  /// Creates a new `ISpectifyOptions` instance with modified properties.
+  /// Creates a new `ISpectLoggerOptions` instance with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
-  ISpectifyOptions copyWith({
+  ISpectLoggerOptions copyWith({
     bool? enabled,
     bool? useHistory,
     bool? useConsoleLogs,
@@ -117,7 +117,7 @@ class ISpectifyOptions {
     Map<String, String>? customTitles,
     Map<String, AnsiPen>? customColors,
   }) =>
-      ISpectifyOptions(
+      ISpectLoggerOptions(
         enabled: enabled ?? this.enabled,
         useHistory: useHistory ?? _useHistory,
         useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,

@@ -10,12 +10,12 @@ import 'package:ispectify/ispectify.dart';
 final class ISpect {
   const ISpect._();
 
-  static late ISpectify _logger;
+  static late ISpectLogger _logger;
   static bool _isInitialized = false;
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
-  static ISpectify get logger {
+  static ISpectLogger get logger {
     if (!_isInitialized) {
       throw StateError(
         'ISpect is not initialized. Call ISpect.initialize() first.',
@@ -26,7 +26,7 @@ final class ISpect {
 
   /// Initializes the logger instance once.
   /// Returns `true` if initialization was successful.
-  static bool initialize(ISpectify logger, {bool force = false}) {
+  static bool initialize(ISpectLogger logger, {bool force = false}) {
     if (_isInitialized && !force) return false;
     _logger = logger;
     _isInitialized = true;
@@ -47,7 +47,7 @@ final class ISpect {
   /// Runs the app with centralized logging and error capture.
   static void run<T>(
     T Function() callback, {
-    required ISpectify logger,
+    required ISpectLogger logger,
     VoidCallback? onInit,
     VoidCallback? onInitialized,
     void Function(Object, StackTrace)? onZonedError,

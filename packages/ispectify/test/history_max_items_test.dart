@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('DefaultISpectifyHistory maxHistoryItems edge cases', () {
     test('maxHistoryItems = 0 should disable history instead of crashing', () {
-      final options = ISpectifyOptions(maxHistoryItems: 0);
+      final options = ISpectLoggerOptions(maxHistoryItems: 0);
       final history = DefaultISpectifyHistory(options);
 
       // This should not crash
@@ -16,7 +16,7 @@ void main() {
     });
 
     test('maxHistoryItems = -1 should disable history instead of crashing', () {
-      final options = ISpectifyOptions(maxHistoryItems: -1);
+      final options = ISpectLoggerOptions(maxHistoryItems: -1);
       final history = DefaultISpectifyHistory(options);
 
       // This should not crash
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('maxHistoryItems > 0 should work normally', () {
-      final options = ISpectifyOptions(maxHistoryItems: 2);
+      final options = ISpectLoggerOptions(maxHistoryItems: 2);
       final history = DefaultISpectifyHistory(options)
         ..add(ISpectifyData('Log 1', key: 'test1'))
         ..add(ISpectifyData('Log 2', key: 'test2'));
@@ -43,7 +43,7 @@ void main() {
     });
 
     test('maxHistoryItems = 1 should keep only the latest item', () {
-      final options = ISpectifyOptions(maxHistoryItems: 1);
+      final options = ISpectLoggerOptions(maxHistoryItems: 1);
       final history = DefaultISpectifyHistory(options)
         ..add(ISpectifyData('Log 1', key: 'test1'));
 

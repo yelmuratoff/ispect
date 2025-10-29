@@ -1,8 +1,8 @@
 import 'package:ispectify/ispectify.dart';
 
 Future<void> main() async {
-  final iSpectify = ISpectify(
-    options: ISpectifyOptions(
+  final iSpectify = ISpectLogger(
+    options: ISpectLoggerOptions(
       customColors: {
         ISpectifyLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),

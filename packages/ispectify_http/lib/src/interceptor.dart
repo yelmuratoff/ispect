@@ -10,7 +10,7 @@ import 'package:ispectify_http/src/utils/multipart_serializer.dart';
 class ISpectHttpInterceptor extends InterceptorContract
     with BaseNetworkInterceptor {
   ISpectHttpInterceptor({
-    ISpectify? logger,
+    ISpectLogger? logger,
     this.settings = const ISpectHttpInterceptorSettings(),
     RedactionService? redactor,
   }) {
@@ -180,12 +180,14 @@ class ISpectHttpInterceptor extends InterceptorContract
     bool useRedaction,
   ) {
     if (headers == null || headers.isEmpty) return null;
-    final objectHeaders = headers.map((key, value) => MapEntry(key, value as Object?));
+    final objectHeaders =
+        headers.map((key, value) => MapEntry(key, value as Object?));
     final sanitized = payload.headersOrNull(
       objectHeaders,
       enableRedaction: useRedaction,
     );
-    return sanitized?.map((key, value) => MapEntry(key, value?.toString() ?? ''));
+    return sanitized
+        ?.map((key, value) => MapEntry(key, value?.toString() ?? ''));
   }
 
   Map<String, dynamic>? _requestBodyPayload(

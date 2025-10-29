@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:test/test.dart';
 
-class RecordingLogger extends ISpectify {
+class RecordingLogger extends ISpectLogger {
   final List<ISpectifyData> records = <ISpectifyData>[];
 
   @override
