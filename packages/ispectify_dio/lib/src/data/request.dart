@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 
 class DioRequestData {
   DioRequestData(this.requestOptions);
@@ -11,15 +12,20 @@ class DioRequestData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
+    final normalizedHeaders = _stringKeyedMap(requestOptions.headers);
+    final normalizedQuery = _stringKeyedMap(requestOptions.queryParameters);
+    final normalizedExtra = _stringKeyedMap(requestOptions.extra);
+    final normalizedData = _normalizeBody(requestOptions.data);
+
     final map = <String, dynamic>{
       'path': requestOptions.path,
       'base-url': requestOptions.baseUrl,
       'url': requestOptions.uri.toString(),
       'method': requestOptions.method,
-      'data': requestOptions.data,
-      'headers': requestOptions.headers,
-      'query-parameters': requestOptions.queryParameters,
-      'extra': requestOptions.extra,
+      'data': normalizedData,
+      'headers': normalizedHeaders,
+      'query-parameters': normalizedQuery,
+      'extra': normalizedExtra,
       'preserve-header-case': requestOptions.preserveHeaderCase,
       'response-type': requestOptions.responseType,
       'content-type': requestOptions.contentType,
@@ -42,36 +48,47 @@ class DioRequestData {
     // Apply redaction to known sensitive sections when a redactor is provided.
     final hasDataKey = map.containsKey('data');
     final Object? rawData = hasDataKey ? map['data'] : null;
-    final rawHeaders = (map['headers'] as Map).cast<String, dynamic>();
 
-    final rawQuery = (map['query-parameters'] as Map).cast<String, dynamic>();
-    final rawExtra = (map['extra'] as Map).cast<String, dynamic>();
-
-    if (hasDataKey) {
-      map['data'] = redactor.redact(
-        rawData,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
+    map['data'] = hasDataKey
+        ? redactor.redact(
+              rawData,
+              ignoredValues: ignoredValues,
+              ignoredKeys: ignoredKeys,
+            ) ??
+            rawData
+        : null;
 
     map['headers'] = redactor.redactHeaders(
-      rawHeaders,
+      normalizedHeaders,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
 
     map['query-parameters'] = redactor.redact(
-      rawQuery,
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
+          normalizedQuery,
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        ) ??
+        normalizedQuery;
     map['extra'] = redactor.redact(
-      rawExtra,
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
+          normalizedExtra,
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        ) ??
+        normalizedExtra;
 
     return map;
+  }
+
+  Map<String, dynamic> _stringKeyedMap(Map<dynamic, dynamic>? source) {
+    if (source == null || source.isEmpty) return <String, dynamic>{};
+    return source.map((key, value) => MapEntry(key.toString(), value));
+  }
+
+  Object? _normalizeBody(Object? data) {
+    if (data is FormData) {
+      return DioFormDataSerializer.serialize(data);
+    }
+    return data;
   }
 }

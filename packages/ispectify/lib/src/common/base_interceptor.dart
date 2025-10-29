@@ -15,6 +15,7 @@ import 'package:ispectify/ispectify.dart';
 mixin BaseNetworkInterceptor {
   late final ISpectify _logger;
   late RedactionService _redactor;
+  late NetworkPayloadSanitizer _payloadSanitizer;
 
   /// Initializes the interceptor with logger and redaction service.
   ///
@@ -28,6 +29,7 @@ mixin BaseNetworkInterceptor {
   }) {
     _logger = logger ?? ISpectify();
     _redactor = redactor ?? RedactionService();
+    _payloadSanitizer = NetworkPayloadSanitizer(_redactor);
   }
 
   /// Gets the current logger instance.
@@ -35,6 +37,9 @@ mixin BaseNetworkInterceptor {
 
   /// Gets the current redaction service.
   RedactionService get redactor => _redactor;
+
+  /// Provides helper functions for sanitizing headers and bodies.
+  NetworkPayloadSanitizer get payload => _payloadSanitizer;
 
   /// Indicates whether redaction is enabled for this interceptor.
   ///
@@ -48,6 +53,7 @@ mixin BaseNetworkInterceptor {
   /// recreating the interceptor.
   set redactor(RedactionService newRedactor) {
     _redactor = newRedactor;
+    _payloadSanitizer = NetworkPayloadSanitizer(_redactor);
   }
 
   /// Redacts HTTP headers according to redaction rules.
@@ -60,7 +66,10 @@ mixin BaseNetworkInterceptor {
     Map<String, dynamic> headers, {
     required bool useRedaction,
   }) =>
-      useRedaction ? _redactor.redactHeaders(headers) : headers;
+      payload.headersMap(
+        headers,
+        enableRedaction: useRedaction,
+      );
 
   /// Redacts request/response body data.
   ///
@@ -69,7 +78,11 @@ mixin BaseNetworkInterceptor {
   ///
   /// Returns redacted data or original if redaction is disabled.
   Object? redactBody(Object? data, {required bool useRedaction}) =>
-      useRedaction ? _redactor.redact(data) : data;
+      payload.body(
+        data,
+        enableRedaction: useRedaction,
+        normalizer: (value) => value,
+      );
 
   /// Conditionally redacts data based on redaction setting.
   ///
@@ -78,7 +91,11 @@ mixin BaseNetworkInterceptor {
   /// - [data]: Data to potentially redact.
   /// - [useRedaction]: Whether redaction is enabled.
   Object? maybeRedact(Object? data, {required bool useRedaction}) =>
-      useRedaction ? _redactor.redact(data) : data;
+      payload.body(
+        data,
+        enableRedaction: useRedaction,
+        normalizer: (value) => value,
+      );
 
   /// Converts an untyped Map<dynamic, dynamic> to Map<String, dynamic>.
   ///
@@ -88,7 +105,7 @@ mixin BaseNetworkInterceptor {
   /// - [map]: The untyped map to convert.
   Map<String, dynamic> convertToTypedMap(Map<dynamic, dynamic> map) {
     try {
-      return map.map((k, v) => MapEntry(k.toString(), v));
+      return payload.stringKeyMap(map);
     } catch (_) {
       return <String, dynamic>{'raw': map.toString()};
     }
@@ -106,7 +123,12 @@ mixin BaseNetworkInterceptor {
     required bool useRedaction,
   }) {
     try {
-      final redacted = useRedaction ? _redactor.redact(data) : data;
+      final redacted = payload.body(
+            data,
+            enableRedaction: useRedaction,
+            normalizer: (value) => value,
+          ) ??
+          data;
 
       // Guard clause: if already correct type, return early
       if (redacted is Map<String, dynamic>) {
@@ -118,7 +140,7 @@ mixin BaseNetworkInterceptor {
       return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
     } catch (_) {
       // Fallback: convert original data
-      return data.map((k, v) => MapEntry(k.toString(), v));
+      return payload.stringKeyMap(data);
     }
   }
 }

@@ -2,73 +2,38 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_dio/src/data/_data.dart';
 
-class DioErrorLog extends ISpectifyData {
+class DioErrorLog extends NetworkErrorLog {
   DioErrorLog(
     super.message, {
-    required this.method,
-    required this.errorData,
-    required this.url,
-    required this.path,
-    required this.statusCode,
-    required this.statusMessage,
-    required this.requestHeaders,
-    required this.headers,
-    required this.body,
-    required this.settings,
-    this.redactor,
-  }) : super(
-          key: getKey,
-          title: getKey,
-          logLevel: LogLevel.error,
-          pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: errorData.toJson(
+    required super.method,
+    required super.url,
+    required super.path,
+    required super.statusCode,
+    required String? statusMessage,
+    required ISpectDioInterceptorSettings settings,
+    required DioErrorData errorData,
+    super.requestHeaders,
+    Map<String, String>? headers,
+    super.body,
+    RedactionService? redactor,
+  })  : _settings = settings,
+        _errorData = errorData,
+        super(
+          statusMessage: statusMessage ?? errorData.exception?.message,
+          settings: settings,
+          headers: headers?.map(MapEntry.new),
+          capturedException: errorData.exception,
+          capturedStackTrace: errorData.exception?.stackTrace,
+          metadata: errorData.toJson(
             redactor: redactor,
           ),
         );
 
-  final String? method;
-  final String? url;
-  final String? path;
-  final int? statusCode;
-  final String? statusMessage;
-  final Map<String, dynamic>? requestHeaders;
-  final Map<String, String>? headers;
-  final Map<String, dynamic>? body;
-  final ISpectDioInterceptorSettings settings;
-  final DioErrorData errorData;
-  final RedactionService? redactor;
-
-  static const getKey = 'http-error';
+  final ISpectDioInterceptorSettings _settings;
+  final DioErrorData _errorData;
 
   @override
-  String get textMessage {
-    final buffer = StringBuffer('[$method] $message');
+  ISpectDioInterceptorSettings get settings => _settings;
 
-    if (statusCode != null) {
-      buffer.write('\nStatus: $statusCode');
-    }
-
-    if (settings.printErrorMessage &&
-        (statusMessage != null || errorData.exception?.message != null)) {
-      buffer.write(
-        '\nMessage: ${statusMessage ?? errorData.exception?.message ?? ''}',
-      );
-    }
-
-    if (settings.printErrorData && body != null) {
-      final prettyData = JsonTruncatorService.pretty(
-        body,
-      );
-      buffer.write('\nData: $prettyData');
-    }
-
-    if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(
-        headers,
-      );
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
-
-    return buffer.toString().truncate()!;
-  }
+  DioErrorData get errorData => _errorData;
 }
