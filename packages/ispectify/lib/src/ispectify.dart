@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/factory/log_factory.dart';
+import 'package:ispectify/src/logger/log_pipeline.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
@@ -52,6 +53,13 @@ class ISpectLogger {
     _filter = filter;
     _errorHandler = errorHandler ?? ISpectErrorHandler(resolvedOptions);
     _history = history ?? DefaultISpectLoggerHistory(resolvedOptions);
+    _pipeline = LogPipeline(
+      streamController: _loggerStreamController,
+      options: _options,
+      consoleLogger: _logger,
+      history: _history,
+      filter: _filter,
+    );
     _replaceObserver(observer);
   }
 
@@ -71,6 +79,7 @@ class ISpectLogger {
   late ISpectBaseLogger _logger;
   late ISpectErrorHandler _errorHandler;
   ISpectFilter? _filter;
+  late LogPipeline _pipeline;
 
   /// Observers notified of log events (in insertion order, without duplicates).
   final LinkedHashSet<ISpectObserver> _observers =
@@ -198,6 +207,13 @@ class ISpectLogger {
         history: _history.history,
       );
     }
+
+    _pipeline.update(
+      options: _options,
+      consoleLogger: _logger,
+      history: _history,
+      filter: _filter,
+    );
   }
 
   /// Stream controller for broadcasting log events.
@@ -238,11 +254,6 @@ class ISpectLogger {
     if (!_ensureActive()) return;
     _options.enabled = false;
   }
-
-  /// Checks if a log entry is approved by the filter.
-  ///
-  /// Returns true if there is no filter or if the filter approves the log.
-  bool _isApprovedByFilter(ISpectLogData data) => _filter?.apply(data) ?? true;
 
   // ======= LOGGING METHODS =======
 
@@ -528,14 +539,10 @@ class ISpectLogger {
   /// Processes a log entry based on the provided `ISpectLogData`.
   ///
   /// This method performs the following steps:
-  /// 1. Checks if logging is enabled via the `_options.enabled` flag.
-  /// 2. Verifies if the log entry passes the filter criteria using `_isApprovedByFilter`.
-  /// 3. If the log is an error (`isError` is `true`), it triggers the `onError` callback
-  ///    on the `_observer`. Otherwise, it triggers the `onLog` callback.
-  /// 4. Adds the log entry to the `_loggerStreamController` stream.
-  /// 5. Handles additional output processing via `_handleForOutputs`.
-  /// 6. If console logging is enabled (`_options.useConsoleLogs`), logs the message
-  ///    to the console using `_logger.log` with the appropriate log level and pen.
+  /// 1. Verifies that the logger is still active.
+  /// 2. Uses the [_pipeline] to determine whether the log should be processed.
+  /// 3. Notifies observers when the log is accepted.
+  /// 4. Delegates side-effects (stream broadcast, history, console) to the pipeline.
   ///
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectLogData` object.
@@ -545,8 +552,7 @@ class ISpectLogger {
     bool skipObserverNotification = false,
   }) {
     if (!_ensureActive()) return;
-    if (!_options.enabled) return;
-    if (!_isApprovedByFilter(data)) return;
+    if (!_pipeline.shouldProcess(data)) return;
 
     if (!skipObserverNotification) {
       if (data.isError) {
@@ -556,27 +562,7 @@ class ISpectLogger {
       }
     }
 
-    _loggerStreamController.add(data);
-    _handleForOutputs(data);
-
-    if (_options.useConsoleLogs) {
-      _logger.log(
-        '${data.header}${data.textMessage}'.truncate(
-          maxLength: _options.logTruncateLength,
-        ),
-        level: data.logLevel ?? (data.isError ? LogLevel.error : null),
-        pen: data.pen ?? _options.penByKey(data.key),
-      );
-    }
-  }
-
-  /// Handles log data for output destinations.
-  ///
-  /// Currently, this only adds the log to history, but could be extended
-  /// to handle other output destinations.
-  void _handleForOutputs(ISpectLogData data) {
-    if (!_ensureActive()) return;
-    _history.add(data);
+    _pipeline.dispatch(data);
   }
 
   /// Releases resources held by this logger.
