@@ -41,12 +41,12 @@ abstract class ConsoleUtils {
   /// ANSI color mapping for different log levels.
   ///
   /// This map associates each `LogLevel` with a corresponding ANSI color.
-  static final Map<LogLevel, AnsiPen> ansiColors = {
+  static final Map<LogLevel, AnsiPen> ansiColors = Map.unmodifiable({
     LogLevel.critical: AnsiPen()..red(),
     LogLevel.error: AnsiPen()..red(),
     LogLevel.warning: AnsiPen()..yellow(),
     LogLevel.verbose: AnsiPen()..gray(),
     LogLevel.info: AnsiPen()..blue(),
     LogLevel.debug: AnsiPen()..gray(),
-  };
+  });
 }
