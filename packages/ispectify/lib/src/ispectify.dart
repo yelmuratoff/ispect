@@ -297,6 +297,7 @@ class ISpectLogger {
   ///
   /// - `log`: The custom log data to process.
   void logData(ISpectLogData log) {
+    if (!_ensureActive()) return;
     _processLog(log);
   }
 
@@ -312,14 +313,12 @@ class ISpectLogger {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    final log = LogFactory.createLog(
-      level: LogLevel.critical,
+    _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
-      options: _options,
+      logLevel: LogLevel.critical,
     );
-    _processLog(log);
   }
 
   /// Creates a debug level log entry.
@@ -328,12 +327,10 @@ class ISpectLogger {
   ///
   /// - `msg`: The log message.
   void debug(Object? msg) {
-    final log = LogFactory.createLog(
-      level: LogLevel.debug,
+    _handleLog(
       message: msg,
-      options: _options,
+      logLevel: LogLevel.debug,
     );
-    _processLog(log);
   }
 
   /// Creates an error level log entry.
@@ -348,14 +345,12 @@ class ISpectLogger {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    final log = LogFactory.createLog(
-      level: LogLevel.error,
+    _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
-      options: _options,
+      logLevel: LogLevel.error,
     );
-    _processLog(log);
   }
 
   /// Creates an info level log entry.
@@ -364,12 +359,10 @@ class ISpectLogger {
   ///
   /// - `msg`: The log message.
   void info(Object? msg) {
-    final log = LogFactory.createLog(
-      level: LogLevel.info,
+    _handleLog(
       message: msg,
-      options: _options,
+      logLevel: LogLevel.info,
     );
-    _processLog(log);
   }
 
   /// Creates a verbose level log entry.
@@ -378,12 +371,10 @@ class ISpectLogger {
   ///
   /// - `msg`: The log message.
   void verbose(Object? msg) {
-    final log = LogFactory.createLog(
-      level: LogLevel.verbose,
+    _handleLog(
       message: msg,
-      options: _options,
+      logLevel: LogLevel.verbose,
     );
-    _processLog(log);
   }
 
   /// Creates a warning level log entry.
@@ -392,12 +383,10 @@ class ISpectLogger {
   ///
   /// - `msg`: The log message.
   void warning(Object? msg) {
-    final log = LogFactory.createLog(
-      level: LogLevel.warning,
+    _handleLog(
       message: msg,
-      options: _options,
+      logLevel: LogLevel.warning,
     );
-    _processLog(log);
   }
 
   /// Creates a "good" log entry.
@@ -476,14 +465,14 @@ class ISpectLogger {
     if (!_ensureActive()) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
-    final data = ISpectLogData(
-      message?.toString() ?? '',
-      key: logType.key,
-      title: _options.titleByKey(logType.key),
+    final data = LogFactory.fromType(
+      type: logType,
+      level: logLevel,
+      message: message,
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? _options.penByKey(logType.key),
-      logLevel: logLevel,
+      pen: pen,
+      options: _options,
     );
 
     _processLog(data);

@@ -236,10 +236,11 @@ class ISpectFilter implements Filter<ISpectLogData> {
     List<Type>? types,
     List<String>? logTypeKeys,
     String? searchQuery,
-  }) => ISpectFilter(
-      titles: titles ?? _titles,
-      types: types ?? _types,
-      logTypeKeys: logTypeKeys ?? _logTypeKeys,
-      searchQuery: searchQuery ?? _searchQuery,
-    );
+  }) =>
+      ISpectFilter(
+        titles: titles ?? _titles,
+        types: types ?? _types,
+        logTypeKeys: logTypeKeys ?? _logTypeKeys,
+        searchQuery: searchQuery ?? _searchQuery,
+      );
 }

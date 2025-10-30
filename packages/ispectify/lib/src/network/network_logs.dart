@@ -292,8 +292,7 @@ class NetworkErrorLog extends ISpectLogData {
 
     _appendPrettySection(
       buffer: buffer,
-      shouldPrint:
-          _settings.printErrorData && (_body?.isNotEmpty ?? false),
+      shouldPrint: _settings.printErrorData && (_body?.isNotEmpty ?? false),
       label: 'Data',
       value: _body,
     );

@@ -7,6 +7,31 @@ import 'package:ispectify/ispectify.dart';
 class LogFactory {
   const LogFactory._();
 
+  /// Creates a log entry using an explicit [ISpectLogType].
+  ///
+  /// The [level] parameter allows overriding the default level derived from
+  /// the provided [type].
+  static ISpectLogData fromType({
+    required ISpectLogType type,
+    required Object? message,
+    LogLevel? level,
+    Object? exception,
+    StackTrace? stackTrace,
+    AnsiPen? pen,
+    ISpectLoggerOptions? options,
+  }) {
+    final resolvedLevel = level ?? type.level;
+    return ISpectLogData(
+      message?.toString() ?? '',
+      key: type.key,
+      title: options?.titleByKey(type.key),
+      exception: exception,
+      stackTrace: stackTrace,
+      pen: pen ?? options?.penByKey(type.key),
+      logLevel: resolvedLevel,
+    );
+  }
+
   /// Creates a standardized log entry from the given parameters.
   ///
   /// - `level`: The severity level of the log
@@ -26,14 +51,14 @@ class LogFactory {
     ISpectLoggerOptions? options,
   }) {
     final type = ISpectLogType.fromLogLevel(level);
-    return ISpectLogData(
-      message?.toString() ?? '',
-      key: type.key,
-      title: options?.titleByKey(type.key),
+    return fromType(
+      type: type,
+      level: level,
+      message: message,
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? options?.penByKey(type.key),
-      logLevel: level,
+      pen: pen,
+      options: options,
     );
   }
 }
