@@ -53,6 +53,5 @@ extension ISpectStringExtension on String? {
   /// print(''.orDefault('default'));       // Output: 'default'
   /// print('value'.orDefault('default'));  // Output: 'value'
   /// ```
-  String orDefault(String defaultValue) =>
-      isNullOrEmpty ? defaultValue : this!;
+  String orDefault(String defaultValue) => isNullOrEmpty ? defaultValue : this!;
 }

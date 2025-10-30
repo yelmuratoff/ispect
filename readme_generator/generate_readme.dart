@@ -42,7 +42,9 @@ String readVersionFromConfig() {
     }
 
     final content = versionFile.readAsStringSync();
-    final versionLine = content.split('\n').firstWhere(
+    final versionLine = content
+        .split('\n')
+        .firstWhere(
           (line) => line.trim().startsWith('VERSION='),
           orElse: () => 'VERSION=0.0.0',
         );
@@ -111,8 +113,10 @@ void generateReadme(String packageName) {
         readme = readme.replaceAll('{{$key}}', value);
       } else if (value is List) {
         if (key == 'features') {
-          final featuresText =
-              value.cast<String>().map((feature) => '- $feature').join('\n');
+          final featuresText = value
+              .cast<String>()
+              .map((feature) => '- $feature')
+              .join('\n');
           readme = readme.replaceAll('{{$key}}', featuresText);
         }
       }
@@ -184,8 +188,10 @@ void generateRootReadme() {
         readme = readme.replaceAll('{{$key}}', value);
       } else if (value is List) {
         if (key == 'features') {
-          final featuresText =
-              value.cast<String>().map((feature) => '- $feature').join('\n');
+          final featuresText = value
+              .cast<String>()
+              .map((feature) => '- $feature')
+              .join('\n');
           readme = readme.replaceAll('{{$key}}', featuresText);
         }
       }

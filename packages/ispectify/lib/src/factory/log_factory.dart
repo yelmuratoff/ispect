@@ -44,7 +44,9 @@ class LogFactory {
   /// - `options`: Configuration options for title and pen defaults
   ///
   /// Returns an `ISpectLogData` instance configured according to the log level.
-  @Deprecated('Use fromType(type: ISpectLogType.fromLogLevel(level), ...) instead')
+  @Deprecated(
+    'Use fromType(type: ISpectLogType.fromLogLevel(level), ...) instead',
+  )
   static ISpectLogData createLog({
     required LogLevel level,
     required Object? message,

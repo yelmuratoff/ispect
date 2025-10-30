@@ -89,7 +89,9 @@ Web: $kIsWeb
         final handler = LogsFileFactory.create();
         final path = handler.getFilePath(logFile);
 
-        ISpect.logger.info('✅ Created $logType log file: ${path.split('/').last}');
+        ISpect.logger.info(
+          '✅ Created $logType log file: ${path.split('/').last}',
+        );
       } catch (e, st) {
         ISpect.logger.handle(
           message: '❌ Failed to create $logType log file',
