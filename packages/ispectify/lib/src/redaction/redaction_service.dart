@@ -87,18 +87,10 @@ class RedactionService {
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
-  }) {
-    final callIgnored =
-        (ignoredValues == null || ignoredValues.isEmpty) ? null : ignoredValues;
-    final callIgnoredKeysLower = (ignoredKeys == null || ignoredKeys.isEmpty)
-        ? null
-        : ignoredKeys.map((e) => e.toLowerCase()).toSet();
-
-    return _createWalker(
-      ignoredValues: callIgnored,
-      ignoredKeysLower: callIgnoredKeysLower,
-    ).redactHeaders(headers);
-  }
+  }) =>
+      _createWalker(
+        _RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+      ).redactHeaders(headers);
 
   /// Redacts any JSON-like payload (Map/List/scalars).
   Object? redact(
@@ -108,26 +100,14 @@ class RedactionService {
     Set<String>? ignoredKeys,
   }) =>
       _createWalker(
-        ignoredValues: (ignoredValues == null || ignoredValues.isEmpty)
-            ? null
-            : ignoredValues,
-        ignoredKeysLower: (ignoredKeys == null || ignoredKeys.isEmpty)
-            ? null
-            : ignoredKeys.map((e) => e.toLowerCase()).toSet(),
+        _RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
       ).redact(
         data,
         keyName: keyName,
       );
 
-  _RedactionWalker _createWalker({
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeysLower,
-  }) =>
-      _RedactionWalker(
-        _config,
-        ignoredValues: ignoredValues,
-        ignoredKeysLower: ignoredKeysLower,
-      );
+  _RedactionWalker _createWalker(_RedactionRequest request) =>
+      _RedactionWalker(_config, request);
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
@@ -172,16 +152,44 @@ class RedactionService {
   }
 }
 
-class _RedactionWalker {
-  const _RedactionWalker(
-    this.config, {
+class _RedactionRequest {
+  const _RedactionRequest._({
     this.ignoredValues,
     this.ignoredKeysLower,
   });
 
-  final _RedactionConfig config;
+  factory _RedactionRequest.fromOverrides(
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  ) {
+    final normalizedValues = (ignoredValues == null || ignoredValues.isEmpty)
+        ? null
+        : Set<String>.unmodifiable(ignoredValues);
+    final normalizedKeys = (ignoredKeys == null || ignoredKeys.isEmpty)
+        ? null
+        : Set<String>.unmodifiable(
+            ignoredKeys.map((e) => e.toLowerCase()),
+          );
+    if (normalizedValues == null && normalizedKeys == null) {
+      return empty;
+    }
+    return _RedactionRequest._(
+      ignoredValues: normalizedValues,
+      ignoredKeysLower: normalizedKeys,
+    );
+  }
+
+  static const empty = _RedactionRequest._();
+
   final Set<String>? ignoredValues;
   final Set<String>? ignoredKeysLower;
+}
+
+class _RedactionWalker {
+  const _RedactionWalker(this.config, this.request);
+
+  final _RedactionConfig config;
+  final _RedactionRequest request;
 
   Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
     final out = <String, Object?>{};
@@ -456,11 +464,11 @@ class _RedactionWalker {
 
   bool _isIgnoredValue(String value) =>
       config.ignoredValues.contains(value) ||
-      (ignoredValues?.contains(value) ?? false);
+      (request.ignoredValues?.contains(value) ?? false);
 
   bool _isIgnoredKey(String keyLower) =>
       config.ignoredKeyNamesLower.contains(keyLower) ||
-      (ignoredKeysLower?.contains(keyLower) ?? false);
+      (request.ignoredKeysLower?.contains(keyLower) ?? false);
 
   bool _isSensitiveKey(String? key) {
     if (key == null) return false;
