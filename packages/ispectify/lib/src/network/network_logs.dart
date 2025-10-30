@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/enums/log_type.dart';
 import 'package:ispectify/src/models/data.dart';
@@ -8,28 +10,33 @@ import 'package:ispectify/src/utils/string_extension.dart';
 
 Map<String, dynamic> _mapFromEntries(
   Iterable<MapEntry<String, Object?>> entries,
+) =>
+    Map<String, dynamic>.fromEntries(entries);
+
+String _composeNetworkMessage(
+  String header,
+  List<String? Function()> sections,
 ) {
-  final data = <String, dynamic>{};
-  for (final entry in entries) {
-    data[entry.key] = entry.value;
+  final buffer = StringBuffer(header);
+  for (final build in sections) {
+    final content = build();
+    if (content != null && content.isNotEmpty) {
+      buffer.write('\n$content');
+    }
   }
-  return data;
+  return buffer.toString().truncate() ?? '';
 }
 
-Map<String, dynamic>? _cloneMap(Map<String, dynamic>? source) =>
-    source == null ? null : Map<String, dynamic>.from(source);
-
-void _appendPrettySection({
-  required StringBuffer buffer,
-  required bool shouldPrint,
+String? _prettySection({
+  required bool enabled,
   required String label,
   required Object? value,
+  bool skipEmptyMap = false,
 }) {
-  if (!shouldPrint || value == null) return;
-  if (value is Map && value.isEmpty) return;
-
+  if (!enabled || value == null) return null;
+  if (skipEmptyMap && value is Map && value.isEmpty) return null;
   final formatted = JsonTruncatorService.pretty(value);
-  buffer.write('\n$label: $formatted');
+  return '$label: $formatted';
 }
 
 class NetworkRequestLog extends ISpectLogData {
@@ -75,7 +82,8 @@ class NetworkRequestLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get headers => _cloneMap(_headers);
+  Map<String, dynamic>? get headers =>
+      _headers == null ? null : UnmodifiableMapView(_headers);
 
   Object? get body => _body;
 
@@ -83,23 +91,24 @@ class NetworkRequestLog extends ISpectLogData {
 
   @override
   String get textMessage {
-    final buffer = StringBuffer('[${method ?? '-'}] ${message ?? ''}');
-
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint: _settings.printRequestData && _body != null,
-      label: 'Data',
-      value: _body,
+    final header = '[${method ?? '-'}] ${message ?? ''}';
+    return _composeNetworkMessage(
+      header,
+      [
+        () => _prettySection(
+              enabled: _settings.printRequestData && _body != null,
+              label: 'Data',
+              value: _body,
+            ),
+        () => _prettySection(
+              enabled: _settings.printRequestHeaders &&
+                  (_headers?.isNotEmpty ?? false),
+              label: 'Headers',
+              value: _headers,
+              skipEmptyMap: true,
+            ),
+      ],
     );
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint:
-          _settings.printRequestHeaders && (_headers?.isNotEmpty ?? false),
-      label: 'Headers',
-      value: _headers,
-    );
-
-    return buffer.toString().truncate() ?? '';
   }
 
   String get logKey => _logKey;
@@ -165,11 +174,14 @@ class NetworkResponseLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get requestHeaders => _cloneMap(_requestHeaders);
+  Map<String, dynamic>? get requestHeaders =>
+      _requestHeaders == null ? null : UnmodifiableMapView(_requestHeaders);
 
-  Map<String, dynamic>? get headers => _cloneMap(_headers);
+  Map<String, dynamic>? get headers =>
+      _headers == null ? null : UnmodifiableMapView(_headers);
 
-  Map<String, dynamic>? get requestBody => _cloneMap(_requestBody);
+  Map<String, dynamic>? get requestBody =>
+      _requestBody == null ? null : UnmodifiableMapView(_requestBody);
 
   Object? get responseBody => _responseBody;
 
@@ -177,32 +189,28 @@ class NetworkResponseLog extends ISpectLogData {
 
   @override
   String get textMessage {
-    final buffer =
-        StringBuffer('[$_logKey] [${method ?? '-'}] ${message ?? ''}');
-
-    if (statusCode != null) {
-      buffer.write('\nStatus: $statusCode');
-    }
-
-    if (_settings.printResponseMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
-    }
-
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint: _settings.printResponseData && _responseBody != null,
-      label: 'Data',
-      value: _responseBody,
+    final header = '[$_logKey] [${method ?? '-'}] ${message ?? ''}';
+    return _composeNetworkMessage(
+      header,
+      [
+        () => statusCode != null ? 'Status: $statusCode' : null,
+        () => _settings.printResponseMessage && statusMessage != null
+            ? 'Message: $statusMessage'
+            : null,
+        () => _prettySection(
+              enabled: _settings.printResponseData && _responseBody != null,
+              label: 'Data',
+              value: _responseBody,
+            ),
+        () => _prettySection(
+              enabled: _settings.printResponseHeaders &&
+                  (_headers?.isNotEmpty ?? false),
+              label: 'Headers',
+              value: _headers,
+              skipEmptyMap: true,
+            ),
+      ],
     );
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint:
-          _settings.printResponseHeaders && (_headers?.isNotEmpty ?? false),
-      label: 'Headers',
-      value: _headers,
-    );
-
-    return buffer.toString().truncate() ?? '';
   }
 
   String get logKey => _logKey;
@@ -270,41 +278,42 @@ class NetworkErrorLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get requestHeaders => _cloneMap(_requestHeaders);
+  Map<String, dynamic>? get requestHeaders =>
+      _requestHeaders == null ? null : UnmodifiableMapView(_requestHeaders);
 
-  Map<String, dynamic>? get headers => _cloneMap(_headers);
+  Map<String, dynamic>? get headers =>
+      _headers == null ? null : UnmodifiableMapView(_headers);
 
-  Map<String, dynamic>? get body => _cloneMap(_body);
+  Map<String, dynamic>? get body =>
+      _body == null ? null : UnmodifiableMapView(_body);
 
   NetworkLogPrintOptions get settings => _settings;
 
   @override
   String get textMessage {
-    final buffer = StringBuffer('[${method ?? '-'}] ${message ?? ''}');
-
-    if (statusCode != null) {
-      buffer.write('\nStatus: $statusCode');
-    }
-
-    if (_settings.printErrorMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
-    }
-
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint: _settings.printErrorData && (_body?.isNotEmpty ?? false),
-      label: 'Data',
-      value: _body,
+    final header = '[${method ?? '-'}] ${message ?? ''}';
+    return _composeNetworkMessage(
+      header,
+      [
+        () => statusCode != null ? 'Status: $statusCode' : null,
+        () => _settings.printErrorMessage && statusMessage != null
+            ? 'Message: $statusMessage'
+            : null,
+        () => _prettySection(
+              enabled: _settings.printErrorData && (_body?.isNotEmpty ?? false),
+              label: 'Data',
+              value: _body,
+              skipEmptyMap: true,
+            ),
+        () => _prettySection(
+              enabled: _settings.printErrorHeaders &&
+                  (_headers?.isNotEmpty ?? false),
+              label: 'Headers',
+              value: _headers,
+              skipEmptyMap: true,
+            ),
+      ],
     );
-    _appendPrettySection(
-      buffer: buffer,
-      shouldPrint:
-          _settings.printErrorHeaders && (_headers?.isNotEmpty ?? false),
-      label: 'Headers',
-      value: _headers,
-    );
-
-    return buffer.toString().truncate() ?? '';
   }
 
   String get logKey => _logKey;

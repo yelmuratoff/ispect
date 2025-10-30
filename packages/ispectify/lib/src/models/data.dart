@@ -27,8 +27,13 @@ class ISpectLogData {
     this.title,
     this.pen,
     this.key,
-    this.additionalData,
-  }) : _time = time ?? DateTime.now();
+    Map<String, dynamic>? additionalData,
+  })  : additionalData = additionalData == null
+            ? null
+            : Map<String, dynamic>.unmodifiable(
+                Map<String, dynamic>.from(additionalData),
+              ),
+        _time = time ?? DateTime.now();
 
   /// The timestamp when the log entry was created.
   final DateTime _time;

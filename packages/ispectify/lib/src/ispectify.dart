@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/factory/log_factory.dart';
@@ -70,8 +71,9 @@ class ISpectLogger {
   late ISpectErrorHandler _errorHandler;
   ISpectFilter? _filter;
 
-  /// List of observers that will be notified of log events.
-  final List<ISpectObserver> _observers = [];
+  /// Observers notified of log events (in insertion order, without duplicates).
+  final LinkedHashSet<ISpectObserver> _observers =
+      LinkedHashSet<ISpectObserver>();
 
   void _replaceObserver(ISpectObserver? observer) {
     if (_isDisposed) return;
@@ -94,9 +96,7 @@ class ISpectLogger {
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
     if (!_ensureActive()) return;
-    if (!_observers.contains(observer)) {
-      _observers.add(observer);
-    }
+    _observers.add(observer);
   }
 
   /// Removes an observer from the list of registered observers.

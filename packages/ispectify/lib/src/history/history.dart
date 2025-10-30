@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:ispectify/ispectify.dart';
 import 'package:meta/meta.dart';
 export 'file_log/file_log_history.dart';
@@ -37,10 +39,10 @@ class DefaultISpectLoggerHistory implements ILogHistory {
   final ISpectLoggerOptions settings;
 
   /// Internal list to store log history.
-  final List<ISpectLogData> _history = [];
+  final ListQueue<ISpectLogData> _history = ListQueue<ISpectLogData>();
 
   @override
-  List<ISpectLogData> get history => List.unmodifiable(_history);
+  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(_history);
 
   @override
   void clear() {
@@ -55,10 +57,8 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     if (settings.maxHistoryItems <= 0) return;
 
     // Enforce max history size
-    if (_history.length >= settings.maxHistoryItems) {
-      _history.removeAt(0); // Remove oldest entry
-    }
-    _history.add(data);
+    _trimIfNeeded();
+    _history.addLast(data);
   }
 
   /// Adds data to history bypassing the useHistory check.
@@ -68,9 +68,18 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     // If maxHistoryItems is 0 or negative, disable history
     if (settings.maxHistoryItems <= 0) return;
 
-    if (_history.length >= settings.maxHistoryItems) {
-      _history.removeAt(0); // Remove oldest entry
+    _trimIfNeeded();
+    _history.addLast(data);
+  }
+
+  void _trimIfNeeded() {
+    final maxItems = settings.maxHistoryItems;
+    if (maxItems <= 0) {
+      _history.clear();
+      return;
     }
-    _history.add(data);
+    while (_history.length >= maxItems) {
+      _history.removeFirst();
+    }
   }
 }
