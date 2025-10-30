@@ -64,23 +64,28 @@ class _ISpectLoggerSettingsBottomSheetState
     widget.controller.addListener(_handleUpdate);
 
     // Initialize settings in controller if not already set from options
-    final initialSettings = widget.options.initialSettings;
-    if (initialSettings != null &&
-        widget.controller.settings != initialSettings) {
-      widget.controller.updateSettings(initialSettings);
-      _applySettingsToLogger(initialSettings);
-    } else {
-      // Ensure controller has current logger state
-      final currentSettings = ISpectSettingsState(
-        enabled: widget.logger.value.options.enabled,
-        useConsoleLogs: widget.logger.value.options.useConsoleLogs,
-        useHistory: widget.logger.value.options.useHistory,
-        disabledLogTypes: widget.controller.settings.disabledLogTypes,
-      );
-      if (widget.controller.settings != currentSettings) {
-        widget.controller.updateSettings(currentSettings);
+    // Use addPostFrameCallback to avoid notifying listeners during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final initialSettings = widget.options.initialSettings;
+      if (initialSettings != null &&
+          widget.controller.settings != initialSettings) {
+        widget.controller.updateSettings(initialSettings);
+        _applySettingsToLogger(initialSettings);
+      } else {
+        // Ensure controller has current logger state
+        final currentSettings = ISpectSettingsState(
+          enabled: widget.logger.value.options.enabled,
+          useConsoleLogs: widget.logger.value.options.useConsoleLogs,
+          useHistory: widget.logger.value.options.useHistory,
+          disabledLogTypes: widget.controller.settings.disabledLogTypes,
+        );
+        if (widget.controller.settings != currentSettings) {
+          widget.controller.updateSettings(currentSettings);
+        }
       }
-    }
+    });
   }
 
   void _handleUpdate() {
