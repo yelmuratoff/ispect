@@ -16,6 +16,22 @@ Map<String, dynamic> _mapFromEntries(
   return data;
 }
 
+Map<String, dynamic>? _cloneMap(Map<String, dynamic>? source) =>
+    source == null ? null : Map<String, dynamic>.from(source);
+
+void _appendPrettySection({
+  required StringBuffer buffer,
+  required bool shouldPrint,
+  required String label,
+  required Object? value,
+}) {
+  if (!shouldPrint || value == null) return;
+  if (value is Map && value.isEmpty) return;
+
+  final formatted = JsonTruncatorService.pretty(value);
+  buffer.write('\n$label: $formatted');
+}
+
 class NetworkRequestLog extends ISpectLogData {
   NetworkRequestLog(
     super.message, {
@@ -59,10 +75,7 @@ class NetworkRequestLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get headers {
-    final headers = _headers;
-    return headers == null ? null : Map<String, dynamic>.from(headers);
-  }
+  Map<String, dynamic>? get headers => _cloneMap(_headers);
 
   Object? get body => _body;
 
@@ -72,18 +85,19 @@ class NetworkRequestLog extends ISpectLogData {
   String get textMessage {
     final buffer = StringBuffer('[${method ?? '-'}] ${message ?? ''}');
 
-    if (_settings.printRequestData && _body != null) {
-      final prettyData = JsonTruncatorService.pretty(_body);
-      buffer.write('\nData: $prettyData');
-    }
-
-    final headers = _headers;
-    if (_settings.printRequestHeaders &&
-        headers != null &&
-        headers.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint: _settings.printRequestData && _body != null,
+      label: 'Data',
+      value: _body,
+    );
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint:
+          _settings.printRequestHeaders && (_headers?.isNotEmpty ?? false),
+      label: 'Headers',
+      value: _headers,
+    );
 
     return buffer.toString().truncate() ?? '';
   }
@@ -151,20 +165,11 @@ class NetworkResponseLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get requestHeaders {
-    final headers = _requestHeaders;
-    return headers == null ? null : Map<String, dynamic>.from(headers);
-  }
+  Map<String, dynamic>? get requestHeaders => _cloneMap(_requestHeaders);
 
-  Map<String, dynamic>? get headers {
-    final headers = _headers;
-    return headers == null ? null : Map<String, dynamic>.from(headers);
-  }
+  Map<String, dynamic>? get headers => _cloneMap(_headers);
 
-  Map<String, dynamic>? get requestBody {
-    final body = _requestBody;
-    return body == null ? null : Map<String, dynamic>.from(body);
-  }
+  Map<String, dynamic>? get requestBody => _cloneMap(_requestBody);
 
   Object? get responseBody => _responseBody;
 
@@ -183,18 +188,19 @@ class NetworkResponseLog extends ISpectLogData {
       buffer.write('\nMessage: $statusMessage');
     }
 
-    if (_settings.printResponseData && _responseBody != null) {
-      final prettyData = JsonTruncatorService.pretty(_responseBody);
-      buffer.write('\nData: $prettyData');
-    }
-
-    final headers = _headers;
-    if (_settings.printResponseHeaders &&
-        headers != null &&
-        headers.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint: _settings.printResponseData && _responseBody != null,
+      label: 'Data',
+      value: _responseBody,
+    );
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint:
+          _settings.printResponseHeaders && (_headers?.isNotEmpty ?? false),
+      label: 'Headers',
+      value: _headers,
+    );
 
     return buffer.toString().truncate() ?? '';
   }
@@ -264,20 +270,11 @@ class NetworkErrorLog extends ISpectLogData {
   final NetworkLogPrintOptions _settings;
   final String _logKey;
 
-  Map<String, dynamic>? get requestHeaders {
-    final headers = _requestHeaders;
-    return headers == null ? null : Map<String, dynamic>.from(headers);
-  }
+  Map<String, dynamic>? get requestHeaders => _cloneMap(_requestHeaders);
 
-  Map<String, dynamic>? get headers {
-    final headers = _headers;
-    return headers == null ? null : Map<String, dynamic>.from(headers);
-  }
+  Map<String, dynamic>? get headers => _cloneMap(_headers);
 
-  Map<String, dynamic>? get body {
-    final bodyData = _body;
-    return bodyData == null ? null : Map<String, dynamic>.from(bodyData);
-  }
+  Map<String, dynamic>? get body => _cloneMap(_body);
 
   NetworkLogPrintOptions get settings => _settings;
 
@@ -293,17 +290,20 @@ class NetworkErrorLog extends ISpectLogData {
       buffer.write('\nMessage: $statusMessage');
     }
 
-    final bodyData = _body;
-    if (_settings.printErrorData && bodyData != null && bodyData.isNotEmpty) {
-      final prettyData = JsonTruncatorService.pretty(bodyData);
-      buffer.write('\nData: $prettyData');
-    }
-
-    final headers = _headers;
-    if (_settings.printErrorHeaders && headers != null && headers.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint:
+          _settings.printErrorData && (_body?.isNotEmpty ?? false),
+      label: 'Data',
+      value: _body,
+    );
+    _appendPrettySection(
+      buffer: buffer,
+      shouldPrint:
+          _settings.printErrorHeaders && (_headers?.isNotEmpty ?? false),
+      label: 'Headers',
+      value: _headers,
+    );
 
     return buffer.toString().truncate() ?? '';
   }

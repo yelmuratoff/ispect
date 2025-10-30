@@ -43,30 +43,23 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) {
-    _init(filter, options, logger, observer, errorHandler, history);
+  }) : _loggerStreamController = StreamController<ISpectLogData>.broadcast() {
+    final resolvedOptions = options ?? ISpectLoggerOptions();
+    _options = resolvedOptions;
+    _logger = logger ?? ISpectBaseLogger();
+    _filter = filter;
+    _errorHandler = errorHandler ?? ISpectErrorHandler(resolvedOptions);
+    _history = history ?? DefaultISpectLoggerHistory(resolvedOptions);
+    _replaceObserver(observer);
   }
 
-  /// Initializes all components of the inspector.
-  ///
-  /// This method is called from the constructor to set up the instance
-  /// with provided or default components.
-  void _init(
-    ISpectFilter? filter,
-    ISpectLoggerOptions? options,
-    ISpectBaseLogger? logger,
-    ISpectObserver? observer,
-    ISpectErrorHandler? errorHandler,
-    ILogHistory? history,
-  ) {
-    _filter = filter;
-    // ignore: deprecated_member_use_from_same_package
-    _observer = observer;
-    _options = options ?? ISpectLoggerOptions();
-    _logger = logger ?? ISpectBaseLogger();
-    _errorHandler = errorHandler ?? ISpectErrorHandler(_options);
-    _history = history ?? DefaultISpectLoggerHistory(_options);
-  }
+  /// Broadcast stream controller for log events.
+  final StreamController<ISpectLogData> _loggerStreamController;
+
+  bool _isDisposed = false;
+
+  /// Indicates whether this logger has been disposed and can no longer emit logs.
+  bool get isDisposed => _isDisposed;
 
   late ISpectLoggerOptions _options;
 
@@ -75,30 +68,22 @@ class ISpectLogger {
 
   late ISpectBaseLogger _logger;
   late ISpectErrorHandler _errorHandler;
-  late ISpectFilter? _filter;
+  ISpectFilter? _filter;
 
   /// List of observers that will be notified of log events.
   final List<ISpectObserver> _observers = [];
 
-  /// Backward compatibility: Setter for single observer.
-  ///
-  /// Replaces all existing observers with the provided observer.
-  /// Use [addObserver] for adding multiple observers.
-  @Deprecated('Use addObserver() and removeObserver() for better control')
-  set _observer(ISpectObserver? observer) {
+  void _replaceObserver(ISpectObserver? observer) {
+    if (_isDisposed) return;
     _observers.clear();
     if (observer != null) {
       _observers.add(observer);
     }
   }
 
-  /// Backward compatibility: Getter for single observer.
-  ///
-  /// Returns the first observer if any exist, otherwise null.
-  @Deprecated('Use addObserver() and removeObserver() for better control')
-  ISpectObserver? get _observer => _observers.isEmpty ? null : _observers.first;
-
   late ILogHistory _history;
+
+  bool _ensureActive() => !_isDisposed;
 
   // ======= OBSERVER METHODS =======
 
@@ -108,6 +93,7 @@ class ISpectLogger {
   ///
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
+    if (!_ensureActive()) return;
     if (!_observers.contains(observer)) {
       _observers.add(observer);
     }
@@ -117,11 +103,13 @@ class ISpectLogger {
   ///
   /// - `observer`: The observer to remove.
   void removeObserver(ISpectObserver observer) {
+    if (!_ensureActive()) return;
     _observers.remove(observer);
   }
 
   /// Removes all registered observers.
   void clearObservers() {
+    if (!_ensureActive()) return;
     _observers.clear();
   }
 
@@ -130,6 +118,9 @@ class ISpectLogger {
   /// Wraps each observer call in a try-catch to prevent one failing
   /// observer from affecting others.
   void _notifyObservers(void Function(ISpectObserver) notify) {
+    if (_observers.isEmpty) return;
+    if (!_ensureActive()) return;
+
     for (final observer in _observers) {
       try {
         notify(observer);
@@ -162,45 +153,49 @@ class ISpectLogger {
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
-    _filter = filter ?? _filter; // Fixed null-aware assignment
-    _options = options ?? _options;
-    // ignore: deprecated_member_use_from_same_package
-    _observer = observer ?? _observer;
-    _logger = logger ?? _logger;
+    if (!_ensureActive()) return;
+
+    if (filter != null) {
+      _filter = filter;
+    }
+
+    if (observer != null) {
+      _replaceObserver(observer);
+    }
+
+    if (options != null) {
+      _options = options;
+    }
+
+    if (logger != null) {
+      _logger = logger;
+    }
+
     if (errorHandler != null) {
       _errorHandler = errorHandler;
     } else {
-      // Preserve any injected custom error handler implementation.
-      // If current handler is the default implementation, rebuild it to reflect new options.
-      if (_errorHandler.runtimeType == ISpectErrorHandler) {
-        _errorHandler = ISpectErrorHandler(_options);
-      }
-      // Otherwise keep existing custom error handler as-is.
+      // Rebuild default handler when options change.
+      _errorHandler = ISpectErrorHandler(_options);
     }
+
     if (history != null) {
       _history = history;
-    } else {
-      // Preserve any injected custom history implementation.
-      // If current history is the default in-memory implementation, rebuild it to reflect new options.
-      if (_history is DefaultISpectLoggerHistory) {
-        _history = DefaultISpectLoggerHistory(
-          _options,
-          history: _history.history,
-        );
-      }
-      // Otherwise keep existing custom history instance as-is.
+    } else if (_history is DefaultISpectLoggerHistory) {
+      // Rebuild default history to inherit updated options while
+      // keeping the accumulated entries.
+      _history = DefaultISpectLoggerHistory(
+        _options,
+        history: _history.history,
+      );
     }
   }
 
   /// Stream controller for broadcasting log events.
-  final _loggerStreamController = StreamController<ISpectLogData>.broadcast();
-
   /// Stream of log data that can be subscribed to for real-time monitoring.
   ///
   /// This stream broadcasts all log events that pass through the filter.
   /// Multiple listeners can subscribe to this stream.
-  Stream<ISpectLogData> get stream =>
-      _loggerStreamController.stream; // Removed redundant .asBroadcastStream()
+  Stream<ISpectLogData> get stream => _loggerStreamController.stream;
 
   /// List of all log entries stored in history.
   List<ISpectLogData> get history => _history.history;
@@ -213,17 +208,26 @@ class ISpectLogger {
   // ======= OPTIONS METHODS =======
 
   /// Clears all log entries from history.
-  void clearHistory() => _history.clear();
+  void clearHistory() {
+    if (!_ensureActive()) return;
+    _history.clear();
+  }
 
   /// Enables the inspector.
   ///
   /// When enabled, log entries will be processed and stored.
-  void enable() => _options.enabled = true;
+  void enable() {
+    if (!_ensureActive()) return;
+    _options.enabled = true;
+  }
 
   /// Disables the inspector.
   ///
   /// When disabled, log entries will not be processed or stored.
-  void disable() => _options.enabled = false;
+  void disable() {
+    if (!_ensureActive()) return;
+    _options.enabled = false;
+  }
 
   /// Checks if a log entry is approved by the filter.
   ///
@@ -246,6 +250,8 @@ class ISpectLogger {
     StackTrace? stackTrace,
     Object? message,
   }) {
+    if (!_ensureActive()) return;
+
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
 
@@ -467,6 +473,8 @@ class ISpectLogger {
     LogLevel? logLevel,
     AnsiPen? pen,
   }) {
+    if (!_ensureActive()) return;
+
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
     final data = ISpectLogData(
       message?.toString() ?? '',
@@ -500,6 +508,7 @@ class ISpectLogger {
     ISpectLogData data, {
     bool skipObserverNotification = false,
   }) {
+    if (!_ensureActive()) return;
     if (!_options.enabled) return;
     if (!_isApprovedByFilter(data)) return;
 
@@ -530,6 +539,18 @@ class ISpectLogger {
   /// Currently, this only adds the log to history, but could be extended
   /// to handle other output destinations.
   void _handleForOutputs(ISpectLogData data) {
+    if (!_ensureActive()) return;
     _history.add(data);
+  }
+
+  /// Releases resources held by this logger.
+  ///
+  /// After calling `dispose`, the logger becomes a no-op and no further
+  /// events will be emitted through the stream.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _observers.clear();
+    await _loggerStreamController.close();
   }
 }

@@ -163,51 +163,69 @@ class SearchFilter implements Filter<ISpectLogData> {
 class ISpectFilter implements Filter<ISpectLogData> {
   /// Creates an `ISpectFilter` that combines title, type, log type key, and search filters.
   ISpectFilter({
-    List<String> titles = const [],
-    List<Type> types = const [],
-    List<String> logTypeKeys = const [],
+    Iterable<String> titles = const [],
+    Iterable<Type> types = const [],
+    Iterable<String> logTypeKeys = const [],
     String? searchQuery,
-  })  : _filters = _buildFilters(titles, types, logTypeKeys, searchQuery),
-        _isEmpty = titles.isEmpty &&
-            types.isEmpty &&
-            logTypeKeys.isEmpty &&
-            (searchQuery?.isEmpty ?? true);
+  })  : _titles = {...titles.where((title) => title.isNotEmpty)},
+        _types = {...types},
+        _logTypeKeys = {...logTypeKeys.where((key) => key.isNotEmpty)},
+        _searchQuery = searchQuery?.trim(),
+        _searchFilter = (searchQuery?.trim().isNotEmpty ?? false)
+            ? SearchFilter(searchQuery!.trim())
+            : null;
 
-  /// List of individual filters applied.
-  final List<Filter<ISpectLogData>> _filters;
+  final Set<String> _titles;
+  final Set<Type> _types;
+  final Set<String> _logTypeKeys;
+  final String? _searchQuery;
+  final SearchFilter? _searchFilter;
 
-  /// Getter for filters to provide read-only access.
-  List<Filter<ISpectLogData>> get filters => List.unmodifiable(_filters);
+  /// Exposes the active filters for consumers that rely on the original API.
+  List<Filter<ISpectLogData>> get filters =>
+      List<Filter<ISpectLogData>>.unmodifiable(
+        [
+          if (_titles.isNotEmpty) TitleFilter.fromSet(_titles),
+          if (_types.isNotEmpty) TypeFilter.fromSet(_types),
+          if (_logTypeKeys.isNotEmpty) LogTypeKeyFilter.fromSet(_logTypeKeys),
+          if (_searchFilter != null) _searchFilter,
+        ],
+      );
 
-  /// Indicates whether any filter is active.
-  final bool _isEmpty;
+  /// Provides read-only access to the configured titles.
+  Set<String> get titles => Set.unmodifiable(_titles);
 
-  /// Builds a list of filters based on provided parameters.
-  static List<Filter<ISpectLogData>> _buildFilters(
-    List<String> titles,
-    List<Type> types,
-    List<String> logTypeKeys,
-    String? searchQuery,
-  ) {
-    final filters = <Filter<ISpectLogData>>[];
+  /// Provides read-only access to the configured runtime types.
+  Set<Type> get types => Set.unmodifiable(_types);
 
-    if (titles.isNotEmpty) filters.add(TitleFilter(titles));
-    if (types.isNotEmpty) filters.add(TypeFilter(types));
-    if (logTypeKeys.isNotEmpty) filters.add(LogTypeKeyFilter(logTypeKeys));
-    if (searchQuery?.isNotEmpty ?? false) {
-      filters.add(SearchFilter(searchQuery!));
-    }
+  /// Provides read-only access to the configured log keys.
+  Set<String> get logTypeKeys => Set.unmodifiable(_logTypeKeys);
 
-    return filters;
-  }
+  /// Returns the configured search query, if any.
+  String? get searchQuery => _searchQuery;
+
+  bool get _isEmpty =>
+      _titles.isEmpty &&
+      _types.isEmpty &&
+      _logTypeKeys.isEmpty &&
+      _searchFilter == null;
 
   @override
   bool apply(ISpectLogData item) {
     // Skip filtering if no filters are active
     if (_isEmpty) return true;
 
-    // Returns true if ANY filter matches the item (OR logic for search)
-    return _filters.any((filter) => filter.apply(item));
+    if (_titles.contains(item.title)) return true;
+    if (_logTypeKeys.contains(item.key)) return true;
+
+    if (_types.isNotEmpty) {
+      final runtimeType = item.runtimeType;
+      if (_types.contains(runtimeType)) return true;
+    }
+
+    if (_searchFilter != null && _searchFilter.apply(item)) return true;
+
+    return false;
   }
 
   /// Returns a new instance of `ISpectFilter` with updated filtering criteria.
@@ -218,57 +236,10 @@ class ISpectFilter implements Filter<ISpectLogData> {
     List<Type>? types,
     List<String>? logTypeKeys,
     String? searchQuery,
-  }) {
-    final newTitles = titles ?? _getExistingTitles();
-    final newTypes = types ?? _getExistingTypes();
-    final newLogTypeKeys = logTypeKeys ?? _getExistingLogTypeKeys();
-    final newSearchQuery = searchQuery ?? _getExistingSearchQuery();
-
-    return ISpectFilter(
-      titles: newTitles,
-      types: newTypes,
-      logTypeKeys: newLogTypeKeys,
-      searchQuery: newSearchQuery,
+  }) => ISpectFilter(
+      titles: titles ?? _titles,
+      types: types ?? _types,
+      logTypeKeys: logTypeKeys ?? _logTypeKeys,
+      searchQuery: searchQuery ?? _searchQuery,
     );
-  }
-
-  /// Retrieves existing titles from TitleFilter if present.
-  List<String> _getExistingTitles() {
-    for (final filter in _filters) {
-      if (filter is TitleFilter) {
-        return filter.titles.toList();
-      }
-    }
-    return const [];
-  }
-
-  /// Retrieves existing types from TypeFilter if present.
-  List<Type> _getExistingTypes() {
-    for (final filter in _filters) {
-      if (filter is TypeFilter) {
-        return filter.types.toList();
-      }
-    }
-    return const [];
-  }
-
-  /// Retrieves existing log type keys from LogTypeKeyFilter if present.
-  List<String> _getExistingLogTypeKeys() {
-    for (final filter in _filters) {
-      if (filter is LogTypeKeyFilter) {
-        return filter.keys.toList();
-      }
-    }
-    return const [];
-  }
-
-  /// Retrieves the existing search query if a `SearchFilter` exists.
-  String? _getExistingSearchQuery() {
-    for (final filter in _filters) {
-      if (filter is SearchFilter) {
-        return filter.query;
-      }
-    }
-    return null;
-  }
 }
