@@ -18,42 +18,28 @@ class ISpectErrorHandler {
     Object exception, [
     StackTrace? stackTrace,
     String? msg,
-  ]) {
-    // If the exception is already an ISpectLogError, return it as is.
-    if (exception is ISpectLogError) {
-      return exception;
-    }
-    // If the exception is already an ISpectLogException, return it as is.
-    else if (exception is ISpectLogException) {
-      return exception;
-    }
-    // Handle Dart [Error] objects.
-    else if (exception is Error) {
-      return ISpectLogError(
-        exception,
-        title: settings.titleByKey(ISpectLogType.error.key),
-        message: msg,
-        stackTrace: stackTrace,
-      );
-    }
-    // Handle Dart [Exception] objects.
-    else if (exception is Exception) {
-      return ISpectLogException(
-        exception,
-        title: settings.titleByKey(ISpectLogType.exception.key),
-        message: msg,
-        stackTrace: stackTrace,
-      );
-    }
-    // Handle any other type of object as a generic error.
-    else {
-      return ISpectLogData(
-        exception.toString(),
-        key: ISpectLogType.error.key,
-        title: settings.titleByKey(ISpectLogType.error.key),
-        logLevel: LogLevel.error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
+  ]) =>
+      switch (exception) {
+        final ISpectLogError logError => logError,
+        final ISpectLogException logException => logException,
+        final Error err => ISpectLogError(
+            err,
+            title: settings.titleByKey(ISpectLogType.error.key),
+            message: msg,
+            stackTrace: stackTrace,
+          ),
+        final Exception ex => ISpectLogException(
+            ex,
+            title: settings.titleByKey(ISpectLogType.exception.key),
+            message: msg,
+            stackTrace: stackTrace,
+          ),
+        _ => ISpectLogData(
+            exception.toString(),
+            key: ISpectLogType.error.key,
+            title: settings.titleByKey(ISpectLogType.error.key),
+            logLevel: LogLevel.error,
+            stackTrace: stackTrace,
+          ),
+      };
 }

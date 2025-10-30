@@ -44,7 +44,8 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) : _loggerStreamController = StreamController<ISpectLogData>.broadcast() {
+  }) : _loggerStreamController =
+            StreamController<ISpectLogData>.broadcast(sync: true) {
     final resolvedOptions = options ?? ISpectLoggerOptions();
     _options = resolvedOptions;
     _logger = logger ?? ISpectBaseLogger();
@@ -99,6 +100,12 @@ class ISpectLogger {
     _observers.add(observer);
   }
 
+  /// Registers an observer and returns a disposer to remove it later.
+  ISpectObserverDisposer observe(ISpectObserver observer) {
+    addObserver(observer);
+    return () => removeObserver(observer);
+  }
+
   /// Removes an observer from the list of registered observers.
   ///
   /// - `observer`: The observer to remove.
@@ -112,6 +119,9 @@ class ISpectLogger {
     if (!_ensureActive()) return;
     _observers.clear();
   }
+
+  /// Indicates whether at least one observer is registered.
+  bool get hasObservers => _observers.isNotEmpty;
 
   /// Helper method to notify all observers with error handling.
   ///
@@ -543,3 +553,5 @@ class ISpectLogger {
     await _loggerStreamController.close();
   }
 }
+
+typedef ISpectObserverDisposer = void Function();
