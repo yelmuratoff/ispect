@@ -99,14 +99,10 @@ class ISpectLogData {
   /// Returns the formatted timestamp of the log entry.
   String get formattedTime => ISpectDateTimeFormatter(time).format;
 
-  bool get isError {
-    final isErrorLog =
-        (logLevel == LogLevel.error || logLevel == LogLevel.critical) ||
-            ISpectLogType.values.any(
-              (t) => t.key == key && t.isErrorType,
-            );
-    return isErrorLog;
-  }
+  bool get isError =>
+      logLevel == LogLevel.error ||
+      logLevel == LogLevel.critical ||
+      ISpectLogType.isErrorKey(key);
 
   /// Notifies the observer about this log entry.
   ///

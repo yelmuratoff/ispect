@@ -92,6 +92,19 @@ enum ISpectLogType {
 
   final String key;
 
+  static final Map<String, ISpectLogType> _byKey = {
+    for (final type in ISpectLogType.values) type.key: type,
+  };
+
+  static final Map<LogLevel, ISpectLogType> _byLevel = {
+    for (final type in ISpectLogType.values) type.level: type,
+  };
+
+  static final Set<String> _errorKeys = {
+    for (final type in ISpectLogType.values)
+      if (type.isErrorType) type.key,
+  };
+
   /// Converts a `LogLevel` to its corresponding [ISpectLogType].
   ///
   /// If the provided `logLevel` is `null`, the method defaults to returning
@@ -105,18 +118,19 @@ enum ISpectLogType {
   static ISpectLogType fromLogLevel(LogLevel? logLevel) {
     if (logLevel == null) return ISpectLogType.debug;
 
-    return ISpectLogType.values.firstWhere((e) => e.level == logLevel);
-  }
-
-  static ISpectLogType? fromKey(String key) {
-    try {
-      return ISpectLogType.values.firstWhere((e) => e.key == key);
-    } catch (_) {
-      return null;
+    final type = _byLevel[logLevel];
+    if (type == null) {
+      throw StateError('No log type registered for level $logLevel');
     }
+    return type;
   }
 
-  static Set<String> get keys => ISpectLogType.values.map((e) => e.key).toSet();
+  static ISpectLogType? fromKey(String key) => _byKey[key];
+
+  static Set<String> get keys => _byKey.keys.toSet();
+
+  static bool isErrorKey(String? key) =>
+      key != null && _errorKeys.contains(key);
 
   bool get isErrorType => switch (this) {
         ISpectLogType.error ||
