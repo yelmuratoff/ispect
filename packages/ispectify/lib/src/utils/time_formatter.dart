@@ -27,9 +27,9 @@ class ISpectDateTimeFormatter {
     return '${_pad(date!.day)}.${_pad(date!.month)}.${date!.year} | $timeAndSeconds';
   }
 
-  /// Returns the default formatted date-time representation.
+  /// Returns the default formatted time representation.
   ///
-  /// Uses `fullTime` as the standard format.
+  /// Uses `timeAndSeconds` as the standard compact format.
   String get format => date == null ? '' : timeAndSeconds;
 
   /// Pads single-digit values with a leading zero.

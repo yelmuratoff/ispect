@@ -89,7 +89,7 @@ ISpectLogger is the logging foundation for the ISpect ecosystem. It builds on th
 ### Disable Console Output
 ```dart
 final logger = ISpectLogger(
-  logger: ISpectLoggerLogger(
+  logger: ISpectBaseLogger(
     settings: LoggerSettings(enableColors: false),
   ),
   options: ISpectLoggerOptions(useConsoleLogs: false),
@@ -112,7 +112,7 @@ final logger = ISpectLogger(
     useHistory: false,
     logTruncateLength: 400,
   ),
-  logger: ISpectLoggerLogger(
+  logger: ISpectBaseLogger(
     settings: LoggerSettings(
       enableColors: false, // deterministic output
       maxLineWidth: 80,
@@ -133,8 +133,8 @@ ISpectLoggerOptions(
 ### Custom Titles & Colors
 ```dart
 ISpectLoggerOptions(
-  titles: { 'http-request': '➡ HTTP', 'http-response': '⬅ HTTP' },
-  colors: { 'http-error': AnsiPen()..red(bg:true) },
+  customTitles: { 'http-request': '➡ HTTP', 'http-response': '⬅ HTTP' },
+  customColors: { 'http-error': AnsiPen()..red(bg:true) },
 );
 ```
 Unknown keys fallback to the key string + gray pen.
@@ -241,7 +241,7 @@ Use `ISpect.run` with `isZoneErrorHandlingEnabled` (default true) to automatical
 
 ```dart
 final logger = ISpectLogger(
-    logger: ISpectLoggerLogger(
+    logger: ISpectBaseLogger(
         settings: LoggerSettings(
       enableColors: false,
     )),
@@ -251,12 +251,12 @@ final logger = ISpectLogger(
       useConsoleLogs: true,
       maxHistoryItems: 10000,
       logTruncateLength: 10000,
-      titles: {
+      customTitles: {
         'error': 'Error Logs',
         'info': 'Info Logs',
         'debug': 'Debug Logs',
       },
-      colors: {
+      customColors: {
         'error': AnsiPen()..red(),
         'info': AnsiPen()..blue(),
         'debug': AnsiPen()..white(),
@@ -323,7 +323,7 @@ void main() {
   if (kEnableISpectLogger) {
     // Initialize ISpectLogger only in development/staging
     logger = ISpectLogger(
-      logger: ISpectLoggerLogger(
+      logger: ISpectBaseLogger(
           settings: LoggerSettings(
         enableColors: false,
       )),
@@ -333,12 +333,12 @@ void main() {
         useConsoleLogs: true,
         maxHistoryItems: 10000,
         logTruncateLength: 10000,
-        titles: {
+        customTitles: {
           'error': 'Error Logs',
           'info': 'Info Logs',
           'debug': 'Debug Logs',
         },
-        colors: {
+        customColors: {
           'error': AnsiPen()..red(),
           'info': AnsiPen()..blue(),
           'debug': AnsiPen()..white(),
@@ -415,7 +415,7 @@ class SafeLogger {
   
   static ISpectLogger _createLogger() {
     return ISpectLogger(
-      logger: ISpectLoggerLogger(
+      logger: ISpectBaseLogger(
         settings: LoggerSettings(
           enableColors: kDebugMode, // Disable colors in headless/CI for cleaner output
         )
@@ -453,10 +453,10 @@ ISpectLogger createLogger() {
   const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
   final bool isProd = environment == 'production';
   return ISpectLogger(
-    logger: ISpectLoggerLogger(
+    logger: ISpectBaseLogger(
       settings: LoggerSettings(
         enableColors: !isProd,
-        lineLength: environment == 'development' ? 120 : 80,
+        maxLineWidth: environment == 'development' ? 120 : 80,
       )
     ),
     options: ISpectLoggerOptions(
@@ -465,7 +465,7 @@ ISpectLogger createLogger() {
       useConsoleLogs: environment == 'development',
       maxHistoryItems: environment == 'development' ? 10000 : 2000,
       logTruncateLength: environment == 'development' ? 10000 : 2000,
-      titles: {
+      customTitles: {
         'error': 'Errors',
         'warning': 'Warnings', 
         'info': 'Information',

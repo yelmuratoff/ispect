@@ -69,13 +69,22 @@ class ISpectLogData {
   /// Returns the timestamp of the log.
   DateTime get time => _time;
 
-  /// Returns the full message, including the stack trace if available.
+  /// Returns the full message, including error/exception and stack trace if available.
   String get textMessage {
-    final errMsg = (error != null)
-        ? '$error'.truncate()
-        : ((exception != null) ? '$exception' : ''.truncate());
+    final buffer = StringBuffer();
 
-    return '$messageText$errMsg$stackTraceText';
+    final msg = messageText;
+    if (msg.isNotEmpty) buffer.write(msg);
+
+    if (error != null) {
+      buffer.write('${'$error'.truncate()}');
+    } else if (exception != null) {
+      buffer.write('${'$exception'.truncate()}');
+    }
+
+    if (stackTraceText.isNotEmpty) buffer.write(stackTraceText);
+
+    return buffer.toString();
   }
 
   /// Returns a formatted log header including the title or key and timestamp.

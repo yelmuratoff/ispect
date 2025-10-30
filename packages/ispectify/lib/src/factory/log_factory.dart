@@ -44,6 +44,7 @@ class LogFactory {
   /// - `options`: Configuration options for title and pen defaults
   ///
   /// Returns an `ISpectLogData` instance configured according to the log level.
+  @Deprecated('Use fromType(type: ISpectLogType.fromLogLevel(level), ...) instead')
   static ISpectLogData createLog({
     required LogLevel level,
     required Object? message,
@@ -52,17 +53,15 @@ class LogFactory {
     AnsiPen? pen,
     ISpectLoggerOptions? options,
     Map<String, dynamic>? additionalData,
-  }) {
-    final type = ISpectLogType.fromLogLevel(level);
-    return fromType(
-      type: type,
-      level: level,
-      message: message,
-      exception: exception,
-      stackTrace: stackTrace,
-      pen: pen,
-      options: options,
-      additionalData: additionalData,
-    );
-  }
+  }) =>
+      fromType(
+        type: ISpectLogType.fromLogLevel(level),
+        level: level,
+        message: message,
+        exception: exception,
+        stackTrace: stackTrace,
+        pen: pen,
+        options: options,
+        additionalData: additionalData,
+      );
 }

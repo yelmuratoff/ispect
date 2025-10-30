@@ -22,18 +22,16 @@ abstract interface class ILoggerFormatter {
   );
 }
 
-/// A log formatter that enhances log readability by adding visual structure.
+/// A simple, readable log formatter.
 ///
-/// The `ExtendedLoggerFormatter` wraps log messages with top and bottom borders,
-/// ensuring clear separation in console outputs. It also supports colorization
-/// when enabled in `LoggerSettings`.
+/// The `ExtendedLoggerFormatter` prefixes the first line with a dash and indents
+/// subsequent lines for clarity. If colors are enabled in `LoggerSettings`, ANSI
+/// styles are applied to the entire message.
 ///
 /// Example output:
-/// ```
-/// - Log message goes here...
-/// ```
-///
-/// If colorization is enabled, ANSI escape codes will be applied to the output.
+/// - First line
+///   Second line
+///   Third line
 class ExtendedLoggerFormatter implements ILoggerFormatter {
   /// Creates an instance of `ExtendedLoggerFormatter`.
   ///

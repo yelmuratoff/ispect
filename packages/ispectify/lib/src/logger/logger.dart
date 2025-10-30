@@ -96,5 +96,5 @@ class ISpectBaseLogger {
 
   @override
   String toString() =>
-      'ISpectLoggerLogger(enabled: ${settings.enable}, level: ${settings.level})';
+      'ISpectBaseLogger(enabled: ${settings.enable}, level: ${settings.level})';
 }
