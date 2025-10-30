@@ -72,14 +72,15 @@ class _LogsScreenState extends State<LogsScreen> {
     final iSpect = ISpect.read(context);
     return Scaffold(
       backgroundColor: iSpect.theme.backgroundColor(context),
-      body: ListenableBuilder(
-        listenable: _logsViewController,
-        builder: (_, __) => Row(
-          children: [
-            Expanded(
-              child: ISpectLogsBuilder(
-                logger: ISpect.logger,
-                builder: (context, data) => _MainLogsView(
+      body: ISpectLogsBuilder(
+        logger: ISpect.logger,
+        controller: _logsViewController,
+        builder: (context, data) => ListenableBuilder(
+          listenable: _logsViewController,
+          builder: (_, __) => Row(
+            children: [
+              Expanded(
+                child: _MainLogsView(
                   logsData: data,
                   iSpectTheme: iSpect,
                   titleFiltersController: _titleFiltersController,
@@ -91,22 +92,22 @@ class _LogsScreenState extends State<LogsScreen> {
                   onSettingsTap: () => _openLogsSettings(context),
                 ),
               ),
-            ),
-            if (_logsViewController.activeData != null) ...[
-              VerticalDivider(
-                color: _getDividerColor(iSpect, context),
-                width: 1,
-                thickness: 1,
-              ),
-              context.screenSizeMaybeWhen(
-                phone: () => const SizedBox.shrink(),
-                orElse: () => _DetailView(
-                  activeData: _logsViewController.activeData!,
-                  onClose: () => _logsViewController.activeData = null,
+              if (_logsViewController.activeData != null) ...[
+                VerticalDivider(
+                  color: _getDividerColor(iSpect, context),
+                  width: 1,
+                  thickness: 1,
                 ),
-              ),
+                context.screenSizeMaybeWhen(
+                  phone: () => const SizedBox.shrink(),
+                  orElse: () => _DetailView(
+                    activeData: _logsViewController.activeData!,
+                    onClose: () => _logsViewController.activeData = null,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
 typedef ISpectWidgetBuilder = Widget Function(
@@ -12,62 +13,35 @@ class ISpectLogsBuilder extends StatefulWidget {
     required this.logger,
     required this.builder,
     super.key,
+    this.controller,
   });
 
   final ISpectLogger logger;
   final ISpectWidgetBuilder builder;
+  final ISpectViewController? controller;
 
   @override
   State<ISpectLogsBuilder> createState() => _ISpectLogsBuilderState();
 }
 
 class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
-  List<ISpectLogData>? _lastData;
   int _lastDataLength = 0;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<ISpectLogData>(
         stream: widget.logger.stream,
         builder: (context, snapshot) {
+          // Always get fresh data from logger history
+          // StreamBuilder rebuilds when stream emits, so we always have latest data
           final currentData = widget.logger.history;
 
-          if (_shouldRebuild(currentData)) {
-            _lastData = List.from(currentData);
+          // Invalidate cache if data length changed
+          if (currentData.length != _lastDataLength) {
             _lastDataLength = currentData.length;
-            return widget.builder(context, currentData);
+            widget.controller?.onDataChanged();
           }
 
-          // Return cached widget if data hasn't meaningfully changed
-          return widget.builder(context, _lastData ?? currentData);
+          return widget.builder(context, currentData);
         },
       );
-
-  /// Determines if the widget should rebuild based on data changes.
-  bool _shouldRebuild(List<ISpectLogData> newData) {
-    // Always rebuild if this is the first build
-    if (_lastData == null) return true;
-
-    // Rebuild if length changed
-    if (newData.length != _lastDataLength) return true;
-
-    // For performance, only check the most recent items for changes
-    // This covers the common case of new logs being added
-    const checkCount = 10;
-    final itemsToCheck =
-        newData.length < checkCount ? newData.length : checkCount;
-
-    if (itemsToCheck > 0) {
-      for (var i = 0; i < itemsToCheck; i++) {
-        final newIndex = newData.length - 1 - i;
-        final oldIndex = _lastData!.length - 1 - i;
-
-        if (oldIndex < 0 ||
-            newData[newIndex].hashCode != _lastData![oldIndex].hashCode) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 }
