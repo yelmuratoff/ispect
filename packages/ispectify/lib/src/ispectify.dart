@@ -280,6 +280,7 @@ class ISpectLogger {
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
+  /// - `additionalData`: Optional metadata attached to the log entry.
   void log(
     Object? message, {
     LogLevel? logLevel,
@@ -287,6 +288,7 @@ class ISpectLogger {
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
+    Map<String, dynamic>? additionalData,
   }) {
     // Determine the appropriate log level
     final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
@@ -298,6 +300,7 @@ class ISpectLogger {
       logLevel: effectiveLogLevel,
       pen: pen,
       type: type,
+      additionalData: additionalData,
     );
   }
 
@@ -322,12 +325,16 @@ class ISpectLogger {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.critical,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -336,10 +343,16 @@ class ISpectLogger {
   /// Debug logs are for detailed information useful during development.
   ///
   /// - `msg`: The log message.
-  void debug(Object? msg) {
+  void debug(
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.debug,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -354,12 +367,16 @@ class ISpectLogger {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.error,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -368,10 +385,16 @@ class ISpectLogger {
   /// Info logs are for general information about system operation.
   ///
   /// - `msg`: The log message.
-  void info(Object? msg) {
+  void info(
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.info,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -380,10 +403,16 @@ class ISpectLogger {
   /// Verbose logs contain the most detailed information.
   ///
   /// - `msg`: The log message.
-  void verbose(Object? msg) {
+  void verbose(
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.verbose,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -392,10 +421,16 @@ class ISpectLogger {
   /// Warning logs indicate potential issues that aren't errors.
   ///
   /// - `msg`: The log message.
-  void warning(Object? msg) {
+  void warning(
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.warning,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -471,6 +506,7 @@ class ISpectLogger {
     ISpectLogType? type,
     LogLevel? logLevel,
     AnsiPen? pen,
+    Map<String, dynamic>? additionalData,
   }) {
     if (!_ensureActive()) return;
 
@@ -483,6 +519,7 @@ class ISpectLogger {
       stackTrace: stackTrace,
       pen: pen,
       options: _options,
+      additionalData: additionalData,
     );
 
     _processLog(data);

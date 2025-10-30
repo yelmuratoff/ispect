@@ -19,6 +19,7 @@ class LogFactory {
     StackTrace? stackTrace,
     AnsiPen? pen,
     ISpectLoggerOptions? options,
+    Map<String, dynamic>? additionalData,
   }) {
     final resolvedLevel = level ?? type.level;
     return ISpectLogData(
@@ -29,6 +30,7 @@ class LogFactory {
       stackTrace: stackTrace,
       pen: pen ?? options?.penByKey(type.key),
       logLevel: resolvedLevel,
+      additionalData: additionalData,
     );
   }
 
@@ -49,6 +51,7 @@ class LogFactory {
     StackTrace? stackTrace,
     AnsiPen? pen,
     ISpectLoggerOptions? options,
+    Map<String, dynamic>? additionalData,
   }) {
     final type = ISpectLogType.fromLogLevel(level);
     return fromType(
@@ -59,6 +62,7 @@ class LogFactory {
       stackTrace: stackTrace,
       pen: pen,
       options: options,
+      additionalData: additionalData,
     );
   }
 }

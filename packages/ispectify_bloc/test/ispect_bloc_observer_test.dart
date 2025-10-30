@@ -16,12 +16,16 @@ class RecordingLogger extends ISpectLogger {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     records.add(
       ISpectLogData(
         msg?.toString(),
         exception: exception,
         stackTrace: stackTrace,
+        additionalData: additionalData,
+        pen: pen,
       ),
     );
   }
@@ -78,7 +82,7 @@ void main() {
 
       final completion = logger.records.whereType<BlocDoneLog>().single;
       expect(completion.hasError, isTrue);
-      expect(completion.additionalData?['completedWithError'], isTrue);
+      expect(completion.additionalData?['completed-with-error'], isTrue);
     });
 
     test('emits BlocErrorLog when errors occur and printErrors enabled', () {
