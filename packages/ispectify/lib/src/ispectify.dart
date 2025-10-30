@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/factory/log_factory.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/observer_registry.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
@@ -81,16 +81,12 @@ class ISpectLogger {
   ISpectFilter? _filter;
   late LogPipeline _pipeline;
 
-  /// Observers notified of log events (in insertion order, without duplicates).
-  final LinkedHashSet<ISpectObserver> _observers =
-      LinkedHashSet<ISpectObserver>();
+  /// Observers notified of log events.
+  final ObserverRegistry _observers = ObserverRegistry();
 
   void _replaceObserver(ISpectObserver? observer) {
     if (_isDisposed) return;
-    _observers.clear();
-    if (observer != null) {
-      _observers.add(observer);
-    }
+    _observers.replaceWith(observer);
   }
 
   late ILogHistory _history;
@@ -111,8 +107,8 @@ class ISpectLogger {
 
   /// Registers an observer and returns a disposer to remove it later.
   ISpectObserverDisposer observe(ISpectObserver observer) {
-    addObserver(observer);
-    return () => removeObserver(observer);
+    if (!_ensureActive()) return () {};
+    return _observers.observe(observer);
   }
 
   /// Removes an observer from the list of registered observers.
@@ -130,26 +126,15 @@ class ISpectLogger {
   }
 
   /// Indicates whether at least one observer is registered.
-  bool get hasObservers => _observers.isNotEmpty;
+  bool get hasObservers => _observers.hasObservers;
 
   /// Helper method to notify all observers with error handling.
   ///
   /// Wraps each observer call in a try-catch to prevent one failing
   /// observer from affecting others.
   void _notifyObservers(void Function(ISpectObserver) notify) {
-    if (_observers.isEmpty) return;
     if (!_ensureActive()) return;
-
-    for (final observer in _observers) {
-      try {
-        notify(observer);
-      } catch (e, st) {
-        _logger.log(
-          'Observer error: $e\n$st',
-          level: LogLevel.error,
-        );
-      }
-    }
+    _observers.notify(notify, _logger);
   }
 
   /// Reconfigures the inspector with new components.
