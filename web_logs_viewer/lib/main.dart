@@ -11,18 +11,17 @@ import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart'
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
 void main() {
-  final logger = ISpectFlutter.init();
   ISpect.run(
     () {
       WidgetsFlutterBinding.ensureInitialized();
       runApp(const MyApp());
     },
-    logger: logger,
     onInit: () {
-      Bloc.observer = ISpectBlocObserver(logger: logger);
-      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
-      dio.interceptors.add(ISpectDioInterceptor(logger: logger));
-      dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+      // Access logger via ISpect.logger after initialization
+      Bloc.observer = ISpectBlocObserver(logger: ISpect.logger);
+      client.interceptors.add(ISpectHttpInterceptor(logger: ISpect.logger));
+      dio.interceptors.add(ISpectDioInterceptor(logger: ISpect.logger));
+      dummyDio.interceptors.add(ISpectDioInterceptor(logger: ISpect.logger));
     },
   );
 }

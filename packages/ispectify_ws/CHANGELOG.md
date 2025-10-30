@@ -5,22 +5,42 @@
 ### Added
 - Fluent API builders for interceptor settings configuration
 - Support for multiple observers with improved notification mechanism
-- Utility classes for payload sanitization and serialization
+- Enhanced logging context with `additionalData` support and centralized `LogFactory`
+- Localization for bloc error logs and provider activity across all supported languages
+- Settings persistence and log type filtering functionality
+- Resource disposal functionality to `ISpectLogger` for proper resource management
+- Comprehensive unit tests for settings builders and redaction service
 
 ### Changed
 - Unified logging interface across HTTP and WebSocket interceptors
 - Improved filter update performance by ~70% with debouncing
-- Optimized widget rendering and list creation performance
+- Optimized widget rendering and list creation with fixed-size lists
 - Enhanced error handling and logging across all modules
-- Refactored observer handling mechanism
+- Refactored observer handling to support multiple observers
 - Updated UI components for better consistency and theming
-- Improved code organization and reduced duplication
+- Improved code organization and reduced code duplication
+- Refactored logger initialization to use `addPostFrameCallback` for improved state management
+- Simplified header redaction logic in `RedactionService`
+- Enhanced documentation with detailed usage examples and configuration guides
 
 ### Fixed
 - Improved type safety in HTTP and Dio interceptors
-- Enhanced null-safety in JSON selector
+- Enhanced null-safety in JSON selector and generic type constraints
 - Better memory safety with unmodifiable cache views
 - Case-insensitive key comparison in redact method
+- Memory optimization in widgets and list creation
+- Circular dependencies in service initialization
+- Object pool lifecycle management and performance issues
+
+### Breaking Changes
+
+#### Method Renaming
+- `logCustom()` -> `logData()` - Renamed for consistency across logging API
+
+#### Class Renaming
+- `ISpectify` -> `ISpectLogger`
+- `ISpectifyLogger` -> `ISpectBaseLogger`
+- `ISpectifyFlutter ` -> `ISpectFlutter`
 
 ## 4.4.7
 

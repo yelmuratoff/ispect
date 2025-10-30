@@ -1,6 +1,6 @@
 name: ispectify_ws
 description: WebSocket interceptor integration for ISpect toolkit using ws package
-version: 4.4.8-dev01
+version: 4.4.8-dev02
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -13,7 +13,7 @@ dependency_overrides:
 
 dependencies:
   ws: ^1.0.0
-  ispectify: ^4.4.8-dev01
+  ispectify: ^4.4.8-dev02
 
 dev_dependencies:
   lints: ^5.1.1

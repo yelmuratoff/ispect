@@ -80,11 +80,17 @@ Provides network, database, performance, widget tree, logging and device insight
 - Cache Management: Application cache inspection and management
 
 ## Logging Configuration
-Core logging powered by ISpectLogger. Configure via `ISpectLoggerOptions` passed to the logger you supply into `ISpect.run`.
+Core logging powered by ISpectLogger. Configure via `ISpectLoggerOptions` passed to `ISpectFlutter.init()` when you need custom settings.
 
-### Typical Setup
+### Default Setup (No Configuration)
 ```dart
-final logger = ISpectLogger(
+// Logger with default settings is created automatically
+ISpect.run(() => runApp(const App()));
+```
+
+### Custom Logger Setup
+```dart
+final logger = ISpectFlutter.init(
   options: ISpectLoggerOptions(
     enabled: true,
     useHistory: true,
@@ -93,17 +99,28 @@ final logger = ISpectLogger(
     logTruncateLength: 4000,
   ),
 );
-ISpect.run(() => runApp(App()), logger: logger);
+ISpect.run(() => runApp(const App()), logger: logger);
 ```
 
 ### Disable Console Noise
 ```dart
-logger.configure(options: logger.options.copyWith(useConsoleLogs: false));
+final logger = ISpectFlutter.init(
+  options: const ISpectLoggerOptions(useConsoleLogs: false),
+);
+ISpect.run(() => runApp(const App()), logger: logger);
+
+// Or configure after initialization
+ISpect.logger.configure(
+  options: ISpect.logger.options.copyWith(useConsoleLogs: false),
+);
 ```
 
 ### Stateless (No History)
 ```dart
-logger.configure(options: logger.options.copyWith(useHistory: false));
+final logger = ISpectFlutter.init(
+  options: const ISpectLoggerOptions(useHistory: false),
+);
+ISpect.run(() => runApp(const App()), logger: logger);
 ```
 Stream subscribers still receive real-time events.
 
@@ -113,7 +130,9 @@ class WarningsAndAbove implements ISpectFilter {
   @override
   bool apply(ISpectLogData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
 }
-final logger = ISpectLogger(filter: WarningsAndAbove());
+
+final logger = ISpectFlutter.init(filter: WarningsAndAbove());
+ISpect.run(() => runApp(const App()), logger: logger);
 ```
 
 For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectLogger README.
@@ -128,7 +147,7 @@ Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispect: ^4.4.8-dev01
+  ispect: ^4.4.8-dev02
 ```
 
 ## Security & Production Guidelines
@@ -153,8 +172,7 @@ void main() {
   }
 }
 void _bootstrapDebug() {
-  final logger = ISpectFlutter.init();
-  ISpect.run(() => runApp(const MyApp()), logger: logger);
+  ISpect.run(() => runApp(const MyApp()));
 }
 ```
 **2. Build commands**
@@ -188,22 +206,12 @@ const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: f
 void main() {
   if (kEnableISpect) {
     // Initialize ISpect only in development/staging
-    _initializeISpect();
+    // Logger is created automatically
+    ISpect.run(() => runApp(const MyApp()));
   } else {
     // Production initialization without ISpect
-    runApp(MyApp());
+    runApp(const MyApp());
   }
-}
-
-void _initializeISpect() {
-  // Initialize ISpectLogger for logging
-  final ISpectLogger logger = ISpectFlutter.init();
-
-  // Wrap your app with ISpect
-  ISpect.run(
-    () => runApp(MyApp()),
-    logger: logger,
-  );
 }
 
 class MyApp extends StatelessWidget {
@@ -249,8 +257,7 @@ class MyApp extends StatelessWidget {
 const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
 void main() {
   if (!kEnableISpect) return runApp(const MyApp());
-  final logger = ISpectFlutter.init();
-  ISpect.run(() => runApp(const MyApp()), logger: logger);
+  ISpect.run(() => runApp(const MyApp()));
 }
 
 // Run with: flutter run --dart-define=ENABLE_ISPECT=true
@@ -464,20 +471,20 @@ Add the following packages to your `pubspec.yaml` based on your needs:
 ```yaml
 dependencies:
   # Core ISpect
-  ispect: ^4.4.8-dev01
+  ispect: ^4.4.8-dev02
   
   # HTTP integrations (choose one or both)
-  ispectify_dio: ^4.4.8-dev01      # For Dio HTTP client
-  ispectify_http: ^4.4.8-dev01     # For standard HTTP package
+  ispectify_dio: ^4.4.8-dev02      # For Dio HTTP client
+  ispectify_http: ^4.4.8-dev02     # For standard HTTP package
   
   # Database integration
-  ispectify_db: ^4.4.8-dev01       # For database operation logging
+  ispectify_db: ^4.4.8-dev02       # For database operation logging
   
   # WebSocket integration
-  ispectify_ws: ^4.4.8-dev01       # For WebSocket monitoring
+  ispectify_ws: ^4.4.8-dev02       # For WebSocket monitoring
   
   # State management integration
-  ispectify_bloc: ^4.4.8-dev01     # For BLoC state management
+  ispectify_bloc: ^4.4.8-dev02     # For BLoC state management
   
 ```
 
@@ -489,7 +496,7 @@ For Dio integration, use the `ispectify_dio` package:
 
 ```yaml
 dependencies:
-  ispectify_dio: ^4.4.8-dev01
+  ispectify_dio: ^4.4.8-dev02
 ```
 
 ```dart
@@ -528,7 +535,7 @@ For standard HTTP package integration, use the `ispectify_http` package:
 
 ```yaml
 dependencies:
-  ispectify_http: ^4.4.8-dev01
+  ispectify_http: ^4.4.8-dev02
 ```
 
 ```dart
@@ -579,7 +586,7 @@ For database operation logging, use the `ispectify_db` package:
 
 ```yaml
 dependencies:
-  ispectify_db: ^4.4.8-dev01
+  ispectify_db: ^4.4.8-dev02
 ```
 
 ```dart
@@ -613,7 +620,7 @@ For WebSocket monitoring, use the `ispectify_ws` package:
 
 ```yaml
 dependencies:
-  ispectify_ws: ^4.4.8-dev01
+  ispectify_ws: ^4.4.8-dev02
 ```
 
 ```dart
@@ -647,7 +654,7 @@ For BLoC integration, use the `ispectify_bloc` package:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.4.8-dev01
+  ispectify_bloc: ^4.4.8-dev02
 ```
 
 ```dart

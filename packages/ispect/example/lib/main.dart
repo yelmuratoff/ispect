@@ -6,9 +6,6 @@ import 'package:share_plus/share_plus.dart';
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  // Initialize ISpectLogger for logging
-  final logger = ISpectFlutter.init();
-
   // Example: Restore settings from storage (e.g., SharedPreferences)
   // final prefs = await SharedPreferences.getInstance();
   // final settingsJson = prefs.getString('ispect_settings');
@@ -16,11 +13,8 @@ void main() {
   //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
   //     : null;
 
-  // Wrap your app with ISpect
-  ISpect.run(
-    () => runApp(const MyApp()),
-    logger: logger,
-  );
+  // Wrap your app with ISpect (logger is created automatically)
+  ISpect.run(() => runApp(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

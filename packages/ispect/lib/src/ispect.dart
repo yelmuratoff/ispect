@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
+import 'package:ispect/src/common/extensions/init.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
 import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
@@ -45,9 +46,25 @@ final class ISpect {
       ISpectScopeController.of(context);
 
   /// Runs the app with centralized logging and error capture.
+  ///
+  /// If [logger] is not provided, creates a default Flutter logger automatically
+  /// using [ISpectFlutter.init()].
+  ///
+  /// ### Example (Simple):
+  /// ```dart
+  /// ISpect.run(() => runApp(MyApp()));
+  /// ```
+  ///
+  /// ### Example (Custom Logger):
+  /// ```dart
+  /// final customLogger = ISpectFlutter.init(
+  ///   options: ISpectLoggerOptions(...),
+  /// );
+  /// ISpect.run(() => runApp(MyApp()), logger: customLogger);
+  /// ```
   static void run<T>(
     T Function() callback, {
-    required ISpectLogger logger,
+    ISpectLogger? logger,
     VoidCallback? onInit,
     VoidCallback? onInitialized,
     void Function(Object, StackTrace)? onZonedError,
@@ -61,8 +78,10 @@ final class ISpect {
     ISpectLogOptions options = const ISpectLogOptions(),
     List<String> filters = const [],
   }) {
-    initialize(logger);
-    _errorHandler = ErrorHandlerService(logger: logger, filters: filters);
+    final effectiveLogger = logger ?? ISpectFlutter.init();
+    initialize(effectiveLogger);
+    _errorHandler =
+        ErrorHandlerService(logger: effectiveLogger, filters: filters);
 
     _errorHandler!.setupErrorHandling(
       options: options,
