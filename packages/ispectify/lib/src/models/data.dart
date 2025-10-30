@@ -18,7 +18,7 @@ class ISpectLogData {
   /// - `key`: A unique identifier for this log entry.
   /// - `additionalData`: Any extra metadata attached to the log.
   ISpectLogData(
-    this.message, {
+    Object? message, {
     DateTime? time,
     this.logLevel,
     this.exception,
@@ -28,7 +28,8 @@ class ISpectLogData {
     this.pen,
     this.key,
     Map<String, dynamic>? additionalData,
-  })  : additionalData = additionalData == null
+  })  : message = message?.toString(),
+        additionalData = additionalData == null
             ? null
             : Map<String, dynamic>.unmodifiable(
                 Map<String, dynamic>.from(additionalData),

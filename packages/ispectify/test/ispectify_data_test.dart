@@ -3,6 +3,20 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectLogData Extensions', () {
+    test('coerces message values to strings', () {
+      final data = ISpectLogData(1234);
+      expect(data.message, '1234');
+    });
+
+    test('detects error logs via log type key', () {
+      final data = ISpectLogData(
+        'Database failure',
+        key: ISpectLogType.dbError.key,
+      );
+
+      expect(data.isError, isTrue);
+    });
+
     test('copy() creates exact duplicate preserving additionalData', () {
       final originalData = ISpectLogData(
         'Test message',

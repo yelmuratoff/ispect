@@ -8,7 +8,7 @@ extension ISpectDataX on ISpectLogData {
   ///
   /// If no parameters are provided, the original values are retained.
   ISpectLogData copyWith({
-    String? message,
+    Object? message,
     LogLevel? logLevel,
     Object? exception,
     Error? error,

@@ -97,7 +97,12 @@ enum ISpectLogType {
   };
 
   static final Map<LogLevel, ISpectLogType> _byLevel = {
-    for (final type in ISpectLogType.values) type.level: type,
+    LogLevel.critical: ISpectLogType.critical,
+    LogLevel.error: ISpectLogType.error,
+    LogLevel.warning: ISpectLogType.warning,
+    LogLevel.info: ISpectLogType.info,
+    LogLevel.debug: ISpectLogType.debug,
+    LogLevel.verbose: ISpectLogType.verbose,
   };
 
   static final Set<String> _errorKeys = {
