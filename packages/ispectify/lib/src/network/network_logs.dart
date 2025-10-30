@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/enums/log_type.dart';
 import 'package:ispectify/src/models/data.dart';
@@ -8,10 +6,10 @@ import 'package:ispectify/src/network/network_log_options.dart';
 import 'package:ispectify/src/truncator.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
-Map<String, dynamic> _mapFromEntries(
-  Iterable<MapEntry<String, Object?>> entries,
-) =>
-    Map<String, dynamic>.fromEntries(entries);
+Map<String, dynamic>? _metadata(Map<String, Object?> source) {
+  if (source.isEmpty) return null;
+  return Map<String, dynamic>.from(source);
+}
 
 String _composeNetworkMessage(
   String header,
@@ -45,16 +43,14 @@ class NetworkRequestLog extends ISpectLogData {
     required this.method,
     required this.url,
     required this.path,
-    required NetworkLogPrintOptions settings,
+    required this.settings,
     Map<String, dynamic>? headers,
-    Object? body,
+    this.body,
     String? logKey,
     Map<String, dynamic>? metadata,
     AnsiPen? pen,
-  })  : _headers = headers,
-        _body = body,
-        _settings = settings,
-        _logKey = logKey ?? ISpectLogType.httpRequest.key,
+  })  : headers = headers == null ? null : Map.unmodifiable(headers),
+        logKey = logKey ?? ISpectLogType.httpRequest.key,
         super(
           key: logKey ?? ISpectLogType.httpRequest.key,
           title: logKey ?? ISpectLogType.httpRequest.key,
@@ -62,32 +58,24 @@ class NetworkRequestLog extends ISpectLogData {
               settings.requestPen ??
               ISpectLogType.httpRequest.defaultPen,
           additionalData: metadata ??
-              _mapFromEntries(
-                [
-                  if (method != null) MapEntry('method', method),
-                  if (url != null) MapEntry('url', url),
-                  if (path != null) MapEntry('path', path),
-                  if (headers != null) MapEntry('headers', headers),
-                  if (body != null) MapEntry('body', body),
-                ],
+              _metadata(
+                {
+                  if (method != null) 'method': method,
+                  if (url != null) 'url': url,
+                  if (path != null) 'path': path,
+                  if (headers != null) 'headers': headers,
+                  if (body != null) 'body': body,
+                },
               ),
         );
 
   final String? method;
   final String? url;
   final String? path;
-
-  final Map<String, dynamic>? _headers;
-  final Object? _body;
-  final NetworkLogPrintOptions _settings;
-  final String _logKey;
-
-  Map<String, dynamic>? get headers =>
-      _headers == null ? null : UnmodifiableMapView(_headers);
-
-  Object? get body => _body;
-
-  NetworkLogPrintOptions get settings => _settings;
+  final Map<String, dynamic>? headers;
+  final Object? body;
+  final NetworkLogPrintOptions settings;
+  final String logKey;
 
   @override
   String get textMessage {
@@ -96,22 +84,20 @@ class NetworkRequestLog extends ISpectLogData {
       header,
       [
         () => _prettySection(
-              enabled: _settings.printRequestData && _body != null,
+              enabled: settings.printRequestData && body != null,
               label: 'Data',
-              value: _body,
+              value: body,
             ),
         () => _prettySection(
-              enabled: _settings.printRequestHeaders &&
-                  (_headers?.isNotEmpty ?? false),
+              enabled: settings.printRequestHeaders &&
+                  (headers?.isNotEmpty ?? false),
               label: 'Headers',
-              value: _headers,
+              value: headers,
               skipEmptyMap: true,
             ),
       ],
     );
   }
-
-  String get logKey => _logKey;
 }
 
 class NetworkResponseLog extends ISpectLogData {
@@ -122,20 +108,20 @@ class NetworkResponseLog extends ISpectLogData {
     required this.path,
     required this.statusCode,
     required this.statusMessage,
-    required NetworkLogPrintOptions settings,
+    required this.settings,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? requestBody,
-    Object? responseBody,
+    this.responseBody,
     String? logKey,
     Map<String, dynamic>? metadata,
     AnsiPen? pen,
-  })  : _requestHeaders = requestHeaders,
-        _headers = headers,
-        _requestBody = requestBody,
-        _responseBody = responseBody,
-        _settings = settings,
-        _logKey = logKey ?? ISpectLogType.httpResponse.key,
+  })  : requestHeaders =
+            requestHeaders == null ? null : Map.unmodifiable(requestHeaders),
+        headers = headers == null ? null : Map.unmodifiable(headers),
+        requestBody =
+            requestBody == null ? null : Map.unmodifiable(requestBody),
+        logKey = logKey ?? ISpectLogType.httpResponse.key,
         super(
           key: logKey ?? ISpectLogType.httpResponse.key,
           title: logKey ?? ISpectLogType.httpResponse.key,
@@ -143,21 +129,18 @@ class NetworkResponseLog extends ISpectLogData {
               settings.responsePen ??
               ISpectLogType.httpResponse.defaultPen,
           additionalData: metadata ??
-              _mapFromEntries(
-                [
-                  if (method != null) MapEntry('method', method),
-                  if (url != null) MapEntry('url', url),
-                  if (path != null) MapEntry('path', path),
-                  if (statusCode != null) MapEntry('statusCode', statusCode),
-                  if (statusMessage != null)
-                    MapEntry('statusMessage', statusMessage),
-                  if (requestHeaders != null)
-                    MapEntry('requestHeaders', requestHeaders),
-                  if (headers != null) MapEntry('headers', headers),
-                  if (requestBody != null) MapEntry('requestBody', requestBody),
-                  if (responseBody != null)
-                    MapEntry('responseBody', responseBody),
-                ],
+              _metadata(
+                {
+                  if (method != null) 'method': method,
+                  if (url != null) 'url': url,
+                  if (path != null) 'path': path,
+                  if (statusCode != null) 'statusCode': statusCode,
+                  if (statusMessage != null) 'statusMessage': statusMessage,
+                  if (requestHeaders != null) 'requestHeaders': requestHeaders,
+                  if (headers != null) 'headers': headers,
+                  if (requestBody != null) 'requestBody': requestBody,
+                  if (responseBody != null) 'responseBody': responseBody,
+                },
               ),
         );
 
@@ -166,54 +149,38 @@ class NetworkResponseLog extends ISpectLogData {
   final String? path;
   final int? statusCode;
   final String? statusMessage;
-
-  final Map<String, dynamic>? _requestHeaders;
-  final Map<String, dynamic>? _headers;
-  final Map<String, dynamic>? _requestBody;
-  final Object? _responseBody;
-  final NetworkLogPrintOptions _settings;
-  final String _logKey;
-
-  Map<String, dynamic>? get requestHeaders =>
-      _requestHeaders == null ? null : UnmodifiableMapView(_requestHeaders);
-
-  Map<String, dynamic>? get headers =>
-      _headers == null ? null : UnmodifiableMapView(_headers);
-
-  Map<String, dynamic>? get requestBody =>
-      _requestBody == null ? null : UnmodifiableMapView(_requestBody);
-
-  Object? get responseBody => _responseBody;
-
-  NetworkLogPrintOptions get settings => _settings;
+  final Map<String, dynamic>? requestHeaders;
+  final Map<String, dynamic>? headers;
+  final Map<String, dynamic>? requestBody;
+  final Object? responseBody;
+  final NetworkLogPrintOptions settings;
+  final String logKey;
 
   @override
   String get textMessage {
-    final header = '[$_logKey] [${method ?? '-'}] ${message ?? ''}';
+    final header = '[$logKey] [${method ?? '-'}] ${message ?? ''}';
     return _composeNetworkMessage(
       header,
       [
         () => statusCode != null ? 'Status: $statusCode' : null,
-        () => _settings.printResponseMessage && statusMessage != null
+        () => settings.printResponseMessage && statusMessage != null
             ? 'Message: $statusMessage'
             : null,
         () => _prettySection(
-              enabled: _settings.printResponseData && _responseBody != null,
+              enabled: settings.printResponseData && responseBody != null,
               label: 'Data',
-              value: _responseBody,
+              value: responseBody,
             ),
         () => _prettySection(
-              enabled: _settings.printResponseHeaders &&
-                  (_headers?.isNotEmpty ?? false),
+              enabled: settings.printResponseHeaders &&
+                  (headers?.isNotEmpty ?? false),
               label: 'Headers',
-              value: _headers,
+              value: headers,
               skipEmptyMap: true,
             ),
       ],
     );
   }
-
-  String get logKey => _logKey;
 }
 
 class NetworkErrorLog extends ISpectLogData {
@@ -224,7 +191,7 @@ class NetworkErrorLog extends ISpectLogData {
     required this.path,
     required this.statusCode,
     required this.statusMessage,
-    required NetworkLogPrintOptions settings,
+    required this.settings,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? body,
@@ -233,11 +200,11 @@ class NetworkErrorLog extends ISpectLogData {
     String? logKey,
     Map<String, dynamic>? metadata,
     AnsiPen? pen,
-  })  : _requestHeaders = requestHeaders,
-        _headers = headers,
-        _body = body,
-        _settings = settings,
-        _logKey = logKey ?? ISpectLogType.httpError.key,
+  })  : requestHeaders =
+            requestHeaders == null ? null : Map.unmodifiable(requestHeaders),
+        headers = headers == null ? null : Map.unmodifiable(headers),
+        body = body == null ? null : Map.unmodifiable(body),
+        logKey = logKey ?? ISpectLogType.httpError.key,
         super(
           key: logKey ?? ISpectLogType.httpError.key,
           title: logKey ?? ISpectLogType.httpError.key,
@@ -246,23 +213,21 @@ class NetworkErrorLog extends ISpectLogData {
           exception: capturedException,
           stackTrace: capturedStackTrace,
           additionalData: metadata ??
-              _mapFromEntries(
-                [
-                  if (method != null) MapEntry('method', method),
-                  if (url != null) MapEntry('url', url),
-                  if (path != null) MapEntry('path', path),
-                  if (statusCode != null) MapEntry('statusCode', statusCode),
-                  if (statusMessage != null)
-                    MapEntry('statusMessage', statusMessage),
-                  if (requestHeaders != null)
-                    MapEntry('requestHeaders', requestHeaders),
-                  if (headers != null) MapEntry('headers', headers),
-                  if (body != null) MapEntry('body', body),
+              _metadata(
+                {
+                  if (method != null) 'method': method,
+                  if (url != null) 'url': url,
+                  if (path != null) 'path': path,
+                  if (statusCode != null) 'statusCode': statusCode,
+                  if (statusMessage != null) 'statusMessage': statusMessage,
+                  if (requestHeaders != null) 'requestHeaders': requestHeaders,
+                  if (headers != null) 'headers': headers,
+                  if (body != null) 'body': body,
                   if (capturedException != null)
-                    MapEntry('exception', '$capturedException'),
+                    'exception': '$capturedException',
                   if (capturedStackTrace != null)
-                    MapEntry('stackTrace', '$capturedStackTrace'),
-                ],
+                    'stackTrace': '$capturedStackTrace',
+                },
               ),
         );
 
@@ -271,23 +236,11 @@ class NetworkErrorLog extends ISpectLogData {
   final String? path;
   final int? statusCode;
   final String? statusMessage;
-
-  final Map<String, dynamic>? _requestHeaders;
-  final Map<String, dynamic>? _headers;
-  final Map<String, dynamic>? _body;
-  final NetworkLogPrintOptions _settings;
-  final String _logKey;
-
-  Map<String, dynamic>? get requestHeaders =>
-      _requestHeaders == null ? null : UnmodifiableMapView(_requestHeaders);
-
-  Map<String, dynamic>? get headers =>
-      _headers == null ? null : UnmodifiableMapView(_headers);
-
-  Map<String, dynamic>? get body =>
-      _body == null ? null : UnmodifiableMapView(_body);
-
-  NetworkLogPrintOptions get settings => _settings;
+  final Map<String, dynamic>? requestHeaders;
+  final Map<String, dynamic>? headers;
+  final Map<String, dynamic>? body;
+  final NetworkLogPrintOptions settings;
+  final String logKey;
 
   @override
   String get textMessage {
@@ -296,25 +249,23 @@ class NetworkErrorLog extends ISpectLogData {
       header,
       [
         () => statusCode != null ? 'Status: $statusCode' : null,
-        () => _settings.printErrorMessage && statusMessage != null
+        () => settings.printErrorMessage && statusMessage != null
             ? 'Message: $statusMessage'
             : null,
         () => _prettySection(
-              enabled: _settings.printErrorData && (_body?.isNotEmpty ?? false),
+              enabled: settings.printErrorData && (body?.isNotEmpty ?? false),
               label: 'Data',
-              value: _body,
+              value: body,
               skipEmptyMap: true,
             ),
         () => _prettySection(
-              enabled: _settings.printErrorHeaders &&
-                  (_headers?.isNotEmpty ?? false),
+              enabled:
+                  settings.printErrorHeaders && (headers?.isNotEmpty ?? false),
               label: 'Headers',
-              value: _headers,
+              value: headers,
               skipEmptyMap: true,
             ),
       ],
     );
   }
-
-  String get logKey => _logKey;
 }
