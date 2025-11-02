@@ -3,7 +3,7 @@ description: A workspace for ispect packages
 version: 1.0.0
 
 environment:
-  sdk: ">=3.6.0 <3.9.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 dev_dependencies:
   lints: ^5.0.0
