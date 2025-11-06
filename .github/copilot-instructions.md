@@ -92,8 +92,8 @@ void main() {
 ./bash/update_versions.sh --bump patch
 
 # 2. Update CHANGELOG.md (root) with new section
-# 3. Regenerate READMEs if configs changed
-./bash/update_readme.sh generate all
+# 3. Sync README to all packages
+./bash/sync_readme.sh
 
 # 4. Dry-run publish to validate
 ./bash/publish.sh --dry-run
@@ -107,30 +107,16 @@ The `publish.sh` script enforces:
 - No `any` version constraints
 - No committed `Podfile.lock` files
 
-### README Generation
+### README Synchronization
 
-READMEs are **generated** from templates, not manually edited:
+READMEs are **synchronized** from the workspace root:
 
 ```bash
-# List available packages
-./bash/update_readme.sh list
-
-# Generate for one package (also updates root README for 'ispect')
-./bash/update_readme.sh generate ispect
-
-# Regenerate all
-./bash/update_readme.sh generate all
-
-# Dry-run validation
-./bash/update_readme.sh dry-run
+# Sync README from root to all packages
+./bash/sync_readme.sh
 ```
 
-**Template structure**:
-- Template: `readme_generator/template.md`
-- Configs: `readme_generator/configs/<package>.json`
-- Generator: `readme_generator/generate_readme.dart`
-
-Version placeholders like `ispect: ^X.Y.Z` are auto-replaced with current `version.config` value.
+The root `README.md` is copied to all package directories. Any changes should be made to the root README and then synced.
 
 ### CHANGELOG Management
 
@@ -333,7 +319,7 @@ Validates before commit:
 | `version.config` | Single source of truth for version |
 | `bash/update_versions.sh` | Semantic version bumping + propagation |
 | `bash/publish.sh` | Dependency-ordered multi-package publishing |
-| `readme_generator/` | Template-based README generation |
+| `bash/sync_readme.sh` | Sync root README to all packages |
 | `packages/ispect/lib/ispect.dart` | Main export barrel file |
 | `packages/ispectify/lib/src/ispectify.dart` | Core logging engine |
 | `packages/ispectify_*/lib/src/interceptor.dart` | Interceptor implementations |
@@ -341,7 +327,7 @@ Validates before commit:
 ## Common Pitfalls
 
 1. **Don't manually edit package versions** → Use `./bash/update_versions.sh`
-2. **Don't edit generated READMEs** → Edit configs in `readme_generator/configs/` then regenerate
+2. **Don't edit package READMEs directly** → Edit root `README.md` then sync with `./bash/sync_readme.sh`
 3. **Don't remove `dependency_overrides`** → Required for local monorepo development
 4. **Don't use raw `dart test`** → Use workspace tasks or navigate to package directory
 5. **Don't commit ISpect-enabled builds** → Always gate behind `--dart-define=ENABLE_ISPECT`
@@ -353,12 +339,11 @@ Validates before commit:
 # Version bump workflow
 ./bash/update_versions.sh --bump patch && \
 ./bash/update_changelog.sh && \
-./bash/update_readme.sh generate all
+./bash/sync_readme.sh
 
 # Validation workflow
 ./bash/check_version_sync.sh && \
-./bash/check_dependencies.sh && \
-./bash/update_readme.sh dry-run
+./bash/check_dependencies.sh
 
 # Publish workflow
 ./bash/publish.sh --dry-run && \

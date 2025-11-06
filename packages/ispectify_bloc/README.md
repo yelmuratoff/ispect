@@ -1,11 +1,11 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
   
-  <p><strong>BLoC state management integration for ISpectLogger logging system</strong></p>
+  <p><strong>Logging and inspector tool for Flutter development and testing</strong></p>
   
   <p>
-    <a href="https://pub.dev/packages/ispectify_bloc">
-      <img src="https://img.shields.io/pub/v/ispectify_bloc.svg" alt="pub version">
+    <a href="https://pub.dev/packages/ispect">
+      <img src="https://img.shields.io/pub/v/ispect.svg" alt="pub version">
     </a>
     <a href="https://opensource.org/licenses/MIT">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
@@ -16,18 +16,18 @@
   </p>
   
   <p>
-    <a href="https://pub.dev/packages/ispectify_bloc/score">
-      <img src="https://img.shields.io/pub/likes/ispectify_bloc?logo=flutter" alt="Pub likes">
+    <a href="https://pub.dev/packages/ispect/score">
+      <img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes">
     </a>
-    <a href="https://pub.dev/packages/ispectify_bloc/score">
-      <img src="https://img.shields.io/pub/points/ispectify_bloc?logo=flutter" alt="Pub points">
+    <a href="https://pub.dev/packages/ispect/score">
+      <img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points">
     </a>
   </p>
 </div>
 
 ## TL;DR
 
-Observe BLoC/Cubit events, transitions, states with selective filtering.
+Drop-in Flutter debug panel: network + database + logs + performance + UI inspector. Add flag, wrap app, ship safer builds.
 
 ## Interface Preview
 
@@ -50,118 +50,146 @@ Try out ISpect in your browser! Visit [https://yelmuratoff.github.io/ispect/](ht
 
 ##  Architecture
 
-ISpectLoggerBloc integrates with the BLoC library through observers:
+Modular packages. Include only what you use:
 
-| Component | Description |
-|-----------|-----------|
-| **BLoC Observer** | Captures all BLoC events and state changes |
-| **Event Logger** | Logs events with parameters and metadata |
-| **State Logger** | Logs state changes and transitions |
-| **Error Handler** | Captures and logs BLoC errors |
-| **Performance Tracker** | Measures state change performance |
+| Package | Role | Version |
+|---------|------|---------|
+| [ispect](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispect) | Core panel + inspectors | [![pub](https://img.shields.io/pub/v/ispect.svg)](https://pub.dev/packages/ispect) |
+| [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) | Logging backbone | [![pub](https://img.shields.io/pub/v/ispectify.svg)](https://pub.dev/packages/ispectify) |
+| [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) | Dio HTTP capture | [![pub](https://img.shields.io/pub/v/ispectify_dio.svg)](https://pub.dev/packages/ispectify_dio) |
+| [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) | http package capture | [![pub](https://img.shields.io/pub/v/ispectify_http.svg)](https://pub.dev/packages/ispectify_http) |
+| [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) | WebSocket traffic | [![pub](https://img.shields.io/pub/v/ispectify_ws.svg)](https://pub.dev/packages/ispectify_ws) |
+| [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) | Database operations | [![pub](https://img.shields.io/pub/v/ispectify_db.svg)](https://pub.dev/packages/ispectify_db) |
+| [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
 
 ## Overview
 
-> **ISpectLogger BLoC** integrates BLoC state management with the ISpectLogger logging system.
+> **ISpect** is the main debugging and inspection toolkit designed specifically for Flutter applications. Includes network, database, performance, UI, and device tools.
 
-ISpectLoggerBloc integrates BLoC state management with the ISpectLogger logging system for state change monitoring.
+Provides network, database, performance, widget tree, logging and device insight tooling via a lightweight in‑app panel.
 
 ### Key Features
 
-- State Change Logging: Automatic logging of all BLoC state changes
-- Event Tracking: Detailed event logging with parameters
-- Transition Monitoring: Complete state transition tracking
-- Error Handling: BLoC error logging with stack traces
-- Performance Metrics: State change timing and performance tracking
-- Configurable: Flexible filtering and formatting options
+- Network Monitoring: Detailed HTTP request/response inspection with error tracking
+- Database Logging: Passive DB operation tracing with duration, errors, redaction
+- Logging: Advanced logging system with categorization and filtering
+- Performance Analysis: Real-time performance metrics and monitoring
+- UI Inspector: Widget hierarchy inspection with color picker and layout analysis
+- Device Information: System and app metadata collection
+- Bug Reporting: Integrated feedback system with screenshot capture
+- Cache Management: Application cache inspection and management
 
-## Configuration Options
+## Logging Configuration
+Core logging powered by ISpectLogger. Configure via `ISpectLoggerOptions` passed to `ISpectFlutter.init()` when you need custom settings.
 
-### Basic Setup
-
+### Default Setup (No Configuration)
 ```dart
-// Initialize in ISpect.run onInit callback
-ISpect.run(
-  () => runApp(MyApp()),
-  logger: logger,
-  onInit: () {
-    // Set up BLoC observer for automatic logging
-    Bloc.observer = ISpectBlocObserver(
-      logger: logger,
-    );
-  },
+// Logger with default settings is created automatically
+ISpect.run(() => runApp(const App()));
+```
+
+### Custom Logger Setup
+```dart
+final logger = ISpectFlutter.init(
+  options: ISpectLoggerOptions(
+    enabled: true,
+    useHistory: true,
+    useConsoleLogs: kDebugMode,
+    maxHistoryItems: 5000,
+    logTruncateLength: 4000,
+  ),
+);
+ISpect.run(() => runApp(const App()), logger: logger);
+```
+
+### Disable Console Noise
+```dart
+final logger = ISpectFlutter.init(
+  options: const ISpectLoggerOptions(useConsoleLogs: false),
+);
+ISpect.run(() => runApp(const App()), logger: logger);
+
+// Or configure after initialization
+ISpect.logger.configure(
+  options: ISpect.logger.options.copyWith(useConsoleLogs: false),
 );
 ```
 
-### Filtering BLoC Logs
-
+### Stateless (No History)
 ```dart
-// You can disable specific BLoC logs in ISpectTheme
-ISpectBuilder(
-  theme: const ISpectTheme(
-    logDescriptions: [
-      LogDescription(
-        key: 'bloc-event',
-        isDisabled: true, // Disable event logs
-      ),
-      LogDescription(
-        key: 'bloc-transition',
-        isDisabled: true, // Disable transition logs
-      ),
-      LogDescription(
-        key: 'bloc-close',
-        isDisabled: true, // Disable close logs
-      ),
-      LogDescription(
-        key: 'bloc-create',
-        isDisabled: true, // Disable create logs
-      ),
-      LogDescription(
-        key: 'bloc-state',
-        isDisabled: true, // Disable state logs
-      ),
-    ],
-  ),
-  child: child,
-)
+final logger = ISpectFlutter.init(
+  options: const ISpectLoggerOptions(useHistory: false),
+);
+ISpect.run(() => runApp(const App()), logger: logger);
 ```
+Stream subscribers still receive real-time events.
 
-### Using with Different BLoC Types
-
+### Filter Example
 ```dart
-// Works with Cubit
-class CounterCubit extends Cubit<int> {
-  CounterCubit() : super(0);
-  void increment() => emit(state + 1);
+class WarningsAndAbove implements ISpectFilter {
+  @override
+  bool apply(ISpectLogData d) => (d.logLevel?.priority ?? 0) >= LogLevel.warning.priority;
 }
 
-// Works with BLoC
-class CounterBloc extends Bloc<CounterEvent, int> {
-  CounterBloc() : super(0) {
-    on<CounterIncremented>((event, emit) {
-      emit(state + 1);
-    });
-  }
-}
-
-// All state changes will be automatically logged
+final logger = ISpectFlutter.init(filter: WarningsAndAbove());
+ISpect.run(() => runApp(const App()), logger: logger);
 ```
+
+For advanced knobs (redaction, dynamic reconfigure, zero-allocation tips) see the ISpectLogger README.
+
+## Internationalization
+- Bundled locales: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
+- Extend via ISpectLocalizations delegate override
 
 ## Installation
 
-Add ispectify_bloc to your `pubspec.yaml`:
+Add ispect to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ispectify_bloc: ^4.4.8-dev02
+  ispect: ^4.4.8-dev02
 ```
 
 ## Security & Production Guidelines
 
 > IMPORTANT: ISpect is development‑only. Keep it out of production builds.
 
+Enable with a --dart-define flag. In release without the flag, code is tree‑shaken (no size / perf impact). Wrap all init behind the boolean and avoid committing builds with it enabled.
+
 <details>
 <summary><strong>Full security & environment setup (click to expand)</strong></summary>
+
+### Recommended Setup with Dart Define Constants
+
+**1. Flag-driven initialization**
+```dart
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+void main() {
+  if (kEnableISpect) {
+    _bootstrapDebug();
+  } else {
+    runApp(const MyApp());
+  }
+}
+void _bootstrapDebug() {
+  ISpect.run(() => runApp(const MyApp()));
+}
+```
+**2. Build commands**
+```bash
+# Dev / QA
+flutter run --dart-define=ENABLE_ISPECT=true
+# Release (default false)
+flutter build apk
+```
+**3. Verify exclusion**
+Compare sizes: build once with flag true and another without; the delta should reflect removed debug assets.
+
+**Benefits**
+- Zero production footprint (tree-shaken)
+- Prevents accidental data exposure
+- Faster startup & lower memory in release
+- Clear audit trail via explicit flag
 
 </details>
 
@@ -170,35 +198,20 @@ dependencies:
 ```dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispectify_bloc/ispectify_bloc.dart';
 
-// Use dart define to control ISpectLogger BLoC integration
-const bool kEnableISpectBloc = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+// Use dart define to control ISpect inclusion
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
 
 void main() {
-  if (kEnableISpectBloc) {
-    _initializeWithISpect();
+  if (kEnableISpect) {
+    // Initialize ISpect only in development/staging
+    // Logger is created automatically
+    ISpect.run(() => runApp(const MyApp()));
   } else {
     // Production initialization without ISpect
-    runApp(MyApp());
+    runApp(const MyApp());
   }
-}
-
-void _initializeWithISpect() {
-  final logger = ISpectFlutter.init();
-
-  ISpect.run(
-    () => runApp(MyApp()),
-    logger: logger,
-    onInit: () {
-      // Set up BLoC observer only in development/staging
-      Bloc.observer = ISpectBlocObserver(
-        logger: logger,
-      );
-    },
-  );
 }
 
 class MyApp extends StatelessWidget {
@@ -207,60 +220,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: BlocProvider(
-        create: (context) => CounterCubit(),
-        child: const CounterPage(),
-      ),
-    );
-  }
-}
-
-// Your Cubit/BLoC will be automatically logged only when ISpect is enabled
-class CounterCubit extends Cubit<int> {
-  CounterCubit() : super(0);
-
-  void increment() => emit(state + 1);
-  void decrement() => emit(state - 1);
-  
-  void load({required String data}) {
-    // State changes will be logged only when ISpect is enabled
-    emit(state + 1);
-  }
-}
-
-class CounterPage extends StatelessWidget {
-  const CounterPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('ISpectLogger BLoC Example')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            BlocBuilder<CounterCubit, int>(
-              builder: (context, state) {
-                return Text('Count: $state');
-              },
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // This state change will be logged only when enabled
-                context.read<CounterCubit>().increment();
-              },
-              child: const Text('Increment'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                // This state change will also be logged only when enabled
-                context.read<CounterCubit>().load(data: 'Test data');
-              },
-              child: const Text('Load Data'),
-            ),
-          ],
+      localizationsDelegates: kEnableISpect
+          ? ISpectLocalizations.localizationDelegates([
+              // Add your localization delegates here
+            ])
+          : [
+              // Your regular localization delegates
+            ],
+      // Conditionally add ISpectBuilder in MaterialApp builder
+      builder: (context, child) {
+        if (kEnableISpect) {
+          return ISpectBuilder(child: child ?? const SizedBox.shrink());
+        }
+        return child ?? const SizedBox.shrink();
+      },
+      home: Scaffold(
+        appBar: AppBar(title: const Text('ISpect Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+  ISpect.logger.info('Button pressed!');
+            },
+            child: const Text('Press me'),
+          ),
         ),
       ),
     );
@@ -270,9 +252,564 @@ class CounterPage extends StatelessWidget {
 
 ### Minimal Setup
 
+```dart
+// main.dart (minimal enable)
+const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+void main() {
+  if (!kEnableISpect) return runApp(const MyApp());
+  ISpect.run(() => runApp(const MyApp()));
+}
+
+// Run with: flutter run --dart-define=ENABLE_ISPECT=true
+```
+
+## Advanced Configuration
+
+### Environment-Based Setup
+
+```dart
+// Create a dedicated ISpect configuration file
+// lib/config/ispect_config.dart
+
+import 'package:flutter/foundation.dart';
+
+class ISpectConfig {
+  static const bool isEnabled = bool.fromEnvironment(
+    'ENABLE_ISPECT',
+    defaultValue: kDebugMode, // Only enable in debug by default
+  );
+  
+  static const String environment = String.fromEnvironment(
+    'ENVIRONMENT',
+    defaultValue: 'development',
+  );
+  
+  // Only enable in development and staging
+  static bool get shouldInitialize => 
+    isEnabled && (environment != 'production');
+}
+```
+
+### Custom Theming (Development Only)
+
+```dart
+// Wrap theming configuration in conditional check
+Widget build(BuildContext context) {
+  return MaterialApp(
+    builder: (context, child) {
+      if (ISpectConfig.shouldInitialize) {
+        return ISpectBuilder(
+          theme: ISpectTheme(
+            pageTitle: 'Debug Panel',
+            lightBackgroundColor: Colors.white,
+            darkBackgroundColor: Colors.black,
+            lightDividerColor: Colors.grey.shade300,
+            darkDividerColor: Colors.grey.shade800,
+            logColors: {
+              'error': Colors.red,
+              'info': Colors.blue,
+            },
+            logIcons: {
+              'error': Icons.error,
+              'info': Icons.info,
+            },
+            logDescriptions: [
+              LogDescription(
+                key: 'riverpod-add',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-update',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-dispose',
+                isDisabled: true,
+              ),
+              LogDescription(
+                key: 'riverpod-fail',
+                isDisabled: true,
+              ),
+            ],
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      }
+      return child ?? const SizedBox.shrink();
+    },
+    home: Scaffold(/* your app content */),
+  );
+}
+```
+
+### Panel Customization (Development Only)
+
+```dart
+Widget build(BuildContext context) {
+  return MaterialApp(
+    builder: (context, child) {
+      if (!ISpectConfig.shouldInitialize) {
+        return child ?? const SizedBox.shrink(); // Return app without ISpect in production
+      }
+      
+      return ISpectBuilder(
+        options: ISpectOptions(
+          locale: const Locale('en'),
+          isFeedbackEnabled: true,
+          actionItems: [
+            ISpectActionItem(
+                onTap: (BuildContext context) {
+                  // Development-only actions
+                },
+                title: 'Dev Action',
+                icon: Icons.build),
+          ],
+          panelItems: [
+            ISpectPanelItem(
+              enableBadge: false,
+              icon: Icons.settings,
+              onTap: (context) {
+                // Handle settings tap
+              },
+            ),
+          ],
+          panelButtons: [
+            ISpectPanelButtonItem(
+                icon: Icons.info,
+                label: 'Debug Info',
+                onTap: (context) {
+                  // Handle debug info tap
+                }),
+          ],
+        ),
+        child: child ?? const SizedBox.shrink(),
+      );
+    },
+    home: Scaffold(/* your app content */),
+  );
+}
+```
+
+### Build Configuration Examples
+
+```bash
+# Development with ISpect
+flutter run --dart-define=ENABLE_ISPECT=true --dart-define=ENVIRONMENT=development
+
+# Staging with ISpect
+flutter build apk --dart-define=ENABLE_ISPECT=true --dart-define=ENVIRONMENT=staging
+
+# Production without ISpect (recommended)
+flutter build apk --dart-define=ENABLE_ISPECT=false --dart-define=ENVIRONMENT=production
+
+# Or use flavor-specific configurations
+flutter build apk --flavor production # ISpect automatically disabled
+```
+
+### Custom Callbacks
+
+ISpect supports custom callback functions to extend its functionality for file operations, content loading, and sharing. These callbacks allow you to integrate with platform-specific packages and handle operations according to your app's requirements.
+
+```dart
+ISpectBuilder(
+  options: ISpectOptions(
+    // ... other options ...
+    onLoadLogContent: (context) async {
+      // Here you can load log content.
+      // For example, from a file using file_picker.
+      return 'Loaded log content from callback';
+    },
+    onOpenFile: (path) async {
+      // Here you can handle opening the file.
+      // For example, using open_filex package.
+      await OpenFilex.open(path);
+    },
+    onShare: (ISpectShareRequest request) async {
+      // Here you can handle sharing the content.
+      // For example, using share_plus package.
+      final filesPath = request.filePaths;
+      final files = <XFile>[];
+      for (final path in filesPath) {
+        files.add(XFile(path));
+      }
+      await SharePlus.instance.share(ShareParams(
+        text: request.text,
+        subject: request.subject,
+        files: files,
+      ));
+    },
+  ),
+  child: child,
+)
+```
+
+**Callback Descriptions:**
+
+- **`onLoadLogContent`**: Called when ISpect needs to load additional log content. Return a string with the content to be displayed. Useful for loading logs from external sources like files or network.
+
+- **`onOpenFile`**: Triggered when a user wants to open a file from within ISpect. Implement platform-specific file opening logic here.
+
+- **`onShare`**: Handles sharing operations when users want to export logs, screenshots, or other data. The `ISpectShareRequest` contains file paths, text content, and subject for sharing.
+
+**Integration Examples:**
+
+For file operations, consider using:
+- `file_picker` for selecting files to load
+- `open_filex` or `open_file` for opening files on device
+- `share_plus` for cross-platform sharing functionality
+
+These callbacks are only called when ISpect is enabled, ensuring no impact on production builds.
+
+## Integration Guides
+
+ISpect integrates with various Flutter packages through companion packages. Below are guides for integrating ISpect with HTTP clients, database operations, state management, WebSocket connections, and navigation.
+
+### Required Dependencies
+
+Add the following packages to your `pubspec.yaml` based on your needs:
+
+```yaml
+dependencies:
+  # Core ISpect
+  ispect: ^4.4.8-dev02
+  
+  # HTTP integrations (choose one or both)
+  ispectify_dio: ^4.4.8-dev02      # For Dio HTTP client
+  ispectify_http: ^4.4.8-dev02     # For standard HTTP package
+  
+  # Database integration
+  ispectify_db: ^4.4.8-dev02       # For database operation logging
+  
+  # WebSocket integration
+  ispectify_ws: ^4.4.8-dev02       # For WebSocket monitoring
+  
+  # State management integration
+  ispectify_bloc: ^4.4.8-dev02     # For BLoC state management
+  
+```
+
+### HTTP Integration
+
+#### Dio HTTP Client
+
+For Dio integration, use the `ispectify_dio` package:
+
+```yaml
+dependencies:
+  ispectify_dio: ^4.4.8-dev02
+```
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
+
+final Dio dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.example.com',
+  ),
+);
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: logger,
+  onInit: () {
+    dio.interceptors.add(
+      ISpectDioInterceptor(
+        logger: logger,
+        settings: const ISpectDioInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printRequestData: true,
+          printResponseData: true,
+        ),
+      ),
+    );
+    // Avoid also adding Dio's LogInterceptor unless deliberately comparing outputs.
+  },
+);
+```
+
+#### Standard HTTP Client
+
+For standard HTTP package integration, use the `ispectify_http` package:
+
+```yaml
+dependencies:
+  ispectify_http: ^4.4.8-dev02
+```
+
+```dart
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:ispectify_http/ispectify_http.dart';
+
+final http_interceptor.InterceptedClient client =
+    http_interceptor.InterceptedClient.build(interceptors: []);
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: logger,
+  onInit: () {
+    client.interceptors.add(
+      ISpectHttpInterceptor(
+        logger: logger,
+        settings: const ISpectHttpInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+        ),
+      ),
+    );
+  },
+);
+```
+
+#### Multiple HTTP Clients
+
+You can monitor multiple Dio or HTTP clients simultaneously. Placing interceptor setup inside `onInit` ensures all code is removed from production when the flag is false:
+
+```dart
+final Dio mainDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+final Dio uploadDio = Dio(BaseOptions(baseUrl: 'https://upload.example.com'));
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: logger,
+  onInit: () {
+    mainDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+    uploadDio.interceptors.add(ISpectDioInterceptor(logger: logger));
+  },
+);
+```
+
+### Database Integration
+
+For database operation logging, use the `ispectify_db` package:
+
+```yaml
+dependencies:
+  ispectify_db: ^4.4.8-dev02
+```
+
+```dart
+import 'package:sqflite/sqflite.dart';
+import 'package:ispectify_db/ispectify_db.dart';
+
+// Configure database logging
+ISpectDbCore.config = const ISpectDbConfig(
+  sampleRate: 1.0,
+  redact: true,
+  attachStackOnError: true,
+  enableTransactionMarkers: false,
+  slowQueryThreshold: Duration(milliseconds: 400),
+);
+
+// Log database operations
+final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+  source: 'sqflite',
+  operation: 'query',
+  statement: 'SELECT * FROM users WHERE id = ?',
+  args: [userId],
+  table: 'users',
+  run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
+  projectResult: (rows) => {'rows': rows.length},
+);
+```
+
+### WebSocket Integration
+
+For WebSocket monitoring, use the `ispectify_ws` package:
+
+```yaml
+dependencies:
+  ispectify_ws: ^4.4.8-dev02
+```
+
+```dart
+import 'package:ws/ws.dart';
+import 'package:ispectify_ws/ispectify_ws.dart';
+
+final interceptor = ISpectWSInterceptor(
+  logger: logger,
+  settings: const ISpectWSInterceptorSettings(
+    enabled: true,
+    printSentData: true,
+    printReceivedData: true,
+    printReceivedMessage: true,
+    printErrorData: true,
+    printErrorMessage: true,
+  ),
+);
+
+final client = WebSocketClient(
+  WebSocketOptions.common(
+    interceptors: [interceptor],
+  ),
+);
+
+interceptor.setClient(client);
+```
+
+### BLoC State Management Integration
+
+For BLoC integration, use the `ispectify_bloc` package:
+
+```yaml
+dependencies:
+  ispectify_bloc: ^4.4.8-dev02
+```
+
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
+
+ISpect.run(
+  () => runApp(MyApp()),
+  logger: logger,
+  onInit: () {
+    Bloc.observer = ISpectBlocObserver(
+      logger: logger,
+    );
+  },
+);
+```
+
+You can also filter specific BLoC logs in the ISpect theme:
+
+```dart
+ISpectBuilder(
+  theme: const ISpectTheme(
+    logDescriptions: [
+      LogDescription(
+        key: 'bloc-event',
+        isDisabled: true,
+      ),
+      LogDescription(
+        key: 'bloc-transition',
+        isDisabled: true,
+      ),
+      LogDescription(
+        key: 'bloc-state',
+        isDisabled: true,
+      ),
+    ],
+  ),
+  child: child,
+)
+```
+
+### Navigation Integration
+
+To track screen navigation, use `ISpectNavigatorObserver`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
+
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _observer = ISpectNavigatorObserver(
+    isLogModals: true,
+    isLogPages: true,
+    isLogGestures: false,
+    isLogOtherTypes: true,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorObservers: [_observer],
+      builder: (context, child) {
+        return ISpectBuilder(
+          observer: _observer,
+          child: child ?? const SizedBox(),
+        );
+      },
+    );
+  }
+}
+```
+
+Navigation events will be logged with the key `route`.
+
+### Sensitive Data Redaction
+
+All integration packages support redaction. Prefer disabling only with synthetic data. Use placeholder values when demonstrating secrets.
+
+#### Dio Example
+
+```dart
+final interceptor = ISpectDioInterceptor(
+  logger: logger,
+  settings: const ISpectDioInterceptorSettings(
+    enableRedaction: false, // Only if data is guaranteed non-sensitive
+  ),
+);
+```
+
+#### HTTP Example
+
+```dart
+final redactor = RedactionService();
+redactor.ignoreKeys(['authorization', 'x-api-key']);
+redactor.ignoreValues(['<placeholder-secret>']);
+client.interceptors.add(ISpectHttpInterceptor(logger: logger, redactor: redactor));
+```
+
+#### WebSocket Example
+
+```dart
+final redactor = RedactionService();
+redactor.ignoreKeys(['auth_token']);
+redactor.ignoreValues(['<placeholder>']);
+final interceptor = ISpectWSInterceptor(logger: logger, redactor: redactor);
+```
+
+#### Database Example
+
+```dart
+// Database redaction is configured globally
+ISpectDbCore.config = const ISpectDbConfig(
+  redact: true,
+  redactKeys: ['password', 'token', 'secret'],
+);
+```
+
+Redaction masks data in headers, bodies, WS messages, and query parameters. Avoid embedding real secrets in code.
+
+### Log Filtering and Customization
+
+```dart
+ISpectBuilder(
+  theme: const ISpectTheme(
+    logDescriptions: [
+      LogDescription(key: 'bloc-event', isDisabled: true),
+      LogDescription(key: 'bloc-transition', isDisabled: true),
+      LogDescription(key: 'bloc-state', isDisabled: true),
+      LogDescription(key: 'bloc-create', isDisabled: false),
+      LogDescription(key: 'bloc-close', isDisabled: false),
+      LogDescription(key: 'http-request', isDisabled: false),
+      LogDescription(key: 'http-response', isDisabled: false),
+      LogDescription(key: 'http-error', isDisabled: false),
+      LogDescription(key: 'db-query', isDisabled: false),
+      LogDescription(key: 'db-result', isDisabled: false),
+      LogDescription(key: 'db-error', isDisabled: false),
+      LogDescription(key: 'route', isDisabled: false),
+      LogDescription(key: 'print', isDisabled: true),
+      LogDescription(key: 'analytics', isDisabled: true),
+    ],
+  ),
+  child: child,
+)
+```
+
+Available log keys: `bloc-*`, `http-*`, `db-*`, `route`, `print`, `analytics`, `error`, `debug`, `info`
+
 ## Examples
 
-See the [example/](example/) directory for complete integration examples with different BLoC patterns.
+Complete example applications are available in the [example/](example/) directory demonstrating core functionality.
 
 ## 🤝 Contributing
 
@@ -284,10 +821,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Related Packages
 
-- [ispectify](../ispectify) - Foundation logging system
-- [ispect](../ispect) - Main debugging interface
-- [flutter_bloc](https://pub.dev/packages/flutter_bloc) - BLoC state management library
-- [bloc](https://pub.dev/packages/bloc) - Core BLoC library
+- [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) - Foundation logging system
+- [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) - Dio HTTP client integration
+- [ispectify_http](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_http) - Standard HTTP client integration
+- [ispectify_ws](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_ws) - WebSocket connection monitoring
+- [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) - Database operation logging
+- [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) - BLoC state management integration
 
 ---
 
