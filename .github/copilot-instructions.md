@@ -295,10 +295,10 @@ flutter build apk
    - Checks internal dependency constraints
    - Ensures CHANGELOG documents current version
 
-2. **Sync Versions and Changelogs** (`.github/workflows/sync_versions_and_changelogs.yml`)
-   - Triggers on changes to `version.config` or `CHANGELOG.md`
-   - Runs `update_versions.sh` and commits changes
-   - Auto-commits updated `pubspec.yaml` files
+2. **Sync Versions, Changelogs, and READMEs** (`.github/workflows/sync_versions_and_changelogs.yml`)
+   - Triggers on changes to `version.config`, `CHANGELOG.md`, or `README.md`
+   - Runs `update_versions.sh` and `sync_readme.sh`
+   - Auto-commits updated `pubspec.yaml`, CHANGELOG, and README files to all packages
 
 ### Pre-Commit Hook
 
