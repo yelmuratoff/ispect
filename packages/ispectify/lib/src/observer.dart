@@ -20,5 +20,5 @@ abstract interface class ISpectObserver {
   /// Called when an `ISpectLogData` log entry is recorded.
   ///
   /// Override this method to handle logs.
-  void onLog(ISpectLogData log) {}
+  void onLog(ISpectLogData data) {}
 }

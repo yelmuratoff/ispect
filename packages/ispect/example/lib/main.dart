@@ -1,7 +1,43 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+
+class SentryISpectObserver implements ISpectObserver {
+  @override
+  void onError(ISpectLogData err) {
+    log('SentryISpectObserver - onError: ${err.message}');
+  }
+
+  @override
+  void onException(ISpectLogData err) {
+    log('SentryISpectObserver - onException: ${err.message}');
+  }
+
+  @override
+  void onLog(ISpectLogData data) {
+    log('SentryISpectObserver - onLog: ${data.message}');
+  }
+}
+
+class BackendISpectObserver implements ISpectObserver {
+  @override
+  void onError(ISpectLogData err) {
+    log('BackendISpectObserver - onError: ${err.message}');
+  }
+
+  @override
+  void onException(ISpectLogData err) {
+    log('BackendISpectObserver - onException: ${err.message}');
+  }
+
+  @override
+  void onLog(ISpectLogData data) {
+    log('BackendISpectObserver - onLog: ${data.message}');
+  }
+}
 
 final observer = ISpectNavigatorObserver();
 
@@ -13,8 +49,13 @@ void main() {
   //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
   //     : null;
 
-  // Wrap your app with ISpect (logger is created automatically)
-  ISpect.run(() => runApp(const MyApp()));
+  final logger = ISpectFlutter.init();
+
+  logger.addObserver(SentryISpectObserver());
+  logger.addObserver(BackendISpectObserver());
+
+  // Wrap your app with ISpect
+  ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
