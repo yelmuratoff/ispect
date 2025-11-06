@@ -27,15 +27,31 @@
 
 ## 📱 What is ISpect?
 
-ISpect is an in-app debugging tool for Flutter that provides network monitoring, database logging, performance tracking, and UI inspection.
+In-app debugging tool for Flutter. Monitor network requests, database queries, logs, performance, and UI—all from within your running app.
 
 **Core capabilities:**
-- 🌐 Network request/response inspection (Dio, HTTP package)
-- 🗄️ Database operation logging with query performance
-- 📝 Advanced logging with filtering and export
-- 🎨 Widget tree inspection and layout analysis
-- 🔌 Observer pattern for third-party integrations (Sentry, Crashlytics, etc.)
-- 🎯 Zero production impact when disabled via build flags
+- 🌐 **Network monitoring** – HTTP/HTTPS requests and responses (Dio, http package)
+- 🗄️ **Database logging** – Query execution time and results
+- 📝 **Advanced logging** – Categorized logs with export and filtering
+- 🎨 **UI inspector** – Widget tree and layout analysis
+- 🔌 **Observers** – Integrate with Sentry, Crashlytics, or custom analytics
+- 🔒 **Production-safe** – Tree-shaken when disabled (zero overhead)
+
+## 📑 Table of Contents
+
+- [Interface Preview](#interface-preview)
+- [Try It Out](#-try-it-out)
+- [Architecture](#-architecture)
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Logger Configuration](#-logger-configuration)
+- [Internationalization](#-internationalization)
+- [Production Safety](#-production-safety)
+- [Customization](#-customization)
+- [Integrations](#-integrations)
+- [Examples](#-examples)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## Interface Preview
 
@@ -176,8 +192,10 @@ dependencies:
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 
+// Create observer instance
+final observer = ISpectNavigatorObserver();
+
 void main() {
-  // Wrap your app with ISpect—that's it!
   ISpect.run(() => runApp(const MyApp()));
 }
 
@@ -187,8 +205,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // Add ISpect's builder to enable the debug panel
+      // Add observer to track navigation
+      navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
+        options: ISpectOptions(observer: observer),
         child: child ?? const SizedBox.shrink(),
       ),
       home: Scaffold(
@@ -196,7 +216,6 @@ class MyApp extends StatelessWidget {
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              // Use the logger anywhere in your app
               ISpect.logger.info('Button pressed!');
             },
             child: const Text('Press me'),
@@ -209,6 +228,8 @@ class MyApp extends StatelessWidget {
 ```
 
 A draggable button appears on screen. Tap it to open the ISpect panel.
+
+> **Important:** ISpect requires `ISpectNavigatorObserver` to work correctly. Always add it to both `navigatorObservers` and `ISpectOptions`. You can pass `null` to `observer` parameter, but this will disable some features like navigation tracking and proper context handling.
 
 ## ⚙️ Logger Configuration
 
@@ -299,9 +320,11 @@ For advanced configuration options (redaction, dynamic reconfiguration, performa
 
 ```dart
 MaterialApp(
-  localizationsDelegates: ISpectLocalizations.localizationDelegates([
-    // Add your own localization delegates here
-  ]),
+  localizationsDelegates: ISpectLocalizations.delegates(
+    delegates: [
+      // Add your own localization delegates here
+    ],
+  ),
   // ...
 )
 ```
@@ -339,6 +362,8 @@ void main() {
 **Step 2:** Conditionally include ISpect UI
 
 ```dart
+final observer = ISpectNavigatorObserver();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -346,16 +371,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       localizationsDelegates: kEnableISpect
-          ? ISpectLocalizations.localizationDelegates([
+          ? ISpectLocalizations.delegates(delegates: [
               // Your localization delegates
             ])
           : [
               // Your localization delegates without ISpect
             ],
+      navigatorObservers: kEnableISpect ? [observer] : [],
       builder: (context, child) {
-        // Only wrap with ISpectBuilder when enabled
         if (kEnableISpect) {
-          return ISpectBuilder(child: child ?? const SizedBox.shrink());
+          return ISpectBuilder(
+            options: ISpectOptions(observer: observer),
+            child: child ?? const SizedBox.shrink(),
+          );
         }
         return child ?? const SizedBox.shrink();
       },
@@ -441,7 +469,10 @@ flutter build apk \
 ### Theming
 
 ```dart
+final observer = ISpectNavigatorObserver();
+
 ISpectBuilder(
+  options: ISpectOptions(observer: observer),
   theme: ISpectTheme(
     pageTitle: 'Debug Panel',
     lightBackgroundColor: Colors.white,
@@ -449,7 +480,7 @@ ISpectBuilder(
     lightDividerColor: Colors.grey.shade300,
     darkDividerColor: Colors.grey.shade800,
 
-    // Custom colors for different log types
+    // Custom colors for log types
     logColors: {
       'error': Colors.red,
       'warning': Colors.orange,
@@ -465,7 +496,7 @@ ISpectBuilder(
       'debug': Icons.bug_report,
     },
 
-    // Disable specific log categories (e.g., Riverpod state changes)
+    // Disable specific log categories
     logDescriptions: [
       LogDescription(key: 'riverpod-add', isDisabled: true),
       LogDescription(key: 'riverpod-update', isDisabled: true),
@@ -480,17 +511,18 @@ ISpectBuilder(
 ### Panel Actions
 
 ```dart
+final observer = ISpectNavigatorObserver();
+
 ISpectBuilder(
   options: ISpectOptions(
+    observer: observer,
     locale: const Locale('en'),
-    isFeedbackEnabled: true,
 
-    // Custom actions in the action menu
+    // Custom action items in the menu
     actionItems: [
       ISpectActionItem(
         onTap: (context) {
           // Clear cache, reset state, etc.
-          print('Custom dev action triggered');
         },
         title: 'Clear All Data',
         icon: Icons.delete_sweep,
@@ -498,14 +530,13 @@ ISpectBuilder(
       ISpectActionItem(
         onTap: (context) {
           // Switch to a test environment
-          print('Switch to staging');
         },
         title: 'Switch Environment',
         icon: Icons.swap_horiz,
       ),
     ],
 
-    // Custom panel items (shown as icons)
+    // Custom panel items (icons)
     panelItems: [
       DraggablePanelItem(
         enableBadge: false,
@@ -516,7 +547,7 @@ ISpectBuilder(
       ),
     ],
 
-    // Custom panel buttons (shown as labeled buttons)
+    // Custom panel buttons (labeled)
     panelButtons: [
       DraggablePanelButtonItem(
         icon: Icons.info,
@@ -529,7 +560,6 @@ ISpectBuilder(
   ),
   child: child ?? const SizedBox.shrink(),
 )
-
 ```
 
 ### Settings Persistence
@@ -537,6 +567,8 @@ ISpectBuilder(
 ```dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final observer = ISpectNavigatorObserver();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -560,8 +592,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
+          observer: observer,
           initialSettings: initialSettings ?? const ISpectSettingsState(
             disabledLogTypes: {'warning'},
             enabled: true,
@@ -588,9 +622,13 @@ class MyApp extends StatelessWidget {
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
+final observer = ISpectNavigatorObserver();
+
 ISpectBuilder(
   options: ISpectOptions(
-    // Load log content from an external source
+    observer: observer,
+
+    // Load log content from external source
     onLoadLogContent: (context) async {
       // Use file_picker to let users select a log file
       // final result = await FilePicker.platform.pickFiles();
@@ -600,15 +638,14 @@ ISpectBuilder(
       return 'Loaded log content from file';
     },
 
-    // Handle file opening (e.g., exported logs)
+    // Handle file opening
     onOpenFile: (path) async {
       await OpenFilex.open(path);
     },
 
-    // Handle sharing (logs, screenshots, etc.)
+    // Handle sharing
     onShare: (ISpectShareRequest request) async {
       final files = request.filePaths.map((path) => XFile(path)).toList();
-
       await Share.shareXFiles(
         files,
         text: request.text,
@@ -787,24 +824,18 @@ ISpect.run(
 );
 ```
 
-You can also filter specific BLoC logs in the ISpect theme:
+Filter specific BLoC logs:
 
 ```dart
+final observer = ISpectNavigatorObserver();
+
 ISpectBuilder(
+  options: ISpectOptions(observer: observer),
   theme: const ISpectTheme(
     logDescriptions: [
-      LogDescription(
-        key: 'bloc-event',
-        isDisabled: true,
-      ),
-      LogDescription(
-        key: 'bloc-transition',
-        isDisabled: true,
-      ),
-      LogDescription(
-        key: 'bloc-state',
-        isDisabled: true,
-      ),
+      LogDescription(key: 'bloc-event', isDisabled: true),
+      LogDescription(key: 'bloc-transition', isDisabled: true),
+      LogDescription(key: 'bloc-state', isDisabled: true),
     ],
   ),
   child: child,
