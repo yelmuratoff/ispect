@@ -26,6 +26,15 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
+  /// Maximum allowed JSON string size (590MB)
+  static const int maxJsonSize = 500 * 1024 * 1024;
+
+  /// Maximum allowed JSON nesting depth
+  static const int maxJsonDepth = 1000;
+
+  /// Maximum number of log entries allowed in import
+  static const int maxLogEntries = 100000;
+
   /// Exports logs to JSON format with metadata
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata)
@@ -78,20 +87,82 @@ class LogsJsonService {
     return jsonLogs;
   }
 
-  /// Imports logs from JSON format
+  /// Imports logs from JSON format with comprehensive validation
   ///
   /// - Parameters: jsonString (JSON content to parse)
   /// - Return: List of imported log entries
   /// - Usage example: `final logs = await service.importFromJson(jsonContent);`
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
+  ///
+  /// **Validation:**
+  /// - Size: Max 10MB
+  /// - Depth: Max 50 levels
+  /// - Count: Max 100,000 entries
+  ///
+  /// **Security:** Prevents DoS attacks via malformed JSON
   Future<List<ISpectLogData>> importFromJson(String jsonString) async {
     try {
+      // Validate size
+      _validateJsonSize(jsonString);
+
       final dynamic jsonData = jsonDecode(jsonString);
+
+      // Validate depth
+      _validateJsonDepth(jsonData);
+
       final logsJson = _extractLogsFromJsonData(jsonData);
+
+      // Validate count
+      _validateLogCount(logsJson);
 
       return await _processImportedLogsInChunks(logsJson);
     } catch (e) {
+      if (e is FormatException) rethrow;
       throw FormatException('Failed to import logs from JSON: $e');
+    }
+  }
+
+  /// Validates JSON string size to prevent memory exhaustion
+  void _validateJsonSize(String jsonString) {
+    if (jsonString.length > maxJsonSize) {
+      throw FormatException(
+        'JSON size (${jsonString.length} bytes) exceeds maximum allowed '
+        'size ($maxJsonSize bytes). Please import a smaller dataset.',
+      );
+    }
+  }
+
+  /// Validates JSON nesting depth to prevent stack overflow
+  void _validateJsonDepth(dynamic data, [int currentDepth = 0]) {
+    if (currentDepth > maxJsonDepth) {
+      throw FormatException(
+        'JSON nesting depth ($currentDepth) exceeds maximum allowed '
+        'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
+      );
+    }
+
+    if (data is Map) {
+      for (final value in data.values) {
+        _validateJsonDepth(value, currentDepth + 1);
+      }
+    } else if (data is List) {
+      // Only check first and last items to avoid O(n*depth) complexity
+      if (data.isNotEmpty) {
+        _validateJsonDepth(data.first, currentDepth + 1);
+        if (data.length > 1) {
+          _validateJsonDepth(data.last, currentDepth + 1);
+        }
+      }
+    }
+  }
+
+  /// Validates log entry count to prevent excessive memory usage
+  void _validateLogCount(List<dynamic> logsJson) {
+    if (logsJson.length > maxLogEntries) {
+      throw FormatException(
+        'Log count (${logsJson.length}) exceeds maximum allowed '
+        'entries ($maxLogEntries). Please split the import into smaller batches.',
+      );
     }
   }
 

@@ -43,7 +43,7 @@ class ISpectViewController extends ChangeNotifier {
 
   // Filter cache properties
   List<String>? _cachedTitles;
-  List<Type>? _cachedTypes;
+  Set<Type>? _cachedTypesSet; // Use Set for O(1) lookups
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
 
@@ -123,10 +123,10 @@ class ISpectViewController extends ChangeNotifier {
 
   /// Adds a new filter type and notifies listeners.
   void addFilterType(Type type) {
-    final currentTypes = _getCurrentTypes();
-    if (currentTypes.contains(type)) return;
+    final currentTypesSet = _getCurrentTypesSet();
+    if (currentTypesSet.contains(type)) return;
 
-    _updateFilter(types: [...currentTypes, type]);
+    _updateFilter(types: [...currentTypesSet, type]);
   }
 
   /// Removes a filter type and notifies listeners.
@@ -196,18 +196,21 @@ class ISpectViewController extends ChangeNotifier {
     return _cachedTitles!;
   }
 
-  /// Retrieves the current type filters with caching.
-  List<Type> _getCurrentTypes() {
-    if (!_filterCacheValid || _cachedTypes == null) {
-      _cachedTypes = (_filter.filters.firstWhere(
+  /// Retrieves the current type filters as a Set for O(1) lookups.
+  Set<Type> _getCurrentTypesSet() {
+    if (!_filterCacheValid || _cachedTypesSet == null) {
+      _cachedTypesSet = (_filter.filters.firstWhere(
         (f) => f is TypeFilter,
         orElse: () => TypeFilter([]),
       ) as TypeFilter)
           .types
-          .toList(growable: false);
+          .toSet();
     }
-    return _cachedTypes!;
+    return _cachedTypesSet!;
   }
+
+  /// Retrieves the current type filters as a List (for backwards compatibility).
+  List<Type> _getCurrentTypes() => _getCurrentTypesSet().toList(growable: false);
 
   /// Retrieves the current search query with caching.
   String? _getCurrentSearchQuery() {
@@ -226,7 +229,7 @@ class ISpectViewController extends ChangeNotifier {
   void _invalidateFilterCache() {
     _filterCacheValid = false;
     _cachedTitles = null;
-    _cachedTypes = null;
+    _cachedTypesSet = null;
     _cachedSearchQuery = null;
   }
 

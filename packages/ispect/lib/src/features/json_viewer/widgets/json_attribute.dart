@@ -162,10 +162,10 @@ class _JsonAttributeState extends State<JsonAttribute> {
               onTap: _hasInteraction
                   ? () => _handleTap(context, valueStyle)
                   : null,
-              child: AnimatedBuilder(
-                animation: widget.node,
-                builder: (context, _) => RepaintBoundary(
-                  child: Padding(
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: widget.node,
+                  builder: (context, _) => Padding(
                     padding: _kBottomPadding,
                     child: Row(
                       crossAxisAlignment: widget.node.isRoot

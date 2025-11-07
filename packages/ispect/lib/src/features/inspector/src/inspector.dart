@@ -273,21 +273,24 @@ class InspectorState extends State<Inspector> {
   }
 
   void _handleZoomDisabled() {
-    if (_byteDataStateNotifier.value != null) {
-      final color = getPixelFromByteData(
-        _byteDataStateNotifier.value!,
-        width: _image!.width,
-        x: _zoomImageOffsetNotifier.value!.dx.round(),
-        y: _zoomImageOffsetNotifier.value!.dy.round(),
-      );
+    try {
+      if (_byteDataStateNotifier.value != null) {
+        final color = getPixelFromByteData(
+          _byteDataStateNotifier.value!,
+          width: _image!.width,
+          x: _zoomImageOffsetNotifier.value!.dx.round(),
+          y: _zoomImageOffsetNotifier.value!.dy.round(),
+        );
 
-      showColorPickerResultSnackbar(
-        context: context,
-        color: color,
-      );
+        showColorPickerResultSnackbar(
+          context: context,
+          color: color,
+        );
+      }
+    } finally {
+      // Always clean up resources, even if an exception occurs
+      _resetZoomState();
     }
-
-    _resetZoomState();
   }
 
   void _resetZoomState() {

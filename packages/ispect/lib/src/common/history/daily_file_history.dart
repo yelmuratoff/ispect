@@ -4,6 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/date_time_extensions.dart';
+import 'package:ispect/src/common/extensions/error_handling_extensions.dart';
+import 'package:ispect/src/common/history/file_history_config.dart';
 
 /// Optimized daily file-based log history implementation
 ///
@@ -41,9 +44,9 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
     }
   }
 
-  static const int _chunkSize = 100;
-  static const int _fallbackEntrySize = 500;
-  static const double _sizeSafetyMargin = 1.2;
+  static const int _chunkSize = FileHistoryConfig.chunkSize;
+  static const int _fallbackEntrySize = FileHistoryConfig.fallbackEntrySize;
+  static const double _sizeSafetyMargin = FileHistoryConfig.sizeSafetyMargin;
 
   static final RegExp _datePattern =
       RegExp(r'logs_(\d{4})-(\d{2})-(\d{2})\.json');
@@ -92,11 +95,13 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
 
       _sessionDirectory = logsDir.path;
       _directoryInitialized.complete();
-    } catch (e, st) {
-      if (settings.useConsoleLogs) {
-        ISpect.logger.handle(exception: e, stackTrace: st);
-      }
-      _directoryInitialized.completeError(e);
+    } catch (exception, stackTrace) {
+      ISpect.logger.handleConditionally(
+        exception: exception,
+        stackTrace: stackTrace,
+        settings: settings,
+      );
+      _directoryInitialized.completeError(exception);
     }
   }
 
@@ -219,8 +224,7 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
   /// - Return: String formatted as YYYY-MM-DD
   /// - Usage example: Used internally for file naming consistency
   /// - Edge case notes: Zero-pads month and day for sorting
-  String _formatDateForFileName(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  String _formatDateForFileName(DateTime date) => date.toFileNameFormat();
 
   /// Optimized date parsing from file name
   DateTime? _parseDateFromFileName(String fileName) {
@@ -249,10 +253,12 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
 
     try {
       await saveToDailyFile();
-    } catch (e, st) {
-      if (settings.useConsoleLogs) {
-        ISpect.logger.handle(exception: e, stackTrace: st);
-      }
+    } catch (exception, stackTrace) {
+      ISpect.logger.handleConditionally(
+        exception: exception,
+        stackTrace: stackTrace,
+        settings: settings,
+      );
     }
   }
 
@@ -279,12 +285,7 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
 
       // Only trigger cleanup when adding a new date that would exceed the limit
       // If today's file already exists, we're just updating it, so no cleanup needed
-      final todayExists = availableDates.any(
-        (date) =>
-            date.year == todayDate.year &&
-            date.month == todayDate.month &&
-            date.day == todayDate.day,
-      );
+      final todayExists = availableDates.any((date) => date.isSameDay(todayDate));
 
       if (!todayExists && availableDates.length >= _maxSessionDays) {
         await _performSessionCleanup(availableDates);
@@ -462,7 +463,7 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
       final targetDate = DateTime(today.year, today.month, today.day);
 
       for (final entry in existingFileData) {
-        if (!_isSameDay(entry.time, targetDate)) {
+        if (!entry.time.isSameDay(targetDate)) {
           if (settings.useConsoleLogs) {
             ISpect.logger.warning(
               'File ${file.path} contains data from ${_formatDateForFileName(entry.time)}, '
@@ -482,12 +483,14 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
     int requiredBytes,
   ) async {
     try {
-      // Add 10% buffer for filesystem overhead
-      final requiredWithBuffer = (requiredBytes * 1.1).round();
+      // Add buffer for filesystem overhead
+      final requiredWithBuffer =
+          (requiredBytes * FileHistoryConfig.filesystemOverheadMargin).round();
 
       // Check against the configured maximum file size limit
       // This prevents runaway file growth while respecting user configuration
-      return requiredWithBuffer <= (_maxFileSize * 1.1).round();
+      return requiredWithBuffer <=
+          (_maxFileSize * FileHistoryConfig.filesystemOverheadMargin).round();
     } catch (e) {
       // If we can't check disk space, assume it's available
       return true;
@@ -513,9 +516,10 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
       // Since _writeDataChunked overwrites the file completely with merged data,
       // we only need to check if the estimated size of the data to be written
       // exceeds the limit. Adding currentSize would double-count existing data.
-      // We use 90% of the limit to provide a safety buffer and avoid edge cases.
+      // We use threshold to provide a safety buffer and avoid edge cases.
       final estimatedDataSize = _estimateJsonSize(data);
-      final effectiveLimit = (_maxFileSize * 0.9).round();
+      final effectiveLimit =
+          (_maxFileSize * FileHistoryConfig.fileSizeThreshold).round();
 
       return estimatedDataSize > effectiveLimit;
     } catch (e, st) {
@@ -530,7 +534,9 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
   int _estimateJsonSize(List<ISpectLogData> data) {
     if (data.isEmpty) return 0;
 
-    final sampleSize = data.length > 10 ? 10 : data.length;
+    final sampleSize = data.length > FileHistoryConfig.sampleSizeForEstimation
+        ? FileHistoryConfig.sampleSizeForEstimation
+        : data.length;
     var totalSampleSize = 0;
 
     for (var i = 0; i < sampleSize; i++) {
@@ -591,7 +597,7 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
 
     if (_lastSaveDate == null) return true;
 
-    if (!_isSameDay(_lastSaveDate!, now)) return false;
+    if (!_lastSaveDate!.isSameDay(now)) return false;
 
     return true;
   }
@@ -655,14 +661,14 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
 
     // Add existing data (from file)
     for (final item in existing) {
-      if (_isSameDay(item.time, today)) {
+      if (item.time.isSameDay(today)) {
         merged.add(item);
       }
     }
 
     // Add current data (from memory), avoiding duplicates
     for (final item in current) {
-      if (_isSameDay(item.time, today)) {
+      if (item.time.isSameDay(today)) {
         merged.add(item);
       }
     }
@@ -909,17 +915,6 @@ class DailyFileLogHistory extends DefaultISpectLoggerHistory
     final file = File(todaySessionPath);
     return file.exists();
   }
-
-  /// Checks if two dates are the same day
-  ///
-  /// - Parameters: date1, date2 - Dates to compare
-  /// - Returns: `bool` true if same calendar day
-  /// - Usage example: Used for date validation and filtering
-  /// - Edge case notes: Ignores time components, compares only date parts
-  bool _isSameDay(DateTime date1, DateTime date2) =>
-      date1.year == date2.year &&
-      date1.month == date2.month &&
-      date1.day == date2.day;
 
   /// Cleanup resources when history is no longer needed
   void dispose() {

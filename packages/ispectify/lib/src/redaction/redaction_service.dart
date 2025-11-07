@@ -483,6 +483,7 @@ class _RedactionWalker {
 }
 
 const Set<String> _kDefaultSensitiveKeys = <String>{
+  // Authentication & Authorization
   'authorization',
   'proxy-authorization',
   'x-api-key',
@@ -501,14 +502,109 @@ const Set<String> _kDefaultSensitiveKeys = <String>{
   'private_key',
   'set-cookie',
   'cookie',
+
+  // Personal Identification Numbers
+  'ssn',
+  'social_security',
+  'social-security',
+  'social_security_number',
+  'socialSecurityNumber',
+  'national_id',
+  'nationalId',
+  'national-id',
+  'passport',
+  'passport_number',
+  'passportNumber',
+  'passport-number',
+  'drivers_license',
+  'driversLicense',
+  'drivers-license',
+  'driver_license',
+  'driverLicense',
+  'driver-license',
+  'license_number',
+  'licenseNumber',
+  'license-number',
+
+  // Financial Information
+  'credit_card',
+  'creditCard',
+  'credit-card',
+  'card_number',
+  'cardNumber',
+  'card-number',
+  'cc_number',
+  'ccNumber',
+  'cc-number',
+  'cvv',
+  'cvc',
+  'cvv2',
+  'card_cvv',
+  'cardCvv',
+  'security_code',
+  'securityCode',
+  'security-code',
+  'bank_account',
+  'bankAccount',
+  'bank-account',
+  'account_number',
+  'accountNumber',
+  'account-number',
+  'routing_number',
+  'routingNumber',
+  'routing-number',
+  'iban',
+  'swift',
+  'swift_code',
+  'swiftCode',
+  'swift-code',
+  'bic',
+
+  // Personal Contact Information (context-dependent)
+  'phone',
+  'phone_number',
+  'phoneNumber',
+  'phone-number',
+  'mobile',
+  'mobile_number',
+  'mobileNumber',
+  'mobile-number',
+  'cell',
+  'cell_phone',
+  'cellPhone',
+  'cell-phone',
 };
 
 final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
+  // Authentication patterns
   RegExp(r'(?:^|[_\-])token(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])secret(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])pass(?:word)?(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
+
+  // Personal identification patterns
+  RegExp(r'(?:^|[_\-])ssn(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])social[_\-]?security(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])passport(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])drivers?[_\-]?license(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])national[_\-]?id(?:$|[_\-])', caseSensitive: false),
+
+  // Financial patterns
+  RegExp(r'(?:^|[_\-])credit[_\-]?card(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])card[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cvv[0-9]?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cvc(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])bank[_\-]?account(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])routing[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])account[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])iban(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])swift(?:$|[_\-])', caseSensitive: false),
+
+  // Contact information patterns
+  RegExp(r'(?:^|[_\-])phone(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])mobile(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cell(?:$|[_\-])', caseSensitive: false),
 ];
 
 final RegExp _schemeRegex = RegExp(r'^(\w+)\s+', caseSensitive: false);
