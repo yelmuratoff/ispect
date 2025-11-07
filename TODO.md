@@ -27,11 +27,6 @@
 - [ ] Add proper stream subscription cleanup
 - [x] Add dispose guards for all resources
 
-### Magic Numbers & Configuration
-- [x] Extract hardcoded values in `daily_file_history.dart:44-46` to documented config class
-- [x] Extract zoom constants from `inspector.dart:113-120` to config
-- [x] Document performance tuning rationale for all constants
-
 ---
 
 ## Priority 2 - High (Performance & SOLID)
@@ -107,41 +102,14 @@
   - [ ] Filtering logic
   - [ ] Redaction service
   - [ ] Session management
-- [ ] Add widget tests for:
-  - [ ] JSON viewer
-  - [ ] Inspector
-  - [ ] Logs screen
-  - [ ] Expansion tile
-- [ ] Add integration tests for:
-  - [ ] End-to-end log flow
-  - [ ] Multi-package interactions
 - [ ] Create test utilities/fixtures for common scenarios
-- [ ] Add performance benchmarks
 - [ ] Set up code coverage reporting in CI/CD
 
 ### Modern Dart/Flutter Patterns
 - [ ] Use Dart 3.0 sealed classes for state representations
 - [ ] Apply pattern matching consistently across codebase
 - [ ] Use records for multiple return values (already started, make consistent)
-- [ ] Add immutability with `freezed` or `built_value` for models
-- [ ] Consider using `riverpod` for dependency injection
 - [ ] Leverage const constructors more aggressively
-
-### Documentation
-- [ ] Add complexity analysis (O(n), etc.) to method documentation
-- [ ] Document thread safety guarantees
-- [ ] Document memory usage characteristics
-- [ ] Create architectural decision records (ADRs)
-- [ ] Add performance tuning guide
-- [ ] Create migration guide for breaking changes
-
-### Build & Tooling
-- [ ] Consider migrating from bash scripts to Melos for monorepo management
-- [ ] Add automated testing in CI/CD
-- [ ] Add code coverage reporting
-- [ ] Add performance regression tests
-- [ ] Add pre-publish validation hooks
-- [ ] Set up automated dependency updates
 
 ---
 
