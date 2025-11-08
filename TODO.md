@@ -5,13 +5,11 @@
 ### Security
 - [x] Expand redaction patterns to include: SSN, credit cards, bank accounts, phone numbers, passport, driver license
 - [x] Add input validation for JSON import (size limits, depth limits, schema validation)
-- [ ] Set explicit file permissions on log files
 - [x] Add DoS protection for deeply nested JSON (included in JSON validation)
 
 ### Architecture - God Classes Refactoring
 - [ ] Refactor `custom_expansion_tile.dart` (1,026 lines) - extract animation logic
 - [ ] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
-- [ ] Refactor `logs_screen.dart` (632 lines) - apply MVC/MVP pattern
 - [ ] Refactor `ispectify.dart` (565 lines) - extract observer management
 
 ### Memory Leaks
@@ -27,7 +25,6 @@
 ### Performance Optimization
 - [ ] Replace O(n) filter searches with indexed map in `ispect_view_controller.dart:188-196`
 - [x] Replace quadratic date comparison with Set-based lookup in `daily_file_history.dart:284-287`
-- [ ] Move JSON encoding to isolates using `compute()` in `ispect_view_controller.dart:366-367`
 - [x] Fix widget rebuild boundaries in `json_attribute.dart:165-167` (RepaintBoundary should wrap AnimatedBuilder)
 - [x] Use Set instead of List for type filtering (O(1) vs O(n) lookups)
 - [ ] Add caching for expensive color calculations in JSON viewer
