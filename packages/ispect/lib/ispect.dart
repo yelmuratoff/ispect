@@ -12,7 +12,6 @@ export 'package:ispectify/ispectify.dart';
 
 export 'src/common/extensions/history.dart';
 export 'src/common/extensions/init.dart';
-export 'src/common/history/daily_file_history.dart';
 export 'src/common/models/panel_button.dart';
 export 'src/common/models/panel_item.dart';
 export 'src/common/observers/route_observer.dart';

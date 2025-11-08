@@ -3,19 +3,12 @@
 ## Security & Architecture
 
 ### Security
-- [ ] Add encryption layer for persisted log files (currently plain JSON)
 - [x] Expand redaction patterns to include: SSN, credit cards, bank accounts, phone numbers, passport, driver license
 - [x] Add input validation for JSON import (size limits, depth limits, schema validation)
 - [ ] Set explicit file permissions on log files
 - [x] Add DoS protection for deeply nested JSON (included in JSON validation)
 
 ### Architecture - God Classes Refactoring
-- [ ] Split `daily_file_history.dart` (1,124 lines) into:
-  - [ ] `FileSystemService` - File I/O operations
-  - [ ] `JsonSerializationService` - JSON encoding/decoding
-  - [ ] `SessionManager` - Session lifecycle
-  - [ ] `StatisticsCalculator` - Metrics and analytics
-  - [ ] `DateFilePathResolver` - Path management
 - [ ] Refactor `custom_expansion_tile.dart` (1,026 lines) - extract animation logic
 - [ ] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
 - [ ] Refactor `logs_screen.dart` (632 lines) - apply MVC/MVP pattern
