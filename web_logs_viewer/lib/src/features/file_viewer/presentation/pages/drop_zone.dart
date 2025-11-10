@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -27,6 +28,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   final List<Widget> _droppedWidgets = [];
   Widget _preview = const SizedBox();
   Widget _content = const EmptyDropZoneContent();
+  final List<StreamSubscription> _fileSubscriptions = [];
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +130,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   }
 
   void _handleFile(dynamic file, String? displayName, String? mimeType) {
-    processFileStream(
+    final sub = processFileStream(
       file,
       onSuccess: (content) {
         final fileInfo = detectFileType(
@@ -164,6 +166,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         }
       },
     );
+    _fileSubscriptions.add(sub);
   }
 
   void _addWidgetToContent(Widget widget) {
@@ -197,6 +200,15 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
       _isDragOver = false;
       _preview = const SizedBox();
     });
+  }
+
+  @override
+  void dispose() {
+    for (final sub in _fileSubscriptions) {
+      sub.cancel();
+    }
+    _fileSubscriptions.clear();
+    super.dispose();
   }
 
   void _showFileOptionsDialog() {

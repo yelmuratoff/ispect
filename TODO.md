@@ -1,9 +1,5 @@
 # TODO
 
-### Memory Leaks
-- [ ] Add proper stream subscription cleanup
----
-
 ## Priority 2 - High (Performance & SOLID)
 
 ### Performance Optimization

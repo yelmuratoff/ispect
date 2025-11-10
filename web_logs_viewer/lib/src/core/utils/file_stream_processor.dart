@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 /// Processes a file stream and decodes its content.
-void processFileStream(
+StreamSubscription<Uint8List> processFileStream(
   dynamic file, {
   required void Function(String content) onSuccess,
   required void Function(Object error) onError,
@@ -10,7 +11,7 @@ void processFileStream(
   final stream = file.getStream();
   final chunks = <Uint8List>[];
 
-  stream.listen(
+  return stream.listen(
     chunks.add,
     onDone: () {
       try {
