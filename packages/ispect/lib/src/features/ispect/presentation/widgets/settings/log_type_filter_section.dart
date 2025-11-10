@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/base_card.dart';
 
@@ -35,41 +36,65 @@ class LogTypeFilterSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                context.ispectL10n.iSpectifyLogsInfo,
-                style: context.ispectTheme.textTheme.titleMedium?.copyWith(
-                  color: context.ispectTheme.textColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextButton(
-                onPressed: _isAllEnabled ? onDeselectAll : onSelectAll,
-                child: Text(
-                  _isAllEnabled ? 'Deselect All' : 'Select All',
-                  style: TextStyle(
-                    color: context.ispectTheme.colorScheme.primary,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.ispectTheme.cardColor,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(16),
+          ),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: iSpect.theme.dividerColor(context) ??
+                  context.ispectTheme.dividerColor,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    context.ispectL10n.iSpectifyLogsInfo,
+                    style: context.ispectTheme.textTheme.titleMedium?.copyWith(
+                      color: context.ispectTheme.textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: _isAllEnabled ? onDeselectAll : onSelectAll,
+                    child: Text(
+                      _isAllEnabled ? 'Deselect All' : 'Select All',
+                      style: context.ispectTheme.textTheme.bodySmall?.copyWith(
+                        color: context.ispectTheme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Divider(
+              color: iSpect.theme.dividerColor(context) ??
+                  context.ispectTheme.dividerColor,
+              height: 1,
+            ),
+            const Gap(8),
+            ...ISpectConstants.defaultLogDescriptions(context).map(
+              (entry) => _buildLogTypeItem(
+                context,
+                iSpect,
+                entry,
+              ),
+            ),
+            const Gap(12),
+          ],
         ),
-        ...ISpectConstants.defaultLogDescriptions(context).map(
-          (entry) => _buildLogTypeItem(
-            context,
-            iSpect,
-            entry,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -84,7 +109,7 @@ class LogTypeFilterSection extends StatelessWidget {
     return Column(
       children: [
         ISpectBaseCard(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: EdgeInsets.zero,
           color: iSpect.theme.dividerColor(context) ??
               context.ispectTheme.dividerColor,
           backgroundColor: context.ispectTheme.cardColor,
