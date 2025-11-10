@@ -1,7 +1,6 @@
 # TODO
 
 ### Architecture - God Classes Refactoring
-- [ ] Refactor `custom_expansion_tile.dart` (1,026 lines) - extract animation logic
 - [ ] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
 - [ ] Refactor `ispectify.dart` (565 lines) - extract observer management
 
