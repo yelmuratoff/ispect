@@ -3,7 +3,6 @@
 ## Priority 2 - High (Performance & SOLID)
 
 ### Performance Optimization
-- [ ] Replace O(n) filter searches with indexed map in `ispect_view_controller.dart:188-196`
 - [ ] Add caching for expensive color calculations in JSON viewer
 - [ ] Optimize nested ValueListenableBuilders in `inspector.dart:406-470`
 
@@ -128,3 +127,4 @@
 - [x] Use Set instead of List for type filtering (O(1) vs O(n) lookups)
 - [x] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
 - [x] Refactor `ispectify.dart` (565 lines) - extract observer management
+- [x] Replace O(n) filter searches with indexed map in `ispect_view_controller.dart:188-196`
