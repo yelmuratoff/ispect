@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/factory/log_factory.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
-import 'package:ispectify/src/observer_registry.dart';
+import 'package:ispectify/src/observer/observer_manager.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
@@ -60,6 +60,7 @@ class ISpectLogger {
       history: _history,
       filter: _filter,
     );
+    _observerManager = ObserverManager(() => _logger);
     _replaceObserver(observer);
   }
 
@@ -82,11 +83,11 @@ class ISpectLogger {
   late LogPipeline _pipeline;
 
   /// Observers notified of log events.
-  final ObserverRegistry _observers = ObserverRegistry();
+  late final ObserverManager _observerManager;
 
   void _replaceObserver(ISpectObserver? observer) {
     if (_isDisposed) return;
-    _observers.replaceWith(observer);
+    _observerManager.replace(observer);
   }
 
   late ILogHistory _history;
@@ -102,13 +103,13 @@ class ISpectLogger {
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
     if (!_ensureActive()) return;
-    _observers.add(observer);
+    _observerManager.add(observer);
   }
 
   /// Registers an observer and returns a disposer to remove it later.
   ISpectObserverDisposer observe(ISpectObserver observer) {
     if (!_ensureActive()) return () {};
-    return _observers.observe(observer);
+    return _observerManager.observe(observer);
   }
 
   /// Removes an observer from the list of registered observers.
@@ -116,17 +117,17 @@ class ISpectLogger {
   /// - `observer`: The observer to remove.
   void removeObserver(ISpectObserver observer) {
     if (!_ensureActive()) return;
-    _observers.remove(observer);
+    _observerManager.remove(observer);
   }
 
   /// Removes all registered observers.
   void clearObservers() {
     if (!_ensureActive()) return;
-    _observers.clear();
+    _observerManager.clear();
   }
 
   /// Indicates whether at least one observer is registered.
-  bool get hasObservers => _observers.hasObservers;
+  bool get hasObservers => _observerManager.hasObservers;
 
   /// Helper method to notify all observers with error handling.
   ///
@@ -134,7 +135,7 @@ class ISpectLogger {
   /// observer from affecting others.
   void _notifyObservers(void Function(ISpectObserver) notify) {
     if (!_ensureActive()) return;
-    _observers.notify(notify, _logger);
+    _observerManager.notify(notify);
   }
 
   /// Reconfigures the inspector with new components.
@@ -557,7 +558,7 @@ class ISpectLogger {
   Future<void> dispose() async {
     if (_isDisposed) return;
     _isDisposed = true;
-    _observers.clear();
+    _observerManager.clear();
     await _loggerStreamController.close();
   }
 }

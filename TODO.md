@@ -1,12 +1,7 @@
 # TODO
 
-### Architecture - God Classes Refactoring
-- [ ] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
-- [ ] Refactor `ispectify.dart` (565 lines) - extract observer management
-
 ### Memory Leaks
 - [ ] Add proper stream subscription cleanup
-
 ---
 
 ## Priority 2 - High (Performance & SOLID)
@@ -135,3 +130,5 @@
 - [x] Replace quadratic date comparison with Set-based lookup in `daily_file_history.dart:284-287`
 - [x] Fix widget rebuild boundaries in `json_attribute.dart:165-167` (RepaintBoundary should wrap AnimatedBuilder)
 - [x] Use Set instead of List for type filtering (O(1) vs O(n) lookups)
+- [x] Refactor `json_attribute.dart` (806 lines) - separate caching, rendering, search
+- [x] Refactor `ispectify.dart` (565 lines) - extract observer management
