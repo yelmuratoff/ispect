@@ -20,11 +20,6 @@ import 'package:ispect/src/features/ispect/services/file_processing_service.dart
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
-///
-/// - Parameters: options, appBarTitle, itemsBuilder, navigatorObserver
-/// - Return: StatefulWidget that displays logs in a scrollable list
-/// - Usage example: LogsScreen(options: myOptions).push(context)
-/// - Edge case notes: Handles empty state when no logs are available
 class LogsScreen extends StatefulWidget {
   const LogsScreen({
     required this.options,
@@ -372,13 +367,11 @@ class _EmptyLogsWidget extends StatelessWidget {
   const _EmptyLogsWidget();
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => Row(
         children: [
           const Icon(
             Icons.info_outline_rounded,
-            size: 40,
-            color: Colors.white70,
+            size: 20,
           ),
           const Gap(8),
           Text(

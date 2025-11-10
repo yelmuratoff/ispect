@@ -3,9 +3,6 @@ import 'dart:collection';
 import 'package:ispectify/ispectify.dart';
 
 /// Simple cache for filtered log data.
-///
-/// Uses a generation-based approach to track data changes,
-/// which is simpler and more performant than complex hash calculations.
 class FilterCache {
   List<ISpectLogData> _cachedData = [];
   ISpectFilter? _lastFilter;
