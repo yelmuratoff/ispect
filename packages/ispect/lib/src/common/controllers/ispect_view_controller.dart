@@ -30,7 +30,7 @@ class ISpectViewController extends ChangeNotifier {
   final ISpectShareCallback? _onShare;
 
   List<String>? _cachedTitles;
-  Set<Type>? _cachedTypesSet; // Set for O(1) lookups
+  Set<Type>? _cachedTypesSet;
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
 
@@ -185,7 +185,6 @@ class ISpectViewController extends ChangeNotifier {
     _cachedSearchQuery = null;
   }
 
-  // Generation-based cache: O(1) hits, O(n) misses. Call onDataChanged when data updates.
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) {
     if (logsData.isEmpty) return <ISpectLogData>[];
     return _filterCache.getFiltered(logsData, filter, _dataGeneration);

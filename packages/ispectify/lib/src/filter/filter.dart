@@ -16,7 +16,7 @@ abstract class Filter<T> {
 class LogTypeKeyFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of log type keys.
   ///
-  /// Converts the list to a Set for O(1) lookups.
+  /// Converts the list to a Set
   LogTypeKeyFilter(List<String> keys) : keys = keys.toSet();
 
   /// Creates a filter from a set of log type keys.
@@ -37,7 +37,7 @@ class LogTypeKeyFilter implements Filter<ISpectLogData> {
 class TitleFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of titles.
   ///
-  /// Converts the list to a Set for O(1) lookups.
+  /// Converts the list to a Set
   TitleFilter(List<String> titles) : titles = titles.toSet();
 
   /// Creates a filter from a set of titles.
@@ -58,7 +58,7 @@ class TitleFilter implements Filter<ISpectLogData> {
 class TypeFilter implements Filter<ISpectLogData> {
   /// Creates a filter with a set of types.
   ///
-  /// Converts the list to a Set for O(1) lookups.
+  /// Converts the list to a Set
   TypeFilter(List<Type> types) : types = types.toSet();
 
   /// Creates a filter from a set of types.
