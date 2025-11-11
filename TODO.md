@@ -1,11 +1,6 @@
 # TODO
 
 ### Other
-- [ ] **SRP**: Split `ISpectViewController` into:
-  - [ ] `FilterManager` - Handle filtering logic
-  - [ ] `SettingsManager` - Handle settings
-  - [ ] `LogExportService` - Handle exports
-  - [ ] `LogImportService` - Handle imports
 - [ ] **OCP**: Implement strategy pattern for `RedactionService`
   - [ ] `KeyBasedRedaction` strategy
   - [ ] `PatternBasedRedaction` strategy
@@ -114,3 +109,8 @@
 - [x] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
 - [x] Extract platform detection from business logic
 - [x] Create proper abstraction layer for file system operations
+- [x] **SRP**: Split `ISpectViewController` into:
+  - [x] `FilterManager` - Handle filtering logic
+  - [x] `SettingsManager` - Handle settings
+  - [x] `LogExportService` - Handle exports
+  - [x] `LogImportService` - Handle imports
