@@ -126,19 +126,23 @@ class FilterManager {
       return (all: _cachedAllTitles!, unique: _cachedUniqueTitles!);
     }
 
+    final allTitles = <String>[];
     final uniqueTitlesSet = <String>{};
+
     for (final data in logsData) {
       final title = data.title;
-      if (title != null) uniqueTitlesSet.add(title);
+      if (title == null) continue;
+      allTitles.add(title);
+      uniqueTitlesSet.add(title);
     }
 
     final uniqueTitles = uniqueTitlesSet.toList(growable: false);
 
-    _cachedAllTitles = uniqueTitles;
+    _cachedAllTitles = allTitles;
     _cachedUniqueTitles = uniqueTitles;
     _lastTitlesDataHash = currentLength;
 
-    return (all: uniqueTitles, unique: uniqueTitles);
+    return (all: allTitles, unique: uniqueTitles);
   }
 
   void dispose() {
@@ -169,7 +173,8 @@ class FilterManager {
     return _cachedTypesSet!;
   }
 
-  List<Type> _getCurrentTypes() => _getCurrentTypesSet().toList(growable: false);
+  List<Type> _getCurrentTypes() =>
+      _getCurrentTypesSet().toList(growable: false);
 
   String? _getCurrentSearchQuery() {
     if (!_filterCacheValid || _cachedSearchQuery == null) {
