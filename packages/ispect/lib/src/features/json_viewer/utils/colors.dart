@@ -36,6 +36,8 @@ class JsonColorsUtils {
     Object? value,
   ) {
     final theme = ISpect.read(context).theme;
+    // Avoid repeated Theme.of(context) lookups on hot path
+    final defaultSecondary = Theme.of(context).colorScheme.secondary;
     final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
@@ -54,15 +56,8 @@ class JsonColorsUtils {
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
       'time' || 'date' => JsonColors.dateTimeColor,
-      _ => valueColor(
-          value,
-          Theme.of(context).colorScheme.secondary,
-        ),
+      _ => valueColor(value, defaultSecondary),
     };
-    return result ??
-        valueColor(
-          value,
-          Theme.of(context).colorScheme.secondary,
-        );
+    return result ?? valueColor(value, defaultSecondary);
   }
 }

@@ -142,12 +142,8 @@ class ISpectTheme {
   ///
   /// - Merges `logColors` with default colors from `ISpectConstants`.
   /// - Uses dark mode colors if enabled.
-  Map<String, Color> colors(BuildContext context) => {
-        ...logColors,
-        ...context.isDarkMode
-            ? ISpectConstants.darkTypeColors
-            : ISpectConstants.lightTypeColors,
-      };
+  Map<String, Color> colors(BuildContext context) =>
+      context.isDarkMode ? _getDarkColors(this) : _getLightColors(this);
 
   /// Returns a combined map of default and custom log icons.
   ///
@@ -185,4 +181,32 @@ class ISpectTheme {
         .where((desc) => !desc.isDisabled)
         .toList(growable: false);
   }
+}
+
+// Per-instance caches stored externally to keep ISpectTheme const-constructible
+final Expando<Map<String, Color>> _lightColorsExpando =
+    Expando<Map<String, Color>>('ISpectTheme.lightColors');
+final Expando<Map<String, Color>> _darkColorsExpando =
+    Expando<Map<String, Color>>('ISpectTheme.darkColors');
+
+Map<String, Color> _getLightColors(ISpectTheme theme) {
+  final cached = _lightColorsExpando[theme];
+  if (cached != null) return cached;
+  final merged = {
+    ...theme.logColors,
+    ...ISpectConstants.lightTypeColors,
+  };
+  _lightColorsExpando[theme] = merged;
+  return merged;
+}
+
+Map<String, Color> _getDarkColors(ISpectTheme theme) {
+  final cached = _darkColorsExpando[theme];
+  if (cached != null) return cached;
+  final merged = {
+    ...theme.logColors,
+    ...ISpectConstants.darkTypeColors,
+  };
+  _darkColorsExpando[theme] = merged;
+  return merged;
 }
