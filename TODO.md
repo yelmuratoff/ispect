@@ -3,7 +3,7 @@
 ## Priority 2 - High (Performance & SOLID)
 
 ### Performance Optimization
-- [ ] Add caching for expensive color calculations in JSON viewer
+- [ ] Optimize expensive color calculations in JSON viewer
 - [ ] Optimize nested ValueListenableBuilders in `inspector.dart:406-470`
 
 ### Other
