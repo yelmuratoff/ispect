@@ -259,7 +259,8 @@ class _MainLogsView extends StatelessWidget {
         SliverList.builder(
           itemCount: filteredLogEntries.length,
           itemBuilder: (context, index) {
-            final logEntry = logsViewController.getLogEntryAtIndex(
+            final (entry: logEntry, actualIndex: _) =
+                logsViewController.getLogEntryAtIndex(
               filteredLogEntries,
               index,
             );

@@ -107,16 +107,19 @@ class _JsonScreenState extends State<JsonScreen> {
                   icon: const Icon(Icons.unfold_less_rounded),
                   onPressed: _store.collapseAll,
                 ),
-                if (context.iSpect.options.onShare != null)
-                  IconButton(
-                    icon: const Icon(Icons.share_rounded),
-                    onPressed: () async {
-                      await ISpectShareLogBottomSheet(
-                        data: widget.data,
-                        truncatedData: widget.truncatedData ?? widget.data,
-                      ).show(context);
-                    },
-                  ),
+                switch (context.iSpect.options.onShare) {
+                  null => const SizedBox.shrink(),
+                  _ => IconButton(
+                      icon: const Icon(Icons.share_rounded),
+                      onPressed: () async {
+                        await ISpectShareLogBottomSheet(
+                          data: widget.data,
+                          truncatedData:
+                              widget.truncatedData ?? widget.data,
+                        ).show(context);
+                      },
+                    ),
+                },
               ],
             ),
           ),
@@ -141,7 +144,7 @@ class _JsonScreenState extends State<JsonScreen> {
                     onChanged: _onSearchChanged,
                     hintText: context.ispectL10n.search,
                     controller: _searchController,
-                    elevation: WidgetStateProperty.all(0),
+                    elevation: const WidgetStatePropertyAll(0),
                   ),
                 ),
                 const Gap(8),
@@ -154,14 +157,14 @@ class _JsonScreenState extends State<JsonScreen> {
                   builder: (context, searchData) {
                     final count = searchData.count;
                     final focusedIndex = searchData.focusedIndex;
-                    if (count == 0) {
-                      return const SizedBox.shrink();
-                    }
-                    return _SearchNavigationPanel(
-                      store: _store,
-                      scrollToSearchMatch: _scrollToSearchMatch,
-                      searchFocusText: '${focusedIndex + 1} of $count',
-                    );
+                    return switch (count) {
+                      0 => const SizedBox.shrink(),
+                      _ => _SearchNavigationPanel(
+                          store: _store,
+                          scrollToSearchMatch: _scrollToSearchMatch,
+                          searchFocusText: '${focusedIndex + 1} of $count',
+                        ),
+                    };
                   },
                 ),
               ],
@@ -204,25 +207,34 @@ class _JsonScreenState extends State<JsonScreen> {
 
     // First check if the exact node is visible
     final nodeIndex = displayNodes.indexOf(searchResult.node);
-    if (nodeIndex != -1) {
-      await _scrollToIndex(nodeIndex);
-      return;
+    switch (nodeIndex) {
+      case -1:
+        break;
+      default:
+        await _scrollToIndex(nodeIndex);
+        return;
     }
 
     // Find the closest parent that's visible
-    var currentNode = searchResult.node.parent;
-    while (currentNode != null) {
+    for (var currentNode = searchResult.node.parent;
+        currentNode != null;
+        currentNode = currentNode.parent) {
       final parentIndex = displayNodes.indexOf(currentNode);
-      if (parentIndex != -1) {
-        await _scrollToIndex(parentIndex);
-        return;
+      switch (parentIndex) {
+        case -1:
+          break;
+        default:
+          await _scrollToIndex(parentIndex);
+          return;
       }
-      currentNode = currentNode.parent;
     }
 
     // Last resort: scroll to first item if available
-    if (displayNodes.isNotEmpty) {
-      await _scrollToIndex(0);
+    switch (displayNodes.isEmpty) {
+      case false:
+        await _scrollToIndex(0);
+      case true:
+        break;
     }
   }
 

@@ -131,12 +131,11 @@ class _JsonAttributeState extends State<JsonAttribute> {
           int? focusedValueIndex;
 
           if (hasResults && store.focusedSearchResult.node == widget.node) {
-            if (store.focusedSearchResult.matchLocation ==
-                SearchMatchLocation.key) {
-              focusedKeyIndex = store.focusedSearchResult.matchIndex;
-            } else if (store.focusedSearchResult.matchLocation ==
-                SearchMatchLocation.value) {
-              focusedValueIndex = store.focusedSearchResult.matchIndex;
+            switch (store.focusedSearchResult.matchLocation) {
+              case SearchMatchLocation.key:
+                focusedKeyIndex = store.focusedSearchResult.matchIndex;
+              case SearchMatchLocation.value:
+                focusedValueIndex = store.focusedSearchResult.matchIndex;
             }
           }
 
@@ -151,8 +150,10 @@ class _JsonAttributeState extends State<JsonAttribute> {
           final valueStyle = _valueStyle;
 
           return MouseRegion(
-            cursor:
-                _hasInteraction ? SystemMouseCursors.click : MouseCursor.defer,
+            cursor: switch (_hasInteraction) {
+              true => SystemMouseCursors.click,
+              false => MouseCursor.defer,
+            },
             onEnter: (_) => _handleMouseEnter(),
             onExit: (_) => _handleMouseExit(),
             child: GestureDetector(
@@ -177,11 +178,7 @@ class _JsonAttributeState extends State<JsonAttribute> {
                             color: widget.theme.indentationLineColor,
                           ),
                         ),
-                        if (widget.node.isRoot &&
-                            widget.node.children.isNotEmpty)
-                          const SelectionContainer.disabled(
-                            child: SizedBox(width: 24, child: ToggleButton()),
-                          ),
+                        _buildToggleForNode(),
                         _buildNodeKey(
                           context,
                           searchData.searchTerm,
@@ -189,17 +186,7 @@ class _JsonAttributeState extends State<JsonAttribute> {
                           searchData.focusedKeyMatchIndex,
                         ),
                         const SizedBox(width: 8, child: KeySeparatorText()),
-                        if (widget.node.value is List)
-                          ArraySuffixWidget(
-                            length: widget.node.children.length,
-                            style: widget.theme.rootKeyTextStyle,
-                          ),
-                        if (widget.node.value is Map ||
-                            widget.node.value is Set)
-                          MapSuffixWidget(
-                            length: widget.node.children.length,
-                            style: widget.theme.rootKeyTextStyle,
-                          ),
+                        _buildSuffixForValue(widget.node.value),
                         if (widget.node.isRoot)
                           SelectionContainer.disabled(
                             child: Padding(
@@ -210,16 +197,13 @@ class _JsonAttributeState extends State<JsonAttribute> {
                               ),
                             ),
                           ),
-                        if (widget.node.isRoot)
-                          _buildRootInformation(context)
-                        else
-                          _buildPropertyValue(
-                            context,
-                            searchData.searchTerm,
-                            searchData.hasSearchResults,
-                            searchData.focusedValueMatchIndex,
-                            valueStyle,
-                          ),
+                        _buildValueOrRootInfo(
+                          context,
+                          searchData.searchTerm,
+                          searchData.hasSearchResults,
+                          searchData.focusedValueMatchIndex,
+                          valueStyle,
+                        ),
                         if (widget.trailingBuilder != null)
                           widget.trailingBuilder!(context, widget.node),
                       ],
@@ -273,16 +257,15 @@ class _JsonAttributeState extends State<JsonAttribute> {
       child: nodeKey,
     );
 
-    if (widget.maxRootNodeWidth != null) {
-      return Flexible(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: widget.maxRootNodeWidth!),
-          child: jsonCard,
+    return switch (widget.maxRootNodeWidth) {
+      null => jsonCard,
+      final v => Flexible(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: v),
+            child: jsonCard,
+          ),
         ),
-      );
-    }
-
-    return jsonCard;
+    };
   }
 
   Widget _buildRootInformation(BuildContext context) => Padding(
@@ -316,13 +299,51 @@ class _JsonAttributeState extends State<JsonAttribute> {
 
   void _onNodeTap(BuildContext context) {
     if (!widget.node.isRoot) return;
-
-    if (widget.node.isCollapsed) {
-      widget.store.expandNode(widget.node);
-    } else {
-      widget.store.collapseNode(widget.node);
+    switch (widget.node.isCollapsed) {
+      case true:
+        widget.store.expandNode(widget.node);
+      case false:
+        widget.store.collapseNode(widget.node);
     }
   }
+
+  Widget _buildToggleForNode() => switch (
+        (widget.node.isRoot, widget.node.children.isNotEmpty)) {
+        (true, true) => const SelectionContainer.disabled(
+            child: SizedBox(width: 24, child: ToggleButton()),
+          ),
+        _ => _kEmptyWidget,
+      };
+
+  Widget _buildValueOrRootInfo(
+    BuildContext context,
+    String searchTerm,
+    bool hasSearchResults,
+    int? focusedMatchIndex,
+    PropertyOverrides valueStyle,
+  ) =>
+      switch (widget.node.isRoot) {
+        true => _buildRootInformation(context),
+        false => _buildPropertyValue(
+            context,
+            searchTerm,
+            hasSearchResults,
+            focusedMatchIndex,
+            valueStyle,
+          ),
+      };
+
+  Widget _buildSuffixForValue(Object? value) => switch (value) {
+        List<Object?> _ => ArraySuffixWidget(
+            length: widget.node.children.length,
+            style: widget.theme.rootKeyTextStyle,
+          ),
+        Map<Object?, Object?> _ || Set<Object?> _ => MapSuffixWidget(
+            length: widget.node.children.length,
+            style: widget.theme.rootKeyTextStyle,
+          ),
+        _ => _kEmptyWidget,
+      };
 }
 
 // Rendering and search widgets moved to rendering/ and search/ directories.

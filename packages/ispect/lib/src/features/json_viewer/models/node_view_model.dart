@@ -18,6 +18,7 @@ class NodeViewModelState extends ChangeNotifier {
         treeDepth: treeDepth,
         parent: parent,
         rawValue: rawValue,
+        kind: const NodeKind.property(),
       );
 
   /// Build a `NodeViewModelState` as a class.
@@ -28,7 +29,7 @@ class NodeViewModelState extends ChangeNotifier {
     required Object? rawValue,
   }) =>
       NodeViewModelState._(
-        isClass: true,
+        kind: const NodeKind.object(),
         key: key,
         treeDepth: treeDepth,
         parent: parent,
@@ -43,7 +44,7 @@ class NodeViewModelState extends ChangeNotifier {
     required Object? rawValue,
   }) =>
       NodeViewModelState._(
-        isArray: true,
+        kind: const NodeKind.array(),
         key: key,
         treeDepth: treeDepth,
         parent: parent,
@@ -54,17 +55,17 @@ class NodeViewModelState extends ChangeNotifier {
     required this.treeDepth,
     required this.key,
     required this.rawValue,
-    this.isClass = false,
-    this.isArray = false,
+    required this.kind,
     this.value,
     this.parent,
-  }) : isRoot = isClass || isArray;
+  });
 
   final String key;
   final int treeDepth;
-  final bool isClass;
-  final bool isArray;
-  final bool isRoot;
+  final NodeKind kind;
+  bool get isClass => kind.isClass;
+  bool get isArray => kind.isArray;
+  bool get isRoot => kind.isRoot;
   final NodeViewModelState? parent;
   final Object? rawValue;
 
@@ -98,14 +99,12 @@ class NodeViewModelState extends ChangeNotifier {
   }
 
   /// Gets the children of this node.
-  Iterable<NodeViewModelState> get children {
-    if (isClass && value is Map<String, NodeViewModelState>) {
-      return (value! as Map<String, NodeViewModelState>).values;
-    } else if (isArray && value is List<NodeViewModelState>) {
-      return value! as List<NodeViewModelState>;
-    }
-    return const <NodeViewModelState>[];
-  }
+  Iterable<NodeViewModelState> get children =>
+      switch ((kind, value)) {
+        (ClassNodeKind(), final Map<String, NodeViewModelState> map) => map.values,
+        (ArrayNodeKind(), final List<NodeViewModelState> list) => list,
+        _ => const <NodeViewModelState>[],
+      };
 }
 
 /// A matched search in the given `node`.
@@ -125,4 +124,28 @@ class SearchResult {
 enum SearchMatchLocation {
   key,
   value,
+}
+
+sealed class NodeKind {
+  const NodeKind();
+
+  const factory NodeKind.property() = PropertyNodeKind;
+  const factory NodeKind.object() = ClassNodeKind;
+  const factory NodeKind.array() = ArrayNodeKind;
+
+  bool get isClass => this is ClassNodeKind;
+  bool get isArray => this is ArrayNodeKind;
+  bool get isRoot => isClass || isArray;
+}
+
+final class PropertyNodeKind extends NodeKind {
+  const PropertyNodeKind();
+}
+
+final class ClassNodeKind extends NodeKind {
+  const ClassNodeKind();
+}
+
+final class ArrayNodeKind extends NodeKind {
+  const ArrayNodeKind();
 }

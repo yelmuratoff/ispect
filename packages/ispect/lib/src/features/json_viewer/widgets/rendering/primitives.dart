@@ -51,9 +51,10 @@ class IndentationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final indentation = depth > 0
-        ? ((depth + 1) * indentationPadding).clamp(0, 100)
-        : indentationPadding;
+    final indentation = switch (depth) {
+      > 0 => ((depth + 1) * indentationPadding).clamp(0, 100),
+      _ => indentationPadding,
+    };
     return Padding(
       padding: const EdgeInsets.only(right: 4, left: 4),
       child: CustomPaint(

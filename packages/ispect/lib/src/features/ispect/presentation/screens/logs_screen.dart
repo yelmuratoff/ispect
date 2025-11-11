@@ -9,10 +9,10 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
-
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
@@ -230,17 +230,13 @@ class _LogsScreenState extends State<LogsScreen> {
       builder: (_) => const _LogSourceDialog(),
     );
 
-    if (!mounted || choice == null) {
-      return;
-    }
+    if (!mounted || choice == null) return;
 
-    if (choice == _LogSourceChoice.external) {
-      await _loadContentFromCallback();
-      return;
-    }
-
-    if (choice == _LogSourceChoice.paste) {
-      _showPasteDialog();
+    switch (choice) {
+      case _LogSourceChoice.external:
+        await _loadContentFromCallback();
+      case _LogSourceChoice.paste:
+        _showPasteDialog();
     }
   }
 
@@ -290,12 +286,13 @@ class _LogsScreenState extends State<LogsScreen> {
       return;
     }
 
-    if (result.success) {
-      await result.action(context);
-      return;
+    switch (result) {
+      case final FileProcessingResult r when r.success:
+        await r.action(context);
+        return;
+      case final FileProcessingResult r:
+        _showContentProcessingError(r.error);
     }
-
-    _showContentProcessingError(result.error);
   }
 
   void _showContentProcessingError(String? error) {
@@ -445,7 +442,8 @@ class _MainLogsView extends StatelessWidget {
         SuperSliverList.builder(
           itemCount: filteredLogEntries.length,
           itemBuilder: (context, index) {
-            final logEntry = logsViewController.getLogEntryAtIndex(
+            final (entry: logEntry, actualIndex: _) =
+                logsViewController.getLogEntryAtIndex(
               filteredLogEntries,
               index,
             );

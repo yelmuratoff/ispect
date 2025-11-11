@@ -1,19 +1,5 @@
 # TODO
 
-### Extension Methods
-- [x] Add color calculation extensions for JSON viewer
-
-### Code Style
-- [ ] Fix commented-out duplicate declarations in `daily_file_history.dart:304`
-
-### Error Handling
-- [ ] Fix silent error swallowing in `logs_json_service.dart:122-130` (add logging)
-- [ ] Add validation before type casts throughout codebase
-- [ ] Improve error messages to be more actionable
-- [ ] Add error recovery mechanisms
-
----
-
 ## Priority 4 - Low (Modern Patterns & Testing)
 
 ### Testing
@@ -109,3 +95,4 @@
 - [x] **DIP**: Add dependency injection to `Inspector` (inject controller)
 - [x] Create shared base class for interceptors (dio/http/ws)
 - [x] Consolidate chunking logic (appears in 3+ places with different implementations)
+- [x] Add color calculation extensions for JSON viewer

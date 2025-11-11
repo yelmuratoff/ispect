@@ -5,8 +5,6 @@ import 'package:ispect/src/common/managers/settings_manager.dart';
 import 'package:ispect/src/common/services/log_export_service.dart';
 import 'package:ispect/src/common/services/log_import_service.dart';
 
-typedef TitlesResult = ({List<String> all, List<String> unique});
-
 class ISpectViewController extends ChangeNotifier {
   ISpectViewController({
     ISpectShareCallback? onShare,
@@ -96,13 +94,16 @@ class ISpectViewController extends ChangeNotifier {
   void handleTitleFilterToggle(String title, {required bool isSelected}) =>
       _filterManager.handleTitleFilterToggle(title, isSelected: isSelected);
 
-  ISpectLogData getLogEntryAtIndex(
+  ({ISpectLogData entry, int actualIndex}) getLogEntryAtIndex(
     List<ISpectLogData> filteredEntries,
     int index,
   ) {
     final actualIndex =
         isLogOrderReversed ? filteredEntries.length - 1 - index : index;
-    return filteredEntries[actualIndex];
+    return (
+      entry: filteredEntries[actualIndex],
+      actualIndex: actualIndex,
+    );
   }
 
   void copyLogEntryText(

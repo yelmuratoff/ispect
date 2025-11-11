@@ -56,7 +56,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           elevation: 0,
           pinned: true,
           floating: true,
-          expandedHeight: !value ? 110 : 160,
+          expandedHeight: switch (value) { false => 110, true => 160 },
           collapsedHeight: 60,
           toolbarHeight: 60,
           leading: IconButton(
@@ -71,15 +71,17 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           backgroundColor: widget.backgroundColor ??
               context.ispectTheme.scaffoldBackgroundColor,
           actions: [
-            if (widget.onSettingsTap != null)
-              UnconstrainedBox(
-                child: IconButton(
-                  onPressed: widget.onSettingsTap,
-                  icon: const Icon(
-                    Icons.settings_rounded,
+            switch (widget.onSettingsTap) {
+              null => const SizedBox.shrink(),
+              _ => UnconstrainedBox(
+                  child: IconButton(
+                    onPressed: widget.onSettingsTap,
+                    icon: const Icon(
+                      Icons.settings_rounded,
+                    ),
                   ),
                 ),
-              ),
+            },
             const Gap(10),
           ],
           title: Text(
@@ -131,31 +133,42 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                         ],
                         hintText: context.ispectL10n.search,
                         onChanged: widget.controller.updateFilterSearchQuery,
-                        elevation: WidgetStateProperty.all(0),
+                        elevation: const WidgetStatePropertyAll(0),
                       ),
                     ),
                     Flexible(
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
-                        child: !value
-                            ? const SizedBox.shrink()
-                            : Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: SizedBox(
-                                  key: const ValueKey('filter'),
-                                  height: 40,
-                                  child: ListView.separated(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    scrollDirection: Axis.horizontal,
-                                    separatorBuilder: (_, __) => const Gap(8),
-                                    itemCount: widget.uniqTitles.length,
-                                    itemBuilder: (context, index) {
+                        child: switch (value) {
+                          false => const SizedBox.shrink(),
+                          true => Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: SizedBox(
+                                key: const ValueKey('filter'),
+                                height: 40,
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  scrollDirection: Axis.horizontal,
+                                  separatorBuilder: (_, __) => const Gap(8),
+                                  itemCount: widget.uniqTitles.length,
+                                  itemBuilder: (context, index) {
                                       final title = widget.uniqTitles[index];
                                       final count = widget.titles
                                           .where((e) => e == title)
                                           .length;
+                                      final isSelected = widget
+                                          .titlesController.selectedIndexes
+                                          .contains(index);
+                                      final bgColor = switch (
+                                        (isSelected, context.isDarkMode)) {
+                                        (true, true) => context.ispectTheme
+                                            .colorScheme.primaryContainer,
+                                        (true, false) => context
+                                            .ispectTheme.colorScheme.primary,
+                                        _ => context.ispectTheme.cardColor,
+                                      };
                                       return FilterChip(
                                         selectedColor: context.ispectTheme
                                             .colorScheme.primaryContainer,
@@ -164,16 +177,15 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                           style: context
                                               .ispectTheme.textTheme.bodyMedium,
                                         ),
-                                        selected: widget
-                                            .titlesController.selectedIndexes
-                                            .contains(index),
+                                        selected: isSelected,
                                         onSelected: (selected) {
-                                          if (selected) {
-                                            widget.titlesController
-                                                .selectIndex(index);
-                                          } else {
-                                            widget.titlesController
-                                                .unselectIndex(index);
+                                          switch (selected) {
+                                            case true:
+                                              widget.titlesController
+                                                  .selectIndex(index);
+                                            case false:
+                                              widget.titlesController
+                                                  .unselectIndex(index);
                                           }
                                           _onToggle(
                                             title,
@@ -182,22 +194,13 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                                 index,
                                           );
                                         },
-                                        backgroundColor: widget.titlesController
-                                                .selectedIndexes
-                                                .contains(index)
-                                            ? context.isDarkMode
-                                                ? context
-                                                    .ispectTheme
-                                                    .colorScheme
-                                                    .primaryContainer
-                                                : context.ispectTheme
-                                                    .colorScheme.primary
-                                            : context.ispectTheme.cardColor,
+                                        backgroundColor: bgColor,
                                       );
                                     },
                                   ),
                                 ),
                               ),
+                        },
                       ),
                     ),
                   ],

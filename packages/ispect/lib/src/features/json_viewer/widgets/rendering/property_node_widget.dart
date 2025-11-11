@@ -29,11 +29,15 @@ class PropertyNodeWidget extends StatelessWidget {
   final bool hasSearchResults;
   final int? focusedSearchMatchIndex;
 
-  String _formatValue() =>
-      valueFormatter?.call(node.value) ??
-      ((node.value?.toString().isEmpty ?? false)
-          ? 'empty'
-          : node.value?.toString() ?? 'null');
+  String _formatValue() {
+    final val = node.value;
+    final custom = valueFormatter?.call(val);
+    if (custom != null) return custom;
+    return switch (val) {
+      null => 'null',
+      _ => val.toString().isEmpty ? 'empty' : val.toString(),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,36 +46,35 @@ class PropertyNodeWidget extends StatelessWidget {
         JsonColorsUtils.valueColorByKey(context, node.key, node.value);
     final valueStyle = style.copyWith(color: valueColor);
 
-    if (!hasSearchResults) {
-      return Row(
-        children: [
-          Flexible(
-            child: JsonCard(
-              backgroundColor: valueColor,
-              child: Text(text, style: valueStyle),
+    return switch (hasSearchResults) {
+      false => Row(
+          children: [
+            Flexible(
+              child: JsonCard(
+                backgroundColor: valueColor,
+                child: Text(text, style: valueStyle),
+              ),
             ),
-          ),
-        ],
-      );
-    }
-
-    return Row(
-      children: [
-        Flexible(
-          child: JsonCard(
-            backgroundColor: valueColor,
-            child: HighlightedText(
-              key: ValueKey('highlight-value-$text'),
-              text: text,
-              highlightedText: searchTerm,
-              style: valueStyle,
-              primaryMatchStyle: focusedSearchHighlightStyle,
-              secondaryMatchStyle: searchHighlightStyle,
-              focusedSearchMatchIndex: focusedSearchMatchIndex,
-            ),
-          ),
+          ],
         ),
-      ],
-    );
+      true => Row(
+          children: [
+            Flexible(
+              child: JsonCard(
+                backgroundColor: valueColor,
+                child: HighlightedText(
+                  key: ValueKey('highlight-value-$text'),
+                  text: text,
+                  highlightedText: searchTerm,
+                  style: valueStyle,
+                  primaryMatchStyle: focusedSearchHighlightStyle,
+                  secondaryMatchStyle: searchHighlightStyle,
+                  focusedSearchMatchIndex: focusedSearchMatchIndex,
+                ),
+              ),
+            ),
+          ],
+        ),
+    };
   }
 }

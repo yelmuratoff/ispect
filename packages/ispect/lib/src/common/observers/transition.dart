@@ -53,13 +53,11 @@ class RouteTransition {
 
   String? get prettyArguments {
     final args = arguments;
-    if (args == null) {
-      return null;
-    }
-    if (args is Map<String, dynamic>) {
-      return JsonTruncatorService.pretty(args);
-    }
-    return args.toString();
+    return switch (args) {
+      null => null,
+      final Map<String, dynamic> map => JsonTruncatorService.pretty(map),
+      _ => args.toString(),
+    };
   }
 
   @override

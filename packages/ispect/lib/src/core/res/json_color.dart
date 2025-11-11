@@ -43,19 +43,13 @@ class JsonColors {
   /// - `4xx` (Client Errors) → Red
   /// - `5xx` (Server Errors) → Red
   /// - Other / Unknown → Grey
-  static Color statusColor(int? statusCode) {
-    if (statusCode == null) {
-      return Colors.grey;
-    } else if (statusCode >= 200 && statusCode < 300) {
-      return Colors.green;
-    } else if (statusCode >= 400 && statusCode < 500) {
-      return Colors.red;
-    } else if (statusCode >= 500) {
-      return Colors.red;
-    } else {
-      return Colors.grey;
-    }
-  }
+  static Color statusColor(int? statusCode) => switch (statusCode) {
+        null => Colors.grey,
+        >= 200 && < 300 => Colors.green,
+        >= 400 && < 500 => Colors.red,
+        >= 500 => Colors.red,
+        _ => Colors.grey,
+      };
 
   /// Maps HTTP methods to their respective colors.
   static const methodColors = {

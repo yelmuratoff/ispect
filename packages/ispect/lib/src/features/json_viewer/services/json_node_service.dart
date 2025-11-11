@@ -9,9 +9,10 @@ import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dar
 /// for getting direct children from nodes.
 mixin NodeHelperMixin {
   /// Gets direct children of a node based on its type.
-  Object? getDirectChildrenHelper(NodeViewModelState node) => switch (node) {
-        _ when node.isClass => node.value as Map<String, NodeViewModelState>?,
-        _ when node.isArray => node.value as List<NodeViewModelState>?,
+  Object? getDirectChildrenHelper(NodeViewModelState node) =>
+      switch ((node.kind, node.value)) {
+        (ClassNodeKind(), final Map<String, NodeViewModelState> map) => map,
+        (ArrayNodeKind(), final List<NodeViewModelState> list) => list,
         _ => null,
       };
 
@@ -102,19 +103,10 @@ class DefaultNodeExpansionService
 
   int _countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
+    if (node.isCollapsed) return 1;
 
     return 1 +
-        switch (node) {
-          _ when node.isClass && !node.isCollapsed => countChildrenInIterable(
-              (node.value! as Map<String, NodeViewModelState>).values,
-              _countVisibleChildren,
-            ),
-          _ when node.isArray && !node.isCollapsed => countChildrenInIterable(
-              node.value! as List<NodeViewModelState>,
-              _countVisibleChildren,
-            ),
-          _ => 0,
-        };
+        countChildrenInIterable(node.children, _countVisibleChildren);
   }
 }
 
@@ -183,19 +175,9 @@ class DefaultNodeAnalysisService
   @override
   int countVisibleChildren(NodeViewModelState node) {
     if (!node.isRoot) return 1;
+    if (node.isCollapsed) return 1;
 
-    return 1 +
-        switch (node) {
-          _ when node.isClass && !node.isCollapsed => countChildrenInIterable(
-              (node.value! as Map<String, NodeViewModelState>).values,
-              countVisibleChildren,
-            ),
-          _ when node.isArray && !node.isCollapsed => countChildrenInIterable(
-              node.value! as List<NodeViewModelState>,
-              countVisibleChildren,
-            ),
-          _ => 0,
-        };
+    return 1 + countChildrenInIterable(node.children, countVisibleChildren);
   }
 
   @override
