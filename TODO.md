@@ -1,10 +1,6 @@
 # TODO
 
 ### Other
-- [x] **OCP**: Implement strategy pattern for `RedactionService`
-  - [x] `KeyBasedRedaction` strategy
-  - [x] `PatternBasedRedaction` strategy
-  - [x] `CompositeRedactionStrategy` for combining strategies
 - [ ] **DIP**: Add dependency injection to `Inspector` (inject controller)
 
 ### Code Duplication
@@ -114,3 +110,7 @@
   - [x] `SettingsManager` - Handle settings
   - [x] `LogExportService` - Handle exports
   - [x] `LogImportService` - Handle imports
+- [x] **OCP**: Implement strategy pattern for `RedactionService`
+  - [x] `KeyBasedRedaction` strategy
+  - [x] `PatternBasedRedaction` strategy
+  - [x] `CompositeRedactionStrategy` for combining strategies
