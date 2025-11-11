@@ -1,7 +1,7 @@
 # TODO
 
 ### Extension Methods
-- [ ] Add color calculation extensions for JSON viewer
+- [x] Add color calculation extensions for JSON viewer
 
 ### Code Style
 - [ ] Fix commented-out duplicate declarations in `daily_file_history.dart:304`

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 class ThemeSchemeScreen extends StatelessWidget {
   const ThemeSchemeScreen({super.key});
@@ -868,7 +868,7 @@ class ColorBox extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: getTextColorOnBackground(displayColor),
+              color: displayColor.contrastText(),
               fontSize: 12,
             ),
           ),

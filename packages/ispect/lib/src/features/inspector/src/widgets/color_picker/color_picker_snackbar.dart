@@ -5,6 +5,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// Displays a snackbar with the selected color information and an option to copy the color value.
 ///
@@ -65,7 +66,7 @@ void showColorPickerResultSnackbar({
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
                     border: Border.fromBorderSide(
                       BorderSide(
-                        color: getTextColorOnBackground(color),
+                        color: color.contrastText(),
                       ),
                     ),
                   ),
