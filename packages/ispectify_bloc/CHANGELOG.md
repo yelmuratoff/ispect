@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.4.8-dev03
+## 4.4.8-dev04
 
 ### Added
 - Fluent API builders for interceptor settings configuration
