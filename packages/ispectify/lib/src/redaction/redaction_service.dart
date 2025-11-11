@@ -46,8 +46,7 @@ class RedactionService {
     Set<String>? fullyMaskedKeys,
     int? maxDepth,
     RedactionStrategy? strategy,
-  })  : _strategy =
-            strategy ??
+  })  : _strategy = strategy ??
             CompositeRedactionStrategy(const [
               KeyBasedRedaction(),
               PatternBasedRedaction(),
@@ -632,8 +631,14 @@ final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
   RegExp(r'(?:^|[_\-])cvv[0-9]?(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])cvc(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])bank[_\-]?account(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])routing[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])account[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(
+    r'(?:^|[_\-])routing[_\-]?num(?:ber)?(?:$|[_\-])',
+    caseSensitive: false,
+  ),
+  RegExp(
+    r'(?:^|[_\-])account[_\-]?num(?:ber)?(?:$|[_\-])',
+    caseSensitive: false,
+  ),
   RegExp(r'(?:^|[_\-])iban(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])swift(?:$|[_\-])', caseSensitive: false),
 

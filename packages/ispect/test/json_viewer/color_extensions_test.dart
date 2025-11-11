@@ -14,7 +14,8 @@ void main() {
       expect(const Color(0xFF101010).contrastText(), Colors.white);
     });
 
-    test('lighten/darken clamp to range and invert each other approximately', () {
+    test('lighten/darken clamp to range and invert each other approximately',
+        () {
       const base = Color(0xFF336699);
       final lighter = base.lighten(0.2);
       final darker = base.darken(0.2);
@@ -33,6 +34,6 @@ void main() {
       final mid = a.blend(b);
       expect((mid.r * 255).round(), inInclusiveRange(127, 128));
       expect((mid.b * 255).round(), inInclusiveRange(127, 128));
-  });
+    });
   });
 }

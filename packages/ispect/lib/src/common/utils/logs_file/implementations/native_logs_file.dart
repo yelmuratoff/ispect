@@ -160,8 +160,7 @@ class NativeLogsFile extends BaseLogsFile {
     String fileName,
     String fileType,
   ) async {
-    final dir =
-        (await platformDirectoryProvider.tempDirectory()) as Directory;
+    final dir = (await platformDirectoryProvider.tempDirectory()) as Directory;
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
     final fullFileName = '${safeFileName}_$timestamp.$fileType';

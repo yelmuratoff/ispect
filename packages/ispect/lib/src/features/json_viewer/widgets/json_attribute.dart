@@ -307,8 +307,8 @@ class _JsonAttributeState extends State<JsonAttribute> {
     }
   }
 
-  Widget _buildToggleForNode() => switch (
-        (widget.node.isRoot, widget.node.children.isNotEmpty)) {
+  Widget _buildToggleForNode() =>
+      switch ((widget.node.isRoot, widget.node.children.isNotEmpty)) {
         (true, true) => const SelectionContainer.disabled(
             child: SizedBox(width: 24, child: ToggleButton()),
           ),

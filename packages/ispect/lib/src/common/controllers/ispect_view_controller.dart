@@ -71,7 +71,8 @@ class ISpectViewController extends ChangeNotifier {
 
   void addFilterTitle(String title) => _filterManager.addFilterTitle(title);
 
-  void removeFilterTitle(String title) => _filterManager.removeFilterTitle(title);
+  void removeFilterTitle(String title) =>
+      _filterManager.removeFilterTitle(title);
 
   Future<void> downloadLogsFile(String logs) async =>
       _exportService.downloadLogsFile(logs);

@@ -114,8 +114,7 @@ class _JsonScreenState extends State<JsonScreen> {
                       onPressed: () async {
                         await ISpectShareLogBottomSheet(
                           data: widget.data,
-                          truncatedData:
-                              widget.truncatedData ?? widget.data,
+                          truncatedData: widget.truncatedData ?? widget.data,
                         ).show(context);
                       },
                     ),

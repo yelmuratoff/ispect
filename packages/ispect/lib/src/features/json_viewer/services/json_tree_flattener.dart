@@ -5,8 +5,7 @@ class JsonTreeFlattener {
   /// Flattens a hierarchical JSON tree into a list for efficient rendering
   static List<NodeViewModelState> flatten(Object? object) => switch (object) {
         null => const <NodeViewModelState>[],
-        final List<NodeViewModelState> list =>
-          _flattenIterable(list),
+        final List<NodeViewModelState> list => _flattenIterable(list),
         final Map<String, NodeViewModelState> map =>
           _flattenIterable(map.values),
         _ => const <NodeViewModelState>[],

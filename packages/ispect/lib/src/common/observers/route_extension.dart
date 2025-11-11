@@ -13,7 +13,10 @@ extension ISpectRouteExtension on Route<dynamic>? {
   /// - Returns `runtimeType` or 'Unknown' as a last resort.
   String get routeName => switch (this) {
         null => 'Unknown',
-        final Route<dynamic> route => switch ((route.settings.name?.trim(), route)) {
+        final Route<dynamic> route => switch ((
+            route.settings.name?.trim(),
+            route
+          )) {
             (final String name, _) when name.isNotEmpty => name,
             (_, PageRoute()) => 'Unnamed Page',
             (_, PopupRoute()) => 'Unnamed Popup',

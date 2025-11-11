@@ -154,52 +154,54 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                   separatorBuilder: (_, __) => const Gap(8),
                                   itemCount: widget.uniqTitles.length,
                                   itemBuilder: (context, index) {
-                                      final title = widget.uniqTitles[index];
-                                      final count = widget.titles
-                                          .where((e) => e == title)
-                                          .length;
-                                      final isSelected = widget
-                                          .titlesController.selectedIndexes
-                                          .contains(index);
-                                      final bgColor = switch (
-                                        (isSelected, context.isDarkMode)) {
-                                        (true, true) => context.ispectTheme
-                                            .colorScheme.primaryContainer,
-                                        (true, false) => context
-                                            .ispectTheme.colorScheme.primary,
-                                        _ => context.ispectTheme.cardColor,
-                                      };
-                                      return FilterChip(
-                                        selectedColor: context.ispectTheme
-                                            .colorScheme.primaryContainer,
-                                        label: Text(
-                                          '$count  $title',
-                                          style: context
-                                              .ispectTheme.textTheme.bodyMedium,
-                                        ),
-                                        selected: isSelected,
-                                        onSelected: (selected) {
-                                          switch (selected) {
-                                            case true:
-                                              widget.titlesController
-                                                  .selectIndex(index);
-                                            case false:
-                                              widget.titlesController
-                                                  .unselectIndex(index);
-                                          }
-                                          _onToggle(
-                                            title,
+                                    final title = widget.uniqTitles[index];
+                                    final count = widget.titles
+                                        .where((e) => e == title)
+                                        .length;
+                                    final isSelected = widget
+                                        .titlesController.selectedIndexes
+                                        .contains(index);
+                                    final bgColor = switch ((
+                                      isSelected,
+                                      context.isDarkMode
+                                    )) {
+                                      (true, true) => context.ispectTheme
+                                          .colorScheme.primaryContainer,
+                                      (true, false) =>
+                                        context.ispectTheme.colorScheme.primary,
+                                      _ => context.ispectTheme.cardColor,
+                                    };
+                                    return FilterChip(
+                                      selectedColor: context.ispectTheme
+                                          .colorScheme.primaryContainer,
+                                      label: Text(
+                                        '$count  $title',
+                                        style: context
+                                            .ispectTheme.textTheme.bodyMedium,
+                                      ),
+                                      selected: isSelected,
+                                      onSelected: (selected) {
+                                        switch (selected) {
+                                          case true:
                                             widget.titlesController
-                                                    .selectedIndex ==
-                                                index,
-                                          );
-                                        },
-                                        backgroundColor: bgColor,
-                                      );
-                                    },
-                                  ),
+                                                .selectIndex(index);
+                                          case false:
+                                            widget.titlesController
+                                                .unselectIndex(index);
+                                        }
+                                        _onToggle(
+                                          title,
+                                          widget.titlesController
+                                                  .selectedIndex ==
+                                              index,
+                                        );
+                                      },
+                                      backgroundColor: bgColor,
+                                    );
+                                  },
                                 ),
                               ),
+                            ),
                         },
                       ),
                     ),

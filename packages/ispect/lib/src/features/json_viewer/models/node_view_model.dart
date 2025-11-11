@@ -99,9 +99,9 @@ class NodeViewModelState extends ChangeNotifier {
   }
 
   /// Gets the children of this node.
-  Iterable<NodeViewModelState> get children =>
-      switch ((kind, value)) {
-        (ClassNodeKind(), final Map<String, NodeViewModelState> map) => map.values,
+  Iterable<NodeViewModelState> get children => switch ((kind, value)) {
+        (ClassNodeKind(), final Map<String, NodeViewModelState> map) =>
+          map.values,
         (ArrayNodeKind(), final List<NodeViewModelState> list) => list,
         _ => const <NodeViewModelState>[],
       };

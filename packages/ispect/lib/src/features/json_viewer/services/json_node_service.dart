@@ -105,8 +105,7 @@ class DefaultNodeExpansionService
     if (!node.isRoot) return 1;
     if (node.isCollapsed) return 1;
 
-    return 1 +
-        countChildrenInIterable(node.children, _countVisibleChildren);
+    return 1 + countChildrenInIterable(node.children, _countVisibleChildren);
   }
 }
 
