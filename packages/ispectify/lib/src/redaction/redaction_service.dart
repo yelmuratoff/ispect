@@ -45,7 +45,14 @@ class RedactionService {
     Set<String>? ignoredKeys,
     Set<String>? fullyMaskedKeys,
     int? maxDepth,
-  }) : _config = _RedactionConfig(
+    RedactionStrategy? strategy,
+  })  : _strategy =
+            strategy ??
+            CompositeRedactionStrategy(const [
+              KeyBasedRedaction(),
+              PatternBasedRedaction(),
+            ]),
+        _config = _RedactionConfig(
           sensitiveKeysLower: (sensitiveKeys ?? _kDefaultSensitiveKeys)
               .map((e) => e.toLowerCase())
               .toSet(),
@@ -81,6 +88,7 @@ class RedactionService {
   }
 
   final _RedactionConfig _config;
+  final RedactionStrategy _strategy;
 
   /// Redacts header values, respecting optional per-call overrides.
   Map<String, Object?> redactHeaders(
@@ -107,7 +115,7 @@ class RedactionService {
       );
 
   _RedactionWalker _createWalker(_RedactionRequest request) =>
-      _RedactionWalker(_config, request);
+      _RedactionWalker(_config, request, _strategy);
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
@@ -186,10 +194,11 @@ class _RedactionRequest {
 }
 
 class _RedactionWalker {
-  const _RedactionWalker(this.config, this.request);
+  const _RedactionWalker(this.config, this.request, this.strategy);
 
   final _RedactionConfig config;
   final _RedactionRequest request;
+  final RedactionStrategy strategy;
 
   Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
     final out = <String, Object?>{};
@@ -217,12 +226,39 @@ class _RedactionWalker {
     if (node == null) return null;
     if (depth >= config.maxDepth) return node;
 
+    // Try pluggable strategies first.
+    final runtime = _createRuntime();
+    final strategyResult = strategy.tryRedact(
+      node,
+      keyName: keyName,
+      runtime: runtime,
+    );
+    if (strategyResult != null) return strategyResult;
+
+    // Fallback to the built-in logic.
     if (_isSensitiveKey(keyName)) {
       return _redactSensitiveValue(node, keyName);
     }
-
     return _redactByType(node, keyName, depth);
   }
+
+  RedactionRuntime _createRuntime() => RedactionRuntime(
+        placeholder: config.placeholder,
+        redactBinary: config.redactBinary,
+        redactBase64: config.redactBase64,
+        sensitiveKeysLower: config.sensitiveKeysLower,
+        sensitiveKeyPatterns: config.sensitiveKeyPatterns,
+        fullyMaskedKeyNamesLower: config.fullyMaskedKeyNamesLower,
+        isIgnoredValue: _isIgnoredValue,
+        isIgnoredKey: _isIgnoredKey,
+        maskString: (value, {keyName}) => _maskString(value, keyName: keyName),
+        binaryPlaceholder: _binaryPlaceholder,
+        base64Placeholder: _base64Placeholder,
+        redactUint8List: _redactUint8List,
+        looksLikeAuthorizationValue: _looksLikeAuthorizationValue,
+        isLikelyBase64: _isLikelyBase64,
+        isProbablyBinaryString: _isProbablyBinaryString,
+      );
 
   Object? _redactSensitiveValue(Object? node, String? keyName) {
     if (node is String) {
