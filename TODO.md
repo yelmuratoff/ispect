@@ -1,10 +1,5 @@
 # TODO
 
-### Code Duplication
-- [ ] Create shared base class for interceptors (dio/http/ws)
-- [ ] Standardize settings builders across packages
-- [ ] Consolidate chunking logic (appears in 3+ places with different implementations)
-
 ### Extension Methods
 - [ ] Add color calculation extensions for JSON viewer
 
@@ -112,3 +107,5 @@
   - [x] `PatternBasedRedaction` strategy
   - [x] `CompositeRedactionStrategy` for combining strategies
 - [x] **DIP**: Add dependency injection to `Inspector` (inject controller)
+- [x] Create shared base class for interceptors (dio/http/ws)
+- [x] Consolidate chunking logic (appears in 3+ places with different implementations)

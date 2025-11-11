@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/chunking.dart';
 
 Object? _toEncodable(dynamic object) {
   if (object is Uri) {
@@ -71,19 +72,15 @@ class LogsJsonService {
   ) async {
     final jsonLogs = <Map<String, dynamic>>[];
     const chunkSize = 50;
-
-    for (var i = 0; i < logs.length; i += chunkSize) {
-      final chunk = logs.skip(i).take(chunkSize);
-
+    const yieldEveryChunks = 10;
+    var processed = 0;
+    for (final chunk in Chunking.chunks(logs, chunkSize)) {
       for (final log in chunk) {
         jsonLogs.add(log.toJson());
       }
-
-      if (i % (chunkSize * 10) == 0) {
-        await Future<void>.delayed(Duration.zero);
-      }
+      processed++;
+      await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-
     return jsonLogs;
   }
 
@@ -185,26 +182,22 @@ class LogsJsonService {
   ) async {
     final logs = <ISpectLogData>[];
     const chunkSize = 25;
-
-    for (var i = 0; i < logsJson.length; i += chunkSize) {
-      final chunk = logsJson.skip(i).take(chunkSize);
-
+    const yieldEveryChunks = 4;
+    var processed = 0;
+    for (final chunk in Chunking.chunks(logsJson, chunkSize)) {
       for (final logJson in chunk) {
         try {
           final log = ISpectLogDataJsonUtils.fromJson(
             logJson as Map<String, dynamic>,
           );
           logs.add(log);
-        } catch (e) {
+        } catch (_) {
           continue;
         }
       }
-
-      if (i % (chunkSize * 4) == 0) {
-        await Future<void>.delayed(Duration.zero);
-      }
+      processed++;
+      await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-
     return logs;
   }
 
