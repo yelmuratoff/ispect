@@ -14,11 +14,7 @@
 - [ ] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
 
 ### Architecture - Mixed Concerns
-- [ ] Separate `logs_screen.dart` into:
-  - [ ] `LogsScreenView` - UI only
-  - [ ] `LogsScreenPresenter` - Business logic
-  - [ ] `LogsScreenController` - State management
-- [ ] Extract platform detection from business logic
+- [x] Extract platform detection from business logic
 - [ ] Create proper abstraction layer for file system operations
 
 ---

@@ -1,6 +1,4 @@
-import 'dart:developer';
-
-import 'package:flutter/foundation.dart';
+import 'package:ispect/src/core/platform/platform_output.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Extension on `ISpectLogger` for Flutter-specific configurations.
@@ -52,21 +50,6 @@ extension ISpectFlutter on ISpectLogger {
   /// - **Other platforms**: Uses `debugPrint()` for efficient log handling.
   ///
   /// - `message`: The log message to be displayed.
-  static void _defaultFlutterOutput(String message) {
-    if (kIsWeb) {
-      // Web environments use print as the default logging mechanism.
-      // ignore: avoid_print
-      print(message);
-      return;
-    }
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        log(message, name: 'ISpect', level: 1000);
-      default:
-        // ignore: avoid_print
-        print(message);
-    }
-  }
+  static void _defaultFlutterOutput(String message) =>
+      PlatformOutput.log(message);
 }
