@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/inspector/overlay.dart';
@@ -54,6 +55,7 @@ class Inspector extends StatefulWidget {
     this.areKeyboardShortcutsEnabled = true,
     this.isPanelVisible = true,
     this.controller,
+    this.logsController,
     this.widgetInspectorShortcuts = const [
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
@@ -88,6 +90,7 @@ class Inspector extends StatefulWidget {
   final Color? selectedTextColor;
 
   final DraggablePanelController? controller;
+  final ISpectViewController? logsController;
 
   static InspectorState of(BuildContext context) {
     final result = maybeOf(context);
@@ -592,6 +595,7 @@ class InspectorState extends State<Inspector> {
         options: context.iSpect.options,
         appBarTitle: iSpect.theme.pageTitle,
         itemsBuilder: context.iSpect.options.itemsBuilder,
+        controller: widget.logsController,
       ),
       settings: const RouteSettings(
         name: 'ISpect Screen',

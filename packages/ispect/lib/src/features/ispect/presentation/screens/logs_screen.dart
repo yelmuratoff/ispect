@@ -26,11 +26,13 @@ class LogsScreen extends StatefulWidget {
     super.key,
     this.appBarTitle,
     this.itemsBuilder,
+    this.controller,
   });
 
   final String? appBarTitle;
   final ISpectLogDataBuilder? itemsBuilder;
   final ISpectOptions options;
+  final ISpectViewController? controller;
 
   @override
   State<LogsScreen> createState() => _LogsScreenState();
@@ -46,10 +48,11 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   void initState() {
     super.initState();
-    _logsViewController = ISpectViewController(
-      onShare: widget.options.onShare,
-      initialSettings: widget.options.initialSettings,
-    );
+    _logsViewController = widget.controller ??
+        ISpectViewController(
+          onShare: widget.options.onShare,
+          initialSettings: widget.options.initialSettings,
+        );
     _logsViewController.toggleExpandedLogs();
   }
 
@@ -57,7 +60,10 @@ class _LogsScreenState extends State<LogsScreen> {
   void dispose() {
     _searchFocusNode.dispose();
     _titleFiltersController.dispose();
-    _logsViewController.dispose();
+    // Dispose only if we own the controller instance.
+    if (widget.controller == null) {
+      _logsViewController.dispose();
+    }
     _logsScrollController.dispose();
     super.dispose();
   }

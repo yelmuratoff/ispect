@@ -1,8 +1,5 @@
 # TODO
 
-### Other
-- [ ] **DIP**: Add dependency injection to `Inspector` (inject controller)
-
 ### Code Duplication
 - [ ] Create shared base class for interceptors (dio/http/ws)
 - [ ] Standardize settings builders across packages
@@ -114,3 +111,4 @@
   - [x] `KeyBasedRedaction` strategy
   - [x] `PatternBasedRedaction` strategy
   - [x] `CompositeRedactionStrategy` for combining strategies
+- [x] **DIP**: Add dependency injection to `Inspector` (inject controller)
