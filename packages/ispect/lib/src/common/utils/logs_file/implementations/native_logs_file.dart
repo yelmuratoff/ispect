@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:ispect/src/common/utils/date_formatter.dart';
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
+import 'package:ispect/src/core/platform/platform_directory.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Native platform implementation for log file operations.
 ///
@@ -38,12 +38,8 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   /// Gets platform-appropriate directory for log storage
-  Future<Directory> _getPlatformDirectory() async {
-    if (Platform.isIOS || Platform.isMacOS) {
-      return getApplicationDocumentsDirectory();
-    }
-    return getTemporaryDirectory();
-  }
+  Future<Directory> _getPlatformDirectory() async =>
+      (await platformDirectoryProvider.logsBaseDirectory()) as Directory;
 
   /// Ensures logs subdirectory exists
   Future<Directory> _ensureLogsDirectory(Directory parentDir) async {
@@ -164,7 +160,8 @@ class NativeLogsFile extends BaseLogsFile {
     String fileName,
     String fileType,
   ) async {
-    final dir = await getTemporaryDirectory();
+    final dir =
+        (await platformDirectoryProvider.tempDirectory()) as Directory;
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
     final fullFileName = '${safeFileName}_$timestamp.$fileType';

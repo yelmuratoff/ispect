@@ -11,11 +11,11 @@
   - [ ] `PatternBasedRedaction` strategy
   - [ ] `CompositeRedactionStrategy` for combining strategies
 - [ ] **DIP**: Add dependency injection to `Inspector` (inject controller)
-- [ ] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
+- [x] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
 
 ### Architecture - Mixed Concerns
 - [x] Extract platform detection from business logic
-- [ ] Create proper abstraction layer for file system operations
+- [x] Create proper abstraction layer for file system operations
 
 ---
 
