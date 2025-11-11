@@ -13,35 +13,6 @@
 - [ ] Create test utilities/fixtures for common scenarios
 - [ ] Set up code coverage reporting in CI/CD
 
-### Modern Dart/Flutter Patterns
-- [ ] Use Dart 3.0 sealed classes for state representations
-- [ ] Apply pattern matching consistently across codebase
-- [ ] Use records for multiple return values (already started, make consistent)
-- [ ] Leverage const constructors more aggressively
-
----
-
-## Metrics to Track
-
-### Performance Metrics
-- [ ] Set up widget rebuild tracking (DevTools)
-- [ ] Measure JSON encoding time before/after isolate migration
-- [ ] Track file I/O latency
-- [ ] Monitor memory usage over time
-- [ ] Track FPS during heavy logging
-
-### Code Quality Metrics
-- [ ] Test coverage % (target: >80%)
-- [ ] Average method length (target: <50 lines)
-- [ ] Cyclomatic complexity (target: <10 per method)
-- [ ] Code duplication % (target: <5%)
-- [ ] Number of SOLID violations
-
-### Security Metrics
-- [ ] Redaction coverage in tests
-- [ ] Encryption validation test coverage
-- [ ] Input validation coverage
-
 ---
 
 ## Done
@@ -96,3 +67,7 @@
 - [x] Create shared base class for interceptors (dio/http/ws)
 - [x] Consolidate chunking logic (appears in 3+ places with different implementations)
 - [x] Add color calculation extensions for JSON viewer
+- [x] Use Dart 3.0 sealed classes for state representations
+- [x] Apply pattern matching consistently across codebase
+- [x] Use records for multiple return values (already started, make consistent)
+- [x] Leverage const constructors more aggressively
