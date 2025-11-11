@@ -10,6 +10,8 @@
 - Settings persistence and log type filtering functionality
 - Resource disposal functionality to `ISpectLogger` for proper resource management
 - Comprehensive unit tests for settings builders and redaction service
+- Strategy-based redaction (composite, key and pattern) configurable via `RedactionService`
+- Platform directory abstraction so file operations resolve correctly on each supported target
 
 ### Changed
 - Unified logging interface across HTTP and WebSocket interceptors
@@ -22,6 +24,10 @@
 - Refactored logger initialization to use `addPostFrameCallback` for improved state management
 - Simplified header redaction logic in `RedactionService`
 - Enhanced documentation with detailed usage examples and configuration guides
+- Reworked `ISpectViewController` to rely on new `FilterManager`/`SettingsManager` and explicit log import/export services for clearer separation
+- Migrated logging output through the platform-aware `PlatformOutput` abstraction
+- Sealed `FileProcessingResult` and related JSON/observer models for cleaner error handling and caching
+- JSON viewer color handling now uses dedicated calculation extensions plus cached contrast lookups for stable text rendering
 
 ### Fixed
 - Improved type safety in HTTP and Dio interceptors
