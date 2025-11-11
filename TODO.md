@@ -11,15 +11,6 @@
   - [ ] `PatternBasedRedaction` strategy
   - [ ] `CompositeRedactionStrategy` for combining strategies
 - [ ] **DIP**: Add dependency injection to `Inspector` (inject controller)
-- [x] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
-
-### Architecture - Mixed Concerns
-- [x] Extract platform detection from business logic
-- [x] Create proper abstraction layer for file system operations
-
----
-
-## Priority 3 - Medium (Code Quality)
 
 ### Code Duplication
 - [ ] Create shared base class for interceptors (dio/http/ws)
@@ -120,3 +111,6 @@
 - [x] Replace O(n) filter searches with indexed map in `ispect_view_controller.dart:188-196`
 - [x] Optimize expensive color calculations in JSON viewer
 - [x] Optimize nested ValueListenableBuilders in `inspector.dart:406-470`
+- [x] **DIP**: Create abstract `PlatformDirectory` interface for platform-specific code
+- [x] Extract platform detection from business logic
+- [x] Create proper abstraction layer for file system operations
