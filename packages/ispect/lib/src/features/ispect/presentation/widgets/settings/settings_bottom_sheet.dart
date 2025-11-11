@@ -365,7 +365,7 @@ class _SettingsBody extends StatelessWidget {
               const SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: 32),
+                  padding: EdgeInsets.only(bottom: 32, top: 16),
                   child: _HowToReachMeWidget(),
                 ),
               ),
