@@ -146,6 +146,7 @@ class InspectorState extends State<Inspector> {
 
   final _controller = InspectorController();
   late final DraggablePanelController _draggablePanelController;
+  late final Listenable _panelListenable;
 
   @override
   void initState() {
@@ -175,6 +176,15 @@ class InspectorState extends State<Inspector> {
     if (_isPanelVisible && widget.areKeyboardShortcutsEnabled) {
       _keyboardHandler.register();
     }
+
+    // Merge panel-affecting listenables to avoid nested builders and
+    // minimize rebuild overhead.
+    _panelListenable = Listenable.merge([
+      _controller,
+      _inspectorStateNotifier,
+      _zoomStateNotifier,
+      _byteDataStateNotifier,
+    ]);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.iSpect.options.observer != null) {
@@ -407,69 +417,60 @@ class InspectorState extends State<Inspector> {
         _buildColorPickerOverlay(screenSize),
         if (_isPanelVisible)
           AnimatedBuilder(
-            animation: Listenable.merge([
-              _controller,
-            ]),
-            builder: (_, __) => MultiValueListenableBuilder(
-              valueListenables: [
-                _inspectorStateNotifier,
-                _zoomStateNotifier,
-                _byteDataStateNotifier,
+            animation: _panelListenable,
+            builder: (context, __) => DraggablePanel(
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
+              backgroundColor: context.isDarkMode
+                  ? context.ispectTheme.colorScheme.primaryContainer
+                  : context.ispectTheme.colorScheme.primary,
+              controller: _draggablePanelController,
+              items: [
+                if (context.iSpect.options.isLogPageEnabled)
+                  DraggablePanelItem(
+                    icon: _controller.inLoggerPage
+                        ? Icons.undo_rounded
+                        : Icons.reorder_rounded,
+                    enableBadge: _controller.inLoggerPage,
+                    onTap: (_) {
+                      _launchInfospect(context);
+                    },
+                    description: _controller.inLoggerPage
+                        ? context.ispectL10n.backToMainScreen
+                        : context.ispectL10n.openLogViewer,
+                  ),
+                if (context.iSpect.options.isPerformanceEnabled)
+                  DraggablePanelItem(
+                    icon: Icons.monitor_heart_outlined,
+                    enableBadge: iSpect.isPerformanceTrackingEnabled,
+                    onTap: (_) {
+                      iSpect.togglePerformanceTracking();
+                    },
+                    description: context.ispectL10n.togglePerformanceTracking,
+                  ),
+                if (context.iSpect.options.isInspectorEnabled)
+                  DraggablePanelItem(
+                    icon: Icons.format_shapes_rounded,
+                    enableBadge: _inspectorStateNotifier.value,
+                    onTap: (_) {
+                      _onInspectorStateChanged(
+                        !_inspectorStateNotifier.value,
+                      );
+                    },
+                    description: context.ispectL10n.inspectWidgets,
+                  ),
+                if (context.iSpect.options.isColorPickerEnabled)
+                  DraggablePanelItem(
+                    icon: Icons.colorize_rounded,
+                    enableBadge: _zoomStateNotifier.value,
+                    onTap: (_) {
+                      _onZoomStateChanged(!_zoomStateNotifier.value);
+                    },
+                    description: context.ispectL10n.zoomPickColor,
+                  ),
+                ...context.iSpect.options.panelItems,
               ],
-              builder: (context) => DraggablePanel(
-                borderRadius: const BorderRadius.all(Radius.circular(16)),
-                backgroundColor: context.isDarkMode
-                    ? context.ispectTheme.colorScheme.primaryContainer
-                    : context.ispectTheme.colorScheme.primary,
-                controller: _draggablePanelController,
-                items: [
-                  if (context.iSpect.options.isLogPageEnabled)
-                    DraggablePanelItem(
-                      icon: _controller.inLoggerPage
-                          ? Icons.undo_rounded
-                          : Icons.reorder_rounded,
-                      enableBadge: _controller.inLoggerPage,
-                      onTap: (_) {
-                        _launchInfospect(context);
-                      },
-                      description: _controller.inLoggerPage
-                          ? context.ispectL10n.backToMainScreen
-                          : context.ispectL10n.openLogViewer,
-                    ),
-                  if (context.iSpect.options.isPerformanceEnabled)
-                    DraggablePanelItem(
-                      icon: Icons.monitor_heart_outlined,
-                      enableBadge: iSpect.isPerformanceTrackingEnabled,
-                      onTap: (_) {
-                        iSpect.togglePerformanceTracking();
-                      },
-                      description: context.ispectL10n.togglePerformanceTracking,
-                    ),
-                  if (context.iSpect.options.isInspectorEnabled)
-                    DraggablePanelItem(
-                      icon: Icons.format_shapes_rounded,
-                      enableBadge: _inspectorStateNotifier.value,
-                      onTap: (_) {
-                        _onInspectorStateChanged(
-                          !_inspectorStateNotifier.value,
-                        );
-                      },
-                      description: context.ispectL10n.inspectWidgets,
-                    ),
-                  if (context.iSpect.options.isColorPickerEnabled)
-                    DraggablePanelItem(
-                      icon: Icons.colorize_rounded,
-                      enableBadge: _zoomStateNotifier.value,
-                      onTap: (_) {
-                        _onZoomStateChanged(!_zoomStateNotifier.value);
-                      },
-                      description: context.ispectL10n.zoomPickColor,
-                    ),
-                  ...context.iSpect.options.panelItems,
-                ],
-                buttons: context.iSpect.options.panelButtons,
-                child: null,
-              ),
+              buttons: context.iSpect.options.panelButtons,
+              child: null,
             ),
           ),
       ],

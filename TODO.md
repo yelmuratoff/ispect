@@ -1,10 +1,5 @@
 # TODO
 
-## Priority 2 - High (Performance & SOLID)
-
-### Performance Optimization
-- [ ] Optimize nested ValueListenableBuilders in `inspector.dart:406-470`
-
 ### Other
 - [ ] **SRP**: Split `ISpectViewController` into:
   - [ ] `FilterManager` - Handle filtering logic
@@ -128,3 +123,4 @@
 - [x] Refactor `ispectify.dart` (565 lines) - extract observer management
 - [x] Replace O(n) filter searches with indexed map in `ispect_view_controller.dart:188-196`
 - [x] Optimize expensive color calculations in JSON viewer
+- [x] Optimize nested ValueListenableBuilders in `inspector.dart:406-470`
