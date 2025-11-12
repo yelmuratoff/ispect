@@ -183,7 +183,7 @@ Observers receive all logs, errors, and exceptions. Use them to forward events t
 
 ```yaml
 dependencies:
-  ispect: ^4.4.8-dev04
+  ispect: ^4.5.0-dev05
 ```
 
 ### Quick Start
@@ -674,12 +674,12 @@ ISpect provides companion packages for common Flutter libraries.
 
 ```yaml
 dependencies:
-  ispect: ^4.4.8-dev04              # Core package (required)
-  ispectify_dio: ^4.4.8-dev04       # Dio HTTP client
-  ispectify_http: ^4.4.8-dev04      # Standard http package
-  ispectify_db: ^4.4.8-dev04        # Database operations
-  ispectify_ws: ^4.4.8-dev04        # WebSocket traffic
-  ispectify_bloc: ^4.4.8-dev04      # BLoC/Cubit integration
+  ispect: ^4.5.0-dev05              # Core package (required)
+  ispectify_dio: ^4.5.0-dev05       # Dio HTTP client
+  ispectify_http: ^4.5.0-dev05      # Standard http package
+  ispectify_db: ^4.5.0-dev05        # Database operations
+  ispectify_ws: ^4.5.0-dev05        # WebSocket traffic
+  ispectify_bloc: ^4.5.0-dev05      # BLoC/Cubit integration
 ```
 
 ### 🌐 HTTP Monitoring

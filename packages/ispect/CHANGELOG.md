@@ -1,6 +1,16 @@
 # Changelog
 
-## 4.4.8-dev04
+## 4.5.0-dev05
+
+### Breaking Changes
+
+#### Method Renaming
+- `logCustom()` -> `logData()` - Renamed for consistency across logging API
+
+#### Class Renaming
+- `ISpectify` -> `ISpectLogger`
+- `ISpectifyLogger` -> `ISpectBaseLogger`
+- `ISpectifyFlutter ` -> `ISpectFlutter`
 
 ### Added
 - Fluent API builders for interceptor settings configuration
@@ -37,16 +47,6 @@
 - Memory optimization in widgets and list creation
 - Circular dependencies in service initialization
 - Object pool lifecycle management and performance issues
-
-### Breaking Changes
-
-#### Method Renaming
-- `logCustom()` -> `logData()` - Renamed for consistency across logging API
-
-#### Class Renaming
-- `ISpectify` -> `ISpectLogger`
-- `ISpectifyLogger` -> `ISpectBaseLogger`
-- `ISpectifyFlutter ` -> `ISpectFlutter`
 
 ## 4.4.7
 
