@@ -2,6 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/utils/log_message_formatter.dart';
 
 /// A model class representing a structured log entry.
 class ISpectLogData {
@@ -70,38 +71,27 @@ class ISpectLogData {
   DateTime get time => _time;
 
   /// Returns the full message, including error/exception and stack trace if available.
-  String get textMessage {
-    final buffer = StringBuffer();
-
-    final msg = messageText;
-    if (msg.isNotEmpty) buffer.write(msg);
-
-    if (error != null) {
-      buffer.write('${'$error'.truncate()}');
-    } else if (exception != null) {
-      buffer.write('${'$exception'.truncate()}');
-    }
-
-    if (stackTraceText.isNotEmpty) buffer.write(stackTraceText);
-
-    return buffer.toString();
-  }
+  String get textMessage => joinLogParts([
+        messageText,
+        errorText,
+        exceptionText,
+        stackTraceText,
+      ]);
 
   /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
 
   /// Returns the formatted stack trace if available, otherwise an empty string.
-  String get stackTraceText =>
-      (stackTrace != null && stackTrace != StackTrace.empty)
-          ? '\nStackTrace: $stackTrace'
-          : '';
+  String? get stackTraceText => (stackTrace != null && stackTrace != StackTrace.empty)
+      ? 'StackTrace: $stackTrace'.truncate()
+      : null;
 
   /// Returns the exception as a string if available, otherwise an empty string.
   String? get exceptionText =>
-      exception != null ? '\n$exception'.truncate() : '';
+      exception != null ? exception.toString().truncate() : null;
 
   /// Returns the error as a string if available, otherwise an empty string.
-  String? get errorText => error != null ? '\n$error'.truncate() : '';
+  String? get errorText => error != null ? error.toString().truncate() : null;
 
   /// Returns the log message as a string, or an empty string if `null`.
   String get messageText => message.truncate() ?? '';

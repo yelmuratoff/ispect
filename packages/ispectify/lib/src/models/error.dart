@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/utils/log_message_formatter.dart';
 
 class ISpectLogError extends ISpectLogData {
   ISpectLogError(
@@ -14,7 +15,11 @@ class ISpectLogError extends ISpectLogData {
         );
 
   @override
-  String get textMessage => '$messageText$errorText$stackTraceText';
+  String get textMessage => joinLogParts([
+        messageText,
+        errorText,
+        stackTraceText,
+      ]);
 
   @override
   void notifyObserver(ISpectObserver observer) {
