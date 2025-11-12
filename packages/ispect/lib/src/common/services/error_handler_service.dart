@@ -5,12 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Service responsible for handling errors across the application.
-///
-/// This service follows the Single Responsibility Principle by separating
-/// error handling logic from the main ISpect class.
 class ErrorHandlerService {
-  const ErrorHandlerService({
+  ErrorHandlerService({
     required this.logger,
     required this.filters,
   });
@@ -18,7 +14,9 @@ class ErrorHandlerService {
   final ISpectLogger logger;
   final List<String> filters;
 
-  /// Configures global Flutter and platform error handlers.
+  bool _isHandlingPrint = false;
+  static final RegExp _ansiPattern = RegExp(r'\x1B\[[0-9;]*[mGKH]');
+
   void setupErrorHandling({
     required ISpectLogOptions options,
     void Function(Object, StackTrace)? onPlatformDispatcherError,
@@ -66,26 +64,29 @@ class ErrorHandlerService {
     FlutterError.presentError = (details) {
       void handleError() {
         onPresentError?.call(details, details.stack);
-        if (_shouldHandleError(
+
+        final snapshot = _captureStrings(
           details.exceptionAsString(),
-          details.stack.toString(),
-        )) {
+          details.stack,
+        );
+
+        if (_shouldHandleError(snapshot)) {
           logger.handle(
             message: 'Flutter error presented',
             exception: details,
             stackTrace: details.stack,
           );
-          if (isUncaughtErrorsHandlingEnabled) {
-            onUncaughtErrors?.call(<dynamic>[details, details.stack]);
-          }
+          _notifyUncaughtErrors(
+            <dynamic>[details, details.stack],
+            isEnabled: isUncaughtErrorsHandlingEnabled,
+            callback: onUncaughtErrors,
+          );
         }
       }
 
-      // Try to use addPostFrameCallback, fallback to immediate execution
       try {
         WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
       } catch (_) {
-        // If WidgetsBinding is not initialized, handle immediately
         handleError();
       }
     };
@@ -98,15 +99,20 @@ class ErrorHandlerService {
   }) {
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
-      if (_shouldHandleError(error.toString(), stack.toString())) {
+
+      final snapshot = _captureStrings(error, stack);
+
+      if (_shouldHandleError(snapshot)) {
         logger.handle(
           message: 'Platform error caught',
           exception: error,
           stackTrace: stack,
         );
-        if (isUncaughtErrorsHandlingEnabled) {
-          onUncaughtErrors?.call(<dynamic>[error, stack]);
-        }
+        _notifyUncaughtErrors(
+          <dynamic>[error, stack],
+          isEnabled: isUncaughtErrorsHandlingEnabled,
+          callback: onUncaughtErrors,
+        );
       }
       return true;
     };
@@ -119,27 +125,43 @@ class ErrorHandlerService {
   }) {
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
-      if (_shouldHandleError(details.toString(), details.stack.toString())) {
+
+      final snapshot = _captureStrings(details, details.stack);
+
+      if (_shouldHandleError(snapshot)) {
         logger.error(
           'FlutterErrorDetails',
-          exception: details.toString(),
+          exception: snapshot.message,
           stackTrace: details.stack,
         );
-        if (isUncaughtErrorsHandlingEnabled) {
-          onUncaughtErrors?.call(<dynamic>[details, details.stack]);
-        }
+        _notifyUncaughtErrors(
+          <dynamic>[details, details.stack],
+          isEnabled: isUncaughtErrorsHandlingEnabled,
+          callback: onUncaughtErrors,
+        );
       }
     };
   }
 
-  /// Determines whether the given error should be handled based on active filters.
-  bool _shouldHandleError(String exception, String stack) =>
-      filters.isEmpty ||
-      !filters.any(
-        (filter) => exception.contains(filter) || stack.contains(filter),
-      );
+  bool _shouldHandleError(_ErrorSnapshot snapshot) {
+    if (filters.isEmpty) return true;
 
-  /// Handles zone errors with appropriate filtering and callbacks.
+    return !filters.any(
+      (filter) =>
+          snapshot.message.contains(filter) || snapshot.stack.contains(filter),
+    );
+  }
+
+  void _notifyUncaughtErrors(
+    List<dynamic> errorData, {
+    required bool isEnabled,
+    required void Function(List<dynamic>)? callback,
+  }) {
+    if (isEnabled) {
+      callback?.call(errorData);
+    }
+  }
+
   void handleZoneError(
     Object error,
     StackTrace stackTrace, {
@@ -148,19 +170,23 @@ class ErrorHandlerService {
     required bool isUncaughtErrorsHandlingEnabled,
   }) {
     onZonedError?.call(error, stackTrace);
-    if (_shouldHandleError(error.toString(), stackTrace.toString())) {
+
+    final snapshot = _captureStrings(error, stackTrace);
+
+    if (_shouldHandleError(snapshot)) {
       logger.handle(
         message: 'Zoned error caught',
         exception: error,
         stackTrace: stackTrace,
       );
-      if (isUncaughtErrorsHandlingEnabled) {
-        onUncaughtErrors?.call(<dynamic>[error, stackTrace]);
-      }
+      _notifyUncaughtErrors(
+        <dynamic>[error, stackTrace],
+        isEnabled: isUncaughtErrorsHandlingEnabled,
+        callback: onUncaughtErrors,
+      );
     }
   }
 
-  /// Handles print statements in zones with appropriate filtering.
   void handleZonePrint(
     Zone parent,
     ZoneDelegate zoneDelegate,
@@ -169,14 +195,35 @@ class ErrorHandlerService {
     required bool isPrintLoggingEnabled,
     required bool isFlutterPrintEnabled,
   }) {
-    if (isPrintLoggingEnabled && !_containsAnsi(line)) {
-      logger.print(line);
-    } else if (isFlutterPrintEnabled) {
-      parent.print(line);
+    if (_isHandlingPrint) {
+      zoneDelegate.print(parent, line);
+      return;
+    }
+
+    _isHandlingPrint = true;
+    try {
+      if (isPrintLoggingEnabled && !_containsAnsi(line)) {
+        logger.print(line);
+      } else if (isFlutterPrintEnabled) {
+        zoneDelegate.print(parent, line);
+      }
+    } finally {
+      _isHandlingPrint = false;
     }
   }
 
-  /// Checks if a string contains ANSI escape sequences (e.g., for color).
-  static bool _containsAnsi(String line) =>
-      line.contains(RegExp(r'\x1B\[[0-9;]*[mGKH]'));
+  bool _containsAnsi(String line) => line.contains(_ansiPattern);
+
+  _ErrorSnapshot _captureStrings(Object? exception, StackTrace? stack) {
+    final message = exception?.toString() ?? '';
+    final stackStr = stack?.toString() ?? '';
+    return _ErrorSnapshot(message, stackStr);
+  }
+}
+
+class _ErrorSnapshot {
+  const _ErrorSnapshot(this.message, this.stack);
+
+  final String message;
+  final String stack;
 }

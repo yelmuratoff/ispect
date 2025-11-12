@@ -38,6 +38,7 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 ios
+android
 .env
 .DS_Store
 
