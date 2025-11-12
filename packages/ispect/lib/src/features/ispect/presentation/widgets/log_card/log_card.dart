@@ -199,14 +199,35 @@ class _LazyExpandedBody extends StatelessWidget {
       );
 }
 
-class _LazyStackTraceBody extends StatelessWidget {
+class _LazyStackTraceBody extends StatefulWidget {
   const _LazyStackTraceBody({
     required this.color,
     required this.stackTrace,
   });
 
+  static const _maxStackTraceHeight = 320.0;
+
   final String stackTrace;
   final Color color;
+
+  @override
+  State<_LazyStackTraceBody> createState() => _LazyStackTraceBodyState();
+}
+
+class _LazyStackTraceBodyState extends State<_LazyStackTraceBody> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -214,16 +235,27 @@ class _LazyStackTraceBody extends StatelessWidget {
         child: SizedBox(
           width: double.maxFinite,
           child: DecoratedBox(
-            decoration: DecorationUtils.roundedBorder(color: color),
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: SelectableText(
-                stackTrace,
-                maxLines: ISpectConstants.stackTraceMaxLines,
-                minLines: 1,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
+            decoration: DecorationUtils.roundedBorder(color: widget.color),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: _LazyStackTraceBody._maxStackTraceHeight,
+              ),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                radius: const Radius.circular(4),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(6),
+                  primary: false,
+                  physics: const ClampingScrollPhysics(),
+                  child: SelectableText(
+                    widget.stackTrace,
+                    style: TextStyle(
+                      color: widget.color,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ),
             ),

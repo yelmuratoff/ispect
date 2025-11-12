@@ -179,13 +179,26 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(title: const Text('ISpect Example')),
         body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              ISpect.logger.info('Button pressed!');
-              ISpect.logger.warning('Button pressed!');
-              ISpect.logger.error('Button pressed!');
-            },
-            child: const Text('Press me'),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.info('Button pressed!');
+                  ISpect.logger.warning('Button pressed!');
+                  ISpect.logger.error('Button pressed!');
+                },
+                child: const Text('Press me'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.handle(
+                    exception: Exception('Test Exception'),
+                    stackTrace: StackTrace.current,
+                  );
+                },
+                child: const Text('Large Error'),
+              ),
+            ],
           ),
         ),
       ),
