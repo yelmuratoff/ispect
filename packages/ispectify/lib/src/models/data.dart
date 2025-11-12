@@ -82,9 +82,10 @@ class ISpectLogData {
   String get header => '[${title ?? key}] | $formattedTime\n';
 
   /// Returns the formatted stack trace if available, otherwise an empty string.
-  String? get stackTraceText => (stackTrace != null && stackTrace != StackTrace.empty)
-      ? 'StackTrace: $stackTrace'.truncate()
-      : null;
+  String? get stackTraceText =>
+      (stackTrace != null && stackTrace != StackTrace.empty)
+          ? 'StackTrace: $stackTrace'.truncate()
+          : null;
 
   /// Returns the exception as a string if available, otherwise an empty string.
   String? get exceptionText =>
