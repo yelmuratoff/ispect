@@ -1,7 +1,5 @@
 # TODO
 
-## Priority 4 - Low (Modern Patterns & Testing)
-
 ### Testing
 - [ ] Increase test coverage from current ~11% to >80%
 - [ ] Add unit tests for:
