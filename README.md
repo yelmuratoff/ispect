@@ -5,22 +5,25 @@
 
   <p>
     <a href="https://pub.dev/packages/ispect">
-      <img src="https://img.shields.io/pub/v/ispect.svg" alt="pub version">
+      <img src="https://img.shields.io/pub/v/ispect?include_prereleases&style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="pub version">
     </a>
     <a href="https://opensource.org/licenses/MIT">
-      <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
+      <img src="https://img.shields.io/badge/license-mit-blue?style=for-the-badge&labelColor=0360a9&color=2ab7f6" alt="License">
     </a>
-    <a href="https://github.com/K1yoshiSho/ispect">
-      <img src="https://img.shields.io/github/stars/K1yoshiSho/ispect?style=social" alt="GitHub stars">
+    <a href="https://github.com/yelmuratoff/ispect">
+      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=for-the-badge&logo=github&labelColor=0360a9&color=2ab7f6" alt="GitHub stars">
     </a>
   </p>
 
   <p>
     <a href="https://pub.dev/packages/ispect/score">
-      <img src="https://img.shields.io/pub/likes/ispect?logo=flutter" alt="Pub likes">
+      <img src="https://img.shields.io/pub/likes/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub likes">
     </a>
     <a href="https://pub.dev/packages/ispect/score">
-      <img src="https://img.shields.io/pub/points/ispect?logo=flutter" alt="Pub points">
+      <img src="https://img.shields.io/pub/points/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub points">
+    </a>
+    <a href="https://pub.dev/packages/ispect/downloads">
+      <img src="https://img.shields.io/pub/dm/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub downloads">
     </a>
   </p>
 </div>
