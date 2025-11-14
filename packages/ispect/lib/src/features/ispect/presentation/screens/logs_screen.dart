@@ -347,6 +347,7 @@ class _LogListItem extends StatelessWidget {
             onCopyTap: onCopyPressed,
             onTap: onItemTapped,
             observer: observer,
+            dividerColor: dividerColor,
           ),
         );
 

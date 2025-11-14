@@ -13,6 +13,7 @@ class LogCard extends StatelessWidget {
   const LogCard({
     required this.icon,
     required this.color,
+    required this.dividerColor,
     required this.data,
     required this.index,
     required this.isExpanded,
@@ -25,6 +26,7 @@ class LogCard extends StatelessWidget {
   final ISpectLogData data;
   final IconData icon;
   final Color color;
+  final Color dividerColor;
   final int index;
   final bool isExpanded;
   final VoidCallback onTap;
@@ -53,11 +55,13 @@ class LogCard extends StatelessWidget {
                 onTap: onTap,
                 onCopyTap: onCopyTap,
                 observer: observer,
+                dividerColor: dividerColor,
               ),
               if (isExpanded) ...[
                 _ExpandedContent(
                   data: data,
                   color: color,
+                  dividerColor: dividerColor,
                 ),
               ],
             ],
@@ -70,6 +74,7 @@ class _LogCardHeader extends StatelessWidget {
   const _LogCardHeader({
     required this.icon,
     required this.color,
+    required this.dividerColor,
     required this.data,
     required this.isExpanded,
     required this.onTap,
@@ -79,6 +84,7 @@ class _LogCardHeader extends StatelessWidget {
 
   final IconData icon;
   final Color color;
+  final Color dividerColor;
   final ISpectLogData data;
   final bool isExpanded;
   final VoidCallback onTap;
@@ -131,10 +137,12 @@ class _ExpandedContent extends StatelessWidget {
   const _ExpandedContent({
     required this.data,
     required this.color,
+    required this.dividerColor,
   });
 
   final ISpectLogData data;
   final Color color;
+  final Color dividerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +153,7 @@ class _ExpandedContent extends StatelessWidget {
       children: [
         Container(
           height: 1,
-          color: context.ispectTheme.dividerColor,
+          color: dividerColor,
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

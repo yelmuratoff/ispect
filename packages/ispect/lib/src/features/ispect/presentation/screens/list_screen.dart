@@ -168,6 +168,7 @@ class _LogListItem extends StatelessWidget {
         isExpanded: isExpanded,
         onCopyTap: onCopyPressed,
         onTap: onItemTapped,
+        dividerColor: dividerColor,
       ),
     );
 
