@@ -15,24 +15,20 @@ class ISpectBottomSheetHeader extends StatelessWidget {
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: theme.textColor,
+  Widget build(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: context.appTheme.textTheme.headlineSmall?.copyWith(
+              color: context.appTheme.textColor,
+            ),
           ),
-        ),
-        IconButton(
-          onPressed: onClose ?? () => Navigator.pop(context),
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: theme.textColor),
-        ),
-      ],
-    );
-  }
+          IconButton(
+            onPressed: onClose ?? () => Navigator.pop(context),
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.close_rounded, color: context.appTheme.textColor),
+          ),
+        ],
+      );
 }

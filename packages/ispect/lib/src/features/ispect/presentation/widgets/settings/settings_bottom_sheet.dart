@@ -178,7 +178,8 @@ class _ISpectLoggerSettingsBottomSheetState
       ISpectSettingsCardItem(
         title: context.ispectL10n.enabled,
         enabled: currentSettings.enabled,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.card?.resolve(context) ??
+            context.appTheme.cardColor,
         onChanged: (enabled) {
           _onSettingChanged(currentSettings.copyWith(enabled: enabled));
         },
@@ -186,7 +187,8 @@ class _ISpectLoggerSettingsBottomSheetState
       ISpectSettingsCardItem(
         canEdit: currentSettings.enabled,
         title: context.ispectL10n.useConsoleLogs,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.card?.resolve(context) ??
+            context.appTheme.cardColor,
         enabled: currentSettings.useConsoleLogs,
         onChanged: (enabled) {
           _onSettingChanged(
@@ -197,7 +199,8 @@ class _ISpectLoggerSettingsBottomSheetState
       ISpectSettingsCardItem(
         canEdit: currentSettings.enabled,
         title: context.ispectL10n.useHistory,
-        backgroundColor: context.ispectTheme.cardColor,
+        backgroundColor: context.ispectTheme.card?.resolve(context) ??
+            context.appTheme.cardColor,
         enabled: currentSettings.useHistory,
         onChanged: (enabled) {
           _onSettingChanged(currentSettings.copyWith(useHistory: enabled));
@@ -224,7 +227,7 @@ class _ISpectLoggerSettingsBottomSheetState
       ),
       orElse: () => AlertDialog(
         contentPadding: EdgeInsets.zero,
-        backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
+        backgroundColor: iSpect.theme.background?.resolve(context),
         content: SizedBox(
           height: MediaQuery.sizeOf(context).height * 0.7,
           width: MediaQuery.sizeOf(context).width * 0.8,
@@ -269,7 +272,7 @@ class _SettingsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: context.ispectTheme.scaffoldBackgroundColor,
+          color: iSpect.theme.background?.resolve(context),
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(16),
           ),
@@ -296,14 +299,15 @@ class _SettingsBody extends StatelessWidget {
                       .copyWith(bottom: 16, top: 8),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: context.ispectTheme.cardColor,
+                      color: context.ispectTheme.card?.resolve(context) ??
+                          context.appTheme.cardColor,
                       borderRadius: const BorderRadius.all(
                         Radius.circular(16),
                       ),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
+                          color: iSpect.theme.divider?.resolve(context) ??
+                              context.appTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -314,10 +318,10 @@ class _SettingsBody extends StatelessWidget {
                           settings[index],
                           if (index != settings.length - 1)
                             Divider(
-                              color: iSpect.theme.dividerColor(
+                              color: iSpect.theme.divider?.resolve(
                                     context,
                                   ) ??
-                                  context.ispectTheme.dividerColor,
+                                  context.appTheme.dividerColor,
                               height: 1,
                             ),
                         ],
@@ -332,12 +336,13 @@ class _SettingsBody extends StatelessWidget {
                       .copyWith(bottom: 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: context.ispectTheme.cardColor,
+                      color: context.ispectTheme.card?.resolve(context) ??
+                          context.appTheme.cardColor,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),
                       border: Border.fromBorderSide(
                         BorderSide(
-                          color: iSpect.theme.dividerColor(context) ??
-                              context.ispectTheme.dividerColor,
+                          color: iSpect.theme.divider?.resolve(context) ??
+                              context.appTheme.dividerColor,
                         ),
                       ),
                     ),
@@ -386,8 +391,8 @@ class _HowToReachMeWidget extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 text: 'ISpect',
-                style: context.ispectTheme.textTheme.titleLarge?.copyWith(
-                  color: context.ispectTheme.colorScheme.primary,
+                style: context.appTheme.textTheme.titleLarge?.copyWith(
+                  color: context.ispectTheme.primary?.resolve(context),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -405,7 +410,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
+    final theme = context.appTheme;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -450,15 +455,15 @@ class _ActionTile extends StatelessWidget {
             dense: true,
             title: Text(
               action.title,
-              style: context.ispectTheme.textTheme.bodyMedium,
+              style: context.appTheme.textTheme.bodyMedium,
             ),
-            leading: Icon(action.icon, color: context.ispectTheme.textColor),
+            leading: Icon(action.icon, color: context.appTheme.textColor),
           ),
         ),
         if (showDivider)
           Divider(
-            color: iSpect.theme.dividerColor(context) ??
-                context.ispectTheme.dividerColor,
+            color: iSpect.theme.divider?.resolve(context) ??
+                context.appTheme.dividerColor,
             height: 1,
           ),
       ],

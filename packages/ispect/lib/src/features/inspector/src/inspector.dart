@@ -423,9 +423,7 @@ class InspectorState extends State<Inspector> {
             animation: _panelListenable,
             builder: (context, __) => DraggablePanel(
               borderRadius: const BorderRadius.all(Radius.circular(16)),
-              backgroundColor: context.isDarkMode
-                  ? context.ispectTheme.colorScheme.primaryContainer
-                  : context.ispectTheme.colorScheme.primary,
+              backgroundColor: context.ispectTheme.primary?.resolve(context),
               controller: _draggablePanelController,
               items: [
                 if (context.iSpect.options.isLogPageEnabled)

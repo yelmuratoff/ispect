@@ -10,7 +10,8 @@ class ThemeSchemeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final backgroundColor = ISpect.read(context).theme.backgroundColor(context);
+    final backgroundColor =
+        ISpect.read(context).theme.background?.resolve(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -917,9 +918,13 @@ class DialogsSnackbarsDisplay extends StatelessWidget {
   }
 
   void _showDialog(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor,
         title: const Text('Dialog'),
         content: const Text('This is a dialog'),
         actions: [

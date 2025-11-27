@@ -50,11 +50,8 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
         child: ISpectPerformanceOverlay(
           enabled: isPerformanceTrackingEnabled,
           alignment: Alignment.topCenter,
-          backgroundColor:
-              context.ispectTheme.colorScheme.surface.withAlpha(100),
-          textColor: context.ispectTheme.colorScheme.onSurface,
-          // textBackgroundColor:
-          //     context.ispectTheme.colorScheme.surface.withAlpha(0x80),
+          backgroundColor: context.appTheme.colorScheme.surface.withAlpha(100),
+          textColor: context.appTheme.colorScheme.onSurface,
           child: child,
         ),
       );

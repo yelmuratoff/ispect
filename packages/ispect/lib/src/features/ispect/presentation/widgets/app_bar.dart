@@ -69,7 +69,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           ),
           scrolledUnderElevation: 0,
           backgroundColor: widget.backgroundColor ??
-              context.ispectTheme.scaffoldBackgroundColor,
+              context.ispectTheme.background?.resolve(context),
           actions: [
             switch (widget.onSettingsTap) {
               null => const SizedBox.shrink(),
@@ -165,19 +165,20 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                       isSelected,
                                       context.isDarkMode
                                     )) {
-                                      (true, true) => context.ispectTheme
+                                      (true, true) => context.appTheme
                                           .colorScheme.primaryContainer,
                                       (true, false) =>
-                                        context.ispectTheme.colorScheme.primary,
-                                      _ => context.ispectTheme.cardColor,
+                                        context.appTheme.colorScheme.primary,
+                                      _ => context.ispectTheme.card
+                                          ?.resolve(context),
                                     };
                                     return FilterChip(
-                                      selectedColor: context.ispectTheme
-                                          .colorScheme.primaryContainer,
+                                      selectedColor: context.ispectTheme.primary
+                                          ?.resolve(context),
                                       label: Text(
                                         '$count  $title',
                                         style: context
-                                            .ispectTheme.textTheme.bodyMedium,
+                                            .appTheme.textTheme.bodyMedium,
                                       ),
                                       selected: isSelected,
                                       onSelected: (selected) {

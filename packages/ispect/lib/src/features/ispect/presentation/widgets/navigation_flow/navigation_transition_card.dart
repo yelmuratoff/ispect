@@ -31,7 +31,7 @@ class NavigationTransitionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
+    final theme = context.appTheme;
     final isHighlighted = _isSpecial || _isSelected;
 
     return Card(
@@ -102,7 +102,7 @@ class NavigationTransitionCard extends StatelessWidget {
       );
 
   Widget _buildSpecialIndicator(BuildContext context) {
-    final colorScheme = context.ispectTheme.colorScheme;
+    final colorScheme = context.appTheme.colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -119,7 +119,7 @@ class NavigationTransitionCard extends StatelessWidget {
               _headerText(context),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: context.ispectTheme.textTheme.labelSmall?.copyWith(
+              style: context.appTheme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onPrimaryContainer,
               ),

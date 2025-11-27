@@ -92,16 +92,14 @@ class BoxInfoPanelWidget extends StatelessWidget {
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.divider?.resolve(context),
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo, theme: theme),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.divider?.resolve(context),
                 ),
               ],
             ],

@@ -162,7 +162,7 @@ class SquareIconButton extends StatelessWidget {
           ),
           icon: Icon(
             icon,
-            color: context.ispectTheme.colorScheme.onSurface.withValues(
+            color: context.appTheme.colorScheme.onSurface.withValues(
               alpha: ISpectConstants.disabledOpacity,
             ),
           ),

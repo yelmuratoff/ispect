@@ -145,11 +145,11 @@ class JsonExplorerTheme {
   static JsonExplorerTheme defaultThemeByContext(BuildContext context) =>
       JsonExplorerTheme(
         propertyKeyTextStyle: TextStyle(
-          color: context.ispectTheme.colorScheme.primary,
+          color: context.ispectTheme.primary?.resolve(context),
           fontWeight: FontWeight.bold,
         ),
         rootKeyTextStyle: TextStyle(
-          color: context.ispectTheme.colorScheme.primary,
+          color: context.ispectTheme.primary?.resolve(context),
           fontWeight: FontWeight.bold,
         ),
         valueSearchHighlightTextStyle: const TextStyle(

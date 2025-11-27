@@ -38,7 +38,7 @@ class CombinedOverlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.ispectTheme.colorScheme;
+    final colorScheme = context.appTheme.colorScheme;
     final borderColor = colorScheme.inverseSurface.withValues(alpha: 0.2);
     final textColor = color.contrastText();
 
@@ -264,7 +264,7 @@ class _ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
         opacity: _isVisible ? 1.0 : 0.0,
         duration: _animationDuration,
         child: InformationBoxWidget(
-          color: context.ispectTheme.colorScheme.primary,
+          color: context.ispectTheme.primary?.resolve(context),
           child: Text('x${widget.zoomScale}'),
         ),
       );

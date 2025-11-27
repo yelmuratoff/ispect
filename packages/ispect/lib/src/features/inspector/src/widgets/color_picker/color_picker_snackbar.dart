@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -35,20 +34,19 @@ void showColorPickerResultSnackbar({
   required Color color,
 }) {
   final colorString = colorToHexString(color);
-  final iSpect = ISpect.read(context);
 
   ScaffoldMessenger.of(context).clearSnackBars();
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: context.ispectTheme.cardColor,
+      backgroundColor: context.ispectTheme.card?.resolve(context),
       elevation: 0,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: iSpect.theme.dividerColor(context) ??
-              context.ispectTheme.dividerColor,
+          color: context.ispectTheme.divider?.resolve(context) ??
+              Colors.transparent,
         ),
       ),
       content: Row(

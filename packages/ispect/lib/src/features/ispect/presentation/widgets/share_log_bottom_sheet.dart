@@ -49,18 +49,23 @@ class _ISpectShareLogBottomSheetState extends State<ISpectShareLogBottomSheet> {
             truncatedData: widget.truncatedData,
           ),
         ),
-        orElse: () => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
-          content: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.2,
-            width: 500,
-            child: _Body(
-              data: widget.data,
-              truncatedData: widget.truncatedData,
+        orElse: () {
+          final iSpect = ISpect.read(context);
+          final backgroundColor = iSpect.theme.background?.resolve(context);
+
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            backgroundColor: backgroundColor,
+            content: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.2,
+              width: 500,
+              child: _Body(
+                data: widget.data,
+                truncatedData: widget.truncatedData,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
 }
 
@@ -75,10 +80,12 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
+        color: backgroundColor,
         borderRadius: const BorderRadius.all(
           Radius.circular(16),
         ),

@@ -40,14 +40,14 @@ class LogTypeFilterSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: context.ispectTheme.cardColor,
+          color: context.ispectTheme.card?.resolve(context),
           borderRadius: const BorderRadius.all(
             Radius.circular(16),
           ),
           border: Border.fromBorderSide(
             BorderSide(
-              color: iSpect.theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
+              color: iSpect.theme.divider?.resolve(context) ??
+                  context.appTheme.dividerColor,
             ),
           ),
         ),
@@ -61,8 +61,8 @@ class LogTypeFilterSection extends StatelessWidget {
                 children: [
                   Text(
                     context.ispectL10n.iSpectifyLogsInfo,
-                    style: context.ispectTheme.textTheme.titleMedium?.copyWith(
-                      color: context.ispectTheme.textColor,
+                    style: context.appTheme.textTheme.titleMedium?.copyWith(
+                      color: context.appTheme.textColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -70,8 +70,8 @@ class LogTypeFilterSection extends StatelessWidget {
                     onPressed: _isAllEnabled ? onDeselectAll : onSelectAll,
                     child: Text(
                       _isAllEnabled ? 'Deselect All' : 'Select All',
-                      style: context.ispectTheme.textTheme.bodySmall?.copyWith(
-                        color: context.ispectTheme.colorScheme.primary,
+                      style: context.appTheme.textTheme.bodySmall?.copyWith(
+                        color: context.appTheme.colorScheme.primary,
                       ),
                     ),
                   ),
@@ -79,8 +79,8 @@ class LogTypeFilterSection extends StatelessWidget {
               ),
             ),
             Divider(
-              color: iSpect.theme.dividerColor(context) ??
-                  context.ispectTheme.dividerColor,
+              color: iSpect.theme.divider?.resolve(context) ??
+                  context.appTheme.dividerColor,
               height: 1,
             ),
             const Gap(8),
@@ -110,9 +110,10 @@ class LogTypeFilterSection extends StatelessWidget {
       children: [
         ISpectBaseCard(
           padding: EdgeInsets.zero,
-          color: iSpect.theme.dividerColor(context) ??
-              context.ispectTheme.dividerColor,
-          backgroundColor: context.ispectTheme.cardColor,
+          color: iSpect.theme.divider?.resolve(context) ??
+              context.appTheme.dividerColor,
+          backgroundColor: context.ispectTheme.card?.resolve(context) ??
+              context.appTheme.cardColor,
           child: Material(
             color: Colors.transparent,
             child: ListTile(

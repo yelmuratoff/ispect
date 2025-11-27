@@ -12,6 +12,27 @@
 - `ISpectifyLogger` -> `ISpectBaseLogger`
 - `ISpectifyFlutter ` -> `ISpectFlutter`
 
+#### Other Changes:
+- `ISpectTheme`:
+   - Was:
+      ```dart
+      lightBackgroundColor: Colors.white,
+      darkBackgroundColor: Colors.black,
+      lightDividerColor: Colors.grey.shade300,
+      darkDividerColor: Colors.grey.shade800,
+      ```
+   - Now:
+      ```dart
+      background: ISpectDynamicColor(
+            light: Colors.white,
+            dark: Colors.black,
+          ),
+      divider: ISpectDynamicColor(
+            light: Colors.grey.shade300,
+            dark: Colors.grey.shade800,
+          ),
+      ```
+
 ### Added
 - Fluent API builders for interceptor settings configuration
 - Support for multiple observers with improved notification mechanism

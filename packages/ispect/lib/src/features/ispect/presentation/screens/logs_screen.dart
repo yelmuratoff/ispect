@@ -72,7 +72,7 @@ class _LogsScreenState extends State<LogsScreen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(context),
+      backgroundColor: iSpect.theme.background?.resolve(context),
       body: ISpectLogsBuilder(
         logger: ISpect.logger,
         controller: _logsViewController,
@@ -95,7 +95,7 @@ class _LogsScreenState extends State<LogsScreen> {
               ),
               if (_logsViewController.activeData != null) ...[
                 VerticalDivider(
-                  color: _getDividerColor(iSpect, context),
+                  color: context.ispectTheme.divider?.resolve(context),
                   width: 1,
                   thickness: 1,
                 ),
@@ -113,9 +113,6 @@ class _LogsScreenState extends State<LogsScreen> {
       ),
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 
   void _openLogsSettings(BuildContext context) {
     final logger = ValueNotifier(ISpect.logger);
@@ -380,7 +377,7 @@ class _EmptyLogsWidget extends StatelessWidget {
           const Gap(8),
           Text(
             context.ispectL10n.notFound.capitalize(),
-            style: context.ispectTheme.textTheme.bodyLarge,
+            style: context.appTheme.textTheme.bodyLarge,
           ),
         ],
       );
@@ -414,7 +411,7 @@ class _MainLogsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
     final titles = logsViewController.getTitles(logsData);
-    final dividerColor = _getDividerColor(iSpectTheme, context);
+
     final options = ISpect.read(context).options;
 
     return CustomScrollView(
@@ -431,7 +428,7 @@ class _MainLogsView extends StatelessWidget {
           onSettingsTap: onSettingsTap,
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.backgroundColor(context),
+          backgroundColor: iSpectTheme.theme.background?.resolve(context),
         ),
         if (filteredLogEntries.isEmpty)
           const SliverToBoxAdapter(
@@ -461,7 +458,8 @@ class _MainLogsView extends StatelessWidget {
                       logEntry.hashCode ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: dividerColor,
+              dividerColor: iSpectTheme.theme.divider?.resolve(context) ??
+                  context.appTheme.dividerColor,
               customItemBuilder: itemsBuilder,
               observer: options.observer is ISpectNavigatorObserver
                   ? options.observer as ISpectNavigatorObserver?
@@ -479,9 +477,6 @@ class _MainLogsView extends StatelessWidget {
       ],
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 }
 
 /// Detail view widget for displaying selected log data
@@ -513,34 +508,40 @@ class _LogSourceDialog extends StatelessWidget {
   const _LogSourceDialog();
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        title: Text(context.ispectL10n.loadFileContent),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.file_open),
-              title: Text(context.ispectL10n.loadFileContent),
-              subtitle: Text(context.ispectL10n.selectTxtOrJsonFromDevice),
-              onTap: () => Navigator.of(context).pop(_LogSourceChoice.external),
-            ),
-            const Gap(16),
-            ListTile(
-              leading: const Icon(Icons.content_paste),
-              title: Text(context.ispectL10n.pasteContent),
-              subtitle: Text(context.ispectL10n.pasteTxtOrJsonHere),
-              onTap: () => Navigator.of(context).pop(_LogSourceChoice.paste),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.ispectL10n.cancel),
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
+    return AlertDialog(
+      backgroundColor: backgroundColor,
+      title: Text(context.ispectL10n.loadFileContent),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.file_open),
+            title: Text(context.ispectL10n.loadFileContent),
+            subtitle: Text(context.ispectL10n.selectTxtOrJsonFromDevice),
+            onTap: () => Navigator.of(context).pop(_LogSourceChoice.external),
+          ),
+          const Gap(16),
+          ListTile(
+            leading: const Icon(Icons.content_paste),
+            title: Text(context.ispectL10n.pasteContent),
+            subtitle: Text(context.ispectL10n.pasteTxtOrJsonHere),
+            onTap: () => Navigator.of(context).pop(_LogSourceChoice.paste),
           ),
         ],
-      );
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.ispectL10n.cancel),
+        ),
+      ],
+    );
+  }
 }
 
 /// Dialog widget for pasting file content
@@ -581,50 +582,56 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        title: Text(context.ispectL10n.pasteContent),
-        content: SizedBox(
-          width: MediaQuery.sizeOf(context).width * 0.8,
-          height: MediaQuery.sizeOf(context).height * 0.6,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(context.ispectL10n.pasteYourFileContentBelow),
-              const Gap(8),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    hintText:
-                        context.ispectL10n.pasteYourTxtOrJsonFileContentHere,
-                  ),
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                  ),
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
+    return AlertDialog(
+      backgroundColor: backgroundColor,
+      title: Text(context.ispectL10n.pasteContent),
+      content: SizedBox(
+        width: MediaQuery.sizeOf(context).width * 0.8,
+        height: MediaQuery.sizeOf(context).height * 0.6,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.ispectL10n.pasteYourFileContentBelow),
+            const Gap(8),
+            Expanded(
+              child: TextField(
+                controller: _controller,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText:
+                      context.ispectL10n.pasteYourTxtOrJsonFileContentHere,
+                ),
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 12,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.ispectL10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: _hasContent
-                ? () async {
-                    Navigator.of(context).pop();
-                    await widget.onContentProcessed(_controller.text);
-                  }
-                : null,
-            child: Text(context.ispectL10n.process),
-          ),
-        ],
-      );
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.ispectL10n.cancel),
+        ),
+        ElevatedButton(
+          onPressed: _hasContent
+              ? () async {
+                  Navigator.of(context).pop();
+                  await widget.onContentProcessed(_controller.text);
+                }
+              : null,
+          child: Text(context.ispectL10n.process),
+        ),
+      ],
+    );
+  }
 }

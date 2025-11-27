@@ -75,8 +75,8 @@ class _ISpectNavigationFlowScreenState
             ? Center(
                 child: Text(
                   context.ispectL10n.noNavigationTransitions,
-                  style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
-                    color: context.ispectTheme.colorScheme.onSurface
+                  style: context.appTheme.textTheme.bodyLarge?.copyWith(
+                    color: context.appTheme.colorScheme.onSurface
                         .withValues(alpha: 0.5),
                   ),
                 ),

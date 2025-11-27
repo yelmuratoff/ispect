@@ -77,7 +77,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(context),
+      backgroundColor: iSpect.theme.background?.resolve(context),
       body: ListenableBuilder(
         listenable: _logsViewController,
         builder: (_, __) => Row(
@@ -95,7 +95,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
             ),
             if (_logsViewController.activeData != null) ...[
               VerticalDivider(
-                color: _getDividerColor(iSpect, context),
+                color: context.ispectTheme.divider?.resolve(context),
                 width: 1,
                 thickness: 1,
               ),
@@ -112,9 +112,6 @@ class _LogsScreenState extends State<LogsV2Screen> {
       ),
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 
   Future<void> getLogs() async {
     if (widget.logs != null && widget.logs!.isNotEmpty) {
@@ -203,7 +200,7 @@ class EmptyLogsWidget extends StatelessWidget {
           const Gap(8),
           Text(
             context.ispectL10n.notFound.capitalize(),
-            style: context.ispectTheme.textTheme.bodyLarge,
+            style: context.appTheme.textTheme.bodyLarge,
           ),
         ],
       );
@@ -248,7 +245,7 @@ class _MainLogsView extends StatelessWidget {
           controller: logsViewController,
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.backgroundColor(context),
+          backgroundColor: iSpectTheme.theme.background?.resolve(context),
         ),
         if (filteredLogEntries.isEmpty)
           const SliverToBoxAdapter(
@@ -278,7 +275,8 @@ class _MainLogsView extends StatelessWidget {
                       logEntry.hashCode ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: _getDividerColor(iSpectTheme, context),
+              dividerColor: iSpectTheme.theme.divider?.resolve(context) ??
+                  context.appTheme.dividerColor,
               onCopyPressed: () => logsViewController.copyLogEntryText(
                 context,
                 logEntry,
@@ -292,9 +290,6 @@ class _MainLogsView extends StatelessWidget {
       ],
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 }
 
 /// Detail view widget for displaying selected log data

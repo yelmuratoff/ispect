@@ -46,19 +46,24 @@ class ISpectNavigationFlowActionsSheet extends StatelessWidget {
             items: items,
           ),
         ),
-        orElse: () => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
-          content: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.2,
-            width: 500,
-            child: _ActionsSheetContent(
-              log: log,
-              transition: transition,
-              items: items,
+        orElse: () {
+          final iSpect = ISpect.read(context);
+          final backgroundColor = iSpect.theme.background?.resolve(context);
+
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            backgroundColor: backgroundColor,
+            content: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.2,
+              width: 500,
+              child: _ActionsSheetContent(
+                log: log,
+                transition: transition,
+                items: items,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
 }
 
@@ -75,10 +80,12 @@ class _ActionsSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
+        color: backgroundColor,
         borderRadius: const BorderRadius.all(
           Radius.circular(16),
         ),

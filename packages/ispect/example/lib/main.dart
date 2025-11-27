@@ -143,10 +143,14 @@ class MyApp extends StatelessWidget {
         ),
         theme: ISpectTheme(
           pageTitle: 'Your name here',
-          lightBackgroundColor: Colors.white,
-          darkBackgroundColor: Colors.black,
-          lightDividerColor: Colors.grey.shade300,
-          darkDividerColor: Colors.grey.shade800,
+          background: ISpectDynamicColor(
+            light: Colors.white,
+            dark: Colors.black,
+          ),
+          divider: ISpectDynamicColor(
+            light: Colors.grey.shade300,
+            dark: Colors.grey.shade800,
+          ),
           logColors: {
             'error': Colors.red,
             'info': Colors.blue,

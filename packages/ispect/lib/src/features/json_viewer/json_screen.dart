@@ -86,10 +86,10 @@ class _JsonScreenState extends State<JsonScreen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(context),
+      backgroundColor: iSpect.theme.background?.resolve(context),
       appBar: AppBar(
         scrolledUnderElevation: 0,
-        backgroundColor: iSpect.theme.backgroundColor(context),
+        backgroundColor: iSpect.theme.background?.resolve(context),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
