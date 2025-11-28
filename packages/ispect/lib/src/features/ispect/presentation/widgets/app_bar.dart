@@ -164,20 +164,12 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                     final isSelected = widget
                                         .titlesController.selectedIndexes
                                         .contains(index);
-                                    final bgColor = switch ((
-                                      isSelected,
-                                      context.isDarkMode
-                                    )) {
-                                      (true, true) => context.appTheme
-                                          .colorScheme.primaryContainer,
-                                      (true, false) =>
-                                        context.appTheme.colorScheme.primary,
-                                      _ => context.ispectTheme.card
-                                          ?.resolve(context),
-                                    };
+
                                     return FilterChip(
-                                      selectedColor: context.ispectTheme.primary
-                                          ?.resolve(context),
+                                      color: WidgetStateProperty.all(
+                                        context.ispectTheme.card
+                                            ?.resolve(context),
+                                      ),
                                       label: Text(
                                         '$count  $title',
                                         style: context
@@ -210,7 +202,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                               index,
                                         );
                                       },
-                                      backgroundColor: bgColor,
                                     );
                                   },
                                 ),

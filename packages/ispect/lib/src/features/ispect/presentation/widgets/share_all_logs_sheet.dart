@@ -39,9 +39,7 @@ class _ISpectShareAllLogsBottomSheetState
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
         phone: () => DraggableScrollableSheet(
-          initialChildSize: 0.3,
           minChildSize: 0.2,
-          maxChildSize: 0.5,
           expand: false,
           builder: (context, scrollController) => _Body(
             controller: widget.controller,
@@ -121,7 +119,10 @@ class _InfoDescription extends StatelessWidget {
           children: [
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.ispectTheme.card?.resolve(context),
+                ),
                 onPressed: () {
                   controller.shareLogsAsFile(ISpect.logger.history);
                 },
@@ -142,7 +143,10 @@ class _InfoDescription extends StatelessWidget {
             ),
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.ispectTheme.card?.resolve(context),
+                ),
                 onPressed: () {
                   controller.shareLogsAsFile(
                     ISpect.logger.history,
