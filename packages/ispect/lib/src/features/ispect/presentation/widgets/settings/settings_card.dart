@@ -52,6 +52,16 @@ class ISpectSettingsCardItem extends StatelessWidget {
               ),
               trailing: Switch(
                 value: enabled,
+                trackColor: WidgetStateProperty.all(
+                  context.ispectTheme.primary?.resolve(context) ??
+                      context.appTheme.colorScheme.primary,
+                ),
+                thumbColor: WidgetStateProperty.all(
+                  context.appTheme.colorScheme.onPrimary,
+                ),
+                trackOutlineColor: WidgetStateProperty.all(
+                  context.ispectTheme.divider?.resolve(context),
+                ),
                 onChanged: canEdit ? onChanged : null,
               ),
             ),

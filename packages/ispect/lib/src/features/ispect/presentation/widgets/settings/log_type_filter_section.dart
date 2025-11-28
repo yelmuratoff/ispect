@@ -40,7 +40,8 @@ class LogTypeFilterSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: context.ispectTheme.card?.resolve(context),
+          color: context.ispectTheme.card?.resolve(context) ??
+              context.appTheme.cardColor,
           borderRadius: const BorderRadius.all(
             Radius.circular(16),
           ),
@@ -170,6 +171,16 @@ class LogTypeFilterSection extends StatelessWidget {
               ),
               trailing: Switch(
                 value: isEnabled,
+                trackColor: WidgetStateProperty.all(
+                  context.ispectTheme.primary?.resolve(context) ??
+                      context.appTheme.colorScheme.primary,
+                ),
+                thumbColor: WidgetStateProperty.all(
+                  context.appTheme.colorScheme.onPrimary,
+                ),
+                trackOutlineColor: WidgetStateProperty.all(
+                  context.ispectTheme.divider?.resolve(context),
+                ),
                 onChanged: (value) =>
                     onLogTypeToggled(logType.key, enabled: value),
               ),

@@ -134,6 +134,9 @@ class _JsonScreenState extends State<JsonScreen> {
                 Expanded(
                   child: SearchBar(
                     constraints: const BoxConstraints(minHeight: 45),
+                    backgroundColor: WidgetStatePropertyAll(
+                      context.ispectTheme.card?.resolve(context),
+                    ),
                     shape: const WidgetStatePropertyAll(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -279,8 +282,7 @@ class _SearchNavigationPanel extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w200,
-              color: Colors.grey,
+              fontWeight: FontWeight.w400,
             ),
           ),
           Row(

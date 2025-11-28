@@ -102,6 +102,9 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SearchBar(
                         focusNode: widget.focusNode,
+                        backgroundColor: WidgetStatePropertyAll(
+                          context.ispectTheme.card?.resolve(context),
+                        ),
                         constraints: const BoxConstraints(
                           minHeight: 45,
                         ),
@@ -181,6 +184,16 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                                             .appTheme.textTheme.bodyMedium,
                                       ),
                                       selected: isSelected,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                        side: BorderSide(
+                                          color: context.ispectTheme.divider
+                                                  ?.resolve(context) ??
+                                              context.appTheme.dividerColor,
+                                        ),
+                                      ),
                                       onSelected: (selected) {
                                         switch (selected) {
                                           case true:

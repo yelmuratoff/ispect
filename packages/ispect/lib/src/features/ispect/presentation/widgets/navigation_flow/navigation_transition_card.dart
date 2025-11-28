@@ -36,6 +36,7 @@ class NavigationTransitionCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
+      color: context.ispectTheme.card?.resolve(context),
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -106,7 +107,11 @@ class NavigationTransitionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
+        color: context.ispectTheme.card?.resolve(context),
+        border: Border.all(
+          color: context.ispectTheme.divider?.resolve(context) ??
+              colorScheme.onSurface.withValues(alpha: 0.2),
+        ),
         borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
@@ -121,7 +126,7 @@ class NavigationTransitionCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: context.appTheme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onPrimaryContainer,
+                //
               ),
             ),
           ),

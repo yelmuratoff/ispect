@@ -120,71 +120,85 @@ class _InfoDescription extends StatelessWidget {
       children: [
         ISpectBottomSheetHeader(title: context.ispectL10n.share),
         const Gap(16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (shareCallback != null)
+        Flexible(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (shareCallback != null)
+                SizedBox(
+                  height: 40,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor:
+                          context.iSpect.theme.card?.resolve(context),
+                    ),
+                    onPressed: () {
+                      final valueToShare = JsonTruncatorService.pretty(
+                        data,
+                        maxDepth: 500,
+                        maxIterableSize: 10000,
+                      );
+
+                      Navigator.of(context).pop();
+
+                      LogsFileFactory.downloadFile(
+                        valueToShare,
+                        fileName: 'ispect_log',
+                        onShare: shareCallback,
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.share_rounded,
+                        ),
+                        const Gap(8),
+                        Flexible(
+                          child: Text(
+                            context.ispectL10n.shareLogFull,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               SizedBox(
-                height: 48,
-                child: ElevatedButton(
+                height: 40,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor:
+                        context.iSpect.theme.card?.resolve(context),
+                  ),
                   onPressed: () {
                     final valueToShare = JsonTruncatorService.pretty(
-                      data,
-                      maxDepth: 500,
-                      maxIterableSize: 10000,
+                      truncatedData,
                     );
 
                     Navigator.of(context).pop();
 
-                    LogsFileFactory.downloadFile(
-                      valueToShare,
-                      fileName: 'ispect_log',
-                      onShare: shareCallback,
+                    copyClipboard(
+                      context,
+                      value: valueToShare,
                     );
                   },
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.share_rounded,
+                        Icons.copy_rounded,
                       ),
                       const Gap(8),
-                      Flexible(child: Text(context.ispectL10n.shareLogFull)),
+                      Flexible(
+                        child: Text(
+                          context.ispectL10n.copyToClipboardTruncated,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  final valueToShare = JsonTruncatorService.pretty(
-                    truncatedData,
-                  );
-
-                  Navigator.of(context).pop();
-
-                  copyClipboard(
-                    context,
-                    value: valueToShare,
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.copy_rounded,
-                    ),
-                    const Gap(8),
-                    Flexible(
-                      child: Text(
-                        context.ispectL10n.copyToClipboardTruncated,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

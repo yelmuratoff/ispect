@@ -36,10 +36,7 @@ class ISpectNavigationFlowActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
         phone: () => DraggableScrollableSheet(
-          initialChildSize: 0.3,
           minChildSize: 0.2,
-          maxChildSize: 0.5,
-          expand: false,
           builder: (context, scrollController) => _ActionsSheetContent(
             log: log,
             transition: transition,
@@ -95,78 +92,89 @@ class _ActionsSheetContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ISpectBottomSheetHeader(title: context.ispectL10n.share),
               const Gap(16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (context.iSpect.options.onShare != null)
+              Flexible(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (context.iSpect.options.onShare != null)
+                      SizedBox(
+                        height: 40,
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor:
+                                context.ispectTheme.card?.resolve(context),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            final String text;
+                            if (transition == null) {
+                              text = items.transitionsText();
+                            } else {
+                              text = items.transitionsToId(
+                                transition!.id,
+                                isTruncated: false,
+                              );
+                            }
+                            LogsFileFactory.downloadFile(
+                              text,
+                              fileName: 'ispect_navigation_flow',
+                              onShare: context.iSpect.options.onShare,
+                            );
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.share_rounded),
+                              const Gap(8),
+                              Flexible(
+                                child: Text(context.ispectL10n.shareLogFull),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     SizedBox(
-                      height: 48,
-                      child: ElevatedButton(
+                      height: 40,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              context.ispectTheme.card?.resolve(context),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                           final String text;
                           if (transition == null) {
                             text = items.transitionsText();
                           } else {
-                            text = items.transitionsToId(
-                              transition!.id,
-                              isTruncated: false,
-                            );
+                            text = items.transitionsToId(transition!.id);
                           }
-                          LogsFileFactory.downloadFile(
-                            text,
-                            fileName: 'ispect_navigation_flow',
-                            onShare: context.iSpect.options.onShare,
+                          copyClipboard(
+                            context,
+                            value: text,
+                            showValue: false,
                           );
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.share_rounded),
+                            const Icon(Icons.copy_rounded),
                             const Gap(8),
                             Flexible(
-                              child: Text(context.ispectL10n.shareLogFull),
+                              child: Text(
+                                context.ispectL10n.copyToClipboardTruncated,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        final String text;
-                        if (transition == null) {
-                          text = items.transitionsText();
-                        } else {
-                          text = items.transitionsToId(transition!.id);
-                        }
-                        copyClipboard(
-                          context,
-                          value: text,
-                          showValue: false,
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.copy_rounded),
-                          const Gap(8),
-                          Flexible(
-                            child: Text(
-                              context.ispectL10n.copyToClipboardTruncated,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

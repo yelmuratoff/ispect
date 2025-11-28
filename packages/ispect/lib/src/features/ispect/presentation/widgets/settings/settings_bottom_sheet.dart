@@ -272,7 +272,8 @@ class _SettingsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: iSpect.theme.background?.resolve(context),
+          color: iSpect.theme.background?.resolve(context) ??
+              context.appTheme.scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(16),
           ),

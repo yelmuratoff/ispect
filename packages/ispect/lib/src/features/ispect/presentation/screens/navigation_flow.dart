@@ -49,8 +49,10 @@ class _ISpectNavigationFlowScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.ispectTheme.background?.resolve(context),
         appBar: AppBar(
           title: Text(context.ispectL10n.navigationFlow),
+          backgroundColor: context.ispectTheme.background?.resolve(context),
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded),
