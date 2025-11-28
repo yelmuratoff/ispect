@@ -4,11 +4,9 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
 
 @immutable
 class ISpectDynamicColor {
@@ -99,12 +97,14 @@ class ISpectTheme {
   const ISpectTheme({
     this.pageTitle = 'ISpect',
     this.background,
+    this.foreground,
     this.divider,
     this.primary,
     this.card,
     this.logColors = const {},
     this.logIcons = const {},
     this.logDescriptions = const [],
+    this.panelTheme,
   });
 
   /// The title displayed on the inspector page.
@@ -112,6 +112,9 @@ class ISpectTheme {
 
   /// Background color
   final ISpectDynamicColor? background;
+
+  /// Foreground color
+  final ISpectDynamicColor? foreground;
 
   /// Divider color
   final ISpectDynamicColor? divider;
@@ -130,6 +133,9 @@ class ISpectTheme {
 
   /// A list of descriptions for log types.
   final List<LogDescription> logDescriptions;
+
+  /// Theme settings for draggable panels within ISpect.
+  final DraggablePanelTheme? panelTheme;
 
   /// Creates a new `ISpectTheme` instance with updated values while retaining
   /// existing ones where not specified.
@@ -150,22 +156,26 @@ class ISpectTheme {
   ISpectTheme copyWith({
     String? pageTitle,
     ISpectDynamicColor? background,
+    ISpectDynamicColor? foreground,
     ISpectDynamicColor? divider,
     ISpectDynamicColor? primary,
     ISpectDynamicColor? card,
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
     List<LogDescription>? logDescriptions,
+    DraggablePanelTheme? panelTheme,
   }) {
     return ISpectTheme(
       pageTitle: pageTitle ?? this.pageTitle,
       background: background ?? this.background,
+      foreground: foreground ?? this.foreground,
       divider: divider ?? this.divider,
       primary: primary ?? this.primary,
       card: card ?? this.card,
       logColors: logColors ?? this.logColors,
       logIcons: logIcons ?? this.logIcons,
       logDescriptions: logDescriptions ?? this.logDescriptions,
+      panelTheme: panelTheme ?? this.panelTheme,
     );
   }
 
@@ -236,6 +246,7 @@ class ISpectTheme {
     return {
       'page_title': pageTitle,
       'background': background?.toMap(),
+      'foreground': foreground?.toMap(),
       'divider': divider?.toMap(),
       'primary': primary?.toMap(),
       'card': card?.toMap(),
@@ -255,12 +266,14 @@ class ISpectTheme {
     return '''ISpectTheme(
       pageTitle: $pageTitle,
       background: $background,
+      foreground: $foreground,
       divider: $divider,
       primary: $primary,
       card: $card,
       logColors: $logColors,
       logIcons: $logIcons,
       logDescriptions: $logDescriptions,
+      panelTheme: $panelTheme,
       )''';
   }
 
@@ -272,24 +285,28 @@ class ISpectTheme {
     return other is ISpectTheme &&
         other.pageTitle == pageTitle &&
         other.background == background &&
+        other.foreground == foreground &&
         other.divider == divider &&
         other.primary == primary &&
         other.card == card &&
         collectionEquals(other.logColors, logColors) &&
         collectionEquals(other.logIcons, logIcons) &&
-        collectionEquals(other.logDescriptions, logDescriptions);
+        collectionEquals(other.logDescriptions, logDescriptions) &&
+        other.panelTheme == panelTheme;
   }
 
   @override
   int get hashCode {
     return pageTitle.hashCode ^
         background.hashCode ^
+        foreground.hashCode ^
         divider.hashCode ^
         primary.hashCode ^
         card.hashCode ^
         logColors.hashCode ^
         logIcons.hashCode ^
-        logDescriptions.hashCode;
+        logDescriptions.hashCode ^
+        panelTheme.hashCode;
   }
 
   factory ISpectTheme.fromMap(Map<String, dynamic> map) {
@@ -300,6 +317,9 @@ class ISpectTheme {
       pageTitle: cast<String?>('page_title'),
       background: map['background'] != null
           ? ISpectDynamicColor.fromMap(Map.from(cast<Map>('background')))
+          : null,
+      foreground: map['foreground'] != null
+          ? ISpectDynamicColor.fromMap(Map.from(cast<Map>('foreground')))
           : null,
       divider: map['divider'] != null
           ? ISpectDynamicColor.fromMap(Map.from(cast<Map>('divider')))
