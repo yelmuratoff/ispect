@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/base_card.dart';
 
 /// A widget that displays a list of log types with toggle switches

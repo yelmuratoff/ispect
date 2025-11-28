@@ -83,7 +83,10 @@ class MyApp extends StatelessWidget {
           // initialSettings: initialSettings,
           initialSettings: const ISpectSettingsState(
             disabledLogTypes: {
-              'warning',
+              'riverpod-add',
+              'riverpod-update',
+              'riverpod-dispose',
+              'riverpod-fail',
             },
             enabled: true,
             useConsoleLogs: true,
@@ -147,51 +150,33 @@ class MyApp extends StatelessWidget {
             ),
           ],
         ),
-        // theme: ISpectTheme(
-        //   pageTitle: 'Your name here',
-        //   primary: ISpectDynamicColor(
-        //     light: Colors.red,
-        //     dark: Colors.red,
-        //   ),
-        //   background: ISpectDynamicColor(
-        //     light: Colors.redAccent.shade100,
-        //     dark: Colors.black,
-        //   ),
-        //   card: ISpectDynamicColor(
-        //     light: Colors.redAccent.shade200,
-        //     dark: Colors.grey.shade900,
-        //   ),
-        //   divider: ISpectDynamicColor(
-        //     light: Colors.redAccent.shade400,
-        //     dark: Colors.grey.shade800,
-        //   ),
-        //   logColors: {
-        //     'error': Colors.red,
-        //     'info': Colors.blue,
-        //   },
-        //   logIcons: {
-        //     'error': Icons.error,
-        //     'info': Icons.info,
-        //   },
-        //   logDescriptions: [
-        //     LogDescription(
-        //       key: 'riverpod-add',
-        //       isDisabled: true,
-        //     ),
-        //     LogDescription(
-        //       key: 'riverpod-update',
-        //       isDisabled: true,
-        //     ),
-        //     LogDescription(
-        //       key: 'riverpod-dispose',
-        //       isDisabled: true,
-        //     ),
-        //     LogDescription(
-        //       key: 'riverpod-fail',
-        //       isDisabled: true,
-        //     ),
-        //   ],
-        // ),
+        theme: ISpectTheme(
+          pageTitle: 'Your name here',
+          primary: ISpectDynamicColor(
+            light: Colors.red,
+            dark: Colors.red,
+          ),
+          background: ISpectDynamicColor(
+            light: Colors.redAccent.shade100,
+            dark: Colors.black,
+          ),
+          card: ISpectDynamicColor(
+            light: Colors.redAccent.shade200,
+            dark: Colors.grey.shade900,
+          ),
+          divider: ISpectDynamicColor(
+            light: Colors.redAccent.shade400,
+            dark: Colors.grey.shade800,
+          ),
+          logColors: {
+            'error': Colors.yellow,
+            'info': Colors.blue,
+          },
+          logIcons: {
+            'error': Icons.abc,
+            'info': Icons.info,
+          },
+        ),
         child: child ?? const SizedBox.shrink(),
       ),
       home: Scaffold(

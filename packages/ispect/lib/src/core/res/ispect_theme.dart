@@ -103,7 +103,6 @@ class ISpectTheme {
     this.card,
     this.logColors = const {},
     this.logIcons = const {},
-    this.logDescriptions = const [],
     this.panelTheme,
   });
 
@@ -130,9 +129,6 @@ class ISpectTheme {
 
   /// A map of icons associated with different log types.
   final Map<String, IconData> logIcons;
-
-  /// A list of descriptions for log types.
-  final List<LogDescription> logDescriptions;
 
   /// Theme settings for draggable panels within ISpect.
   final DraggablePanelTheme? panelTheme;
@@ -162,7 +158,6 @@ class ISpectTheme {
     ISpectDynamicColor? card,
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
-    List<LogDescription>? logDescriptions,
     DraggablePanelTheme? panelTheme,
   }) {
     return ISpectTheme(
@@ -174,7 +169,6 @@ class ISpectTheme {
       card: card ?? this.card,
       logColors: logColors ?? this.logColors,
       logIcons: logIcons ?? this.logIcons,
-      logDescriptions: logDescriptions ?? this.logDescriptions,
       panelTheme: panelTheme ?? this.panelTheme,
     );
   }
@@ -219,29 +213,6 @@ class ISpectTheme {
     return iconData ?? Icons.bug_report_outlined;
   }
 
-  /// Returns a filtered list of enabled log descriptions.
-  ///
-  /// - Merges default descriptions from `ISpectConstants`.
-  /// - Filters out descriptions marked as disabled.
-  List<LogDescription> descriptions(BuildContext context) {
-    final descMap = <String, LogDescription>{};
-
-    // Add default descriptions
-    for (final desc in ISpectConstants.defaultLogDescriptions(context)) {
-      descMap[desc.key] = desc;
-    }
-
-    // Overwrite with custom descriptions
-    for (final desc in logDescriptions) {
-      descMap[desc.key] = desc;
-    }
-
-    // Return only enabled descriptions
-    return descMap.values
-        .where((desc) => !desc.isDisabled)
-        .toList(growable: false);
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'page_title': pageTitle,
@@ -252,7 +223,6 @@ class ISpectTheme {
       'card': card?.toMap(),
       'log_colors': logColors,
       'log_icons': logIcons,
-      'log_descriptions': logDescriptions.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -272,7 +242,6 @@ class ISpectTheme {
       card: $card,
       logColors: $logColors,
       logIcons: $logIcons,
-      logDescriptions: $logDescriptions,
       panelTheme: $panelTheme,
       )''';
   }
@@ -280,7 +249,7 @@ class ISpectTheme {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    final collectionEquals = const DeepCollectionEquality().equals;
+    final mapEquals = const DeepCollectionEquality().equals;
 
     return other is ISpectTheme &&
         other.pageTitle == pageTitle &&
@@ -289,9 +258,8 @@ class ISpectTheme {
         other.divider == divider &&
         other.primary == primary &&
         other.card == card &&
-        collectionEquals(other.logColors, logColors) &&
-        collectionEquals(other.logIcons, logIcons) &&
-        collectionEquals(other.logDescriptions, logDescriptions) &&
+        mapEquals(other.logColors, logColors) &&
+        mapEquals(other.logIcons, logIcons) &&
         other.panelTheme == panelTheme;
   }
 
@@ -305,7 +273,6 @@ class ISpectTheme {
         card.hashCode ^
         logColors.hashCode ^
         logIcons.hashCode ^
-        logDescriptions.hashCode ^
         panelTheme.hashCode;
   }
 
@@ -336,10 +303,6 @@ class ISpectTheme {
       logIcons: cast<Map<String, dynamic>?>('log_icons')?.map(
               (k, v) => MapEntry(k, IconData((v as num?)?.toInt() ?? 0))) ??
           const <String, IconData>{},
-      logDescriptions: List<LogDescription>.from(
-          cast<Iterable?>('log_descriptions')
-                  ?.map((x) => LogDescription.fromMap(Map.from(x as Map))) ??
-              const <LogDescription>[]),
     );
   }
 }
