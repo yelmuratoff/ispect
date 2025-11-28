@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.5.0-dev12
+## 4.5.0
 
 ### 🚨 Breaking Changes
 

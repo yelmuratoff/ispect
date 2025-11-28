@@ -1,6 +1,6 @@
 name: ispectify_bloc
 description: BLoC state management integration for ISpect toolkit
-version: 4.5.0-dev12
+version: 4.5.0
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
