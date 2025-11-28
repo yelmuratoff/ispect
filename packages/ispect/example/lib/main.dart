@@ -49,7 +49,15 @@ void main() {
   //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
   //     : null;
 
-  final logger = ISpectFlutter.init();
+  final logger = ISpectFlutter.init(
+    options: ISpectLoggerOptions(
+      customColors: {
+        'error': AnsiPen()..yellow(),
+        'exception': AnsiPen()..yellow(),
+        'info': AnsiPen()..blue(),
+      },
+    ),
+  );
 
   logger.addObserver(SentryISpectObserver());
   logger.addObserver(BackendISpectObserver());
