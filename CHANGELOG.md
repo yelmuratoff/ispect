@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.5.0-dev11
+## 4.5.0-dev12
 
 ### Breaking Changes
 
@@ -14,6 +14,36 @@
 
 #### Other Changes:
 - `ISpectTheme`:
+   - Was:
+      ```dart
+          logDescriptions: [
+             LogDescription(
+               key: 'riverpod-add',
+               isDisabled: true,
+             ),
+             LogDescription(
+               key: 'riverpod-update',
+               isDisabled: true,
+             ),
+             LogDescription(
+               key: 'riverpod-dispose',
+               isDisabled: true,
+             ),
+             LogDescription(
+               key: 'riverpod-fail',
+               isDisabled: true,
+             ),
+           ],
+      ```
+   - Now:
+      ```dart
+      disabledLogTypes: {
+              'riverpod-add',
+              'riverpod-update',
+              'riverpod-dispose',
+              'riverpod-fail',
+            },
+      ```
    - Was:
       ```dart
       lightBackgroundColor: Colors.white,
