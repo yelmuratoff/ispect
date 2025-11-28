@@ -2,7 +2,7 @@ import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/utils/console_utils.dart';
 
-/// Configuration settings for ISpectify logger.
+/// Configuration settings for ISpectLogger logger.
 ///
 /// This class defines how logs are formatted, colored, and displayed.
 class LoggerSettings {
@@ -23,7 +23,10 @@ class LoggerSettings {
     this.lineSymbol = '─',
     this.maxLineWidth = 110,
     this.enableColors = true,
-  }) : colors = {...ConsoleUtils.ansiColors, if (colors != null) ...colors};
+  }) : colors = Map<LogLevel, AnsiPen>.unmodifiable({
+          ...ConsoleUtils.ansiColors,
+          if (colors != null) ...colors,
+        });
 
   /// ANSI colors for log levels.
   final Map<LogLevel, AnsiPen> colors;

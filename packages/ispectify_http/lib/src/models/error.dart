@@ -2,62 +2,36 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/settings.dart';
 
-class HttpErrorLog extends ISpectifyData {
+class HttpErrorLog extends NetworkErrorLog {
   HttpErrorLog(
     super.message, {
-    required this.method,
-    required this.url,
-    required this.path,
-    required this.statusCode,
-    required this.statusMessage,
-    required this.requestHeaders,
-    required this.headers,
-    required this.body,
-    required this.responseData,
-    required this.settings,
-    this.redactor,
-  }) : super(
-          key: getKey,
-          logLevel: LogLevel.error,
-          pen: settings.errorPen ?? (AnsiPen()..red()),
-          additionalData: responseData?.toJson(
+    required super.method,
+    required super.url,
+    required super.path,
+    required super.statusCode,
+    required super.statusMessage,
+    required ISpectHttpInterceptorSettings settings,
+    required HttpResponseData? responseData,
+    Map<String, String>? requestHeaders,
+    Map<String, String>? headers,
+    super.body,
+    RedactionService? redactor,
+  })  : _settings = settings,
+        _responseData = responseData,
+        super(
+          settings: settings,
+          requestHeaders: requestHeaders?.map(MapEntry.new),
+          headers: headers?.map(MapEntry.new),
+          metadata: responseData?.toJson(
             redactor: redactor,
           ),
         );
 
-  final String? method;
-  final String? url;
-  final String? path;
-  final int? statusCode;
-  final String? statusMessage;
-  final Map<String, String>? requestHeaders;
-  final Map<String, String>? headers;
-  final Map<String, dynamic>? body;
-  final HttpResponseData? responseData;
-  final ISpectHttpInterceptorSettings settings;
-  final RedactionService? redactor;
-
-  static const getKey = 'http-error';
+  final ISpectHttpInterceptorSettings _settings;
+  final HttpResponseData? _responseData;
 
   @override
-  String get textMessage {
-    final buffer = StringBuffer('[$method] $message')
-      ..write('\nStatus: $statusCode');
+  ISpectHttpInterceptorSettings get settings => _settings;
 
-    if (settings.printErrorMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
-    }
-
-    if (settings.printErrorData && body != null && body!.isNotEmpty) {
-      final prettyBody = JsonTruncatorService.pretty(body);
-      buffer.write('\nData: $prettyBody');
-    }
-
-    if (settings.printErrorHeaders && headers != null && headers!.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
-
-    return buffer.toString().truncate()!;
-  }
+  HttpResponseData? get responseData => _responseData;
 }

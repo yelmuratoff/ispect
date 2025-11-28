@@ -15,6 +15,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 VERSION_FILE="version.config"
+README_FILE="README.md"
 if [[ ! -f $VERSION_FILE ]]; then
   echo "[ERR] $VERSION_FILE not found" >&2; exit 1
 fi
@@ -133,6 +134,34 @@ update_internal_refs() { # $1=file
   if [[ $updated -eq 1 ]]; then change_files+=("$file"); fi
 }
 
+update_readme_versions() {
+  local file="$ROOT_DIR/$README_FILE"
+  [[ -f $file ]] || return 0
+  [[ ${#PACKAGE_NAMES[@]} -gt 0 ]] || return 0
+
+  local tmp="${file}.tmp"
+  cp "$file" "$tmp"
+
+  for pkg in "${PACKAGE_NAMES[@]}"; do
+    sed -E "s/^([[:space:]]*${pkg}:[[:space:]]*\^)[^[:space:]]+/\1$VERSION/g" "$tmp" > "${tmp}.next"
+    mv "${tmp}.next" "$tmp"
+  done
+
+  if cmp -s "$file" "$tmp"; then
+    rm -f "$tmp"
+    echo "[OK ] README.md $VERSION references already in sync"
+    return 0
+  fi
+
+  echo "[CHG] README.md versions -> ^$VERSION"
+  if [[ $DRY_RUN -eq 0 ]]; then
+    mv "$tmp" "$file"
+    change_files+=("$file")
+  else
+    rm -f "$tmp"
+  fi
+}
+
 # Process each package
 for dir in "${PACKAGE_DIRS[@]}"; do
   ps="$dir/pubspec.yaml"
@@ -146,6 +175,8 @@ for dir in "${PACKAGE_DIRS[@]}"; do
     update_internal_refs "$ex_ps"
   fi
 done
+
+update_readme_versions
 
 echo "[INFO] Summary:" 
 if [[ ${#change_files[@]} -gt 0 ]]; then

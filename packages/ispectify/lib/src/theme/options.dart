@@ -1,70 +1,53 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Default ANSI colors for ISpectify log types.
-final Map<String, AnsiPen> _defaultColors = {
-  ISpectifyLogType.critical.key: AnsiPen()..red(),
-  ISpectifyLogType.warning.key: AnsiPen()..xterm(172),
-  ISpectifyLogType.verbose.key: AnsiPen()..xterm(08),
-  ISpectifyLogType.info.key: AnsiPen()..blue(),
-  ISpectifyLogType.debug.key: AnsiPen()..gray(),
-  ISpectifyLogType.error.key: AnsiPen()..red(),
-  ISpectifyLogType.exception.key: AnsiPen()..red(),
-  ISpectifyLogType.httpError.key: AnsiPen()..red(),
-  ISpectifyLogType.httpRequest.key: AnsiPen()..xterm(207),
-  ISpectifyLogType.httpResponse.key: AnsiPen()..xterm(35),
-  ISpectifyLogType.blocEvent.key: AnsiPen()..xterm(51),
-  ISpectifyLogType.blocTransition.key: AnsiPen()..xterm(49),
-  ISpectifyLogType.blocCreate.key: AnsiPen()..xterm(35),
-  ISpectifyLogType.blocClose.key: AnsiPen()..xterm(198),
-  ISpectifyLogType.blocState.key: AnsiPen()..xterm(38),
-  ISpectifyLogType.blocDone.key: AnsiPen()..green(),
-  ISpectifyLogType.blocError.key: AnsiPen()..red(),
-  ISpectifyLogType.riverpodAdd.key: AnsiPen()..xterm(51),
-  ISpectifyLogType.riverpodUpdate.key: AnsiPen()..xterm(49),
-  ISpectifyLogType.riverpodDispose.key: AnsiPen()..xterm(198),
-  ISpectifyLogType.riverpodFail.key: AnsiPen()..red(),
-  ISpectifyLogType.route.key: AnsiPen()..xterm(135),
-  ISpectifyLogType.good.key: AnsiPen()..green(),
-  ISpectifyLogType.analytics.key: AnsiPen()..yellow(),
-  ISpectifyLogType.provider.key: AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
-  ISpectifyLogType.print.key: AnsiPen()..blue(),
-  ISpectifyLogType.dbQuery.key: AnsiPen()..blue(),
-  ISpectifyLogType.dbResult.key: AnsiPen()..green(),
-  ISpectifyLogType.dbError.key: AnsiPen()..red(),
-};
-
 /// Fallback color for logs without a predefined color.
 final AnsiPen _fallbackPen = AnsiPen()..gray();
 
-/// Configuration options for ISpectify logging.
+/// Helper function to get default pen for a log type key.
+AnsiPen? _getDefaultPenByKey(String key) {
+  try {
+    final logType = ISpectLogType.values.firstWhere((e) => e.key == key);
+    return logType.defaultPen;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Configuration options for ISpectLogger logging.
 ///
 /// This class allows customization of logging behavior, including
 /// enabling/disabling logs, storing log history, and customizing
 /// log colors and titles.
-class ISpectifyOptions {
-  /// Creates an instance of `ISpectifyOptions` with customizable settings.
+///
+/// Color and title customization now uses the [ISpectLogTypeRegistry]
+/// for better extensibility. Custom overrides can be provided via
+/// the [customTitles] and [customColors] parameters.
+class ISpectLoggerOptions {
+  /// Creates an instance of `ISpectLoggerOptions` with customizable settings.
   ///
   /// - `enabled`: Whether logging is enabled.
   /// - `useHistory`: Whether to store logs in history.
   /// - `useConsoleLogs`: Whether to print logs to the console.
   /// - `maxHistoryItems`: Maximum number of logs to retain in history.
   /// - `logTruncateLength`: Maximum length for log messages in console.
-  /// - `titles`: Custom log titles.
-  /// - `colors`: Custom log colors.
-  ISpectifyOptions({
+  /// - `customTitles`: Custom log titles that override registry defaults.
+  /// - `customColors`: Custom log colors that override registry defaults.
+  ISpectLoggerOptions({
     this.enabled = true,
     bool useHistory = true,
     bool useConsoleLogs = true,
     int maxHistoryItems = 10000,
     int logTruncateLength = 10000,
-    Map<String, String>? titles,
-    Map<String, AnsiPen>? colors,
+    Map<String, String>? customTitles,
+    Map<String, AnsiPen>? customColors,
   })  : _useHistory = useHistory,
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,
-        titles = {if (titles != null) ...titles},
-        colors = {..._defaultColors, if (colors != null) ...colors};
+        _customTitles =
+            customTitles != null ? Map.unmodifiable(customTitles) : null,
+        _customColors =
+            customColors != null ? Map.unmodifiable(customColors) : null;
 
   /// Whether log history is enabled.
   bool get useHistory => _useHistory && enabled;
@@ -85,42 +68,62 @@ class ISpectifyOptions {
   /// Whether logging is globally enabled.
   bool enabled;
 
-  /// Map of log type keys to custom titles.
-  final Map<String, String> titles;
+  /// Custom title overrides (immutable after creation).
+  final Map<String, String>? _customTitles;
 
-  /// Map of log type keys to ANSI colors.
-  final Map<String, AnsiPen> colors;
+  /// Custom color overrides (immutable after creation).
+  final Map<String, AnsiPen>? _customColors;
 
   /// Retrieves the title associated with a given log type key.
   ///
-  /// Returns the default key if no custom title is defined.
-  String titleByKey(String key) => titles[key] ?? key;
+  /// First checks custom overrides, then falls back to the key itself.
+  String titleByKey(String key) {
+    // 1. Check custom override
+    final customTitle = _customTitles?[key];
+    if (customTitle != null) return customTitle;
+
+    // 2. Fallback to key itself
+    return key;
+  }
 
   /// Retrieves the ANSI color associated with a given log type key.
   ///
-  /// If no specific color is assigned, it returns a fallback color.
-  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) =>
-      colors[key] ?? fallbackPen ?? _fallbackPen;
+  /// First checks custom overrides, then built-in defaults from ISpectLogType,
+  /// then provided fallback, finally falls back to default gray.
+  AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) {
+    if (key == null) return fallbackPen ?? _fallbackPen;
 
-  /// Creates a new `ISpectifyOptions` instance with modified properties.
+    // 1. Check custom override
+    final customPen = _customColors?[key];
+    if (customPen != null) return customPen;
+
+    // 2. Check built-in defaults
+    final defaultPen = _getDefaultPenByKey(key);
+    if (defaultPen != null) return defaultPen;
+
+    // 3. Use provided fallback or default
+    return fallbackPen ?? _fallbackPen;
+  }
+
+  /// Creates a new `ISpectLoggerOptions` instance with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
-  ISpectifyOptions copyWith({
+  ISpectLoggerOptions copyWith({
     bool? enabled,
     bool? useHistory,
     bool? useConsoleLogs,
     int? maxHistoryItems,
     int? logTruncateLength,
-    Map<String, String>? titles,
-    Map<String, AnsiPen>? colors,
+    Map<String, String>? customTitles,
+    Map<String, AnsiPen>? customColors,
   }) =>
-      ISpectifyOptions(
+      ISpectLoggerOptions(
         enabled: enabled ?? this.enabled,
         useHistory: useHistory ?? _useHistory,
         useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
         maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
         logTruncateLength: logTruncateLength ?? _logTruncateLength,
-        titles: titles ?? this.titles,
-        colors: colors ?? this.colors,
+        customTitles: customTitles ?? _customTitles,
+        customColors: customColors ?? _customColors,
       );
 }

@@ -2,9 +2,23 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyData Extensions', () {
+  group('ISpectLogData Extensions', () {
+    test('coerces message values to strings', () {
+      final data = ISpectLogData(1234);
+      expect(data.message, '1234');
+    });
+
+    test('detects error logs via log type key', () {
+      final data = ISpectLogData(
+        'Database failure',
+        key: ISpectLogType.dbError.key,
+      );
+
+      expect(data.isError, isTrue);
+    });
+
     test('copy() creates exact duplicate preserving additionalData', () {
-      final originalData = ISpectifyData(
+      final originalData = ISpectLogData(
         'Test message',
         logLevel: LogLevel.info,
         title: 'Test Title',
@@ -30,7 +44,7 @@ void main() {
     });
 
     test('copyWith() preserves additionalData when no parameters provided', () {
-      final originalData = ISpectifyData(
+      final originalData = ISpectLogData(
         'Test message',
         additionalData: {
           'key1': 'value1',
@@ -44,7 +58,7 @@ void main() {
     });
 
     test('copyWith() allows overriding additionalData', () {
-      final originalData = ISpectifyData(
+      final originalData = ISpectLogData(
         'Test message',
         additionalData: {'original': 'data'},
       );
@@ -63,7 +77,7 @@ void main() {
 
     test('copyWith() preserves additionalData when other fields are changed',
         () {
-      final originalData = ISpectifyData(
+      final originalData = ISpectLogData(
         'Original message',
         title: 'Original Title',
         additionalData: {'important': 'metadata'},
@@ -80,12 +94,12 @@ void main() {
     });
 
     test('curlCommand returns null for non-HTTP logs', () {
-      final data = ISpectifyData('Test message');
+      final data = ISpectLogData('Test message');
       expect(data.curlCommand, isNull);
     });
 
     test('curlCommand generates cURL for HTTP request logs', () {
-      final data = ISpectifyData(
+      final data = ISpectLogData(
         'Test request',
         key: 'http-request',
         additionalData: {
@@ -104,7 +118,7 @@ void main() {
     });
 
     test('curlCommand generates cURL for HTTP response logs', () {
-      final data = ISpectifyData(
+      final data = ISpectLogData(
         'Response received',
         key: 'http-response',
         additionalData: {
@@ -125,7 +139,7 @@ void main() {
     });
 
     test('curlCommand generates cURL for HTTP error logs', () {
-      final data = ISpectifyData(
+      final data = ISpectLogData(
         'Request failed',
         key: 'http-error',
         additionalData: {

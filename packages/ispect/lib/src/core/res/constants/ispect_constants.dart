@@ -14,6 +14,52 @@ final class ISpectConstants {
 
   static const hidden = 'Hidden';
 
+  // UI Constants for consistent spacing and sizing
+  /// Standard icon size for log cards
+  static const double logCardIconSize = 16;
+
+  /// Standard icon button dimension
+  static const double iconButtonDimension = 24;
+
+  /// Standard icon button icon size
+  static const double iconButtonIconSize = 16;
+
+  /// Standard border radius
+  static const double standardBorderRadius = 8;
+
+  /// Large border radius for containers
+  static const double largeBorderRadius = 10;
+
+  /// Snackbar border radius
+  static const double snackbarBorderRadius = 16;
+
+  /// Standard horizontal padding
+  static const double standardHorizontalPadding = 12;
+
+  /// Standard vertical padding
+  static const double standardVerticalPadding = 8;
+
+  /// Standard gap size
+  static const double standardGap = 6;
+
+  /// Animation duration in milliseconds
+  static const int animationDurationMs = 150;
+
+  /// Max lines for selectable text in stack traces
+  static const int stackTraceMaxLines = 50;
+
+  /// Standard opacity for background colors
+  static const double standardBackgroundOpacity = 0.08;
+
+  /// Standard opacity for icon buttons
+  static const double iconButtonBackgroundOpacity = 0.1;
+
+  /// Standard opacity for disabled elements
+  static const double disabledOpacity = 0.5;
+
+  /// Toast background color
+  static const Color toastBackgroundColor = Color.fromARGB(255, 49, 49, 49);
+
   static const typeIcons = {
     /// Base logs section
     'error': Icons.error_outline_rounded,
@@ -70,6 +116,7 @@ final class ISpectConstants {
     'exception': Color.fromARGB(255, 211, 47, 47),
     'good': Color.fromARGB(255, 56, 142, 60),
     'print': Color.fromARGB(255, 25, 118, 210),
+    'provider': Color.fromARGB(255, 25, 118, 210),
     'analytics': Color.fromARGB(255, 182, 177, 25),
 
     /// Http section
@@ -115,6 +162,7 @@ final class ISpectConstants {
     'exception': Color.fromARGB(255, 239, 83, 80),
     'good': Color.fromARGB(255, 120, 230, 129),
     'print': Color.fromARGB(255, 66, 165, 245),
+    'provider': Color.fromARGB(255, 66, 165, 245),
     'analytics': Color.fromARGB(255, 255, 255, 0),
 
     /// Http section
@@ -190,6 +238,10 @@ final class ISpectConstants {
         description: l10n.printLogDesc,
       ),
       LogDescription(
+        key: 'provider',
+        description: l10n.providerLogDesc,
+      ),
+      LogDescription(
         key: 'analytics',
         description: l10n.analyticsLogDesc,
       ),
@@ -228,6 +280,10 @@ final class ISpectConstants {
       LogDescription(
         key: 'bloc-state',
         description: l10n.blocStateLogDesc,
+      ),
+      LogDescription(
+        key: 'bloc-error',
+        description: l10n.blocErrorLogDesc,
       ),
       LogDescription(
         key: 'riverpod-add',

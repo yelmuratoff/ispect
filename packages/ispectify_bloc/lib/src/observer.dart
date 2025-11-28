@@ -28,14 +28,14 @@ typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
-/// `BLoC` logger on `ISpectify` base
+/// `BLoC` logger on `ISpectLogger` base
 ///
-/// `logger` field is the current `ISpectify` instance.
-/// Provide your instance if your application uses `ISpectify` as the default logger
-/// Common ISpectify instance will be used by default
+/// `logger` field is the current `ISpectLogger` instance.
+/// Provide your instance if your application uses `ISpectLogger` as the default logger
+/// Common ISpectLogger instance will be used by default
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
-    ISpectify? logger,
+    ISpectLogger? logger,
     this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
@@ -46,10 +46,10 @@ class ISpectBlocObserver extends BlocObserver {
     Iterable<Pattern> filters = const <Pattern>[],
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
-    _logger = logger ?? ISpectify();
+    _logger = logger ?? ISpectLogger();
   }
 
-  late final ISpectify _logger;
+  late final ISpectLogger _logger;
   final BlocEventCallback? onBlocEvent;
   final BlocTransitionCallback? onBlocTransition;
   final BlocChangeCallback? onBlocChange;
@@ -100,7 +100,7 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace stackTrace,
   ) {
     onBlocError?.call(bloc, error, stackTrace);
-    _logger.logCustom(
+    _logger.logData(
       BlocErrorLog(
         bloc: bloc,
         thrown: error,
@@ -120,7 +120,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocEvent?.call(bloc, event);
-    _logger.logCustom(
+    _logger.logData(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -143,7 +143,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocTransition?.call(bloc, transition);
-    _logger.logCustom(
+    _logger.logData(
       BlocTransitionLog(
         bloc: bloc,
         transition: transition,
@@ -163,7 +163,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocChange?.call(bloc, change);
-    _logger.logCustom(
+    _logger.logData(
       BlocStateLog(
         bloc: bloc,
         change: change,
@@ -188,7 +188,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocCreate?.call(bloc);
-    _logger.logCustom(BlocCreateLog(bloc: bloc));
+    _logger.logData(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -198,7 +198,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     onBlocClose?.call(bloc);
-    _logger.logCustom(BlocCloseLog(bloc: bloc));
+    _logger.logData(BlocCloseLog(bloc: bloc));
   }
 
   @override
@@ -213,10 +213,12 @@ class ISpectBlocObserver extends BlocObserver {
     if (!isEnabled) {
       return;
     }
-    if (!settings.printCompletions || error != null) {
+    final shouldLogCompletion =
+        (settings.printCompletions && error == null) || error != null;
+    if (!shouldLogCompletion) {
       return;
     }
-    _logger.logCustom(
+    _logger.logData(
       BlocDoneLog(
         bloc: bloc,
         settings: settings,

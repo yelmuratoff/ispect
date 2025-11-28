@@ -2,51 +2,31 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_dio/src/data/_data.dart';
 
-class DioRequestLog extends ISpectifyData {
+class DioRequestLog extends NetworkRequestLog {
   DioRequestLog(
     super.message, {
-    required this.requestData,
-    required this.settings,
-    required this.method,
-    required this.url,
-    required this.path,
-    required this.headers,
-    required this.body,
-    this.redactor,
-  }) : super(
-          title: getKey,
-          key: getKey,
-          pen: settings.requestPen ?? (AnsiPen()..xterm(207)),
-          additionalData: requestData.toJson(
+    required super.method,
+    required super.url,
+    required super.path,
+    required ISpectDioInterceptorSettings settings,
+    required DioRequestData requestData,
+    super.headers,
+    super.body,
+    RedactionService? redactor,
+  })  : _settings = settings,
+        _requestData = requestData,
+        super(
+          settings: settings,
+          metadata: requestData.toJson(
             redactor: redactor,
           ),
         );
 
-  final String method;
-  final String url;
-  final String path;
-  final Map<String, dynamic> headers;
-  final Object? body;
-  final ISpectDioInterceptorSettings settings;
-  final DioRequestData requestData;
-  final RedactionService? redactor;
+  final ISpectDioInterceptorSettings _settings;
+  final DioRequestData _requestData;
 
-  static const getKey = 'http-request';
+  DioRequestData get requestData => _requestData;
 
   @override
-  String get textMessage {
-    final buffer = StringBuffer('[$method] $message');
-
-    if (settings.printRequestData && body != null) {
-      final prettyData = JsonTruncatorService.pretty(body);
-      buffer.write('\nData: $prettyData');
-    }
-
-    if (settings.printRequestHeaders && headers.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(headers);
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
-
-    return buffer.toString().truncate()!;
-  }
+  ISpectDioInterceptorSettings get settings => _settings;
 }

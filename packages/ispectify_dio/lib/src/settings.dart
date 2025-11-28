@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// `ISpectDioInterceptor` settings and customization
-class ISpectDioInterceptorSettings {
+class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
   const ISpectDioInterceptorSettings({
     this.enabled = true,
     this.enableRedaction = false,
@@ -29,27 +29,35 @@ class ISpectDioInterceptorSettings {
   final bool enableRedaction;
 
   /// Print `response.data` if true
+  @override
   final bool printResponseData;
 
   /// Print `response.headers` if true
+  @override
   final bool printResponseHeaders;
 
   /// Print `response.statusMessage` if true
+  @override
   final bool printResponseMessage;
 
   /// Print `error.response.data` if true
+  @override
   final bool printErrorData;
 
   /// Print `error.response.headers` if true
+  @override
   final bool printErrorHeaders;
 
   /// Print `error.message` if true
+  @override
   final bool printErrorMessage;
 
   /// Print `request.data` if true
+  @override
   final bool printRequestData;
 
   /// Print `request.headers` if true
+  @override
   final bool printRequestHeaders;
 
   /// Field to set custom http request console logs color
@@ -61,6 +69,7 @@ class ISpectDioInterceptorSettings {
   ///final redPen = AnsiPen()..blue();
   ///```
   /// More details in `AnsiPen` docs
+  @override
   final AnsiPen? requestPen;
 
   /// Field to set custom http response console logs color
@@ -72,6 +81,7 @@ class ISpectDioInterceptorSettings {
   ///final redPen = AnsiPen()..blue();
   ///```
   /// More details in `AnsiPen` docs
+  @override
   final AnsiPen? responsePen;
 
   /// Field to set custom http error console logs color
@@ -83,6 +93,7 @@ class ISpectDioInterceptorSettings {
   ///final redPen = AnsiPen()..blue();
   ///```
   /// More details in `AnsiPen` docs
+  @override
   final AnsiPen? errorPen;
 
   /// For request filtering.

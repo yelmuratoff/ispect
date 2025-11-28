@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('preserves duplicate form fields and lists them', () async {
-    final inspector = ISpectify();
+    final inspector = ISpectLogger();
     final interceptor = ISpectDioInterceptor(
       logger: inspector,
       settings: const ISpectDioInterceptorSettings(
@@ -47,7 +47,7 @@ void main() {
   });
 
   test('response FormData preserves duplicate fields', () async {
-    final inspector = ISpectify();
+    final inspector = ISpectLogger();
     final interceptor = ISpectDioInterceptor(
       logger: inspector,
       settings: const ISpectDioInterceptorSettings(
@@ -82,7 +82,7 @@ void main() {
   });
 
   test('request FormData is properly extracted and logged', () async {
-    final inspector = ISpectify();
+    final inspector = ISpectLogger();
     final interceptor = ISpectDioInterceptor(
       logger: inspector,
       settings: const ISpectDioInterceptorSettings(

@@ -1,5 +1,134 @@
 # Changelog
 
+## 4.6.0
+
+### 🚨 Breaking Changes
+
+#### API Renaming
+To improve consistency and clarity, several core classes and methods have been renamed:
+
+**Methods:**
+- `logCustom()` → `logData()` - Better reflects the purpose of logging custom data
+
+**Classes:**
+- `ISpectify` → `ISpectLogger` - More descriptive name for the main logger
+- `ISpectifyLogger` → `ISpectBaseLogger` - Clarifies the base logger abstraction
+- `ISpectifyFlutter` → `ISpectFlutter` - Shorter, cleaner naming
+
+#### ISpectTheme API Changes
+
+**1. Simplified log type filtering:**
+```dart
+// ❌ Before (verbose)
+logDescriptions: [
+  LogDescription(key: 'riverpod-add', isDisabled: true),
+  LogDescription(key: 'riverpod-update', isDisabled: true),
+],
+
+// ✅ Now (clean and simple)
+disabledLogTypes: {'riverpod-add', 'riverpod-update'},
+```
+
+**2. Unified color theming with `ISpectDynamicColor`:**
+```dart
+// ❌ Before (separate light/dark properties)
+lightBackgroundColor: Colors.white,
+darkBackgroundColor: Colors.black,
+lightDividerColor: Colors.grey.shade300,
+darkDividerColor: Colors.grey.shade800,
+
+// ✅ Now (unified with ISpectDynamicColor)
+background: ISpectDynamicColor(
+  light: Colors.white,
+  dark: Colors.black,
+),
+divider: ISpectDynamicColor(
+  light: Colors.grey.shade300,
+  dark: Colors.grey.shade800,
+),
+```
+
+**3. Customizable log descriptions:**
+
+`logDescriptions` now accepts `Map<String, String>` for overriding default descriptions:
+```dart
+ISpectTheme(
+  logColors: {'error': Colors.red},
+  logIcons: {'error': Icons.error},
+  logDescriptions: {
+    'error': 'Critical application errors',
+    'info': 'Informational messages',
+  },
+)
+```
+
+---
+
+### ✨ New Features
+
+#### Interceptor Configuration
+- **Fluent API builders** for cleaner interceptor settings configuration
+- **Multiple observers support** with improved notification mechanism
+
+#### Logging Enhancements
+- **Enhanced context**: `additionalData` support with centralized `LogFactory`
+- **Resource management**: Proper disposal functionality in `ISpectLogger`
+- **Localization**: Full support for bloc error logs and provider activity across all languages
+
+#### Settings & Filtering
+- **Persistent settings**: Your log preferences are now saved between sessions
+- **Advanced filtering**: Improved log type filtering with better UI controls
+
+#### Security & Privacy
+- **Strategy-based redaction**: Configure via `RedactionService` with composite, key, and pattern strategies
+- **Comprehensive tests**: Unit tests for settings builders and redaction service
+
+#### Platform Support
+- **Platform abstraction**: File operations now work correctly across all supported targets via platform-aware directory handling
+
+---
+
+### 🔧 Improvements
+
+#### Performance
+- **70% faster filtering**: Log filter updates now use debouncing for dramatic performance gains
+- **Optimized rendering**: Widget rendering and list creation now use fixed-size lists
+- **Better caching**: JSON viewer uses cached contrast lookups for stable text rendering
+
+#### Architecture
+- **Unified logging interface**: Consistent API across HTTP and WebSocket interceptors
+- **Cleaner separation**: `ISpectViewController` now uses dedicated `FilterManager`/`SettingsManager` and explicit import/export services
+- **Platform-aware output**: All logging migrated to `PlatformOutput` abstraction
+- **Sealed models**: `FileProcessingResult` and related JSON/observer models for type-safe error handling
+
+#### Code Quality
+- **Better initialization**: Logger now uses `addPostFrameCallback` for improved state management
+- **Simplified logic**: Cleaner header redaction in `RedactionService`
+- **Reduced duplication**: Improved code organization across all modules
+- **Enhanced error handling**: More robust error handling and logging throughout
+
+#### Documentation
+- **Comprehensive guides**: Detailed usage examples and configuration guides added
+- **Better comments**: Improved inline documentation for easier maintenance
+
+---
+
+### 🐛 Bug Fixes
+
+#### Type Safety
+- **HTTP/Dio interceptors**: Improved type safety across all interceptor implementations
+- **JSON selector**: Enhanced null-safety and generic type constraints
+- **Memory safety**: Unmodifiable cache views prevent accidental mutations
+
+#### Performance & Memory
+- **Widget optimization**: Fixed memory leaks in widgets and list creation
+- **Object pool**: Resolved lifecycle management and performance issues
+- **Circular dependencies**: Fixed initialization order in service dependency graph
+
+#### Functionality
+- **Case-insensitive redaction**: Redact method now handles keys regardless of case
+- **Error handling**: More robust error handling across all modules
+
 ## 4.4.7
 
 ### Added
@@ -143,15 +272,15 @@
 
 ### Enhancements:
 
-- Extend `ISpectifyFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
+- Extend `ISpectFlutter.init` to accept custom `ILogHistory` instances and disable default print logging.
 - Refactor file handlers *(web and native)* to support configurable file types and `JSON` output.
 - Make settings and info callback parameters optional in the app bar and conditionally render related UI.
 - Add ability to open log files directly from the `ISpect` screen.
 
 ### Changes:
-- Rename `ISpectifyDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
-- Rename `ISpectifyHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
-- Rename `ISpectifyBlocObserver` to `ISpectBLocObserver` for consistency
+- Rename `ISpectLoggerDioLogger` to `ISpectDioInterceptor` for clarity and consistency with other interceptors
+- Rename `ISpectLoggerHttpLogger` to `ISpectHttpInterceptor` and adjust its usage in the example project
+- Rename `ISpectLoggerBlocObserver` to `ISpectBLocObserver` for consistency
 - Rename `iSpectify` to `logger` and update related classes and documentation for consistency
 
 ## Draggable Panel
@@ -201,8 +330,8 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Expose new zoom configuration constants and helper methods in `InspectorState` for enhanced zoom and overlay management
 
 ### Changes:
-- Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectifyFlutter.init, `ISpectJiraClient.initialize`)*
-- Rename `ISpectifyActionItem` to `ISpectActionItem` and update references in docs and examples
+- Revise `README` instructions across all packages to showcase new initialization patterns *(e.g. ISpectFlutter.init, `ISpectJiraClient.initialize`)*
+- Rename `ISpectLoggerActionItem` to `ISpectActionItem` and update references in docs and examples
 - Add `ISpectPanelItem` and `ISpectPanelButtonItem` models and corresponding usage samples. `Records` -> `Models`
 - Refresh quick start and advanced feature code snippets to illustrate updated APIs and options
 - Unify headings *(Basic Setup, Custom Issue Creation, etc.)* and standardize sample app flows
@@ -315,7 +444,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ### Added
 - **Custom Performance Overlay** - Changed the approach and some improvements
 - **Enhanced Log Navigation** - Search, highlight, and expand/collapse functionality
-- **New Option: `logTruncateLength`** - Available in `ISpectifyOptions` for configurable log truncation
+- **New Option: `logTruncateLength`** - Available in `ISpectLoggerOptions` for configurable log truncation
 - **New Configuration: `ISpectHttpInterceptorSettings`** - Added to `ISpectHttpInterceptor` for improved setup flexibility
 
 ### Improved
@@ -354,8 +483,8 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - **Log Descriptions** - Added `logDescriptions` to `ISpectTheme` to add, modify, or disable descriptions in the info bottom sheet
 - **Theme Scheme Screen** - Included basic `Theme Scheme Screen` in the `ISpect` panel for testing
 
-### Updated ISpectify
-- **Documentation** - Comprehensive documentation added to the `ISpectify` class
+### Updated ISpectLogger
+- **Documentation** - Comprehensive documentation added to the `ISpectLogger` class
 - **Constructor Enhancement** - Modified to accept optional components (`logger`, `observer`, `options`, `filter`, `errorHandler`, `history`)
 - **Configuration Method** - Introduced `configure` method to update existing inspector instance configuration
 - **Internal Logic** - Updated to leverage new components and options effectively
@@ -402,9 +531,9 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 3.0.0
 
 ### BREAKING CHANGES
-- Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectify`
+- Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectLogger`
   - This was done to ease usage and reduce external dependencies
-  - You can now use `ISpectify` to log all application actions
+  - You can now use `ISpectLogger` to log all application actions
   
 - Separated main functions into different packages:
   - `ispect_ai` - For using `AI` as a log reporter and log description generator (useful for managers and testers)
@@ -445,7 +574,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 2.0.3
 
 ### Fixed
-- `setState` during build inside `ISpectScreen` (ISpectify)
+- `setState` during build inside `ISpectScreen` (ISpectLogger)
 
 ## 2.0.1
 
@@ -461,7 +590,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.9.8
 
 ### Updated
-- Upgraded `ISpectify` to v4.5.0
+- Upgraded `ISpectLogger` to v4.5.0
 
 ### Added
 - Enhanced customization for `track` method:
@@ -494,7 +623,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
         SuccessLog.logKey: const Color(0xFF880E4F),
       },
       logIcons: {
-        ISpectifyLogType.route.key: Icons.router_rounded,
+        ISpectLogType.route.key: Icons.router_rounded,
         SuccessLog.logKey: Icons.check_circle_rounded,
       },
     ),
@@ -702,7 +831,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.2.4
 
 ### Added
-- New options for `ISpectify` detailed monitor page: reverse all logs and toggle expansion
+- New options for `ISpectLogger` detailed monitor page: reverse all logs and toggle expansion
 - Moved performance tracker to `Draggable` button (removed from settings sheet)
 
 ## 1.2.3
@@ -714,7 +843,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.2.0
 
 ### Updated
-- Upgraded ISpectify to version 4.3.2
+- Upgraded ISpectLogger to version 4.3.2
 
 ## 1.1.8
 
@@ -730,7 +859,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.1.6
 
 ### Updated
-- Refactored Riverpod logs on ISpectify Page
+- Refactored Riverpod logs on ISpectLogger Page
 - Updated dependencies
 
 ## 1.1.5
@@ -739,7 +868,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Riverpod logs
 
 ### Updated
-- ISpectify Page and Feedback builder
+- ISpectLogger Page and Feedback builder
 
 ## 1.1.2
 
@@ -747,7 +876,7 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 - Light theme issues
 
 ### Removed
-- `ISpectifyScreenTheme` (use ISpectOptions theme properties instead)
+- `ISpectLoggerScreenTheme` (use ISpectOptions theme properties instead)
 
 ## 1.1.0
 
@@ -780,4 +909,4 @@ Just add `description` field to the `DraggablePanelItem` or `DraggablePanelButto
 ## 1.0.0
 
 ### Initial Release
-- Wrapper around Inspector, ISpectify, and related functionality
+- Wrapper around Inspector, ISpectLogger, and related functionality

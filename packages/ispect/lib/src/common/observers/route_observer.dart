@@ -184,14 +184,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
     // Arguments info (only if present)
-    final arguments = route?.settings.arguments;
-    if (arguments != null) {
-      if (arguments is Map<String, dynamic>) {
-        final formattedArgs = JsonTruncatorService.pretty(arguments);
-        buffer.writeln('Arguments: ${formattedArgs}');
-      } else {
-        buffer.writeln('Arguments: $arguments');
-      }
+    switch (route?.settings.arguments) {
+      case null:
+        break;
+      case final Map<String, dynamic> args:
+        final formattedArgs = JsonTruncatorService.pretty(args);
+        buffer.writeln('Arguments: $formattedArgs');
+      case final Object args:
+        buffer.writeln('Arguments: $args');
     }
 
     return buffer.toString().trim();
@@ -213,33 +213,15 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   ///
   /// Returns true if the route transition should be logged based on current settings.
   bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
-    final routeIsPage = route is PageRoute;
-    final prevRouteIsPage = previousRoute is PageRoute;
-
-    // If both routes are PageRoutes
-    if (routeIsPage && prevRouteIsPage) {
-      // // If one route is PageRoute and the other is not, don't log
-      // if (routeIsPage != prevRouteIsPage) {
-      //   return false;
-      // }
-      return isLogPages;
-    }
-
-    // At this point, neither route is a PageRoute
-    final routeIsModal = route is ModalRoute;
-    final prevRouteIsModal = previousRoute is ModalRoute;
-
-    // If both routes are ModalRoutes
-    if (routeIsModal && prevRouteIsModal) {
-      return isLogModals;
-    }
-
-    // If one route is ModalRoute and the other is not, don't log
-    if (routeIsModal != prevRouteIsModal) {
-      return false;
-    }
-
-    // At this point, routes are neither PageRoutes nor ModalRoutes
-    return isLogOtherTypes;
+    return switch ((route, previousRoute)) {
+      // Both pages
+      (PageRoute(), PageRoute()) => isLogPages,
+      // Both modals (PageRoute is ModalRoute; Page/Page is handled above)
+      (ModalRoute(), ModalRoute()) => isLogModals,
+      // Mixed modal/non-modal
+      (ModalRoute(), _) || (_, ModalRoute()) => false,
+      // Other types
+      _ => isLogOtherTypes,
+    };
   }
 }

@@ -2,70 +2,35 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_dio/src/data/_data.dart';
 
-class DioResponseLog extends ISpectifyData {
+class DioResponseLog extends NetworkResponseLog {
   DioResponseLog(
     super.message, {
-    required this.responseData,
-    required this.settings,
-    required this.method,
-    required this.url,
-    required this.path,
-    required this.statusCode,
-    required this.statusMessage,
-    required this.requestHeaders,
-    required this.headers,
-    required this.requestBody,
-    required this.responseBody,
-    this.redactor,
-  }) : super(
-          key: getKey,
-          title: getKey,
-          pen: settings.responsePen ?? (AnsiPen()..xterm(35)),
-          additionalData: responseData.toJson(
+    required super.method,
+    required super.url,
+    required super.path,
+    required super.statusCode,
+    required super.statusMessage,
+    required ISpectDioInterceptorSettings settings,
+    required DioResponseData responseData,
+    super.requestHeaders,
+    super.headers,
+    super.requestBody,
+    super.responseBody,
+    RedactionService? redactor,
+  })  : _settings = settings,
+        _responseData = responseData,
+        super(
+          settings: settings,
+          metadata: responseData.toJson(
             redactor: redactor,
           ),
         );
 
-  final String? method;
-  final String? url;
-  final String? path;
-  final int? statusCode;
-  final String? statusMessage;
-  final Map<String, dynamic>? requestHeaders;
-  final Map<String, dynamic>? headers;
-  final Map<String, dynamic>? requestBody;
-  final Object? responseBody;
-  final ISpectDioInterceptorSettings settings;
-  final DioResponseData responseData;
-  final RedactionService? redactor;
+  final ISpectDioInterceptorSettings _settings;
+  final DioResponseData _responseData;
 
-  static const getKey = 'http-response';
+  DioResponseData get responseData => _responseData;
 
   @override
-  String get textMessage {
-    final buffer = StringBuffer('[$getKey] [$method] $message')
-      ..write('\nStatus: $statusCode');
-
-    if (settings.printResponseMessage && statusMessage != null) {
-      buffer.write('\nMessage: $statusMessage');
-    }
-
-    if (settings.printResponseData && responseBody != null) {
-      final prettyData = JsonTruncatorService.pretty(
-        responseBody,
-      );
-      buffer.write('\nData: $prettyData');
-    }
-
-    if (settings.printResponseHeaders &&
-        headers != null &&
-        headers!.isNotEmpty) {
-      final prettyHeaders = JsonTruncatorService.pretty(
-        headers,
-      );
-      buffer.write('\nHeaders: $prettyHeaders');
-    }
-
-    return buffer.toString().truncate()!;
-  }
+  ISpectDioInterceptorSettings get settings => _settings;
 }

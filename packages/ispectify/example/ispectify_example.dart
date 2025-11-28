@@ -1,14 +1,14 @@
 import 'package:ispectify/ispectify.dart';
 
 Future<void> main() async {
-  final iSpectify = ISpectify(
-    options: ISpectifyOptions(
-      colors: {
-        ISpectifyLogType.info.key: AnsiPen()..magenta(),
+  final logger = ISpectLogger(
+    options: ISpectLoggerOptions(
+      customColors: {
+        ISpectLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),
       },
-      titles: {
-        ISpectifyLogType.info.key: 'i',
+      customTitles: {
+        ISpectLogType.info.key: 'i',
         CustomLog.logKey: 'Custom',
       },
     ),
@@ -26,17 +26,17 @@ Future<void> main() async {
   try {
     throw Exception('Something went wrong');
   } catch (e, st) {
-    iSpectify.handle(
+    logger.handle(
       exception: e,
       stackTrace: st,
       message: 'Exception with',
     );
   }
 
-  iSpectify.logCustom(CustomLog('Something like your own service message'));
+  logger.logData(CustomLog('Something like your own service message'));
 }
 
-class CustomLog extends ISpectifyData {
+class CustomLog extends ISpectLogData {
   CustomLog(super.message);
 
   static const logKey = 'custom_log_key';

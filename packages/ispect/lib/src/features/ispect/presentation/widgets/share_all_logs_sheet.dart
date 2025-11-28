@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 class ISpectShareAllLogsBottomSheet extends StatefulWidget {
@@ -35,36 +36,31 @@ class ISpectShareAllLogsBottomSheet extends StatefulWidget {
 
 class _ISpectShareAllLogsBottomSheetState
     extends State<ISpectShareAllLogsBottomSheet> {
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) => context.screenSizeMaybeWhen(
         phone: () => DraggableScrollableSheet(
-          initialChildSize: 0.3,
           minChildSize: 0.2,
-          maxChildSize: 0.5,
           expand: false,
           builder: (context, scrollController) => _Body(
             controller: widget.controller,
           ),
         ),
-        orElse: () => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          backgroundColor: context.ispectTheme.scaffoldBackgroundColor,
-          content: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.2,
-            width: 500,
-            child: _Body(
-              controller: widget.controller,
+        orElse: () {
+          final iSpect = ISpect.read(context);
+          final backgroundColor = iSpect.theme.background?.resolve(context);
+
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            backgroundColor: backgroundColor,
+            content: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.2,
+              width: 500,
+              child: _Body(
+                controller: widget.controller,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
 }
 
@@ -77,10 +73,12 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
+        color: backgroundColor,
         borderRadius: const BorderRadius.all(
           Radius.circular(16),
         ),
@@ -113,7 +111,7 @@ class _InfoDescription extends StatelessWidget {
 
     return Column(
       children: [
-        _Header(title: context.ispectL10n.share),
+        ISpectBottomSheetHeader(title: context.ispectL10n.share),
         const Gap(16),
         Wrap(
           spacing: 8,
@@ -121,7 +119,10 @@ class _InfoDescription extends StatelessWidget {
           children: [
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.ispectTheme.card?.resolve(context),
+                ),
                 onPressed: () {
                   controller.shareLogsAsFile(ISpect.logger.history);
                 },
@@ -142,7 +143,10 @@ class _InfoDescription extends StatelessWidget {
             ),
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.ispectTheme.card?.resolve(context),
+                ),
                 onPressed: () {
                   controller.shareLogsAsFile(
                     ISpect.logger.history,
@@ -165,33 +169,6 @@ class _InfoDescription extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ],
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.ispectTheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style:
-              theme.textTheme.headlineSmall?.copyWith(color: theme.textColor),
-        ),
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: theme.textColor),
         ),
       ],
     );

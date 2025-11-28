@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Signature for build custom `ISpectifyError`
+/// Signature for build custom `ISpectLogError`
 /// messages in showing `Snackbar` or another widgets
-typedef ISpectifyErrorBuilder = Widget Function(
+typedef ISpectLogErrorBuilder = Widget Function(
   BuildContext context,
-  ISpectifyError data,
+  ISpectLogError data,
 );
 
-/// Signature for build custom `ISpectifyException`
+/// Signature for build custom `ISpectLogException`
 /// messages in showing `Snackbar` or another widgets
-typedef ISpectifyExceptionBuilder = Widget Function(
+typedef ISpectLogExceptionBuilder = Widget Function(
   BuildContext context,
-  ISpectifyException data,
+  ISpectLogException data,
 );
 
-/// Signature for build custom `ISpectifyData` widgets
-typedef ISpectifyDataBuilder = Widget Function(
+/// Signature for build custom `ISpectLogData` widgets
+typedef ISpectLogDataBuilder = Widget Function(
   BuildContext context,
-  ISpectifyData data,
+  ISpectLogData data,
 );

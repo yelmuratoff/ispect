@@ -2,9 +2,9 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectify clearHistory', () {
+  group('ISpectLogger clearHistory', () {
     test('clearHistory works when logging is disabled', () {
-      final logger = ISpectify()
+      final logger = ISpectLogger()
 
         // Add some logs to history
         ..info('Test log 1')
@@ -21,14 +21,14 @@ void main() {
     });
 
     test(
-        'DefaultISpectifyHistory.clear() works regardless of useHistory setting',
+        'DefaultISpectLoggerHistory.clear() works regardless of useHistory setting',
         () {
       // Test with useHistory = false
-      final optionsDisabled = ISpectifyOptions(useHistory: false);
-      final historyDisabled = DefaultISpectifyHistory(optionsDisabled);
+      final optionsDisabled = ISpectLoggerOptions(useHistory: false);
+      final historyDisabled = DefaultISpectLoggerHistory(optionsDisabled);
 
       // Add items to history using test method
-      final testData = ISpectifyData('Test log', key: 'test');
+      final testData = ISpectLogData('Test log', key: 'test');
       historyDisabled.addForTesting(testData);
       expect(historyDisabled.history.length, 1);
 
@@ -37,9 +37,10 @@ void main() {
       expect(historyDisabled.history.length, 0);
 
       // Test with useHistory = true but enabled = false
-      final optionsEnabledFalse = ISpectifyOptions(enabled: false);
-      final historyEnabledFalse = DefaultISpectifyHistory(optionsEnabledFalse)
-        ..addForTesting(testData);
+      final optionsEnabledFalse = ISpectLoggerOptions(enabled: false);
+      final historyEnabledFalse =
+          DefaultISpectLoggerHistory(optionsEnabledFalse)
+            ..addForTesting(testData);
       expect(historyEnabledFalse.history.length, 1);
 
       historyEnabledFalse.clear();
@@ -47,7 +48,7 @@ void main() {
     });
 
     test('clearHistory preserves history functionality after re-enabling', () {
-      final logger = ISpectify()
+      final logger = ISpectLogger()
 
         // Add logs and disable
         ..info('Test log 1')

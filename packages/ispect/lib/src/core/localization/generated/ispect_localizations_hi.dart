@@ -73,6 +73,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'आदेश प्रसंस्करण पूरा हो गया';
 
   @override
+  String get blocErrorLogDesc => 'आदेश प्रसंस्करण के दौरान त्रुटि हुई';
+
+  @override
   String get buildVersion => 'बिल्ड संस्करण';
 
   @override
@@ -484,6 +487,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'प्रोवाइडर लॉग की संख्या: $text';
   }
+
+  @override
+  String get providerLogDesc => 'स्थिति प्रोवाइडर गतिविधि लॉग की गई';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

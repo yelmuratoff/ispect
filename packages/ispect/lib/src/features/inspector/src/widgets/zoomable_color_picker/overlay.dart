@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
 import 'package:ispect/src/features/inspector/src/widgets/components/information_box_widget.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// A combined overlay widget for zoomable color picker with color display
 /// and zoom level indicators.
@@ -37,9 +38,9 @@ class CombinedOverlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.ispectTheme.colorScheme;
+    final colorScheme = context.appTheme.colorScheme;
     final borderColor = colorScheme.inverseSurface.withValues(alpha: 0.2);
-    final textColor = getTextColorOnBackground(color);
+    final textColor = color.contrastText();
 
     return Material(
       color: Colors.transparent,
@@ -263,7 +264,7 @@ class _ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
         opacity: _isVisible ? 1.0 : 0.0,
         duration: _animationDuration,
         child: InformationBoxWidget(
-          color: context.ispectTheme.colorScheme.primary,
+          color: context.ispectTheme.primary?.resolve(context),
           child: Text('x${widget.zoomScale}'),
         ),
       );

@@ -92,8 +92,8 @@ class FileContentWidget extends StatelessWidget {
       if (file.runtimeType.toString().contains('length')) {
         return file.length as int?;
       }
-    } catch (e) {
-      // Ignore
+    } catch (e, st) {
+      ISpect.logger.handle(exception: e, stackTrace: st);
     }
     return null;
   }

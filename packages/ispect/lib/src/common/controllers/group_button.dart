@@ -85,8 +85,9 @@ class GroupButtonController extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<int> _removeDisabledIndexes(List<int> indexes) =>
-      indexes.where((e) => !disabledIndexes.contains(e)).toList();
+  List<int> _removeDisabledIndexes(List<int> indexes) => indexes
+      .where((e) => !disabledIndexes.contains(e))
+      .toList(growable: false);
 
   bool _isDisabled(int i, {bool withCallBack = false}) {
     final isDisabled = _disabledIndexes.contains(i);
@@ -98,19 +99,13 @@ class GroupButtonController extends ChangeNotifier {
 
   /// Enable buttons by indexes in checkbox and radio type
   void enableIndexes(List<int> indexes) {
-    // ignore: prefer_foreach
-    for (final i in indexes) {
-      _disabledIndexes.remove(i);
-    }
+    _disabledIndexes.removeAll(indexes);
     notifyListeners();
   }
 
   /// Disable buttons by indexes in checkbox and radio type
   void disableIndexes(List<int> indexes) {
-    // ignore: prefer_foreach
-    for (final i in indexes) {
-      _disabledIndexes.add(i);
-    }
+    _disabledIndexes.addAll(indexes);
     notifyListeners();
   }
 }

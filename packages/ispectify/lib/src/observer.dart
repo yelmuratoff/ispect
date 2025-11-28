@@ -1,24 +1,24 @@
 import 'package:ispectify/src/models/data.dart';
 
-/// An abstract observer class for monitoring ISpectify events.
+/// An abstract observer class for monitoring ISpectLogger events.
 ///
 /// Implementations of this class can listen to errors, exceptions, and log events.
-abstract interface class ISpectifyObserver {
-  /// Creates an instance of `ISpectifyObserver`.
-  const ISpectifyObserver();
+abstract interface class ISpectObserver {
+  /// Creates an instance of `ISpectObserver`.
+  const ISpectObserver();
 
-  /// Called when an `ISpectifyError` is reported.
+  /// Called when an `ISpectLogError` is reported.
   ///
   /// Override this method to handle errors.
-  void onError(ISpectifyData err) {}
+  void onError(ISpectLogData err) {}
 
-  /// Called when an `ISpectifyException` is reported.
+  /// Called when an `ISpectLogException` is reported.
   ///
   /// Override this method to handle exceptions.
-  void onException(ISpectifyData err) {}
+  void onException(ISpectLogData err) {}
 
-  /// Called when an `ISpectifyData` log entry is recorded.
+  /// Called when an `ISpectLogData` log entry is recorded.
   ///
   /// Override this method to handle logs.
-  void onLog(ISpectifyData log) {}
+  void onLog(ISpectLogData data) {}
 }

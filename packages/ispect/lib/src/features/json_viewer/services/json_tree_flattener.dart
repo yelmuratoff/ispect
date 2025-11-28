@@ -3,91 +3,41 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 /// Service responsible for flattening JSON tree structures
 class JsonTreeFlattener {
   /// Flattens a hierarchical JSON tree into a list for efficient rendering
-  static List<NodeViewModelState> flatten(Object? object) {
-    if (object == null) {
-      return const <NodeViewModelState>[];
-    }
+  static List<NodeViewModelState> flatten(Object? object) => switch (object) {
+        null => const <NodeViewModelState>[],
+        final List<NodeViewModelState> list => _flattenIterable(list),
+        final Map<String, NodeViewModelState> map =>
+          _flattenIterable(map.values),
+        _ => const <NodeViewModelState>[],
+      };
 
-    if (object is List<NodeViewModelState>) {
-      return _flattenArray(object);
-    }
-
-    if (object is Map<String, NodeViewModelState>) {
-      return _flattenClass(object);
-    }
-
-    return const <NodeViewModelState>[];
-  }
-
-  static List<NodeViewModelState> _flattenClass(
-    Map<String, NodeViewModelState> object,
+  static List<NodeViewModelState> _flattenIterable(
+    Iterable<NodeViewModelState> nodes,
   ) {
-    // Pre-allocate with estimated capacity for better performance
     final resultList = <NodeViewModelState>[];
 
-    for (final value in object.values) {
-      resultList.add(value);
-
-      if (!value.isCollapsed) {
-        final childValue = value.value;
-        if (childValue is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(childValue, resultList);
-        } else if (childValue is List<NodeViewModelState>) {
-          _addFlattenedArrayToList(childValue, resultList);
-        }
+    for (final node in nodes) {
+      resultList.add(node);
+      if (_shouldExpand(node)) {
+        _addFlattenedChildren(node, resultList);
       }
     }
 
     return resultList;
   }
 
-  static List<NodeViewModelState> _flattenArray(
-    List<NodeViewModelState> objects,
-  ) {
-    final resultList = <NodeViewModelState>[];
-
-    for (final object in objects) {
-      resultList.add(object);
-      if (!object.isCollapsed) {
-        final childValue = object.value;
-        if (childValue is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(childValue, resultList);
-        }
-      }
-    }
-    return resultList;
-  }
-
-  static void _addFlattenedClassToList(
-    Map<String, NodeViewModelState> object,
+  static void _addFlattenedChildren(
+    NodeViewModelState node,
     List<NodeViewModelState> flatList,
   ) {
-    for (final value in object.values) {
-      flatList.add(value);
-
-      if (!value.isCollapsed) {
-        final childValue = value.value;
-        if (childValue is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(childValue, flatList);
-        } else if (childValue is List<NodeViewModelState>) {
-          _addFlattenedArrayToList(childValue, flatList);
-        }
+    for (final child in node.children) {
+      flatList.add(child);
+      if (_shouldExpand(child)) {
+        _addFlattenedChildren(child, flatList);
       }
     }
   }
 
-  static void _addFlattenedArrayToList(
-    List<NodeViewModelState> objects,
-    List<NodeViewModelState> flatList,
-  ) {
-    for (final object in objects) {
-      flatList.add(object);
-      if (!object.isCollapsed) {
-        final childValue = object.value;
-        if (childValue is Map<String, NodeViewModelState>) {
-          _addFlattenedClassToList(childValue, flatList);
-        }
-      }
-    }
-  }
+  static bool _shouldExpand(NodeViewModelState node) =>
+      node.isRoot && !node.isCollapsed;
 }

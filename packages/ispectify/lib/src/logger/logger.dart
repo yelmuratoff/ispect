@@ -12,14 +12,14 @@ import 'package:ispectify/src/settings.dart';
 ///
 /// Supports multiple log levels, colorized output, filtering,
 /// and customizable formatting/output handling.
-class ISpectifyLogger {
-  /// Creates an instance of `ISpectifyLogger` with optional configurations.
+class ISpectBaseLogger {
+  /// Creates an instance of `ISpectBaseLogger` with optional configurations.
   ///
   /// - `settings`: Logger configuration settings. Defaults to `LoggerSettings()`.
   /// - `formatter`: Formatter for log messages. Defaults to `ExtendedLoggerFormatter()`.
   /// - `filter`: Optional log filter.
   /// - `output`: Optional output function (e.g., `print`).
-  ISpectifyLogger({
+  ISpectBaseLogger({
     LoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
     ILoggerFilter? filter,
@@ -80,14 +80,14 @@ class ISpectifyLogger {
   /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Creates a new `ISpectifyLogger` instance with overridden properties.
-  ISpectifyLogger copyWith({
+  /// Creates a new `ISpectLoggerLogger` instance with overridden properties.
+  ISpectBaseLogger copyWith({
     LoggerSettings? settings,
     ILoggerFormatter? formatter,
     ILoggerFilter? filter,
     void Function(String message)? output,
   }) =>
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: settings ?? this.settings,
         formatter: formatter ?? this.formatter,
         filter: filter ?? _filter,
@@ -96,5 +96,5 @@ class ISpectifyLogger {
 
   @override
   String toString() =>
-      'ISpectifyLogger(enabled: ${settings.enable}, level: ${settings.level})';
+      'ISpectBaseLogger(enabled: ${settings.enable}, level: ${settings.level})';
 }

@@ -48,7 +48,7 @@ void main() {
     test(
         'error payload preserved when printResponseData=false, printErrorData=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -70,7 +70,7 @@ void main() {
 
       final log = await future;
       expect(log.body, isNotNull);
-      expect(log.body, contains('error'));
+      expect(log.body!['response'], contains('error'));
       expect(
         log.textMessage.contains('Invalid token'),
         isTrue,
@@ -78,7 +78,7 @@ void main() {
       );
     });
     test('logs parsed response body for success responses', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -116,7 +116,7 @@ void main() {
     });
 
     test('error logs preserve array bodies under data key', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -141,9 +141,11 @@ void main() {
 
       final log = await future;
       expect(log.body, isNotNull);
-      expect(log.body, contains('data'));
-      final data = log.body!['data'];
-      expect(data, isA<List<dynamic>>());
+      final responseMap = log.body!['response'] as Map<String, dynamic>;
+      expect(responseMap['data'], isA<List<dynamic>>());
+      final data = responseMap['data'] as List<dynamic>;
+      expect(data, isNotEmpty);
+      expect(data.first, contains('field'));
       expect(
         log.textMessage.contains('email'),
         isTrue,
@@ -152,7 +154,7 @@ void main() {
     });
 
     test('multipart request fields/files are redacted when enabled', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -465,7 +467,7 @@ void main() {
   group('Multipart Request Logging', () {
     test('multipart request form data is logged when printRequestData=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -512,7 +514,7 @@ void main() {
 
     test('multipart request data is redacted when enableRedaction=true',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -559,7 +561,7 @@ void main() {
 
     test('multipart request data is not logged when printRequestData=false',
         () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -593,7 +595,7 @@ void main() {
 
   group('Response and Error Filtering', () {
     test('responseFilter does not suppress error logging', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -650,7 +652,7 @@ void main() {
     });
 
     test('errorFilter can still suppress specific errors', () async {
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         settings: const ISpectHttpInterceptorSettings(
@@ -712,7 +714,7 @@ void main() {
       // Note: 'password' and 'token' are already in default sensitive keys,
       // so no need to configure them explicitly
 
-      final inspector = ISpectify();
+      final inspector = ISpectLogger();
       final interceptor = ISpectHttpInterceptor(
         logger: inspector,
         redactor: redactor,
@@ -743,8 +745,8 @@ void main() {
       expect(errorLog.statusCode, 401);
       expect(errorLog.body, isNotNull);
 
-      final body = errorLog.body!;
-      expect(body, contains('error'));
+      final body = errorLog.body!['response'] as Map<String, dynamic>;
+      expect(body, isNotNull);
       expect(body['error'], 'Invalid credentials');
 
       // Sensitive fields should be redacted

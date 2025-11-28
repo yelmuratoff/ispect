@@ -2,10 +2,11 @@
 // ignore_for_file: type=lint
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/utils/log_message_formatter.dart';
 
 /// A model class representing a structured log entry.
-class ISpectifyData {
-  /// Creates an instance of `ISpectifyData` to store log details.
+class ISpectLogData {
+  /// Creates an instance of `ISpectLogData` to store log details.
   ///
   /// - `message`: The main log message.
   /// - `time`: The timestamp of the log entry. Defaults to `DateTime.now()`.
@@ -17,8 +18,8 @@ class ISpectifyData {
   /// - `pen`: ANSI color for styling logs.
   /// - `key`: A unique identifier for this log entry.
   /// - `additionalData`: Any extra metadata attached to the log.
-  ISpectifyData(
-    this.message, {
+  ISpectLogData(
+    Object? message, {
     DateTime? time,
     this.logLevel,
     this.exception,
@@ -27,8 +28,14 @@ class ISpectifyData {
     this.title,
     this.pen,
     this.key,
-    this.additionalData,
-  }) : _time = time ?? DateTime.now();
+    Map<String, dynamic>? additionalData,
+  })  : message = message?.toString(),
+        additionalData = additionalData == null
+            ? null
+            : Map<String, dynamic>.unmodifiable(
+                Map<String, dynamic>.from(additionalData),
+              ),
+        _time = time ?? DateTime.now();
 
   /// The timestamp when the log entry was created.
   final DateTime _time;
@@ -63,44 +70,53 @@ class ISpectifyData {
   /// Returns the timestamp of the log.
   DateTime get time => _time;
 
-  /// Returns the full message, including the stack trace if available.
-  String get textMessage {
-    final errMsg = (error != null)
-        ? '$error'.truncate()
-        : ((exception != null) ? '$exception' : ''.truncate());
-
-    return '$messageText$errMsg$stackTraceText';
-  }
+  /// Returns the full message, including error/exception and stack trace if available.
+  String get textMessage => joinLogParts([
+        messageText,
+        errorText,
+        exceptionText,
+        stackTraceText,
+      ]);
 
   /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
 
   /// Returns the formatted stack trace if available, otherwise an empty string.
-  String get stackTraceText =>
+  String? get stackTraceText =>
       (stackTrace != null && stackTrace != StackTrace.empty)
-          ? '\nStackTrace: $stackTrace'
-          : '';
+          ? 'StackTrace: $stackTrace'.truncate()
+          : null;
 
   /// Returns the exception as a string if available, otherwise an empty string.
   String? get exceptionText =>
-      exception != null ? '\n$exception'.truncate() : '';
+      exception != null ? exception.toString().truncate() : null;
 
   /// Returns the error as a string if available, otherwise an empty string.
-  String? get errorText => error != null ? '\n$error'.truncate() : '';
+  String? get errorText => error != null ? error.toString().truncate() : null;
 
   /// Returns the log message as a string, or an empty string if `null`.
   String get messageText => message.truncate() ?? '';
 
   /// Returns the formatted timestamp of the log entry.
-  String get formattedTime => ISpectifyDateTimeFormatter(time).format;
+  String get formattedTime => ISpectDateTimeFormatter(time).format;
 
-  bool get isError {
-    final isErrorLog =
-        (logLevel == LogLevel.error || logLevel == LogLevel.critical) ||
-            ISpectifyLogType.values.any(
-              (t) => t.key == key && t.isErrorType,
-            );
-    return isErrorLog;
+  bool get isError =>
+      logLevel == LogLevel.error ||
+      logLevel == LogLevel.critical ||
+      ISpectLogType.isErrorKey(key);
+
+  /// Notifies the observer about this log entry.
+  ///
+  /// This method uses polymorphic dispatch to call the appropriate observer method.
+  /// Subclasses can override this to customize which observer method is called.
+  ///
+  /// - `observer`: The observer to notify.
+  void notifyObserver(ISpectObserver observer) {
+    if (isError) {
+      observer.onError(this);
+    } else {
+      observer.onLog(this);
+    }
   }
 
   @override
@@ -108,7 +124,7 @@ class ISpectifyData {
     if (identical(this, other)) return true;
     final mapEquals = const DeepCollectionEquality().equals;
 
-    return other is ISpectifyData &&
+    return other is ISpectLogData &&
         other._time == _time &&
         other.key == key &&
         other.message == message &&
@@ -137,7 +153,7 @@ class ISpectifyData {
 
   @override
   String toString() {
-    return '''ISpectifyData(
+    return '''ISpectLogData(
       key: $key,
       message: $message,
       logLevel: $logLevel,

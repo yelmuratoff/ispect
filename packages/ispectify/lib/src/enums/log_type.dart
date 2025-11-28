@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Enum representing various log types used in the ISpectify library.
+/// Enum representing various log types used in the ISpectLogger library.
 ///
 /// Each log type is associated with a unique string key and can be mapped
 /// to a corresponding `LogLevel` using the provided extension.
@@ -40,16 +40,16 @@ import 'package:ispectify/ispectify.dart';
 ///   - `print`: Represents a print log.
 ///
 /// Each log type can be mapped to a `LogLevel` using the `level` getter
-/// provided in the `ISpectifyLogTypeExt` extension. The `fromLogLevel`
+/// provided in the `ISpectLogTypeExt` extension. The `fromLogLevel`
 /// method allows conversion from a `LogLevel` to the corresponding
-/// `ISpectifyLogType`.
+/// `ISpectLogType`.
 ///
 /// Example:
 /// ```dart
-/// final logType = ISpectifyLogType.fromLogLevel(LogLevel.error);
+/// final logType = ISpectLogType.fromLogLevel(LogLevel.error);
 /// print(logType.key); // Outputs: "error"
 /// ```
-enum ISpectifyLogType {
+enum ISpectLogType {
   error('error'),
   critical('critical'),
   info('info'),
@@ -79,69 +79,137 @@ enum ISpectifyLogType {
   dbResult('db-result'),
   dbError('db-error'),
 
+  wsSent('ws-sent'),
+  wsReceived('ws-received'),
+
   route('route'),
   good('good'),
   analytics('analytics'),
   provider('provider'),
   print('print');
 
-  const ISpectifyLogType(this.key);
+  const ISpectLogType(this.key);
 
   final String key;
 
-  /// Converts a `LogLevel` to its corresponding [ISpectifyLogType].
+  static final Map<String, ISpectLogType> _byKey = {
+    for (final type in ISpectLogType.values) type.key: type,
+  };
+
+  static final Map<LogLevel, ISpectLogType> _byLevel = {
+    LogLevel.critical: ISpectLogType.critical,
+    LogLevel.error: ISpectLogType.error,
+    LogLevel.warning: ISpectLogType.warning,
+    LogLevel.info: ISpectLogType.info,
+    LogLevel.debug: ISpectLogType.debug,
+    LogLevel.verbose: ISpectLogType.verbose,
+  };
+
+  static final Set<String> _errorKeys = {
+    for (final type in ISpectLogType.values)
+      if (type.isErrorType) type.key,
+  };
+
+  /// Converts a `LogLevel` to its corresponding [ISpectLogType].
   ///
   /// If the provided `logLevel` is `null`, the method defaults to returning
-  /// `ISpectifyLogType.debug`.
+  /// `ISpectLogType.debug`.
   ///
-  /// Throws a `StateError` if no matching [ISpectifyLogType] is found for the
+  /// Throws a `StateError` if no matching [ISpectLogType] is found for the
   /// given `logLevel`.
   ///
   /// - Parameter `logLevel`: The [LogLevel` to be converted.
-  /// - Returns: The corresponding `ISpectifyLogType` for the given [logLevel].
-  static ISpectifyLogType fromLogLevel(LogLevel? logLevel) {
-    if (logLevel == null) return ISpectifyLogType.debug;
+  /// - Returns: The corresponding `ISpectLogType` for the given [logLevel].
+  static ISpectLogType fromLogLevel(LogLevel? logLevel) {
+    if (logLevel == null) return ISpectLogType.debug;
 
-    return ISpectifyLogType.values.firstWhere((e) => e.level == logLevel);
+    final type = _byLevel[logLevel];
+    if (type == null) {
+      throw StateError('No log type registered for level $logLevel');
+    }
+    return type;
   }
 
-  static Set<String> get keys =>
-      ISpectifyLogType.values.map((e) => e.key).toSet();
+  static ISpectLogType? fromKey(String key) => _byKey[key];
+
+  static Set<String> get keys => _byKey.keys.toSet();
+
+  static bool isErrorKey(String? key) =>
+      key != null && _errorKeys.contains(key);
 
   bool get isErrorType => switch (this) {
-        ISpectifyLogType.error ||
-        ISpectifyLogType.critical ||
-        ISpectifyLogType.exception ||
-        ISpectifyLogType.httpError ||
-        ISpectifyLogType.riverpodFail ||
-        ISpectifyLogType.dbError =>
+        ISpectLogType.error ||
+        ISpectLogType.critical ||
+        ISpectLogType.exception ||
+        ISpectLogType.httpError ||
+        ISpectLogType.riverpodFail ||
+        ISpectLogType.dbError =>
           true,
         _ => false,
       };
 }
 
-extension ISpectifyLogTypeExt on ISpectifyLogType {
-  /// Maps the current `ISpectifyLogType` instance to its corresponding `LogLevel`.
+extension ISpectLogTypeExt on ISpectLogType {
+  /// Maps the current `ISpectLogType` instance to its corresponding `LogLevel`.
   ///
   /// Returns:
-  /// - `LogLevel.error` for `ISpectifyLogType.error`.
-  /// - `LogLevel.critical` for `ISpectifyLogType.critical`.
-  /// - `LogLevel.info` for `ISpectifyLogType.info`.
-  /// - `LogLevel.debug` for `ISpectifyLogType.debug`.
-  /// - `LogLevel.verbose` for `ISpectifyLogType.verbose`.
-  /// - `LogLevel.warning` for `ISpectifyLogType.warning`.
+  /// - `LogLevel.error` for `ISpectLogType.error`.
+  /// - `LogLevel.critical` for `ISpectLogType.critical`.
+  /// - `LogLevel.info` for `ISpectLogType.info`.
+  /// - `LogLevel.debug` for `ISpectLogType.debug`.
+  /// - `LogLevel.verbose` for `ISpectLogType.verbose`.
+  /// - `LogLevel.warning` for `ISpectLogType.warning`.
   /// - Defaults to `LogLevel.info` for any other cases.
   LogLevel get level => switch (this) {
-        ISpectifyLogType.error => LogLevel.error,
-        ISpectifyLogType.critical => LogLevel.critical,
-        ISpectifyLogType.exception => LogLevel.error,
-        ISpectifyLogType.httpError => LogLevel.error,
-        ISpectifyLogType.riverpodFail => LogLevel.error,
-        ISpectifyLogType.dbError => LogLevel.error,
-        ISpectifyLogType.info => LogLevel.info,
-        ISpectifyLogType.debug => LogLevel.debug,
-        ISpectifyLogType.verbose => LogLevel.verbose,
-        ISpectifyLogType.warning => LogLevel.warning,
+        ISpectLogType.error => LogLevel.error,
+        ISpectLogType.critical => LogLevel.critical,
+        ISpectLogType.exception => LogLevel.error,
+        ISpectLogType.httpError => LogLevel.error,
+        ISpectLogType.riverpodFail => LogLevel.error,
+        ISpectLogType.dbError => LogLevel.error,
+        ISpectLogType.blocError => LogLevel.error,
+        ISpectLogType.info => LogLevel.info,
+        ISpectLogType.debug => LogLevel.debug,
+        ISpectLogType.verbose => LogLevel.verbose,
+        ISpectLogType.warning => LogLevel.warning,
         _ => LogLevel.info,
+      };
+
+  /// Returns the default ANSI pen (color) for this log type.
+  ///
+  /// These are the built-in colors that will be used if no custom
+  /// override is provided via `ISpectLoggerOptions`.
+  AnsiPen get defaultPen => switch (this) {
+        ISpectLogType.critical => AnsiPen()..red(),
+        ISpectLogType.error => AnsiPen()..red(),
+        ISpectLogType.exception => AnsiPen()..red(),
+        ISpectLogType.httpError => AnsiPen()..red(),
+        ISpectLogType.blocError => AnsiPen()..red(),
+        ISpectLogType.riverpodFail => AnsiPen()..red(),
+        ISpectLogType.dbError => AnsiPen()..red(),
+        ISpectLogType.warning => AnsiPen()..xterm(172),
+        ISpectLogType.verbose => AnsiPen()..xterm(08),
+        ISpectLogType.info => AnsiPen()..blue(),
+        ISpectLogType.debug => AnsiPen()..gray(),
+        ISpectLogType.httpRequest => AnsiPen()..xterm(207),
+        ISpectLogType.httpResponse => AnsiPen()..xterm(35),
+        ISpectLogType.blocEvent => AnsiPen()..xterm(51),
+        ISpectLogType.blocTransition => AnsiPen()..xterm(49),
+        ISpectLogType.blocCreate => AnsiPen()..xterm(35),
+        ISpectLogType.blocClose => AnsiPen()..xterm(198),
+        ISpectLogType.blocState => AnsiPen()..xterm(38),
+        ISpectLogType.blocDone => AnsiPen()..green(),
+        ISpectLogType.riverpodAdd => AnsiPen()..xterm(51),
+        ISpectLogType.riverpodUpdate => AnsiPen()..xterm(49),
+        ISpectLogType.riverpodDispose => AnsiPen()..xterm(198),
+        ISpectLogType.route => AnsiPen()..xterm(135),
+        ISpectLogType.good => AnsiPen()..green(),
+        ISpectLogType.analytics => AnsiPen()..yellow(),
+        ISpectLogType.provider => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
+        ISpectLogType.print => AnsiPen()..blue(),
+        ISpectLogType.dbQuery => AnsiPen()..blue(),
+        ISpectLogType.dbResult => AnsiPen()..green(),
+        ISpectLogType.wsSent => AnsiPen()..xterm(207),
+        ISpectLogType.wsReceived => AnsiPen()..xterm(35),
       };
 }

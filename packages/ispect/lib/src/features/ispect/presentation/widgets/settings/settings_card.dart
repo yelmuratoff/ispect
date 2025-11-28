@@ -31,8 +31,8 @@ class ISpectSettingsCardItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: ISpectBaseCard(
           padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(right: 4),
-          color: iSpect.theme.dividerColor(context) ??
-              context.ispectTheme.dividerColor,
+          color: iSpect.theme.divider?.resolve(context) ??
+              context.appTheme.dividerColor,
           backgroundColor: backgroundColor,
           child: Material(
             color: Colors.transparent,
@@ -45,13 +45,23 @@ class ISpectSettingsCardItem extends StatelessWidget {
               title: Text(
                 title,
                 style: TextStyle(
-                  color: context.ispectTheme.textColor,
+                  color: context.appTheme.textColor,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               trailing: Switch(
                 value: enabled,
+                trackColor: WidgetStateProperty.all(
+                  context.ispectTheme.primary?.resolve(context) ??
+                      context.appTheme.colorScheme.primary,
+                ),
+                thumbColor: WidgetStateProperty.all(
+                  context.appTheme.colorScheme.onPrimary,
+                ),
+                trackOutlineColor: WidgetStateProperty.all(
+                  context.ispectTheme.divider?.resolve(context),
+                ),
                 onChanged: canEdit ? onChanged : null,
               ),
             ),

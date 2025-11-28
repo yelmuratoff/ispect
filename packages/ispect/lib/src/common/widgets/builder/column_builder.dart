@@ -28,7 +28,10 @@ class ISpectColumnBuilder extends StatelessWidget {
         mainAxisSize: mainAxisSize,
         mainAxisAlignment: mainAxisAlignment,
         verticalDirection: verticalDirection,
-        children:
-            List.generate(itemCount, (index) => itemBuilder(context, index)),
+        children: List.generate(
+          itemCount,
+          (index) => itemBuilder(context, index),
+          growable: false,
+        ),
       );
 }

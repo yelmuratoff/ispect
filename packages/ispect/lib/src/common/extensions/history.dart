@@ -1,10 +1,10 @@
 import 'package:ispect/ispect.dart';
 
-/// Extension on `List<ISpectifyData>` to format history text output.
+/// Extension on `List<ISpectLogData>` to format history text output.
 ///
 /// This extension provides a formatted string representation of the list,
 /// where each message is followed by a separator line.
-extension HistoryListFlutterText on List<ISpectifyData> {
+extension HistoryListFlutterText on List<ISpectLogData> {
   /// Returns a formatted string representation of the history list.
   ///
   /// Each message in the list is separated by a horizontal line of length 30.

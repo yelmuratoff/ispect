@@ -78,6 +78,10 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'Le traitement de la commande est terminé';
 
   @override
+  String get blocErrorLogDesc =>
+      'Une erreur s\'est produite lors du traitement d\'une commande';
+
+  @override
   String get buildVersion => 'Version de construction';
 
   @override
@@ -492,6 +496,9 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'Nombre de journaux de fournisseurs : $text';
   }
+
+  @override
+  String get providerLogDesc => 'Activité du fournisseur d\'état enregistrée';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

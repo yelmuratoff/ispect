@@ -4,7 +4,7 @@ import 'package:ispectify/src/settings.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectifyLogger', () {
+  group('ISpectLoggerLogger', () {
     late List<String> loggedMessages;
 
     setUp(() {
@@ -12,7 +12,7 @@ void main() {
     });
 
     test('should log messages at or above the minimum level', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(level: LogLevel.warning),
         output: (message) => loggedMessages.add(message),
       )
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('should not log messages below the minimum level', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(level: LogLevel.warning),
         output: (message) => loggedMessages.add(message),
       )
@@ -42,7 +42,7 @@ void main() {
     });
 
     test('should log all messages when level is verbose', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(),
         output: (message) => loggedMessages.add(message),
       )
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('should not log any messages when level is critical', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(level: LogLevel.critical, enable: false),
         output: (message) => loggedMessages.add(message),
       )
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('should not log when logging is disabled', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(enable: false),
         output: (message) => loggedMessages.add(message),
       ).critical('Critical message');
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('should use default debug level when no level specified', () {
-      ISpectifyLogger(
+      ISpectBaseLogger(
         settings: LoggerSettings(),
         output: (message) => loggedMessages.add(message),
       ).log('Default level message');

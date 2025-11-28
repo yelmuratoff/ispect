@@ -77,6 +77,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'Se completó el procesamiento del comando';
 
   @override
+  String get blocErrorLogDesc => 'Ocurrió un error al procesar un comando';
+
+  @override
   String get buildVersion => 'Versión de compilación';
 
   @override
@@ -490,6 +493,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'Cantidad de registros de proveedores: $text';
   }
+
+  @override
+  String get providerLogDesc => 'Actividad del proveedor de estado registrada';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

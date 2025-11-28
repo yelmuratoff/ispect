@@ -1,10 +1,12 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
@@ -16,7 +18,6 @@ class ISpectAppBar extends StatefulWidget {
     required this.onToggleTitle,
     required this.focusNode,
     this.onSettingsTap,
-    this.onInfoTap,
     this.backgroundColor,
     super.key,
   });
@@ -30,7 +31,6 @@ class ISpectAppBar extends StatefulWidget {
   final List<String?> uniqTitles;
 
   final VoidCallback? onSettingsTap;
-  final VoidCallback? onInfoTap;
 
   final FocusNode focusNode;
 
@@ -58,7 +58,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           elevation: 0,
           pinned: true,
           floating: true,
-          expandedHeight: !value ? 110 : 160,
+          expandedHeight: switch (value) { false => 110, true => 160 },
           collapsedHeight: 60,
           toolbarHeight: 60,
           leading: IconButton(
@@ -71,34 +71,39 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           ),
           scrolledUnderElevation: 0,
           backgroundColor: widget.backgroundColor ??
-              context.ispectTheme.scaffoldBackgroundColor,
+              context.ispectTheme.background?.resolve(context),
           actions: [
-            if (widget.onInfoTap != null)
-              UnconstrainedBox(
-                child: IconButton(
-                  onPressed: widget.onInfoTap,
-                  icon: const Icon(
-                    Icons.info_outline_rounded,
+            switch (widget.onSettingsTap) {
+              null => const SizedBox.shrink(),
+              _ => UnconstrainedBox(
+                  child: IconButton(
+                    onPressed: widget.onSettingsTap,
+                    icon: const Icon(
+                      Icons.settings_rounded,
+                    ),
                   ),
                 ),
-              ),
-            if (widget.onSettingsTap != null)
-              UnconstrainedBox(
-                child: IconButton(
-                  onPressed: widget.onSettingsTap,
-                  icon: const Icon(
-                    Icons.settings_rounded,
-                  ),
-                ),
-              ),
+            },
             const Gap(10),
           ],
-          title: Text(
-            widget.title ?? '',
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
+          title: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => DailySessionsScreen(
+                    history: ISpect.logger.fileLogHistory,
+                  ),
+                  settings: const RouteSettings(name: 'ISpect Info Screen'),
+                ),
+              );
+            },
+            child: Text(
+              widget.title ?? '',
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
           flexibleSpace: FlexibleSpaceBar(
@@ -111,6 +116,9 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SearchBar(
                         focusNode: widget.focusNode,
+                        backgroundColor: WidgetStatePropertyAll(
+                          context.ispectTheme.card?.resolve(context),
+                        ),
                         constraints: const BoxConstraints(
                           minHeight: 45,
                         ),
@@ -142,73 +150,78 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                         ],
                         hintText: context.ispectL10n.search,
                         onChanged: widget.controller.updateFilterSearchQuery,
-                        elevation: WidgetStateProperty.all(0),
+                        elevation: const WidgetStatePropertyAll(0),
                       ),
                     ),
                     Flexible(
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
-                        child: !value
-                            ? const SizedBox.shrink()
-                            : Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: SizedBox(
-                                  key: const ValueKey('filter'),
-                                  height: 40,
-                                  child: ListView.separated(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    scrollDirection: Axis.horizontal,
-                                    separatorBuilder: (_, __) => const Gap(8),
-                                    itemCount: widget.uniqTitles.length,
-                                    itemBuilder: (context, index) {
-                                      final title = widget.uniqTitles[index];
-                                      final count = widget.titles
-                                          .where((e) => e == title)
-                                          .length;
-                                      return FilterChip(
-                                        selectedColor: context.ispectTheme
-                                            .colorScheme.primaryContainer,
-                                        label: Text(
-                                          '$count  $title',
-                                          style: context
-                                              .ispectTheme.textTheme.bodyMedium,
+                        child: switch (value) {
+                          false => const SizedBox.shrink(),
+                          true => Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: SizedBox(
+                                key: const ValueKey('filter'),
+                                height: 40,
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  scrollDirection: Axis.horizontal,
+                                  separatorBuilder: (_, __) => const Gap(8),
+                                  itemCount: widget.uniqTitles.length,
+                                  itemBuilder: (context, index) {
+                                    final title = widget.uniqTitles[index];
+                                    final count = widget.titles
+                                        .where((e) => e == title)
+                                        .length;
+                                    final isSelected = widget
+                                        .titlesController.selectedIndexes
+                                        .contains(index);
+
+                                    return FilterChip(
+                                      color: WidgetStateProperty.all(
+                                        context.ispectTheme.card
+                                            ?.resolve(context),
+                                      ),
+                                      label: Text(
+                                        '$count  $title',
+                                        style: context
+                                            .appTheme.textTheme.bodyMedium,
+                                      ),
+                                      selected: isSelected,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(8),
                                         ),
-                                        selected: widget
-                                            .titlesController.selectedIndexes
-                                            .contains(index),
-                                        onSelected: (selected) {
-                                          if (selected) {
+                                        side: BorderSide(
+                                          color: context.ispectTheme.divider
+                                                  ?.resolve(context) ??
+                                              context.appTheme.dividerColor,
+                                        ),
+                                      ),
+                                      onSelected: (selected) {
+                                        switch (selected) {
+                                          case true:
                                             widget.titlesController
                                                 .selectIndex(index);
-                                          } else {
+                                          case false:
                                             widget.titlesController
                                                 .unselectIndex(index);
-                                          }
-                                          _onToggle(
-                                            title,
-                                            widget.titlesController
-                                                    .selectedIndex ==
-                                                index,
-                                          );
-                                        },
-                                        backgroundColor: widget.titlesController
-                                                .selectedIndexes
-                                                .contains(index)
-                                            ? context.isDarkMode
-                                                ? context
-                                                    .ispectTheme
-                                                    .colorScheme
-                                                    .primaryContainer
-                                                : context.ispectTheme
-                                                    .colorScheme.primary
-                                            : context.ispectTheme.cardColor,
-                                      );
-                                    },
-                                  ),
+                                        }
+                                        _onToggle(
+                                          title,
+                                          widget.titlesController
+                                                  .selectedIndex ==
+                                              index,
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
                               ),
+                            ),
+                        },
                       ),
                     ),
                   ],

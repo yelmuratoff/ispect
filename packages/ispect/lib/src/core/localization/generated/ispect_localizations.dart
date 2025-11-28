@@ -245,6 +245,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Finished processing a command'**
   String get blocDoneLogDesc;
 
+  /// No description provided for @blocErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Error occurred while processing a command'**
+  String get blocErrorLogDesc;
+
   /// No description provided for @buildVersion.
   ///
   /// In en, this message translates to:
@@ -964,6 +970,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Provider logs count: {text}'**
   String iSpectifyTypeProviderCount(Object text);
+
+  /// No description provided for @providerLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'State provider activity logged'**
+  String get providerLogDesc;
 
   /// No description provided for @iSpectifyTypeRiverpod.
   ///

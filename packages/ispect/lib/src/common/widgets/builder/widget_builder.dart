@@ -1,73 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
-typedef ISpectifyWidgetBuilder = Widget Function(
+typedef ISpectWidgetBuilder = Widget Function(
   BuildContext context,
-  List<ISpectifyData> data,
+  List<ISpectLogData> data,
 );
 
-/// Builder widget for ISpectify data streams.
-class ISpectifyBuilder extends StatefulWidget {
-  const ISpectifyBuilder({
-    required this.iSpectify,
+/// Builder widget for ISpectLogger data streams.
+class ISpectLogsBuilder extends StatefulWidget {
+  const ISpectLogsBuilder({
+    required this.logger,
     required this.builder,
     super.key,
+    this.controller,
   });
 
-  final ISpectify iSpectify;
-  final ISpectifyWidgetBuilder builder;
+  final ISpectLogger logger;
+  final ISpectWidgetBuilder builder;
+  final ISpectViewController? controller;
 
   @override
-  State<ISpectifyBuilder> createState() => _ISpectifyBuilderState();
+  State<ISpectLogsBuilder> createState() => _ISpectLogsBuilderState();
 }
 
-class _ISpectifyBuilderState extends State<ISpectifyBuilder> {
-  List<ISpectifyData>? _lastData;
+class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
   int _lastDataLength = 0;
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<ISpectifyData>(
-        stream: widget.iSpectify.stream,
+  Widget build(BuildContext context) => StreamBuilder<ISpectLogData>(
+        stream: widget.logger.stream,
         builder: (context, snapshot) {
-          final currentData = widget.iSpectify.history;
+          // Always get fresh data from logger history
+          // StreamBuilder rebuilds when stream emits, so we always have latest data
+          final currentData = widget.logger.history;
 
-          if (_shouldRebuild(currentData)) {
-            _lastData = List.from(currentData);
+          // Invalidate cache if data length changed
+          if (currentData.length != _lastDataLength) {
             _lastDataLength = currentData.length;
-            return widget.builder(context, currentData);
+            widget.controller?.onDataChanged();
           }
 
-          // Return cached widget if data hasn't meaningfully changed
-          return widget.builder(context, _lastData ?? currentData);
+          return widget.builder(context, currentData);
         },
       );
-
-  /// Determines if the widget should rebuild based on data changes.
-  bool _shouldRebuild(List<ISpectifyData> newData) {
-    // Always rebuild if this is the first build
-    if (_lastData == null) return true;
-
-    // Rebuild if length changed
-    if (newData.length != _lastDataLength) return true;
-
-    // For performance, only check the most recent items for changes
-    // This covers the common case of new logs being added
-    const checkCount = 10;
-    final itemsToCheck =
-        newData.length < checkCount ? newData.length : checkCount;
-
-    if (itemsToCheck > 0) {
-      for (var i = 0; i < itemsToCheck; i++) {
-        final newIndex = newData.length - 1 - i;
-        final oldIndex = _lastData!.length - 1 - i;
-
-        if (oldIndex < 0 ||
-            newData[newIndex].hashCode != _lastData![oldIndex].hashCode) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 }

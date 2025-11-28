@@ -1,16 +1,21 @@
 import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 
-typedef JsonStoreSelectorBuilder<T> = Widget Function(
+typedef JsonStoreSelectorBuilder<T extends Object> = Widget Function(
   BuildContext context,
   T value,
 );
 
-typedef JsonStoreSelectorComparator<T> = bool Function(T previous, T next);
+typedef JsonStoreSelectorComparator<T extends Object> = bool Function(
+  T previous,
+  T next,
+);
 
 /// Lightweight selector widget that listens to [JsonExplorerStore]
 /// and rebuilds only when the selected value changes.
-class JsonStoreSelector<T> extends StatefulWidget {
+///
+/// The type parameter [T] must be non-nullable for reliable equality checks.
+class JsonStoreSelector<T extends Object> extends StatefulWidget {
   const JsonStoreSelector({
     required this.store,
     required this.selector,
@@ -28,7 +33,8 @@ class JsonStoreSelector<T> extends StatefulWidget {
   State<JsonStoreSelector<T>> createState() => _JsonStoreSelectorState<T>();
 }
 
-class _JsonStoreSelectorState<T> extends State<JsonStoreSelector<T>> {
+class _JsonStoreSelectorState<T extends Object>
+    extends State<JsonStoreSelector<T>> {
   late T _value;
 
   @override

@@ -3,11 +3,11 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:test/test.dart';
 
-class RecordingLogger extends ISpectify {
-  final List<ISpectifyData> records = <ISpectifyData>[];
+class RecordingLogger extends ISpectLogger {
+  final List<ISpectLogData> records = <ISpectLogData>[];
 
   @override
-  void logCustom(ISpectifyData data) {
+  void logData(ISpectLogData data) {
     records.add(data);
   }
 
@@ -16,12 +16,16 @@ class RecordingLogger extends ISpectify {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     records.add(
-      ISpectifyData(
+      ISpectLogData(
         msg?.toString(),
         exception: exception,
         stackTrace: stackTrace,
+        additionalData: additionalData,
+        pen: pen,
       ),
     );
   }
@@ -78,7 +82,7 @@ void main() {
 
       final completion = logger.records.whereType<BlocDoneLog>().single;
       expect(completion.hasError, isTrue);
-      expect(completion.additionalData?['completedWithError'], isTrue);
+      expect(completion.additionalData?['completed-with-error'], isTrue);
     });
 
     test('emits BlocErrorLog when errors occur and printErrors enabled', () {

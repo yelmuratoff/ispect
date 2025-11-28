@@ -1,5 +1,6 @@
 export 'package:ansicolor/ansicolor.dart';
 
+export 'src/common/base_interceptor.dart';
 export 'src/common/extensions/ispectify_data.dart';
 export 'src/enums/log_type.dart';
 export 'src/filter/filter.dart';
@@ -12,8 +13,15 @@ export 'src/models/data.dart';
 export 'src/models/error.dart';
 export 'src/models/exception.dart';
 export 'src/models/models.dart';
+export 'src/network/network_log_options.dart';
+export 'src/network/network_logs.dart';
+export 'src/network/network_payload_sanitizer.dart';
 export 'src/observer.dart';
 export 'src/redaction/redaction_service.dart';
+export 'src/redaction/strategies/composite_redaction_strategy.dart';
+export 'src/redaction/strategies/key_based_redaction.dart';
+export 'src/redaction/strategies/pattern_based_redaction.dart';
+export 'src/redaction/strategies/redaction_strategy.dart';
 export 'src/settings.dart';
 export 'src/theme/options.dart';
 export 'src/truncator.dart';

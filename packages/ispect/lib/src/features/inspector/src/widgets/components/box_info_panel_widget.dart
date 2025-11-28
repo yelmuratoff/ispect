@@ -87,21 +87,19 @@ class BoxInfoPanelWidget extends StatelessWidget {
             expandedCrossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (boxInfo.containerRect != null) ...[
-                _MainRow(boxInfo: boxInfo),
+                _MainRow(boxInfo: boxInfo, theme: theme),
               ],
               if (boxInfo.targetRenderBox is RenderParagraph) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.divider?.resolve(context),
                 ),
-                _RenderParagraphInfo(boxInfo: boxInfo),
+                _RenderParagraphInfo(boxInfo: boxInfo, theme: theme),
               ],
               if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
                 Divider(
                   height: 16,
-                  color:
-                      iSpect.theme.dividerColor(context) ?? theme.dividerColor,
+                  color: iSpect.theme.divider?.resolve(context),
                 ),
               ],
             ],
@@ -117,19 +115,19 @@ class _InfoRow extends StatelessWidget {
     required this.icon,
     required this.child,
     required this.subtitle,
+    required this.theme,
     this.iconColor,
     this.backgroundColor,
   });
   final IconData icon;
   final Widget child;
   final String subtitle;
+  final ThemeData theme;
   final Color? iconColor;
   final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     Widget child0 = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -143,7 +141,6 @@ class _InfoRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             child,
-            const SizedBox(height: 0),
             Text(
               subtitle,
               style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
@@ -171,43 +168,46 @@ class _InfoRow extends StatelessWidget {
 class _MainRow extends StatelessWidget {
   const _MainRow({
     required this.boxInfo,
+    required this.theme,
   });
   final BoxInfo boxInfo;
+  final ThemeData theme;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: [
-        _InfoRow(
-          icon: Icons.format_shapes,
-          subtitle: 'size',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(
-            '${boxInfo.targetRect.width.toStringAsFixed(1)} × ${boxInfo.targetRect.height}',
+  Widget build(BuildContext context) => Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          _InfoRow(
+            icon: Icons.format_shapes,
+            subtitle: 'size',
+            theme: theme,
+            backgroundColor: theme.chipTheme.backgroundColor,
+            child: Text(
+              '${boxInfo.targetRect.width.toStringAsFixed(1)} × ${boxInfo.targetRect.height}',
+            ),
           ),
-        ),
-        _InfoRow(
-          icon: Icons.straighten,
-          subtitle: 'padding (LTRB)',
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(boxInfo.describePadding()),
-        ),
-      ],
-    );
-  }
+          _InfoRow(
+            icon: Icons.straighten,
+            subtitle: 'padding (LTRB)',
+            theme: theme,
+            backgroundColor: theme.chipTheme.backgroundColor,
+            child: Text(boxInfo.describePadding()),
+          ),
+        ],
+      );
 }
 
 class _RenderParagraphInfo extends StatelessWidget {
-  const _RenderParagraphInfo({required this.boxInfo});
+  const _RenderParagraphInfo({
+    required this.boxInfo,
+    required this.theme,
+  });
   final BoxInfo boxInfo;
+  final ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final renderParagraph = boxInfo.targetRenderBox as RenderParagraph;
 
     final style = renderParagraph.text.style;
@@ -220,24 +220,28 @@ class _RenderParagraphInfo extends StatelessWidget {
         _InfoRow(
           icon: Icons.font_download,
           subtitle: 'font family',
+          theme: theme,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(style.fontFamily ?? 'n/a'),
         ),
         _InfoRow(
           icon: Icons.format_size,
           subtitle: 'font size',
+          theme: theme,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(style.fontSize?.toStringAsFixed(1) ?? 'n/a'),
         ),
         _InfoRow(
           icon: Icons.text_format,
           subtitle: 'decoration',
+          theme: theme,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(style.decoration?.toString() ?? 'n/a'),
         ),
         _InfoRow(
           icon: Icons.color_lens,
           subtitle: 'color',
+          theme: theme,
           iconColor: style.color,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
@@ -252,12 +256,14 @@ class _RenderParagraphInfo extends StatelessWidget {
         _InfoRow(
           icon: Icons.height,
           subtitle: 'height',
+          theme: theme,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(style.height?.toStringAsFixed(1) ?? 'n/a'),
         ),
         _InfoRow(
           icon: Icons.line_weight,
           subtitle: 'weight',
+          theme: theme,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(style.fontWeight?.toString() ?? 'n/a'),
         ),

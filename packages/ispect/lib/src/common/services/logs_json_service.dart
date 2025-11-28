@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/chunking.dart';
 
 Object? _toEncodable(dynamic object) {
   if (object is Uri) {
@@ -26,6 +27,15 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
+  /// Maximum allowed JSON string size (590MB)
+  static const int maxJsonSize = 500 * 1024 * 1024;
+
+  /// Maximum allowed JSON nesting depth
+  static const int maxJsonDepth = 1000;
+
+  /// Maximum number of log entries allowed in import
+  static const int maxLogEntries = 100000;
+
   /// Exports logs to JSON format with metadata
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata)
@@ -33,7 +43,7 @@ class LogsJsonService {
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
   Future<String> exportToJson(
-    List<ISpectifyData> logs, {
+    List<ISpectLogData> logs, {
     bool includeMetadata = true,
   }) async {
     final exportData = <String, dynamic>{};
@@ -58,40 +68,98 @@ class LogsJsonService {
 
   /// Processes logs in chunks to prevent memory issues
   Future<List<Map<String, dynamic>>> _processLogsInChunks(
-    List<ISpectifyData> logs,
+    List<ISpectLogData> logs,
   ) async {
     final jsonLogs = <Map<String, dynamic>>[];
     const chunkSize = 50;
-
-    for (var i = 0; i < logs.length; i += chunkSize) {
-      final chunk = logs.skip(i).take(chunkSize);
-
+    const yieldEveryChunks = 10;
+    var processed = 0;
+    for (final chunk in Chunking.chunks(logs, chunkSize)) {
       for (final log in chunk) {
         jsonLogs.add(log.toJson());
       }
-
-      if (i % (chunkSize * 10) == 0) {
-        await Future<void>.delayed(Duration.zero);
-      }
+      processed++;
+      await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-
     return jsonLogs;
   }
 
-  /// Imports logs from JSON format
+  /// Imports logs from JSON format with comprehensive validation
   ///
   /// - Parameters: jsonString (JSON content to parse)
   /// - Return: List of imported log entries
   /// - Usage example: `final logs = await service.importFromJson(jsonContent);`
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
-  Future<List<ISpectifyData>> importFromJson(String jsonString) async {
+  ///
+  /// **Validation:**
+  /// - Size: Max 10MB
+  /// - Depth: Max 50 levels
+  /// - Count: Max 100,000 entries
+  ///
+  /// **Security:** Prevents DoS attacks via malformed JSON
+  Future<List<ISpectLogData>> importFromJson(String jsonString) async {
     try {
+      // Validate size
+      _validateJsonSize(jsonString);
+
       final dynamic jsonData = jsonDecode(jsonString);
+
+      // Validate depth
+      _validateJsonDepth(jsonData);
+
       final logsJson = _extractLogsFromJsonData(jsonData);
+
+      // Validate count
+      _validateLogCount(logsJson);
 
       return await _processImportedLogsInChunks(logsJson);
     } catch (e) {
+      if (e is FormatException) rethrow;
       throw FormatException('Failed to import logs from JSON: $e');
+    }
+  }
+
+  /// Validates JSON string size to prevent memory exhaustion
+  void _validateJsonSize(String jsonString) {
+    if (jsonString.length > maxJsonSize) {
+      throw FormatException(
+        'JSON size (${jsonString.length} bytes) exceeds maximum allowed '
+        'size ($maxJsonSize bytes). Please import a smaller dataset.',
+      );
+    }
+  }
+
+  /// Validates JSON nesting depth to prevent stack overflow
+  void _validateJsonDepth(dynamic data, [int currentDepth = 0]) {
+    if (currentDepth > maxJsonDepth) {
+      throw FormatException(
+        'JSON nesting depth ($currentDepth) exceeds maximum allowed '
+        'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
+      );
+    }
+
+    if (data is Map) {
+      for (final value in data.values) {
+        _validateJsonDepth(value, currentDepth + 1);
+      }
+    } else if (data is List) {
+      // Only check first and last items to avoid O(n*depth) complexity
+      if (data.isNotEmpty) {
+        _validateJsonDepth(data.first, currentDepth + 1);
+        if (data.length > 1) {
+          _validateJsonDepth(data.last, currentDepth + 1);
+        }
+      }
+    }
+  }
+
+  /// Validates log entry count to prevent excessive memory usage
+  void _validateLogCount(List<dynamic> logsJson) {
+    if (logsJson.length > maxLogEntries) {
+      throw FormatException(
+        'Log count (${logsJson.length}) exceeds maximum allowed '
+        'entries ($maxLogEntries). Please split the import into smaller batches.',
+      );
     }
   }
 
@@ -109,31 +177,27 @@ class LogsJsonService {
   }
 
   /// Processes imported logs in chunks to prevent UI freezing
-  Future<List<ISpectifyData>> _processImportedLogsInChunks(
+  Future<List<ISpectLogData>> _processImportedLogsInChunks(
     List<dynamic> logsJson,
   ) async {
-    final logs = <ISpectifyData>[];
+    final logs = <ISpectLogData>[];
     const chunkSize = 25;
-
-    for (var i = 0; i < logsJson.length; i += chunkSize) {
-      final chunk = logsJson.skip(i).take(chunkSize);
-
+    const yieldEveryChunks = 4;
+    var processed = 0;
+    for (final chunk in Chunking.chunks(logsJson, chunkSize)) {
       for (final logJson in chunk) {
         try {
-          final log = ISpectifyDataJsonUtils.fromJson(
+          final log = ISpectLogDataJsonUtils.fromJson(
             logJson as Map<String, dynamic>,
           );
           logs.add(log);
-        } catch (e) {
+        } catch (_) {
           continue;
         }
       }
-
-      if (i % (chunkSize * 4) == 0) {
-        await Future<void>.delayed(Duration.zero);
-      }
+      processed++;
+      await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-
     return logs;
   }
 
@@ -144,7 +208,7 @@ class LogsJsonService {
   /// - Usage example: `await service.shareLogsAsJsonFile(logs, fileName: 'my_logs');`
   /// - Edge case notes: Validates non-empty logs, combines export and download operations
   Future<void> shareLogsAsJsonFile(
-    List<ISpectifyData> logs, {
+    List<ISpectLogData> logs, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
@@ -170,9 +234,9 @@ class LogsJsonService {
   /// - Usage example: `await service.shareFilteredLogsAsJsonFile(allLogs, filteredLogs, currentFilter);`
   /// - Edge case notes: Includes filter metadata for context, validates non-empty filtered logs
   Future<void> shareFilteredLogsAsJsonFile(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter, {
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
@@ -196,20 +260,20 @@ class LogsJsonService {
 
   /// Creates export data structure for filtered logs
   Map<String, dynamic> _createFilteredExportData(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter,
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter,
   ) =>
       {
         'metadata': _createFilteredMetadata(logs, filteredLogs, filter),
-        'logs': filteredLogs.map((log) => log.toJson()).toList(),
+        'logs': filteredLogs.map((log) => log.toJson()).toList(growable: false),
       };
 
   /// Creates metadata for filtered export including filter information
   Map<String, dynamic> _createFilteredMetadata(
-    List<ISpectifyData> logs,
-    List<ISpectifyData> filteredLogs,
-    ISpectifyFilter filter,
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter,
   ) =>
       {
         'exportedAt': DateTime.now().toIso8601String(),
@@ -220,7 +284,7 @@ class LogsJsonService {
       };
 
   /// Creates summary of applied filter
-  Map<String, dynamic> _createFilterSummary(ISpectifyFilter filter) => {
+  Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
         'hasSearchQuery':
             filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
         'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,

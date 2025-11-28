@@ -66,21 +66,3 @@ String colorToHexString(Color color, {bool withAlpha = false}) {
 
   return '#$r$g$b';
 }
-
-/// Determines the appropriate text color (black or white) to ensure
-/// sufficient contrast against a given background color.
-///
-/// This function calculates the luminance of the background color
-/// and returns black if the luminance is greater than 0.5, otherwise
-/// it returns white.
-///
-/// `background` - The background color to evaluate.
-///
-/// Returns a `Color` object representing either black or white,
-/// depending on the luminance of the background.
-Color getTextColorOnBackground(Color background) {
-  final luminance = background.computeLuminance();
-
-  if (luminance > 0.5) return Colors.black;
-  return Colors.white;
-}

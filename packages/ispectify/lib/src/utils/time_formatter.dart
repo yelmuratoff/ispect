@@ -2,9 +2,9 @@
 ///
 /// Provides various time formatting styles, including full timestamps
 /// and time with milliseconds.
-class ISpectifyDateTimeFormatter {
-  /// Creates an instance of `ISpectifyDateTimeFormatter` with the given [date].
-  const ISpectifyDateTimeFormatter(this.date);
+class ISpectDateTimeFormatter {
+  /// Creates an instance of `ISpectDateTimeFormatter` with the given [date].
+  const ISpectDateTimeFormatter(this.date);
 
   /// The `DateTime` instance to be formatted.
   final DateTime? date;
@@ -27,9 +27,9 @@ class ISpectifyDateTimeFormatter {
     return '${_pad(date!.day)}.${_pad(date!.month)}.${date!.year} | $timeAndSeconds';
   }
 
-  /// Returns the default formatted date-time representation.
+  /// Returns the default formatted time representation.
   ///
-  /// Uses `fullTime` as the standard format.
+  /// Uses `timeAndSeconds` as the standard compact format.
   String get format => date == null ? '' : timeAndSeconds;
 
   /// Pads single-digit values with a leading zero.

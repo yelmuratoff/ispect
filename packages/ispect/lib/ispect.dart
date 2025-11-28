@@ -12,7 +12,6 @@ export 'package:ispectify/ispectify.dart';
 
 export 'src/common/extensions/history.dart';
 export 'src/common/extensions/init.dart';
-export 'src/common/history/daily_file_history.dart';
 export 'src/common/models/panel_button.dart';
 export 'src/common/models/panel_item.dart';
 export 'src/common/observers/route_observer.dart';
@@ -23,6 +22,5 @@ export 'src/common/widgets/builder/column_builder.dart';
 export 'src/common/widgets/builder/data_builder.dart';
 export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/core/res/ispect_callbacks.dart';
-export 'src/features/ispect/domain/models/log_description.dart';
 export 'src/features/ispect/options.dart';
 export 'src/features/json_viewer/json_screen.dart';

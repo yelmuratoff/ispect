@@ -75,6 +75,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => 'Команданы өңдеу аяқталды';
 
   @override
+  String get blocErrorLogDesc => 'Команданы өңдеу кезінде қате пайда болды';
+
+  @override
   String get buildVersion => 'Құрастыру нұсқасы';
 
   @override
@@ -487,6 +490,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return 'Провайдерлер жазбаларының саны: $text';
   }
+
+  @override
+  String get providerLogDesc => 'Күй провайдерінің іс-әрекеті журналға жазылды';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

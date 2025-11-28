@@ -1,19 +1,69 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
+class SentryISpectObserver implements ISpectObserver {
+  @override
+  void onError(ISpectLogData err) {
+    log('SentryISpectObserver - onError: ${err.message}');
+  }
+
+  @override
+  void onException(ISpectLogData err) {
+    log('SentryISpectObserver - onException: ${err.message}');
+  }
+
+  @override
+  void onLog(ISpectLogData data) {
+    log('SentryISpectObserver - onLog: ${data.message}');
+  }
+}
+
+class BackendISpectObserver implements ISpectObserver {
+  @override
+  void onError(ISpectLogData err) {
+    log('BackendISpectObserver - onError: ${err.message}');
+  }
+
+  @override
+  void onException(ISpectLogData err) {
+    log('BackendISpectObserver - onException: ${err.message}');
+  }
+
+  @override
+  void onLog(ISpectLogData data) {
+    log('BackendISpectObserver - onLog: ${data.message}');
+  }
+}
+
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  // Initialize ISpectify for logging
-  final logger = ISpectifyFlutter.init();
+  // Example: Restore settings from storage (e.g., SharedPreferences)
+  // final prefs = await SharedPreferences.getInstance();
+  // final settingsJson = prefs.getString('ispect_settings');
+  // final initialSettings = settingsJson != null
+  //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
+  //     : null;
+
+  final logger = ISpectFlutter.init(
+    options: ISpectLoggerOptions(
+      customColors: {
+        'error': AnsiPen()..yellow(),
+        'exception': AnsiPen()..yellow(),
+        'info': AnsiPen()..blue(),
+      },
+    ),
+  );
+
+  logger.addObserver(SentryISpectObserver());
+  logger.addObserver(BackendISpectObserver());
 
   // Wrap your app with ISpect
-  ISpect.run(
-    () => runApp(MyApp()),
-    logger: logger,
-  );
+  ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -25,11 +75,40 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         // Add your localization delegates here
       ]),
+      theme: ThemeData(
+        dividerColor: Colors.grey.shade300,
+      ),
+      darkTheme: ThemeData(
+        dividerColor: Colors.grey.shade800,
+      ),
       navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
           observer: observer,
+
+          // This parameter is needed if you want the user to be able to manage settings
+          // Example: Restore initial settings from storage
+          // initialSettings: initialSettings,
+          initialSettings: const ISpectSettingsState(
+            disabledLogTypes: {
+              'riverpod-add',
+              'riverpod-update',
+              'riverpod-dispose',
+              'riverpod-fail',
+            },
+            enabled: true,
+            useConsoleLogs: true,
+            useHistory: true,
+          ),
           locale: const Locale('en'),
+
+          onSettingsChanged: (settings) {
+            // Persist settings when they change
+            ISpect.logger.print('ISpect settings changed: $settings');
+            // Example: Save to SharedPreferences
+            // final prefs = await SharedPreferences.getInstance();
+            // await prefs.setString('ispect_settings', jsonEncode(settings.toJson()));
+          },
           onLoadLogContent: (context) async {
             // Here you can load log content.
             // For example, from a file using file_picker.
@@ -81,47 +160,58 @@ class MyApp extends StatelessWidget {
         ),
         theme: ISpectTheme(
           pageTitle: 'Your name here',
-          lightBackgroundColor: Colors.white,
-          darkBackgroundColor: Colors.black,
-          lightDividerColor: Colors.grey.shade300,
-          darkDividerColor: Colors.grey.shade800,
+          primary: ISpectDynamicColor(
+            light: Colors.red,
+            dark: Colors.red,
+          ),
+          background: ISpectDynamicColor(
+            light: Colors.redAccent.shade100,
+            dark: Colors.black,
+          ),
+          card: ISpectDynamicColor(
+            light: Colors.redAccent.shade200,
+            dark: Colors.grey.shade900,
+          ),
+          divider: ISpectDynamicColor(
+            light: Colors.redAccent.shade400,
+            dark: Colors.grey.shade800,
+          ),
           logColors: {
-            'error': Colors.red,
+            'error': Colors.yellow,
+            'exception': Colors.yellow,
             'info': Colors.blue,
           },
           logIcons: {
-            'error': Icons.error,
+            'error': Icons.abc,
+            'exception': Icons.abc,
             'info': Icons.info,
           },
-          logDescriptions: [
-            LogDescription(
-              key: 'riverpod-add',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-update',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-dispose',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-fail',
-              isDisabled: true,
-            ),
-          ],
         ),
         child: child ?? const SizedBox.shrink(),
       ),
       home: Scaffold(
         appBar: AppBar(title: const Text('ISpect Example')),
         body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              ISpect.logger.info('Button pressed!');
-            },
-            child: const Text('Press me'),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.info('Button pressed!');
+                  ISpect.logger.warning('Button pressed!');
+                  ISpect.logger.error('Button pressed!');
+                },
+                child: const Text('Press me'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ISpect.logger.handle(
+                    exception: Exception('Test Exception'),
+                    stackTrace: StackTrace.current,
+                  );
+                },
+                child: const Text('Large Error'),
+              ),
+            ],
           ),
         ),
       ),

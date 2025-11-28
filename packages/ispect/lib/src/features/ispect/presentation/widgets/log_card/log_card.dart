@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 
 part 'collapsed_body.dart';
@@ -11,6 +13,7 @@ class LogCard extends StatelessWidget {
   const LogCard({
     required this.icon,
     required this.color,
+    required this.dividerColor,
     required this.data,
     required this.index,
     required this.isExpanded,
@@ -20,9 +23,10 @@ class LogCard extends StatelessWidget {
     super.key,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final IconData icon;
   final Color color;
+  final Color dividerColor;
   final int index;
   final bool isExpanded;
   final VoidCallback onTap;
@@ -32,9 +36,14 @@ class LogCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RepaintBoundary(
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          color:
-              isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
+          duration: const Duration(
+            milliseconds: ISpectConstants.animationDurationMs,
+          ),
+          color: isExpanded
+              ? color.withValues(
+                  alpha: ISpectConstants.standardBackgroundOpacity,
+                )
+              : Colors.transparent,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -46,11 +55,13 @@ class LogCard extends StatelessWidget {
                 onTap: onTap,
                 onCopyTap: onCopyTap,
                 observer: observer,
+                dividerColor: dividerColor,
               ),
               if (isExpanded) ...[
                 _ExpandedContent(
                   data: data,
                   color: color,
+                  dividerColor: dividerColor,
                 ),
               ],
             ],
@@ -63,6 +74,7 @@ class _LogCardHeader extends StatelessWidget {
   const _LogCardHeader({
     required this.icon,
     required this.color,
+    required this.dividerColor,
     required this.data,
     required this.isExpanded,
     required this.onTap,
@@ -72,7 +84,8 @@ class _LogCardHeader extends StatelessWidget {
 
   final IconData icon;
   final Color color;
-  final ISpectifyData data;
+  final Color dividerColor;
+  final ISpectLogData data;
   final bool isExpanded;
   final VoidCallback onTap;
   final VoidCallback? onCopyTap;
@@ -84,7 +97,10 @@ class _LogCardHeader extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: ISpectConstants.standardHorizontalPadding,
+              vertical: ISpectConstants.standardVerticalPadding,
+            ),
             child: CollapsedBody(
               icon: icon,
               color: color,
@@ -104,7 +120,7 @@ class _LogCardHeader extends StatelessWidget {
               message: data.textMessage,
               errorMessage: data.httpLogText,
               expanded: isExpanded,
-              isHTTP: data.key == ISpectifyLogType.httpRequest.key,
+              isHTTP: data.key == ISpectLogType.httpRequest.key,
               onCopyCurlTap: () {
                 final curl = data.curlCommand;
                 if (curl != null) {
@@ -121,10 +137,12 @@ class _ExpandedContent extends StatelessWidget {
   const _ExpandedContent({
     required this.data,
     required this.color,
+    required this.dividerColor,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final Color color;
+  final Color dividerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +153,7 @@ class _ExpandedContent extends StatelessWidget {
       children: [
         Container(
           height: 1,
-          color: context.ispectTheme.dividerColor,
+          color: dividerColor,
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -168,7 +186,7 @@ class _LazyExpandedBody extends StatelessWidget {
     required this.hasStackTrace,
   });
 
-  final ISpectifyData data;
+  final ISpectLogData data;
   final Color color;
   final bool hasStackTrace;
 
@@ -189,14 +207,35 @@ class _LazyExpandedBody extends StatelessWidget {
       );
 }
 
-class _LazyStackTraceBody extends StatelessWidget {
+class _LazyStackTraceBody extends StatefulWidget {
   const _LazyStackTraceBody({
     required this.color,
     required this.stackTrace,
   });
 
+  static const _maxStackTraceHeight = 320.0;
+
   final String stackTrace;
   final Color color;
+
+  @override
+  State<_LazyStackTraceBody> createState() => _LazyStackTraceBodyState();
+}
+
+class _LazyStackTraceBodyState extends State<_LazyStackTraceBody> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -204,19 +243,27 @@ class _LazyStackTraceBody extends StatelessWidget {
         child: SizedBox(
           width: double.maxFinite,
           child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              border: Border.all(color: color),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: SelectableText(
-                stackTrace,
-                maxLines: 50,
-                minLines: 1,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
+            decoration: DecorationUtils.roundedBorder(color: widget.color),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: _LazyStackTraceBody._maxStackTraceHeight,
+              ),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                radius: const Radius.circular(4),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(6),
+                  primary: false,
+                  physics: const ClampingScrollPhysics(),
+                  child: SelectableText(
+                    widget.stackTrace,
+                    style: TextStyle(
+                      color: widget.color,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -242,10 +289,7 @@ class _LogContentContainer extends StatelessWidget {
         width: double.maxFinite,
         child: DecoratedBox(
           decoration: hasStackTrace
-              ? BoxDecoration(
-                  border: Border.all(color: color),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                )
+              ? DecorationUtils.roundedBorder(color: color)
               : const BoxDecoration(),
           child: Padding(
             padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,

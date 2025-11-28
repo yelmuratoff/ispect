@@ -1,61 +1,68 @@
-name: Sync Versions and Changelogs
+name: Sync Versions, Changelogs, and READMEs
 
 on:
-  push:
-    branches:
-      - '**'
-    paths:
-      - 'CHANGELOG.md'
-      - 'version.config'
-      - '.github/workflows/sync_versions_and_changelogs.yml'
-      - 'bash/update_versions.sh'
-      - 'bash/update_changelog.sh'
+   push:
+      branches:
+         - "**"
+      paths:
+         - "CHANGELOG.md"
+         - "version.config"
+         - "README.md"
+         - ".github/workflows/sync_versions_and_changelogs.yml"
+         - "bash/update_versions.sh"
+         - "bash/update_changelog.sh"
+         - "bash/sync_readme.sh"
 
 jobs:
-  update-versions-and-changelogs:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      
-      - name: Setup Git
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-      
-      - name: Update package versions and CHANGELOGs
-        run: |
-          chmod +x bash/update_versions.sh
-          ./bash/update_versions.sh
-      
-      - name: Verify Dependencies
-        run: |
-          chmod +x bash/check_dependencies.sh
-          ./bash/check_dependencies.sh || echo "Dependency check found issues, but continuing with commit as update_versions.sh should have fixed them"
-      
-      - name: Commit and push changes
-        run: |
-          # Clean up any temporary files
-          find packages -name "*.tmp" -type f -delete || true
-          
-          # Check for actual changes to tracked files
-          if [[ -n $(git status --porcelain | grep -E '^\s*(M|A|D|R)') ]]; then
-            # Add only existing files that we care about
-            git add packages/*/CHANGELOG.md packages/*/pubspec.yaml packages/*/example/pubspec.yaml version.config 2>/dev/null || true
-            
-            # Only commit if there are staged changes
-            if [[ -n $(git diff --cached --name-only) ]]; then
-              git commit -m "chore: sync package versions and changelogs with dependencies"
-              git push
-              echo "Package versions, dependencies, and changelogs updated and pushed successfully!"
-            else
-              echo "No staged changes to commit after adding files."
-            fi
-          else
-            echo "No changes to commit."
-          fi
+   update-versions-changelogs-readmes:
+      runs-on: ubuntu-latest
+      permissions:
+         contents: write
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v3
+           with:
+              fetch-depth: 0
+
+         - name: Setup Git
+           run: |
+              git config --global user.name "GitHub Actions"
+              git config --global user.email "actions@github.com"
+
+         - name: Update package versions and CHANGELOGs
+           run: |
+              chmod +x bash/update_versions.sh
+              ./bash/update_versions.sh
+
+         - name: Sync README to all packages
+           run: |
+              chmod +x bash/sync_readme.sh
+              ./bash/sync_readme.sh
+
+         - name: Verify Dependencies
+           run: |
+              chmod +x bash/check_dependencies.sh
+              ./bash/check_dependencies.sh || echo "Dependency check found issues, but continuing with commit as update_versions.sh should have fixed them"
+
+         - name: Commit and push changes
+           run: |
+              # Clean up any temporary files
+              find packages -name "*.tmp" -type f -delete || true
+
+              # Check for actual changes to tracked files
+              if [[ -n $(git status --porcelain | grep -E '^\s*(M|A|D|R)') ]]; then
+                # Add only existing files that we care about
+                git add packages/*/CHANGELOG.md packages/*/README.md packages/*/pubspec.yaml packages/*/example/pubspec.yaml version.config 2>/dev/null || true
+                
+                # Only commit if there are staged changes
+                if [[ -n $(git diff --cached --name-only) ]]; then
+                  git commit -m "chore: sync package versions, changelogs, and READMEs with dependencies"
+                  git push
+                  echo "Package versions, dependencies, changelogs, and READMEs updated and pushed successfully!"
+                else
+                  echo "No staged changes to commit after adding files."
+                fi
+              else
+                echo "No changes to commit."
+              fi

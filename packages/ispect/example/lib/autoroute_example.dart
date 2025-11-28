@@ -20,12 +20,9 @@ class SecondNavObserver extends AutoRouterObserver {
 }
 
 final observer = ISpectNavigatorObserver();
+
 void main() {
-  final logger = ISpectifyFlutter.init();
-  ISpect.run(
-    logger: logger,
-    () => runApp(NestedNavigationApp()),
-  );
+  ISpect.run(() => runApp(NestedNavigationApp()));
 }
 
 class NestedNavigationApp extends StatelessWidget {

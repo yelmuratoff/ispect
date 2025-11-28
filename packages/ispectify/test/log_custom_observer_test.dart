@@ -1,24 +1,24 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
-class _SpyObserver implements ISpectifyObserver {
+class _SpyObserver implements ISpectObserver {
   const _SpyObserver();
   static int errorCount = 0;
   static int exceptionCount = 0;
   static int logCount = 0;
 
   @override
-  void onError(ISpectifyData err) {
+  void onError(ISpectLogData err) {
     errorCount++;
   }
 
   @override
-  void onException(ISpectifyData err) {
+  void onException(ISpectLogData err) {
     exceptionCount++;
   }
 
   @override
-  void onLog(ISpectifyData log) {
+  void onLog(ISpectLogData log) {
     logCount++;
   }
 }
@@ -30,23 +30,23 @@ void main() {
     _SpyObserver.logCount = 0;
   });
 
-  test('logCustom routes error-level custom logs to onError', () async {
-    final logger = ISpectify(observer: const _SpyObserver());
+  test('logData routes error-level custom logs to onError', () async {
+    final logger = ISpectLogger(observer: const _SpyObserver());
 
     // Subscribe before emitting to avoid missing broadcast events
     final future = logger.stream.take(2).toList();
 
-    final httpErr = ISpectifyData(
+    final httpErr = ISpectLogData(
       'HTTP failed',
-      key: ISpectifyLogType.httpError.key,
+      key: ISpectLogType.httpError.key,
       logLevel: LogLevel.error,
     );
 
-    final normal = ISpectifyData('Hello', key: ISpectifyLogType.info.key);
+    final normal = ISpectLogData('Hello', key: ISpectLogType.info.key);
 
     logger
-      ..logCustom(httpErr)
-      ..logCustom(normal);
+      ..logData(httpErr)
+      ..logData(normal);
 
     await future;
 
@@ -56,7 +56,7 @@ void main() {
 
   test('handle() calls observer methods only once per error/exception',
       () async {
-    final logger = ISpectify(observer: const _SpyObserver());
+    final logger = ISpectLogger(observer: const _SpyObserver());
 
     // Test Error handling
     final testError = ArgumentError('Test error');

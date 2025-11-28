@@ -28,7 +28,7 @@ class LogsV2Screen extends StatefulWidget {
   });
 
   final String? appBarTitle;
-  final List<ISpectifyData>? logs;
+  final List<ISpectLogData>? logs;
   final String? sessionPath;
   final DateTime? sessionDate;
   final ISpectShareCallback? onShare;
@@ -52,12 +52,14 @@ class _LogsScreenState extends State<LogsV2Screen> {
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
-  final List<ISpectifyData> _logs = [];
+  final List<ISpectLogData> _logs = [];
 
   @override
   void initState() {
     super.initState();
-    _logsViewController = ISpectViewController(onShare: widget.onShare);
+    _logsViewController = ISpectViewController(
+      onShare: widget.onShare,
+    );
     _logsViewController.toggleExpandedLogs();
     getLogs();
   }
@@ -75,7 +77,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.backgroundColor(context),
+      backgroundColor: iSpect.theme.background?.resolve(context),
       body: ListenableBuilder(
         listenable: _logsViewController,
         builder: (_, __) => Row(
@@ -93,7 +95,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
             ),
             if (_logsViewController.activeData != null) ...[
               VerticalDivider(
-                color: _getDividerColor(iSpect, context),
+                color: context.ispectTheme.divider?.resolve(context),
                 width: 1,
                 thickness: 1,
               ),
@@ -110,9 +112,6 @@ class _LogsScreenState extends State<LogsV2Screen> {
       ),
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 
   Future<void> getLogs() async {
     if (widget.logs != null && widget.logs!.isNotEmpty) {
@@ -145,7 +144,7 @@ class _LogListItem extends StatelessWidget {
     super.key,
   });
 
-  final ISpectifyData logData;
+  final ISpectLogData logData;
   final int itemIndex;
   final IconData statusIcon;
   final Color statusColor;
@@ -166,6 +165,7 @@ class _LogListItem extends StatelessWidget {
         isExpanded: isExpanded,
         onCopyTap: onCopyPressed,
         onTap: onItemTapped,
+        dividerColor: dividerColor,
       ),
     );
 
@@ -200,7 +200,7 @@ class EmptyLogsWidget extends StatelessWidget {
           const Gap(8),
           Text(
             context.ispectL10n.notFound.capitalize(),
-            style: context.ispectTheme.textTheme.bodyLarge,
+            style: context.appTheme.textTheme.bodyLarge,
           ),
         ],
       );
@@ -218,7 +218,7 @@ class _MainLogsView extends StatelessWidget {
     this.appBarTitle,
   });
 
-  final List<ISpectifyData> logsData;
+  final List<ISpectLogData> logsData;
   final ISpectScopeModel iSpectTheme;
   final GroupButtonController titleFiltersController;
   final FocusNode searchFocusNode;
@@ -230,7 +230,7 @@ class _MainLogsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
-    final (allTitles, uniqueTitles) = logsViewController.getTitles(logsData);
+    final titles = logsViewController.getTitles(logsData);
 
     return CustomScrollView(
       controller: logsScrollController,
@@ -240,12 +240,12 @@ class _MainLogsView extends StatelessWidget {
           focusNode: searchFocusNode,
           title: appBarTitle,
           titlesController: titleFiltersController,
-          titles: allTitles,
-          uniqTitles: uniqueTitles,
+          titles: titles.all,
+          uniqTitles: titles.unique,
           controller: logsViewController,
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.backgroundColor(context),
+          backgroundColor: iSpectTheme.theme.background?.resolve(context),
         ),
         if (filteredLogEntries.isEmpty)
           const SliverToBoxAdapter(
@@ -257,12 +257,13 @@ class _MainLogsView extends StatelessWidget {
         SliverList.builder(
           itemCount: filteredLogEntries.length,
           itemBuilder: (context, index) {
-            final logEntry = logsViewController.getLogEntryAtIndex(
+            final (entry: logEntry, actualIndex: _) =
+                logsViewController.getLogEntryAtIndex(
               filteredLogEntries,
               index,
             );
             return _LogListItem(
-              key: ValueKey('${logEntry.hashCode}_$index'),
+              key: ObjectKey(logEntry),
               logData: logEntry,
               itemIndex: index,
               statusIcon:
@@ -274,7 +275,8 @@ class _MainLogsView extends StatelessWidget {
                       logEntry.hashCode ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: _getDividerColor(iSpectTheme, context),
+              dividerColor: iSpectTheme.theme.divider?.resolve(context) ??
+                  context.appTheme.dividerColor,
               onCopyPressed: () => logsViewController.copyLogEntryText(
                 context,
                 logEntry,
@@ -288,9 +290,6 @@ class _MainLogsView extends StatelessWidget {
       ],
     );
   }
-
-  Color _getDividerColor(ISpectScopeModel iSpect, BuildContext context) =>
-      iSpect.theme.dividerColor(context) ?? context.ispectTheme.dividerColor;
 }
 
 /// Detail view widget for displaying selected log data
@@ -300,7 +299,7 @@ class _DetailView extends StatelessWidget {
     required this.onClose,
   });
 
-  final ISpectifyData activeData;
+  final ISpectLogData activeData;
   final VoidCallback onClose;
 
   @override

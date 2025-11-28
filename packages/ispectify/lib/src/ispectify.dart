@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/factory/log_factory.dart';
+import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/observer/observer_manager.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
 ///
-/// `ISpectify` provides a comprehensive logging system with features such as:
+/// `ISpectLogger` provides a comprehensive logging system with features such as:
 /// - Multiple log levels (debug, info, warning, error, critical, verbose)
 /// - Custom log filtering
 /// - Error and exception handling
@@ -15,7 +18,7 @@ import 'package:ispectify/ispectify.dart';
 /// ### Example usage:
 ///
 /// ```dart
-/// final inspector = ISpectify();
+/// final inspector = ISpectLogger();
 /// inspector.info('Application started');
 /// inspector.error('Failed to connect', NetworkException(), StackTrace.current);
 ///
@@ -24,8 +27,8 @@ import 'package:ispectify/ispectify.dart';
 ///   // Handle log data
 /// });
 /// ```
-class ISpectify {
-  /// Creates an instance of `ISpectify` with optional components.
+class ISpectLogger {
+  /// Creates an instance of `ISpectLogger` with optional components.
   ///
   /// All parameters are optional and will be initialized with defaults if not provided.
   ///
@@ -35,47 +38,105 @@ class ISpectify {
   /// - `filter`: For filtering which logs should be processed.
   /// - `errorHandler`: Custom error handling logic.
   /// - `history`: Custom implementation for storing log history.
-  ISpectify({
-    ISpectifyLogger? logger,
-    ISpectifyObserver? observer,
-    ISpectifyOptions? options,
-    ISpectifyFilter? filter,
-    ISpectifyErrorHandler? errorHandler,
+  ISpectLogger({
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectLoggerOptions? options,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) {
-    _init(filter, options, logger, observer, errorHandler, history);
-  }
-
-  /// Initializes all components of the inspector.
-  ///
-  /// This method is called from the constructor to set up the instance
-  /// with provided or default components.
-  void _init(
-    ISpectifyFilter? filter,
-    ISpectifyOptions? settings,
-    ISpectifyLogger? logger,
-    ISpectifyObserver? observer,
-    ISpectifyErrorHandler? errorHandler,
-    ILogHistory? history,
-  ) {
+  }) : _loggerStreamController =
+            StreamController<ISpectLogData>.broadcast(sync: true) {
+    final resolvedOptions = options ?? ISpectLoggerOptions();
+    _options = resolvedOptions;
+    _logger = logger ?? ISpectBaseLogger();
     _filter = filter;
-    _observer = observer;
-    _options = settings ?? ISpectifyOptions();
-    _logger = logger ?? ISpectifyLogger();
-    _errorHandler = errorHandler ?? ISpectifyErrorHandler(_options);
-    _history = history ?? DefaultISpectifyHistory(_options);
+    _errorHandler = errorHandler ?? ISpectErrorHandler(resolvedOptions);
+    _history = history ?? DefaultISpectLoggerHistory(resolvedOptions);
+    _pipeline = LogPipeline(
+      streamController: _loggerStreamController,
+      options: _options,
+      consoleLogger: _logger,
+      history: _history,
+      filter: _filter,
+    );
+    _observerManager = ObserverManager(() => _logger);
+    _replaceObserver(observer);
   }
 
-  late ISpectifyOptions _options;
+  /// Broadcast stream controller for log events.
+  final StreamController<ISpectLogData> _loggerStreamController;
+
+  bool _isDisposed = false;
+
+  /// Indicates whether this logger has been disposed and can no longer emit logs.
+  bool get isDisposed => _isDisposed;
+
+  late ISpectLoggerOptions _options;
 
   /// Current configuration options for this inspector instance.
-  ISpectifyOptions get options => _options;
+  ISpectLoggerOptions get options => _options;
 
-  late ISpectifyLogger _logger;
-  late ISpectifyErrorHandler _errorHandler;
-  late ISpectifyFilter? _filter;
-  late ISpectifyObserver? _observer;
+  late ISpectBaseLogger _logger;
+  late ISpectErrorHandler _errorHandler;
+  ISpectFilter? _filter;
+  late LogPipeline _pipeline;
+
+  /// Observers notified of log events.
+  late final ObserverManager _observerManager;
+
+  void _replaceObserver(ISpectObserver? observer) {
+    if (_isDisposed) return;
+    _observerManager.replace(observer);
+  }
+
   late ILogHistory _history;
+
+  bool _ensureActive() => !_isDisposed;
+
+  // ======= OBSERVER METHODS =======
+
+  /// Adds an observer to be notified of log events.
+  ///
+  /// Multiple observers can be registered, and all will be notified.
+  ///
+  /// - `observer`: The observer to add.
+  void addObserver(ISpectObserver observer) {
+    if (!_ensureActive()) return;
+    _observerManager.add(observer);
+  }
+
+  /// Registers an observer and returns a disposer to remove it later.
+  ISpectObserverDisposer observe(ISpectObserver observer) {
+    if (!_ensureActive()) return () {};
+    return _observerManager.observe(observer);
+  }
+
+  /// Removes an observer from the list of registered observers.
+  ///
+  /// - `observer`: The observer to remove.
+  void removeObserver(ISpectObserver observer) {
+    if (!_ensureActive()) return;
+    _observerManager.remove(observer);
+  }
+
+  /// Removes all registered observers.
+  void clearObservers() {
+    if (!_ensureActive()) return;
+    _observerManager.clear();
+  }
+
+  /// Indicates whether at least one observer is registered.
+  bool get hasObservers => _observerManager.hasObservers;
+
+  /// Helper method to notify all observers with error handling.
+  ///
+  /// Wraps each observer call in a try-catch to prevent one failing
+  /// observer from affecting others.
+  void _notifyObservers(void Function(ISpectObserver) notify) {
+    if (!_ensureActive()) return;
+    _observerManager.notify(notify);
+  }
 
   /// Reconfigures the inspector with new components.
   ///
@@ -90,55 +151,66 @@ class ISpectify {
   /// - `errorHandler`: New error handler implementation.
   /// - `history`: New history storage implementation.
   void configure({
-    ISpectifyLogger? logger,
-    ISpectifyOptions? options,
-    ISpectifyObserver? observer,
-    ISpectifyFilter? filter,
-    ISpectifyErrorHandler? errorHandler,
+    ISpectBaseLogger? logger,
+    ISpectLoggerOptions? options,
+    ISpectObserver? observer,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
-    _filter = filter ?? _filter; // Fixed null-aware assignment
-    _options = options ?? _options;
-    _observer = observer ?? _observer;
-    _logger = logger ?? _logger;
+    if (!_ensureActive()) return;
+
+    if (filter != null) {
+      _filter = filter;
+    }
+
+    if (observer != null) {
+      _replaceObserver(observer);
+    }
+
+    if (options != null) {
+      _options = options;
+    }
+
+    if (logger != null) {
+      _logger = logger;
+    }
+
     if (errorHandler != null) {
       _errorHandler = errorHandler;
     } else {
-      // Preserve any injected custom error handler implementation.
-      // If current handler is the default implementation, rebuild it to reflect new options.
-      if (_errorHandler.runtimeType == ISpectifyErrorHandler) {
-        _errorHandler = ISpectifyErrorHandler(_options);
-      }
-      // Otherwise keep existing custom error handler as-is.
+      // Rebuild default handler when options change.
+      _errorHandler = ISpectErrorHandler(_options);
     }
+
     if (history != null) {
       _history = history;
-    } else {
-      // Preserve any injected custom history implementation.
-      // If current history is the default in-memory implementation, rebuild it to reflect new options.
-      if (_history is DefaultISpectifyHistory) {
-        _history = DefaultISpectifyHistory(
-          _options,
-          history: _history.history,
-        );
-      }
-      // Otherwise keep existing custom history instance as-is.
+    } else if (_history is DefaultISpectLoggerHistory) {
+      // Rebuild default history to inherit updated options while
+      // keeping the accumulated entries.
+      _history = DefaultISpectLoggerHistory(
+        _options,
+        history: _history.history,
+      );
     }
+
+    _pipeline.update(
+      options: _options,
+      consoleLogger: _logger,
+      history: _history,
+      filter: _filter,
+    );
   }
 
   /// Stream controller for broadcasting log events.
-  final _iSpectifyStreamController =
-      StreamController<ISpectifyData>.broadcast();
-
   /// Stream of log data that can be subscribed to for real-time monitoring.
   ///
   /// This stream broadcasts all log events that pass through the filter.
   /// Multiple listeners can subscribe to this stream.
-  Stream<ISpectifyData> get stream => _iSpectifyStreamController
-      .stream; // Removed redundant .asBroadcastStream()
+  Stream<ISpectLogData> get stream => _loggerStreamController.stream;
 
   /// List of all log entries stored in history.
-  List<ISpectifyData> get history => _history.history;
+  List<ISpectLogData> get history => _history.history;
 
   ILogHistory get logHistory => _history;
 
@@ -148,22 +220,26 @@ class ISpectify {
   // ======= OPTIONS METHODS =======
 
   /// Clears all log entries from history.
-  void clearHistory() => _history.clear();
+  void clearHistory() {
+    if (!_ensureActive()) return;
+    _history.clear();
+  }
 
   /// Enables the inspector.
   ///
   /// When enabled, log entries will be processed and stored.
-  void enable() => _options.enabled = true;
+  void enable() {
+    if (!_ensureActive()) return;
+    _options.enabled = true;
+  }
 
   /// Disables the inspector.
   ///
   /// When disabled, log entries will not be processed or stored.
-  void disable() => _options.enabled = false;
-
-  /// Checks if a log entry is approved by the filter.
-  ///
-  /// Returns true if there is no filter or if the filter approves the log.
-  bool _isApprovedByFilter(ISpectifyData data) => _filter?.apply(data) ?? true;
+  void disable() {
+    if (!_ensureActive()) return;
+    _options.enabled = false;
+  }
 
   // ======= LOGGING METHODS =======
 
@@ -181,19 +257,14 @@ class ISpectify {
     StackTrace? stackTrace,
     Object? message,
   }) {
+    if (!_ensureActive()) return;
+
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
-    if (data is ISpectifyError) {
-      _observer?.onError(data);
-      _processLog(data, skipObserverNotification: true);
-      return;
-    }
-    if (data is ISpectifyException) {
-      _observer?.onException(data);
-      _processLog(data, skipObserverNotification: true);
-      return;
-    }
-    _processLog(data);
+
+    // Use polymorphic dispatch to notify observers
+    _notifyObservers(data.notifyObserver);
+    _processLog(data, skipObserverNotification: true);
   }
 
   /// Creates a log entry with custom parameters.
@@ -206,13 +277,15 @@ class ISpectify {
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
+  /// - `additionalData`: Optional metadata attached to the log entry.
   void log(
     Object? message, {
     LogLevel? logLevel,
-    ISpectifyLogType? type,
+    ISpectLogType? type,
     Object? exception,
     StackTrace? stackTrace,
     AnsiPen? pen,
+    Map<String, dynamic>? additionalData,
   }) {
     // Determine the appropriate log level
     final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
@@ -224,15 +297,17 @@ class ISpectify {
       logLevel: effectiveLogLevel,
       pen: pen,
       type: type,
+      additionalData: additionalData,
     );
   }
 
-  /// Logs a custom `ISpectifyData` instance directly.
+  /// Logs a custom `ISpectLogData` instance directly.
   ///
   /// This allows for creating fully customized log entries.
   ///
   /// - `log`: The custom log data to process.
-  void logCustom(ISpectifyData log) {
+  void logData(ISpectLogData log) {
+    if (!_ensureActive()) return;
     _processLog(log);
   }
 
@@ -247,13 +322,16 @@ class ISpectify {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.critical,
-      type: ISpectifyLogType.critical,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -262,15 +340,16 @@ class ISpectify {
   /// Debug logs are for detailed information useful during development.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
   void debug(
-    Object? msg,
-  ) {
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.debug,
-      type: ISpectifyLogType.debug,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -285,13 +364,16 @@ class ISpectify {
     Object? msg, {
     Object? exception,
     StackTrace? stackTrace,
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
   }) {
     _handleLog(
       message: msg,
       exception: exception,
       stackTrace: stackTrace,
       logLevel: LogLevel.error,
-      type: ISpectifyLogType.error,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -300,15 +382,16 @@ class ISpectify {
   /// Info logs are for general information about system operation.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
   void info(
-    Object? msg,
-  ) {
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.info,
-      type: ISpectifyLogType.info,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -317,15 +400,16 @@ class ISpectify {
   /// Verbose logs contain the most detailed information.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
   void verbose(
-    Object? msg,
-  ) {
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.verbose,
-      type: ISpectifyLogType.verbose,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -334,15 +418,16 @@ class ISpectify {
   /// Warning logs indicate potential issues that aren't errors.
   ///
   /// - `msg`: The log message.
-  /// - `exception`: Optional exception associated with the log.
-  /// - `stackTrace`: Optional stack trace for the log.
   void warning(
-    Object? msg,
-  ) {
+    Object? msg, {
+    Map<String, dynamic>? additionalData,
+    AnsiPen? pen,
+  }) {
     _handleLog(
       message: msg,
       logLevel: LogLevel.warning,
-      type: ISpectifyLogType.warning,
+      pen: pen,
+      additionalData: additionalData,
     );
   }
 
@@ -409,79 +494,73 @@ class ISpectify {
 
   /// Internal method to handle basic log creation.
   ///
-  /// This method creates a standard `ISpectifyData` instance and passes it
+  /// This method creates a standard `ISpectLogData` instance and passes it
   /// to `_handleLogData` for processing.
   void _handleLog({
     Object? message,
     Object? exception,
     StackTrace? stackTrace,
-    ISpectifyLogType? type,
+    ISpectLogType? type,
     LogLevel? logLevel,
     AnsiPen? pen,
+    Map<String, dynamic>? additionalData,
   }) {
-    final logType = type ?? ISpectifyLogType.fromLogLevel(logLevel);
-    final data = ISpectifyData(
-      message?.toString() ?? '',
-      key: logType.key,
-      title: _options.titleByKey(logType.key),
+    if (!_ensureActive()) return;
+
+    final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
+    final data = LogFactory.fromType(
+      type: logType,
+      level: logLevel,
+      message: message,
       exception: exception,
       stackTrace: stackTrace,
-      pen: pen ?? _options.penByKey(logType.key),
-      logLevel: logLevel,
+      pen: pen,
+      options: _options,
+      additionalData: additionalData,
     );
 
     _processLog(data);
   }
 
-  /// Processes a log entry based on the provided `ISpectifyData`.
+  /// Processes a log entry based on the provided `ISpectLogData`.
   ///
   /// This method performs the following steps:
-  /// 1. Checks if logging is enabled via the `_options.enabled` flag.
-  /// 2. Verifies if the log entry passes the filter criteria using `_isApprovedByFilter`.
-  /// 3. If the log is an error (`isError` is `true`), it triggers the `onError` callback
-  ///    on the `_observer`. Otherwise, it triggers the `onLog` callback.
-  /// 4. Adds the log entry to the `_iSpectifyStreamController` stream.
-  /// 5. Handles additional output processing via `_handleForOutputs`.
-  /// 6. If console logging is enabled (`_options.useConsoleLogs`), logs the message
-  ///    to the console using `_logger.log` with the appropriate log level and pen.
+  /// 1. Verifies that the logger is still active.
+  /// 2. Uses the [_pipeline] to determine whether the log should be processed.
+  /// 3. Notifies observers when the log is accepted.
+  /// 4. Delegates side-effects (stream broadcast, history, console) to the pipeline.
   ///
   /// Parameters:
-  /// - `data`: The log entry to process, encapsulated in an `ISpectifyData` object.
+  /// - `data`: The log entry to process, encapsulated in an `ISpectLogData` object.
   /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
   void _processLog(
-    ISpectifyData data, {
+    ISpectLogData data, {
     bool skipObserverNotification = false,
   }) {
-    if (!_options.enabled) return;
-    if (!_isApprovedByFilter(data)) return;
+    if (!_ensureActive()) return;
+    if (!_pipeline.shouldProcess(data)) return;
 
     if (!skipObserverNotification) {
       if (data.isError) {
-        _observer?.onError(data);
+        _notifyObservers((observer) => observer.onError(data));
       } else {
-        _observer?.onLog(data);
+        _notifyObservers((observer) => observer.onLog(data));
       }
     }
 
-    _iSpectifyStreamController.add(data);
-    _handleForOutputs(data);
-
-    if (_options.useConsoleLogs) {
-      _logger.log(
-        '${data.header}${data.textMessage}'.truncate(
-          maxLength: _options.logTruncateLength,
-        ),
-        level: data.logLevel ?? (data.isError ? LogLevel.error : null),
-        pen: data.pen ?? _options.penByKey(data.key),
-      );
-    }
+    _pipeline.dispatch(data);
   }
 
-  /// Handles log data for output destinations.
+  /// Releases resources held by this logger.
   ///
-  /// Currently, this only adds the log to history, but could be extended
-  /// to handle other output destinations.
-  void _handleForOutputs(ISpectifyData data) {
-    _history.add(data);
+  /// After calling `dispose`, the logger becomes a no-op and no further
+  /// events will be emitted through the stream.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _observerManager.clear();
+    await _loggerStreamController.close();
   }
 }
+
+typedef ISpectObserverDisposer = void Function();

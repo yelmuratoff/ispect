@@ -11,27 +11,28 @@ extension ISpectRouteExtension on Route<dynamic>? {
   /// - Returns explicit name from `RouteSettings` if available.
   /// - Otherwise, returns a label based on route type (`PageRoute`, `ModalRoute`, `PopupRoute`).
   /// - Returns `runtimeType` or 'Unknown' as a last resort.
-  String get routeName {
-    final route = this;
-    if (route == null) return 'Unknown';
-
-    final name = route.settings.name?.trim();
-    if (name != null && name.isNotEmpty) return name;
-
-    if (route is PageRoute) return 'Unnamed Page';
-    if (route is ModalRoute) return 'Unnamed Modal';
-    if (route is PopupRoute) return 'Unnamed Popup';
-
-    return route.runtimeType.toString();
-  }
+  String get routeName => switch (this) {
+        null => 'Unknown',
+        final Route<dynamic> route => switch ((
+            route.settings.name?.trim(),
+            route
+          )) {
+            (final String name, _) when name.isNotEmpty => name,
+            (_, PageRoute()) => 'Unnamed Page',
+            (_, PopupRoute()) => 'Unnamed Popup',
+            (_, ModalRoute()) => 'Unnamed Modal',
+            _ => route.runtimeType.toString(),
+          },
+      };
 
   /// Returns the runtime type of the route or 'Null' if the route is null.
-  String get routeType {
-    if (this is PageRoute) return 'Page';
-    if (this is ModalRoute) return 'Modal';
-    if (this is PopupRoute) return 'Popup';
-    return runtimeType.toString();
-  }
+  String get routeType => switch (this) {
+        null => 'Null',
+        PageRoute() => 'Page',
+        PopupRoute() => 'Popup',
+        ModalRoute() => 'Modal',
+        _ => runtimeType.toString(),
+      };
 }
 
 extension ISpectTransitionListExtension on List<RouteTransition> {

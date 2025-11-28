@@ -7,27 +7,15 @@ import 'package:ispect/src/core/res/json_color.dart';
 /// Utility class containing color and styling helper methods for JSON tree viewing
 class JsonColorsUtils {
   /// Returns a default color based on the `JsonNodeType`.
-  static Color valueColor(Object? value, Color defaultColor) {
-    if (value == null) {
-      return JsonColors.nullColor;
-    }
-    if (value is int || value is double || value is num) {
-      return JsonColors.numColor;
-    }
-    if (value is bool) {
-      return JsonColors.boolColor;
-    }
-    if (value is String) {
-      return JsonColors.stringColor;
-    }
-    if (value is Iterable || value is List) {
-      return JsonColors.arrayColor;
-    }
-    if (value is Map) {
-      return JsonColors.objectColor;
-    }
-    return defaultColor;
-  }
+  static Color valueColor(Object? value, Color defaultColor) => switch (value) {
+        null => JsonColors.nullColor,
+        int() || double() || num() => JsonColors.numColor,
+        bool() => JsonColors.boolColor,
+        String() => JsonColors.stringColor,
+        Iterable() || List() => JsonColors.arrayColor,
+        Map() => JsonColors.objectColor,
+        _ => defaultColor,
+      };
 
   /// Resolves the display color of the value based on the `keyName`.
   static Color valueColorByKey(
@@ -36,6 +24,8 @@ class JsonColorsUtils {
     Object? value,
   ) {
     final theme = ISpect.read(context).theme;
+    // Avoid repeated Theme.of(context) lookups on hot path
+    final defaultSecondary = Theme.of(context).colorScheme.secondary;
     final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
@@ -54,15 +44,8 @@ class JsonColorsUtils {
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
       'time' || 'date' => JsonColors.dateTimeColor,
-      _ => valueColor(
-          value,
-          Theme.of(context).colorScheme.secondary,
-        ),
+      _ => valueColor(value, defaultSecondary),
     };
-    return result ??
-        valueColor(
-          value,
-          Theme.of(context).colorScheme.secondary,
-        );
+    return result ?? valueColor(value, defaultSecondary);
   }
 }

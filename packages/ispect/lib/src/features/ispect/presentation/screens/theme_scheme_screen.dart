@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 class ThemeSchemeScreen extends StatelessWidget {
   const ThemeSchemeScreen({super.key});
@@ -10,7 +10,8 @@ class ThemeSchemeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final backgroundColor = ISpect.read(context).theme.backgroundColor(context);
+    final backgroundColor =
+        ISpect.read(context).theme.background?.resolve(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -868,7 +869,7 @@ class ColorBox extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: getTextColorOnBackground(displayColor),
+              color: displayColor.contrastText(),
               fontSize: 12,
             ),
           ),
@@ -917,9 +918,13 @@ class DialogsSnackbarsDisplay extends StatelessWidget {
   }
 
   void _showDialog(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor,
         title: const Text('Dialog'),
         content: const Text('This is a dialog'),
         actions: [

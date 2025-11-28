@@ -10,6 +10,7 @@ extension DateTimeExtensions on DateTime {
   /// ```
   String toFormattedString() => DateFormat('dd.MM.yyyy').format(toLocal());
 
+  /// Checks if the DateTime instance represents today's date.
   bool get isToday {
     final now = DateTime.now();
     return year == now.year && month == now.month && day == now.day;

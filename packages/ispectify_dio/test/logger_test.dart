@@ -7,11 +7,11 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectDioInterceptor tests', () {
     late ISpectDioInterceptor interceptor;
-    late ISpectify logger;
+    late ISpectLogger logger;
 
     setUp(() {
-      logger = ISpectify(
-        options: ISpectifyOptions(
+      logger = ISpectLogger(
+        options: ISpectLoggerOptions(
           useConsoleLogs: false,
         ),
       );
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('onError should log DioErrorLog', () async {
-      final logger = ISpectify();
+      final logger = ISpectLogger();
       final interceptor = ISpectDioInterceptor(logger: logger);
       final dio = Dio();
       dio.interceptors.add(interceptor);

@@ -56,7 +56,8 @@ final class ISpectDbCore {
       final out = <String, Object?>{};
       data.forEach((k, v) {
         final keyStr = k.toString();
-        final hit = keys.any((rk) => rk.toLowerCase() == keyStr.toLowerCase());
+        final keyLower = keyStr.toLowerCase();
+        final hit = keys.any((rk) => rk.toLowerCase() == keyLower);
         out[keyStr] = hit ? '***' : redact(v, keys);
       });
       return out;
@@ -100,16 +101,12 @@ final class ISpectDbCore {
   }) {
     final buffer = StringBuffer('[$source] $operation');
 
-    if (table != null || target != null) {
-      final tablePart = table != null ? table : null;
-      final targetPart = target != null ? target : null;
-      if (tablePart != null && targetPart != null) {
-        buffer.write(' $tablePart → $targetPart');
-      } else if (tablePart != null) {
-        buffer.write(' $tablePart');
-      } else if (targetPart != null) {
-        buffer.write(' $targetPart');
-      }
+    if (table != null && target != null) {
+      buffer.write(' $table → $target');
+    } else if (table != null) {
+      buffer.write(' $table');
+    } else if (target != null) {
+      buffer.write(' $target');
     }
 
     final details = <String>[];
@@ -160,7 +157,7 @@ class ISpectDbToken {
   final String? transactionId;
 }
 
-extension ISpectifyDb on ISpectify {
+extension ISpectLoggerDb on ISpectLogger {
   void db({
     required String source,
     required String operation,
@@ -289,7 +286,7 @@ extension ISpectifyDb on ISpectify {
       'error': error?.toString(),
     });
 
-    final data = ISpectifyData(
+    final data = ISpectLogData(
       message,
       key: keyName,
       title: keyName,
@@ -300,7 +297,7 @@ extension ISpectifyDb on ISpectify {
           : null,
     );
 
-    logCustom(data);
+    logData(data);
   }
 
   Future<T> dbTrace<T>({

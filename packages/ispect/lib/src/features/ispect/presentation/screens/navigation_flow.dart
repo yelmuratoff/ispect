@@ -49,8 +49,10 @@ class _ISpectNavigationFlowScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.ispectTheme.background?.resolve(context),
         appBar: AppBar(
           title: Text(context.ispectL10n.navigationFlow),
+          backgroundColor: context.ispectTheme.background?.resolve(context),
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded),
@@ -75,8 +77,8 @@ class _ISpectNavigationFlowScreenState
             ? Center(
                 child: Text(
                   context.ispectL10n.noNavigationTransitions,
-                  style: context.ispectTheme.textTheme.bodyLarge?.copyWith(
-                    color: context.ispectTheme.colorScheme.onSurface
+                  style: context.appTheme.textTheme.bodyLarge?.copyWith(
+                    color: context.appTheme.colorScheme.onSurface
                         .withValues(alpha: 0.5),
                   ),
                 ),

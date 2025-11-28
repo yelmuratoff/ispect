@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// Displays a snackbar with the selected color information and an option to copy the color value.
 ///
@@ -34,20 +34,19 @@ void showColorPickerResultSnackbar({
   required Color color,
 }) {
   final colorString = colorToHexString(color);
-  final iSpect = ISpect.read(context);
 
   ScaffoldMessenger.of(context).clearSnackBars();
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: context.ispectTheme.cardColor,
+      backgroundColor: context.ispectTheme.card?.resolve(context),
       elevation: 0,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: iSpect.theme.dividerColor(context) ??
-              context.ispectTheme.dividerColor,
+          color: context.ispectTheme.divider?.resolve(context) ??
+              Colors.transparent,
         ),
       ),
       content: Row(
@@ -65,7 +64,7 @@ void showColorPickerResultSnackbar({
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
                     border: Border.fromBorderSide(
                       BorderSide(
-                        color: getTextColorOnBackground(color),
+                        color: color.contrastText(),
                       ),
                     ),
                   ),
@@ -79,7 +78,10 @@ void showColorPickerResultSnackbar({
             ],
           ),
           const Gap(8),
-          ElevatedButton(
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: context.ispectTheme.background?.resolve(context),
+            ),
             onPressed: () {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               copyClipboard(context, value: colorString);

@@ -72,6 +72,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get blocDoneLogDesc => '命令处理已完成';
 
   @override
+  String get blocErrorLogDesc => '处理命令时发生错误';
+
+  @override
   String get buildVersion => '构建版本';
 
   @override
@@ -475,6 +478,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String iSpectifyTypeProviderCount(Object text) {
     return '提供者日志数: $text';
   }
+
+  @override
+  String get providerLogDesc => '状态提供者活动已记录';
 
   @override
   String get iSpectifyTypeRiverpod => 'Riverpod';

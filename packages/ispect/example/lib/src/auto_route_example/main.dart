@@ -7,12 +7,7 @@ import 'main.gr.dart';
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  final logger = ISpectifyFlutter.init();
-
-  ISpect.run(
-    logger: logger,
-    () => runApp(DeclarativeNavigationExampleApp()),
-  );
+  ISpect.run(() => runApp(DeclarativeNavigationExampleApp()));
 }
 
 @AutoRouterConfig(generateForDir: ['lib/src/auto_route_example'])

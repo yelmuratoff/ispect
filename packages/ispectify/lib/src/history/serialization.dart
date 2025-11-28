@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Extension for ISpectifyData to add JSON serialization support.
-extension ISpectifyDataSerialization on ISpectifyData {
+/// Extension for ISpectLogData to add JSON serialization support.
+extension ISpectLogDataSerialization on ISpectLogData {
   /// Converts the log data into a JSON representation.
   ///
   /// Omits `null` values for a cleaner output.
@@ -30,13 +30,13 @@ extension ISpectifyDataSerialization on ISpectifyData {
       };
 }
 
-/// Utility class for ISpectifyData JSON operations.
-class ISpectifyDataJsonUtils {
-  /// Creates ISpectifyData from JSON Map.
+/// Utility class for ISpectLogData JSON operations.
+class ISpectLogDataJsonUtils {
+  /// Creates ISpectLogData from JSON Map.
   ///
   /// Note: AnsiPen, Exception, Error, and StackTrace are reconstructed
   /// from string representations with some limitations.
-  static ISpectifyData fromJson(Map<String, dynamic> json) => ISpectifyData(
+  static ISpectLogData fromJson(Map<String, dynamic> json) => ISpectLogData(
         json['message'] as String?,
         time: DateTime.parse(json['time'] as String),
         logLevel: json['log-level'] != null

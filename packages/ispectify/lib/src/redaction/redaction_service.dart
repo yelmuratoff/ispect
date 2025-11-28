@@ -3,11 +3,36 @@ import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 
-/// RedactionService
+class _RedactionConfig {
+  const _RedactionConfig({
+    required this.sensitiveKeysLower,
+    required this.sensitiveKeyPatterns,
+    required this.maxDepth,
+    required this.stringEdgeVisible,
+    required this.placeholder,
+    required this.redactBinary,
+    required this.redactBase64,
+    required this.ignoredValues,
+    required this.ignoredKeyNamesLower,
+    required this.fullyMaskedKeyNamesLower,
+  });
+
+  final Set<String> sensitiveKeysLower;
+  final List<RegExp> sensitiveKeyPatterns;
+  final int maxDepth;
+  final int stringEdgeVisible;
+  final String placeholder;
+  final bool redactBinary;
+  final bool redactBase64;
+  final Set<String> ignoredValues;
+  final Set<String> ignoredKeyNamesLower;
+  final Set<String> fullyMaskedKeyNamesLower;
+}
+
+/// A configurable service that redacts sensitive values in headers and payloads.
 ///
-/// A single-class, configurable service to redact sensitive values in
-/// headers, JSON-like maps, and lists. Designed to be fast, recursive, and
-/// idempotent with sensible defaults.
+/// The implementation delegates traversal to [_RedactionWalker] so configuration
+/// and mutation APIs remain focused and easy to extend.
 class RedactionService {
   RedactionService({
     Set<String>? sensitiveKeys,
@@ -20,250 +45,285 @@ class RedactionService {
     Set<String>? ignoredKeys,
     Set<String>? fullyMaskedKeys,
     int? maxDepth,
-  })  : _sensitiveKeysLower = (sensitiveKeys ?? _kDefaultSensitiveKeys)
-            .map((e) => e.toLowerCase())
-            .toSet(),
-        _sensitiveKeyPatterns =
-            sensitiveKeyPatterns ?? _kDefaultSensitiveKeyRegexps,
-        _maxDepth = maxDepth ?? 100,
-        _stringEdgeVisible = stringEdgeVisible ?? 2,
-        _placeholder = placeholder ?? '[REDACTED]',
-        _redactBinary = redactBinary ?? true,
-        _redactBase64 = redactBase64 ?? true,
-        _ignoredValues = {...?ignoredValues, ...ISpectifyLogType.keys},
-        _ignoredKeyNamesLower = {
-          ...?(ignoredKeys?.map((e) => e.toLowerCase())),
-        },
-        _fullyMaskedKeyNamesLower =
-            (fullyMaskedKeys ?? _kDefaultFullyMaskedKeys)
-                .map((e) => e.toLowerCase())
-                .toSet() {
-    // Input validation
-    if (_maxDepth <= 0) {
-      throw ArgumentError('maxDepth must be positive, got: $_maxDepth');
-    }
-    if (_stringEdgeVisible < 0) {
+    RedactionStrategy? strategy,
+  })  : _strategy = strategy ??
+            CompositeRedactionStrategy(const [
+              KeyBasedRedaction(),
+              PatternBasedRedaction(),
+            ]),
+        _config = _RedactionConfig(
+          sensitiveKeysLower: (sensitiveKeys ?? _kDefaultSensitiveKeys)
+              .map((e) => e.toLowerCase())
+              .toSet(),
+          sensitiveKeyPatterns:
+              sensitiveKeyPatterns ?? _kDefaultSensitiveKeyRegexps,
+          maxDepth: maxDepth ?? 100,
+          stringEdgeVisible: stringEdgeVisible ?? 2,
+          placeholder: placeholder ?? '[REDACTED]',
+          redactBinary: redactBinary ?? true,
+          redactBase64: redactBase64 ?? true,
+          ignoredValues: {...?ignoredValues, ...ISpectLogType.keys},
+          ignoredKeyNamesLower: {
+            ...?(ignoredKeys?.map((e) => e.toLowerCase())),
+          },
+          fullyMaskedKeyNamesLower:
+              (fullyMaskedKeys ?? _kDefaultFullyMaskedKeys)
+                  .map((e) => e.toLowerCase())
+                  .toSet(),
+        ) {
+    if (_config.maxDepth <= 0) {
       throw ArgumentError(
-        'stringEdgeVisible must be non-negative, got: $_stringEdgeVisible',
+        'maxDepth must be positive, got: ${_config.maxDepth}',
       );
     }
-    if (_placeholder.isEmpty) {
+    if (_config.stringEdgeVisible < 0) {
+      throw ArgumentError(
+        'stringEdgeVisible must be non-negative, got: ${_config.stringEdgeVisible}',
+      );
+    }
+    if (_config.placeholder.isEmpty) {
       throw ArgumentError('placeholder must not be empty');
     }
   }
 
-  final Set<String> _sensitiveKeysLower;
-  final List<RegExp> _sensitiveKeyPatterns;
-  final int _maxDepth;
-  final int _stringEdgeVisible;
-  final String _placeholder;
-  final bool _redactBinary;
-  final bool _redactBase64;
-  final Set<String> _ignoredValues;
-  final Set<String> _ignoredKeyNamesLower;
-  final Set<String> _fullyMaskedKeyNamesLower;
+  final _RedactionConfig _config;
+  final RedactionStrategy _strategy;
 
-  // --- Public API ----------------------------------------------------------
-
-  /// Redacts a headers map (case-insensitive keys). Returns a new map; does not mutate input.
-  ///
-  /// - [ignoredValues] allows passing a per-call set of exact strings to skip redaction.
-  /// - [ignoredKeys] allows passing a per-call set of key names (case-insensitive) to skip redaction.
+  /// Redacts header values, respecting optional per-call overrides.
   Map<String, Object?> redactHeaders(
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
-  }) {
-    final out = <String, Object?>{};
-    final callIgnored =
-        (ignoredValues == null || ignoredValues.isEmpty) ? null : ignoredValues;
-    final callIgnoredKeysLower = (ignoredKeys == null || ignoredKeys.isEmpty)
-        ? null
-        : ignoredKeys.map((e) => e.toLowerCase()).toSet();
-    headers.forEach((key, value) {
-      final keyStr = key;
-      out[keyStr] = _redactNode(
-        value,
-        keyName: keyStr,
-        depth: 0,
-        ignoredValues: callIgnored,
-        ignoredKeysLower: callIgnoredKeysLower,
-      );
-    });
-    return out;
-  }
+  }) =>
+      _createWalker(
+        _RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+      ).redactHeaders(headers);
 
-  /// Redacts any JSON-like data structure (Map/List/scalars).
-  /// - [keyName] can be provided to control masking at the current level.
-  /// - [ignoredValues] allows passing a per-call set of exact strings to skip redaction.
-  /// - [ignoredKeys] allows passing a per-call set of key names (case-insensitive) to skip redaction.
+  /// Redacts any JSON-like payload (Map/List/scalars).
   Object? redact(
     Object? data, {
     String? keyName,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) =>
-      _redactNode(
+      _createWalker(
+        _RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+      ).redact(
         data,
         keyName: keyName,
-        depth: 0,
-        ignoredValues: (ignoredValues == null || ignoredValues.isEmpty)
-            ? null
-            : ignoredValues,
-        ignoredKeysLower: (ignoredKeys == null || ignoredKeys.isEmpty)
-            ? null
-            : ignoredKeys.map((e) => e.toLowerCase()).toSet(),
       );
+
+  _RedactionWalker _createWalker(_RedactionRequest request) =>
+      _RedactionWalker(_config, request, _strategy);
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
-    _ignoredValues.add(value);
+    _config.ignoredValues.add(value);
   }
 
   /// Add multiple string values to the ignore list (exact matches).
   void ignoreValues(Iterable<String> values) {
-    _ignoredValues.addAll(values);
+    _config.ignoredValues.addAll(values);
   }
 
   /// Remove a string value from the ignore list.
   void unignoreValue(String value) {
-    _ignoredValues.remove(value);
+    _config.ignoredValues.remove(value);
   }
 
   /// Clear all ignored string values.
   void clearIgnoredValues() {
-    _ignoredValues.clear();
+    _config.ignoredValues.clear();
   }
 
   /// Add a key name to the ignore list (case-insensitive).
   void ignoreKey(String keyName) {
-    _ignoredKeyNamesLower.add(keyName.toLowerCase());
+    _config.ignoredKeyNamesLower.add(keyName.toLowerCase());
   }
 
   /// Add multiple key names to the ignore list (case-insensitive).
   void ignoreKeys(Iterable<String> keyNames) {
-    for (final k in keyNames) {
-      _ignoredKeyNamesLower.add(k.toLowerCase());
+    for (final key in keyNames) {
+      _config.ignoredKeyNamesLower.add(key.toLowerCase());
     }
   }
 
   /// Remove a key name from the ignore list.
   void unignoreKey(String keyName) {
-    _ignoredKeyNamesLower.remove(keyName.toLowerCase());
+    _config.ignoredKeyNamesLower.remove(keyName.toLowerCase());
   }
 
   /// Clear all ignored key names.
   void clearIgnoredKeys() {
-    _ignoredKeyNamesLower.clear();
+    _config.ignoredKeyNamesLower.clear();
+  }
+}
+
+class _RedactionRequest {
+  const _RedactionRequest._({
+    this.ignoredValues,
+    this.ignoredKeysLower,
+  });
+
+  factory _RedactionRequest.fromOverrides(
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  ) {
+    final normalizedValues = (ignoredValues == null || ignoredValues.isEmpty)
+        ? null
+        : Set<String>.unmodifiable(ignoredValues);
+    final normalizedKeys = (ignoredKeys == null || ignoredKeys.isEmpty)
+        ? null
+        : Set<String>.unmodifiable(
+            ignoredKeys.map((e) => e.toLowerCase()),
+          );
+    if (normalizedValues == null && normalizedKeys == null) {
+      return empty;
+    }
+    return _RedactionRequest._(
+      ignoredValues: normalizedValues,
+      ignoredKeysLower: normalizedKeys,
+    );
   }
 
-  // --- Core logic ----------------------------------------------------------
+  static const empty = _RedactionRequest._();
+
+  final Set<String>? ignoredValues;
+  final Set<String>? ignoredKeysLower;
+}
+
+class _RedactionWalker {
+  const _RedactionWalker(this.config, this.request, this.strategy);
+
+  final _RedactionConfig config;
+  final _RedactionRequest request;
+  final RedactionStrategy strategy;
+
+  Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
+    final out = <String, Object?>{};
+    headers.forEach((key, value) {
+      out[key] = _redactNode(
+        value,
+        keyName: key,
+        depth: 0,
+      );
+    });
+    return out;
+  }
+
+  Object? redact(Object? data, {String? keyName}) => _redactNode(
+        data,
+        keyName: keyName,
+        depth: 0,
+      );
 
   Object? _redactNode(
     Object? node, {
     required String? keyName,
     required int depth,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeysLower,
   }) {
     if (node == null) return null;
+    if (depth >= config.maxDepth) return node;
 
-    // Prevent infinite recursion and DoS attacks
-    if (depth >= _maxDepth) {
-      return node; // Return as-is if max depth reached
+    // Try pluggable strategies first.
+    final runtime = _createRuntime();
+    final strategyResult = strategy.tryRedact(
+      node,
+      keyName: keyName,
+      runtime: runtime,
+    );
+    if (strategyResult != null) return strategyResult;
+
+    // Fallback to the built-in logic.
+    if (_isSensitiveKey(keyName)) {
+      return _redactSensitiveValue(node, keyName);
     }
-
-    // If key is sensitive, mask scalar values directly
-    if (_isSensitiveKey(keyName, ignoredKeysLower)) {
-      return _redactSensitiveValue(node, ignoredValues, keyName);
-    }
-
-    // For non-sensitive keys, handle based on type
-    return _redactByType(node, keyName, depth, ignoredValues, ignoredKeysLower);
+    return _redactByType(node, keyName, depth);
   }
 
-  /// Redacts a sensitive scalar value (String, num, bool, DateTime)
-  /// Returns the placeholder for scalar types or processes binary data appropriately
-  Object? _redactSensitiveValue(
-    Object? node,
-    Set<String>? ignoredValues,
-    String? keyName,
-  ) {
+  RedactionRuntime _createRuntime() => RedactionRuntime(
+        placeholder: config.placeholder,
+        redactBinary: config.redactBinary,
+        redactBase64: config.redactBase64,
+        sensitiveKeysLower: config.sensitiveKeysLower,
+        sensitiveKeyPatterns: config.sensitiveKeyPatterns,
+        fullyMaskedKeyNamesLower: config.fullyMaskedKeyNamesLower,
+        isIgnoredValue: _isIgnoredValue,
+        isIgnoredKey: _isIgnoredKey,
+        maskString: (value, {keyName}) => _maskString(value, keyName: keyName),
+        binaryPlaceholder: _binaryPlaceholder,
+        base64Placeholder: _base64Placeholder,
+        redactUint8List: _redactUint8List,
+        looksLikeAuthorizationValue: _looksLikeAuthorizationValue,
+        isLikelyBase64: _isLikelyBase64,
+        isProbablyBinaryString: _isProbablyBinaryString,
+      );
+
+  Object? _redactSensitiveValue(Object? node, String? keyName) {
     if (node is String) {
-      if (_isIgnoredValue(node, ignoredValues)) return node;
+      if (_isIgnoredValue(node)) return node;
       if (keyName != null &&
-          _fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
-        return _placeholder;
+          config.fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
+        return config.placeholder;
       }
       return _maskString(node, keyName: keyName);
     }
-    if (node.isScalarType) return _placeholder;
-    if (node is Uint8List) return _redactBinary ? _redactUint8List(node) : node;
-    // For complex types under sensitive key, replace with placeholder
-    return _placeholder;
+    if (node.isScalarType) return config.placeholder;
+    if (node is Uint8List) {
+      return config.redactBinary ? _redactUint8List(node) : node;
+    }
+    return config.placeholder;
   }
 
-  /// Redacts data based on its type (Map, List, Uint8List, String)
-  /// Preserves the original data structure and types where possible
   Object? _redactByType(
     Object? node,
     String? keyName,
     int depth,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeysLower,
   ) {
     if (keyName != null &&
         node is String &&
-        _fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
-      return _placeholder;
+        config.fullyMaskedKeyNamesLower.contains(keyName.toLowerCase())) {
+      return config.placeholder;
     }
+
     if (node is Map) {
-      return _redactMap(node, depth, ignoredValues, ignoredKeysLower);
+      return _redactMap(node, depth);
     }
     if (node is List) {
-      return _redactList(node, keyName, depth, ignoredValues, ignoredKeysLower);
+      return _redactList(node, keyName, depth);
     }
     if (node is Uint8List) {
-      return _redactBinary ? _redactUint8List(node) : node;
+      return config.redactBinary ? _redactUint8List(node) : node;
     }
     if (node is String) {
-      return _redactStringContent(node, ignoredValues, keyName);
+      return _redactStringContent(node, keyName);
     }
-    // Primitive non-string types left as-is
+
     return node;
   }
 
-  /// Recursively redacts all values in a Map while preserving keys and structure
   Map<Object?, Object?> _redactMap(
     Map<Object?, Object?> input,
     int depth,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeysLower,
   ) {
-    // For String-keyed maps, preserve the type more carefully
     if (input is Map<String, Object?>) {
       final result = <String, Object?>{};
-      input.forEach((k, v) {
-        result[k] = _redactNode(
-          v,
-          keyName: k,
+      input.forEach((key, value) {
+        result[key] = _redactNode(
+          value,
+          keyName: key,
           depth: depth + 1,
-          ignoredValues: ignoredValues,
-          ignoredKeysLower: ignoredKeysLower,
         );
       });
       return result;
     }
 
-    // Fallback for other Map types
     final result = <Object?, Object?>{};
-    input.forEach((k, v) {
-      result[k] = _redactNode(
-        v,
-        keyName: k?.toString(),
+    input.forEach((key, value) {
+      result[key] = _redactNode(
+        value,
+        keyName: key?.toString(),
         depth: depth + 1,
-        ignoredValues: ignoredValues,
-        ignoredKeysLower: ignoredKeysLower,
       );
     });
     return result;
@@ -273,75 +333,56 @@ class RedactionService {
     List<Object?> input,
     String? keyName,
     int depth,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeysLower,
   ) =>
       input
           .map(
-            (e) => _redactNode(
-              e,
+            (value) => _redactNode(
+              value,
               keyName: keyName,
               depth: depth + 1,
-              ignoredValues: ignoredValues,
-              ignoredKeysLower: ignoredKeysLower,
             ),
           )
           .toList(growable: false);
 
-  /// Redacts string content that may contain sensitive data like tokens or binary data
   Object? _redactStringContent(
-    String node,
-    Set<String>? ignoredValues,
+    String value,
     String? keyName,
   ) {
-    if (_isIgnoredValue(node, ignoredValues)) return node;
+    if (_isIgnoredValue(value)) return value;
 
-    // If the content itself looks like a JWT, token, or base64/binary, mask partially.
-    if (_looksLikeAuthorizationValue(node)) {
-      return _maskString(node, keyName: keyName);
+    if (_looksLikeAuthorizationValue(value)) {
+      return _maskString(value, keyName: keyName);
     }
-    if (_redactBase64 && _isLikelyBase64(node)) {
-      return _base64Placeholder(node.length);
+    if (config.redactBase64 && _isLikelyBase64(value)) {
+      return _base64Placeholder(value.length);
     }
-    if (_redactBinary && _isProbablyBinaryString(node)) {
-      return _binaryPlaceholder(node.codeUnits.length);
+    if (config.redactBinary && _isProbablyBinaryString(value)) {
+      return _binaryPlaceholder(value.codeUnits.length);
     }
-    return node;
+    return value;
   }
 
-  bool _isSensitiveKey(String? key, Set<String>? callIgnoredKeysLower) {
-    if (key == null) return false;
-    final k = key.toLowerCase();
-    if (_isIgnoredKeyLower(k, callIgnoredKeysLower)) return false;
-    if (_sensitiveKeysLower.contains(k)) return true;
-    for (final r in _sensitiveKeyPatterns) {
-      if (r.hasMatch(k)) return true;
-    }
-    return false;
-  }
+  String _maskString(
+    String value, {
+    required String? keyName,
+  }) {
+    if (value == config.placeholder) return value;
 
-  // --- Masking helpers -----------------------------------------------------
-
-  String _maskString(String value, {required String? keyName}) {
-    if (value == _placeholder) return value; // idempotent
-
-    // Keep scheme for tokens like "Bearer ", "Basic ", etc.
-    final Match? m = _schemeRegex.firstMatch(value);
-    if (m != null) {
-      final head = m.group(0) ?? '';
-      final rest = value.substring(head.length);
-      return '$head${_maskEdges(rest)}';
+    final match = _schemeRegex.firstMatch(value);
+    if (match != null) {
+      final prefix = match.group(0) ?? '';
+      final remainder = value.substring(prefix.length);
+      return '$prefix${_maskEdges(remainder)}';
     }
 
-    // Cookies: mask values but keep cookie names
     if (keyName != null && keyName.toLowerCase() == 'cookie') {
       return value.split(';').map((part) {
-        final p = part.trim();
-        final idx = p.indexOf('=');
-        if (idx <= 0) return p; // flags like HttpOnly
-        final name = p.substring(0, idx);
-        final val = p.substring(idx + 1);
-        return '$name=${_maskEdges(val)}';
+        final trimmed = part.trim();
+        final separatorIndex = trimmed.indexOf('=');
+        if (separatorIndex <= 0) return trimmed;
+        final name = trimmed.substring(0, separatorIndex);
+        final cookieValue = trimmed.substring(separatorIndex + 1);
+        return '$name=${_maskEdges(cookieValue)}';
       }).join('; ');
     }
 
@@ -349,35 +390,27 @@ class RedactionService {
   }
 
   String _maskEdges(String input) {
-    if (input.isEmpty) return _placeholder;
-    if (input.length <= _stringEdgeVisible * 2) return _placeholder;
-    final start = input.substring(0, _stringEdgeVisible);
-    final end = input.substring(input.length - _stringEdgeVisible);
-    // final hidden = input.length - (_stringEdgeVisible * 2);
-    return '$start…$end ($_placeholder)';
+    if (input.isEmpty) return config.placeholder;
+    final edge = config.stringEdgeVisible;
+    if (input.length <= edge * 2) return config.placeholder;
+
+    final start = input.substring(0, edge);
+    final end = input.substring(input.length - edge);
+    return '$start…$end (${config.placeholder})';
   }
 
-  // --- Detection helpers ---------------------------------------------------
-
-  bool _looksLikeAuthorizationValue(String s) {
-    // JWT: header.payload.signature (base64url parts)
-    if (_jwtRegex.hasMatch(s)) {
+  bool _looksLikeAuthorizationValue(String value) {
+    if (_jwtRegex.hasMatch(value)) return true;
+    if (value.startsWith('Bearer ') ||
+        value.startsWith('Basic ') ||
+        value.startsWith('Digest ')) {
       return true;
     }
-    // Common token hints
-    if (s.startsWith('Bearer ') ||
-        s.startsWith('Basic ') ||
-        s.startsWith('Digest ')) {
-      return true;
-    }
-    if (_tokenPrefixRegex.hasMatch(s)) {
-      return true; // GitHub/Slack tokens
-    }
-    return false;
+    return _tokenPrefixRegex.hasMatch(value);
   }
 
-  bool _isLikelyBase64(String s) {
-    final sanitized = s.replaceAll(RegExp(r'\s'), '');
+  bool _isLikelyBase64(String value) {
+    final sanitized = value.replaceAll(RegExp(r'\s'), '');
     if (sanitized.length < 32) return false;
     if (!_base64Regex.hasMatch(sanitized)) return false;
     if (sanitized.length % 4 == 1) return false;
@@ -410,7 +443,7 @@ class RedactionService {
     }
   }
 
-  bool _isProbablyBinaryString(String s) {
+  bool _isProbablyBinaryString(String value) {
     const maxNonPrintable = 8;
     const maxInspected = 1024;
     const ratioThreshold = 0.2;
@@ -418,7 +451,7 @@ class RedactionService {
 
     var inspected = 0;
     var nonPrintable = 0;
-    for (final codePoint in s.runes) {
+    for (final codePoint in value.runes) {
       if (inspected >= maxInspected) break;
       inspected++;
       if (_isPrintableCodePoint(codePoint)) continue;
@@ -433,15 +466,13 @@ class RedactionService {
   }
 
   bool _isPrintableCodePoint(int codePoint) {
-    if (codePoint == 0xFFFD) {
-      return false; // replacement character signals decoding issues
-    }
+    if (codePoint == 0xFFFD) return false;
     if (codePoint == 0x09 || codePoint == 0x0A || codePoint == 0x0D) {
       return true;
     }
     if (codePoint >= 0x20 && codePoint <= 0x7E) return true;
     if (codePoint == 0x85 || codePoint == 0x2028 || codePoint == 0x2029) {
-      return true; // common Unicode line separators
+      return true;
     }
     if (codePoint >= 0xA0 && codePoint <= 0xD7FF) return true;
     if (codePoint >= 0xE000 && codePoint <= 0x10FFFF) return true;
@@ -449,74 +480,182 @@ class RedactionService {
   }
 
   String _binaryPlaceholder(int length) => '[binary $length bytes]';
+
   String _base64Placeholder(int length) => '[base64 ~${length}B]';
 
-  /// Redacts Uint8List by preserving the type and size but masking the content
-  /// This ensures that the returned data maintains the same type as the input,
-  /// preventing type-related issues in user code
   Uint8List _redactUint8List(Uint8List data) {
     final placeholder = _binaryPlaceholder(data.length);
     final placeholderBytes = Uint8List.fromList(placeholder.codeUnits);
-    // If placeholder is longer than original data, truncate it
     final length = placeholderBytes.length > data.length
         ? data.length
         : placeholderBytes.length;
     final result = Uint8List(data.length)
       ..setRange(0, length, placeholderBytes.take(length));
-    // Fill remaining bytes with zeros or pattern
     for (var i = length; i < data.length; i++) {
-      result[i] = 0; // or some other pattern
+      result[i] = 0;
     }
     return result;
   }
 
-  bool _isIgnoredValue(String value, Set<String>? callIgnored) =>
-      _ignoredValues.contains(value) || (callIgnored?.contains(value) ?? false);
+  bool _isIgnoredValue(String value) =>
+      config.ignoredValues.contains(value) ||
+      (request.ignoredValues?.contains(value) ?? false);
 
-  bool _isIgnoredKeyLower(String keyLower, Set<String>? callIgnored) =>
-      _ignoredKeyNamesLower.contains(keyLower) ||
-      (callIgnored?.contains(keyLower) ?? false);
+  bool _isIgnoredKey(String keyLower) =>
+      config.ignoredKeyNamesLower.contains(keyLower) ||
+      (request.ignoredKeysLower?.contains(keyLower) ?? false);
 
-  // --- Defaults ------------------------------------------------------------
-
-  static const Set<String> _kDefaultSensitiveKeys = <String>{
-    'authorization',
-    'proxy-authorization',
-    'x-api-key',
-    'api-key',
-    'apikey',
-    'apiKey',
-    'token',
-    'access_token',
-    'refresh_token',
-    'id_token',
-    'password',
-    'secret',
-    'client-secret',
-    'client_secret',
-    'private-key',
-    'private_key',
-    'set-cookie',
-    'cookie',
-  };
-
-  static final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
-    RegExp(r'(?:^|[_\-])token(?:$|[_\-])', caseSensitive: false),
-    RegExp(r'(?:^|[_\-])secret(?:$|[_\-])', caseSensitive: false),
-    RegExp(r'(?:^|[_\-])pass(?:word)?(?:$|[_\-])', caseSensitive: false),
-    RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
-    RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
-  ];
-
-  static final RegExp _schemeRegex = RegExp(r'^(\w+)\s+', caseSensitive: false);
-  static final RegExp _jwtRegex =
-      RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
-  static final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
-  static final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
-  static const Set<String> _kDefaultFullyMaskedKeys = <String>{
-    'filename',
-  };
+  bool _isSensitiveKey(String? key) {
+    if (key == null) return false;
+    final lower = key.toLowerCase();
+    if (_isIgnoredKey(lower)) return false;
+    if (config.sensitiveKeysLower.contains(lower)) return true;
+    for (final pattern in config.sensitiveKeyPatterns) {
+      if (pattern.hasMatch(lower)) return true;
+    }
+    return false;
+  }
 }
+
+const Set<String> _kDefaultSensitiveKeys = <String>{
+  // Authentication & Authorization
+  'authorization',
+  'proxy-authorization',
+  'x-api-key',
+  'api-key',
+  'apikey',
+  'apiKey',
+  'token',
+  'access_token',
+  'refresh_token',
+  'id_token',
+  'password',
+  'secret',
+  'client-secret',
+  'client_secret',
+  'private-key',
+  'private_key',
+  'set-cookie',
+  'cookie',
+
+  // Personal Identification Numbers
+  'ssn',
+  'social_security',
+  'social-security',
+  'social_security_number',
+  'socialSecurityNumber',
+  'national_id',
+  'nationalId',
+  'national-id',
+  'passport',
+  'passport_number',
+  'passportNumber',
+  'passport-number',
+  'drivers_license',
+  'driversLicense',
+  'drivers-license',
+  'driver_license',
+  'driverLicense',
+  'driver-license',
+  'license_number',
+  'licenseNumber',
+  'license-number',
+
+  // Financial Information
+  'credit_card',
+  'creditCard',
+  'credit-card',
+  'card_number',
+  'cardNumber',
+  'card-number',
+  'cc_number',
+  'ccNumber',
+  'cc-number',
+  'cvv',
+  'cvc',
+  'cvv2',
+  'card_cvv',
+  'cardCvv',
+  'security_code',
+  'securityCode',
+  'security-code',
+  'bank_account',
+  'bankAccount',
+  'bank-account',
+  'account_number',
+  'accountNumber',
+  'account-number',
+  'routing_number',
+  'routingNumber',
+  'routing-number',
+  'iban',
+  'swift',
+  'swift_code',
+  'swiftCode',
+  'swift-code',
+  'bic',
+
+  // Personal Contact Information (context-dependent)
+  'phone',
+  'phone_number',
+  'phoneNumber',
+  'phone-number',
+  'mobile',
+  'mobile_number',
+  'mobileNumber',
+  'mobile-number',
+  'cell',
+  'cell_phone',
+  'cellPhone',
+  'cell-phone',
+};
+
+final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
+  // Authentication patterns
+  RegExp(r'(?:^|[_\-])token(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])secret(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])pass(?:word)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
+
+  // Personal identification patterns
+  RegExp(r'(?:^|[_\-])ssn(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])social[_\-]?security(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])passport(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])drivers?[_\-]?license(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])national[_\-]?id(?:$|[_\-])', caseSensitive: false),
+
+  // Financial patterns
+  RegExp(r'(?:^|[_\-])credit[_\-]?card(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])card[_\-]?num(?:ber)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cvv[0-9]?(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cvc(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])bank[_\-]?account(?:$|[_\-])', caseSensitive: false),
+  RegExp(
+    r'(?:^|[_\-])routing[_\-]?num(?:ber)?(?:$|[_\-])',
+    caseSensitive: false,
+  ),
+  RegExp(
+    r'(?:^|[_\-])account[_\-]?num(?:ber)?(?:$|[_\-])',
+    caseSensitive: false,
+  ),
+  RegExp(r'(?:^|[_\-])iban(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])swift(?:$|[_\-])', caseSensitive: false),
+
+  // Contact information patterns
+  RegExp(r'(?:^|[_\-])phone(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])mobile(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cell(?:$|[_\-])', caseSensitive: false),
+];
+
+final RegExp _schemeRegex = RegExp(r'^(\w+)\s+', caseSensitive: false);
+final RegExp _jwtRegex =
+    RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
+final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
+final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
+const Set<String> _kDefaultFullyMaskedKeys = <String>{
+  'filename',
+};
 
 extension _ObjectExtensions on Object? {
   bool get isScalarType {

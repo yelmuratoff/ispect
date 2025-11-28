@@ -5,7 +5,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 
 void main() async {
-  final logger = ISpectify();
+  final logger = ISpectLogger();
 
   ISpectDbCore.config = const ISpectDbConfig(
     sampleRate: 1.0,

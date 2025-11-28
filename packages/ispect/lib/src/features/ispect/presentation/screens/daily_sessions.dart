@@ -97,69 +97,80 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            context.ispectL10n.sessions,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
-            ),
+  Widget build(BuildContext context) {
+    final iSpect = context.iSpect;
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        title: Text(
+          context.ispectL10n.sessions,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
           ),
-          leading: IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_rounded),
-          ),
-          actionsPadding: const EdgeInsets.only(right: 12),
-          actions: [
-            if (context.iSpect.options.onOpenFile != null)
-              IconButton(
-                icon: const Icon(Icons.open_in_new_rounded),
-                onPressed: _openPath,
-                tooltip: context.ispectL10n.openPath,
-              ),
-            IconButton(
-              icon: const Icon(Icons.copy_all_rounded),
-              onPressed: _copyPathToClipboard,
-              tooltip: context.ispectL10n.copyPath,
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: () => _loadSessions(isRefreshing: true),
-              tooltip: context.ispectL10n.refresh,
-            ),
-            if (widget.history != null)
-              IconButton(
-                icon: const Icon(Icons.clear_all_rounded),
-                onPressed: _showClearAllDialog,
-                tooltip: context.ispectL10n.clearAllSessions,
-              ),
-          ],
         ),
-        body: _dates.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.only(top: 16, left: 16),
-                child: EmptyLogsWidget(),
-              )
-            : ListView.builder(
-                itemCount: _dates.length,
-                itemBuilder: (context, index) {
-                  final session = _dates[index];
-                  return _SessionListTile(
-                    key: ValueKey(session.hashCode),
-                    session: session,
-                    history: widget.history!,
-                    onTap: () => _navigateToSession(session),
-                  );
-                },
-              ),
-      );
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        actionsPadding: const EdgeInsets.only(right: 12),
+        actions: [
+          if (context.iSpect.options.onOpenFile != null)
+            IconButton(
+              icon: const Icon(Icons.open_in_new_rounded),
+              onPressed: _openPath,
+              tooltip: context.ispectL10n.openPath,
+            ),
+          IconButton(
+            icon: const Icon(Icons.copy_all_rounded),
+            onPressed: _copyPathToClipboard,
+            tooltip: context.ispectL10n.copyPath,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => _loadSessions(isRefreshing: true),
+            tooltip: context.ispectL10n.refresh,
+          ),
+          if (widget.history != null)
+            IconButton(
+              icon: const Icon(Icons.clear_all_rounded),
+              onPressed: _showClearAllDialog,
+              tooltip: context.ispectL10n.clearAllSessions,
+            ),
+        ],
+      ),
+      body: _dates.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.only(top: 16, left: 16),
+              child: EmptyLogsWidget(),
+            )
+          : ListView.builder(
+              itemCount: _dates.length,
+              itemBuilder: (context, index) {
+                final session = _dates[index];
+                return _SessionListTile(
+                  key: ObjectKey(session),
+                  session: session,
+                  history: widget.history!,
+                  onTap: () => _navigateToSession(session),
+                );
+              },
+            ),
+    );
+  }
 
   void _showClearAllDialog() {
+    final iSpect = context.iSpect;
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor,
         title: Text(context.ispectL10n.clearAllSessions),
         content: Text(context.ispectL10n.confirmClearAllDailySessions),
         actions: [
@@ -210,9 +221,13 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   void _showErrorDialog(String message) {
+    final iSpect = context.iSpect;
+    final backgroundColor = iSpect.theme.background?.resolve(context);
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor,
         title: Text(context.ispectL10n.error),
         content: Text(message),
         actions: [
@@ -272,7 +287,7 @@ class _SessionListTileState extends State<_SessionListTile> {
         dense: true,
         title: Text(
           _getSessionTitle(widget.session),
-          style: context.ispectTheme.textTheme.titleSmall,
+          style: context.appTheme.textTheme.titleSmall,
         ),
         subtitle: _fileSize != null
             ? Text(

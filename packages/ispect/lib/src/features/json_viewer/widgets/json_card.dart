@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// A card-like container widget that wraps its child
 /// with customizable styling.
@@ -51,9 +52,7 @@ class JsonCard extends StatelessWidget {
         decoration: BoxDecoration(
           border:
               borderSide != null ? Border.fromBorderSide(borderSide!) : null,
-          color: backgroundColor?.withValues(
-            alpha: 0.2,
-          ),
+          color: backgroundColor?.withAlphaPercent(0.2),
           borderRadius: borderRadius,
         ),
         child: Padding(
