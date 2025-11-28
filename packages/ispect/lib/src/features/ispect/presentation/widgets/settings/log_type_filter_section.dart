@@ -158,10 +158,17 @@ class LogTypeFilterSection extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (logType.description != null) ...[
+                  if (iSpect.theme.getTypeDescription(
+                        context,
+                        key: logType.key,
+                      ) !=
+                      null) ...[
                     const SizedBox(width: 4),
                     Tooltip(
-                      message: logType.description,
+                      message: iSpect.theme.getTypeDescription(
+                        context,
+                        key: logType.key,
+                      ),
                       child: const Icon(
                         Icons.info_outline,
                         size: 14,

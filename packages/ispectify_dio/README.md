@@ -186,7 +186,7 @@ Observers receive all logs, errors, and exceptions. Use them to forward events t
 
 ```yaml
 dependencies:
-  ispect: ^4.5.0-dev11
+  ispect: ^4.5.0-dev12
 ```
 
 ### Quick Start
@@ -478,10 +478,16 @@ ISpectBuilder(
   options: ISpectOptions(observer: observer),
   theme: ISpectTheme(
     pageTitle: 'Debug Panel',
-    lightBackgroundColor: Colors.white,
-    darkBackgroundColor: Colors.black,
-    lightDividerColor: Colors.grey.shade300,
-    darkDividerColor: Colors.grey.shade800,
+
+    // Unified color theming with ISpectDynamicColor
+    background: ISpectDynamicColor(
+      light: Colors.white,
+      dark: Colors.black,
+    ),
+    divider: ISpectDynamicColor(
+      light: Colors.grey.shade300,
+      dark: Colors.grey.shade800,
+    ),
 
     // Custom colors for log types
     logColors: {
@@ -499,13 +505,19 @@ ISpectBuilder(
       'debug': Icons.bug_report,
     },
 
+    // Custom descriptions for log types
+    logDescriptions: {
+      'error': 'Critical application errors',
+      'info': 'Informational messages',
+    },
+
     // Disable specific log categories
-    logDescriptions: [
-      LogDescription(key: 'riverpod-add', isDisabled: true),
-      LogDescription(key: 'riverpod-update', isDisabled: true),
-      LogDescription(key: 'riverpod-dispose', isDisabled: true),
-      LogDescription(key: 'riverpod-fail', isDisabled: true),
-    ],
+    disabledLogTypes: {
+      'riverpod-add',
+      'riverpod-update',
+      'riverpod-dispose',
+      'riverpod-fail',
+    },
   ),
   child: child ?? const SizedBox.shrink(),
 )
@@ -677,12 +689,12 @@ ISpect provides companion packages for common Flutter libraries.
 
 ```yaml
 dependencies:
-  ispect: ^4.5.0-dev11              # Core package (required)
-  ispectify_dio: ^4.5.0-dev11       # Dio HTTP client
-  ispectify_http: ^4.5.0-dev11      # Standard http package
-  ispectify_db: ^4.5.0-dev11        # Database operations
-  ispectify_ws: ^4.5.0-dev11        # WebSocket traffic
-  ispectify_bloc: ^4.5.0-dev11      # BLoC/Cubit integration
+  ispect: ^4.5.0-dev12              # Core package (required)
+  ispectify_dio: ^4.5.0-dev12       # Dio HTTP client
+  ispectify_http: ^4.5.0-dev12      # Standard http package
+  ispectify_db: ^4.5.0-dev12        # Database operations
+  ispectify_ws: ^4.5.0-dev12        # WebSocket traffic
+  ispectify_bloc: ^4.5.0-dev12      # BLoC/Cubit integration
 ```
 
 ### 🌐 HTTP Monitoring
@@ -835,11 +847,11 @@ final observer = ISpectNavigatorObserver();
 ISpectBuilder(
   options: ISpectOptions(observer: observer),
   theme: const ISpectTheme(
-    logDescriptions: [
-      LogDescription(key: 'bloc-event', isDisabled: true),
-      LogDescription(key: 'bloc-transition', isDisabled: true),
-      LogDescription(key: 'bloc-state', isDisabled: true),
-    ],
+    disabledLogTypes: {
+      'bloc-event',
+      'bloc-transition',
+      'bloc-state',
+    },
   ),
   child: child,
 )

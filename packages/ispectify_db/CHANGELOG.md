@@ -1,74 +1,133 @@
 # Changelog
 
-## 4.5.0-dev11
+## 4.5.0-dev12
 
-### Breaking Changes
+### 🚨 Breaking Changes
 
-#### Method Renaming
-- `logCustom()` -> `logData()` - Renamed for consistency across logging API
+#### API Renaming
+To improve consistency and clarity, several core classes and methods have been renamed:
 
-#### Class Renaming
-- `ISpectify` -> `ISpectLogger`
-- `ISpectifyLogger` -> `ISpectBaseLogger`
-- `ISpectifyFlutter ` -> `ISpectFlutter`
+**Methods:**
+- `logCustom()` → `logData()` - Better reflects the purpose of logging custom data
 
-#### Other Changes:
-- `ISpectTheme`:
-   - Was:
-      ```dart
-      lightBackgroundColor: Colors.white,
-      darkBackgroundColor: Colors.black,
-      lightDividerColor: Colors.grey.shade300,
-      darkDividerColor: Colors.grey.shade800,
-      ```
-   - Now:
-      ```dart
-      background: ISpectDynamicColor(
-            light: Colors.white,
-            dark: Colors.black,
-          ),
-      divider: ISpectDynamicColor(
-            light: Colors.grey.shade300,
-            dark: Colors.grey.shade800,
-          ),
-      panelTheme: DraggablePanelTheme(),
-      ```
+**Classes:**
+- `ISpectify` → `ISpectLogger` - More descriptive name for the main logger
+- `ISpectifyLogger` → `ISpectBaseLogger` - Clarifies the base logger abstraction
+- `ISpectifyFlutter` → `ISpectFlutter` - Shorter, cleaner naming
 
-### Added
-- Fluent API builders for interceptor settings configuration
-- Support for multiple observers with improved notification mechanism
-- Enhanced logging context with `additionalData` support and centralized `LogFactory`
-- Localization for bloc error logs and provider activity across all supported languages
-- Settings persistence and log type filtering functionality
-- Resource disposal functionality to `ISpectLogger` for proper resource management
-- Comprehensive unit tests for settings builders and redaction service
-- Strategy-based redaction (composite, key and pattern) configurable via `RedactionService`
-- Platform directory abstraction so file operations resolve correctly on each supported target
+#### ISpectTheme API Changes
 
-### Changed
-- Unified logging interface across HTTP and WebSocket interceptors
-- Improved filter update performance by ~70% with debouncing
-- Optimized widget rendering and list creation with fixed-size lists
-- Enhanced error handling and logging across all modules
-- Refactored observer handling to support multiple observers
-- Updated UI components for better consistency and theming
-- Improved code organization and reduced code duplication
-- Refactored logger initialization to use `addPostFrameCallback` for improved state management
-- Simplified header redaction logic in `RedactionService`
-- Enhanced documentation with detailed usage examples and configuration guides
-- Reworked `ISpectViewController` to rely on new `FilterManager`/`SettingsManager` and explicit log import/export services for clearer separation
-- Migrated logging output through the platform-aware `PlatformOutput` abstraction
-- Sealed `FileProcessingResult` and related JSON/observer models for cleaner error handling and caching
-- JSON viewer color handling now uses dedicated calculation extensions plus cached contrast lookups for stable text rendering
+**1. Simplified log type filtering:**
+```dart
+// ❌ Before (verbose)
+logDescriptions: [
+  LogDescription(key: 'riverpod-add', isDisabled: true),
+  LogDescription(key: 'riverpod-update', isDisabled: true),
+],
 
-### Fixed
-- Improved type safety in HTTP and Dio interceptors
-- Enhanced null-safety in JSON selector and generic type constraints
-- Better memory safety with unmodifiable cache views
-- Case-insensitive key comparison in redact method
-- Memory optimization in widgets and list creation
-- Circular dependencies in service initialization
-- Object pool lifecycle management and performance issues
+// ✅ Now (clean and simple)
+disabledLogTypes: {'riverpod-add', 'riverpod-update'},
+```
+
+**2. Unified color theming with `ISpectDynamicColor`:**
+```dart
+// ❌ Before (separate light/dark properties)
+lightBackgroundColor: Colors.white,
+darkBackgroundColor: Colors.black,
+lightDividerColor: Colors.grey.shade300,
+darkDividerColor: Colors.grey.shade800,
+
+// ✅ Now (unified with ISpectDynamicColor)
+background: ISpectDynamicColor(
+  light: Colors.white,
+  dark: Colors.black,
+),
+divider: ISpectDynamicColor(
+  light: Colors.grey.shade300,
+  dark: Colors.grey.shade800,
+),
+```
+
+**3. Customizable log descriptions:**
+
+`logDescriptions` now accepts `Map<String, String>` for overriding default descriptions:
+```dart
+ISpectTheme(
+  logColors: {'error': Colors.red},
+  logIcons: {'error': Icons.error},
+  logDescriptions: {
+    'error': 'Critical application errors',
+    'info': 'Informational messages',
+  },
+)
+```
+
+---
+
+### ✨ New Features
+
+#### Interceptor Configuration
+- **Fluent API builders** for cleaner interceptor settings configuration
+- **Multiple observers support** with improved notification mechanism
+
+#### Logging Enhancements
+- **Enhanced context**: `additionalData` support with centralized `LogFactory`
+- **Resource management**: Proper disposal functionality in `ISpectLogger`
+- **Localization**: Full support for bloc error logs and provider activity across all languages
+
+#### Settings & Filtering
+- **Persistent settings**: Your log preferences are now saved between sessions
+- **Advanced filtering**: Improved log type filtering with better UI controls
+
+#### Security & Privacy
+- **Strategy-based redaction**: Configure via `RedactionService` with composite, key, and pattern strategies
+- **Comprehensive tests**: Unit tests for settings builders and redaction service
+
+#### Platform Support
+- **Platform abstraction**: File operations now work correctly across all supported targets via platform-aware directory handling
+
+---
+
+### 🔧 Improvements
+
+#### Performance
+- **70% faster filtering**: Log filter updates now use debouncing for dramatic performance gains
+- **Optimized rendering**: Widget rendering and list creation now use fixed-size lists
+- **Better caching**: JSON viewer uses cached contrast lookups for stable text rendering
+
+#### Architecture
+- **Unified logging interface**: Consistent API across HTTP and WebSocket interceptors
+- **Cleaner separation**: `ISpectViewController` now uses dedicated `FilterManager`/`SettingsManager` and explicit import/export services
+- **Platform-aware output**: All logging migrated to `PlatformOutput` abstraction
+- **Sealed models**: `FileProcessingResult` and related JSON/observer models for type-safe error handling
+
+#### Code Quality
+- **Better initialization**: Logger now uses `addPostFrameCallback` for improved state management
+- **Simplified logic**: Cleaner header redaction in `RedactionService`
+- **Reduced duplication**: Improved code organization across all modules
+- **Enhanced error handling**: More robust error handling and logging throughout
+
+#### Documentation
+- **Comprehensive guides**: Detailed usage examples and configuration guides added
+- **Better comments**: Improved inline documentation for easier maintenance
+
+---
+
+### 🐛 Bug Fixes
+
+#### Type Safety
+- **HTTP/Dio interceptors**: Improved type safety across all interceptor implementations
+- **JSON selector**: Enhanced null-safety and generic type constraints
+- **Memory safety**: Unmodifiable cache views prevent accidental mutations
+
+#### Performance & Memory
+- **Widget optimization**: Fixed memory leaks in widgets and list creation
+- **Object pool**: Resolved lifecycle management and performance issues
+- **Circular dependencies**: Fixed initialization order in service dependency graph
+
+#### Functionality
+- **Case-insensitive redaction**: Redact method now handles keys regardless of case
+- **Error handling**: More robust error handling across all modules
 
 ## 4.4.7
 

@@ -103,6 +103,7 @@ class ISpectTheme {
     this.card,
     this.logColors = const {},
     this.logIcons = const {},
+    this.logDescriptions = const {},
     this.panelTheme,
   });
 
@@ -129,6 +130,9 @@ class ISpectTheme {
 
   /// A map of icons associated with different log types.
   final Map<String, IconData> logIcons;
+
+  /// A map of descriptions associated with different log types.
+  final Map<String, String> logDescriptions;
 
   /// Theme settings for draggable panels within ISpect.
   final DraggablePanelTheme? panelTheme;
@@ -158,6 +162,7 @@ class ISpectTheme {
     ISpectDynamicColor? card,
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
+    Map<String, String>? logDescriptions,
     DraggablePanelTheme? panelTheme,
   }) {
     return ISpectTheme(
@@ -169,6 +174,7 @@ class ISpectTheme {
       card: card ?? this.card,
       logColors: logColors ?? this.logColors,
       logIcons: logIcons ?? this.logIcons,
+      logDescriptions: logDescriptions ?? this.logDescriptions,
       panelTheme: panelTheme ?? this.panelTheme,
     );
   }
@@ -213,6 +219,25 @@ class ISpectTheme {
     return iconData ?? Icons.bug_report_outlined;
   }
 
+  /// Returns a combined map of default and custom log descriptions.
+  ///
+  /// - Merges default descriptions from `ISpectConstants` with `logDescriptions`.
+  Map<String, String> descriptions(BuildContext context) {
+    final defaultDescriptions = {
+      for (final desc in ISpectConstants.defaultLogDescriptions(context))
+        if (desc.description != null) desc.key: desc.description!,
+    };
+    return {
+      ...defaultDescriptions,
+      ...logDescriptions,
+    };
+  }
+
+  String? getTypeDescription(BuildContext context, {required String? key}) {
+    if (key == null) return null;
+    return descriptions(context)[key];
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'page_title': pageTitle,
@@ -223,6 +248,7 @@ class ISpectTheme {
       'card': card?.toMap(),
       'log_colors': logColors,
       'log_icons': logIcons,
+      'log_descriptions': logDescriptions,
     };
   }
 
@@ -242,6 +268,7 @@ class ISpectTheme {
       card: $card,
       logColors: $logColors,
       logIcons: $logIcons,
+      logDescriptions: $logDescriptions,
       panelTheme: $panelTheme,
       )''';
   }
@@ -260,6 +287,7 @@ class ISpectTheme {
         other.card == card &&
         mapEquals(other.logColors, logColors) &&
         mapEquals(other.logIcons, logIcons) &&
+        mapEquals(other.logDescriptions, logDescriptions) &&
         other.panelTheme == panelTheme;
   }
 
@@ -273,6 +301,7 @@ class ISpectTheme {
         card.hashCode ^
         logColors.hashCode ^
         logIcons.hashCode ^
+        logDescriptions.hashCode ^
         panelTheme.hashCode;
   }
 
@@ -303,6 +332,9 @@ class ISpectTheme {
       logIcons: cast<Map<String, dynamic>?>('log_icons')?.map(
               (k, v) => MapEntry(k, IconData((v as num?)?.toInt() ?? 0))) ??
           const <String, IconData>{},
+      logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
+              ?.map((k, v) => MapEntry(k, v.toString())) ??
+          const <String, String>{},
     );
   }
 }
