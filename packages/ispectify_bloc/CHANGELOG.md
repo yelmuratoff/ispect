@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.5.0-dev10
+## 4.5.0-dev11
 
 ### Breaking Changes
 
@@ -11,6 +11,28 @@
 - `ISpectify` -> `ISpectLogger`
 - `ISpectifyLogger` -> `ISpectBaseLogger`
 - `ISpectifyFlutter ` -> `ISpectFlutter`
+
+#### Other Changes:
+- `ISpectTheme`:
+   - Was:
+      ```dart
+      lightBackgroundColor: Colors.white,
+      darkBackgroundColor: Colors.black,
+      lightDividerColor: Colors.grey.shade300,
+      darkDividerColor: Colors.grey.shade800,
+      ```
+   - Now:
+      ```dart
+      background: ISpectDynamicColor(
+            light: Colors.white,
+            dark: Colors.black,
+          ),
+      divider: ISpectDynamicColor(
+            light: Colors.grey.shade300,
+            dark: Colors.grey.shade800,
+          ),
+      panelTheme: DraggablePanelTheme(),
+      ```
 
 ### Added
 - Fluent API builders for interceptor settings configuration
