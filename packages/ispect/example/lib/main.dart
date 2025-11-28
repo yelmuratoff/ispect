@@ -170,10 +170,12 @@ class MyApp extends StatelessWidget {
           ),
           logColors: {
             'error': Colors.yellow,
+            'exception': Colors.yellow,
             'info': Colors.blue,
           },
           logIcons: {
             'error': Icons.abc,
+            'exception': Icons.abc,
             'info': Icons.info,
           },
         ),

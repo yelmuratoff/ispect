@@ -203,8 +203,8 @@ class ISpectTheme {
   ///
   /// - Merges `logIcons` with default icons from `ISpectConstants`.
   Map<String, IconData> icons(BuildContext context) => {
-        ...logIcons,
         ...ISpectConstants.typeIcons,
+        ...logIcons,
       };
 
   IconData getTypeIcon(BuildContext context, {required String? key}) {
@@ -317,8 +317,8 @@ Map<String, Color> _getLightColors(ISpectTheme theme) {
   final cached = _lightColorsExpando[theme];
   if (cached != null) return cached;
   final merged = {
-    ...theme.logColors,
     ...ISpectConstants.lightTypeColors,
+    ...theme.logColors,
   };
   _lightColorsExpando[theme] = merged;
   return merged;
@@ -328,8 +328,8 @@ Map<String, Color> _getDarkColors(ISpectTheme theme) {
   final cached = _darkColorsExpando[theme];
   if (cached != null) return cached;
   final merged = {
-    ...theme.logColors,
     ...ISpectConstants.darkTypeColors,
+    ...theme.logColors,
   };
   _darkColorsExpando[theme] = merged;
   return merged;
