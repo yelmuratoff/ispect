@@ -78,7 +78,10 @@ void showColorPickerResultSnackbar({
             ],
           ),
           const Gap(8),
-          ElevatedButton(
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: context.ispectTheme.background?.resolve(context),
+            ),
             onPressed: () {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               copyClipboard(context, value: colorString);
