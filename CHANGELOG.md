@@ -31,6 +31,7 @@
             light: Colors.grey.shade300,
             dark: Colors.grey.shade800,
           ),
+      panelTheme: DraggablePanelTheme(),
       ```
 
 ### Added
