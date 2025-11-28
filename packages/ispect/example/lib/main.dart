@@ -67,6 +67,12 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: ISpectLocalizations.delegates(delegates: [
         // Add your localization delegates here
       ]),
+      theme: ThemeData(
+        dividerColor: Colors.grey.shade300,
+      ),
+      darkTheme: ThemeData(
+        dividerColor: Colors.grey.shade800,
+      ),
       navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(
@@ -141,51 +147,51 @@ class MyApp extends StatelessWidget {
             ),
           ],
         ),
-        theme: ISpectTheme(
-          pageTitle: 'Your name here',
-          primary: ISpectDynamicColor(
-            light: Colors.red,
-            dark: Colors.red,
-          ),
-          background: ISpectDynamicColor(
-            light: Colors.redAccent.shade100,
-            dark: Colors.black,
-          ),
-          card: ISpectDynamicColor(
-            light: Colors.redAccent.shade200,
-            dark: Colors.grey.shade900,
-          ),
-          divider: ISpectDynamicColor(
-            light: Colors.redAccent.shade400,
-            dark: Colors.grey.shade800,
-          ),
-          logColors: {
-            'error': Colors.red,
-            'info': Colors.blue,
-          },
-          logIcons: {
-            'error': Icons.error,
-            'info': Icons.info,
-          },
-          logDescriptions: [
-            LogDescription(
-              key: 'riverpod-add',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-update',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-dispose',
-              isDisabled: true,
-            ),
-            LogDescription(
-              key: 'riverpod-fail',
-              isDisabled: true,
-            ),
-          ],
-        ),
+        // theme: ISpectTheme(
+        //   pageTitle: 'Your name here',
+        //   primary: ISpectDynamicColor(
+        //     light: Colors.red,
+        //     dark: Colors.red,
+        //   ),
+        //   background: ISpectDynamicColor(
+        //     light: Colors.redAccent.shade100,
+        //     dark: Colors.black,
+        //   ),
+        //   card: ISpectDynamicColor(
+        //     light: Colors.redAccent.shade200,
+        //     dark: Colors.grey.shade900,
+        //   ),
+        //   divider: ISpectDynamicColor(
+        //     light: Colors.redAccent.shade400,
+        //     dark: Colors.grey.shade800,
+        //   ),
+        //   logColors: {
+        //     'error': Colors.red,
+        //     'info': Colors.blue,
+        //   },
+        //   logIcons: {
+        //     'error': Icons.error,
+        //     'info': Icons.info,
+        //   },
+        //   logDescriptions: [
+        //     LogDescription(
+        //       key: 'riverpod-add',
+        //       isDisabled: true,
+        //     ),
+        //     LogDescription(
+        //       key: 'riverpod-update',
+        //       isDisabled: true,
+        //     ),
+        //     LogDescription(
+        //       key: 'riverpod-dispose',
+        //       isDisabled: true,
+        //     ),
+        //     LogDescription(
+        //       key: 'riverpod-fail',
+        //       isDisabled: true,
+        //     ),
+        //   ],
+        // ),
         child: child ?? const SizedBox.shrink(),
       ),
       home: Scaffold(
