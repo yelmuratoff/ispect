@@ -416,6 +416,23 @@ flutter build apk --dart-define=ENABLE_ISPECT=false
 
 Build your app twice—once with the flag enabled and once without—then compare the APK/IPA sizes. The difference should reflect the ISpect code being tree-shaken away in the production build.
 
+**Example verification results:**
+
+| Build | APK Size | "ispect" strings in libapp.so |
+|-------|----------|-------------------------------|
+| Production (no flag) | 40 MB | 6 (UI literals only) |
+| Development (`ENABLE_ISPECT=true`) | 49 MB | 301 (full library) |
+
+You can verify the tree-shaking by inspecting the compiled binary:
+
+```bash
+# Extract APK and search for ispect references
+unzip -o app-release.apk -d apk_extracted
+strings apk_extracted/lib/arm64-v8a/libapp.so | grep -ic ispect
+```
+
+In production builds, this should return only a few hits (from your own UI strings like "ISpect disabled"), not hundreds from the library code.
+
 **Why use build flags?**
 
 - 🔐 **Security** – Prevents accidental data exposure in production
