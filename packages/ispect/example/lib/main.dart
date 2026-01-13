@@ -5,6 +5,12 @@ import 'package:ispect/ispect.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
+// Define a constant based on a build-time flag
+const bool kEnableISpect = bool.fromEnvironment(
+  'ENABLE_ISPECT',
+  defaultValue: false,
+);
+
 class SentryISpectObserver implements ISpectObserver {
   @override
   void onError(ISpectLogData err) {
@@ -42,28 +48,26 @@ class BackendISpectObserver implements ISpectObserver {
 final observer = ISpectNavigatorObserver();
 
 void main() {
-  // Example: Restore settings from storage (e.g., SharedPreferences)
-  // final prefs = await SharedPreferences.getInstance();
-  // final settingsJson = prefs.getString('ispect_settings');
-  // final initialSettings = settingsJson != null
-  //     ? ISpectSettingsState.fromJson(jsonDecode(settingsJson))
-  //     : null;
+  if (kEnableISpect) {
+    // ISpect is only initialized when the flag is true
+    final logger = ISpectFlutter.init(
+      options: ISpectLoggerOptions(
+        customColors: {
+          'error': AnsiPen()..yellow(),
+          'exception': AnsiPen()..yellow(),
+          'info': AnsiPen()..blue(),
+        },
+      ),
+    );
 
-  final logger = ISpectFlutter.init(
-    options: ISpectLoggerOptions(
-      customColors: {
-        'error': AnsiPen()..yellow(),
-        'exception': AnsiPen()..yellow(),
-        'info': AnsiPen()..blue(),
-      },
-    ),
-  );
+    logger.addObserver(SentryISpectObserver());
+    logger.addObserver(BackendISpectObserver());
 
-  logger.addObserver(SentryISpectObserver());
-  logger.addObserver(BackendISpectObserver());
-
-  // Wrap your app with ISpect
-  ISpect.run(logger: logger, () => runApp(const MyApp()));
+    ISpect.run(logger: logger, () => runApp(const MyApp()));
+  } else {
+    // Normal app startup without ISpect
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -72,144 +76,144 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: ISpectLocalizations.delegates(delegates: [
-        // Add your localization delegates here
-      ]),
+      localizationsDelegates:
+          kEnableISpect ? ISpectLocalizations.delegates(delegates: []) : [],
       theme: ThemeData(
         dividerColor: Colors.grey.shade300,
       ),
       darkTheme: ThemeData(
         dividerColor: Colors.grey.shade800,
       ),
-      navigatorObservers: [observer],
-      builder: (context, child) => ISpectBuilder(
-        options: ISpectOptions(
-          observer: observer,
-
-          // This parameter is needed if you want the user to be able to manage settings
-          // Example: Restore initial settings from storage
-          // initialSettings: initialSettings,
-          initialSettings: const ISpectSettingsState(
-            disabledLogTypes: {
-              'riverpod-add',
-              'riverpod-update',
-              'riverpod-dispose',
-              'riverpod-fail',
-            },
-            enabled: true,
-            useConsoleLogs: true,
-            useHistory: true,
-          ),
-          locale: const Locale('en'),
-
-          onSettingsChanged: (settings) {
-            // Persist settings when they change
-            ISpect.logger.print('ISpect settings changed: $settings');
-            // Example: Save to SharedPreferences
-            // final prefs = await SharedPreferences.getInstance();
-            // await prefs.setString('ispect_settings', jsonEncode(settings.toJson()));
-          },
-          onLoadLogContent: (context) async {
-            // Here you can load log content.
-            // For example, from a file using file_picker.
-            return 'Loaded log content from callback';
-          },
-          onOpenFile: (path) async {
-            // Here you can handle opening the file.
-            // For example, using open_filex package.
-            await OpenFilex.open(path);
-          },
-          onShare: (ISpectShareRequest request) async {
-            // Here you can handle sharing the content.
-            // For example, using share_plus package.
-            final filesPath = request.filePaths;
-            final files = <XFile>[];
-            for (final path in filesPath) {
-              files.add(XFile(path));
-            }
-            await SharePlus.instance.share(ShareParams(
-              text: request.text,
-              subject: request.subject,
-              files: files,
-            ));
-          },
-          actionItems: [
-            ISpectActionItem(
-                onTap: (BuildContext context) {},
-                title: 'Some title here',
-                icon: Icons.add),
-          ],
-          panelItems: [
-            DraggablePanelItem(
-              enableBadge: false,
-              icon: Icons.settings,
-              onTap: (context) {
-                // Handle settings tap
+      navigatorObservers: kEnableISpect ? [observer] : [],
+      builder: (context, child) {
+        if (kEnableISpect) {
+          return ISpectBuilder(
+            options: ISpectOptions(
+              observer: observer,
+              initialSettings: const ISpectSettingsState(
+                disabledLogTypes: {
+                  'riverpod-add',
+                  'riverpod-update',
+                  'riverpod-dispose',
+                  'riverpod-fail',
+                },
+                enabled: true,
+                useConsoleLogs: true,
+                useHistory: true,
+              ),
+              locale: const Locale('en'),
+              onSettingsChanged: (settings) {
+                ISpect.logger.print('ISpect settings changed: $settings');
+              },
+              onLoadLogContent: (context) async {
+                return 'Loaded log content from callback';
+              },
+              onOpenFile: (path) async {
+                await OpenFilex.open(path);
+              },
+              onShare: (ISpectShareRequest request) async {
+                final filesPath = request.filePaths;
+                final files = <XFile>[];
+                for (final path in filesPath) {
+                  files.add(XFile(path));
+                }
+                await SharePlus.instance.share(ShareParams(
+                  text: request.text,
+                  subject: request.subject,
+                  files: files,
+                ));
+              },
+              actionItems: [
+                ISpectActionItem(
+                    onTap: (BuildContext context) {},
+                    title: 'Some title here',
+                    icon: Icons.add),
+              ],
+              panelItems: [
+                DraggablePanelItem(
+                  enableBadge: false,
+                  icon: Icons.settings,
+                  onTap: (context) {},
+                ),
+              ],
+              panelButtons: [
+                DraggablePanelButtonItem(
+                  icon: Icons.info,
+                  label: 'Info',
+                  onTap: (context) {},
+                ),
+              ],
+            ),
+            theme: ISpectTheme(
+              pageTitle: 'Your name here',
+              primary: ISpectDynamicColor(
+                light: Colors.red,
+                dark: Colors.red,
+              ),
+              background: ISpectDynamicColor(
+                light: Colors.redAccent.shade100,
+                dark: Colors.black,
+              ),
+              card: ISpectDynamicColor(
+                light: Colors.redAccent.shade200,
+                dark: Colors.grey.shade900,
+              ),
+              divider: ISpectDynamicColor(
+                light: Colors.redAccent.shade400,
+                dark: Colors.grey.shade800,
+              ),
+              logColors: {
+                'error': Colors.yellow,
+                'exception': Colors.yellow,
+                'info': Colors.blue,
+              },
+              logIcons: {
+                'error': Icons.abc,
+                'exception': Icons.abc,
+                'info': Icons.info,
               },
             ),
-          ],
-          panelButtons: [
-            DraggablePanelButtonItem(
-              icon: Icons.info,
-              label: 'Info',
-              onTap: (context) {
-                // Handle info tap
-              },
-            ),
-          ],
-        ),
-        theme: ISpectTheme(
-          pageTitle: 'Your name here',
-          primary: ISpectDynamicColor(
-            light: Colors.red,
-            dark: Colors.red,
-          ),
-          background: ISpectDynamicColor(
-            light: Colors.redAccent.shade100,
-            dark: Colors.black,
-          ),
-          card: ISpectDynamicColor(
-            light: Colors.redAccent.shade200,
-            dark: Colors.grey.shade900,
-          ),
-          divider: ISpectDynamicColor(
-            light: Colors.redAccent.shade400,
-            dark: Colors.grey.shade800,
-          ),
-          logColors: {
-            'error': Colors.yellow,
-            'exception': Colors.yellow,
-            'info': Colors.blue,
-          },
-          logIcons: {
-            'error': Icons.abc,
-            'exception': Icons.abc,
-            'info': Icons.info,
-          },
-        ),
-        child: child ?? const SizedBox.shrink(),
-      ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        }
+        return child ?? const SizedBox.shrink();
+      },
       home: Scaffold(
         appBar: AppBar(title: const Text('ISpect Example')),
         body: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
                 onPressed: () {
-                  ISpect.logger.info('Button pressed!');
-                  ISpect.logger.warning('Button pressed!');
-                  ISpect.logger.error('Button pressed!');
+                  if (kEnableISpect) {
+                    ISpect.logger.info('Button pressed!');
+                    ISpect.logger.warning('Button pressed!');
+                    ISpect.logger.error('Button pressed!');
+                  } else {
+                    debugPrint('Button pressed! (ISpect disabled)');
+                  }
                 },
                 child: const Text('Press me'),
               ),
               ElevatedButton(
                 onPressed: () {
-                  ISpect.logger.handle(
-                    exception: Exception('Test Exception'),
-                    stackTrace: StackTrace.current,
-                  );
+                  if (kEnableISpect) {
+                    ISpect.logger.handle(
+                      exception: Exception('Test Exception'),
+                      stackTrace: StackTrace.current,
+                    );
+                  } else {
+                    debugPrint('Error logged! (ISpect disabled)');
+                  }
                 },
                 child: const Text('Large Error'),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'ISpect: ${kEnableISpect ? "ENABLED" : "DISABLED"}',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
