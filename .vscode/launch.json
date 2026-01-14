@@ -6,7 +6,7 @@
       "cwd": "packages/ispect/example",
       "request": "launch",
       "type": "dart",
-      "args": ["-t", "lib/main.dart"]
+      "args": ["-t", "lib/main.dart", "--dart-define=ISPECT_ENABLED=true"]
     },
     {
       "name": "Release ISpect example",
