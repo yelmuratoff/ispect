@@ -182,7 +182,7 @@ Observers receive all logs, errors, and exceptions. Use them to forward events t
 
 ```yaml
 dependencies:
-  ispect: ^4.7.0-dev02
+  ispect: ^4.7.0-dev03
 ```
 
 ### Quick Start
@@ -221,13 +221,13 @@ class MyApp extends StatelessWidget {
 
 ```bash
 # Development (ISpect enabled)
-flutter run --dart-define=ENABLE_ISPECT=true
+flutter run --dart-define=ISPECT_ENABLED=true
 
 # Production (ISpect automatically removed via tree-shaking)
 flutter build apk
 ```
 
-> **Note:** When `ENABLE_ISPECT` is not set (default), `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` automatically become no-ops, allowing Dart's tree-shaking to remove all ISpect code from your production build.
+> **Note:** When `ISPECT_ENABLED` is not set (default), `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` automatically become no-ops, allowing Dart's tree-shaking to remove all ISpect code from your production build.
 
 ## Logger Configuration
 
@@ -361,7 +361,7 @@ class MyApp extends StatelessWidget {
 
 ```bash
 # Development (ISpect enabled)
-flutter run --dart-define=ENABLE_ISPECT=true
+flutter run --dart-define=ISPECT_ENABLED=true
 
 # Production (ISpect removed via tree-shaking)
 flutter build apk
@@ -407,7 +407,7 @@ import 'package:flutter/foundation.dart';
 
 class ISpectConfig {
   static const bool isEnabled = bool.fromEnvironment(
-    'ENABLE_ISPECT',
+    'ISPECT_ENABLED',
     defaultValue: kDebugMode, // Enable in debug mode by default
   );
 
@@ -437,7 +437,7 @@ Build with environment flags:
 
 ```bash
 flutter build apk \
-  --dart-define=ENABLE_ISPECT=true \
+  --dart-define=ISPECT_ENABLED=true \
   --dart-define=ENVIRONMENT=staging
 ```
 
@@ -663,12 +663,12 @@ ISpect provides companion packages for common Flutter libraries.
 
 ```yaml
 dependencies:
-  ispect: ^4.7.0-dev02              # Core package (required)
-  ispectify_dio: ^4.7.0-dev02       # Dio HTTP client
-  ispectify_http: ^4.7.0-dev02      # Standard http package
-  ispectify_db: ^4.7.0-dev02        # Database operations
-  ispectify_ws: ^4.7.0-dev02        # WebSocket traffic
-  ispectify_bloc: ^4.7.0-dev02      # BLoC/Cubit integration
+  ispect: ^4.7.0-dev03              # Core package (required)
+  ispectify_dio: ^4.7.0-dev03       # Dio HTTP client
+  ispectify_http: ^4.7.0-dev03      # Standard http package
+  ispectify_db: ^4.7.0-dev03        # Database operations
+  ispectify_ws: ^4.7.0-dev03        # WebSocket traffic
+  ispectify_bloc: ^4.7.0-dev03      # BLoC/Cubit integration
 ```
 
 ### 🌐 HTTP Monitoring

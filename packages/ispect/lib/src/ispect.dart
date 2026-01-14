@@ -81,7 +81,7 @@ final class ISpect {
   /// ### Build Commands:
   /// ```bash
   /// # Development (ISpect enabled)
-  /// flutter run --dart-define=ENABLE_ISPECT=true
+  /// flutter run --dart-define=ISPECT_ENABLED=true
   ///
   /// # Production (ISpect removed via tree-shaking)
   /// flutter build apk

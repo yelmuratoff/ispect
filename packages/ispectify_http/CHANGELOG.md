@@ -1,6 +1,18 @@
 # Changelog
 
-## 4.7.0-dev02
+## 4.7.0-dev03
+
+### 🚨 IMPORTANT: Behavioral Changes
+
+**ISpect is now DISABLED by default.**
+To ensure production safety and enable effective tree-shaking, ISpect is no longer included in builds by default.
+
+To enable ISpect, you **must** use the following build flag:
+```bash
+flutter run --dart-define=ISPECT_ENABLED=true
+```
+
+If the flag is not set (default), all ISpect-related logic, UI, and logging will be **completely removed** from your application binary during compilation.
 
 ### New Features
 

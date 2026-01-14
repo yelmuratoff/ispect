@@ -18,7 +18,7 @@ import 'package:ispect/src/features/performance/src/builder.dart';
 /// ## Safe Usage
 ///
 /// ```dart
-/// const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+/// const bool kEnableISpect = bool.fromEnvironment('ISPECT_ENABLED');
 ///
 /// MaterialApp(
 ///   builder: (context, child) {
@@ -34,7 +34,7 @@ import 'package:ispect/src/features/performance/src/builder.dart';
 /// Build commands:
 /// ```bash
 /// # Development
-/// flutter run --dart-define=ENABLE_ISPECT=true
+/// flutter run --dart-define=ISPECT_ENABLED=true
 ///
 /// # Production (ISpect removed)
 /// flutter build apk

@@ -40,11 +40,11 @@ export 'src/utils/time_formatter.dart';
 /// Usage:
 /// ```bash
 /// # Development (ISpect enabled)
-/// flutter run --dart-define=ENABLE_ISPECT=true
+/// flutter run --dart-define=ISPECT_ENABLED=true
 ///
 /// # Production (ISpect removed)
 /// flutter build apk
 /// ```
 const bool kISpectEnabled = bool.fromEnvironment(
-  'ENABLE_ISPECT',
+  'ISPECT_ENABLED',
 );
