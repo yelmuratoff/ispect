@@ -57,24 +57,32 @@ class ISpectBuilder extends StatefulWidget {
   /// This is the recommended way to use ISpect - no conditional logic needed
   /// in your code. When `kISpectEnabled` is `false`, simply returns [child].
   ///
+  /// Use [isISpectEnabled] to control visibility at runtime (e.g., for admins only).
+  /// The global `kISpectEnabled` controls tree-shaking at compile time.
+  ///
   /// Example:
   /// ```dart
   /// MaterialApp(
-  ///   builder: (_, child) => ISpectBuilder.wrap(child: child!),
+  ///   builder: (_, child) => ISpectBuilder.wrap(
+  ///     child: child!,
+  ///     isISpectEnabled: user.isAdmin, // Runtime control
+  ///   ),
   /// )
   /// ```
   static Widget wrap({
     required Widget child,
+    bool isISpectEnabled = true,
     ISpectOptions? options,
     ISpectTheme? theme,
     DraggablePanelController? controller,
   }) {
-    if (!kISpectEnabled) return child;
+    if (!kISpectEnabled || !isISpectEnabled) return child;
 
     return ISpectBuilder(
       options: options,
       theme: theme,
       controller: controller,
+      isISpectEnabled: isISpectEnabled,
       child: child,
     );
   }
