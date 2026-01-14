@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
 
-  <p><strong>A comprehensive debugging and inspection toolkit for Flutter</strong></p>
+  <p><strong>In-app debugging toolkit for Flutter</strong></p>
 
   <p>
     <a href="https://pub.dev/packages/ispect">
@@ -28,33 +28,29 @@
   </p>
 </div>
 
-## 📱 What is ISpect?
+## What is ISpect?
 
-In-app debugging tool for Flutter. Monitor network requests, database queries, logs, performance, and UI—all from within your running app.
+In-app debugging tool for Flutter. Inspect network requests, logs, and UI during development and testing.
 
-**Core capabilities:**
-- 🌐 **Network monitoring** – HTTP/HTTPS requests and responses (Dio, http package)
-- 🗄️ **Database logging** – Query execution time and results
-- 📝 **Advanced logging** – Categorized logs with export and filtering
-- 🎨 **UI inspector** – Widget tree and layout analysis
-- 🔌 **Observers** – Integrate with Sentry, Crashlytics, or custom analytics
-- 🔒 **Production-safe** – Tree-shaken when disabled (zero overhead)
+**Features:**
+- Network monitoring (Dio, http)
+- Structured logging with filtering
+- UI inspector
+- Observer pattern for external integrations
+- Removed from production builds via tree-shaking
 
-## 📑 Table of Contents
+## Table of Contents
 
 - [Interface Preview](#interface-preview)
-- [Try It Out](#-try-it-out)
-- [Architecture](#-architecture)
-- [Features](#-features)
-- [Getting Started](#-getting-started)
-- [Logger Configuration](#-logger-configuration)
-- [Internationalization](#-internationalization)
-- [Production Safety](#-production-safety)
-- [Customization](#-customization)
-- [Integrations](#-integrations)
-- [Examples](#-examples)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Logger Configuration](#logger-configuration)
+- [Internationalization](#internationalization)
+- [Production Safety](#production-safety)
+- [Customization](#customization)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Interface Preview
 
@@ -71,13 +67,13 @@ In-app debugging tool for Flutter. Monitor network requests, database queries, l
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/cache.png?raw=true" width="160" />
 </div>
 
-## 🌐 Try It Out
+## Web Demo
 
 **Live Web Demo:** [https://yelmuratoff.github.io/ispect/](https://yelmuratoff.github.io/ispect/)
 
 Drag and drop exported log files to explore them in the browser.
 
-## 🏗️ Architecture
+## Architecture
 
 Modular design—add only what you need:
 
@@ -91,34 +87,34 @@ Modular design—add only what you need:
 | [ispectify_db](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_db) | Database operations | [![pub](https://img.shields.io/pub/v/ispectify_db.svg)](https://pub.dev/packages/ispectify_db) |
 | [ispectify_bloc](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_bloc) | BLoC events/states | [![pub](https://img.shields.io/pub/v/ispectify_bloc.svg)](https://pub.dev/packages/ispectify_bloc) |
 
-## ✨ Features
+## Features
 
-### 🌐 Network Monitoring
+### Network Monitoring
 Inspect HTTP requests and responses with headers, bodies, timing, and errors.
 
-### 🗄️ Database Operations
+### Database Operations
 Track queries with execution time, result counts, and errors.
 
-### 📝 Logging System
+### Logging System
 - Log levels (info, warning, error, debug)
 - Category-based filtering
 - Configurable history retention
 - Export and sharing
 - Observer pattern for third-party integrations
 
-### 🎨 UI Inspector
+### UI Inspector
 Widget tree inspection, layout measurements, color picker.
 
-### ⚡ Performance Tracking
+### Performance Tracking
 Frame rates, memory usage, performance metrics.
 
-### 📱 Device Information
+### Device Information
 Device details, app version, platform info.
 
-### 💬 Feedback Collection
+### Feedback Collection
 In-app feedback with screenshot capture and log attachment.
 
-### 🔌 Observer Pattern
+### Observer Pattern
 
 Observers receive log events in real-time for integration with error tracking services.
 
@@ -180,22 +176,23 @@ void main() {
 
 Observers receive all logs, errors, and exceptions. Use them to forward events to Sentry, Crashlytics, or custom analytics endpoints.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Installation
 
 ```yaml
 dependencies:
-  ispect: ^4.6.0
+  ispect: ^4.7.0
 ```
 
 ### Quick Start
+
+ISpect uses automatic tree-shaking via `kISpectEnabled`. By default, ISpect is **disabled** and completely removed from production builds.
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 
-// Create observer instance
 final observer = ISpectNavigatorObserver();
 
 void main() {
@@ -208,33 +205,31 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // Add observer to track navigation
+      localizationsDelegates: ISpectLocalizations.delegates(),
       navigatorObservers: [observer],
       builder: (context, child) => ISpectBuilder(
         options: ISpectOptions(observer: observer),
         child: child ?? const SizedBox.shrink(),
       ),
-      home: Scaffold(
-        appBar: AppBar(title: const Text('My App')),
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              ISpect.logger.info('Button pressed!');
-            },
-            child: const Text('Press me'),
-          ),
-        ),
-      ),
+      home: const HomePage(),
     );
   }
 }
 ```
 
-A draggable button appears on screen. Tap it to open the ISpect panel.
+**Build Commands:**
 
-> **Important:** ISpect requires `ISpectNavigatorObserver` to work correctly. Always add it to both `navigatorObservers` and `ISpectOptions`. You can pass `null` to `observer` parameter, but this will disable some features like navigation tracking and proper context handling.
+```bash
+# Development (ISpect enabled)
+flutter run --dart-define=ENABLE_ISPECT=true
 
-## ⚙️ Logger Configuration
+# Production (ISpect automatically removed via tree-shaking)
+flutter build apk
+```
+
+> **Note:** When `ENABLE_ISPECT` is not set (default), `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` automatically become no-ops, allowing Dart's tree-shaking to remove all ISpect code from your production build.
+
+## Logger Configuration
 
 ### Default Setup
 
@@ -317,7 +312,7 @@ void main() {
 
 For advanced configuration options (redaction, dynamic reconfiguration, performance tuning), see the [ISpectLogger documentation](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify).
 
-## 🌍 Internationalization
+## Internationalization
 
 **Supported languages:** en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi
 
@@ -334,94 +329,73 @@ MaterialApp(
 
 You can extend or override translations using the `ISpectLocalizations` delegate.
 
-## 🔒 Production Safety
+## Production Safety
 
-> **Security Best Practice:** Debug and logging tools should not be included in production builds. They can expose sensitive data (API keys, tokens, user data, network traffic) and increase app size. This applies to all debugging tools, not just ISpect.
+> **Security Best Practice:** Debug and logging tools should not be included in production builds. They can expose sensitive data (API keys, tokens, user data, network traffic) and increase app size.
 
-ISpect supports conditional compilation via `--dart-define` flags. When the flag is not set, all ISpect code is automatically tree-shaken from your production build—zero impact on size, performance, or security.
+ISpect uses `kISpectEnabled` compile-time constant for automatic tree-shaking. When disabled (default), all ISpect code is removed from production builds.
 
-### Setup with Build Flags
+### Zero-Conditional API
 
-**Step 1:** Use a build flag to control initialization
+ISpect provides factory methods that handle the `kISpectEnabled` check internally, eliminating conditional logic in your code:
 
 ```dart
-// Define a constant based on a build-time flag
-const bool kEnableISpect = bool.fromEnvironment(
-  'ENABLE_ISPECT',
-  defaultValue: false,
-);
-
 void main() {
-  if (kEnableISpect) {
-    // ISpect is only initialized when the flag is true
-    ISpect.run(() => runApp(const MyApp()));
-  } else {
-    // Normal app startup without ISpect
-    runApp(const MyApp());
-  }
+  ISpect.run(() => runApp(const MyApp()));
 }
-```
-
-**Step 2:** Conditionally include ISpect UI
-
-```dart
-final observer = ISpectNavigatorObserver();
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: kEnableISpect
-          ? ISpectLocalizations.delegates(delegates: [
-              // Your localization delegates
-            ])
-          : [
-              // Your localization delegates without ISpect
-            ],
-      navigatorObservers: kEnableISpect ? [observer] : [],
-      builder: (context, child) {
-        if (kEnableISpect) {
-          return ISpectBuilder(
-            options: ISpectOptions(observer: observer),
-            child: child ?? const SizedBox.shrink(),
-          );
-        }
-        return child ?? const SizedBox.shrink();
-      },
+      localizationsDelegates: ISpectLocalizations.delegates(),
+      navigatorObservers: ISpectNavigatorObserver.observers(),
+      builder: (_, child) => ISpectBuilder.wrap(child: child!),
       home: const MyHomePage(),
     );
   }
 }
 ```
 
-**Step 3:** Build with or without ISpect
+**Build Commands:**
 
 ```bash
-# Development build with ISpect
+# Development (ISpect enabled)
 flutter run --dart-define=ENABLE_ISPECT=true
 
-# QA/Staging build with ISpect
-flutter build apk --dart-define=ENABLE_ISPECT=true --dart-define=ENVIRONMENT=staging
-
-# Production build WITHOUT ISpect (default)
+# Production (ISpect removed via tree-shaking)
 flutter build apk
-
-# Or explicitly disable it
-flutter build apk --dart-define=ENABLE_ISPECT=false
 ```
 
-**Step 4:** Verify it's excluded
+### Security recommendations
 
-Build your app twice—once with the flag enabled and once without—then compare the APK/IPA sizes. The difference should reflect the ISpect code being tree-shaken away in the production build.
+#### 1. Maximum Security Build
 
-**Why use build flags?**
+```bash
+flutter build apk --release \
+  --obfuscate \
+  --split-debug-info=debug-info/
+```
 
-- 🔐 **Security** – Prevents accidental data exposure in production
-- ⚡ **Performance** – Zero overhead (code is completely removed)
-- 📦 **App Size** – Production builds don't include debug assets
-- ✅ **Compliance** – Easier to pass security audits
+This enables:
+- **Tree-shaking:** Removes unused code (including disabled ISpect)
+- **Obfuscation:** Mangles class/method names
+- **Debug symbol stripping:** Removes debug information
+
+#### 2. Verified Tree-Shaking Results
+
+| Build | APK Size | libapp.so | "ispect" strings |
+|-------|----------|-----------|------------------|
+| **Obfuscated Production** | 42.4 MB | - | **6** |
+| Non-obfuscated Production | 44.5 MB | 3.8 MB | 34 |
+| Development | 51.0 MB | 5.8 MB | 276 |
+
+**Benefits:**
+
+- No data exposure in production
+- Zero runtime overhead
+- Smaller production builds
+- Easier security audits
 
 ### Environment-Based Configuration
 
@@ -467,7 +441,7 @@ flutter build apk \
   --dart-define=ENVIRONMENT=staging
 ```
 
-## 🎨 Customization
+## Customization
 
 ### Theming
 
@@ -681,7 +655,7 @@ ISpectBuilder(
 
 ---
 
-## 🔌 Integrations
+## Integrations
 
 ISpect provides companion packages for common Flutter libraries.
 
@@ -689,12 +663,12 @@ ISpect provides companion packages for common Flutter libraries.
 
 ```yaml
 dependencies:
-  ispect: ^4.6.0              # Core package (required)
-  ispectify_dio: ^4.6.0       # Dio HTTP client
-  ispectify_http: ^4.6.0      # Standard http package
-  ispectify_db: ^4.6.0        # Database operations
-  ispectify_ws: ^4.6.0        # WebSocket traffic
-  ispectify_bloc: ^4.6.0      # BLoC/Cubit integration
+  ispect: ^4.7.0              # Core package (required)
+  ispectify_dio: ^4.7.0       # Dio HTTP client
+  ispectify_http: ^4.7.0      # Standard http package
+  ispectify_db: ^4.7.0        # Database operations
+  ispectify_ws: ^4.7.0        # WebSocket traffic
+  ispectify_bloc: ^4.7.0      # BLoC/Cubit integration
 ```
 
 ### 🌐 HTTP Monitoring
@@ -923,19 +897,19 @@ ISpectDioInterceptor(
 
 ---
 
-## 📚 Examples
+## Examples
 
 Check out the [example/](example/) directory for a complete working app with all integrations.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-## 📦 Related Packages
+## Related Packages
 
 - [ispectify](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify) – Core logging system
 - [ispectify_dio](https://github.com/K1yoshiSho/ispect/tree/main/packages/ispectify_dio) – Dio integration

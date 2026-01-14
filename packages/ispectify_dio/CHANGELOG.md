@@ -1,5 +1,88 @@
 # Changelog
 
+## 4.7.0
+
+### New Features
+
+#### Zero-Conditional API
+Factory methods that handle `kISpectEnabled` check internally — no `if/else` needed in your code:
+
+```dart
+void main() {
+  ISpect.run(() => runApp(const MyApp()));
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      localizationsDelegates: ISpectLocalizations.delegates(),
+      navigatorObservers: ISpectNavigatorObserver.observers(),
+      builder: (_, child) => ISpectBuilder.wrap(child: child!),
+      home: const HomePage(),
+    );
+  }
+}
+```
+
+**New methods:**
+- `ISpectBuilder.wrap()` — returns child when disabled
+- `ISpectNavigatorObserver.observers()` — returns empty list when disabled
+- `ISpectLocalizations.delegates()` — returns base delegates when disabled
+
+#### Enhanced Observer API
+`ISpectNavigatorObserver.observers()` now accepts optional pre-configured observer for full customization:
+
+```dart
+navigatorObservers: ISpectNavigatorObserver.observers(
+  observer: ISpectNavigatorObserver(
+    onPush: (route, prev) => print('pushed'),
+    onPop: (route, prev) => print('popped'),
+    isLogGestures: true,
+  ),
+  additional: [AnalyticsObserver()],
+),
+```
+
+---
+
+### Security Improvements
+
+#### Verified Tree-Shaking
+Tested production builds show effective code removal:
+
+| Build | APK Size | "ispect" strings |
+|-------|----------|------------------|
+| Obfuscated Production | 42.4 MB | 5 |
+| Non-obfuscated Production | 44.5 MB | 34 |
+| Development | 51.0 MB | 276 |
+
+---
+
+### Documentation
+
+- Updated examples to use zero-conditional API
+- Added security recommendations section
+
+---
+
+### Migration
+
+**Before (conditional):**
+```dart
+navigatorObservers: kISpectEnabled ? [ISpectNavigatorObserver()] : [],
+builder: (_, child) {
+  if (kISpectEnabled) return ISpectBuilder(...);
+  return child!;
+},
+```
+
+**After (zero-conditional):**
+```dart
+navigatorObservers: ISpectNavigatorObserver.observers(),
+builder: (_, child) => ISpectBuilder.wrap(child: child!),
+```
+
 ## 4.6.0
 
 ### 🚨 Breaking Changes

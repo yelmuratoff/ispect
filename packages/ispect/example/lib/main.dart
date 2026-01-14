@@ -5,69 +5,20 @@ import 'package:ispect/ispect.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
-// Define a constant based on a build-time flag
-const bool kEnableISpect = bool.fromEnvironment(
-  'ENABLE_ISPECT',
-  defaultValue: false,
-);
-
 class SentryISpectObserver implements ISpectObserver {
   @override
-  void onError(ISpectLogData err) {
-    log('SentryISpectObserver - onError: ${err.message}');
-  }
-
+  void onError(ISpectLogData err) => log('Sentry onError: ${err.message}');
   @override
-  void onException(ISpectLogData err) {
-    log('SentryISpectObserver - onException: ${err.message}');
-  }
-
+  void onException(ISpectLogData err) =>
+      log('Sentry onException: ${err.message}');
   @override
-  void onLog(ISpectLogData data) {
-    log('SentryISpectObserver - onLog: ${data.message}');
-  }
+  void onLog(ISpectLogData data) => log('Sentry onLog: ${data.message}');
 }
-
-class BackendISpectObserver implements ISpectObserver {
-  @override
-  void onError(ISpectLogData err) {
-    log('BackendISpectObserver - onError: ${err.message}');
-  }
-
-  @override
-  void onException(ISpectLogData err) {
-    log('BackendISpectObserver - onException: ${err.message}');
-  }
-
-  @override
-  void onLog(ISpectLogData data) {
-    log('BackendISpectObserver - onLog: ${data.message}');
-  }
-}
-
-final observer = ISpectNavigatorObserver();
 
 void main() {
-  if (kEnableISpect) {
-    // ISpect is only initialized when the flag is true
-    final logger = ISpectFlutter.init(
-      options: ISpectLoggerOptions(
-        customColors: {
-          'error': AnsiPen()..yellow(),
-          'exception': AnsiPen()..yellow(),
-          'info': AnsiPen()..blue(),
-        },
-      ),
-    );
-
-    logger.addObserver(SentryISpectObserver());
-    logger.addObserver(BackendISpectObserver());
-
-    ISpect.run(logger: logger, () => runApp(const MyApp()));
-  } else {
-    // Normal app startup without ISpect
-    runApp(const MyApp());
-  }
+  final logger = ISpectFlutter.init();
+  logger.addObserver(SentryISpectObserver());
+  ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -76,147 +27,68 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates:
-          kEnableISpect ? ISpectLocalizations.delegates(delegates: []) : [],
+      localizationsDelegates: ISpectLocalizations.delegates(),
+      navigatorObservers: ISpectNavigatorObserver.observers(),
       theme: ThemeData(
-        dividerColor: Colors.grey.shade300,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+      builder: (_, child) => ISpectBuilder.wrap(
+        child: child!,
+        options: ISpectOptions(
+          onOpenFile: (path) async => OpenFilex.open(path),
+          onShare: (req) async => SharePlus.instance.share(ShareParams(
+            text: req.text,
+            subject: req.subject,
+            files: req.filePaths.map(XFile.new).toList(),
+          )),
+        ),
+        theme: ISpectTheme(pageTitle: 'Debug'),
       ),
-      darkTheme: ThemeData(
-        dividerColor: Colors.grey.shade800,
-      ),
-      navigatorObservers: kEnableISpect ? [observer] : [],
-      builder: (context, child) {
-        if (kEnableISpect) {
-          return ISpectBuilder(
-            options: ISpectOptions(
-              observer: observer,
-              initialSettings: const ISpectSettingsState(
-                disabledLogTypes: {
-                  'riverpod-add',
-                  'riverpod-update',
-                  'riverpod-dispose',
-                  'riverpod-fail',
-                },
-                enabled: true,
-                useConsoleLogs: true,
-                useHistory: true,
-              ),
-              locale: const Locale('en'),
-              onSettingsChanged: (settings) {
-                ISpect.logger.print('ISpect settings changed: $settings');
-              },
-              onLoadLogContent: (context) async {
-                return 'Loaded log content from callback';
-              },
-              onOpenFile: (path) async {
-                await OpenFilex.open(path);
-              },
-              onShare: (ISpectShareRequest request) async {
-                final filesPath = request.filePaths;
-                final files = <XFile>[];
-                for (final path in filesPath) {
-                  files.add(XFile(path));
-                }
-                await SharePlus.instance.share(ShareParams(
-                  text: request.text,
-                  subject: request.subject,
-                  files: files,
-                ));
-              },
-              actionItems: [
-                ISpectActionItem(
-                    onTap: (BuildContext context) {},
-                    title: 'Some title here',
-                    icon: Icons.add),
-              ],
-              panelItems: [
-                DraggablePanelItem(
-                  enableBadge: false,
-                  icon: Icons.settings,
-                  onTap: (context) {},
-                ),
-              ],
-              panelButtons: [
-                DraggablePanelButtonItem(
-                  icon: Icons.info,
-                  label: 'Info',
-                  onTap: (context) {},
-                ),
-              ],
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ISpect Example')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('ISpect: ${kISpectEnabled ? "ENABLED" : "DISABLED"}',
+                style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => ISpect.logger.info('Info message!'),
+              icon: const Icon(Icons.info),
+              label: const Text('Log Info'),
             ),
-            theme: ISpectTheme(
-              pageTitle: 'Your name here',
-              primary: ISpectDynamicColor(
-                light: Colors.red,
-                dark: Colors.red,
-              ),
-              background: ISpectDynamicColor(
-                light: Colors.redAccent.shade100,
-                dark: Colors.black,
-              ),
-              card: ISpectDynamicColor(
-                light: Colors.redAccent.shade200,
-                dark: Colors.grey.shade900,
-              ),
-              divider: ISpectDynamicColor(
-                light: Colors.redAccent.shade400,
-                dark: Colors.grey.shade800,
-              ),
-              logColors: {
-                'error': Colors.yellow,
-                'exception': Colors.yellow,
-                'info': Colors.blue,
-              },
-              logIcons: {
-                'error': Icons.abc,
-                'exception': Icons.abc,
-                'info': Icons.info,
-              },
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => ISpect.logger.warning('Warning!'),
+              icon: const Icon(Icons.warning),
+              label: const Text('Log Warning'),
             ),
-            child: child ?? const SizedBox.shrink(),
-          );
-        }
-        return child ?? const SizedBox.shrink();
-      },
-      home: Scaffold(
-        appBar: AppBar(title: const Text('ISpect Example')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  if (kEnableISpect) {
-                    ISpect.logger.info('Button pressed!');
-                    ISpect.logger.warning('Button pressed!');
-                    ISpect.logger.error('Button pressed!');
-                  } else {
-                    debugPrint('Button pressed! (ISpect disabled)');
-                  }
-                },
-                child: const Text('Press me'),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => ISpect.logger.error('Error!'),
+              icon: const Icon(Icons.error),
+              label: const Text('Log Error'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => ISpect.logger.handle(
+                exception: Exception('Test'),
+                stackTrace: StackTrace.current,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (kEnableISpect) {
-                    ISpect.logger.handle(
-                      exception: Exception('Test Exception'),
-                      stackTrace: StackTrace.current,
-                    );
-                  } else {
-                    debugPrint('Error logged! (ISpect disabled)');
-                  }
-                },
-                child: const Text('Large Error'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'ISpect: ${kEnableISpect ? "ENABLED" : "DISABLED"}',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
+              icon: const Icon(Icons.dangerous),
+              label: const Text('Exception'),
+            ),
+          ],
         ),
       ),
     );

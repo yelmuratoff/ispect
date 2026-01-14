@@ -42,6 +42,43 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.maxTransitions = 200,
   });
 
+  /// Returns a list of navigator observers for use in MaterialApp.
+  ///
+  /// When `kISpectEnabled` is `true`, includes ISpect observer.
+  /// When disabled, returns only [additional] observers.
+  ///
+  /// Simple usage:
+  /// ```dart
+  /// MaterialApp(
+  ///   navigatorObservers: ISpectNavigatorObserver.observers(),
+  /// )
+  /// ```
+  ///
+  /// With full customization:
+  /// ```dart
+  /// MaterialApp(
+  ///   navigatorObservers: ISpectNavigatorObserver.observers(
+  ///     observer: ISpectNavigatorObserver(
+  ///       onPush: (route, prev) => print('pushed'),
+  ///       onPop: (route, prev) => print('popped'),
+  ///       isLogGestures: true,
+  ///     ),
+  ///     additional: [AnalyticsObserver()],
+  ///   ),
+  /// )
+  /// ```
+  static List<NavigatorObserver> observers({
+    ISpectNavigatorObserver? observer,
+    List<NavigatorObserver> additional = const [],
+  }) {
+    if (!kISpectEnabled) return additional;
+
+    return [
+      observer ?? ISpectNavigatorObserver(),
+      ...additional,
+    ];
+  }
+
   final int maxTransitions;
   final List<RouteTransition> _transitions = [];
 
@@ -120,6 +157,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? route,
     Route<dynamic>? previousRoute,
   ) {
+    if (!kISpectEnabled) return;
     if (!_shouldLog(route, previousRoute)) return;
 
     final timestamp = DateTime.now();

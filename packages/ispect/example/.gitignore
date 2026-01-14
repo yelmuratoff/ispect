@@ -48,3 +48,6 @@ android
 **/*.gen.dart
 **/*.freezed.dart
 **/*.select.dart
+
+apk_dev
+apk_prod
