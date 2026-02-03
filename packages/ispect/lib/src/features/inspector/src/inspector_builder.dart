@@ -18,7 +18,7 @@ import 'package:ispect/src/features/performance/src/builder.dart';
 /// ## Safe Usage
 ///
 /// ```dart
-/// const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT');
+/// const bool kEnableISpect = bool.fromEnvironment('ISPECT_ENABLED');
 ///
 /// MaterialApp(
 ///   builder: (context, child) {
@@ -34,7 +34,7 @@ import 'package:ispect/src/features/performance/src/builder.dart';
 /// Build commands:
 /// ```bash
 /// # Development
-/// flutter run --dart-define=ENABLE_ISPECT=true
+/// flutter run --dart-define=ISPECT_ENABLED=true
 ///
 /// # Production (ISpect removed)
 /// flutter build apk
@@ -51,6 +51,41 @@ class ISpectBuilder extends StatefulWidget {
     this.controller,
     super.key,
   });
+
+  /// Wraps [child] with ISpect debugging tools when enabled.
+  ///
+  /// This is the recommended way to use ISpect - no conditional logic needed
+  /// in your code. When `kISpectEnabled` is `false`, simply returns [child].
+  ///
+  /// Use [isISpectEnabled] to control visibility at runtime (e.g., for admins only).
+  /// The global `kISpectEnabled` controls tree-shaking at compile time.
+  ///
+  /// Example:
+  /// ```dart
+  /// MaterialApp(
+  ///   builder: (_, child) => ISpectBuilder.wrap(
+  ///     child: child!,
+  ///     isISpectEnabled: user.isAdmin, // Runtime control
+  ///   ),
+  /// )
+  /// ```
+  static Widget wrap({
+    required Widget child,
+    bool isISpectEnabled = true,
+    ISpectOptions? options,
+    ISpectTheme? theme,
+    DraggablePanelController? controller,
+  }) {
+    if (!kISpectEnabled || !isISpectEnabled) return child;
+
+    return ISpectBuilder(
+      options: options,
+      theme: theme,
+      controller: controller,
+      isISpectEnabled: isISpectEnabled,
+      child: child,
+    );
+  }
 
   /// Your main app widget.
   final Widget child;
@@ -117,38 +152,45 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-        listenable: model,
-        builder: (context, _) {
-          final theme = Theme.of(context);
+  Widget build(BuildContext context) {
+    // Early return when ISpect is disabled - enables tree-shaking
+    if (!kISpectEnabled) {
+      return widget.child;
+    }
 
-          // Build the widget tree with the necessary layers.
-          var currentChild = widget.child;
+    return ListenableBuilder(
+      listenable: model,
+      builder: (context, _) {
+        final theme = Theme.of(context);
 
-          // Add inspector to the widget tree.
-          currentChild = Inspector(
-            isPanelVisible: model.isISpectEnabled,
-            backgroundColor: adjustColorBrightness(
-              theme.colorScheme.primaryContainer,
-              0.6,
-            ),
-            selectedColor: theme.colorScheme.primaryContainer,
-            textColor: theme.colorScheme.onSurface,
-            selectedTextColor: theme.colorScheme.onSurface,
-            controller: widget.controller,
-            child: currentChild,
-          );
+        // Build the widget tree with the necessary layers.
+        var currentChild = widget.child;
 
-          // Add performance overlay to the widget tree.
-          currentChild = ISpectPerformanceOverlayBuilder(
-            isPerformanceTrackingEnabled: model.isPerformanceTrackingEnabled,
-            child: currentChild,
-          );
+        // Add inspector to the widget tree.
+        currentChild = Inspector(
+          isPanelVisible: model.isISpectEnabled,
+          backgroundColor: adjustColorBrightness(
+            theme.colorScheme.primaryContainer,
+            0.6,
+          ),
+          selectedColor: theme.colorScheme.primaryContainer,
+          textColor: theme.colorScheme.onSurface,
+          selectedTextColor: theme.colorScheme.onSurface,
+          controller: widget.controller,
+          child: currentChild,
+        );
 
-          return ISpectScopeController(
-            model: model,
-            child: currentChild,
-          );
-        },
-      );
+        // Add performance overlay to the widget tree.
+        currentChild = ISpectPerformanceOverlayBuilder(
+          isPerformanceTrackingEnabled: model.isPerformanceTrackingEnabled,
+          child: currentChild,
+        );
+
+        return ISpectScopeController(
+          model: model,
+          child: currentChild,
+        );
+      },
+    );
+  }
 }

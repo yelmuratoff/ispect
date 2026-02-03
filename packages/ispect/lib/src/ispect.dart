@@ -16,18 +16,30 @@ final class ISpect {
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
+  ///
+  /// When `kISpectEnabled` is `false`, returns a default logger.
+  /// All logging methods are no-ops due to internal checks in `_processLog()`.
   static ISpectLogger get logger {
     if (!_isInitialized) {
-      throw StateError(
-        'ISpect is not initialized. Call ISpect.initialize() first.',
-      );
+      if (!kISpectEnabled) {
+        _logger = ISpectLogger();
+        _isInitialized = true;
+      } else {
+        throw StateError(
+          'ISpect is not initialized. Call ISpect.initialize() first.',
+        );
+      }
     }
     return _logger;
   }
 
   /// Initializes the logger instance once.
   /// Returns `true` if initialization was successful.
+  ///
+  /// When `kISpectEnabled` is `false`, this method does nothing and returns false.
   static bool initialize(ISpectLogger logger, {bool force = false}) {
+    if (!kISpectEnabled) return false;
+
     if (_isInitialized && !force) return false;
     _logger = logger;
     _isInitialized = true;
@@ -50,6 +62,9 @@ final class ISpect {
   /// If [logger] is not provided, creates a default Flutter logger automatically
   /// using [ISpectFlutter.init()].
   ///
+  /// When `kISpectEnabled` is `false` (default), this method simply calls
+  /// the callback without any ISpect initialization, enabling tree-shaking.
+  ///
   /// ### Example (Simple):
   /// ```dart
   /// ISpect.run(() => runApp(MyApp()));
@@ -61,6 +76,15 @@ final class ISpect {
   ///   options: ISpectLoggerOptions(...),
   /// );
   /// ISpect.run(() => runApp(MyApp()), logger: customLogger);
+  /// ```
+  ///
+  /// ### Build Commands:
+  /// ```bash
+  /// # Development (ISpect enabled)
+  /// flutter run --dart-define=ISPECT_ENABLED=true
+  ///
+  /// # Production (ISpect removed via tree-shaking)
+  /// flutter build apk
   /// ```
   static void run<T>(
     T Function() callback, {
@@ -78,6 +102,11 @@ final class ISpect {
     ISpectLogOptions options = const ISpectLogOptions(),
     List<String> filters = const [],
   }) {
+    if (!kISpectEnabled) {
+      callback();
+      return;
+    }
+
     final effectiveLogger = logger ?? ISpectFlutter.init();
     initialize(effectiveLogger);
     _errorHandler =

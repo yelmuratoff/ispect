@@ -53,7 +53,7 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 final class ISpectOptions {
   const ISpectOptions({
     this.locale = const Locale('en'),
-    required this.observer,
+    this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,

@@ -45,3 +45,6 @@ packages/ispect/example/macos/Podfile.lock
 packages/ispectify_db/example/pubspec.lock
 packages/ispectify_db/pubspec.lock
 packages/ispect/untranslated.json
+packages/ispect/example/debug-info/app.android-arm.symbols
+packages/ispect/example/debug-info/app.android-x64.symbols
+packages/ispect/example/debug-info/app.android-arm64.symbols

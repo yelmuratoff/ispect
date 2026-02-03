@@ -31,3 +31,20 @@ export 'src/utils/error_handler.dart';
 export 'src/utils/pretty_json.dart';
 export 'src/utils/string_extension.dart';
 export 'src/utils/time_formatter.dart';
+
+/// Compile-time constant to enable/disable ISpect via `--dart-define`.
+///
+/// When `false` (default), logging methods become no-ops and can be
+/// tree-shaken from production builds.
+///
+/// Usage:
+/// ```bash
+/// # Development (ISpect enabled)
+/// flutter run --dart-define=ISPECT_ENABLED=true
+///
+/// # Production (ISpect removed)
+/// flutter build apk
+/// ```
+const bool kISpectEnabled = bool.fromEnvironment(
+  'ISPECT_ENABLED',
+);

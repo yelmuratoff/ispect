@@ -17,6 +17,10 @@ Scripts:
 ```bash
 ./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh
 ```
+and if everything is ok, run
+```bash
+./bash/publish.sh --auto
+```
 
 ## Quick Start
 

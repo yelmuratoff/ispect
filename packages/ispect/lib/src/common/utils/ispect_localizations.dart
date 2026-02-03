@@ -21,6 +21,15 @@ final class ISpectLocalizations {
   static List<LocalizationsDelegate<Object>> delegates({
     List<LocalizationsDelegate<Object>> delegates = const [],
   }) {
+    if (!kISpectEnabled) {
+      return [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        ...delegates,
+      ];
+    }
+
     final localizationList = [
       GlobalMaterialLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
