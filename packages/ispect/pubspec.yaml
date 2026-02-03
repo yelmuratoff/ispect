@@ -36,7 +36,7 @@ dependencies:
   collection: ^1.19.0
 
   # Logging
-  ispectify: ^4.7.0-dev04
+  ispectify: ^4.7.0
 
   # Utils
   path_provider: ^2.1.5

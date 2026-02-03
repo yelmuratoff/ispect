@@ -14,7 +14,7 @@ dependency_overrides:
 dependencies:
   http: ^1.5.0
   http_interceptor: ^2.0.0
-  ispectify: ^4.7.0-dev04
+  ispectify: ^4.7.0
 
 dev_dependencies:
   lints: ^5.1.1

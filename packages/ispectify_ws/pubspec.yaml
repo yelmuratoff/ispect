@@ -13,7 +13,7 @@ dependency_overrides:
 
 dependencies:
   ws: ^1.0.0
-  ispectify: ^4.7.0-dev04
+  ispectify: ^4.7.0
 
 dev_dependencies:
   lints: ^5.1.1
