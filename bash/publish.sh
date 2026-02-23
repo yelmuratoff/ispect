@@ -5,7 +5,6 @@
 #   ./bash/publish.sh                # dry-run each, then ask confirmation, then publish
 #   ./bash/publish.sh --dry-run      # only dry-run
 #   ./bash/publish.sh --auto         # no prompts, real publish (uses --force)
-#   PUBLISH_FORCE=1 ./bash/publish.sh --auto  # same
 #
 # Options can be combined: --auto implies real publish; --dry-run overrides to only dry-run.
 
