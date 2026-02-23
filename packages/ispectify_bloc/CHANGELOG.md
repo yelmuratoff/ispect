@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.2
+
+### Improvements
+
+- **Web & WASM Compatibility:** Decoupled `dart:io` dependencies from core file utilities to ensure the `ispect` package works flawlessly on the Web and WASM targets. Native functionality remains unchanged.
+
 ## 4.7.1
 
 ### Changes
