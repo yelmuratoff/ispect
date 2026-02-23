@@ -69,6 +69,9 @@ class LogPipeline {
       ),
       level: level,
       pen: pen,
+      error: data.error ?? data.exception,
+      stackTrace: data.stackTrace,
+      time: data.time,
     );
   }
 }

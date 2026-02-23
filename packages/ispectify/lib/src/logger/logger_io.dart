@@ -1,3 +1,5 @@
+import 'package:ispectify/src/models/log_level.dart';
+
 // ignore_for_file: avoid_print
 
 /// Outputs a log message by splitting it into lines and printing each line separately.
@@ -6,6 +8,11 @@
 /// the newline character (`\n`) as a delimiter, and prints each line individually.
 ///
 /// - Parameter `message`: The log message to be output. It can contain multiple lines.
-void outputLog(String message) => message.split('\n').forEach(
-      print,
-    );
+void outputLog(
+  String message, {
+  LogLevel? logLevel,
+  Object? error,
+  StackTrace? stackTrace,
+  DateTime? time,
+}) =>
+    message.split('\n').forEach(print);

@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.7.1
+
+### Changes
+
+#### ispectify:
+
+- `time`, `error`, `stackTrace`, and `level` metadata are now properly passed and displayed in native platform logs (`developer.log`) for better debugging and crash reporting.
+
 ## 4.7.0
 
 ### 🚨 IMPORTANT: Behavioral Changes

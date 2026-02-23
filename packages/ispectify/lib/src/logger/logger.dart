@@ -12,6 +12,16 @@ import 'package:ispectify/src/settings.dart';
 ///
 /// Supports multiple log levels, colorized output, filtering,
 /// and customizable formatting/output handling.
+///
+/// Typedef for a custom log output function.
+typedef LoggerOutput = void Function(
+  String message, {
+  LogLevel? logLevel,
+  Object? error,
+  StackTrace? stackTrace,
+  DateTime? time,
+});
+
 class ISpectBaseLogger {
   /// Creates an instance of `ISpectBaseLogger` with optional configurations.
   ///
@@ -23,7 +33,7 @@ class ISpectBaseLogger {
     LoggerSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
     ILoggerFilter? filter,
-    void Function(String message)? output,
+    LoggerOutput? output,
   })  : settings = settings ?? LoggerSettings(),
         _filter = filter,
         _output = output ?? outputLog {
@@ -37,13 +47,20 @@ class ISpectBaseLogger {
   final ILoggerFormatter formatter;
 
   /// Output function to handle final log message.
-  final void Function(String message) _output;
+  final LoggerOutput _output;
 
   /// Optional filter to determine whether a log should be logged.
   final ILoggerFilter? _filter;
 
   /// Logs a message at a specified level with optional ANSI color pen.
-  void log(Object? msg, {LogLevel? level, AnsiPen? pen}) {
+  void log(
+    Object? msg, {
+    LogLevel? level,
+    AnsiPen? pen,
+    Object? error,
+    StackTrace? stackTrace,
+    DateTime? time,
+  }) {
     final selectedLevel = level ?? LogLevel.debug;
 
     if (!settings.enable ||
@@ -59,7 +76,13 @@ class ISpectBaseLogger {
       LogDetails(message: msg, level: selectedLevel, pen: selectedPen),
       settings,
     );
-    _output(formattedMsg);
+    _output(
+      formattedMsg,
+      logLevel: selectedLevel,
+      error: error,
+      stackTrace: stackTrace,
+      time: time,
+    );
   }
 
   /// Logs a critical-level message.
@@ -85,7 +108,7 @@ class ISpectBaseLogger {
     LoggerSettings? settings,
     ILoggerFormatter? formatter,
     ILoggerFilter? filter,
-    void Function(String message)? output,
+    LoggerOutput? output,
   }) =>
       ISpectBaseLogger(
         settings: settings ?? this.settings,

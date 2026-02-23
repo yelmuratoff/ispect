@@ -50,6 +50,20 @@ extension ISpectFlutter on ISpectLogger {
   /// - **Other platforms**: Uses `debugPrint()` for efficient log handling.
   ///
   /// - `message`: The log message to be displayed.
-  static void _defaultFlutterOutput(String message) =>
-      PlatformOutput.log(message);
+  static void _defaultFlutterOutput(
+    String message, {
+    LogLevel? logLevel,
+    Object? error,
+    StackTrace? stackTrace,
+    DateTime? time,
+  }) {
+    final level = logLevel?.developerLevel ?? 0;
+    PlatformOutput.log(
+      message,
+      level: level,
+      error: error,
+      stackTrace: stackTrace,
+      time: time,
+    );
+  }
 }
