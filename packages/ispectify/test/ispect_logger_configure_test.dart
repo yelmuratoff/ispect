@@ -22,7 +22,7 @@ void main() {
     test('updates logger instance used for console output', () {
       final captured = <String>[];
       final firstLogger = ISpectBaseLogger(
-        output: captured.add,
+        output: (msg, {logLevel, error, stackTrace, time}) => captured.add(msg),
       );
 
       final sut = ISpectLogger(
@@ -33,7 +33,8 @@ void main() {
 
       final replacementCaptured = <String>[];
       final replacementLogger = ISpectBaseLogger(
-        output: replacementCaptured.add,
+        output: (msg, {logLevel, error, stackTrace, time}) =>
+            replacementCaptured.add(msg),
       );
 
       sut
