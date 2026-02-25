@@ -4,13 +4,13 @@ import 'dart:convert';
 /// Deeper nested values are replaced with "...".
 class JsonTruncatorService {
   /// Default maximum depth for JSON structure traversal.
-  static const int _defaultMaxDepth = 15;
+  static const int _defaultMaxDepth = 20;
 
   /// Default string truncation limit.
-  static const int _stringTruncateLimit = 100;
+  static const int _stringTruncateLimit = 10000;
 
   /// Default iterable size limit.
-  static const int _defaultIterableSizeLimit = 100;
+  static const int _defaultIterableSizeLimit = 500;
 
   /// Value indicating no limit should be applied to iterables.
   static const int _unlimitedIterableSize = -1;

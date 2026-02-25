@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.3
+
+### Changes
+
+- **JSON Truncation Limit:** Bump default JSON truncation limits for maximum depth, string length, and iterable size.
+
 ## 4.7.2
 
 ### Improvements
