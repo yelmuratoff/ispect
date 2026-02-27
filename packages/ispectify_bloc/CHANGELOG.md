@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.4
+
+### Changes
+
+- Removed explicit button styling from action sheet buttons to leverage theme defaults.
+
 ## 4.7.3
 
 ### Changes

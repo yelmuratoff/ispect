@@ -41,12 +41,12 @@ dependencies:
   auto_route:
 
   # Use local paths through dependency_overrides
-  ispect: ^4.7.3
-  ispectify_dio: ^4.7.3
-  ispectify_http: ^4.7.3
-  ispectify_bloc: ^4.7.3
-  ispectify_ws: ^4.7.3
-  ispectify_db: ^4.7.3
+  ispect: ^4.7.4
+  ispectify_dio: ^4.7.4
+  ispectify_http: ^4.7.4
+  ispectify_bloc: ^4.7.4
+  ispectify_ws: ^4.7.4
+  ispectify_db: ^4.7.4
 
 dev_dependencies:
   flutter_test:
