@@ -429,6 +429,7 @@ class InspectorState extends State<Inspector> {
                     panelBorder: Border.all(
                       color: context.ispectTheme.divider?.resolve(context) ??
                           Colors.grey.shade400,
+                      width: 0,
                     ),
                     panelBackgroundColor:
                         context.ispectTheme.background?.resolve(
