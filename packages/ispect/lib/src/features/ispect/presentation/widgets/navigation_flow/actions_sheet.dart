@@ -105,11 +105,6 @@ class _ActionsSheetContent extends StatelessWidget {
                       SizedBox(
                         height: 40,
                         child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor:
-                                context.ispectTheme.card?.resolve(context),
-                            foregroundColor: context.appTheme.textColor,
-                          ),
                           onPressed: () {
                             Navigator.of(context).pop();
                             final String text;
@@ -142,11 +137,6 @@ class _ActionsSheetContent extends StatelessWidget {
                     SizedBox(
                       height: 40,
                       child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              context.ispectTheme.card?.resolve(context),
-                          foregroundColor: context.appTheme.textColor,
-                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                           final String text;

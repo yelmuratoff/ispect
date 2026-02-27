@@ -21,19 +21,28 @@ void main() {
   ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final observer = ISpectNavigatorObserver();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       localizationsDelegates: ISpectLocalizations.delegates(),
-      navigatorObservers: ISpectNavigatorObserver.observers(),
+      navigatorObservers:
+          ISpectNavigatorObserver.observers(additional: [observer]),
       theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
         options: ISpectOptions(
+          observer: observer,
           onOpenFile: (path) async => OpenFilex.open(path),
           onShare: (req) async => SharePlus.instance.share(ShareParams(
             text: req.text,
