@@ -132,6 +132,7 @@ class _InfoDescription extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor:
                           context.iSpect.theme.card?.resolve(context),
+                      foregroundColor: context.appTheme.textColor,
                     ),
                     onPressed: () {
                       final valueToShare = JsonTruncatorService.pretty(
@@ -169,6 +170,7 @@ class _InfoDescription extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor:
                         context.iSpect.theme.card?.resolve(context),
+                    foregroundColor: context.appTheme.textColor,
                   ),
                   onPressed: () {
                     final valueToShare = JsonTruncatorService.pretty(
