@@ -47,7 +47,7 @@ class HttpResponseData {
               )
             : response!.body,
       if (response != null && redactor == null)
-        'body-bytes': response!.bodyBytes.toString(),
+        'body-bytes': response!.bodyBytes.length.toString(),
       if (multipartRequest != null)
         'multipart-request': {
           'fields': multipartRequest!.fields,
@@ -90,8 +90,10 @@ class HttpResponseData {
           fields,
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
-        )! as Map;
-        mp['fields'] = red.map((k, v) => MapEntry(k.toString(), v));
+        );
+        if (red is Map) {
+          mp['fields'] = red.map((k, v) => MapEntry(k.toString(), v));
+        }
       }
 
       // Files
@@ -101,9 +103,13 @@ class HttpResponseData {
           files,
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
-        )! as List;
-        mp['files'] =
-            red.map((e) => Map<String, Object?>.from(e as Map)).toList();
+        );
+        if (red is List) {
+          mp['files'] = red
+              .whereType<Map<dynamic, dynamic>>()
+              .map(Map<String, Object?>.from)
+              .toList();
+        }
       }
 
       map['multipart-request'] = mp;

@@ -125,7 +125,9 @@ class _LogsScreenState extends State<LogsV2Screen> {
       final logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
       _logs.addAll(logs ?? []);
     }
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
 
