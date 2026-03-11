@@ -38,10 +38,9 @@ class ISpectLogDataJsonUtils {
   /// from string representations with some limitations.
   static ISpectLogData fromJson(Map<String, dynamic> json) => ISpectLogData(
         json['message'] as String?,
-        time: DateTime.parse(json['time'] as String),
-        logLevel: json['log-level'] != null
-            ? LogLevel.values[int.parse(json['log-level'] as String)]
-            : null,
+        time: DateTime.tryParse(json['time'] as String? ?? '') ??
+            DateTime.now(),
+        logLevel: _parseLogLevel(json['log-level'] as String?),
         title: json['title'] as String?,
         key: json['key'] as String?,
         additionalData: json['additional-data'] as Map<String, dynamic>?,
@@ -56,6 +55,15 @@ class ISpectLogDataJsonUtils {
             ? StackTrace.fromString(json['stack-trace'] as String)
             : null,
       );
+}
+
+LogLevel? _parseLogLevel(String? value) {
+  if (value == null) return null;
+  final index = int.tryParse(value);
+  if (index == null || index < 0 || index >= LogLevel.values.length) {
+    return null;
+  }
+  return LogLevel.values[index];
 }
 
 /// Helper class to represent exceptions deserialized from JSON.

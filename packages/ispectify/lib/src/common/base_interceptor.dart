@@ -97,6 +97,25 @@ mixin BaseNetworkInterceptor {
         normalizer: (value) => value,
       );
 
+  /// Redacts query parameter values in a URL when redaction is enabled.
+  ///
+  /// Returns the original URL string if redaction is disabled or
+  /// the URL has no query parameters.
+  String redactUrl(String url, {required bool useRedaction}) {
+    if (!useRedaction) return url;
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.queryParameters.isEmpty) return url;
+    final redactedParams = uri.queryParameters.map(
+      (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
+    );
+    return uri
+        .replace(
+          queryParameters:
+              redactedParams.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+        )
+        .toString();
+  }
+
   /// Converts an untyped Map<dynamic, dynamic> to Map<String, dynamic>.
   ///
   /// Useful when processing JSON or form data that may have dynamic keys.

@@ -221,15 +221,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
-    // Arguments info (only if present)
+    // Arguments info (only type and key names)
     switch (route?.settings.arguments) {
       case null:
         break;
       case final Map<String, dynamic> args:
-        final formattedArgs = JsonTruncatorService.pretty(args);
-        buffer.writeln('Arguments: $formattedArgs');
+        buffer.writeln('Arguments: {${args.keys.join(', ')}}');
       case final Object args:
-        buffer.writeln('Arguments: $args');
+        buffer.writeln('Arguments: (${args.runtimeType})');
     }
 
     return buffer.toString().trim();

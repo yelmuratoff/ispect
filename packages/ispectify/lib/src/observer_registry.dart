@@ -44,7 +44,7 @@ class ObserverRegistry {
     ISpectBaseLogger consoleLogger,
   ) {
     if (_observers.isEmpty) return;
-    for (final observer in _observers) {
+    for (final observer in List<ISpectObserver>.of(_observers)) {
       try {
         notify(observer);
       } catch (e, st) {

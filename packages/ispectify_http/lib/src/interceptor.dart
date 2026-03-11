@@ -70,11 +70,15 @@ class ISpectHttpInterceptor extends InterceptorContract
         ? _requestBodyPayload(request, useRedaction)
         : null;
 
+    final url = redactUrl(
+      request.url.toString(),
+      useRedaction: useRedaction,
+    );
     logger.logData(
       HttpRequestLog(
-        request.url.toString(),
+        url,
         method: request.method,
-        url: request.url.toString(),
+        url: url,
         path: request.url.path,
         headers: headers,
         settings: settings,
@@ -117,11 +121,15 @@ class ISpectHttpInterceptor extends InterceptorContract
     );
 
     if (isErrorResponse) {
+      final errorUrl = redactUrl(
+        response.request?.url.toString() ?? '',
+        useRedaction: useRedaction,
+      );
       logger.logData(
         HttpErrorLog(
-          response.request?.url.toString() ?? '',
+          errorUrl,
           method: response.request?.method,
-          url: response.request?.url.toString(),
+          url: errorUrl,
           path: response.request?.url.path,
           statusCode: response.statusCode,
           settings: settings,
@@ -139,11 +147,15 @@ class ISpectHttpInterceptor extends InterceptorContract
         ),
       );
     } else {
+      final respUrl = redactUrl(
+        response.request?.url.toString() ?? '',
+        useRedaction: useRedaction,
+      );
       logger.logData(
         HttpResponseLog(
-          response.request?.url.toString() ?? '',
+          respUrl,
           method: response.request?.method,
-          url: response.request?.url.toString(),
+          url: respUrl,
           path: response.request?.url.path,
           statusCode: response.statusCode,
           statusMessage:

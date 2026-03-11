@@ -121,11 +121,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   DioRequestLog _buildRequestLog({
     required RequestOptions options,
     required bool useRedaction,
-  }) =>
-      DioRequestLog(
-        options.uri.toString(),
+  }) {
+    final url = redactUrl(
+      options.uri.toString(),
+      useRedaction: useRedaction,
+    );
+    return DioRequestLog(
+        url,
         method: options.method,
-        url: options.uri.toString(),
+        url: url,
         path: options.uri.path,
         headers: payload.headersMap(
           options.headers,
@@ -136,6 +140,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
         requestData: DioRequestData(options),
         redactor: useRedaction ? redactor : null,
       );
+  }
 
   DioResponseLog _buildResponseLog({
     required Response<dynamic> response,
@@ -156,11 +161,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
           )
         : null;
 
-    return DioResponseLog(
+    final url = redactUrl(
       requestOptions.uri.toString(),
+      useRedaction: useRedaction,
+    );
+    return DioResponseLog(
+      url,
       settings: settings,
       method: requestOptions.method,
-      url: requestOptions.uri.toString(),
+      url: url,
       path: requestOptions.uri.path,
       statusCode: response.statusCode,
       statusMessage: response.statusMessage,
@@ -209,10 +218,14 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
     final requestData = DioRequestData(requestOptions);
 
-    return DioErrorLog(
+    final url = redactUrl(
       requestOptions.uri.toString(),
+      useRedaction: useRedaction,
+    );
+    return DioErrorLog(
+      url,
       method: requestOptions.method,
-      url: requestOptions.uri.toString(),
+      url: url,
       path: requestOptions.uri.path,
       statusCode: response?.statusCode,
       statusMessage: response?.statusMessage,

@@ -37,6 +37,14 @@ class HttpRequestData {
       map['headers'] = red.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
 
+    if (map['data'] != null) {
+      map['data'] = redactor.redact(
+        map['data'],
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+    }
+
     return map;
   }
 }

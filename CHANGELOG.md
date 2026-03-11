@@ -10,11 +10,20 @@
 - Use copy-on-write in `RedactionService` to prevent concurrent modification.
 - Truncate sensitive fields in `ISpectLogData.toString()`.
 - Limit clipboard copy to 100KB.
+- Redact query parameter values in logged URLs.
+- Log only route argument keys/types instead of values in navigator observer.
+- Redact request body in `HttpRequestData.toJson()` when redactor is provided.
+- Sanitize `fileType` parameter in log file path construction.
+- Snapshot observer list before iteration to prevent concurrent modification.
 
 ### Bug Fixes
 
 - Validate all list elements in JSON import depth check.
 - Fix memory leak in `WebLogsFile` static maps.
+- Add bounds checking for `log-level` index in `fromJson` deserialization.
+- Use `DateTime.tryParse` with fallback in log import to handle malformed dates.
+- Add max depth limit (1000) to JSON viewer node builder to prevent stack overflow.
+- Fix cache key collision in `TextMatchService` by including text length.
 
 ### Documentation
 

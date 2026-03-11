@@ -57,7 +57,8 @@ class NativeLogsFile extends BaseLogsFile {
   ) async {
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = _sanitizeFileName(fileName);
-    final fullFileName = '${safeFileName}_$timestamp.$fileType';
+    final safeFileType = fileType.replaceAll(RegExp(r'[^\w]'), '');
+    final fullFileName = '${safeFileName}_$timestamp.$safeFileType';
     final file = File('${logsDir.path}/$fullFileName');
 
     await file.writeAsString(logs, flush: true);
@@ -163,7 +164,8 @@ class NativeLogsFile extends BaseLogsFile {
     final dir = (await platformDirectoryProvider.tempDirectory()) as Directory;
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-    final fullFileName = '${safeFileName}_$timestamp.$fileType';
+    final safeFileType = fileType.replaceAll(RegExp(r'[^\w]'), '');
+    final fullFileName = '${safeFileName}_$timestamp.$safeFileType';
     final file = File('${dir.path}/$fullFileName');
 
     await file.writeAsString(logs, flush: true);
