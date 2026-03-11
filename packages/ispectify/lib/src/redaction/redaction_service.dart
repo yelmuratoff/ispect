@@ -178,7 +178,10 @@ class RedactionService {
   /// Add multiple key names to the ignore list (case-insensitive).
   void ignoreKeys(Iterable<String> keyNames) {
     _config = _config.copyWithIgnoredKeys(
-      {..._config.ignoredKeyNamesLower, ...keyNames.map((e) => e.toLowerCase())},
+      {
+        ..._config.ignoredKeyNamesLower,
+        ...keyNames.map((e) => e.toLowerCase())
+      },
     );
   }
 
@@ -428,7 +431,7 @@ class _RedactionWalker {
   String _maskEdges(String input) {
     if (input.isEmpty) return config.placeholder;
     final edge = config.stringEdgeVisible;
-    if (input.length <= edge * 2) return config.placeholder;
+    if (input.length <= edge * 3) return config.placeholder;
 
     final start = input.substring(0, edge);
     final end = input.substring(input.length - edge);

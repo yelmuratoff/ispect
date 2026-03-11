@@ -147,11 +147,20 @@ class NativeLogsFile extends BaseLogsFile {
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
   }) async {
+    File? file;
     try {
-      final file = await _createTemporaryFile(logs, fileName, fileType);
+      file = await _createTemporaryFile(logs, fileName, fileType);
       await _shareFile(file, onShare: onShare);
     } catch (e) {
       throw Exception('Failed to create and share log file: $e');
+    } finally {
+      try {
+        if (file != null && file.existsSync()) {
+          await file.delete();
+        }
+      } catch (_) {
+        // Best-effort cleanup; temp directory will be purged by the OS.
+      }
     }
   }
 

@@ -131,7 +131,7 @@ class LogsJsonService {
 
   /// Validates JSON nesting depth to prevent stack overflow
   void _validateJsonDepth(dynamic data, [int currentDepth = 0]) {
-    if (currentDepth > maxJsonDepth) {
+    if (currentDepth >= maxJsonDepth) {
       throw FormatException(
         'JSON nesting depth ($currentDepth) exceeds maximum allowed '
         'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',

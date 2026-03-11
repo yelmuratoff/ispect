@@ -48,10 +48,14 @@ class ObserverRegistry {
       try {
         notify(observer);
       } catch (e, st) {
-        consoleLogger.log(
-          'Observer error: $e\n$st',
-          level: LogLevel.error,
-        );
+        try {
+          consoleLogger.log(
+            'Observer error: $e\n$st',
+            level: LogLevel.error,
+          );
+        } catch (_) {
+          // Prevent cascading failures if console logging also fails.
+        }
       }
     }
   }

@@ -71,7 +71,7 @@ final class ISpectWSInterceptor
     bool useRedaction,
   ) {
     final metrics = _client?.metrics.toJson();
-    final url = uri.toString();
+    final url = uri?.toString() ?? '';
     final path = uri?.path ?? '';
     final metricsMap = switch (metrics) {
       final Map<dynamic, dynamic> map => payload.stringKeyMap(map),
@@ -131,7 +131,7 @@ final class ISpectWSInterceptor
           ? 'Failed to log $type: $e'
           : 'Failed to log $type',
       type: type,
-      url: uri.toString(),
+      url: uri?.toString() ?? '',
       path: uri?.path ?? '',
       payload: _createBodyPayload(
         safeData,

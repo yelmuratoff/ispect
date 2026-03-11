@@ -55,7 +55,9 @@ class LogPipeline {
   }
 
   void dispatch(ISpectLogData data) {
-    _streamController.add(data);
+    if (!_streamController.isClosed) {
+      _streamController.add(data);
+    }
     _history.add(data);
 
     if (!_options.useConsoleLogs) return;
