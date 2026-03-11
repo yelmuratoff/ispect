@@ -135,8 +135,7 @@ class HttpResponseData {
       );
       // Return the redacted object as JSON string
       return jsonEncode(redacted);
-    } on FormatException {
-      // If not valid JSON, redact as string
+    } catch (_) {
       final redacted = redactor.redact(
         body,
         ignoredValues: ignoredValues,

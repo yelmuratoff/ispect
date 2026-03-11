@@ -78,6 +78,27 @@ class DioResponseData {
       );
     }
 
+    // Redact redirect URLs which may contain sensitive query parameters
+    final redirects = map['redirects'];
+    if (redirects is List) {
+      map['redirects'] = redirects.map((redirect) {
+        if (redirect is Map<String, dynamic>) {
+          final location = redirect['location'];
+          if (location != null) {
+            return {
+              ...redirect,
+              'location': redactor.redact(
+                location.toString(),
+                ignoredValues: ignoredValues,
+                ignoredKeys: ignoredKeys,
+              ),
+            };
+          }
+        }
+        return redirect;
+      }).toList();
+    }
+
     return map;
   }
 }

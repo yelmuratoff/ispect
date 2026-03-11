@@ -213,7 +213,7 @@ class _JsonScreenState extends State<JsonScreen> {
       case -1:
         break;
       default:
-        await _scrollToIndex(nodeIndex);
+        _scrollToIndex(nodeIndex);
         return;
     }
 
@@ -226,7 +226,7 @@ class _JsonScreenState extends State<JsonScreen> {
         case -1:
           break;
         default:
-          await _scrollToIndex(parentIndex);
+          _scrollToIndex(parentIndex);
           return;
       }
     }
@@ -234,13 +234,13 @@ class _JsonScreenState extends State<JsonScreen> {
     // Last resort: scroll to first item if available
     switch (displayNodes.isEmpty) {
       case false:
-        await _scrollToIndex(0);
+        _scrollToIndex(0);
       case true:
         break;
     }
   }
 
-  Future<void> _scrollToIndex(int index) async {
+  void _scrollToIndex(int index) {
     _listController.animateToItem(
       index: index,
       duration: (estimatedDistance) => const Duration(milliseconds: 250),
@@ -264,12 +264,12 @@ class _SearchNavigationPanel extends StatelessWidget {
 
   void _onPreviousPressed() {
     store.focusPreviousSearchResult();
-    scrollToSearchMatch(store);
+    unawaited(scrollToSearchMatch(store));
   }
 
   void _onNextPressed() {
     store.focusNextSearchResult();
-    scrollToSearchMatch(store);
+    unawaited(scrollToSearchMatch(store));
   }
 
   @override
