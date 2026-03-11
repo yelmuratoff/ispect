@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 /// Interface for cache services to follow Dependency Inversion Principle
 abstract interface class CacheService<K, V> {
   V? get(K key);
@@ -48,7 +50,7 @@ class LRUCache<K, V> implements CacheService<K, V> {
     final sortedEntries = _accessTimes.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));
 
-    final removeCount = (_cache.length - limit) ~/ 2;
+    final removeCount = math.max(1, (_cache.length - limit) ~/ 2);
     for (var i = 0; i < removeCount; i++) {
       final key = sortedEntries[i].key;
       _cache.remove(key);

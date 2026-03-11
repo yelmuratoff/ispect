@@ -85,7 +85,10 @@ class JsonExplorerStore extends ChangeNotifier {
       return;
     }
 
-    final nodeIndex = _displayNodes.indexOf(node) + 1;
+    final index = _displayNodes.indexOf(node);
+    if (index == -1) return;
+
+    final nodeIndex = index + 1;
     final nodes = JsonTreeFlattener.flatten(node.value);
     _displayNodes.insertAll(nodeIndex, nodes);
     node.expand();

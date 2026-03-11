@@ -75,7 +75,10 @@ class DefaultNodeExpansionService
       return displayNodes;
     }
 
-    final nodeIndex = displayNodes.indexOf(node) + 1;
+    final index = displayNodes.indexOf(node);
+    if (index == -1) return displayNodes;
+
+    final nodeIndex = index + 1;
     final children = getDirectChildrenHelper(node);
     final flatChildren = JsonTreeFlattener.flatten(children);
 
@@ -93,7 +96,10 @@ class DefaultNodeExpansionService
       return displayNodes;
     }
 
-    final nodeIndex = displayNodes.indexOf(node) + 1;
+    final index = displayNodes.indexOf(node);
+    if (index == -1) return displayNodes;
+
+    final nodeIndex = index + 1;
     final childrenCount = _countVisibleChildren(node) - 1;
 
     node.collapse();
