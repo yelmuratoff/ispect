@@ -8,9 +8,15 @@ final class ISpectFileUtils {
   const ISpectFileUtils._();
 
   /// Writes [feedbackScreenshot] to a temporary directory and returns the [File].
+  ///
+  /// Throws [FileSystemException] if the write operation fails.
   static Future<File> writeImageToStorage(Uint8List feedbackScreenshot) async {
-    final output =
-        (await platformDirectoryProvider.tempDirectory()) as Directory;
+    final output = await platformDirectoryProvider.tempDirectory();
+    if (output is! Directory) {
+      throw const FileSystemException(
+        'Failed to get temporary directory',
+      );
+    }
     final screenshotFilePath =
         '${output.path}/feedback${feedbackScreenshot.hashCode}.png';
 

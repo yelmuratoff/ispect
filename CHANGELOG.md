@@ -24,6 +24,11 @@
 - Use `DateTime.tryParse` with fallback in log import to handle malformed dates.
 - Add max depth limit (1000) to JSON viewer node builder to prevent stack overflow.
 - Fix cache key collision in `TextMatchService` by including text length.
+- Fix crash on invalid JSON in file viewer.
+- Add `mounted` guard to `JsonExplorerStore` to prevent use-after-dispose.
+- Fix null pointer crashes in `Inspector` by replacing force-unwraps with safe checks.
+- Add error handling to `_extractByteData()` in post-frame callback.
+- Fix unsafe cast in `ISpectFileUtils.writeImageToStorage`.
 
 ### Documentation
 

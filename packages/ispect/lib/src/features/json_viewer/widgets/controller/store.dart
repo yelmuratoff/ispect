@@ -59,7 +59,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Collapses the given `node` so its children won't be visible.
   void collapseNode(NodeViewModelState node) {
-    if (node.isCollapsed || !node.isRoot) {
+    if (!_mounted || node.isCollapsed || !node.isRoot) {
       return;
     }
 
@@ -70,6 +70,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Collapses all nodes.
   void collapseAll() {
+    if (!_mounted) return;
     _displayNodes = _nodeService.collapseAll(_displayNodes, _allNodes);
     _hierarchyCacheService.clear();
     notifyListeners();
@@ -77,7 +78,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Expands the given `node` so its children become visible.
   void expandNode(NodeViewModelState node) {
-    if (!node.isCollapsed || !node.isRoot) {
+    if (!_mounted || !node.isCollapsed || !node.isRoot) {
       return;
     }
 
@@ -91,6 +92,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Expands all nodes.
   void expandAll() {
+    if (!_mounted) return;
     _displayNodes = _nodeService.expandAll(_allNodes);
     _hierarchyCacheService.clear();
     notifyListeners();
@@ -127,7 +129,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Sets the focus on the next search result.
   void focusNextSearchResult({bool loop = false}) {
-    if (searchResults.isEmpty) return;
+    if (!_mounted || searchResults.isEmpty) return;
 
     if (_focusedSearchResultIndex < _searchResults.length - 1) {
       _focusedSearchResultIndex += 1;
@@ -140,7 +142,7 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Sets the focus on the previous search result.
   void focusPreviousSearchResult({bool loop = false}) {
-    if (searchResults.isEmpty) return;
+    if (!_mounted || searchResults.isEmpty) return;
 
     if (_focusedSearchResultIndex > 0) {
       _focusedSearchResultIndex -= 1;

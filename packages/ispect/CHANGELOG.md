@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.7.5
+
+### Bug Fixes
+
+- Add `mounted` guard to `JsonExplorerStore` to prevent use-after-dispose.
+- Fix null pointer crashes in `Inspector` by replacing force-unwraps with safe checks.
+- Add error handling to `_extractByteData()` in post-frame callback.
+- Fix unsafe cast in `ISpectFileUtils.writeImageToStorage`.
+
 ## 4.7.4
 
 ### Changes

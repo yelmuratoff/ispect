@@ -210,16 +210,21 @@ class InspectorState extends State<Inspector> {
 
     if (pointerOffset == null) return;
 
+    final absorbContext = _absorbPointerKey.currentContext;
+    if (absorbContext == null) return;
+
     final boxes = InspectorUtils.onTap(
-      _absorbPointerKey.currentContext!,
+      absorbContext,
       pointerOffset,
     );
 
     if (boxes.isEmpty) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final stackRenderObject =
+        _stackKey.currentContext?.findRenderObject() as RenderStack?;
+    if (stackRenderObject == null) return;
+
+    final overlayOffset = stackRenderObject.localToGlobal(Offset.zero);
 
     _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
       boxes,
@@ -274,7 +279,11 @@ class InspectorState extends State<Inspector> {
       _zoomScaleNotifier.value = _defaultZoomScale;
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _extractByteData();
+        try {
+          await _extractByteData();
+        } catch (_) {
+          return;
+        }
 
         if (_pointerHoverPosition != null) {
           _onZoomHover(_pointerHoverPosition!);
@@ -317,8 +326,9 @@ class InspectorState extends State<Inspector> {
 
   Future<void> _extractByteData() async {
     if (_image != null) return;
-    final boundary = _repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final boundary = _repaintBoundaryKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
+    if (boundary == null) return;
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
@@ -326,12 +336,14 @@ class InspectorState extends State<Inspector> {
     _byteDataStateNotifier.value = await _image!.toByteData();
   }
 
-  Offset _extractShiftedOffset(Offset offset) {
+  Offset? _extractShiftedOffset(Offset offset) {
+    final boundary = _repaintBoundaryKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    var offset0 = (_repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
+    var offset0 = boundary.globalToLocal(offset);
 
     // ignore: join_return_with_assignment
     offset0 *= pixelRatio;
@@ -343,10 +355,13 @@ class InspectorState extends State<Inspector> {
     if (_image == null || _byteDataStateNotifier.value == null) return;
 
     final shiftedOffset = _extractShiftedOffset(offset);
+    if (shiftedOffset == null) return;
 
-    final overlayOffset =
-        (_stackKey.currentContext!.findRenderObject()! as RenderStack)
-            .localToGlobal(Offset.zero);
+    final stackRenderObject =
+        _stackKey.currentContext?.findRenderObject() as RenderStack?;
+    if (stackRenderObject == null) return;
+
+    final overlayOffset = stackRenderObject.localToGlobal(Offset.zero);
 
     _zoomImageOffsetNotifier.value = shiftedOffset;
     _zoomOverlayOffsetNotifier.value = offset - overlayOffset;
