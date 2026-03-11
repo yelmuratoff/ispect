@@ -25,9 +25,18 @@ void copyClipboard(
   String? title,
   bool showValue = true,
 }) {
-  final truncatedValue = value.length > _maxClipboardLength
-      ? '${value.substring(0, _maxClipboardLength)}\n... [truncated]'
-      : value;
+  final String truncatedValue;
+  if (value.length > _maxClipboardLength) {
+    // Avoid splitting a surrogate pair at the truncation boundary.
+    var end = _maxClipboardLength;
+    if (end > 0 && value.codeUnitAt(end - 1) >= 0xD800 &&
+        value.codeUnitAt(end - 1) <= 0xDBFF) {
+      end--;
+    }
+    truncatedValue = '${value.substring(0, end)}\n... [truncated]';
+  } else {
+    truncatedValue = value;
+  }
 
   Clipboard.setData(ClipboardData(text: truncatedValue));
 

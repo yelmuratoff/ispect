@@ -208,8 +208,14 @@ class JsonTruncatorService {
   }
 
   /// Truncates a string if it exceeds the limit.
-  static String _truncateString(String value) =>
-      value.length > _stringTruncateLimit
-          ? '${value.substring(0, _stringTruncateLimit)}$_truncationMarker'
-          : value;
+  static String _truncateString(String value) {
+    if (value.length <= _stringTruncateLimit) return value;
+    // Avoid splitting a surrogate pair at the truncation boundary.
+    var end = _stringTruncateLimit;
+    if (end > 0 && value.codeUnitAt(end - 1) >= 0xD800 &&
+        value.codeUnitAt(end - 1) <= 0xDBFF) {
+      end--;
+    }
+    return '${value.substring(0, end)}$_truncationMarker';
+  }
 }

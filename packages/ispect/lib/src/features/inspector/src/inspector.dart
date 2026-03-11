@@ -600,7 +600,7 @@ class InspectorState extends State<Inspector> {
         return Positioned(
           left: offset.dx.clamp(0, screenSize.width - overlaySize),
           top: (offset.dy - overlaySize - _overlayOffsetY)
-              .clamp(0, screenSize.height),
+              .clamp(0, screenSize.height - overlaySize),
           child: IgnorePointer(
             child: CombinedOverlayWidget(
               image: _image!,

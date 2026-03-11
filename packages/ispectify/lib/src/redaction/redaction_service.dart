@@ -180,7 +180,7 @@ class RedactionService {
     _config = _config.copyWithIgnoredKeys(
       {
         ..._config.ignoredKeyNamesLower,
-        ...keyNames.map((e) => e.toLowerCase())
+        ...keyNames.map((e) => e.toLowerCase()),
       },
     );
   }
@@ -396,7 +396,7 @@ class _RedactionWalker {
       return _base64Placeholder(value.length);
     }
     if (config.redactBinary && _isProbablyBinaryString(value)) {
-      return _binaryPlaceholder(value.codeUnits.length);
+      return _binaryPlaceholder(utf8.encode(value).length);
     }
     return value;
   }
@@ -449,7 +449,7 @@ class _RedactionWalker {
   }
 
   bool _isLikelyBase64(String value) {
-    final sanitized = value.replaceAll(RegExp(r'\s'), '');
+    final sanitized = value.replaceAll(_whitespaceRegex, '');
     if (sanitized.length < 32) return false;
     if (!_base64Regex.hasMatch(sanitized)) return false;
     if (sanitized.length % 4 == 1) return false;
@@ -524,7 +524,7 @@ class _RedactionWalker {
 
   Uint8List _redactUint8List(Uint8List data) {
     final placeholder = _binaryPlaceholder(data.length);
-    final placeholderBytes = Uint8List.fromList(placeholder.codeUnits);
+    final placeholderBytes = Uint8List.fromList(utf8.encode(placeholder));
     final length = placeholderBytes.length > data.length
         ? data.length
         : placeholderBytes.length;
@@ -692,6 +692,7 @@ final RegExp _jwtRegex =
     RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
 final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
 final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
+final RegExp _whitespaceRegex = RegExp(r'\s');
 const Set<String> _kDefaultFullyMaskedKeys = <String>{
   'filename',
 };

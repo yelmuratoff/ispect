@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 
 /// Redacts based on content patterns (tokens, JWTs, base64, binary).
@@ -26,7 +28,7 @@ class PatternBasedRedaction implements RedactionStrategy {
 
     // Binary-looking strings
     if (runtime.redactBinary && runtime.isProbablyBinaryString(node)) {
-      return runtime.binaryPlaceholder(node.codeUnits.length);
+      return runtime.binaryPlaceholder(utf8.encode(node).length);
     }
 
     // Cookie headers: redact each value (keep key names)

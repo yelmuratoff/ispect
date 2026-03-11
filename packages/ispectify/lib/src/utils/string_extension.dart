@@ -10,8 +10,13 @@ extension ISpectStringExtension on String? {
   }) {
     final original = this;
     if (original == null) return null;
-    return original.length > maxLength
-        ? '${original.substring(0, maxLength)}...'
-        : original;
+    if (original.length <= maxLength) return original;
+    // Avoid splitting a surrogate pair at the truncation boundary.
+    var end = maxLength;
+    if (end > 0 && original.codeUnitAt(end - 1) >= 0xD800 &&
+        original.codeUnitAt(end - 1) <= 0xDBFF) {
+      end--;
+    }
+    return '${original.substring(0, end)}...';
   }
 }
