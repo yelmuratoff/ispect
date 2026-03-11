@@ -27,7 +27,7 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
-  /// Maximum allowed JSON string size (590MB)
+  /// Maximum allowed JSON string size (500MB)
   static const int maxJsonSize = 500 * 1024 * 1024;
 
   /// Maximum allowed JSON nesting depth
@@ -143,12 +143,8 @@ class LogsJsonService {
         _validateJsonDepth(value, currentDepth + 1);
       }
     } else if (data is List) {
-      // Only check first and last items to avoid O(n*depth) complexity
-      if (data.isNotEmpty) {
-        _validateJsonDepth(data.first, currentDepth + 1);
-        if (data.length > 1) {
-          _validateJsonDepth(data.last, currentDepth + 1);
-        }
+      for (final item in data) {
+        _validateJsonDepth(item, currentDepth + 1);
       }
     }
   }

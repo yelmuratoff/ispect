@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.7.5
+
+### Security
+
+- Fix redaction bypass for data nested beyond `maxDepth`.
+- Shell-escape values in generated cURL commands.
+- Redact `error` and `message` fields in `DioErrorData`.
+- Use copy-on-write in `RedactionService` to prevent concurrent modification.
+- Truncate sensitive fields in `ISpectLogData.toString()`.
+- Limit clipboard copy to 100KB.
+
+### Bug Fixes
+
+- Validate all list elements in JSON import depth check.
+- Fix memory leak in `WebLogsFile` static maps.
+
+### Documentation
+
+- Fix incorrect `enableRedaction` default value in doc comments.
+
 ## 4.7.4
 
 ### Changes

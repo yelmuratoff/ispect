@@ -17,13 +17,15 @@ class CurlUtils {
     final method = data['method'] as String?;
     if (uri == null || method == null) return null;
 
-    final buffer = StringBuffer('curl -X $method "$uri"');
+    final buffer = StringBuffer(
+      'curl -X ${_shellEscape(method)} ${_shellEscape(uri)}',
+    );
 
     final headers = data['headers'] as Map<String, dynamic>?;
     if (headers != null) {
       headers.forEach((key, value) {
         if (value != null) {
-          buffer.write(' -H "$key: $value"');
+          buffer.write(' -H ${_shellEscape('$key: $value')}');
         }
       });
     }
@@ -32,9 +34,14 @@ class CurlUtils {
     if (body != null) {
       final bodyString =
           body is String ? body : JsonTruncatorService.pretty(body);
-      buffer.write(" -d '$bodyString'");
+      buffer.write(' -d ${_shellEscape(bodyString)}');
     }
 
     return buffer.toString();
+  }
+
+  static String _shellEscape(String value) {
+    final escaped = value.replaceAll("'", r"'\''");
+    return "'$escaped'";
   }
 }

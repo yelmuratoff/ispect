@@ -25,7 +25,7 @@ class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
   // Print Dio logger if true
   final bool enabled;
 
-  /// Enable sensitive data redaction if true (default: true)
+  /// Enable sensitive data redaction if true (default: false)
   final bool enableRedaction;
 
   /// Print `response.data` if true

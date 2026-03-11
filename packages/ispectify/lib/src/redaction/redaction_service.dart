@@ -27,6 +27,34 @@ class _RedactionConfig {
   final Set<String> ignoredValues;
   final Set<String> ignoredKeyNamesLower;
   final Set<String> fullyMaskedKeyNamesLower;
+
+  _RedactionConfig copyWithIgnoredValues(Set<String> newIgnoredValues) =>
+      _RedactionConfig(
+        sensitiveKeysLower: sensitiveKeysLower,
+        sensitiveKeyPatterns: sensitiveKeyPatterns,
+        maxDepth: maxDepth,
+        stringEdgeVisible: stringEdgeVisible,
+        placeholder: placeholder,
+        redactBinary: redactBinary,
+        redactBase64: redactBase64,
+        ignoredValues: newIgnoredValues,
+        ignoredKeyNamesLower: ignoredKeyNamesLower,
+        fullyMaskedKeyNamesLower: fullyMaskedKeyNamesLower,
+      );
+
+  _RedactionConfig copyWithIgnoredKeys(Set<String> newIgnoredKeys) =>
+      _RedactionConfig(
+        sensitiveKeysLower: sensitiveKeysLower,
+        sensitiveKeyPatterns: sensitiveKeyPatterns,
+        maxDepth: maxDepth,
+        stringEdgeVisible: stringEdgeVisible,
+        placeholder: placeholder,
+        redactBinary: redactBinary,
+        redactBase64: redactBase64,
+        ignoredValues: ignoredValues,
+        ignoredKeyNamesLower: newIgnoredKeys,
+        fullyMaskedKeyNamesLower: fullyMaskedKeyNamesLower,
+      );
 }
 
 /// A configurable service that redacts sensitive values in headers and payloads.
@@ -86,7 +114,7 @@ class RedactionService {
     }
   }
 
-  final _RedactionConfig _config;
+  _RedactionConfig _config;
   final RedactionStrategy _strategy;
 
   /// Redacts header values, respecting optional per-call overrides.
@@ -118,44 +146,52 @@ class RedactionService {
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
-    _config.ignoredValues.add(value);
+    _config = _config.copyWithIgnoredValues({..._config.ignoredValues, value});
   }
 
   /// Add multiple string values to the ignore list (exact matches).
   void ignoreValues(Iterable<String> values) {
-    _config.ignoredValues.addAll(values);
+    _config = _config.copyWithIgnoredValues(
+      {..._config.ignoredValues, ...values},
+    );
   }
 
   /// Remove a string value from the ignore list.
   void unignoreValue(String value) {
-    _config.ignoredValues.remove(value);
+    _config = _config.copyWithIgnoredValues(
+      {..._config.ignoredValues}..remove(value),
+    );
   }
 
   /// Clear all ignored string values.
   void clearIgnoredValues() {
-    _config.ignoredValues.clear();
+    _config = _config.copyWithIgnoredValues({});
   }
 
   /// Add a key name to the ignore list (case-insensitive).
   void ignoreKey(String keyName) {
-    _config.ignoredKeyNamesLower.add(keyName.toLowerCase());
+    _config = _config.copyWithIgnoredKeys(
+      {..._config.ignoredKeyNamesLower, keyName.toLowerCase()},
+    );
   }
 
   /// Add multiple key names to the ignore list (case-insensitive).
   void ignoreKeys(Iterable<String> keyNames) {
-    for (final key in keyNames) {
-      _config.ignoredKeyNamesLower.add(key.toLowerCase());
-    }
+    _config = _config.copyWithIgnoredKeys(
+      {..._config.ignoredKeyNamesLower, ...keyNames.map((e) => e.toLowerCase())},
+    );
   }
 
   /// Remove a key name from the ignore list.
   void unignoreKey(String keyName) {
-    _config.ignoredKeyNamesLower.remove(keyName.toLowerCase());
+    _config = _config.copyWithIgnoredKeys(
+      {..._config.ignoredKeyNamesLower}..remove(keyName.toLowerCase()),
+    );
   }
 
   /// Clear all ignored key names.
   void clearIgnoredKeys() {
-    _config.ignoredKeyNamesLower.clear();
+    _config = _config.copyWithIgnoredKeys({});
   }
 }
 
@@ -223,7 +259,7 @@ class _RedactionWalker {
     required int depth,
   }) {
     if (node == null) return null;
-    if (depth >= config.maxDepth) return node;
+    if (depth >= config.maxDepth) return config.placeholder;
 
     // Try pluggable strategies first.
     final runtime = _createRuntime();

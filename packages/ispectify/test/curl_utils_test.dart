@@ -23,7 +23,7 @@ void main() {
         'uri': 'https://example.com',
       };
       final curl = CurlUtils.generateCurl(data);
-      expect(curl, equals('curl -X GET "https://example.com"'));
+      expect(curl, equals("curl -X 'GET' 'https://example.com'"));
     });
 
     test('generateCurl generates POST request with headers and body', () {
@@ -37,10 +37,13 @@ void main() {
         'data': '{"name": "test"}',
       };
       final curl = CurlUtils.generateCurl(data);
-      expect(curl, contains('curl -X POST "https://api.example.com/endpoint"'));
-      expect(curl, contains('-H "Authorization: Bearer token"'));
-      expect(curl, contains('-H "Content-Type: application/json"'));
-      expect(curl, contains("-d '{\"name\": \"test\"}'"));
+      expect(
+        curl,
+        contains("curl -X 'POST' 'https://api.example.com/endpoint'"),
+      );
+      expect(curl, contains("-H 'Authorization: Bearer token'"));
+      expect(curl, contains("-H 'Content-Type: application/json'"));
+      expect(curl, contains('''-d '{"name": "test"}' '''.trim()));
     });
 
     test('generateCurl handles null headers gracefully', () {
@@ -53,7 +56,7 @@ void main() {
       final curl = CurlUtils.generateCurl(data);
       expect(
         curl,
-        equals('curl -X PUT "https://example.com" -d \'plain text\''),
+        equals("curl -X 'PUT' 'https://example.com' -d 'plain text'"),
       );
     });
 
@@ -64,7 +67,34 @@ void main() {
         'url': 'https://url.example.com',
       };
       final curl = CurlUtils.generateCurl(data);
-      expect(curl, contains('"https://uri.example.com"'));
+      expect(curl, contains("'https://uri.example.com'"));
+    });
+
+    test('generateCurl escapes single quotes in values', () {
+      final data = {
+        'method': 'POST',
+        'uri': 'https://example.com',
+        'data': "it's a test",
+      };
+      final curl = CurlUtils.generateCurl(data);
+      expect(curl, isNotNull);
+      // Single quotes in values are escaped as '\''
+      expect(curl, contains(r"it'\''s a test"));
+    });
+
+    test('generateCurl escapes shell metacharacters in headers', () {
+      final data = {
+        'method': 'GET',
+        'uri': 'https://example.com',
+        'headers': {
+          'X-Custom': 'value"; rm -rf / #',
+        },
+      };
+      final curl = CurlUtils.generateCurl(data);
+      expect(curl, isNotNull);
+      // Dangerous shell characters are safely wrapped in single quotes
+      expect(curl!.contains('rm -rf'), isTrue);
+      expect(curl.contains('" ;'), isFalse);
     });
   });
 }

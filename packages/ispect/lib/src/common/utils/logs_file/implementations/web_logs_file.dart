@@ -125,6 +125,9 @@ class WebLogsFile extends BaseLogsFile {
 
     _triggerBrowserDownload(url, finalFileName);
     URL.revokeObjectURL(url);
+
+    _objectUrls.remove(file);
+    _fileNames.remove(file);
   }
 
   /// Determines final filename for download

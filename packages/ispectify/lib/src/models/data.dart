@@ -155,14 +155,11 @@ class ISpectLogData {
   String toString() {
     return '''ISpectLogData(
       key: $key,
-      message: $message,
+      message: ${message.truncate()},
       logLevel: $logLevel,
       title: $title,
-      pen: $pen,
-      additionalData: $additionalData,
-      exception: $exception,
-      error: $error,
-      stackTrace: $stackTrace,
+      exception: ${exception?.toString().truncate()},
+      error: ${error?.toString().truncate()},
       )''';
   }
 }

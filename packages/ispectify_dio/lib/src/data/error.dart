@@ -20,9 +20,21 @@ class DioErrorData {
   }) =>
       {
         'type': exception?.type,
-        'error': exception?.error,
+        'error': redactor != null
+            ? redactor.redact(
+                exception?.error?.toString(),
+                ignoredValues: ignoredValues,
+                ignoredKeys: ignoredKeys,
+              )
+            : exception?.error,
         'stack-trace': exception?.stackTrace,
-        'message': exception?.message,
+        'message': redactor != null
+            ? redactor.redact(
+                exception?.message,
+                ignoredValues: ignoredValues,
+                ignoredKeys: ignoredKeys,
+              )
+            : exception?.message,
         'request-options': redactor == null
             ? requestData.toJson()
             : requestData.toJson(

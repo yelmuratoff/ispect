@@ -16,19 +16,24 @@ import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 ///   showValue: false,
 /// );
 /// ```
+
+const int _maxClipboardLength = 100000;
+
 void copyClipboard(
   BuildContext context, {
   required String value,
   String? title,
   bool showValue = true,
 }) {
-  // Copy the text to the clipboard.
-  Clipboard.setData(ClipboardData(text: value));
+  final truncatedValue = value.length > _maxClipboardLength
+      ? '${value.substring(0, _maxClipboardLength)}\n... [truncated]'
+      : value;
 
-  // Show a toast notification indicating the copy action.
+  Clipboard.setData(ClipboardData(text: truncatedValue));
+
   ISpectToaster.showCopiedToast(
     context,
-    value: value,
+    value: truncatedValue,
     title: title,
     showValue: showValue,
   );
