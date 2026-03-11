@@ -175,6 +175,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   }
 
   void _addWidgetInState(Widget widget) {
+    if (!mounted) return;
     setState(() {
       _addWidgetToContent(widget);
     });
@@ -359,6 +360,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           'pasted_content.${detectedFormat == 'auto' || detectedFormat == 'text' ? 'txt' : detectedFormat}',
     );
 
+    if (!mounted) return;
     setState(() {
       _addWidgetToContent(
         FileContentWidget(

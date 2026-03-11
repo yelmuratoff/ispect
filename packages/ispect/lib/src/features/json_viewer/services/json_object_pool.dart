@@ -128,7 +128,7 @@ class JsonObjectPool implements UniversalObjectPool {
       releaseStringDynamicMap(object);
     } else {
       throw UnsupportedError(
-        'Type ${T.runtimeType} not supported by object pool',
+        'Type $T not supported by object pool',
       );
     }
   }
