@@ -196,7 +196,7 @@ class _JsonScreenState extends State<JsonScreen> {
 
   Future<void> _scrollToSearchMatch(JsonExplorerStore store) async {
     final searchResult = store.focusedSearchResult;
-    if (!mounted) return;
+    if (searchResult == null || !mounted) return;
 
     // Expand the node and all its parents to ensure it's visible
     // We want to handle the nodes in a single batch operation

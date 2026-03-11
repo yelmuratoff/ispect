@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.5
+
+### Security
+
+- Replace broad `catch (_)` with `on FormatException` in response redaction and JSON decoding to avoid masking critical errors.
+
 ## 4.7.4
 
 ### Changes

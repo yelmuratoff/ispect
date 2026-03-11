@@ -15,6 +15,7 @@
 - Redact request body in `HttpRequestData.toJson()` when redactor is provided.
 - Sanitize `fileType` parameter in log file path construction.
 - Snapshot observer list before iteration to prevent concurrent modification.
+- Replace broad `catch (_)` with `on FormatException` in redaction and HTTP interceptor to avoid masking critical errors.
 
 ### Bug Fixes
 
@@ -29,6 +30,11 @@
 - Fix null pointer crashes in `Inspector` by replacing force-unwraps with safe checks.
 - Add error handling to `_extractByteData()` in post-frame callback.
 - Fix unsafe cast in `ISpectFileUtils.writeImageToStorage`.
+- Fix `focusedSearchResult` crash when search results are empty (RangeError).
+- Add `mounted` check after async delay in `buildNodes()` to prevent use-after-dispose.
+- Replace `late final` services with nullable fields in `JsonExplorerStore` to prevent `LateInitializationError`.
+- Add 100MB file size limit in `processFileStream` to prevent OOM on large files.
+- Use typed `List.of` instead of untyped `List.from` for display nodes.
 
 ### Documentation
 

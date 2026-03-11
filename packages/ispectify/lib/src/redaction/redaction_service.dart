@@ -466,14 +466,14 @@ class _RedactionWalker {
     try {
       codec.decode(input);
       return true;
-    } catch (_) {
+    } on FormatException {
       final remainder = input.length % 4;
       if (remainder == 0) return false;
       final padded = input.padRight(input.length + (4 - remainder), '=');
       try {
         codec.decode(padded);
         return true;
-      } catch (_) {
+      } on FormatException {
         return false;
       }
     }

@@ -130,12 +130,13 @@ class _JsonAttributeState extends State<JsonAttribute> {
           int? focusedKeyIndex;
           int? focusedValueIndex;
 
-          if (hasResults && store.focusedSearchResult.node == widget.node) {
-            switch (store.focusedSearchResult.matchLocation) {
+          final focused = hasResults ? store.focusedSearchResult : null;
+          if (focused != null && focused.node == widget.node) {
+            switch (focused.matchLocation) {
               case SearchMatchLocation.key:
-                focusedKeyIndex = store.focusedSearchResult.matchIndex;
+                focusedKeyIndex = focused.matchIndex;
               case SearchMatchLocation.value:
-                focusedValueIndex = store.focusedSearchResult.matchIndex;
+                focusedValueIndex = focused.matchIndex;
             }
           }
 

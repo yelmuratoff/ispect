@@ -5,6 +5,10 @@
 ### Bug Fixes
 
 - Add `mounted` guard to `JsonExplorerStore` to prevent use-after-dispose.
+- Fix `focusedSearchResult` crash when search results are empty (RangeError).
+- Add `mounted` check after async delay in `buildNodes()` to prevent use-after-dispose.
+- Replace `late final` services with nullable fields in `JsonExplorerStore` to prevent `LateInitializationError`.
+- Use typed `List.of` instead of untyped `List.from` for display nodes.
 - Fix null pointer crashes in `Inspector` by replacing force-unwraps with safe checks.
 - Add error handling to `_extractByteData()` in post-frame callback.
 - Fix unsafe cast in `ISpectFileUtils.writeImageToStorage`.
