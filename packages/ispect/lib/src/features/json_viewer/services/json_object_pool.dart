@@ -67,8 +67,8 @@ class JsonObjectPool implements UniversalObjectPool {
       <Type, List<List<Object>>>{};
   final Map<Type, List<Set<Object>>> _typedSetPools =
       <Type, List<Set<Object>>>{};
-  final Map<Type, List<Map<Object, Object>>> _typedMapPools =
-      <Type, List<Map<Object, Object>>>{};
+  final Map<(Type, Type), List<Map<Object, Object>>> _typedMapPools =
+      <(Type, Type), List<Map<Object, Object>>>{};
 
   int _maxPoolSize = _defaultMaxPoolSize;
 
@@ -246,9 +246,10 @@ class JsonObjectPool implements UniversalObjectPool {
 
   @override
   Map<K, V> getTypedMap<K, V>() {
-    final pools = _typedMapPools[K];
+    final pools = _typedMapPools[(K, V)];
     if (pools != null && pools.isNotEmpty) {
-      return pools.removeLast().cast<K, V>()..clear();
+      final map = pools.removeLast()..clear();
+      return map.cast<K, V>();
     }
     return <K, V>{};
   }
@@ -263,7 +264,7 @@ class JsonObjectPool implements UniversalObjectPool {
 
   @override
   void releaseTypedMap<K, V>(Map<K, V> map) {
-    final pools = _typedMapPools[K] ??= <Map<Object, Object>>[];
+    final pools = _typedMapPools[(K, V)] ??= <Map<Object, Object>>[];
     if (pools.length < _maxPoolSize) {
       map.clear();
       pools.add(map.cast<Object, Object>());

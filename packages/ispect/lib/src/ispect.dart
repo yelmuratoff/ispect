@@ -11,7 +11,7 @@ import 'package:ispectify/ispectify.dart';
 final class ISpect {
   const ISpect._();
 
-  static late ISpectLogger _logger;
+  static ISpectLogger? _logger;
   static bool _isInitialized = false;
   static ErrorHandlerService? _errorHandler;
 
@@ -30,7 +30,7 @@ final class ISpect {
         );
       }
     }
-    return _logger;
+    return _logger!;
   }
 
   /// Initializes the logger instance once.
@@ -50,6 +50,7 @@ final class ISpect {
   /// Disposes current ISpect state (useful for testing or hot restart).
   static void dispose() {
     _isInitialized = false;
+    _logger = null;
     _errorHandler = null;
   }
 

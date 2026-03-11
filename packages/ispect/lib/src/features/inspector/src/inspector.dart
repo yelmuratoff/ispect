@@ -285,6 +285,8 @@ class InspectorState extends State<Inspector> {
           return;
         }
 
+        if (!mounted) return;
+
         if (_pointerHoverPosition != null) {
           _onZoomHover(_pointerHoverPosition!);
         }
@@ -296,7 +298,7 @@ class InspectorState extends State<Inspector> {
 
   void _handleZoomDisabled() {
     try {
-      if (_byteDataStateNotifier.value != null) {
+      if (_byteDataStateNotifier.value != null && _image != null) {
         final color = getPixelFromByteData(
           _byteDataStateNotifier.value!,
           width: _image!.width,
@@ -582,7 +584,10 @@ class InspectorState extends State<Inspector> {
         final byteData = _byteDataStateNotifier.value;
         final zoomScale = _zoomScaleNotifier.value;
 
-        if (offset == null || byteData == null || imageOffset == null) {
+        if (offset == null ||
+            byteData == null ||
+            imageOffset == null ||
+            _image == null) {
           return const SizedBox.shrink();
         }
 
