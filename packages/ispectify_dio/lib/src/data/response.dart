@@ -51,7 +51,22 @@ class DioResponseData {
       return map;
     }
 
-    // Redact response-level fields
+    // Redact URL query parameters
+    final url = map['url'];
+    if (url is String) {
+      final uri = Uri.tryParse(url);
+      if (uri != null && uri.queryParameters.isNotEmpty) {
+        final redactedParams = uri.queryParameters.map(
+          (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
+        );
+        map['url'] = uri
+            .replace(
+              queryParameters: redactedParams
+                  .map((k, v) => MapEntry(k, v?.toString() ?? '')),
+            )
+            .toString();
+      }
+    }
 
     map['data'] = redactor.redact(
       map['data'],

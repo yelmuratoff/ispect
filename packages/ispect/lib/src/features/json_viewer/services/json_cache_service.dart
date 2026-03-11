@@ -50,8 +50,9 @@ class LRUCache<K, V> implements CacheService<K, V> {
     final sortedEntries = _accessTimes.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));
 
-    final removeCount = math.max(1, (_cache.length - limit) ~/ 2);
-    for (var i = 0; i < removeCount; i++) {
+    final removeCount = math.max(1, (_cache.length - limit + 1) ~/ 2 + 1);
+    final count = math.min(removeCount, sortedEntries.length);
+    for (var i = 0; i < count; i++) {
       final key = sortedEntries[i].key;
       _cache.remove(key);
       _accessTimes.remove(key);

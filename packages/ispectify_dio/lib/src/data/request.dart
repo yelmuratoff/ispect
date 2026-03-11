@@ -45,6 +45,23 @@ class DioRequestData {
       return map;
     }
 
+    // Redact URL query parameters
+    final url = map['url'];
+    if (url is String) {
+      final uri = Uri.tryParse(url);
+      if (uri != null && uri.queryParameters.isNotEmpty) {
+        final redactedParams = uri.queryParameters.map(
+          (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
+        );
+        map['url'] = uri
+            .replace(
+              queryParameters: redactedParams
+                  .map((k, v) => MapEntry(k, v?.toString() ?? '')),
+            )
+            .toString();
+      }
+    }
+
     // Apply redaction to known sensitive sections when a redactor is provided.
     final hasDataKey = map.containsKey('data');
     final Object? rawData = hasDataKey ? map['data'] : null;

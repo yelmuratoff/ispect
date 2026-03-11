@@ -37,22 +37,24 @@ class ISpectLogDataJsonUtils {
   /// Note: AnsiPen, Exception, Error, and StackTrace are reconstructed
   /// from string representations with some limitations.
   static ISpectLogData fromJson(Map<String, dynamic> json) => ISpectLogData(
-        json['message'] as String?,
-        time: DateTime.tryParse(json['time'] as String? ?? '') ??
+        json['message']?.toString(),
+        time: DateTime.tryParse(json['time']?.toString() ?? '') ??
             DateTime.now(),
-        logLevel: _parseLogLevel(json['log-level'] as String?),
-        title: json['title'] as String?,
-        key: json['key'] as String?,
-        additionalData: json['additional-data'] as Map<String, dynamic>?,
+        logLevel: _parseLogLevel(json['log-level']?.toString()),
+        title: json['title']?.toString(),
+        key: json['key']?.toString(),
+        additionalData: json['additional-data'] is Map<String, dynamic>
+            ? json['additional-data'] as Map<String, dynamic>
+            : null,
         // Note: These are reconstructed as strings for JSON compatibility
         exception: json['exception'] != null
-            ? _StringException(json['exception'] as String)
+            ? _StringException(json['exception'].toString())
             : null,
         error: json['error'] != null
-            ? _StringError(json['error'] as String)
+            ? _StringError(json['error'].toString())
             : null,
         stackTrace: json['stack-trace'] != null
-            ? StackTrace.fromString(json['stack-trace'] as String)
+            ? StackTrace.fromString(json['stack-trace'].toString())
             : null,
       );
 }

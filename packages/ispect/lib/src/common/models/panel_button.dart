@@ -18,10 +18,9 @@ class ISpectPanelButtonItem {
 
     return other is ISpectPanelButtonItem &&
         other.icon == icon &&
-        other.label == label &&
-        other.onTap == onTap;
+        other.label == label;
   }
 
   @override
-  int get hashCode => Object.hash(icon, label, onTap);
+  int get hashCode => Object.hash(icon, label);
 }

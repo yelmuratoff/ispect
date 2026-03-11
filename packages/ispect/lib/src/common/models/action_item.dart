@@ -18,10 +18,9 @@ class ISpectActionItem {
 
     return other is ISpectActionItem &&
         other.title == title &&
-        other.icon == icon &&
-        other.onTap == onTap;
+        other.icon == icon;
   }
 
   @override
-  int get hashCode => Object.hash(title, icon, onTap);
+  int get hashCode => Object.hash(title, icon);
 }
