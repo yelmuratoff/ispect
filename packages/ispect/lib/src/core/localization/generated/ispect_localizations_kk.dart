@@ -25,7 +25,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
 
   @override
-  String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
+  String get allLogsCopied => 'Барлық логтар алмасу буферіне көшірілді';
 
   @override
   String get analyticsLogDesc => 'Оқиға қадағаланды және аналитикаға жіберілді';
@@ -116,7 +116,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copy => 'Көшіру';
 
   @override
-  String get copyAllLogs => 'Барлық жазбаларды көшіру';
+  String get copyAllLogs => 'Барлық логтарды көшіру';
 
   @override
   String counterTimesText(Object number) {
@@ -227,7 +227,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
 
   @override
-  String get logItemCopied => 'Жазба алмасу буферіне көшірілді';
+  String get logItemCopied => 'Лог алмасу буферіне көшірілді';
 
   @override
   String get login => 'Кіру';
@@ -340,7 +340,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get share => 'Бөлісу';
 
   @override
-  String get shareLogsFile => 'Журнал файлын бөлісу';
+  String get shareLogsFile => 'Лог файлын бөлісу';
 
   @override
   String get statusCode => 'Статус коды';

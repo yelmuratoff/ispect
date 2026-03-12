@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'こんにちは！どのようにお手伝いしましょうか？';
 
   @override
-  String get allLogsCopied => 'すべてのログがバッファにコピーされました';
+  String get allLogsCopied => 'すべてのログがクリップボードにコピーされました';
 
   @override
   String get analyticsLogDesc => 'イベントが追跡され、アナリティクスに送信されました';

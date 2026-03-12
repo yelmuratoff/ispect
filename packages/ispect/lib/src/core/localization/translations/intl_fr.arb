@@ -5,7 +5,7 @@
    "addingStatusToIssue": "Ajout d'un statut au problème",
    "aiChat": "Chat IA",
    "aiWelcomeMessage": "Bonjour ! Comment puis-je vous aider ?",
-   "allLogsCopied": "Tous les journaux copiés dans le tampon",
+   "allLogsCopied": "Tous les journaux copiés dans le presse-papiers",
    "analyticsLogDesc": "Événement suivi et envoyé à l'analyse",
    "apiToken": "Jeton API",
    "appData": "Données de l'application",

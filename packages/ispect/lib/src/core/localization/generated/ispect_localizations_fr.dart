@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Bonjour ! Comment puis-je vous aider ?';
 
   @override
-  String get allLogsCopied => 'Tous les journaux copiés dans le tampon';
+  String get allLogsCopied => 'Tous les journaux copiés dans le presse-papiers';
 
   @override
   String get analyticsLogDesc => 'Événement suivi et envoyé à l\'analyse';

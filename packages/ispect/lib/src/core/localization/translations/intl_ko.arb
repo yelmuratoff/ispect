@@ -5,7 +5,7 @@
    "addingStatusToIssue": "문제에 상태 추가 중",
    "aiChat": "AI 채팅",
    "aiWelcomeMessage": "안녕하세요! 어떻게 도와드릴까요?",
-   "allLogsCopied": "모든 로그가 버퍼에 복사됨",
+   "allLogsCopied": "모든 로그가 클립보드에 복사됨",
    "analyticsLogDesc": "이벤트가 추적되어 분석 서비스로 전송됨",
    "apiToken": "API 토큰",
    "appData": "앱 데이터",

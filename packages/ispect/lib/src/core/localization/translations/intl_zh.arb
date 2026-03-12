@@ -5,7 +5,7 @@
    "addingStatusToIssue": "正在添加状态到问题",
    "aiChat": "AI 聊天",
    "aiWelcomeMessage": "你好！我能帮你什么？",
-   "allLogsCopied": "所有日志已复制到缓冲区",
+   "allLogsCopied": "所有日志已复制到剪贴板",
    "analyticsLogDesc": "事件已追踪并发送至分析服务",
    "apiToken": "API 令牌",
    "appData": "应用数据",

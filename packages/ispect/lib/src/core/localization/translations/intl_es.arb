@@ -5,7 +5,7 @@
    "addingStatusToIssue": "Añadiendo estado al problema",
    "aiChat": "Chat de IA",
    "aiWelcomeMessage": "¡Hola! ¿Cómo puedo ayudarte?",
-   "allLogsCopied": "Todos los registros copiados en el búfer",
+   "allLogsCopied": "Todos los registros copiados al portapapeles",
    "analyticsLogDesc": "Evento rastreado y enviado a análisis",
    "apiToken": "Token de API",
    "appData": "Datos de la aplicación",

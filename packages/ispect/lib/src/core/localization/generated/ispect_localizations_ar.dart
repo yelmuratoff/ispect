@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'مرحبًا! كيف يمكنني مساعدتك؟';
 
   @override
-  String get allLogsCopied => 'تم نسخ جميع السجلات في المخزن المؤقت';
+  String get allLogsCopied => 'تم نسخ جميع السجلات إلى الحافظة';
 
   @override
   String get analyticsLogDesc => 'تم تتبع الحدث وإرساله إلى التحليلات';
@@ -224,7 +224,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
       '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إنشاء وإدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
 
   @override
-  String get logItemCopied => 'تم نسخ عنصر السجل في الحافظة';
+  String get logItemCopied => 'تم نسخ عنصر السجل إلى الحافظة';
 
   @override
   String get login => 'تسجيل الدخول';

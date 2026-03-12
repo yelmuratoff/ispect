@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '안녕하세요! 어떻게 도와드릴까요?';
 
   @override
-  String get allLogsCopied => '모든 로그가 버퍼에 복사됨';
+  String get allLogsCopied => '모든 로그가 클립보드에 복사됨';
 
   @override
   String get analyticsLogDesc => '이벤트가 추적되어 분석 서비스로 전송됨';

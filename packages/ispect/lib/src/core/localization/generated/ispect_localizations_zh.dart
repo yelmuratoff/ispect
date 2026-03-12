@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '你好！我能帮你什么？';
 
   @override
-  String get allLogsCopied => '所有日志已复制到缓冲区';
+  String get allLogsCopied => '所有日志已复制到剪贴板';
 
   @override
   String get analyticsLogDesc => '事件已追踪并发送至分析服务';

@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '¡Hola! ¿Cómo puedo ayudarte?';
 
   @override
-  String get allLogsCopied => 'Todos los registros copiados en el búfer';
+  String get allLogsCopied => 'Todos los registros copiados al portapapeles';
 
   @override
   String get analyticsLogDesc => 'Evento rastreado y enviado a análisis';

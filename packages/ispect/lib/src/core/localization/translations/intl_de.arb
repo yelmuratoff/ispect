@@ -5,7 +5,7 @@
    "addingStatusToIssue": "Hinzufügen eines Status zum Problem",
    "aiChat": "KI-Chat",
    "aiWelcomeMessage": "Hallo! Wie kann ich Ihnen helfen?",
-   "allLogsCopied": "Alle Protokolle in den Puffer kopiert",
+   "allLogsCopied": "Alle Protokolle in die Zwischenablage kopiert",
    "analyticsLogDesc": "Ereignis erfasst und an die Analyse gesendet",
    "apiToken": "API-Token",
    "appData": "App-Daten",
