@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Привет! Чем я могу вам помочь?';
 
   @override
-  String get allLogsCopied => 'Все записи скопированы в буфер обмена';
+  String get allLogsCopied => 'Все логи скопированы в буфер обмена';
 
   @override
   String get analyticsLogDesc => 'Событие отслежено и отправлено в аналитику';
@@ -104,7 +104,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get clearCache => 'Очистить кэш';
 
   @override
-  String get collapseLogs => 'Свернуть журнал';
+  String get collapseLogs => 'Свернуть логи';
 
   @override
   String get common => 'Общие';
@@ -116,7 +116,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get copy => 'Скопировать';
 
   @override
-  String get copyAllLogs => 'Копировать все записи';
+  String get copyAllLogs => 'Скопировать все логи';
 
   @override
   String counterTimesText(Object number) {
@@ -173,7 +173,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get exceptionLogDesc => 'Произошла неожиданная ошибка';
 
   @override
-  String get expandLogs => 'Развернуть журнал';
+  String get expandLogs => 'Развернуть логи';
 
   @override
   String get feedbackDescriptionText => 'Опишите проблему';
@@ -194,7 +194,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get generateReport => 'Сгенерировать отчёт';
 
   @override
-  String get goToLogger => 'Перейти к журналу';
+  String get goToLogger => 'Перейти к логам';
 
   @override
   String get goodLogDesc => 'Операция завершена успешно';
@@ -228,7 +228,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
-  String get logItemCopied => 'Запись скопирована в буфер обмена';
+  String get logItemCopied => 'Лог скопирован в буфер обмена';
 
   @override
   String get login => 'Вход';
@@ -237,7 +237,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get logout => 'Выйти';
 
   @override
-  String get logsCount => 'Количество записей';
+  String get logsCount => 'Количество логов';
 
   @override
   String get method => 'Метод';
@@ -290,7 +290,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get retry => 'Повторить';
 
   @override
-  String get reverseLogs => 'Обратный порядок журнала';
+  String get reverseLogs => 'Обратный порядок логов';
 
   @override
   String get riverpodAddLogDesc => 'Провайдер данных создан';
@@ -341,7 +341,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get share => 'Поделиться';
 
   @override
-  String get shareLogsFile => 'Поделиться файлом журнала';
+  String get shareLogsFile => 'Поделиться файлом логов';
 
   @override
   String get statusCode => 'Код статуса';

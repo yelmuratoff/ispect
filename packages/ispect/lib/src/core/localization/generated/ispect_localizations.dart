@@ -152,7 +152,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @allLogsCopied.
   ///
   /// In en, this message translates to:
-  /// **'All logs copied to buffer'**
+  /// **'All logs copied to clipboard'**
   String get allLogsCopied;
 
   /// No description provided for @analyticsLogDesc.
@@ -536,7 +536,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @logItemCopied.
   ///
   /// In en, this message translates to:
-  /// **'Log item is copied in clipboard'**
+  /// **'Log item copied to clipboard'**
   String get logItemCopied;
 
   /// No description provided for @login.
@@ -758,7 +758,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @shareLogsFile.
   ///
   /// In en, this message translates to:
-  /// **'Share logs file'**
+  /// **'Share log file'**
   String get shareLogsFile;
 
   /// No description provided for @statusCode.
