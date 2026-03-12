@@ -2,97 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
-class ISpectShareAllLogsBottomSheet extends StatefulWidget {
+class ISpectShareAllLogsBottomSheet {
   const ISpectShareAllLogsBottomSheet({
     required this.controller,
-    super.key,
   });
 
   final ISpectViewController controller;
 
-  @override
-  State<ISpectShareAllLogsBottomSheet> createState() =>
-      _ISpectShareAllLogsBottomSheetState();
-
-  Future<void> show(BuildContext context) async {
-    await context.screenSizeMaybeWhen(
-      phone: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => this,
-      ),
-      orElse: () => showDialog<void>(
-        context: context,
-        builder: (_) => this,
-      ),
-    );
-  }
-}
-
-class _ISpectShareAllLogsBottomSheetState
-    extends State<ISpectShareAllLogsBottomSheet> {
-  @override
-  Widget build(BuildContext context) => context.screenSizeMaybeWhen(
-        phone: () => DraggableScrollableSheet(
-          minChildSize: 0.2,
-          expand: false,
-          builder: (context, scrollController) => _Body(
-            controller: widget.controller,
+  Future<void> show(BuildContext context) => showISpectSheet(
+        context,
+        builder: (context, _) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: _InfoDescription(controller: controller),
           ),
         ),
-        orElse: () {
-          final iSpect = ISpect.read(context);
-          final backgroundColor = iSpect.theme.background?.resolve(context);
-
-          return AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            backgroundColor: backgroundColor,
-            content: SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.2,
-              width: 500,
-              child: _Body(
-                controller: widget.controller,
-              ),
-            ),
-          );
-        },
       );
-}
-
-class _Body extends StatelessWidget {
-  const _Body({
-    required this.controller,
-  });
-
-  final ISpectViewController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    final backgroundColor = iSpect.theme.background?.resolve(context);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: _InfoDescription(
-            controller: controller,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _InfoDescription extends StatelessWidget {

@@ -5,17 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
-class ISpectSettingsBottomSheet extends StatefulWidget {
+class ISpectSettingsBottomSheet {
   const ISpectSettingsBottomSheet({
     required this.logger,
     required this.options,
     required this.actions,
     required this.controller,
-    super.key,
   });
 
   /// ISpectLogger implementation
@@ -30,36 +30,53 @@ class ISpectSettingsBottomSheet extends StatefulWidget {
   /// Controller for the ISpect view
   final ISpectViewController controller;
 
-  Future<void> show(BuildContext context) async {
-    await context.screenSizeMaybeWhen(
-      phone: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
+  Future<void> show(BuildContext context) => showISpectSheet(
+        context,
+        initialChildSize: 0.8,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        dialogHeightFactor: 0.7,
+        dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
+        topOnlyRadius: true,
         routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
-        builder: (_) => this,
-      ),
-      orElse: () => showDialog<void>(
-        context: context,
         useRootNavigator: false,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Dialog'),
-        builder: (_) => this,
-      ),
-    );
-  }
-
-  @override
-  State<ISpectSettingsBottomSheet> createState() =>
-      _ISpectLoggerSettingsBottomSheetState();
+        builder: (context, scrollController) => _SettingsContent(
+          logger: logger,
+          options: options,
+          actions: actions,
+          controller: controller,
+          externalScrollController: scrollController,
+        ),
+      );
 }
 
-class _ISpectLoggerSettingsBottomSheetState
-    extends State<ISpectSettingsBottomSheet> {
-  final _scrollController = ScrollController();
+class _SettingsContent extends StatefulWidget {
+  const _SettingsContent({
+    required this.logger,
+    required this.options,
+    required this.actions,
+    required this.controller,
+    this.externalScrollController,
+  });
+
+  final ValueNotifier<ISpectLogger> logger;
+  final ISpectOptions options;
+  final List<ISpectActionItem> actions;
+  final ISpectViewController controller;
+  final ScrollController? externalScrollController;
+
+  @override
+  State<_SettingsContent> createState() => _SettingsContentState();
+}
+
+class _SettingsContentState extends State<_SettingsContent> {
+  late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController =
+        widget.externalScrollController ?? ScrollController();
     widget.logger.addListener(_handleUpdate);
     widget.controller.addListener(_handleUpdate);
 
@@ -98,7 +115,9 @@ class _ISpectLoggerSettingsBottomSheetState
   void dispose() {
     widget.logger.removeListener(_handleUpdate);
     widget.controller.removeListener(_handleUpdate);
-    _scrollController.dispose();
+    if (widget.externalScrollController == null) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
@@ -208,177 +227,109 @@ class _ISpectLoggerSettingsBottomSheetState
       ),
     ];
 
-    return context.screenSizeMaybeWhen(
-      phone: () => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => _SettingsBody(
-          iSpect: iSpect,
-          settings: settings,
-          scrollController: scrollController,
-          actions: widget.actions,
-          disabledLogTypes: currentSettings.disabledLogTypes,
-          onLogTypeToggled: _onLogTypeToggled,
-          onSelectAll: _onSelectAll,
-          onDeselectAll: _onDeselectAll,
-        ),
-      ),
-      orElse: () => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        backgroundColor: iSpect.theme.background?.resolve(context),
-        content: SizedBox(
-          height: MediaQuery.sizeOf(context).height * 0.7,
-          width: MediaQuery.sizeOf(context).width * 0.8,
-          child: _SettingsBody(
-            iSpect: iSpect,
-            settings: settings,
-            scrollController: _scrollController,
-            actions: widget.actions,
-            disabledLogTypes: currentSettings.disabledLogTypes,
-            onLogTypeToggled: _onLogTypeToggled,
-            onSelectAll: _onSelectAll,
-            onDeselectAll: _onDeselectAll,
+    return Scrollbar(
+      thumbVisibility: true,
+      controller: _scrollController,
+      interactive: true,
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: ISpectBottomSheetHeader(
+                title: context.ispectL10n.settings,
+              ),
+            ),
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16)
+                  .copyWith(bottom: 16, top: 8),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: context.ispectTheme.card?.resolve(context) ??
+                      context.appTheme.cardColor,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(16),
+                  ),
+                  border: Border.fromBorderSide(
+                    BorderSide(
+                      color: iSpect.theme.divider?.resolve(context) ??
+                          context.appTheme.dividerColor,
+                    ),
+                  ),
+                ),
+                child: ISpectColumnBuilder(
+                  itemCount: settings.length,
+                  itemBuilder: (_, index) => Column(
+                    children: [
+                      settings[index],
+                      if (index != settings.length - 1)
+                        Divider(
+                          color: iSpect.theme.divider?.resolve(
+                                context,
+                              ) ??
+                              context.appTheme.dividerColor,
+                          height: 1,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16)
+                  .copyWith(bottom: 16),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: context.ispectTheme.card?.resolve(context) ??
+                      context.appTheme.cardColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(16)),
+                  border: Border.fromBorderSide(
+                    BorderSide(
+                      color: iSpect.theme.divider?.resolve(context) ??
+                          context.appTheme.dividerColor,
+                    ),
+                  ),
+                ),
+                child: ISpectColumnBuilder(
+                  itemCount: widget.actions.length,
+                  itemBuilder: (_, index) {
+                    final action = widget.actions[index];
+                    return _ActionTile(
+                      action: action,
+                      showDivider: index != widget.actions.length - 1,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: LogTypeFilterSection(
+              disabledLogTypes: currentSettings.disabledLogTypes,
+              onLogTypeToggled: _onLogTypeToggled,
+              onSelectAll: _onSelectAll,
+              onDeselectAll: _onDeselectAll,
+            ),
+          ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 32, top: 16),
+              child: _HowToReachMeWidget(),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _SettingsBody extends StatelessWidget {
-  const _SettingsBody({
-    required this.iSpect,
-    required this.settings,
-    required this.scrollController,
-    required this.actions,
-    required this.disabledLogTypes,
-    required this.onLogTypeToggled,
-    required this.onSelectAll,
-    required this.onDeselectAll,
-  });
-
-  final ISpectScopeModel iSpect;
-  final List<Widget> settings;
-  final ScrollController scrollController;
-  final List<ISpectActionItem> actions;
-  final Set<String> disabledLogTypes;
-  final void Function(String logTypeKey, {required bool enabled})
-      onLogTypeToggled;
-  final VoidCallback onSelectAll;
-  final VoidCallback onDeselectAll;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: iSpect.theme.background?.resolve(context) ??
-              context.appTheme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(16),
-          ),
-        ),
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: scrollController,
-          interactive: true,
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: _Header(title: context.ispectL10n.settings),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16, top: 8),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: context.ispectTheme.card?.resolve(context) ??
-                          context.appTheme.cardColor,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(16),
-                      ),
-                      border: Border.fromBorderSide(
-                        BorderSide(
-                          color: iSpect.theme.divider?.resolve(context) ??
-                              context.appTheme.dividerColor,
-                        ),
-                      ),
-                    ),
-                    child: ISpectColumnBuilder(
-                      itemCount: settings.length,
-                      itemBuilder: (_, index) => Column(
-                        children: [
-                          settings[index],
-                          if (index != settings.length - 1)
-                            Divider(
-                              color: iSpect.theme.divider?.resolve(
-                                    context,
-                                  ) ??
-                                  context.appTheme.dividerColor,
-                              height: 1,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16)
-                      .copyWith(bottom: 16),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: context.ispectTheme.card?.resolve(context) ??
-                          context.appTheme.cardColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      border: Border.fromBorderSide(
-                        BorderSide(
-                          color: iSpect.theme.divider?.resolve(context) ??
-                              context.appTheme.dividerColor,
-                        ),
-                      ),
-                    ),
-                    child: ISpectColumnBuilder(
-                      itemCount: actions.length,
-                      itemBuilder: (_, index) {
-                        final action = actions[index];
-                        return _ActionTile(
-                          action: action,
-                          showDivider: index != actions.length - 1,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: LogTypeFilterSection(
-                  disabledLogTypes: disabledLogTypes,
-                  onLogTypeToggled: onLogTypeToggled,
-                  onSelectAll: onSelectAll,
-                  onDeselectAll: onDeselectAll,
-                ),
-              ),
-              const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 32, top: 16),
-                  child: _HowToReachMeWidget(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
 }
 
 class _HowToReachMeWidget extends StatelessWidget {
@@ -402,33 +353,6 @@ class _HowToReachMeWidget extends StatelessWidget {
           ),
         ],
       );
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.appTheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style:
-              theme.textTheme.headlineSmall?.copyWith(color: theme.textColor),
-        ),
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: theme.textColor),
-        ),
-      ],
-    );
-  }
 }
 
 class _ActionTile extends StatelessWidget {
