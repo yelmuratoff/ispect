@@ -27,7 +27,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'تم نسخ جميع السجلات في المخزن المؤقت';
 
   @override
-  String get analyticsLogDesc => 'سجل إرسال الأحداث إلى خدمة التحليلات';
+  String get analyticsLogDesc => 'تم تتبع الحدث وإرساله إلى التحليلات';
 
   @override
   String get apiToken => 'رمز API';
@@ -131,15 +131,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get creatingIssue => 'جارٍ إنشاء المشكلة';
 
   @override
-  String get criticalLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء الحرجة أو الأحداث التي تتطلب اهتمامًا فوريًا';
+  String get criticalLogDesc => 'خطأ حرج يحتاج إلى اهتمام فوري';
 
   @override
   String get data => 'بيانات';
 
   @override
-  String get debugLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات التصحيح لتحليل سلوك التطبيق';
+  String get debugLogDesc => 'تفاصيل تقنية للمطورين لتحليل السلوك';
 
   @override
   String get description => 'الوصف';
@@ -159,8 +157,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'خطأ أثناء مسح الذاكرة المؤقتة';
 
   @override
-  String get errorLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء التي تحدث في التطبيق';
+  String get errorLogDesc => 'حدث خطأ ما في التطبيق';
 
   @override
   String get errorMessage => 'رسالة الخطأ';
@@ -169,8 +166,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorType => 'نوع الخطأ';
 
   @override
-  String get exceptionLogDesc =>
-      'علامة تُستخدم لتسجيل الاستثناءات التي تحدث في التطبيق';
+  String get exceptionLogDesc => 'حدث خطأ غير متوقع';
 
   @override
   String get expandLogs => 'توسيع السجلات';
@@ -197,8 +193,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get goToLogger => 'الذهاب إلى المسجل';
 
   @override
-  String get goodLogDesc =>
-      'علامة تُستخدم لتسجيل العمليات الناجحة أو الأحداث الإيجابية في التطبيق';
+  String get goodLogDesc => 'اكتملت العملية بنجاح';
 
   @override
   String get headers => 'الرؤوس';
@@ -216,8 +211,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'سجل استجابة الخادم';
 
   @override
-  String get infoLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل معلوماتية حول تشغيل التطبيق';
+  String get infoLogDesc => 'معلومات عامة حول ما يحدث';
 
   @override
   String get initializationFailed => 'فشل التهيئة';
@@ -276,7 +270,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'الآن، يرجى اختيار مشروع';
 
   @override
-  String get printLogDesc => 'سجل طريقة الطباعة القياسية في Flutter';
+  String get printLogDesc => 'تم طباعة رسالة في وحدة التحكم';
 
   @override
   String get projectDomain => 'نطاق المشروع';
@@ -327,7 +321,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get selectPriority => 'اختر الأولوية';
 
   @override
-  String get selectSprint => 'اختر السباق';
+  String get selectSprint => 'اختر السبرنت';
 
   @override
   String get selectStatus => 'اختر الحالة';
@@ -531,15 +525,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get userEmail => 'البريد الإلكتروني للمستخدم';
 
   @override
-  String get verboseLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات مفصلة لتحليل التطبيق بعمق';
+  String get verboseLogDesc => 'معلومات تقنية مفصلة لتصحيح الأخطاء';
 
   @override
   String get viewAndManageData => 'عرض وإدارة بيانات التطبيق';
 
   @override
-  String get warningLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل تحذير حول مشكلات محتملة في التطبيق';
+  String get warningLogDesc => 'مشكلة محتملة قد تسبب أعطال';
 
   @override
   String get you => 'أنت';

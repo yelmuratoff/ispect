@@ -27,7 +27,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'すべてのログがバッファにコピーされました';
 
   @override
-  String get analyticsLogDesc => '分析サービスにイベントを送信するログ';
+  String get analyticsLogDesc => 'イベントが追跡され、アナリティクスに送信されました';
 
   @override
   String get apiToken => 'APIトークン';
@@ -117,7 +117,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String counterTimesText(Object number) {
-    return 'このボタンを$number回押しました:';
+    return 'このボタンを$number回押しました';
   }
 
   @override
@@ -130,13 +130,13 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get creatingIssue => '問題を作成中';
 
   @override
-  String get criticalLogDesc => '即時対応が必要な重大なエラーやイベントを記録するために使用されるタグ';
+  String get criticalLogDesc => '即時対応が必要な重大なエラー';
 
   @override
   String get data => 'データ';
 
   @override
-  String get debugLogDesc => 'アプリの動作を分析するためのデバッグ情報を記録するタグ';
+  String get debugLogDesc => '動作分析のための技術的な詳細情報';
 
   @override
   String get description => '説明';
@@ -156,7 +156,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'キャッシュクリア時のエラー';
 
   @override
-  String get errorLogDesc => 'アプリで発生するエラーを記録するために使用されるタグ';
+  String get errorLogDesc => 'アプリで問題が発生しました';
 
   @override
   String get errorMessage => 'エラーメッセージ';
@@ -165,7 +165,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get errorType => 'エラータイプ';
 
   @override
-  String get exceptionLogDesc => 'アプリで発生する例外を記録するために使用されるタグ';
+  String get exceptionLogDesc => '予期しないエラーが発生しました';
 
   @override
   String get expandLogs => 'ログを展開';
@@ -192,7 +192,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get goToLogger => 'ロガーへ移動';
 
   @override
-  String get goodLogDesc => 'アプリでの成功した操作や肯定的なイベントを記録するために使用されるタグ';
+  String get goodLogDesc => '操作が正常に完了しました';
 
   @override
   String get headers => 'ヘッダー';
@@ -210,7 +210,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'サーバーレスポンスログ';
 
   @override
-  String get infoLogDesc => 'アプリの動作に関する情報メッセージを記録するために使用されるタグ';
+  String get infoLogDesc => '現在の動作に関する一般的な情報';
 
   @override
   String get initializationFailed => '初期化に失敗しました';
@@ -268,7 +268,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'プロジェクトを選択してください';
 
   @override
-  String get printLogDesc => 'Flutterの標準印刷メソッドのログ';
+  String get printLogDesc => 'コンソールにメッセージが出力されました';
 
   @override
   String get projectDomain => 'プロジェクトドメイン';
@@ -464,7 +464,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypePrint => '印刷メソッド';
+  String get iSpectifyTypePrint => 'プリントメソッド';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
@@ -523,13 +523,13 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get userEmail => 'ユーザーメール';
 
   @override
-  String get verboseLogDesc => 'アプリの詳細な分析のために詳細情報を記録するタグ';
+  String get verboseLogDesc => 'デバッグのための詳細な技術情報';
 
   @override
   String get viewAndManageData => 'アプリデータの表示と管理';
 
   @override
-  String get warningLogDesc => 'アプリでの潜在的な問題に関する警告メッセージを記録するタグ';
+  String get warningLogDesc => '問題を引き起こす可能性のある潜在的な問題';
 
   @override
   String get you => 'あなた';

@@ -27,7 +27,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get allLogsCopied => '모든 로그가 버퍼에 복사됨';
 
   @override
-  String get analyticsLogDesc => '분석 서비스로 이벤트 전송 로그';
+  String get analyticsLogDesc => '이벤트가 추적되어 분석 서비스로 전송됨';
 
   @override
   String get apiToken => 'API 토큰';
@@ -130,13 +130,13 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get creatingIssue => '문제 생성 중';
 
   @override
-  String get criticalLogDesc => '즉각적인 주의가 필요한 치명적인 오류 또는 이벤트를 기록하는 데 사용되는 태그';
+  String get criticalLogDesc => '즉각적인 주의가 필요한 치명적인 오류';
 
   @override
   String get data => '데이터';
 
   @override
-  String get debugLogDesc => '앱 동작을 분석하기 위해 디버그 정보를 기록하는 데 사용되는 태그';
+  String get debugLogDesc => '동작 분석을 위한 기술적 세부 정보';
 
   @override
   String get description => '설명';
@@ -156,7 +156,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get errorCacheClearing => '캐시 지우기 오류';
 
   @override
-  String get errorLogDesc => '앱에서 발생하는 오류를 기록하는 데 사용되는 태그';
+  String get errorLogDesc => '앱에서 문제가 발생했습니다';
 
   @override
   String get errorMessage => '오류 메시지';
@@ -165,7 +165,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get errorType => '오류 유형';
 
   @override
-  String get exceptionLogDesc => '앱에서 발생하는 예외를 기록하는 데 사용되는 태그';
+  String get exceptionLogDesc => '예기치 않은 오류가 발생했습니다';
 
   @override
   String get expandLogs => '로그 펼치기';
@@ -192,7 +192,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get goToLogger => '로거로 이동';
 
   @override
-  String get goodLogDesc => '앱에서 성공적인 작업 또는 긍정적인 이벤트를 기록하는 데 사용되는 태그';
+  String get goodLogDesc => '작업이 성공적으로 완료되었습니다';
 
   @override
   String get headers => '헤더';
@@ -210,7 +210,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => '서버 응답 로그';
 
   @override
-  String get infoLogDesc => '앱 작동에 대한 정보 메시지를 기록하는 데 사용되는 태그';
+  String get infoLogDesc => '현재 진행 상황에 대한 일반 정보';
 
   @override
   String get initializationFailed => '초기화 실패';
@@ -268,7 +268,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => '이제 프로젝트를 선택해 주세요';
 
   @override
-  String get printLogDesc => 'Flutter의 표준 출력 메서드 로그';
+  String get printLogDesc => '콘솔에 메시지가 출력됨';
 
   @override
   String get projectDomain => '프로젝트 도메인';
@@ -523,13 +523,13 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get userEmail => '사용자 이메일';
 
   @override
-  String get verboseLogDesc => '앱을 심층적으로 분석하기 위해 자세한 정보를 기록하는 데 사용되는 태그';
+  String get verboseLogDesc => '디버깅을 위한 상세한 기술 정보';
 
   @override
   String get viewAndManageData => '앱 데이터 보기 및 관리';
 
   @override
-  String get warningLogDesc => '앱에서 잠재적인 문제에 대한 경고 메시지를 기록하는 데 사용되는 태그';
+  String get warningLogDesc => '문제를 일으킬 수 있는 잠재적 이슈';
 
   @override
   String get you => '당신';

@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Alle Protokolle in den Puffer kopiert';
 
   @override
-  String get analyticsLogDesc =>
-      'Das Protokoll des Sendens von Ereignissen an den Analysedienst';
+  String get analyticsLogDesc => 'Ereignis erfasst und an die Analyse gesendet';
 
   @override
   String get apiToken => 'API-Token';
@@ -138,14 +137,14 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Ein Tag, das zum Protokollieren kritischer Fehler oder Ereignisse verwendet wird, die sofortige Aufmerksamkeit erfordern';
+      'Kritischer Fehler, der sofortige Aufmerksamkeit erfordert';
 
   @override
   String get data => 'Daten';
 
   @override
   String get debugLogDesc =>
-      'Ein Tag, das zum Protokollieren von Debug-Informationen verwendet wird, um das Verhalten der Anwendung zu analysieren';
+      'Technische Details für Entwickler zur Verhaltensanalyse';
 
   @override
   String get description => 'Beschreibung';
@@ -165,8 +164,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Fehler beim Leeren des Caches';
 
   @override
-  String get errorLogDesc =>
-      'Ein Tag, das zum Protokollieren von Fehlern verwendet wird, die in der Anwendung auftreten';
+  String get errorLogDesc => 'Etwas ist in der App schiefgelaufen';
 
   @override
   String get errorMessage => 'Fehlermeldung';
@@ -175,8 +173,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get errorType => 'Fehlertyp';
 
   @override
-  String get exceptionLogDesc =>
-      'Ein Tag, das zum Protokollieren von Ausnahmen verwendet wird, die in der Anwendung auftreten';
+  String get exceptionLogDesc => 'Unerwarteter Fehler aufgetreten';
 
   @override
   String get expandLogs => 'Protokolle ausklappen';
@@ -203,8 +200,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get goToLogger => 'Zum Logger gehen';
 
   @override
-  String get goodLogDesc =>
-      'Ein Tag, das zum Protokollieren erfolgreicher Operationen oder positiver Ereignisse in der Anwendung verwendet wird';
+  String get goodLogDesc => 'Vorgang erfolgreich abgeschlossen';
 
   @override
   String get headers => 'Header';
@@ -223,7 +219,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get infoLogDesc =>
-      'Ein Tag, das zum Protokollieren informativer Nachrichten über den Betrieb der Anwendung verwendet wird';
+      'Allgemeine Informationen über das aktuelle Geschehen';
 
   @override
   String get initializationFailed => 'Initialisierung fehlgeschlagen';
@@ -284,8 +280,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
       'Bitte wählen Sie jetzt ein Projekt aus';
 
   @override
-  String get printLogDesc =>
-      'Das Protokoll der standardmäßigen Druckmethode in Flutter';
+  String get printLogDesc => 'Nachricht in die Konsole ausgegeben';
 
   @override
   String get projectDomain => 'Projektdomäne';
@@ -543,14 +538,14 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get verboseLogDesc =>
-      'Ein Tag, das zum Protokollieren detaillierter Informationen für eine tiefgehende Analyse der Anwendung verwendet wird';
+      'Detaillierte technische Informationen zur Fehlersuche';
 
   @override
   String get viewAndManageData => 'Anzeigen und Verwalten von Anwendungsdaten';
 
   @override
   String get warningLogDesc =>
-      'Ein Tag, das zum Protokollieren von Warnmeldungen über potenzielle Probleme in der Anwendung verwendet wird';
+      'Potenzielles Problem, das Fehler verursachen könnte';
 
   @override
   String get you => 'Sie';

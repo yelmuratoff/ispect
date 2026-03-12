@@ -27,7 +27,8 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'सभी लॉग बफर में कॉपी कर लिए गए';
 
   @override
-  String get analyticsLogDesc => 'विश्लेषण सेवा को ईवेंट भेजने का लॉग';
+  String get analyticsLogDesc =>
+      'इवेंट ट्रैक किया गया और एनालिटिक्स को भेजा गया';
 
   @override
   String get apiToken => 'API टोकन';
@@ -132,14 +133,14 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'तत्काल ध्यान देने योग्य गंभीर त्रुटियों या घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+      'गंभीर त्रुटि जिस पर तत्काल ध्यान देने की आवश्यकता है';
 
   @override
   String get data => 'डेटा';
 
   @override
   String get debugLogDesc =>
-      'ऐप के व्यवहार का विश्लेषण करने के लिए डिबग जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
+      'डेवलपर्स के लिए व्यवहार विश्लेषण हेतु तकनीकी विवरण';
 
   @override
   String get description => 'विवरण';
@@ -159,8 +160,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'कैश साफ करने में त्रुटि';
 
   @override
-  String get errorLogDesc =>
-      'ऐप में होने वाली त्रुटियों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get errorLogDesc => 'ऐप में कुछ गलत हो गया';
 
   @override
   String get errorMessage => 'त्रुटि संदेश';
@@ -169,8 +169,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get errorType => 'त्रुटि प्रकार';
 
   @override
-  String get exceptionLogDesc =>
-      'ऐप में होने वाली अपवादों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get exceptionLogDesc => 'अप्रत्याशित त्रुटि हुई';
 
   @override
   String get expandLogs => 'लॉग विस्तार करें';
@@ -197,8 +196,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get goToLogger => 'लॉगर पर जाएँ';
 
   @override
-  String get goodLogDesc =>
-      'ऐप में सफल संचालन या सकारात्मक घटनाओं को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get goodLogDesc => 'ऑपरेशन सफलतापूर्वक पूरा हुआ';
 
   @override
   String get headers => 'हेडर';
@@ -216,8 +214,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'सर्वर प्रतिक्रिया लॉग';
 
   @override
-  String get infoLogDesc =>
-      'ऐप के संचालन के बारे में सूचनात्मक संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get infoLogDesc => 'क्या हो रहा है इसके बारे में सामान्य जानकारी';
 
   @override
   String get initializationFailed => 'प्रारंभिकरण विफल';
@@ -277,7 +274,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'अब, कृपया एक प्रोजेक्ट चुनें';
 
   @override
-  String get printLogDesc => 'Flutter में मानक प्रिंट विधि का लॉग';
+  String get printLogDesc => 'कंसोल में संदेश प्रिंट किया गया';
 
   @override
   String get projectDomain => 'प्रोजेक्ट डोमेन';
@@ -533,15 +530,13 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get userEmail => 'उपयोगकर्ता ईमेल';
 
   @override
-  String get verboseLogDesc =>
-      'ऐप के गहन विश्लेषण के लिए विस्तृत जानकारी लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get verboseLogDesc => 'डीबगिंग के लिए विस्तृत तकनीकी जानकारी';
 
   @override
   String get viewAndManageData => 'ऐप डेटा देखना और प्रबंधन करना';
 
   @override
-  String get warningLogDesc =>
-      'ऐप में संभावित समस्याओं के बारे में चेतावनी संदेशों को लॉग करने के लिए उपयोग किया जाने वाला टैग';
+  String get warningLogDesc => 'संभावित समस्या जो परेशानी का कारण बन सकती है';
 
   @override
   String get you => 'आप';
