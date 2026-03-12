@@ -49,15 +49,15 @@
 
 Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPECT_ENABLED` is not defined, the entire toolkit compiles to no-ops and is eliminated by Dart's tree-shaker. Zero bytes in production.
 
-| Capability | What it does |
-|---|---|
-| **Zero-footprint builds** | Compile-time `const` guard removes all code from release APK/IPA |
-| **Visual inspector** | Tap any widget to see its render box, padding, constraints, and color |
-| **Structured logs** | Typed log entries with levels, filtering, export/import, and session history |
-| **Network capture** | Request/response inspection for Dio, http, and WebSocket clients |
-| **Automatic redaction** | Tokens, passwords, PII, and credit cards masked before they reach logs |
-| **Observer hooks** | Forward log events to Sentry, Crashlytics, or any backend in real-time |
-| **12 languages** | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi |
+| Capability                | What it does                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| **Zero-footprint builds** | Compile-time `const` guard removes all code from release APK/IPA             |
+| **Visual inspector**      | Tap any widget to see its render box, padding, constraints, and color        |
+| **Structured logs**       | Typed log entries with levels, filtering, export/import, and session history |
+| **Network capture**       | Request/response inspection for Dio, http, and WebSocket clients             |
+| **Automatic redaction**   | Tokens, passwords, PII, and credit cards masked before they reach logs       |
+| **Observer hooks**        | Forward log events to Sentry, Crashlytics, or any backend in real-time       |
+| **12 languages**          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                               |
 
 ---
 
@@ -111,11 +111,11 @@ Debug tools can expose API keys, tokens, and user data. ISpect solves this at th
 flutter build apk --release --obfuscate --split-debug-info=debug-info/
 ```
 
-| Build | APK Size | "ispect" strings |
-|-------|----------|------------------|
-| Obfuscated release | 42.4 MB | **6** |
-| Non-obfuscated release | 44.5 MB | 34 |
-| Development | 51.0 MB | 276 |
+| Build                  | APK Size | "ispect" strings |
+| ---------------------- | -------- | ---------------- |
+| Obfuscated release     | 42.4 MB  | **6**            |
+| Non-obfuscated release | 44.5 MB  | 34               |
+| Development            | 51.0 MB  | 276              |
 
 For environment-based control:
 
@@ -292,13 +292,13 @@ Install only what your project needs. Each package works independently.
 
 ```yaml
 dependencies:
-  ispect: ^4.7.4            # Core UI, inspector, log viewer
-  ispectify: ^4.7.4          # Logging backbone (Dart-only, no Flutter)
-  ispectify_dio: ^4.7.4      # Dio HTTP interceptor
-  ispectify_http: ^4.7.4     # http package interceptor
-  ispectify_ws: ^4.7.4       # WebSocket traffic capture
-  ispectify_db: ^4.7.4       # Database operation tracking
-  ispectify_bloc: ^4.7.4     # BLoC event/state observer
+  ispect: ^4.7.4 # Core UI, inspector, log viewer
+  ispectify: ^4.7.4 # Logging backbone (Dart-only, no Flutter)
+  ispectify_dio: ^4.7.4 # Dio HTTP interceptor
+  ispectify_http: ^4.7.4 # http package interceptor
+  ispectify_ws: ^4.7.4 # WebSocket traffic capture
+  ispectify_db: ^4.7.4 # Database operation tracking
+  ispectify_bloc: ^4.7.4 # BLoC event/state observer
 ```
 
 ### Dio
