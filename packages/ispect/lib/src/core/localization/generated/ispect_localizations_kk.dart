@@ -25,7 +25,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
 
   @override
-  String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
+  String get allLogsCopied => 'Барлық логтар алмасу буферіне көшірілді';
 
   @override
   String get analyticsLogDesc => 'Оқиға қадағаланды және аналитикаға жіберілді';
@@ -116,7 +116,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copy => 'Көшіру';
 
   @override
-  String get copyAllLogs => 'Барлық жазбаларды көшіру';
+  String get copyAllLogs => 'Барлық логтарды көшіру';
 
   @override
   String counterTimesText(Object number) {
@@ -127,21 +127,19 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get createIssue => 'Мәселені құру';
 
   @override
-  String get createJiraIssue => 'Jira Issue істеу';
+  String get createJiraIssue => 'Jira мәселесін құру';
 
   @override
   String get creatingIssue => 'Мәселе құрылуда';
 
   @override
-  String get criticalLogDesc =>
-      'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
+  String get criticalLogDesc => 'Шұғыл назар аударуды қажет ететін сыни қате';
 
   @override
   String get data => 'Деректер';
 
   @override
-  String get debugLogDesc =>
-      'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
+  String get debugLogDesc => 'Әрекетті талдау үшін техникалық мәліметтер';
 
   @override
   String get description => 'Сипаттама';
@@ -161,8 +159,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Кэш тазарту қатесі';
 
   @override
-  String get errorLogDesc =>
-      'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
+  String get errorLogDesc => 'Қолданбада бірдеңе дұрыс болмады';
 
   @override
   String get errorMessage => 'Қате туралы хабар';
@@ -171,8 +168,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorType => 'Қате түрі';
 
   @override
-  String get exceptionLogDesc =>
-      'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
+  String get exceptionLogDesc => 'Күтпеген қате орын алды';
 
   @override
   String get expandLogs => 'Журналды ашу';
@@ -193,14 +189,13 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get fullURL => 'Толық сілтеме';
 
   @override
-  String get generateReport => 'AI eсеп жасау';
+  String get generateReport => 'Есеп жасау';
 
   @override
   String get goToLogger => 'Журналға өту';
 
   @override
-  String get goodLogDesc =>
-      'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
+  String get goodLogDesc => 'Операция сәтті аяқталды';
 
   @override
   String get headers => 'Headers';
@@ -219,8 +214,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
-  String get infoLogDesc =>
-      'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
+  String get infoLogDesc => 'Не болып жатқаны туралы жалпы ақпарат';
 
   @override
   String get initializationFailed => 'Бастапқы жүктеу қатесі';
@@ -233,7 +227,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
 
   @override
-  String get logItemCopied => 'Жазба алмасу буферіне көшірілді';
+  String get logItemCopied => 'Лог алмасу буферіне көшірілді';
 
   @override
   String get login => 'Кіру';
@@ -270,7 +264,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pickedImages => 'Таңдалған суреттер';
 
   @override
-  String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
+  String get pleaseAuthToJira => 'Jira-да авторизациядан өтіңіз';
 
   @override
   String get pleaseCheckAuthCred =>
@@ -280,7 +274,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'Енді жобаны таңдаңыз';
 
   @override
-  String get printLogDesc => 'Flutter стандартты print методоның журналы';
+  String get printLogDesc => 'Хабарлама консольге шығарылды';
 
   @override
   String get projectDomain => 'Жоба домені';
@@ -346,7 +340,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get share => 'Бөлісу';
 
   @override
-  String get shareLogsFile => 'Журнал файлын бөлісу';
+  String get shareLogsFile => 'Лог файлын бөлісу';
 
   @override
   String get statusCode => 'Статус коды';
@@ -536,15 +530,13 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get userEmail => 'Электрондық пошта';
 
   @override
-  String get verboseLogDesc =>
-      'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
+  String get verboseLogDesc => 'Жөндеу үшін егжей-тегжейлі техникалық ақпарат';
 
   @override
   String get viewAndManageData => 'Қолданба мәліметтерін қарау және басқару';
 
   @override
-  String get warningLogDesc =>
-      'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
+  String get warningLogDesc => 'Мәселелер тудыруы мүмкін ықтимал проблема';
 
   @override
   String get you => 'Сіз';
@@ -642,14 +634,14 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get onlyTxtAndJsonSupported =>
-      'Тек .txt және .json файлдары қолдау табады (ең көп 10 МБ)';
+      'Тек .txt және .json файлдарына қолдау көрсетіледі (ең көп 10 МБ)';
 
   @override
   String get and => 'және';
 
   @override
   String onlyExtensionsSupported(Object extensions, Object max) {
-    return 'Тек $extensions файлдары қолдау табады (ең көп $max)';
+    return 'Тек $extensions файлдарына қолдау көрсетіледі (ең көп $max)';
   }
 
   @override

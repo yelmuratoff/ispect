@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Привет! Чем я могу вам помочь?';
 
   @override
-  String get allLogsCopied => 'Все записи скопированы в буфер обмена';
+  String get allLogsCopied => 'Все логи скопированы в буфер обмена';
 
   @override
   String get analyticsLogDesc => 'Событие отслежено и отправлено в аналитику';
@@ -104,7 +104,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get clearCache => 'Очистить кэш';
 
   @override
-  String get collapseLogs => 'Свернуть журнал';
+  String get collapseLogs => 'Свернуть логи';
 
   @override
   String get common => 'Общие';
@@ -116,7 +116,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get copy => 'Скопировать';
 
   @override
-  String get copyAllLogs => 'Копировать все записи';
+  String get copyAllLogs => 'Скопировать все логи';
 
   @override
   String counterTimesText(Object number) {
@@ -134,7 +134,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Критическая ошибка требующая немедленного внимания';
+      'Критическая ошибка, требующая немедленного внимания';
 
   @override
   String get data => 'Данные';
@@ -173,7 +173,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get exceptionLogDesc => 'Произошла неожиданная ошибка';
 
   @override
-  String get expandLogs => 'Развернуть журнал';
+  String get expandLogs => 'Развернуть логи';
 
   @override
   String get feedbackDescriptionText => 'Опишите проблему';
@@ -191,10 +191,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get fullURL => 'Полная ссылка';
 
   @override
-  String get generateReport => 'Генерация отчёта';
+  String get generateReport => 'Сгенерировать отчёт';
 
   @override
-  String get goToLogger => 'Перейти к журналу';
+  String get goToLogger => 'Перейти к логам';
 
   @override
   String get goodLogDesc => 'Операция завершена успешно';
@@ -228,7 +228,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
-  String get logItemCopied => 'Запись скопирована в буфер обмена';
+  String get logItemCopied => 'Лог скопирован в буфер обмена';
 
   @override
   String get login => 'Вход';
@@ -237,7 +237,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get logout => 'Выйти';
 
   @override
-  String get logsCount => 'Количество записей';
+  String get logsCount => 'Количество логов';
 
   @override
   String get method => 'Метод';
@@ -284,13 +284,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get projectWasSelected => 'Проект выбран';
 
   @override
-  String get requestHeaders => 'Headers запроса';
+  String get requestHeaders => 'Заголовки запроса';
 
   @override
   String get retry => 'Повторить';
 
   @override
-  String get reverseLogs => 'Обратный порядок журнала';
+  String get reverseLogs => 'Обратный порядок логов';
 
   @override
   String get riverpodAddLogDesc => 'Провайдер данных создан';
@@ -341,13 +341,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get share => 'Поделиться';
 
   @override
-  String get shareLogsFile => 'Поделиться файлом журнала';
+  String get shareLogsFile => 'Поделиться файлом логов';
 
   @override
   String get statusCode => 'Код статуса';
 
   @override
-  String get statusMessage => 'Cтатус';
+  String get statusMessage => 'Статус';
 
   @override
   String get submitButtonText => 'Отправить';
@@ -417,7 +417,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypeAnalytics => 'Метод логирования ивента';
+  String get iSpectifyTypeAnalytics => 'Метод логирования событий';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
@@ -471,7 +471,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypePrint => 'Print метод';
+  String get iSpectifyTypePrint => 'Метод print';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
@@ -538,7 +538,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc =>
-      'Потенциальная проблема которая может вызвать сбои';
+      'Потенциальная проблема, которая может вызвать сбои';
 
   @override
   String get you => 'Вы';
@@ -573,13 +573,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Переключить отслеживание производительности';
 
   @override
-  String get openLogViewer => 'Открыть просмотрщик логов';
+  String get openLogViewer => 'Открыть просмотр логов';
 
   @override
   String get backToMainScreen => 'Вернуться на главный экран';
 
   @override
-  String get navigationFlow => 'Flow навигации';
+  String get navigationFlow => 'Поток навигации';
 
   @override
   String get noNavigationTransitions => 'Переходы навигации не зафиксированы';
@@ -597,7 +597,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get dailySessions => 'Ежедневные сессии';
 
   @override
-  String get logViewer => 'Просмотрщик логов';
+  String get logViewer => 'Просмотр логов';
 
   @override
   String get sessions => 'Сессии';

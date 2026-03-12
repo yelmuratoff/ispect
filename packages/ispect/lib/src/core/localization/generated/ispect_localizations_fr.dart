@@ -24,11 +24,10 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Bonjour ! Comment puis-je vous aider ?';
 
   @override
-  String get allLogsCopied => 'Tous les journaux copiés dans le tampon';
+  String get allLogsCopied => 'Tous les journaux copiés dans le presse-papiers';
 
   @override
-  String get analyticsLogDesc =>
-      'Le journal d\'envoi d\'événements au service d\'analyse';
+  String get analyticsLogDesc => 'Événement suivi et envoyé à l\'analyse';
 
   @override
   String get apiToken => 'Jeton API';
@@ -138,14 +137,14 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Étiquette utilisée pour enregistrer les erreurs critiques ou les événements nécessitant une attention immédiate';
+      'Erreur critique nécessitant une attention immédiate';
 
   @override
   String get data => 'Données';
 
   @override
   String get debugLogDesc =>
-      'Étiquette utilisée pour enregistrer des informations de débogage afin d\'analyser le comportement de l\'application';
+      'Détails techniques pour les développeurs pour analyser le comportement';
 
   @override
   String get description => 'Description';
@@ -166,7 +165,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get errorLogDesc =>
-      'Étiquette utilisée pour enregistrer les erreurs survenant dans l\'application';
+      'Quelque chose s\'est mal passé dans l\'application';
 
   @override
   String get errorMessage => 'Message d\'erreur';
@@ -175,8 +174,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get errorType => 'Type d\'erreur';
 
   @override
-  String get exceptionLogDesc =>
-      'Étiquette utilisée pour enregistrer les exceptions survenant dans l\'application';
+  String get exceptionLogDesc => 'Erreur inattendue survenue';
 
   @override
   String get expandLogs => 'Développer les journaux';
@@ -203,8 +201,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get goToLogger => 'Aller au journaliseur';
 
   @override
-  String get goodLogDesc =>
-      'Étiquette utilisée pour enregistrer les opérations réussies ou les événements positifs dans l\'application';
+  String get goodLogDesc => 'Opération terminée avec succès';
 
   @override
   String get headers => 'En-têtes';
@@ -222,8 +219,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Journal des réponses du serveur';
 
   @override
-  String get infoLogDesc =>
-      'Étiquette utilisée pour enregistrer des messages informatifs sur le fonctionnement de l\'application';
+  String get infoLogDesc => 'Informations générales sur ce qui se passe';
 
   @override
   String get initializationFailed => 'Échec de l\'initialisation';
@@ -284,8 +280,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
       'Maintenant, veuillez sélectionner un projet';
 
   @override
-  String get printLogDesc =>
-      'Journal de la méthode d\'impression standard dans Flutter';
+  String get printLogDesc => 'Message affiché dans la console';
 
   @override
   String get projectDomain => 'Domaine du projet';
@@ -543,7 +538,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get verboseLogDesc =>
-      'Étiquette utilisée pour enregistrer des informations détaillées pour une analyse approfondie de l\'application';
+      'Informations techniques détaillées pour le débogage';
 
   @override
   String get viewAndManageData =>
@@ -551,7 +546,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc =>
-      'Étiquette utilisée pour enregistrer des messages d\'avertissement sur des problèmes potentiels dans l\'application';
+      'Problème potentiel pouvant causer des dysfonctionnements';
 
   @override
   String get you => 'Vous';

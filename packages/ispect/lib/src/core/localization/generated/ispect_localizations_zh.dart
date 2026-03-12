@@ -24,10 +24,10 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '你好！我能帮你什么？';
 
   @override
-  String get allLogsCopied => '所有日志已复制到缓冲区';
+  String get allLogsCopied => '所有日志已复制到剪贴板';
 
   @override
-  String get analyticsLogDesc => '发送事件到分析服务的日志';
+  String get analyticsLogDesc => '事件已追踪并发送至分析服务';
 
   @override
   String get apiToken => 'API 令牌';
@@ -130,13 +130,13 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get creatingIssue => '正在创建问题';
 
   @override
-  String get criticalLogDesc => '用于记录需要立即关注的关键错误或事件的日志标签';
+  String get criticalLogDesc => '需要立即关注的严重错误';
 
   @override
   String get data => '数据';
 
   @override
-  String get debugLogDesc => '用于记录调试信息以分析应用程序行为的日志标签';
+  String get debugLogDesc => '供开发者分析行为的技术细节';
 
   @override
   String get description => '描述';
@@ -156,7 +156,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get errorCacheClearing => '清除缓存时出错';
 
   @override
-  String get errorLogDesc => '用于记录应用程序中发生的错误的日志标签';
+  String get errorLogDesc => '应用中出现了问题';
 
   @override
   String get errorMessage => '错误消息';
@@ -165,7 +165,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get errorType => '错误类型';
 
   @override
-  String get exceptionLogDesc => '用于记录应用程序异常的日志标签';
+  String get exceptionLogDesc => '发生了意外错误';
 
   @override
   String get expandLogs => '展开日志';
@@ -192,7 +192,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get goToLogger => '转到日志记录器';
 
   @override
-  String get goodLogDesc => '用于记录成功操作或应用中的正面事件的日志标签';
+  String get goodLogDesc => '操作成功完成';
 
   @override
   String get headers => '请求头';
@@ -210,7 +210,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => '服务器响应日志';
 
   @override
-  String get infoLogDesc => '用于记录应用程序运行信息的日志标签';
+  String get infoLogDesc => '关于当前运行状况的一般信息';
 
   @override
   String get initializationFailed => '初始化失败';
@@ -268,7 +268,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => '现在，请选择一个项目';
 
   @override
-  String get printLogDesc => 'Flutter 标准 print 方法的日志';
+  String get printLogDesc => '消息已输出到控制台';
 
   @override
   String get projectDomain => '项目域';
@@ -523,13 +523,13 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get userEmail => '用户邮箱';
 
   @override
-  String get verboseLogDesc => '用于记录详细信息以进行深入分析的日志标签';
+  String get verboseLogDesc => '用于调试的详细技术信息';
 
   @override
   String get viewAndManageData => '查看和管理应用程序数据';
 
   @override
-  String get warningLogDesc => '用于记录潜在问题的警告消息的日志标签';
+  String get warningLogDesc => '可能导致问题的潜在隐患';
 
   @override
   String get you => '你';
