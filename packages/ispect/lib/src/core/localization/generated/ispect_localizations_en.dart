@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Hello! How can I help you?';
 
   @override
-  String get allLogsCopied => 'All logs copied in buffer';
+  String get allLogsCopied => 'All logs copied to buffer';
 
   @override
   String get analyticsLogDesc => 'Event tracked and sent to analytics';
@@ -97,7 +97,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get changeTheme => 'Change theme';
 
   @override
-  String get clearHistory => 'Clean history';
+  String get clearHistory => 'Clear history';
 
   @override
   String get clearCache => 'Clear cache';
@@ -152,7 +152,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String environmentTapNumber(Object number) {
-    return 'To open the dialog, it remains: $number';
+    return 'Taps remaining to open dialog: $number';
   }
 
   @override
@@ -251,7 +251,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       'Other logs are already being used by developers';
 
   @override
-  String get pageNotFound => 'Oops, the page on this path';
+  String get pageNotFound => 'Oops, the page on this path was not found';
 
   @override
   String get path => 'Path';

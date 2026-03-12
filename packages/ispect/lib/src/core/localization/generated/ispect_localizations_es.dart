@@ -27,8 +27,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get allLogsCopied => 'Todos los registros copiados en el búfer';
 
   @override
-  String get analyticsLogDesc =>
-      'El registro de envío de eventos al servicio de análisis';
+  String get analyticsLogDesc => 'Evento rastreado y enviado a análisis';
 
   @override
   String get apiToken => 'Token de API';
@@ -135,15 +134,14 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Creando problema';
 
   @override
-  String get criticalLogDesc =>
-      'Etiqueta usada para registrar errores críticos o eventos que requieren atención inmediata';
+  String get criticalLogDesc => 'Error crítico que necesita atención inmediata';
 
   @override
   String get data => 'Datos';
 
   @override
   String get debugLogDesc =>
-      'Etiqueta usada para registrar información de depuración para analizar el comportamiento de la aplicación';
+      'Detalles técnicos para que los desarrolladores analicen el comportamiento';
 
   @override
   String get description => 'Descripción';
@@ -163,8 +161,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Error al borrar el caché';
 
   @override
-  String get errorLogDesc =>
-      'Etiqueta usada para registrar errores que ocurren en la aplicación';
+  String get errorLogDesc => 'Algo salió mal en la aplicación';
 
   @override
   String get errorMessage => 'Mensaje de error';
@@ -173,8 +170,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get errorType => 'Tipo de error';
 
   @override
-  String get exceptionLogDesc =>
-      'Etiqueta usada para registrar excepciones que ocurren en la aplicación';
+  String get exceptionLogDesc => 'Error inesperado ocurrido';
 
   @override
   String get expandLogs => 'Expandir registros';
@@ -201,8 +197,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get goToLogger => 'Ir al registrador';
 
   @override
-  String get goodLogDesc =>
-      'Etiqueta usada para registrar operaciones exitosas o eventos positivos en la aplicación';
+  String get goodLogDesc => 'Operación completada con éxito';
 
   @override
   String get headers => 'Encabezados';
@@ -220,8 +215,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Registro de respuesta del servidor';
 
   @override
-  String get infoLogDesc =>
-      'Etiqueta usada para registrar mensajes informativos sobre el funcionamiento de la aplicación';
+  String get infoLogDesc => 'Información general sobre lo que está sucediendo';
 
   @override
   String get initializationFailed => 'Falló la inicialización';
@@ -282,8 +276,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
       'Ahora, por favor, selecciona un proyecto';
 
   @override
-  String get printLogDesc =>
-      'Registro del método de impresión estándar en Flutter';
+  String get printLogDesc => 'Mensaje impreso en la consola';
 
   @override
   String get projectDomain => 'Dominio del proyecto';
@@ -539,16 +532,14 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get userEmail => 'Correo del usuario';
 
   @override
-  String get verboseLogDesc =>
-      'Etiqueta usada para registrar información detallada para un análisis profundo de la aplicación';
+  String get verboseLogDesc => 'Información técnica detallada para depuración';
 
   @override
   String get viewAndManageData =>
       'Visualización y gestión de datos de la aplicación';
 
   @override
-  String get warningLogDesc =>
-      'Etiqueta usada para registrar mensajes de advertencia sobre posibles problemas en la aplicación';
+  String get warningLogDesc => 'Problema potencial que podría causar fallos';
 
   @override
   String get you => 'Tú';

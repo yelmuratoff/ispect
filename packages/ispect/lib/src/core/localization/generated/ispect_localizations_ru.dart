@@ -134,7 +134,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Критическая ошибка требующая немедленного внимания';
+      'Критическая ошибка, требующая немедленного внимания';
 
   @override
   String get data => 'Данные';
@@ -191,7 +191,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get fullURL => 'Полная ссылка';
 
   @override
-  String get generateReport => 'Генерация отчёта';
+  String get generateReport => 'Сгенерировать отчёт';
 
   @override
   String get goToLogger => 'Перейти к журналу';
@@ -284,7 +284,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get projectWasSelected => 'Проект выбран';
 
   @override
-  String get requestHeaders => 'Headers запроса';
+  String get requestHeaders => 'Заголовки запроса';
 
   @override
   String get retry => 'Повторить';
@@ -347,7 +347,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get statusCode => 'Код статуса';
 
   @override
-  String get statusMessage => 'Cтатус';
+  String get statusMessage => 'Статус';
 
   @override
   String get submitButtonText => 'Отправить';
@@ -417,7 +417,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypeAnalytics => 'Метод логирования ивента';
+  String get iSpectifyTypeAnalytics => 'Метод логирования событий';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
@@ -471,7 +471,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypePrint => 'Print метод';
+  String get iSpectifyTypePrint => 'Метод print';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
@@ -538,7 +538,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc =>
-      'Потенциальная проблема которая может вызвать сбои';
+      'Потенциальная проблема, которая может вызвать сбои';
 
   @override
   String get you => 'Вы';
@@ -573,13 +573,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Переключить отслеживание производительности';
 
   @override
-  String get openLogViewer => 'Открыть просмотрщик логов';
+  String get openLogViewer => 'Открыть просмотр логов';
 
   @override
   String get backToMainScreen => 'Вернуться на главный экран';
 
   @override
-  String get navigationFlow => 'Flow навигации';
+  String get navigationFlow => 'Поток навигации';
 
   @override
   String get noNavigationTransitions => 'Переходы навигации не зафиксированы';
@@ -597,7 +597,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get dailySessions => 'Ежедневные сессии';
 
   @override
-  String get logViewer => 'Просмотрщик логов';
+  String get logViewer => 'Просмотр логов';
 
   @override
   String get sessions => 'Сессии';
