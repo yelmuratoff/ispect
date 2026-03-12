@@ -48,6 +48,7 @@ void copyClipboard(
       showValue: showValue,
     );
   }).catchError((_) {
-    // Clipboard write failed silently — don't show success toast.
+    if (!context.mounted) return;
+    ISpectToaster.showErrorToast(context, title: 'Failed to copy to clipboard');
   });
 }

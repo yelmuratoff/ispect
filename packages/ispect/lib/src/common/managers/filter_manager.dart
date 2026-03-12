@@ -35,7 +35,7 @@ class FilterManager {
   // Cache for title extraction
   List<String>? _cachedAllTitles;
   List<String>? _cachedUniqueTitles;
-  int? _lastTitlesDataHash;
+  int _lastTitlesGeneration = -1;
 
   ISpectFilter get filter => _filter;
 
@@ -118,9 +118,7 @@ class FilterManager {
   }
 
   TitlesResult getTitles(List<ISpectLogData> logsData) {
-    final currentLength = logsData.length;
-
-    if (_lastTitlesDataHash == currentLength &&
+    if (_lastTitlesGeneration == _dataGeneration &&
         _cachedAllTitles != null &&
         _cachedUniqueTitles != null) {
       return (all: _cachedAllTitles!, unique: _cachedUniqueTitles!);
@@ -140,7 +138,7 @@ class FilterManager {
 
     _cachedAllTitles = allTitles;
     _cachedUniqueTitles = uniqueTitles;
-    _lastTitlesDataHash = currentLength;
+    _lastTitlesGeneration = _dataGeneration;
 
     return (all: allTitles, unique: uniqueTitles);
   }

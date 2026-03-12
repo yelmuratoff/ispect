@@ -104,23 +104,20 @@ class InspectorUtils {
   /// - Usage: Used to get widget element during inspection for accessing widget properties
   /// - Edge case: Returns null if RenderBox has no associated Element or is disposed
   static Element? getElementFromRenderBox(RenderBox renderBox) {
-    // Fallback: traverse the element tree to find matching render object
     Element? result;
 
     void visitor(Element element) {
-      // Check if this element's render object matches our target
+      if (result != null) return;
+
       if (element.renderObject == renderBox) {
         result = element;
         return;
       }
 
-      // Continue traversing children if no match found
       element.visitChildren(visitor);
     }
 
-    // Start traversal from the root element if we can find it
-    final binding = WidgetsBinding.instance;
-    final rootElement = binding.rootElement;
+    final rootElement = WidgetsBinding.instance.rootElement;
     if (rootElement != null) {
       visitor(rootElement);
     }
