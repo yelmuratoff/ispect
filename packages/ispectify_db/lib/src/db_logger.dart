@@ -11,6 +11,11 @@ final class ISpectDbCore {
   static ISpectDbConfig config = const ISpectDbConfig();
   static final Random _rng = Random();
 
+  static final RegExp _singleQuoteRe = RegExp(r"'[^']*'");
+  static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
+  static final RegExp _digitRe = RegExp(r'\b\d+\b');
+  static final RegExp _whitespaceRe = RegExp(r'\s+');
+
   static bool _samplePass(double? localSample) {
     final s = localSample ?? config.sampleRate;
     if (s == null) return true;
@@ -22,20 +27,22 @@ final class ISpectDbCore {
   static String genId() {
     final now = DateTime.now().microsecondsSinceEpoch;
     final r = _rng.nextInt(0x7fffffff);
-    return ((now & 0xffffffff) ^ r).toRadixString(16) +
-        _rng.nextInt(0xffffff).toRadixString(16).padLeft(6, '0');
+
+    return (now & 0xffffffff).toRadixString(16).padLeft(8, '0') +
+        r.toRadixString(16).padLeft(8, '0');
   }
 
   static String? sqlDigest(String? statement) {
     if (statement == null || statement.isEmpty) return null;
     var s = statement.toLowerCase();
-    s = s.replaceAll(RegExp(r"'[^']*'"), '?');
-    s = s.replaceAll(RegExp(r'\"[^\"]*\"'), '?');
-    s = s.replaceAll(RegExp(r'\b\d+\b'), '?');
-    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    s = s.replaceAll(_singleQuoteRe, '?');
+    s = s.replaceAll(_doubleQuoteRe, '?');
+    s = s.replaceAll(_digitRe, '?');
+    s = s.replaceAll(_whitespaceRe, ' ').trim();
+
     var hash = 5381;
     for (var i = 0; i < s.length; i++) {
-      hash = ((hash << 5) + hash) ^ s.codeUnitAt(i);
+      hash = (((hash << 5) + hash) ^ s.codeUnitAt(i)) & 0xffffffff;
     }
     final hex = (hash & 0x7fffffff).toRadixString(16);
     return '${s.substring(0, s.length > 80 ? 80 : s.length)}|$hex';

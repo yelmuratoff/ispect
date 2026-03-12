@@ -232,11 +232,15 @@ class _RedactionRequest {
 }
 
 class _RedactionWalker {
-  const _RedactionWalker(this.config, this.request, this.strategy);
+  _RedactionWalker(this.config, this.request, this.strategy)
+      : _cachedRuntime = null;
 
   final _RedactionConfig config;
   final _RedactionRequest request;
   final RedactionStrategy strategy;
+
+  // Cached runtime instance — config and request don't change within a walk.
+  RedactionRuntime? _cachedRuntime;
 
   Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
     final out = <String, Object?>{};
@@ -265,7 +269,7 @@ class _RedactionWalker {
     if (depth >= config.maxDepth) return config.placeholder;
 
     // Try pluggable strategies first.
-    final runtime = _createRuntime();
+    final runtime = _cachedRuntime ??= _createRuntime();
     final strategyResult = strategy.tryRedact(
       node,
       keyName: keyName,
@@ -563,7 +567,6 @@ const Set<String> _kDefaultSensitiveKeys = <String>{
   'x-api-key',
   'api-key',
   'apikey',
-  'apiKey',
   'token',
   'access_token',
   'refresh_token',
@@ -582,70 +585,70 @@ const Set<String> _kDefaultSensitiveKeys = <String>{
   'social_security',
   'social-security',
   'social_security_number',
-  'socialSecurityNumber',
+  'socialsecuritynumber',
   'national_id',
-  'nationalId',
+  'nationalid',
   'national-id',
   'passport',
   'passport_number',
-  'passportNumber',
+  'passportnumber',
   'passport-number',
   'drivers_license',
-  'driversLicense',
+  'driverslicense',
   'drivers-license',
   'driver_license',
-  'driverLicense',
+  'driverlicense',
   'driver-license',
   'license_number',
-  'licenseNumber',
+  'licensenumber',
   'license-number',
 
   // Financial Information
   'credit_card',
-  'creditCard',
+  'creditcard',
   'credit-card',
   'card_number',
-  'cardNumber',
+  'cardnumber',
   'card-number',
   'cc_number',
-  'ccNumber',
+  'ccnumber',
   'cc-number',
   'cvv',
   'cvc',
   'cvv2',
   'card_cvv',
-  'cardCvv',
+  'cardcvv',
   'security_code',
-  'securityCode',
+  'securitycode',
   'security-code',
   'bank_account',
-  'bankAccount',
+  'bankaccount',
   'bank-account',
   'account_number',
-  'accountNumber',
+  'accountnumber',
   'account-number',
   'routing_number',
-  'routingNumber',
+  'routingnumber',
   'routing-number',
   'iban',
   'swift',
   'swift_code',
-  'swiftCode',
+  'swiftcode',
   'swift-code',
   'bic',
 
   // Personal Contact Information (context-dependent)
   'phone',
   'phone_number',
-  'phoneNumber',
+  'phonenumber',
   'phone-number',
   'mobile',
   'mobile_number',
-  'mobileNumber',
+  'mobilenumber',
   'mobile-number',
   'cell',
   'cell_phone',
-  'cellPhone',
+  'cellphone',
   'cell-phone',
 };
 
@@ -687,9 +690,13 @@ final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
   RegExp(r'(?:^|[_\-])cell(?:$|[_\-])', caseSensitive: false),
 ];
 
-final RegExp _schemeRegex = RegExp(r'^(\w+)\s+', caseSensitive: false);
+final RegExp _schemeRegex = RegExp(
+  r'^(Bearer|Basic|Digest|NTLM|Negotiate|OAuth|HOBA|Mutual|SCRAM-SHA-\d+)\s+',
+  caseSensitive: false,
+);
+
 final RegExp _jwtRegex =
-    RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$');
+    RegExp(r'^[A-Za-z0-9\-_]{10,}\.[A-Za-z0-9\-_]{10,}\.[A-Za-z0-9\-_]{10,}$');
 final RegExp _tokenPrefixRegex = RegExp('^(ghp_|pat_|xox[baprs]-)');
 final RegExp _base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
 final RegExp _whitespaceRegex = RegExp(r'\s');

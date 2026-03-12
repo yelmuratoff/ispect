@@ -202,6 +202,13 @@ class ISpectLogger {
     );
   }
 
+  /// Removes the current filter so that all logs are processed.
+  void clearFilter() {
+    if (!_ensureActive()) return;
+    _filter = null;
+    _pipeline.clearFilter();
+  }
+
   /// Stream controller for broadcasting log events.
   /// Stream of log data that can be subscribed to for real-time monitoring.
   ///

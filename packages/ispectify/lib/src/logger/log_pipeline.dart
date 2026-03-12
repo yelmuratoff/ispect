@@ -49,6 +49,11 @@ class LogPipeline {
     _filter = filter ?? _filter;
   }
 
+  /// Removes the current filter so that all logs are accepted.
+  void clearFilter() {
+    _filter = null;
+  }
+
   bool shouldProcess(ISpectLogData data) {
     if (!_options.enabled) return false;
     return _filter?.apply(data) ?? true;

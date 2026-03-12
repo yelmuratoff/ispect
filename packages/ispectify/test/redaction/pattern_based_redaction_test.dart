@@ -24,7 +24,7 @@ void main() {
           redactUint8List: (data) => data,
           looksLikeAuthorizationValue: (value) =>
               value.startsWith('Bearer ') ||
-              RegExp(r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$')
+              RegExp(r'^[A-Za-z0-9\-_]{10,}\.[A-Za-z0-9\-_]{10,}\.[A-Za-z0-9\-_]{10,}$')
                   .hasMatch(value),
           isLikelyBase64: (value) => value == 'SGVsbG8=',
           isProbablyBinaryString: (value) => value == '\u0001\u0002\u0003',

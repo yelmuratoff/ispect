@@ -9,7 +9,10 @@ class ISpectDbConfig {
     this.attachStackOnError = false,
     this.enableTransactionMarkers = false,
     this.slowQueryThreshold,
-  });
+  }) : assert(
+          sampleRate == null || (sampleRate >= 0 && sampleRate <= 1),
+          'sampleRate must be between 0.0 and 1.0 (inclusive), got: $sampleRate',
+        );
 
   final double? sampleRate;
   final bool redact;
