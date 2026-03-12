@@ -47,8 +47,8 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   @override
   void dispose() {
-    super.dispose();
     _isFilterEnabled.dispose();
+    super.dispose();
   }
 
   @override

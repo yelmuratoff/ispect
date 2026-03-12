@@ -97,21 +97,32 @@ mixin BaseNetworkInterceptor {
         normalizer: (value) => value,
       );
 
-  /// Redacts query parameter values in a URL when redaction is enabled.
+  /// Redacts query parameter values and userInfo credentials in a URL when
+  /// redaction is enabled.
   ///
   /// Returns the original URL string if redaction is disabled or
-  /// the URL has no query parameters.
+  /// the URL has nothing to redact.
   String redactUrl(String url, {required bool useRedaction}) {
     if (!useRedaction) return url;
     final uri = Uri.tryParse(url);
-    if (uri == null || uri.queryParameters.isEmpty) return url;
-    final redactedParams = uri.queryParameters.map(
-      (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
-    );
+    if (uri == null) return url;
+
+    final hasParams = uri.queryParameters.isNotEmpty;
+    final hasUserInfo = uri.userInfo.isNotEmpty;
+    if (!hasParams && !hasUserInfo) return url;
+
+    final redactedParams = hasParams
+        ? uri.queryParameters.map(
+            (key, value) =>
+                MapEntry(key, redactor.redact(value, keyName: key)),
+          )
+        : null;
+
     return uri
         .replace(
-          queryParameters:
-              redactedParams.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+          userInfo: hasUserInfo ? '[REDACTED]' : null,
+          queryParameters: redactedParams
+              ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
         )
         .toString();
   }

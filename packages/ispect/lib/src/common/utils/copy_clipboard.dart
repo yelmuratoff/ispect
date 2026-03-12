@@ -29,7 +29,8 @@ void copyClipboard(
   if (value.length > _maxClipboardLength) {
     // Avoid splitting a surrogate pair at the truncation boundary.
     var end = _maxClipboardLength;
-    if (end > 0 && value.codeUnitAt(end - 1) >= 0xD800 &&
+    if (end > 0 &&
+        value.codeUnitAt(end - 1) >= 0xD800 &&
         value.codeUnitAt(end - 1) <= 0xDBFF) {
       end--;
     }
@@ -38,12 +39,15 @@ void copyClipboard(
     truncatedValue = value;
   }
 
-  Clipboard.setData(ClipboardData(text: truncatedValue));
-
-  ISpectToaster.showCopiedToast(
-    context,
-    value: truncatedValue,
-    title: title,
-    showValue: showValue,
-  );
+  Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
+    if (!context.mounted) return;
+    ISpectToaster.showCopiedToast(
+      context,
+      value: truncatedValue,
+      title: title,
+      showValue: showValue,
+    );
+  }).catchError((_) {
+    // Clipboard write failed silently — don't show success toast.
+  });
 }

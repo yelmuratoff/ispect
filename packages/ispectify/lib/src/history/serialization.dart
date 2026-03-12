@@ -38,8 +38,8 @@ class ISpectLogDataJsonUtils {
   /// from string representations with some limitations.
   static ISpectLogData fromJson(Map<String, dynamic> json) => ISpectLogData(
         json['message']?.toString(),
-        time: DateTime.tryParse(json['time']?.toString() ?? '') ??
-            DateTime.now(),
+        time:
+            DateTime.tryParse(json['time']?.toString() ?? '') ?? DateTime.now(),
         logLevel: _parseLogLevel(json['log-level']?.toString()),
         title: json['title']?.toString(),
         key: json['key']?.toString(),
