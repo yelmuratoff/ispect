@@ -114,14 +114,18 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
-  void _openLogsSettings(BuildContext context) {
+  Future<void> _openLogsSettings(BuildContext context) async {
     final logger = ValueNotifier(ISpect.logger);
-    ISpectSettingsBottomSheet(
-      options: widget.options,
-      logger: logger,
-      controller: _logsViewController,
-      actions: _buildSettingsActions(context),
-    ).show(context);
+    try {
+      await ISpectSettingsBottomSheet(
+        options: widget.options,
+        logger: logger,
+        controller: _logsViewController,
+        actions: _buildSettingsActions(context),
+      ).show(context);
+    } finally {
+      logger.dispose();
+    }
   }
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
@@ -192,13 +196,20 @@ class _LogsScreenState extends State<LogsScreen> {
         icon: Icons.ios_share_outlined,
       );
 
-  ISpectActionItem _buildNavigationFlowAction() => ISpectActionItem(
-        title: context.ispectL10n.navigationFlow,
-        icon: Icons.route_rounded,
-        onTap: (context) => ISpectNavigationFlowScreen(
-          observer: widget.options.observer! as ISpectNavigatorObserver,
-        ).push(context),
-      );
+  ISpectActionItem _buildNavigationFlowAction() {
+    final observer = widget.options.observer;
+    assert(
+      observer is ISpectNavigatorObserver,
+      'observer must be ISpectNavigatorObserver',
+    );
+    return ISpectActionItem(
+      title: context.ispectL10n.navigationFlow,
+      icon: Icons.route_rounded,
+      onTap: (context) => ISpectNavigationFlowScreen(
+        observer: observer! as ISpectNavigatorObserver,
+      ).push(context),
+    );
+  }
 
   ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
         title: context.ispectL10n.dailySessions,

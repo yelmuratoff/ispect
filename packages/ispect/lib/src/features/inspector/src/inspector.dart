@@ -281,7 +281,12 @@ class InspectorState extends State<Inspector> {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
           await _extractByteData();
-        } catch (_) {
+        } catch (e, s) {
+          ISpect.logger.error(
+            'Failed to extract byte data',
+            exception: e,
+            stackTrace: s,
+          );
           return;
         }
 

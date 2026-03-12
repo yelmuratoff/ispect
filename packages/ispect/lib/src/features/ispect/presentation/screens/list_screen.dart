@@ -114,18 +114,19 @@ class _LogsScreenState extends State<LogsV2Screen> {
   }
 
   Future<void> getLogs() async {
+    List<ISpectLogData>? logs;
     if (widget.logs != null && widget.logs!.isNotEmpty) {
-      _logs.addAll(widget.logs!);
+      logs = widget.logs;
     } else if (widget.sessionPath != null) {
       final fileLogHistory = ISpect.logger.fileLogHistory;
-      final logs = await fileLogHistory?.getLogsBySession(widget.sessionPath!);
-      _logs.addAll(logs ?? []);
+      logs = await fileLogHistory?.getLogsBySession(widget.sessionPath!);
     } else if (widget.sessionDate != null) {
       final fileLogHistory = ISpect.logger.fileLogHistory;
-      final logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
-      _logs.addAll(logs ?? []);
+      logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
     }
-    if (mounted) {
+    if (!mounted) return;
+    if (logs != null && logs.isNotEmpty) {
+      _logs.addAll(logs);
       setState(() {});
     }
   }

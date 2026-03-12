@@ -19,6 +19,7 @@ class InspectorOverlay extends StatefulWidget {
 class _InspectorOverlayState extends State<InspectorOverlay> {
   final _panelVisibilityNotifier = ValueNotifier<bool>(false);
   int? _frameCallbackId;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -28,15 +29,18 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
 
   @override
   void dispose() {
-    if (_frameCallbackId != null) {
-      WidgetsBinding.instance.cancelFrameCallbackWithId(_frameCallbackId!);
+    _disposed = true;
+    final id = _frameCallbackId;
+    if (id != null) {
+      WidgetsBinding.instance.cancelFrameCallbackWithId(id);
+      _frameCallbackId = null;
     }
     _panelVisibilityNotifier.dispose();
     super.dispose();
   }
 
   void _onTick(Duration? tick) {
-    if (!mounted) return;
+    if (_disposed || !mounted) return;
 
     // ignore: avoid_empty_blocks
     setState(() {});
