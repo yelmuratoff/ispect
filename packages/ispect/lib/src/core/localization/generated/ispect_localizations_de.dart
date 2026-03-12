@@ -558,11 +558,11 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get noData => 'Keine Daten';
 
   @override
-  String get shareLogFull => 'Protokoll teilen (vollständig)';
+  String get shareLogFull => 'Vollständiges Protokoll teilen';
 
   @override
   String get copyToClipboardTruncated =>
-      'In die Zwischenablage kopieren (gekürzt)';
+      'Zusammenfassung in die Zwischenablage kopieren';
 
   @override
   String get viewThemeScheme => 'Theme-Schema-Bildschirm anzeigen';

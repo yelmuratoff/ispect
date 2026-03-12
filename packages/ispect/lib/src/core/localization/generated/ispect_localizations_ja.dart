@@ -541,10 +541,10 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get noData => 'データなし';
 
   @override
-  String get shareLogFull => 'ログを共有（完全）';
+  String get shareLogFull => '完全なログを共有';
 
   @override
-  String get copyToClipboardTruncated => 'クリップボードにコピー（省略）';
+  String get copyToClipboardTruncated => '要約をクリップボードにコピー';
 
   @override
   String get viewThemeScheme => 'テーマスキーマ画面を表示';

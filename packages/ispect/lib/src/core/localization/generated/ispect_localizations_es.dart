@@ -551,10 +551,10 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get noData => 'Sin datos';
 
   @override
-  String get shareLogFull => 'Compartir registro (completo)';
+  String get shareLogFull => 'Compartir registro completo';
 
   @override
-  String get copyToClipboardTruncated => 'Copiar al portapapeles (truncado)';
+  String get copyToClipboardTruncated => 'Copiar resumen al portapapeles';
 
   @override
   String get viewThemeScheme => 'Ver pantalla de esquema de tema';

@@ -541,10 +541,10 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get noData => '无数据';
 
   @override
-  String get shareLogFull => '分享日志（完整）';
+  String get shareLogFull => '分享完整日志';
 
   @override
-  String get copyToClipboardTruncated => '复制到剪贴板（截断）';
+  String get copyToClipboardTruncated => '复制摘要到剪贴板';
 
   @override
   String get viewThemeScheme => '查看主题方案屏幕';

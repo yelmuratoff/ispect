@@ -1088,13 +1088,13 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @shareLogFull.
   ///
   /// In en, this message translates to:
-  /// **'Share log (full)'**
+  /// **'Share full log'**
   String get shareLogFull;
 
   /// No description provided for @copyToClipboardTruncated.
   ///
   /// In en, this message translates to:
-  /// **'Copy to clipboard (truncated)'**
+  /// **'Copy summary to clipboard'**
   String get copyToClipboardTruncated;
 
   /// No description provided for @viewThemeScheme.

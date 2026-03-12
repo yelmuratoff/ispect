@@ -558,11 +558,11 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get noData => 'Aucune donnée';
 
   @override
-  String get shareLogFull => 'Partager le journal (complet)';
+  String get shareLogFull => 'Partager le journal complet';
 
   @override
   String get copyToClipboardTruncated =>
-      'Copier dans le presse-papiers (tronqué)';
+      'Copier le résumé dans le presse-papiers';
 
   @override
   String get viewThemeScheme => 'Voir l\'écran du schéma de thème';

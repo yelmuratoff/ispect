@@ -543,10 +543,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get noData => 'لا توجد بيانات';
 
   @override
-  String get shareLogFull => 'مشاركة السجل (كامل)';
+  String get shareLogFull => 'مشاركة السجل الكامل';
 
   @override
-  String get copyToClipboardTruncated => 'نسخ إلى الحافظة (مختصر)';
+  String get copyToClipboardTruncated => 'نسخ الملخص إلى الحافظة';
 
   @override
   String get viewThemeScheme => 'عرض شاشة مخطط الموضوع';
