@@ -152,7 +152,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @allLogsCopied.
   ///
   /// In en, this message translates to:
-  /// **'All logs copied in buffer'**
+  /// **'All logs copied to clipboard'**
   String get allLogsCopied;
 
   /// No description provided for @analyticsLogDesc.
@@ -290,7 +290,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @clearHistory.
   ///
   /// In en, this message translates to:
-  /// **'Clean history'**
+  /// **'Clear history'**
   String get clearHistory;
 
   /// No description provided for @clearCache.
@@ -392,7 +392,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @environmentTapNumber.
   ///
   /// In en, this message translates to:
-  /// **'To open the dialog, it remains: {number}'**
+  /// **'Taps remaining to open dialog: {number}'**
   String environmentTapNumber(Object number);
 
   /// No description provided for @errorCacheClearing.
@@ -536,7 +536,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @logItemCopied.
   ///
   /// In en, this message translates to:
-  /// **'Log item is copied in clipboard'**
+  /// **'Log item copied to clipboard'**
   String get logItemCopied;
 
   /// No description provided for @login.
@@ -584,7 +584,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @pageNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Oops, the page on this path'**
+  /// **'Oops, the page on this path was not found'**
   String get pageNotFound;
 
   /// No description provided for @path.
@@ -758,7 +758,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @shareLogsFile.
   ///
   /// In en, this message translates to:
-  /// **'Share logs file'**
+  /// **'Share log file'**
   String get shareLogsFile;
 
   /// No description provided for @statusCode.

@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Hello! How can I help you?';
 
   @override
-  String get allLogsCopied => 'All logs copied in buffer';
+  String get allLogsCopied => 'All logs copied to clipboard';
 
   @override
   String get analyticsLogDesc => 'Event tracked and sent to analytics';
@@ -97,7 +97,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get changeTheme => 'Change theme';
 
   @override
-  String get clearHistory => 'Clean history';
+  String get clearHistory => 'Clear history';
 
   @override
   String get clearCache => 'Clear cache';
@@ -152,7 +152,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String environmentTapNumber(Object number) {
-    return 'To open the dialog, it remains: $number';
+    return 'Taps remaining to open dialog: $number';
   }
 
   @override
@@ -226,7 +226,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       '1. Go to your Jira website.\n2. Click on your Profile avatar in the bottom left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to Create and manage API tokens and click on it.\n7. Create a token, then copy and paste it.';
 
   @override
-  String get logItemCopied => 'Log item is copied in clipboard';
+  String get logItemCopied => 'Log item copied to clipboard';
 
   @override
   String get login => 'Login';
@@ -251,7 +251,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       'Other logs are already being used by developers';
 
   @override
-  String get pageNotFound => 'Oops, the page on this path';
+  String get pageNotFound => 'Oops, the page on this path was not found';
 
   @override
   String get path => 'Path';
@@ -339,7 +339,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get share => 'Share';
 
   @override
-  String get shareLogsFile => 'Share logs file';
+  String get shareLogsFile => 'Share log file';
 
   @override
   String get statusCode => 'Status code';
