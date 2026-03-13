@@ -81,6 +81,7 @@
    "start": "시작",
    "selectedTransition": "선택된 전환",
    "notFound": "찾을 수 없음",
+   "noResultsHint": "다른 검색어를 시도하거나 필터를 조정하세요",
    "otherLogsForDevelopers": "다른 로그는 이미 개발자가 사용 중임",
    "pageNotFound": "이 경로의 페이지를 찾을 수 없습니다",
    "path": "경로",

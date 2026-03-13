@@ -76,6 +76,7 @@
    "method": "Método",
    "navigate": "Navegar",
    "notFound": "No encontrado",
+   "noResultsHint": "Prueba otra búsqueda o ajusta los filtros",
    "otherLogsForDevelopers": "Otros registros ya están siendo usados por desarrolladores",
    "pageNotFound": "Oops, la página en esta ruta",
    "path": "Ruta",

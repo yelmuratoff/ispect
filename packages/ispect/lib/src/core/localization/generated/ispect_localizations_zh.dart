@@ -244,6 +244,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get notFound => '未找到';
 
   @override
+  String get noResultsHint => '请尝试其他关键词或调整筛选条件';
+
+  @override
   String get otherLogsForDevelopers => '其他日志已供开发者使用';
 
   @override

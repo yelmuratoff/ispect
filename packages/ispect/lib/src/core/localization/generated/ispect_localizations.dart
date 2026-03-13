@@ -575,6 +575,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'not found'**
   String get notFound;
 
+  /// No description provided for @noResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different query or adjust filters'**
+  String get noResultsHint;
+
   /// No description provided for @otherLogsForDevelopers.
   ///
   /// In en, this message translates to:

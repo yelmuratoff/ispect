@@ -81,6 +81,7 @@
    "start": "Начало",
    "selectedTransition": "Выбранный переход",
    "notFound": "не найдена",
+   "noResultsHint": "Попробуйте другой запрос или измените фильтры",
    "otherLogsForDevelopers": "Другие логи уже используют разработчики",
    "pageNotFound": "Ой, страница по этому пути",
    "path": "Путь",

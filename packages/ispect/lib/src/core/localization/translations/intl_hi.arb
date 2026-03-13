@@ -81,6 +81,7 @@
    "start": "प्रारंभ",
    "selectedTransition": "चयनित ट्रांजिशन",
    "notFound": "नहीं मिला",
+   "noResultsHint": "कोई अन्य खोज आज़माएं या फ़िल्टर बदलें",
    "otherLogsForDevelopers": "अन्य लॉग पहले से ही डेवलपर्स द्वारा उपयोग में हैं",
    "pageNotFound": "ओह, इस पथ पर पेज",
    "path": "पथ",

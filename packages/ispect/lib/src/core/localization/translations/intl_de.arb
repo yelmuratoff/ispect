@@ -81,6 +81,7 @@
    "start": "Start",
    "selectedTransition": "Ausgewählter Übergang",
    "notFound": "Nicht gefunden",
+   "noResultsHint": "Versuchen Sie eine andere Suche oder passen Sie die Filter an",
    "otherLogsForDevelopers": "Andere Protokolle werden bereits von Entwicklern verwendet",
    "pageNotFound": "Oops, die Seite auf diesem Pfad",
    "path": "Pfad",

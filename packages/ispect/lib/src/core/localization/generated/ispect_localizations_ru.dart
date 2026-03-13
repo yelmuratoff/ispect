@@ -249,6 +249,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get notFound => 'не найдена';
 
   @override
+  String get noResultsHint => 'Попробуйте другой запрос или измените фильтры';
+
+  @override
   String get otherLogsForDevelopers =>
       'Другие логи уже используют разработчики';
 

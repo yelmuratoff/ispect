@@ -244,6 +244,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get notFound => '찾을 수 없음';
 
   @override
+  String get noResultsHint => '다른 검색어를 시도하거나 필터를 조정하세요';
+
+  @override
   String get otherLogsForDevelopers => '다른 로그는 이미 개발자가 사용 중임';
 
   @override

@@ -245,6 +245,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get notFound => 'غير موجود';
 
   @override
+  String get noResultsHint => 'جرّب بحثًا مختلفًا أو عدّل الفلاتر';
+
+  @override
   String get otherLogsForDevelopers =>
       'السجلات الأخرى تُستخدم بالفعل من قِبل المطورين';
 

@@ -244,6 +244,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get notFound => '見つかりません';
 
   @override
+  String get noResultsHint => '別のキーワードを試すか、フィルターを調整してください';
+
+  @override
   String get otherLogsForDevelopers => '他のログはすでに開発者によって使用されています';
 
   @override

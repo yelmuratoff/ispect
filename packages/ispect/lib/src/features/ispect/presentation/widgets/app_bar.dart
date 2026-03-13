@@ -85,7 +85,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               elevation: 0,
               pinned: true,
               floating: true,
-              expandedHeight: showFilters ? 160.0 : 110.0,
+              expandedHeight: showFilters ? 148.0 : 110.0,
               collapsedHeight: 60,
               toolbarHeight: 60,
               leading: IconButton(
@@ -378,7 +378,7 @@ class _FilterChipsList extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8),
       child: SizedBox(
         key: const ValueKey('filter'),
-        height: 40,
+        height: 32,
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           scrollDirection: Axis.horizontal,
@@ -452,7 +452,7 @@ class _LogFilterChip extends StatelessWidget {
           border: Border.all(color: borderColor),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

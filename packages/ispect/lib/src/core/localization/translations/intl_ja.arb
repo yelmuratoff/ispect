@@ -76,6 +76,7 @@
    "method": "メソッド",
    "navigate": "ナビゲート",
    "notFound": "見つかりません",
+   "noResultsHint": "別のキーワードを試すか、フィルターを調整してください",
    "otherLogsForDevelopers": "他のログはすでに開発者によって使用されています",
    "pageNotFound": "おっと、このパスにページがありません",
    "path": "パス",

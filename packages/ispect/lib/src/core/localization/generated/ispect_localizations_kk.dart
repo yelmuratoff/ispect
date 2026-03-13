@@ -248,6 +248,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get notFound => 'табылған жоқ';
 
   @override
+  String get noResultsHint => 'Басқа сұрау жазыңыз немесе сүзгілерді реттеңіз';
+
+  @override
   String get otherLogsForDevelopers =>
       'Басқа жазбалар әзірлеушілер үшін қолданылуда';
 

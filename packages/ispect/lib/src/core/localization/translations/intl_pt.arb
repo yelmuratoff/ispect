@@ -81,6 +81,7 @@
    "start": "Início",
    "selectedTransition": "Transição selecionada",
    "notFound": "Não encontrado",
+   "noResultsHint": "Tente outra busca ou ajuste os filtros",
    "otherLogsForDevelopers": "Outros logs já estão sendo usados por desenvolvedores",
    "pageNotFound": "Ops, a página neste caminho",
    "path": "Caminho",

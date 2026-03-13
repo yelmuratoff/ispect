@@ -250,6 +250,9 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get notFound => 'Não encontrado';
 
   @override
+  String get noResultsHint => 'Tente outra busca ou ajuste os filtros';
+
+  @override
   String get otherLogsForDevelopers =>
       'Outros logs já estão sendo usados por desenvolvedores';
 
