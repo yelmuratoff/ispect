@@ -152,6 +152,12 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   }
 
   @override
+  void dispose() {
+    model.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Early return when ISpect is disabled - enables tree-shaking
     if (!kISpectEnabled) {

@@ -339,7 +339,13 @@ class InspectorState extends State<Inspector> {
 
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
-    _image = await boundary.toImage(pixelRatio: pixelRatio);
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
+    if (!mounted) {
+      image.dispose();
+      return;
+    }
+
+    _image = image;
     _byteDataStateNotifier.value = await _image!.toByteData();
   }
 
