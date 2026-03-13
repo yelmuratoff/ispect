@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "Exportar logs como arquivo e compartilhar pelo menu de compartilhamento do sistema",
    "navigationFlowDesc": "Ver a sequência de transições de tela no seu aplicativo",
    "dailySessionsDesc": "Navegar pelos arquivos de log de sessões anteriores do aplicativo",
-   "logViewerDesc": "Abrir um visualizador externo para inspecionar arquivos de log"
+   "logViewerDesc": "Abrir um visualizador externo para inspecionar arquivos de log",
+   "selectAll": "Selecionar tudo",
+   "deselectAll": "Desmarcar tudo",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "Banco de dados",
+   "groupNavigation": "Navegação",
+   "groupGeneral": "Geral",
+   "transitionPush": "Push",
+   "transitionPop": "Pop",
+   "transitionReplace": "Substituir",
+   "transitionRemove": "Remover",
+   "transitionStartUserGesture": "Início do gesto",
+   "transitionStopUserGesture": "Fim do gesto",
+   "copyAsCurl": "Copiar como cURL"
 }

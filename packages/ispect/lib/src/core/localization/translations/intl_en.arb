@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "Export logs as a file and share via system share sheet",
    "navigationFlowDesc": "View the sequence of screen transitions in your app",
    "dailySessionsDesc": "Browse log files saved from previous app sessions",
-   "logViewerDesc": "Open an external log viewer to inspect log files"
+   "logViewerDesc": "Open an external log viewer to inspect log files",
+   "selectAll": "Select All",
+   "deselectAll": "Deselect All",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "Database",
+   "groupNavigation": "Navigation",
+   "groupGeneral": "General",
+   "transitionPush": "Push",
+   "transitionPop": "Pop",
+   "transitionReplace": "Replace",
+   "transitionRemove": "Remove",
+   "transitionStartUserGesture": "Start User Gesture",
+   "transitionStopUserGesture": "Stop User Gesture",
+   "copyAsCurl": "Copy as cURL"
 }

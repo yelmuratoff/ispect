@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "Логтарды файлға экспорттап, жүйелік бөлісу мәзірі арқылы жіберу",
    "navigationFlowDesc": "Қосымшадағы экрандар арасындағы ауысулар тізбегін қарау",
    "dailySessionsDesc": "Алдыңғы қосымша сессияларынан сақталған лог файлдарын шолу",
-   "logViewerDesc": "Лог файлдарын талдау үшін сыртқы көрсеткішті ашу"
+   "logViewerDesc": "Лог файлдарын талдау үшін сыртқы көрсеткішті ашу",
+   "selectAll": "Барлығын таңдау",
+   "deselectAll": "Барлығын алу",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "Деректер қоры",
+   "groupNavigation": "Навигация",
+   "groupGeneral": "Жалпы",
+   "transitionPush": "Push",
+   "transitionPop": "Pop",
+   "transitionReplace": "Ауыстыру",
+   "transitionRemove": "Жою",
+   "transitionStartUserGesture": "Қолданушы қимылын бастау",
+   "transitionStopUserGesture": "Қолданушы қимылын аяқтау",
+   "copyAsCurl": "cURL ретінде көшіру"
 }

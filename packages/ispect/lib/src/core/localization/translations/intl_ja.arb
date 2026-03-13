@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "ログをファイルとしてエクスポートし、システム共有メニューで共有",
    "navigationFlowDesc": "アプリの画面遷移の順序を表示",
    "dailySessionsDesc": "以前のアプリセッションから保存されたログファイルを閲覧",
-   "logViewerDesc": "ログファイルを検査するための外部ビューアを開く"
+   "logViewerDesc": "ログファイルを検査するための外部ビューアを開く",
+   "selectAll": "すべて選択",
+   "deselectAll": "すべて解除",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "データベース",
+   "groupNavigation": "ナビゲーション",
+   "groupGeneral": "一般",
+   "transitionPush": "プッシュ",
+   "transitionPop": "ポップ",
+   "transitionReplace": "置換",
+   "transitionRemove": "削除",
+   "transitionStartUserGesture": "ジェスチャー開始",
+   "transitionStopUserGesture": "ジェスチャー終了",
+   "copyAsCurl": "cURLとしてコピー"
 }

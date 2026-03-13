@@ -717,4 +717,52 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get logViewerDesc => 'فتح عارض خارجي لفحص ملفات السجل';
+
+  @override
+  String get selectAll => 'تحديد الكل';
+
+  @override
+  String get deselectAll => 'إلغاء تحديد الكل';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'قاعدة البيانات';
+
+  @override
+  String get groupNavigation => 'التنقل';
+
+  @override
+  String get groupGeneral => 'عام';
+
+  @override
+  String get transitionPush => 'دفع';
+
+  @override
+  String get transitionPop => 'إخراج';
+
+  @override
+  String get transitionReplace => 'استبدال';
+
+  @override
+  String get transitionRemove => 'إزالة';
+
+  @override
+  String get transitionStartUserGesture => 'بدء إيماءة المستخدم';
+
+  @override
+  String get transitionStopUserGesture => 'إيقاف إيماءة المستخدم';
+
+  @override
+  String get copyAsCurl => 'نسخ كـ cURL';
 }

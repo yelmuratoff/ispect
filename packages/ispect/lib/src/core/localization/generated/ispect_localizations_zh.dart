@@ -710,4 +710,52 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get logViewerDesc => '打开外部查看器以检查日志文件';
+
+  @override
+  String get selectAll => '全选';
+
+  @override
+  String get deselectAll => '取消全选';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => '数据库';
+
+  @override
+  String get groupNavigation => '导航';
+
+  @override
+  String get groupGeneral => '通用';
+
+  @override
+  String get transitionPush => '推入';
+
+  @override
+  String get transitionPop => '弹出';
+
+  @override
+  String get transitionReplace => '替换';
+
+  @override
+  String get transitionRemove => '移除';
+
+  @override
+  String get transitionStartUserGesture => '开始用户手势';
+
+  @override
+  String get transitionStopUserGesture => '停止用户手势';
+
+  @override
+  String get copyAsCurl => '复制为 cURL';
 }

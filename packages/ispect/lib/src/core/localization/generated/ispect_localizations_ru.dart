@@ -731,4 +731,52 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   @override
   String get logViewerDesc =>
       'Открыть внешний просмотрщик для анализа лог-файлов';
+
+  @override
+  String get selectAll => 'Выбрать все';
+
+  @override
+  String get deselectAll => 'Снять все';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'База данных';
+
+  @override
+  String get groupNavigation => 'Навигация';
+
+  @override
+  String get groupGeneral => 'Общие';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Замена';
+
+  @override
+  String get transitionRemove => 'Удаление';
+
+  @override
+  String get transitionStartUserGesture => 'Начало жеста';
+
+  @override
+  String get transitionStopUserGesture => 'Конец жеста';
+
+  @override
+  String get copyAsCurl => 'Копировать как cURL';
 }

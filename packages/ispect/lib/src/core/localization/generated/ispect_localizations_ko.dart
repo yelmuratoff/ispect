@@ -710,4 +710,52 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get logViewerDesc => '로그 파일을 검사하기 위한 외부 뷰어 열기';
+
+  @override
+  String get selectAll => '모두 선택';
+
+  @override
+  String get deselectAll => '모두 해제';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => '데이터베이스';
+
+  @override
+  String get groupNavigation => '내비게이션';
+
+  @override
+  String get groupGeneral => '일반';
+
+  @override
+  String get transitionPush => '푸시';
+
+  @override
+  String get transitionPop => '팝';
+
+  @override
+  String get transitionReplace => '교체';
+
+  @override
+  String get transitionRemove => '제거';
+
+  @override
+  String get transitionStartUserGesture => '사용자 제스처 시작';
+
+  @override
+  String get transitionStopUserGesture => '사용자 제스처 종료';
+
+  @override
+  String get copyAsCurl => 'cURL로 복사';
 }

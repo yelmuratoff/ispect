@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "Экспортировать логи в файл и поделиться через системное меню",
    "navigationFlowDesc": "Просмотр последовательности переходов между экранами",
    "dailySessionsDesc": "Просмотр лог-файлов из предыдущих сессий приложения",
-   "logViewerDesc": "Открыть внешний просмотрщик для анализа лог-файлов"
+   "logViewerDesc": "Открыть внешний просмотрщик для анализа лог-файлов",
+   "selectAll": "Выбрать все",
+   "deselectAll": "Снять все",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "База данных",
+   "groupNavigation": "Навигация",
+   "groupGeneral": "Общие",
+   "transitionPush": "Push",
+   "transitionPop": "Pop",
+   "transitionReplace": "Замена",
+   "transitionRemove": "Удаление",
+   "transitionStartUserGesture": "Начало жеста",
+   "transitionStopUserGesture": "Конец жеста",
+   "copyAsCurl": "Копировать как cURL"
 }

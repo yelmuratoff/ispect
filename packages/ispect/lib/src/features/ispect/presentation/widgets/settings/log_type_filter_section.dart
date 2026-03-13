@@ -36,7 +36,7 @@ class LogTypeFilterSection extends StatelessWidget {
     final logDescriptions = ISpectConstants.defaultLogDescriptions(context);
 
     // Group by category
-    final groups = _groupLogTypes(logDescriptions);
+    final groups = _groupLogTypes(context, logDescriptions);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -60,7 +60,9 @@ class LogTypeFilterSection extends StatelessWidget {
                 GestureDetector(
                   onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
                   child: Text(
-                    _isAllEnabled ? 'Deselect All' : 'Select All',
+                    _isAllEnabled
+                        ? context.ispectL10n.deselectAll
+                        : context.ispectL10n.selectAll,
                     style: context.appTheme.textTheme.labelSmall?.copyWith(
                       color: context.ispectTheme.primary?.resolve(context) ??
                           context.appTheme.colorScheme.primary,
@@ -86,26 +88,28 @@ class LogTypeFilterSection extends StatelessWidget {
   }
 
   Map<String, List<LogDescription>> _groupLogTypes(
+    BuildContext context,
     List<LogDescription> descriptions,
   ) {
+    final l10n = context.ispectL10n;
     final groups = <String, List<LogDescription>>{};
     for (final desc in descriptions) {
       final key = desc.key;
       String group;
       if (key.startsWith('http-')) {
-        group = 'HTTP';
+        group = l10n.groupHttp;
       } else if (key.startsWith('bloc-')) {
-        group = 'Bloc';
+        group = l10n.groupBloc;
       } else if (key.startsWith('riverpod-')) {
-        group = 'Riverpod';
+        group = l10n.groupRiverpod;
       } else if (key.startsWith('ws-')) {
-        group = 'WebSocket';
+        group = l10n.groupWebSocket;
       } else if (key.startsWith('db-')) {
-        group = 'Database';
+        group = l10n.groupDatabase;
       } else if (key == 'route') {
-        group = 'Navigation';
+        group = l10n.groupNavigation;
       } else {
-        group = 'General';
+        group = l10n.groupGeneral;
       }
       (groups[group] ??= []).add(desc);
     }

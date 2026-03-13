@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "로그를 파일로 내보내고 시스템 공유 메뉴를 통해 공유",
    "navigationFlowDesc": "앱의 화면 전환 순서 보기",
    "dailySessionsDesc": "이전 앱 세션에서 저장된 로그 파일 탐색",
-   "logViewerDesc": "로그 파일을 검사하기 위한 외부 뷰어 열기"
+   "logViewerDesc": "로그 파일을 검사하기 위한 외부 뷰어 열기",
+   "selectAll": "모두 선택",
+   "deselectAll": "모두 해제",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "데이터베이스",
+   "groupNavigation": "내비게이션",
+   "groupGeneral": "일반",
+   "transitionPush": "푸시",
+   "transitionPop": "팝",
+   "transitionReplace": "교체",
+   "transitionRemove": "제거",
+   "transitionStartUserGesture": "사용자 제스처 시작",
+   "transitionStopUserGesture": "사용자 제스처 종료",
+   "copyAsCurl": "cURL로 복사"
 }

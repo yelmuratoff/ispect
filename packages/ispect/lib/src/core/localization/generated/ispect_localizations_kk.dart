@@ -728,4 +728,52 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   @override
   String get logViewerDesc =>
       'Лог файлдарын талдау үшін сыртқы көрсеткішті ашу';
+
+  @override
+  String get selectAll => 'Барлығын таңдау';
+
+  @override
+  String get deselectAll => 'Барлығын алу';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'Деректер қоры';
+
+  @override
+  String get groupNavigation => 'Навигация';
+
+  @override
+  String get groupGeneral => 'Жалпы';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Ауыстыру';
+
+  @override
+  String get transitionRemove => 'Жою';
+
+  @override
+  String get transitionStartUserGesture => 'Қолданушы қимылын бастау';
+
+  @override
+  String get transitionStopUserGesture => 'Қолданушы қимылын аяқтау';
+
+  @override
+  String get copyAsCurl => 'cURL ретінде көшіру';
 }

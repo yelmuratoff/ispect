@@ -135,7 +135,7 @@ class _ActionButtons extends StatelessWidget {
             SquareIconButton(
               icon: Icons.terminal_rounded,
               color: color,
-              tooltip: 'cURL',
+              tooltip: context.ispectL10n.copyAsCurl,
               onPressed: onCopyCurlTap,
             ),
             const Gap(3),

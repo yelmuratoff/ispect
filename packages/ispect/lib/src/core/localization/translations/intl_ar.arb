@@ -216,5 +216,21 @@
    "shareLogsFileDesc": "تصدير السجلات كملف ومشاركتها عبر قائمة المشاركة",
    "navigationFlowDesc": "عرض تسلسل انتقالات الشاشات في تطبيقك",
    "dailySessionsDesc": "تصفح ملفات السجل المحفوظة من الجلسات السابقة",
-   "logViewerDesc": "فتح عارض خارجي لفحص ملفات السجل"
+   "logViewerDesc": "فتح عارض خارجي لفحص ملفات السجل",
+   "selectAll": "تحديد الكل",
+   "deselectAll": "إلغاء تحديد الكل",
+   "groupHttp": "HTTP",
+   "groupBloc": "Bloc",
+   "groupRiverpod": "Riverpod",
+   "groupWebSocket": "WebSocket",
+   "groupDatabase": "قاعدة البيانات",
+   "groupNavigation": "التنقل",
+   "groupGeneral": "عام",
+   "transitionPush": "دفع",
+   "transitionPop": "إخراج",
+   "transitionReplace": "استبدال",
+   "transitionRemove": "إزالة",
+   "transitionStartUserGesture": "بدء إيماءة المستخدم",
+   "transitionStopUserGesture": "إيقاف إيماءة المستخدم",
+   "copyAsCurl": "نسخ كـ cURL"
 }

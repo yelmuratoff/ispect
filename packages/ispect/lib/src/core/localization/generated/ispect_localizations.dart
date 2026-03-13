@@ -1420,6 +1420,102 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Open an external log viewer to inspect log files'**
   String get logViewerDesc;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// No description provided for @groupHttp.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP'**
+  String get groupHttp;
+
+  /// No description provided for @groupBloc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc'**
+  String get groupBloc;
+
+  /// No description provided for @groupRiverpod.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod'**
+  String get groupRiverpod;
+
+  /// No description provided for @groupWebSocket.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket'**
+  String get groupWebSocket;
+
+  /// No description provided for @groupDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Database'**
+  String get groupDatabase;
+
+  /// No description provided for @groupNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get groupNavigation;
+
+  /// No description provided for @groupGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get groupGeneral;
+
+  /// No description provided for @transitionPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get transitionPush;
+
+  /// No description provided for @transitionPop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop'**
+  String get transitionPop;
+
+  /// No description provided for @transitionReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get transitionReplace;
+
+  /// No description provided for @transitionRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get transitionRemove;
+
+  /// No description provided for @transitionStartUserGesture.
+  ///
+  /// In en, this message translates to:
+  /// **'Start User Gesture'**
+  String get transitionStartUserGesture;
+
+  /// No description provided for @transitionStopUserGesture.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop User Gesture'**
+  String get transitionStopUserGesture;
+
+  /// No description provided for @copyAsCurl.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as cURL'**
+  String get copyAsCurl;
 }
 
 class _ISpectGeneratedLocalizationDelegate

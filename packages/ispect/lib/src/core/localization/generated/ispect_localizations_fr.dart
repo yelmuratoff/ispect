@@ -746,4 +746,52 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   @override
   String get logViewerDesc =>
       'Ouvrir un visualiseur externe pour inspecter les fichiers de log';
+
+  @override
+  String get selectAll => 'Tout sélectionner';
+
+  @override
+  String get deselectAll => 'Tout désélectionner';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'Base de données';
+
+  @override
+  String get groupNavigation => 'Navigation';
+
+  @override
+  String get groupGeneral => 'Général';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Remplacer';
+
+  @override
+  String get transitionRemove => 'Supprimer';
+
+  @override
+  String get transitionStartUserGesture => 'Début du geste';
+
+  @override
+  String get transitionStopUserGesture => 'Fin du geste';
+
+  @override
+  String get copyAsCurl => 'Copier en cURL';
 }
