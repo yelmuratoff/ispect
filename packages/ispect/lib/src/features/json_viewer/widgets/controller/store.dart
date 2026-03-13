@@ -23,7 +23,6 @@ class JsonExplorerStore extends ChangeNotifier {
   String _searchTerm = '';
   var _focusedSearchResultIndex = 0;
   Timer? _currentSearchOperation;
-  DateTime? _lastSearchTime;
   bool _mounted = true;
 
   // Services for better separation of concerns
@@ -120,18 +119,9 @@ class JsonExplorerStore extends ChangeNotifier {
       return;
     }
 
-    // Cancel any ongoing search
     _currentSearchOperation?.cancel();
-
-    // Debounce search operations
-    _currentSearchOperation = JsonSearchService.debounceSearchOperation(
-      normalizedTerm,
-      _lastSearchTime,
-      _allNodes.length,
-      _doSearch,
-    );
-
-    _lastSearchTime = DateTime.now();
+    _currentSearchOperation = null;
+    unawaited(_doSearch());
   }
 
   /// Sets the focus on the next search result.

@@ -78,7 +78,7 @@ class JsonExplorer extends StatelessWidget {
   ///
   /// See also:
   /// * `JsonExplorerStore`
-  final Iterable<NodeViewModelState> nodes;
+  final List<NodeViewModelState> nodes;
   final JsonExplorerStore store;
 
   final ListController? listController;
@@ -144,7 +144,7 @@ class JsonExplorer extends StatelessWidget {
           controller: scrollController,
           listController: listController,
           itemBuilder: (context, index) {
-            final node = nodes.elementAt(index);
+            final node = nodes[index];
             return _JsonAttributeItem(
               node: node,
               store: store,

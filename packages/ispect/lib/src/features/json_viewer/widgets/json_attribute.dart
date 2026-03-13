@@ -186,7 +186,12 @@ class _JsonAttributeState extends State<JsonAttribute> {
                           searchData.hasSearchResults,
                           searchData.focusedKeyMatchIndex,
                         ),
-                        const SizedBox(width: 8, child: KeySeparatorText()),
+                        SizedBox(
+                          width: 8,
+                          child: KeySeparatorText(
+                            style: widget.theme.rootKeyTextStyle,
+                          ),
+                        ),
                         _buildSuffixForValue(widget.node.value),
                         if (widget.node.isRoot)
                           SelectionContainer.disabled(
@@ -310,8 +315,15 @@ class _JsonAttributeState extends State<JsonAttribute> {
 
   Widget _buildToggleForNode() =>
       switch ((widget.node.isRoot, widget.node.children.isNotEmpty)) {
-        (true, true) => const SelectionContainer.disabled(
-            child: SizedBox(width: 24, child: ToggleButton()),
+        (true, true) => SelectionContainer.disabled(
+            child: SizedBox(
+              width: 24,
+              child: ToggleButton(
+                node: widget.node,
+                iconColor: widget.theme.rootKeyTextStyle.color,
+                collapsableToggleBuilder: widget.collapsableToggleBuilder,
+              ),
+            ),
           ),
         _ => _kEmptyWidget,
       };

@@ -210,17 +210,26 @@ class _JsonScreenState extends State<JsonScreen> {
                       elevation: const WidgetStatePropertyAll(0),
                     ),
                   ),
-                  JsonStoreSelector<({int count, int focusedIndex})>(
+                  JsonStoreSelector<
+                      ({
+                        int count,
+                        int focusedIndex,
+                        bool hasSearchTerm,
+                      })>(
                     store: _store,
                     selector: (s) => (
                       count: s.searchResults.length,
                       focusedIndex: s.focusedSearchResultIndex,
+                      hasSearchTerm: s.searchTerm.isNotEmpty,
                     ),
                     builder: (context, searchData) {
+                      if (!searchData.hasSearchTerm) {
+                        return const SizedBox.shrink();
+                      }
                       final count = searchData.count;
                       final focusedIndex = searchData.focusedIndex;
                       return switch (count) {
-                        0 => const SizedBox.shrink(),
+                        0 => _NoResultsLabel(),
                         _ => _SearchNavigation(
                             store: _store,
                             scrollToSearchMatch: _scrollToSearchMatch,
@@ -334,7 +343,7 @@ class _SearchNavigation extends StatelessWidget {
           _NavButton(
             icon: Icons.keyboard_arrow_up_rounded,
             onPressed: () {
-              store.focusPreviousSearchResult();
+              store.focusPreviousSearchResult(loop: true);
               unawaited(scrollToSearchMatch(store));
             },
           ),
@@ -352,7 +361,7 @@ class _SearchNavigation extends StatelessWidget {
           _NavButton(
             icon: Icons.keyboard_arrow_down_rounded,
             onPressed: () {
-              store.focusNextSearchResult();
+              store.focusNextSearchResult(loop: true);
               unawaited(scrollToSearchMatch(store));
             },
           ),
@@ -360,6 +369,21 @@ class _SearchNavigation extends StatelessWidget {
       ),
     );
   }
+}
+
+class _NoResultsLabel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Text(
+          '0/0',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: context.appTheme.colorScheme.error.withValues(alpha: 0.7),
+          ),
+        ),
+      );
 }
 
 class _NavButton extends StatelessWidget {

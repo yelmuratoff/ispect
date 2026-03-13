@@ -21,6 +21,80 @@ void main() {
   ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 
+// ---------------------------------------------------------------------------
+// Color presets for quick theme switching
+// ---------------------------------------------------------------------------
+
+class _ThemePreset {
+  const _ThemePreset(this.label, this.seed, this.primary, this.background);
+  final String label;
+  final Color seed;
+  final ISpectDynamicColor? primary;
+  final ISpectDynamicColor? background;
+}
+
+const _themePresets = <_ThemePreset>[
+  _ThemePreset(
+    'Default',
+    Colors.deepPurple,
+    null,
+    null,
+  ),
+  _ThemePreset(
+    'Ocean',
+    Colors.blue,
+    ISpectDynamicColor(light: Color(0xFF1565C0), dark: Color(0xFF64B5F6)),
+    ISpectDynamicColor(light: Color(0xFFF5F8FF), dark: Color(0xFF0D1B2A)),
+  ),
+  _ThemePreset(
+    'Forest',
+    Colors.green,
+    ISpectDynamicColor(light: Color(0xFF2E7D32), dark: Color(0xFF81C784)),
+    ISpectDynamicColor(light: Color(0xFFF1F8E9), dark: Color(0xFF1B2E1B)),
+  ),
+  _ThemePreset(
+    'Sunset',
+    Colors.deepOrange,
+    ISpectDynamicColor(light: Color(0xFFD84315), dark: Color(0xFFFF8A65)),
+    ISpectDynamicColor(light: Color(0xFFFFF3E0), dark: Color(0xFF2E1A0E)),
+  ),
+  _ThemePreset(
+    'Mono',
+    Colors.grey,
+    ISpectDynamicColor(light: Color(0xFF424242), dark: Color(0xFFBDBDBD)),
+    ISpectDynamicColor(light: Color(0xFFFAFAFA), dark: Color(0xFF121212)),
+  ),
+];
+
+// ---------------------------------------------------------------------------
+// Supported locales with display names
+// ---------------------------------------------------------------------------
+
+class _LocaleOption {
+  const _LocaleOption(this.locale, this.label);
+  final Locale locale;
+  final String label;
+}
+
+const _localeOptions = <_LocaleOption>[
+  _LocaleOption(Locale('en'), 'English'),
+  _LocaleOption(Locale('ru'), 'Русский'),
+  _LocaleOption(Locale('kk'), 'Қазақша'),
+  _LocaleOption(Locale('de'), 'Deutsch'),
+  _LocaleOption(Locale('es'), 'Español'),
+  _LocaleOption(Locale('fr'), 'Français'),
+  _LocaleOption(Locale('pt'), 'Português'),
+  _LocaleOption(Locale('zh'), '中文'),
+  _LocaleOption(Locale('ja'), '日本語'),
+  _LocaleOption(Locale('ko'), '한국어'),
+  _LocaleOption(Locale('hi'), 'हिन्दी'),
+  _LocaleOption(Locale('ar'), 'العربية'),
+];
+
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -31,14 +105,35 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final observer = ISpectNavigatorObserver();
 
+  ThemeMode _themeMode = ThemeMode.system;
+  _ThemePreset _preset = _themePresets.first;
+  Locale _locale = const Locale('en');
+
+  void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
+  void _setPreset(_ThemePreset preset) => setState(() => _preset = preset);
+  void _setLocale(Locale locale) => setState(() => _locale = locale);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: _locale,
+      supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: ISpectLocalizations.delegates(),
       navigatorObservers:
           ISpectNavigatorObserver.observers(additional: [observer]),
+      themeMode: _themeMode,
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _preset.seed,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _preset.seed,
+          brightness: Brightness.dark,
+        ),
+      ),
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
         options: ISpectOptions(
@@ -50,21 +145,50 @@ class _MyAppState extends State<MyApp> {
             files: req.filePaths.map(XFile.new).toList(),
           )),
         ),
-        theme: ISpectTheme(pageTitle: 'Debug'),
+        theme: ISpectTheme(
+          pageTitle: 'Debug',
+          primary: _preset.primary,
+          background: _preset.background,
+        ),
       ),
-      home: const MyHomePage(),
+      home: _MyHomePage(
+        themeMode: _themeMode,
+        preset: _preset,
+        locale: _locale,
+        onThemeModeChanged: _setThemeMode,
+        onPresetChanged: _setPreset,
+        onLocaleChanged: _setLocale,
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+// ---------------------------------------------------------------------------
+// Home page
+// ---------------------------------------------------------------------------
+
+class _MyHomePage extends StatefulWidget {
+  const _MyHomePage({
+    required this.themeMode,
+    required this.preset,
+    required this.locale,
+    required this.onThemeModeChanged,
+    required this.onPresetChanged,
+    required this.onLocaleChanged,
+  });
+
+  final ThemeMode themeMode;
+  final _ThemePreset preset;
+  final Locale locale;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<_ThemePreset> onPresetChanged;
+  final ValueChanged<Locale> onLocaleChanged;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<_MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<_MyHomePage> {
   double _logCount = 10;
   double _listSize = 5;
   double _nestingDepth = 2;
@@ -255,6 +379,19 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 24),
 
+          // --- Appearance settings ---
+          Text('Appearance', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          _AppearanceSection(
+            themeMode: widget.themeMode,
+            preset: widget.preset,
+            locale: widget.locale,
+            onThemeModeChanged: widget.onThemeModeChanged,
+            onPresetChanged: widget.onPresetChanged,
+            onLocaleChanged: widget.onLocaleChanged,
+          ),
+          const Divider(height: 32),
+
           // --- Simple logs ---
           Text('Simple Logs', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
@@ -417,6 +554,107 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Appearance section: theme mode, color preset, locale
+// ---------------------------------------------------------------------------
+
+class _AppearanceSection extends StatelessWidget {
+  const _AppearanceSection({
+    required this.themeMode,
+    required this.preset,
+    required this.locale,
+    required this.onThemeModeChanged,
+    required this.onPresetChanged,
+    required this.onLocaleChanged,
+  });
+
+  final ThemeMode themeMode;
+  final _ThemePreset preset;
+  final Locale locale;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<_ThemePreset> onPresetChanged;
+  final ValueChanged<Locale> onLocaleChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Theme mode toggle
+        SegmentedButton<ThemeMode>(
+          segments: const [
+            ButtonSegment(
+              value: ThemeMode.light,
+              icon: Icon(Icons.light_mode, size: 18),
+              label: Text('Light'),
+            ),
+            ButtonSegment(
+              value: ThemeMode.system,
+              icon: Icon(Icons.settings_brightness, size: 18),
+              label: Text('System'),
+            ),
+            ButtonSegment(
+              value: ThemeMode.dark,
+              icon: Icon(Icons.dark_mode, size: 18),
+              label: Text('Dark'),
+            ),
+          ],
+          selected: {themeMode},
+          onSelectionChanged: (v) => onThemeModeChanged(v.first),
+          showSelectedIcon: false,
+        ),
+        const SizedBox(height: 12),
+
+        // Color preset chips
+        Text('Color preset', style: theme.textTheme.bodySmall),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final p in _themePresets)
+              ChoiceChip(
+                label: Text(p.label),
+                avatar: CircleAvatar(
+                  backgroundColor: p.seed,
+                  radius: 8,
+                ),
+                selected: preset.label == p.label,
+                onSelected: (_) => onPresetChanged(p),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Locale dropdown
+        Text('Language', style: theme.textTheme.bodySmall),
+        const SizedBox(height: 4),
+        DropdownButton<Locale>(
+          value: locale,
+          isExpanded: true,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          items: [
+            for (final opt in _localeOptions)
+              DropdownMenuItem(
+                value: opt.locale,
+                child: Text(opt.label),
+              ),
+          ],
+          onChanged: (v) {
+            if (v != null) onLocaleChanged(v);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reusable widgets
+// ---------------------------------------------------------------------------
 
 class _SimpleLogButton extends StatelessWidget {
   const _SimpleLogButton({
