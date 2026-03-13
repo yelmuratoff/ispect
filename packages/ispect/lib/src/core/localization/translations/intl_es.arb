@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "Registro de mensajes recibidos por WebSocket",
    "dbQueryLogDesc": "Registro de consultas a la base de datos",
    "dbResultLogDesc": "Registro de resultados de la base de datos",
-   "dbErrorLogDesc": "Registro de errores de la base de datos"
+   "dbErrorLogDesc": "Registro de errores de la base de datos",
+   "reverseLogsDesc": "Cambiar el orden de visualización de los logs de más reciente a más antiguo o viceversa",
+   "copyAllLogsDesc": "Copiar todas las entradas de log al portapapeles como texto",
+   "expandLogsDesc": "Mostrar todos los detalles de todas las entradas de log",
+   "collapseLogsDesc": "Contraer todas las entradas de log en vista compacta",
+   "clearHistoryDesc": "Eliminar todas las entradas de log guardadas de la memoria",
+   "shareLogsFileDesc": "Exportar logs como archivo y compartir mediante el menú del sistema",
+   "navigationFlowDesc": "Ver la secuencia de transiciones de pantalla en tu aplicación",
+   "dailySessionsDesc": "Explorar archivos de log de sesiones anteriores de la aplicación",
+   "logViewerDesc": "Abrir un visor externo para inspeccionar archivos de log"
 }

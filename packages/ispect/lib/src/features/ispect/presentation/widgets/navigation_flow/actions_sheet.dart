@@ -21,14 +21,14 @@ class ISpectNavigationFlowActionsSheet {
 
   Future<void> show(BuildContext context) => showISpectSheet(
         context,
+        initialChildSize: 0.25,
+        maxChildSize: 0.35,
+        topOnlyRadius: true,
         builder: (context, _) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: _ActionsContent(
-              log: log,
-              transition: transition,
-              items: items,
-            ),
+          child: _ActionsContent(
+            log: log,
+            transition: transition,
+            items: items,
           ),
         ),
       );
@@ -50,17 +50,24 @@ class _ActionsContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ISpectBottomSheetHeader(title: context.ispectL10n.share),
+          const ISpectDragHandle(),
+          const Gap(8),
+          ISpectBottomSheetHeader(
+            title: context.ispectL10n.share,
+            icon: Icons.route_rounded,
+          ),
           const Gap(16),
           Flexible(
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (context.iSpect.options.onShare != null)
-                  SizedBox(
-                    height: 40,
-                    child: FilledButton(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (context.iSpect.options.onShare != null)
+                    ISpectSheetActionButton(
+                      icon: Icons.share_rounded,
+                      label: context.ispectL10n.shareLogFull,
                       onPressed: () {
                         Navigator.of(context).pop();
                         final String text;
@@ -78,21 +85,10 @@ class _ActionsContent extends StatelessWidget {
                           onShare: context.iSpect.options.onShare,
                         );
                       },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.share_rounded),
-                          const Gap(8),
-                          Flexible(
-                            child: Text(context.ispectL10n.shareLogFull),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                SizedBox(
-                  height: 40,
-                  child: FilledButton(
+                  ISpectSheetActionButton(
+                    icon: Icons.copy_rounded,
+                    label: context.ispectL10n.copyToClipboardTruncated,
                     onPressed: () {
                       Navigator.of(context).pop();
                       final String text;
@@ -107,21 +103,9 @@ class _ActionsContent extends StatelessWidget {
                         showValue: false,
                       );
                     },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.copy_rounded),
-                        const Gap(8),
-                        Flexible(
-                          child: Text(
-                            context.ispectL10n.copyToClipboardTruncated,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

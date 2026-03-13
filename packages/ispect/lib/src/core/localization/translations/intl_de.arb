@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "Protokoll empfangener WebSocket-Nachrichten",
    "dbQueryLogDesc": "Protokoll der Datenbankabfragen",
    "dbResultLogDesc": "Protokoll der Datenbankergebnisse",
-   "dbErrorLogDesc": "Protokoll der Datenbankfehler"
+   "dbErrorLogDesc": "Protokoll der Datenbankfehler",
+   "reverseLogsDesc": "Anzeigereihenfolge der Logs von neueste-zuerst zu älteste-zuerst ändern oder umgekehrt",
+   "copyAllLogsDesc": "Alle Logeinträge als Text in die Zwischenablage kopieren",
+   "expandLogsDesc": "Vollständige Details für alle Logeinträge anzeigen",
+   "collapseLogsDesc": "Alle Logeinträge in kompakter Ansicht zusammenklappen",
+   "clearHistoryDesc": "Alle gespeicherten Logeinträge aus dem Speicher entfernen",
+   "shareLogsFileDesc": "Logs als Datei exportieren und über das System-Teilen-Menü teilen",
+   "navigationFlowDesc": "Abfolge der Bildschirmübergänge in Ihrer App anzeigen",
+   "dailySessionsDesc": "Logdateien aus vorherigen App-Sitzungen durchsuchen",
+   "logViewerDesc": "Externen Log-Viewer zum Untersuchen von Logdateien öffnen"
 }

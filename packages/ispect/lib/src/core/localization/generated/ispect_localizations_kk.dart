@@ -692,4 +692,37 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Дерекқор қателері журналы';
+
+  @override
+  String get reverseLogsDesc =>
+      'Логтардың көрсету ретін жаңадан ескіге немесе керісінше өзгерту';
+
+  @override
+  String get copyAllLogsDesc => 'Барлық лог жазбаларын алмасу буферіне көшіру';
+
+  @override
+  String get expandLogsDesc =>
+      'Барлық лог жазбаларының толық мәліметтерін көрсету';
+
+  @override
+  String get collapseLogsDesc => 'Барлық лог жазбаларын ықшам көрініске жию';
+
+  @override
+  String get clearHistoryDesc => 'Жадтан барлық сақталған лог жазбаларын жою';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Логтарды файлға экспорттап, жүйелік бөлісу мәзірі арқылы жіберу';
+
+  @override
+  String get navigationFlowDesc =>
+      'Қосымшадағы экрандар арасындағы ауысулар тізбегін қарау';
+
+  @override
+  String get dailySessionsDesc =>
+      'Алдыңғы қосымша сессияларынан сақталған лог файлдарын шолу';
+
+  @override
+  String get logViewerDesc =>
+      'Лог файлдарын талдау үшін сыртқы көрсеткішті ашу';
 }

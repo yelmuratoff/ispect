@@ -89,7 +89,7 @@ class ISpectViewController extends ChangeNotifier {
       _filterManager.getTitles(logsData);
 
   void handleLogItemTap(ISpectLogData logEntry) {
-    activeData = activeData?.hashCode == logEntry.hashCode ? null : logEntry;
+    activeData = activeData == logEntry ? null : logEntry;
   }
 
   void handleTitleFilterToggle(String title, {required bool isSelected}) =>

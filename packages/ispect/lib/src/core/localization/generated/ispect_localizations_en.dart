@@ -691,4 +691,36 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Database operation failed';
+
+  @override
+  String get reverseLogsDesc =>
+      'Change the display order of logs from newest-first to oldest-first or vice versa';
+
+  @override
+  String get copyAllLogsDesc => 'Copy all log entries to the clipboard as text';
+
+  @override
+  String get expandLogsDesc => 'Show full details for all log entries';
+
+  @override
+  String get collapseLogsDesc => 'Collapse all log entries to a compact view';
+
+  @override
+  String get clearHistoryDesc => 'Remove all saved log entries from memory';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Export logs as a file and share via system share sheet';
+
+  @override
+  String get navigationFlowDesc =>
+      'View the sequence of screen transitions in your app';
+
+  @override
+  String get dailySessionsDesc =>
+      'Browse log files saved from previous app sessions';
+
+  @override
+  String get logViewerDesc =>
+      'Open an external log viewer to inspect log files';
 }

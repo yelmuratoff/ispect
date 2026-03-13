@@ -1360,6 +1360,60 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Database operation failed'**
   String get dbErrorLogDesc;
+
+  /// No description provided for @reverseLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the display order of logs from newest-first to oldest-first or vice versa'**
+  String get reverseLogsDesc;
+
+  /// No description provided for @copyAllLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all log entries to the clipboard as text'**
+  String get copyAllLogsDesc;
+
+  /// No description provided for @expandLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show full details for all log entries'**
+  String get expandLogsDesc;
+
+  /// No description provided for @collapseLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse all log entries to a compact view'**
+  String get collapseLogsDesc;
+
+  /// No description provided for @clearHistoryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all saved log entries from memory'**
+  String get clearHistoryDesc;
+
+  /// No description provided for @shareLogsFileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export logs as a file and share via system share sheet'**
+  String get shareLogsFileDesc;
+
+  /// No description provided for @navigationFlowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View the sequence of screen transitions in your app'**
+  String get navigationFlowDesc;
+
+  /// No description provided for @dailySessionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse log files saved from previous app sessions'**
+  String get dailySessionsDesc;
+
+  /// No description provided for @logViewerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Open an external log viewer to inspect log files'**
+  String get logViewerDesc;
 }
 
 class _ISpectGeneratedLocalizationDelegate

@@ -6,11 +6,13 @@ class ISpectActionItem {
     required this.onTap,
     required this.title,
     required this.icon,
+    this.description,
   });
 
   final void Function(BuildContext context)? onTap;
   final String title;
   final IconData icon;
+  final String? description;
 
   @override
   bool operator ==(Object other) {

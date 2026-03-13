@@ -444,11 +444,7 @@ class _RedactionWalker {
 
   bool _looksLikeAuthorizationValue(String value) {
     if (_jwtRegex.hasMatch(value)) return true;
-    if (value.startsWith('Bearer ') ||
-        value.startsWith('Basic ') ||
-        value.startsWith('Digest ')) {
-      return true;
-    }
+    if (_schemeRegex.hasMatch(value)) return true;
     return _tokenPrefixRegex.hasMatch(value);
   }
 

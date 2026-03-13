@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "웹소켓 수신 메시지 로그",
    "dbQueryLogDesc": "데이터베이스 쿼리 로그",
    "dbResultLogDesc": "데이터베이스 결과 로그",
-   "dbErrorLogDesc": "데이터베이스 오류 로그"
+   "dbErrorLogDesc": "데이터베이스 오류 로그",
+   "reverseLogsDesc": "로그 표시 순서를 최신순에서 오래된순으로 또는 그 반대로 변경",
+   "copyAllLogsDesc": "모든 로그 항목을 텍스트로 클립보드에 복사",
+   "expandLogsDesc": "모든 로그 항목의 전체 세부 정보 표시",
+   "collapseLogsDesc": "모든 로그 항목을 간결한 보기로 접기",
+   "clearHistoryDesc": "메모리에서 저장된 모든 로그 항목 제거",
+   "shareLogsFileDesc": "로그를 파일로 내보내고 시스템 공유 메뉴를 통해 공유",
+   "navigationFlowDesc": "앱의 화면 전환 순서 보기",
+   "dailySessionsDesc": "이전 앱 세션에서 저장된 로그 파일 탐색",
+   "logViewerDesc": "로그 파일을 검사하기 위한 외부 뷰어 열기"
 }

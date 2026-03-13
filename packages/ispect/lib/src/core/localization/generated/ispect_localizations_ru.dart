@@ -695,4 +695,37 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Операция с базой данных завершилась ошибкой';
+
+  @override
+  String get reverseLogsDesc =>
+      'Изменить порядок отображения логов: сначала новые или сначала старые';
+
+  @override
+  String get copyAllLogsDesc => 'Скопировать все записи логов в буфер обмена';
+
+  @override
+  String get expandLogsDesc => 'Показать полные детали для всех записей логов';
+
+  @override
+  String get collapseLogsDesc => 'Свернуть все записи логов в компактный вид';
+
+  @override
+  String get clearHistoryDesc =>
+      'Удалить все сохранённые записи логов из памяти';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Экспортировать логи в файл и поделиться через системное меню';
+
+  @override
+  String get navigationFlowDesc =>
+      'Просмотр последовательности переходов между экранами';
+
+  @override
+  String get dailySessionsDesc =>
+      'Просмотр лог-файлов из предыдущих сессий приложения';
+
+  @override
+  String get logViewerDesc =>
+      'Открыть внешний просмотрщик для анализа лог-файлов';
 }

@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "WebSocket 受信メッセージのログ",
    "dbQueryLogDesc": "データベースクエリのログ",
    "dbResultLogDesc": "データベース結果のログ",
-   "dbErrorLogDesc": "データベースエラーのログ"
+   "dbErrorLogDesc": "データベースエラーのログ",
+   "reverseLogsDesc": "ログの表示順序を新しい順から古い順、またはその逆に変更",
+   "copyAllLogsDesc": "すべてのログエントリをテキストとしてクリップボードにコピー",
+   "expandLogsDesc": "すべてのログエントリの詳細を表示",
+   "collapseLogsDesc": "すべてのログエントリをコンパクトビューに折りたたむ",
+   "clearHistoryDesc": "メモリからすべての保存済みログエントリを削除",
+   "shareLogsFileDesc": "ログをファイルとしてエクスポートし、システム共有メニューで共有",
+   "navigationFlowDesc": "アプリの画面遷移の順序を表示",
+   "dailySessionsDesc": "以前のアプリセッションから保存されたログファイルを閲覧",
+   "logViewerDesc": "ログファイルを検査するための外部ビューアを開く"
 }

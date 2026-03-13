@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "WebSocket 接收消息日志",
    "dbQueryLogDesc": "数据库查询日志",
    "dbResultLogDesc": "数据库结果日志",
-   "dbErrorLogDesc": "数据库错误日志"
+   "dbErrorLogDesc": "数据库错误日志",
+   "reverseLogsDesc": "将日志显示顺序从最新优先更改为最旧优先，反之亦然",
+   "copyAllLogsDesc": "将所有日志条目作为文本复制到剪贴板",
+   "expandLogsDesc": "显示所有日志条目的完整详细信息",
+   "collapseLogsDesc": "将所有日志条目折叠为紧凑视图",
+   "clearHistoryDesc": "从内存中删除所有已保存的日志条目",
+   "shareLogsFileDesc": "将日志导出为文件并通过系统共享菜单分享",
+   "navigationFlowDesc": "查看应用中的屏幕转换顺序",
+   "dailySessionsDesc": "浏览以前应用会话中保存的日志文件",
+   "logViewerDesc": "打开外部查看器以检查日志文件"
 }

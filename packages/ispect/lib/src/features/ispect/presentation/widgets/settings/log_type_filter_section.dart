@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/base_card.dart';
 
-/// A widget that displays a list of log types with toggle switches
+/// A widget that displays a grid of log type chips
 /// to enable/disable specific log types for filtering.
 class LogTypeFilterSection extends StatelessWidget {
   const LogTypeFilterSection({
@@ -35,167 +33,224 @@ class LogTypeFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
+    final logDescriptions = ISpectConstants.defaultLogDescriptions(context);
+
+    // Group by category
+    final groups = _groupLogTypes(logDescriptions);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: context.ispectTheme.card?.resolve(context) ??
-              context.appTheme.cardColor,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16),
-          ),
-          border: Border.fromBorderSide(
-            BorderSide(
-              color: iSpect.theme.divider?.resolve(context) ??
-                  context.appTheme.dividerColor,
-            ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    context.ispectL10n.iSpectifyLogsInfo,
-                    style: context.appTheme.textTheme.titleMedium?.copyWith(
-                      color: context.appTheme.textColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.ispectL10n.iSpectifyLogsInfo.toUpperCase(),
+                  style: context.appTheme.textTheme.labelSmall?.copyWith(
+                    color:
+                        context.appTheme.textColor.withValues(alpha: 0.45),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
+                  child: Text(
+                    _isAllEnabled ? 'Deselect All' : 'Select All',
+                    style: context.appTheme.textTheme.labelSmall?.copyWith(
+                      color: context.ispectTheme.primary?.resolve(context) ??
+                          context.appTheme.colorScheme.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  TextButton(
-                    onPressed: _isAllEnabled ? onDeselectAll : onSelectAll,
-                    child: Text(
-                      _isAllEnabled ? 'Deselect All' : 'Select All',
-                      style: context.appTheme.textTheme.bodySmall?.copyWith(
-                        color: context.appTheme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Divider(
-              color: iSpect.theme.divider?.resolve(context) ??
-                  context.appTheme.dividerColor,
-              height: 1,
+          ),
+          ...groups.entries.map(
+            (entry) => _LogTypeGroup(
+              title: entry.key,
+              logTypes: entry.value,
+              disabledLogTypes: disabledLogTypes,
+              onLogTypeToggled: onLogTypeToggled,
             ),
-            const Gap(8),
-            ...ISpectConstants.defaultLogDescriptions(context).map(
-              (entry) => _buildLogTypeItem(
-                context,
-                iSpect,
-                entry,
-              ),
-            ),
-            const Gap(12),
-          ],
-        ),
+          ),
+          const Gap(12),
+        ],
       ),
     );
   }
 
-  Widget _buildLogTypeItem(
-    BuildContext context,
-    ISpectScopeModel iSpect,
-    LogDescription logType,
+  Map<String, List<LogDescription>> _groupLogTypes(
+    List<LogDescription> descriptions,
   ) {
-    // Type is enabled if NOT in disabled set
-    final isEnabled = !disabledLogTypes.contains(logType.key);
+    final groups = <String, List<LogDescription>>{};
+    for (final desc in descriptions) {
+      final key = desc.key;
+      String group;
+      if (key.startsWith('http-')) {
+        group = 'HTTP';
+      } else if (key.startsWith('bloc-')) {
+        group = 'Bloc';
+      } else if (key.startsWith('riverpod-')) {
+        group = 'Riverpod';
+      } else if (key.startsWith('ws-')) {
+        group = 'WebSocket';
+      } else if (key.startsWith('db-')) {
+        group = 'Database';
+      } else if (key == 'route') {
+        group = 'Navigation';
+      } else {
+        group = 'General';
+      }
+      (groups[group] ??= []).add(desc);
+    }
+    return groups;
+  }
+}
 
-    return Column(
-      children: [
-        ISpectBaseCard(
-          padding: EdgeInsets.zero,
-          color: iSpect.theme.divider?.resolve(context) ??
-              context.appTheme.dividerColor,
-          backgroundColor: context.ispectTheme.card?.resolve(context) ??
-              context.appTheme.cardColor,
-          child: Material(
-            color: Colors.transparent,
-            child: ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
-              visualDensity: VisualDensity.compact,
-              title: Row(
-                spacing: 4,
-                children: [
-                  SizedBox.square(
-                    dimension: 24,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: context.iSpect.theme
-                            .getTypeColor(context, key: logType.key)
-                            ?.withValues(alpha: 0.2),
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(ISpectConstants.standardBorderRadius),
-                        ),
-                      ),
-                      child: Icon(
-                        context.iSpect.theme
-                            .getTypeIcon(context, key: logType.key),
-                        size: 16,
-                        color: context.iSpect.theme
-                            .getTypeColor(context, key: logType.key),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    logType.key,
-                    style: TextStyle(
-                      color: context.iSpect.theme
-                          .getTypeColor(context, key: logType.key),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (iSpect.theme.getTypeDescription(
-                        context,
-                        key: logType.key,
-                      ) !=
-                      null) ...[
-                    const SizedBox(width: 4),
-                    Tooltip(
-                      message: iSpect.theme.getTypeDescription(
-                        context,
-                        key: logType.key,
-                      ),
-                      child: const Icon(
-                        Icons.info_outline,
-                        size: 14,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              trailing: Switch(
-                value: isEnabled,
-                trackColor: WidgetStateProperty.all(
-                  context.ispectTheme.primary?.resolve(context) ??
-                      context.appTheme.colorScheme.primary,
+class _LogTypeGroup extends StatelessWidget {
+  const _LogTypeGroup({
+    required this.title,
+    required this.logTypes,
+    required this.disabledLogTypes,
+    required this.onLogTypeToggled,
+  });
+
+  final String title;
+  final List<LogDescription> logTypes;
+  final Set<String> disabledLogTypes;
+  final void Function(String logTypeKey, {required bool enabled})
+      onLogTypeToggled;
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.cardColor;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: context.appTheme.textTheme.labelMedium?.copyWith(
+                  color: context.appTheme.textColor.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w600,
                 ),
-                thumbColor: WidgetStateProperty.all(
-                  context.appTheme.colorScheme.onPrimary,
-                ),
-                trackOutlineColor: WidgetStateProperty.all(
-                  context.ispectTheme.divider?.resolve(context),
-                ),
-                onChanged: (value) =>
-                    onLogTypeToggled(logType.key, enabled: value),
               ),
-            ),
+              const Gap(8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: logTypes.map((logType) {
+                  final isEnabled =
+                      !disabledLogTypes.contains(logType.key);
+                  return _LogTypeChip(
+                    logType: logType,
+                    isEnabled: isEnabled,
+                    onToggled: () => onLogTypeToggled(
+                      logType.key,
+                      enabled: !isEnabled,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
+  }
+}
+
+class _LogTypeChip extends StatelessWidget {
+  const _LogTypeChip({
+    required this.logType,
+    required this.isEnabled,
+    required this.onToggled,
+  });
+
+  final LogDescription logType;
+  final bool isEnabled;
+  final VoidCallback onToggled;
+
+  @override
+  Widget build(BuildContext context) {
+    final typeColor = context.iSpect.theme
+        .getTypeColor(context, key: logType.key);
+    final typeIcon = context.iSpect.theme
+        .getTypeIcon(context, key: logType.key);
+    final description = context.iSpect.theme
+        .getTypeDescription(context, key: logType.key);
+    final effectiveColor = isEnabled
+        ? typeColor
+        : context.appTheme.textColor.withValues(alpha: 0.25);
+
+    Widget chip = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onToggled,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isEnabled
+                ? effectiveColor?.withValues(alpha: 0.12)
+                : context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.04),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: Border.all(
+              color: isEnabled
+                  ? effectiveColor?.withValues(alpha: 0.3) ??
+                      Colors.transparent
+                  : context.appTheme.colorScheme.onSurface
+                      .withValues(alpha: 0.08),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                typeIcon,
+                size: 14,
+                color: effectiveColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                logType.key,
+                style: TextStyle(
+                  color: effectiveColor,
+                  fontSize: 12,
+                  fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (description != null) {
+      chip = Tooltip(
+        message: description,
+        child: chip,
+      );
+    }
+
+    return chip;
   }
 }

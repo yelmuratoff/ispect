@@ -684,4 +684,34 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'سجل أخطاء قاعدة البيانات';
+
+  @override
+  String get reverseLogsDesc =>
+      'تغيير ترتيب عرض السجلات من الأحدث أولاً إلى الأقدم أولاً أو العكس';
+
+  @override
+  String get copyAllLogsDesc => 'نسخ جميع إدخالات السجل إلى الحافظة كنص';
+
+  @override
+  String get expandLogsDesc => 'عرض التفاصيل الكاملة لجميع إدخالات السجل';
+
+  @override
+  String get collapseLogsDesc => 'طي جميع إدخالات السجل في عرض مضغوط';
+
+  @override
+  String get clearHistoryDesc => 'حذف جميع إدخالات السجل المحفوظة من الذاكرة';
+
+  @override
+  String get shareLogsFileDesc =>
+      'تصدير السجلات كملف ومشاركتها عبر قائمة المشاركة';
+
+  @override
+  String get navigationFlowDesc => 'عرض تسلسل انتقالات الشاشات في تطبيقك';
+
+  @override
+  String get dailySessionsDesc =>
+      'تصفح ملفات السجل المحفوظة من الجلسات السابقة';
+
+  @override
+  String get logViewerDesc => 'فتح عارض خارجي لفحص ملفات السجل';
 }

@@ -147,6 +147,7 @@ class _LogsScreenState extends State<LogsScreen> {
         onTap: (_) => _logsViewController.toggleLogOrder(),
         title: context.ispectL10n.reverseLogs,
         icon: Icons.swap_vert,
+        description: context.ispectL10n.reverseLogsDesc,
       );
 
   ISpectActionItem _buildCopyAllLogsAction(BuildContext context) =>
@@ -166,6 +167,7 @@ class _LogsScreenState extends State<LogsScreen> {
         ),
         title: context.ispectL10n.copyAllLogs,
         icon: Icons.copy,
+        description: context.ispectL10n.copyAllLogsDesc,
       );
 
   ISpectActionItem _buildExpandLogsAction(BuildContext context) =>
@@ -177,6 +179,9 @@ class _LogsScreenState extends State<LogsScreen> {
         icon: _logsViewController.expandedLogs
             ? Icons.visibility_outlined
             : Icons.visibility_off_outlined,
+        description: _logsViewController.expandedLogs
+            ? context.ispectL10n.collapseLogsDesc
+            : context.ispectL10n.expandLogsDesc,
       );
 
   ISpectActionItem _buildClearHistoryAction(BuildContext context) =>
@@ -185,6 +190,7 @@ class _LogsScreenState extends State<LogsScreen> {
             _logsViewController.clearLogsHistory(ISpect.logger.clearHistory),
         title: context.ispectL10n.clearHistory,
         icon: Icons.delete_outline,
+        description: context.ispectL10n.clearHistoryDesc,
       );
 
   ISpectActionItem _buildShareLogsAction(BuildContext context) =>
@@ -194,6 +200,7 @@ class _LogsScreenState extends State<LogsScreen> {
         ).show(context),
         title: context.ispectL10n.shareLogsFile,
         icon: Icons.ios_share_outlined,
+        description: context.ispectL10n.shareLogsFileDesc,
       );
 
   ISpectActionItem _buildNavigationFlowAction() {
@@ -205,6 +212,7 @@ class _LogsScreenState extends State<LogsScreen> {
     return ISpectActionItem(
       title: context.ispectL10n.navigationFlow,
       icon: Icons.route_rounded,
+      description: context.ispectL10n.navigationFlowDesc,
       onTap: (context) => ISpectNavigationFlowScreen(
         observer: observer! as ISpectNavigatorObserver,
       ).push(context),
@@ -214,6 +222,7 @@ class _LogsScreenState extends State<LogsScreen> {
   ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
         title: context.ispectL10n.dailySessions,
         icon: Icons.history_rounded,
+        description: context.ispectL10n.dailySessionsDesc,
         onTap: (context) => DailySessionsScreen(
           history: ISpect.logger.fileLogHistory,
         ).push(context),
@@ -222,6 +231,7 @@ class _LogsScreenState extends State<LogsScreen> {
   ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
         title: context.ispectL10n.logViewer,
         icon: Icons.developer_mode_rounded,
+        description: context.ispectL10n.logViewerDesc,
         onTap: (_) => _handleLogViewerTap(),
       );
 
@@ -465,8 +475,7 @@ class _MainLogsView extends StatelessWidget {
               statusColor:
                   iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
                       Colors.grey,
-              isExpanded: logsViewController.activeData?.hashCode ==
-                      logEntry.hashCode ||
+              isExpanded: logsViewController.activeData == logEntry ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
               dividerColor: iSpectTheme.theme.divider?.resolve(context) ??

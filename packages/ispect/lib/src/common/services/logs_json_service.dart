@@ -92,8 +92,8 @@ class LogsJsonService {
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   ///
   /// **Validation:**
-  /// - Size: Max 10MB
-  /// - Depth: Max 50 levels
+  /// - Size: Max 500MB
+  /// - Depth: Max 1000 levels
   /// - Count: Max 100,000 entries
   ///
   /// **Security:** Prevents DoS attacks via malformed JSON
@@ -119,12 +119,15 @@ class LogsJsonService {
     }
   }
 
-  /// Validates JSON string size to prevent memory exhaustion
+  /// Validates JSON string size to prevent memory exhaustion.
+  ///
+  /// Uses [String.length] (UTF-16 code units) as a fast, conservative proxy
+  /// for size. For JSON content this closely approximates the actual byte count.
   void _validateJsonSize(String jsonString) {
     if (jsonString.length > maxJsonSize) {
       throw FormatException(
-        'JSON size (${jsonString.length} bytes) exceeds maximum allowed '
-        'size ($maxJsonSize bytes). Please import a smaller dataset.',
+        'JSON size (${jsonString.length} characters) exceeds maximum allowed '
+        'size ($maxJsonSize characters). Please import a smaller dataset.',
       );
     }
   }

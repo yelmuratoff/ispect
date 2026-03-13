@@ -680,4 +680,31 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => '数据库错误日志';
+
+  @override
+  String get reverseLogsDesc => '将日志显示顺序从最新优先更改为最旧优先，反之亦然';
+
+  @override
+  String get copyAllLogsDesc => '将所有日志条目作为文本复制到剪贴板';
+
+  @override
+  String get expandLogsDesc => '显示所有日志条目的完整详细信息';
+
+  @override
+  String get collapseLogsDesc => '将所有日志条目折叠为紧凑视图';
+
+  @override
+  String get clearHistoryDesc => '从内存中删除所有已保存的日志条目';
+
+  @override
+  String get shareLogsFileDesc => '将日志导出为文件并通过系统共享菜单分享';
+
+  @override
+  String get navigationFlowDesc => '查看应用中的屏幕转换顺序';
+
+  @override
+  String get dailySessionsDesc => '浏览以前应用会话中保存的日志文件';
+
+  @override
+  String get logViewerDesc => '打开外部查看器以检查日志文件';
 }

@@ -17,12 +17,11 @@ class ISpectShareLogBottomSheet {
 
   Future<void> show(BuildContext context) => showISpectSheet(
         context,
-        initialChildSize: 0.3,
+        initialChildSize: 0.25,
+        maxChildSize: 0.35,
+        topOnlyRadius: true,
         builder: (context, _) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: _InfoDescription(data: data, truncatedData: truncatedData),
-          ),
+          child: _InfoDescription(data: data, truncatedData: truncatedData),
         ),
       );
 }
@@ -42,78 +41,54 @@ class _InfoDescription extends StatelessWidget {
 
     return Column(
       children: [
-        ISpectBottomSheetHeader(title: context.ispectL10n.share),
+        const ISpectDragHandle(),
+        const Gap(8),
+        ISpectBottomSheetHeader(
+          title: context.ispectL10n.share,
+          icon: Icons.ios_share_rounded,
+        ),
         const Gap(16),
         Flexible(
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (shareCallback != null)
-                SizedBox(
-                  height: 40,
-                  child: FilledButton(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (shareCallback != null)
+                  ISpectSheetActionButton(
+                    icon: Icons.share_rounded,
+                    label: context.ispectL10n.shareLogFull,
                     onPressed: () {
                       final valueToShare = JsonTruncatorService.pretty(
                         data,
                         maxDepth: 500,
                         maxIterableSize: 10000,
                       );
-
                       Navigator.of(context).pop();
-
                       LogsFileFactory.downloadFile(
                         valueToShare,
                         fileName: 'ispect_log',
                         onShare: shareCallback,
                       );
                     },
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.share_rounded,
-                        ),
-                        const Gap(8),
-                        Flexible(
-                          child: Text(
-                            context.ispectL10n.shareLogFull,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              SizedBox(
-                height: 40,
-                child: FilledButton(
+                ISpectSheetActionButton(
+                  icon: Icons.copy_rounded,
+                  label: context.ispectL10n.copyToClipboardTruncated,
                   onPressed: () {
                     final valueToShare = JsonTruncatorService.pretty(
                       truncatedData,
                     );
-
                     Navigator.of(context).pop();
-
                     copyClipboard(
                       context,
                       value: valueToShare,
                     );
                   },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.copy_rounded,
-                      ),
-                      const Gap(8),
-                      Flexible(
-                        child: Text(
-                          context.ispectL10n.copyToClipboardTruncated,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

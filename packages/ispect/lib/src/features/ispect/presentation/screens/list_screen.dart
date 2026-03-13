@@ -274,8 +274,7 @@ class _MainLogsView extends StatelessWidget {
               statusColor:
                   iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
                       Colors.grey,
-              isExpanded: logsViewController.activeData?.hashCode ==
-                      logEntry.hashCode ||
+              isExpanded: logsViewController.activeData == logEntry ||
                   logsViewController.expandedLogs,
               isLastItem: index == filteredLogEntries.length - 1,
               dividerColor: iSpectTheme.theme.divider?.resolve(context) ??

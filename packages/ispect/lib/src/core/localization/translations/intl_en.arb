@@ -206,5 +206,14 @@
    "wsReceivedLogDesc": "Message received through WebSocket connection",
    "dbQueryLogDesc": "Database request executed",
    "dbResultLogDesc": "Database returned results",
-   "dbErrorLogDesc": "Database operation failed"
+   "dbErrorLogDesc": "Database operation failed",
+   "reverseLogsDesc": "Change the display order of logs from newest-first to oldest-first or vice versa",
+   "copyAllLogsDesc": "Copy all log entries to the clipboard as text",
+   "expandLogsDesc": "Show full details for all log entries",
+   "collapseLogsDesc": "Collapse all log entries to a compact view",
+   "clearHistoryDesc": "Remove all saved log entries from memory",
+   "shareLogsFileDesc": "Export logs as a file and share via system share sheet",
+   "navigationFlowDesc": "View the sequence of screen transitions in your app",
+   "dailySessionsDesc": "Browse log files saved from previous app sessions",
+   "logViewerDesc": "Open an external log viewer to inspect log files"
 }

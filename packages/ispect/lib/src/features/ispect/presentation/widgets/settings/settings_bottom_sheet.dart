@@ -7,6 +7,7 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_card.dart';
 
@@ -190,42 +191,7 @@ class _SettingsContentState extends State<_SettingsContent> {
 
   @override
   Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
     final currentSettings = widget.controller.settings;
-
-    final settings = <Widget>[
-      ISpectSettingsCardItem(
-        title: context.ispectL10n.enabled,
-        enabled: currentSettings.enabled,
-        backgroundColor: context.ispectTheme.card?.resolve(context) ??
-            context.appTheme.cardColor,
-        onChanged: (enabled) {
-          _onSettingChanged(currentSettings.copyWith(enabled: enabled));
-        },
-      ),
-      ISpectSettingsCardItem(
-        canEdit: currentSettings.enabled,
-        title: context.ispectL10n.useConsoleLogs,
-        backgroundColor: context.ispectTheme.card?.resolve(context) ??
-            context.appTheme.cardColor,
-        enabled: currentSettings.useConsoleLogs,
-        onChanged: (enabled) {
-          _onSettingChanged(
-            currentSettings.copyWith(useConsoleLogs: enabled),
-          );
-        },
-      ),
-      ISpectSettingsCardItem(
-        canEdit: currentSettings.enabled,
-        title: context.ispectL10n.useHistory,
-        backgroundColor: context.ispectTheme.card?.resolve(context) ??
-            context.appTheme.cardColor,
-        enabled: currentSettings.useHistory,
-        onChanged: (enabled) {
-          _onSettingChanged(currentSettings.copyWith(useHistory: enabled));
-        },
-      ),
-    ];
 
     return Scrollbar(
       thumbVisibility: true,
@@ -234,83 +200,88 @@ class _SettingsContentState extends State<_SettingsContent> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            sliver: SliverToBoxAdapter(
+          // Drag handle
+          const SliverToBoxAdapter(
+            child: ISpectDragHandle(),
+          ),
+          // Header
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
               child: ISpectBottomSheetHeader(
-                title: context.ispectL10n.settings,
+                title: 'ISpect',
+                subtitle: context.ispectL10n.settings,
+                icon: Icons.tune_rounded,
               ),
             ),
+          ),
+          // General section — horizontal toggle cards
+          SliverToBoxAdapter(
+            child: ISpectSectionLabel(title: context.ispectL10n.settings),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16)
-                  .copyWith(bottom: 16, top: 8),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: context.ispectTheme.card?.resolve(context) ??
-                      context.appTheme.cardColor,
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                spacing: 8,
+                children: [
+                  ISpectSettingsCardItem(
+                    title: context.ispectL10n.enabled,
+                    enabled: currentSettings.enabled,
+                    icon: Icons.power_settings_new_rounded,
+                    onChanged: (enabled) {
+                      _onSettingChanged(
+                        currentSettings.copyWith(enabled: enabled),
+                      );
+                    },
                   ),
-                  border: Border.fromBorderSide(
-                    BorderSide(
-                      color: iSpect.theme.divider?.resolve(context) ??
-                          context.appTheme.dividerColor,
-                    ),
+                  ISpectSettingsCardItem(
+                    canEdit: currentSettings.enabled,
+                    title: context.ispectL10n.useConsoleLogs,
+                    icon: Icons.terminal_rounded,
+                    enabled: currentSettings.useConsoleLogs,
+                    onChanged: (enabled) {
+                      _onSettingChanged(
+                        currentSettings.copyWith(useConsoleLogs: enabled),
+                      );
+                    },
                   ),
-                ),
-                child: ISpectColumnBuilder(
-                  itemCount: settings.length,
-                  itemBuilder: (_, index) => Column(
-                    children: [
-                      settings[index],
-                      if (index != settings.length - 1)
-                        Divider(
-                          color: iSpect.theme.divider?.resolve(
-                                context,
-                              ) ??
-                              context.appTheme.dividerColor,
-                          height: 1,
-                        ),
-                    ],
+                  ISpectSettingsCardItem(
+                    canEdit: currentSettings.enabled,
+                    title: context.ispectL10n.useHistory,
+                    icon: Icons.history_rounded,
+                    enabled: currentSettings.useHistory,
+                    onChanged: (enabled) {
+                      _onSettingChanged(
+                        currentSettings.copyWith(useHistory: enabled),
+                      );
+                    },
                   ),
-                ),
+                ],
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16)
-                  .copyWith(bottom: 16),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: context.ispectTheme.card?.resolve(context) ??
-                      context.appTheme.cardColor,
-                  borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  border: Border.fromBorderSide(
-                    BorderSide(
-                      color: iSpect.theme.divider?.resolve(context) ??
-                          context.appTheme.dividerColor,
-                    ),
-                  ),
-                ),
-                child: ISpectColumnBuilder(
-                  itemCount: widget.actions.length,
-                  itemBuilder: (_, index) {
-                    final action = widget.actions[index];
-                    return _ActionTile(
-                      action: action,
-                      showDivider: index != widget.actions.length - 1,
-                    );
-                  },
+          // Actions section — grid of action buttons
+          if (widget.actions.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: ISpectSectionLabel(
+                title: context.ispectL10n.actions,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.actions
+                      .map((action) => _ActionTile(action: action))
+                      .toList(),
                 ),
               ),
             ),
-          ),
+          ],
+          // Log type filter section
           SliverToBoxAdapter(
             child: LogTypeFilterSection(
               disabledLogTypes: currentSettings.disabledLogTypes,
@@ -319,12 +290,8 @@ class _SettingsContentState extends State<_SettingsContent> {
               onDeselectAll: _onDeselectAll,
             ),
           ),
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 32, top: 16),
-              child: _HowToReachMeWidget(),
-            ),
+          const SliverToBoxAdapter(
+            child: Gap(32),
           ),
         ],
       ),
@@ -332,71 +299,67 @@ class _SettingsContentState extends State<_SettingsContent> {
   }
 }
 
-class _HowToReachMeWidget extends StatelessWidget {
-  const _HowToReachMeWidget();
-
-  @override
-  Widget build(BuildContext context) => Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Flexible(
-            child: Text.rich(
-              TextSpan(
-                text: 'ISpect',
-                style: context.appTheme.textTheme.titleLarge?.copyWith(
-                  color: context.ispectTheme.primary?.resolve(context),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      );
-}
-
 class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.action,
-    this.showDivider = true,
-  });
+  const _ActionTile({required this.action});
 
   final ISpectActionItem action;
-  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: ListTile(
-            onTap: () => _onTap(context),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.cardColor;
+    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
+        context.appTheme.colorScheme.primary;
+
+    Widget chip = Material(
+      color: cardColor,
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          action.onTap?.call(context);
+        },
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: context.appTheme.colorScheme.onSurface
+                  .withValues(alpha: 0.08),
             ),
-            dense: true,
-            title: Text(
-              action.title,
-              style: context.appTheme.textTheme.bodyMedium,
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  action.icon,
+                  size: 15,
+                  color: primaryColor,
+                ),
+                const Gap(6),
+                Text(
+                  action.title,
+                  style: context.appTheme.textTheme.labelMedium?.copyWith(
+                    color: context.appTheme.textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-            leading: Icon(action.icon, color: context.appTheme.textColor),
           ),
         ),
-        if (showDivider)
-          Divider(
-            color: iSpect.theme.divider?.resolve(context) ??
-                context.appTheme.dividerColor,
-            height: 1,
-          ),
-      ],
+      ),
     );
-  }
 
-  void _onTap(BuildContext context) {
-    Navigator.pop(context);
-    action.onTap?.call(context);
+    if (action.description case final description?) {
+      chip = Tooltip(
+        message: description,
+        child: chip,
+      );
+    }
+
+    return chip;
   }
 }

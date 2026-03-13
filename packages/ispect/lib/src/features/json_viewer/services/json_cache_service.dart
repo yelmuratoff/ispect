@@ -17,10 +17,9 @@ class LRUCache<K, V> implements CacheService<K, V> {
 
   @override
   V? get(K key) {
-    final value = _cache.remove(key);
-    if (value != null) {
-      _cache[key] = value;
-    }
+    if (!_cache.containsKey(key)) return null;
+    final value = _cache.remove(key) as V;
+    _cache[key] = value;
     return value;
   }
 

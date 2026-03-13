@@ -139,16 +139,18 @@ class ISpectLogData {
 
   @override
   int get hashCode {
-    return _time.hashCode ^
-        key.hashCode ^
-        message.hashCode ^
-        logLevel.hashCode ^
-        title.hashCode ^
-        pen.hashCode ^
-        additionalData.hashCode ^
-        exception.hashCode ^
-        error.hashCode ^
-        stackTrace.hashCode;
+    return Object.hash(
+      _time,
+      key,
+      message,
+      logLevel,
+      title,
+      pen,
+      const DeepCollectionEquality().hash(additionalData),
+      exception,
+      error,
+      stackTrace,
+    );
   }
 
   @override
