@@ -122,6 +122,22 @@ class JsonNodeBuilder {
 
         classNode.value = children;
         array.add(classNode);
+      } else if (arrayValue is List) {
+        final arrayNode = NodeViewModelState.fromArray(
+          key: i.toString(),
+          treeDepth: treeDepth + 1,
+          parent: parent,
+          rawValue: arrayValue,
+        );
+
+        final children = _buildArrayNodes(
+          object: arrayValue,
+          treeDepth: treeDepth + 1,
+          parent: arrayNode,
+        );
+
+        arrayNode.value = children;
+        array.add(arrayNode);
       } else {
         array.add(
           NodeViewModelState.fromProperty(

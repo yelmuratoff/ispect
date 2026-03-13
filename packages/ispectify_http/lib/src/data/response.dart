@@ -67,20 +67,28 @@ class HttpResponseData {
 
     if (redactor == null) return map;
 
-    // Redact URL query parameters
+    // Redact URL query parameters and userInfo credentials
     final url = map['url'];
     if (url is String) {
       final uri = Uri.tryParse(url);
-      if (uri != null && uri.queryParameters.isNotEmpty) {
-        final redactedParams = uri.queryParameters.map(
-          (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
-        );
-        map['url'] = uri
-            .replace(
-              queryParameters: redactedParams
-                  .map((k, v) => MapEntry(k, v?.toString() ?? '')),
-            )
-            .toString();
+      if (uri != null) {
+        final hasParams = uri.queryParameters.isNotEmpty;
+        final hasUserInfo = uri.userInfo.isNotEmpty;
+        if (hasParams || hasUserInfo) {
+          final redactedParams = hasParams
+              ? uri.queryParameters.map(
+                  (key, value) =>
+                      MapEntry(key, redactor.redact(value, keyName: key)),
+                )
+              : null;
+          map['url'] = uri
+              .replace(
+                userInfo: hasUserInfo ? '[REDACTED]' : null,
+                queryParameters: redactedParams
+                    ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+              )
+              .toString();
+        }
       }
     }
 
