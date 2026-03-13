@@ -71,27 +71,31 @@ class CollapsedBody extends StatelessWidget {
             SquareIconButton(
               icon: Icons.compare_arrows_rounded,
               color: color,
+              tooltip: context.ispectL10n.navigationFlow,
               onPressed: onRouteTap,
             ),
-            const Gap(4),
+            const Gap(3),
           ],
           SquareIconButton(
-            icon: Icons.ios_share_rounded,
+            icon: Icons.share_rounded,
             color: color,
+            tooltip: context.ispectL10n.share,
             onPressed: onShareTap,
           ),
-          const Gap(4),
+          const Gap(3),
           if (isHTTP) ...[
             SquareIconButton(
               icon: Icons.terminal_rounded,
               color: color,
+              tooltip: 'cURL',
               onPressed: onCopyCurlTap,
             ),
-            const Gap(4),
+            const Gap(3),
           ],
           SquareIconButton(
-            icon: Icons.zoom_out_map_rounded,
+            icon: Icons.open_in_full_rounded,
             color: color,
+            tooltip: context.ispectL10n.expandLogs,
             onPressed: onExpandTap,
           ),
         ],
@@ -168,8 +172,8 @@ class SquareIconButton extends StatelessWidget {
       ),
     );
 
-    if (tooltip != null) {
-      button = Tooltip(message: tooltip!, child: button);
+    if (tooltip case final tooltip?) {
+      button = Tooltip(message: tooltip, child: button);
     }
 
     return button;
