@@ -30,8 +30,15 @@ final class ISpectWSInterceptor
     try {
       final sanitized = maybeRedact(data, useRedaction: useRedaction);
       return sanitized ?? data;
-    } catch (_) {
-      return data;
+    } catch (e, s) {
+      logger.logData(
+        ISpectLogData(
+          'Redaction failed, data omitted: $e',
+          logLevel: LogLevel.warning,
+          stackTrace: s,
+        ),
+      );
+      return '<redaction-failed>';
     }
   }
 

@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+import 'dart:collection';
 
 /// Interface for cache services to follow Dependency Inversion Principle
 abstract interface class CacheService<K, V> {
@@ -9,27 +9,25 @@ abstract interface class CacheService<K, V> {
   int get size;
 }
 
-/// Generic LRU cache implementation following SRP
 class LRUCache<K, V> implements CacheService<K, V> {
   LRUCache({this.maxEntries = 100});
 
   final int maxEntries;
-  final Map<K, V> _cache = {};
-  final Map<K, DateTime> _accessTimes = {};
+  final LinkedHashMap<K, V> _cache = LinkedHashMap<K, V>();
 
   @override
   V? get(K key) {
-    final value = _cache[key];
+    final value = _cache.remove(key);
     if (value != null) {
-      _accessTimes[key] = DateTime.now();
+      _cache[key] = value;
     }
     return value;
   }
 
   @override
   void put(K key, V value) {
+    _cache.remove(key);
     _cache[key] = value;
-    _accessTimes[key] = DateTime.now();
 
     if (_cache.length > maxEntries) {
       maintain();
@@ -39,23 +37,13 @@ class LRUCache<K, V> implements CacheService<K, V> {
   @override
   void clear() {
     _cache.clear();
-    _accessTimes.clear();
   }
 
   @override
   void maintain({int? maxEntries}) {
     final limit = maxEntries ?? this.maxEntries;
-    if (_cache.length <= limit) return;
-
-    final sortedEntries = _accessTimes.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    final removeCount = math.max(1, (_cache.length - limit + 1) ~/ 2 + 1);
-    final count = math.min(removeCount, sortedEntries.length);
-    for (var i = 0; i < count; i++) {
-      final key = sortedEntries[i].key;
-      _cache.remove(key);
-      _accessTimes.remove(key);
+    while (_cache.length > limit) {
+      _cache.remove(_cache.keys.first);
     }
   }
 

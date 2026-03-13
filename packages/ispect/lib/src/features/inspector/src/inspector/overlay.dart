@@ -20,6 +20,7 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
   final _panelVisibilityNotifier = ValueNotifier<bool>(false);
   int? _frameCallbackId;
   bool _disposed = false;
+  Rect? _lastTargetRect;
 
   @override
   void initState() {
@@ -42,8 +43,16 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
   void _onTick(Duration? tick) {
     if (_disposed || !mounted) return;
 
-    // ignore: avoid_empty_blocks
-    setState(() {});
+    final boxInfo = widget.boxInfo;
+    final currentRect = _canRender && boxInfo != null
+        ? boxInfo.targetRenderBox.localToGlobal(Offset.zero) &
+            boxInfo.targetRenderBox.size
+        : null;
+
+    if (currentRect != _lastTargetRect) {
+      _lastTargetRect = currentRect;
+      setState(() {});
+    }
 
     _frameCallbackId = WidgetsBinding.instance.scheduleFrameCallback(
       _onTick,

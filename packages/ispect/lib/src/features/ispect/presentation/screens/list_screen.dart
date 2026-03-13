@@ -306,14 +306,17 @@ class _DetailView extends StatelessWidget {
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) => Flexible(
-        child: RepaintBoundary(
-          child: JsonScreen(
-            key: ValueKey(activeData.hashCode),
-            data: activeData.toJson(),
-            truncatedData: activeData.toJson(truncated: true),
-            onClose: onClose,
-          ),
+  Widget build(BuildContext context) {
+    final json = activeData.toJson();
+    return Flexible(
+      child: RepaintBoundary(
+        child: JsonScreen(
+          key: ValueKey(activeData.hashCode),
+          data: json,
+          truncatedData: activeData.toJson(truncated: true),
+          onClose: onClose,
         ),
-      );
+      ),
+    );
+  }
 }

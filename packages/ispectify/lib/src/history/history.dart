@@ -40,12 +40,17 @@ class DefaultISpectLoggerHistory implements ILogHistory {
   /// Internal list to store log history.
   final ListQueue<ISpectLogData> _history = ListQueue<ISpectLogData>();
 
+  /// Cached unmodifiable view, invalidated on mutation.
+  List<ISpectLogData>? _cachedHistory;
+
   @override
-  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(_history);
+  List<ISpectLogData> get history =>
+      _cachedHistory ??= List<ISpectLogData>.unmodifiable(_history);
 
   @override
   void clear() {
     _history.clear();
+    _cachedHistory = null;
   }
 
   @override
@@ -58,6 +63,7 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     // Enforce max history size
     _trimIfNeeded();
     _history.addLast(data);
+    _cachedHistory = null;
   }
 
   /// Adds data to history bypassing the useHistory check.
@@ -69,16 +75,21 @@ class DefaultISpectLoggerHistory implements ILogHistory {
 
     _trimIfNeeded();
     _history.addLast(data);
+    _cachedHistory = null;
   }
 
   void _trimIfNeeded() {
     final maxItems = settings.maxHistoryItems;
     if (maxItems <= 0) {
       _history.clear();
+      _cachedHistory = null;
       return;
     }
-    while (_history.length >= maxItems) {
-      _history.removeFirst();
+    if (_history.length >= maxItems) {
+      while (_history.length >= maxItems) {
+        _history.removeFirst();
+      }
+      _cachedHistory = null;
     }
   }
 }

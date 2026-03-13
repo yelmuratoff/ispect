@@ -414,9 +414,8 @@ class InspectorState extends State<Inspector> {
     _zoomStateNotifier.dispose();
     _inspectorStateNotifier.dispose();
     _currentRenderBoxNotifier.dispose();
-    _byteDataStateNotifier.dispose();
     _image?.dispose();
-    _byteDataStateNotifier.value = null;
+    _byteDataStateNotifier.dispose();
     _keyboardHandler.dispose();
     _controller.dispose();
     super.dispose();
