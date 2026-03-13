@@ -38,32 +38,31 @@ class JsonScreen extends StatefulWidget {
 class _JsonScreenState extends State<JsonScreen> {
   final _store = JsonExplorerStore();
   final _searchController = TextEditingController();
+  final _hasSearchText = ValueNotifier(false);
 
   final _scrollController = ScrollController();
   final _listController = ListController();
 
   late JsonExplorerTheme _jsonTheme;
 
-  // Debounce timer for search
   Timer? _searchDebounceTimer;
 
   @override
   void initState() {
     super.initState();
-
     _store.buildNodes(widget.data);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     _jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _hasSearchText.dispose();
     _scrollController.dispose();
     _searchDebounceTimer?.cancel();
     _listController.dispose();
@@ -72,6 +71,7 @@ class _JsonScreenState extends State<JsonScreen> {
   }
 
   void _onSearchChanged(String value) {
+    _hasSearchText.value = value.isNotEmpty;
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -82,102 +82,164 @@ class _JsonScreenState extends State<JsonScreen> {
     });
   }
 
+  void _onSearchClear() {
+    _searchController.clear();
+    _hasSearchText.value = false;
+    _store
+      ..search('')
+      ..expandSearchResults();
+  }
+
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
+    final bgColor = iSpect.theme.background?.resolve(context);
+    final logKey = widget.data['key'] as String?;
+    final logColor = iSpect.theme.getTypeColor(context, key: logKey);
+    final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
+
     return Scaffold(
-      backgroundColor: iSpect.theme.background?.resolve(context),
+      backgroundColor: bgColor,
       appBar: AppBar(
         scrolledUnderElevation: 0,
-        backgroundColor: iSpect.theme.background?.resolve(context),
+        backgroundColor: bgColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
         ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (logColor != null)
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: logColor.withValues(alpha: 0.12),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Icon(logIcon, size: 16, color: logColor),
+              ),
+            if (logKey != null) ...[
+              const Gap(10),
+              Text(
+                logKey,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: logColor,
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.unfold_more_rounded),
-                  onPressed: _store.expandAll,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.unfold_less_rounded),
-                  onPressed: _store.collapseAll,
-                ),
-                switch (context.iSpect.options.onShare) {
-                  null => const SizedBox.shrink(),
-                  _ => IconButton(
-                      icon: const Icon(Icons.share_rounded),
-                      onPressed: () async {
-                        await ISpectShareLogBottomSheet(
-                          data: widget.data,
-                          truncatedData: widget.truncatedData ?? widget.data,
-                        ).show(context);
-                      },
-                    ),
-                },
-              ],
-            ),
+          IconButton(
+            icon: const Icon(Icons.unfold_more_rounded, size: 22),
+            tooltip: context.ispectL10n.expandLogs,
+            onPressed: _store.expandAll,
           ),
+          IconButton(
+            icon: const Icon(Icons.unfold_less_rounded, size: 22),
+            tooltip: context.ispectL10n.collapseLogs,
+            onPressed: _store.collapseAll,
+          ),
+          if (context.iSpect.options.onShare != null)
+            IconButton(
+              icon: const Icon(Icons.share_rounded, size: 22),
+              tooltip: context.ispectL10n.shareLogsFile,
+              onPressed: () async {
+                await ISpectShareLogBottomSheet(
+                  data: widget.data,
+                  truncatedData: widget.truncatedData ?? widget.data,
+                ).show(context);
+              },
+            ),
+          const Gap(4),
         ],
       ),
       body: Column(
         children: [
-          const Gap(12),
+          // Search bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SearchBar(
-                    constraints: const BoxConstraints(minHeight: 45),
-                    backgroundColor: WidgetStatePropertyAll(
-                      context.ispectTheme.card?.resolve(context),
-                    ),
-                    shape: const WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            child: ValueListenableBuilder(
+              valueListenable: _hasSearchText,
+              builder: (context, hasText, _) => Row(
+                children: [
+                  Expanded(
+                    child: SearchBar(
+                      controller: _searchController,
+                      constraints: const BoxConstraints(minHeight: 42),
+                      backgroundColor: WidgetStatePropertyAll(
+                        context.ispectTheme.card?.resolve(context),
                       ),
-                    ),
-                    leading: const Icon(Icons.search),
-                    onChanged: _onSearchChanged,
-                    hintText: context.ispectL10n.search,
-                    controller: _searchController,
-                    elevation: const WidgetStatePropertyAll(0),
-                  ),
-                ),
-                const Gap(8),
-                JsonStoreSelector<({int count, int focusedIndex})>(
-                  store: _store,
-                  selector: (store) => (
-                    count: store.searchResults.length,
-                    focusedIndex: store.focusedSearchResultIndex,
-                  ),
-                  builder: (context, searchData) {
-                    final count = searchData.count;
-                    final focusedIndex = searchData.focusedIndex;
-                    return switch (count) {
-                      0 => const SizedBox.shrink(),
-                      _ => _SearchNavigationPanel(
-                          store: _store,
-                          scrollToSearchMatch: _scrollToSearchMatch,
-                          searchFocusText: '${focusedIndex + 1} of $count',
+                      shape: const WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
-                    };
-                  },
-                ),
-              ],
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: context.appTheme.colorScheme.onSurface
+                              .withValues(alpha: 0.5),
+                        ),
+                      ),
+                      trailing: [
+                        if (hasText)
+                          IconButton(
+                            iconSize: 18,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 28,
+                              height: 28,
+                            ),
+                            padding: EdgeInsets.zero,
+                            onPressed: _onSearchClear,
+                            icon: Icon(
+                              Icons.close_rounded,
+                              color: context.appTheme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                      ],
+                      hintText: context.ispectL10n.search,
+                      onChanged: _onSearchChanged,
+                      elevation: const WidgetStatePropertyAll(0),
+                    ),
+                  ),
+                  JsonStoreSelector<({int count, int focusedIndex})>(
+                    store: _store,
+                    selector: (s) => (
+                      count: s.searchResults.length,
+                      focusedIndex: s.focusedSearchResultIndex,
+                    ),
+                    builder: (context, searchData) {
+                      final count = searchData.count;
+                      final focusedIndex = searchData.focusedIndex;
+                      return switch (count) {
+                        0 => const SizedBox.shrink(),
+                        _ => _SearchNavigation(
+                            store: _store,
+                            scrollToSearchMatch: _scrollToSearchMatch,
+                            focusedIndex: focusedIndex + 1,
+                            totalCount: count,
+                          ),
+                      };
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-          const Gap(12),
+          // JSON viewer
           Expanded(
             child: AnimatedBuilder(
               animation: _store,
               builder: (context, _) => Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
                 child: JsonExplorer(
                   store: _store,
                   nodes: _store.displayNodes,
@@ -188,7 +250,6 @@ class _JsonScreenState extends State<JsonScreen> {
               ),
             ),
           ),
-          const Gap(32),
         ],
       ),
     );
@@ -198,8 +259,6 @@ class _JsonScreenState extends State<JsonScreen> {
     final searchResult = store.focusedSearchResult;
     if (searchResult == null || !mounted) return;
 
-    // Expand the node and all its parents to ensure it's visible
-    // We want to handle the nodes in a single batch operation
     _store.expandParentNodes(searchResult.node);
 
     await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -207,7 +266,6 @@ class _JsonScreenState extends State<JsonScreen> {
 
     final displayNodes = _store.displayNodes;
 
-    // First check if the exact node is visible
     final nodeIndex = displayNodes.indexOf(searchResult.node);
     switch (nodeIndex) {
       case -1:
@@ -217,7 +275,6 @@ class _JsonScreenState extends State<JsonScreen> {
         return;
     }
 
-    // Find the closest parent that's visible
     for (var currentNode = searchResult.node.parent;
         currentNode != null;
         currentNode = currentNode.parent) {
@@ -231,7 +288,6 @@ class _JsonScreenState extends State<JsonScreen> {
       }
     }
 
-    // Last resort: scroll to first item if available
     switch (displayNodes.isEmpty) {
       case false:
         _scrollToIndex(0);
@@ -251,66 +307,80 @@ class _JsonScreenState extends State<JsonScreen> {
   }
 }
 
-class _SearchNavigationPanel extends StatelessWidget {
-  const _SearchNavigationPanel({
+/// Inline search navigation: [▲] 1/5 [▼]
+class _SearchNavigation extends StatelessWidget {
+  const _SearchNavigation({
     required this.store,
     required this.scrollToSearchMatch,
-    required this.searchFocusText,
+    required this.focusedIndex,
+    required this.totalCount,
   });
 
   final JsonExplorerStore store;
   final Future<void> Function(JsonExplorerStore) scrollToSearchMatch;
-  final String searchFocusText;
-
-  void _onPreviousPressed() {
-    store.focusPreviousSearchResult();
-    unawaited(scrollToSearchMatch(store));
-  }
-
-  void _onNextPressed() {
-    store.focusNextSearchResult();
-    unawaited(scrollToSearchMatch(store));
-  }
+  final int focusedIndex;
+  final int totalCount;
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) {
+    final mutedColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5);
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            searchFocusText,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
+          _NavButton(
+            icon: Icons.keyboard_arrow_up_rounded,
+            onPressed: () {
+              store.focusPreviousSearchResult();
+              unawaited(scrollToSearchMatch(store));
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              '$focusedIndex/$totalCount',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: mutedColor,
+              ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: 12,
-            children: [
-              IconButton(
-                onPressed: _onPreviousPressed,
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minHeight: 36,
-                  minWidth: 36,
-                ),
-                icon: const Icon(Icons.arrow_drop_up_rounded),
-              ),
-              IconButton(
-                onPressed: _onNextPressed,
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minHeight: 36,
-                  minWidth: 36,
-                ),
-                icon: const Icon(Icons.arrow_drop_down_rounded),
-              ),
-            ],
+          _NavButton(
+            icon: Icons.keyboard_arrow_down_rounded,
+            onPressed: () {
+              store.focusNextSearchResult();
+              unawaited(scrollToSearchMatch(store));
+            },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  const _NavButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: 28,
+        height: 28,
+        child: IconButton(
+          icon: Icon(icon, size: 20),
+          onPressed: onPressed,
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
+          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
       );
 }
