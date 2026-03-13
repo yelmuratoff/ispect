@@ -19,7 +19,7 @@ class LogCard extends StatelessWidget {
     required this.isExpanded,
     required this.onTap,
     this.observer,
-    this.onCopyTap,
+    this.onShareTap,
     super.key,
   });
 
@@ -30,7 +30,7 @@ class LogCard extends StatelessWidget {
   final int index;
   final bool isExpanded;
   final VoidCallback onTap;
-  final VoidCallback? onCopyTap;
+  final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
 
   @override
@@ -53,7 +53,7 @@ class LogCard extends StatelessWidget {
                 data: data,
                 isExpanded: isExpanded,
                 onTap: onTap,
-                onCopyTap: onCopyTap,
+                onShareTap: onShareTap,
                 observer: observer,
                 dividerColor: dividerColor,
               ),
@@ -79,7 +79,7 @@ class _LogCardHeader extends StatelessWidget {
     required this.isExpanded,
     required this.onTap,
     required this.observer,
-    this.onCopyTap,
+    this.onShareTap,
   });
 
   final IconData icon;
@@ -88,7 +88,7 @@ class _LogCardHeader extends StatelessWidget {
   final ISpectLogData data;
   final bool isExpanded;
   final VoidCallback onTap;
-  final VoidCallback? onCopyTap;
+  final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
 
   @override
@@ -106,7 +106,7 @@ class _LogCardHeader extends StatelessWidget {
               color: color,
               title: data.key,
               dateTime: data.formattedTime,
-              onCopyTap: onCopyTap,
+              onShareTap: onShareTap,
               onRouteTap: data is RouteLog && observer != null
                   ? () => ISpectNavigationFlowScreen(
                         observer: observer!,

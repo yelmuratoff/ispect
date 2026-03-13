@@ -4,12 +4,12 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/string.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
@@ -143,7 +143,7 @@ class _LogListItem extends StatelessWidget {
     required this.isLastItem,
     required this.dividerColor,
     required this.onItemTapped,
-    required this.onCopyPressed,
+    required this.onSharePressed,
     super.key,
   });
 
@@ -155,7 +155,7 @@ class _LogListItem extends StatelessWidget {
   final bool isLastItem;
   final Color dividerColor;
   final VoidCallback onItemTapped;
-  final VoidCallback onCopyPressed;
+  final VoidCallback onSharePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +166,7 @@ class _LogListItem extends StatelessWidget {
         data: logData,
         index: itemIndex,
         isExpanded: isExpanded,
-        onCopyTap: onCopyPressed,
+        onShareTap: onSharePressed,
         onTap: onItemTapped,
         dividerColor: dividerColor,
       ),
@@ -279,11 +279,10 @@ class _MainLogsView extends StatelessWidget {
               isLastItem: index == filteredLogEntries.length - 1,
               dividerColor: iSpectTheme.theme.divider?.resolve(context) ??
                   context.appTheme.dividerColor,
-              onCopyPressed: () => logsViewController.copyLogEntryText(
-                context,
-                logEntry,
-                copyClipboard,
-              ),
+              onSharePressed: () => ISpectShareLogBottomSheet(
+                data: logEntry.toJson(),
+                truncatedData: logEntry.toJson(truncated: true),
+              ).show(context),
               onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
             );
           },

@@ -6,7 +6,7 @@ class CollapsedBody extends StatelessWidget {
     required this.color,
     required this.title,
     required this.dateTime,
-    required this.onCopyTap,
+    required this.onShareTap,
     required this.onCopyCurlTap,
     required this.onExpandTap,
     required this.onRouteTap,
@@ -21,7 +21,7 @@ class CollapsedBody extends StatelessWidget {
   final Color color;
   final String? title;
   final String dateTime;
-  final VoidCallback? onCopyTap;
+  final VoidCallback? onShareTap;
   final VoidCallback? onCopyCurlTap;
   final VoidCallback? onExpandTap;
   final VoidCallback? onRouteTap;
@@ -76,9 +76,9 @@ class CollapsedBody extends StatelessWidget {
             const Gap(4),
           ],
           SquareIconButton(
-            icon: Icons.copy_rounded,
+            icon: Icons.ios_share_rounded,
             color: color,
-            onPressed: onCopyTap,
+            onPressed: onShareTap,
           ),
           const Gap(4),
           if (isHTTP) ...[
@@ -139,36 +139,41 @@ class SquareIconButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onPressed,
+    this.tooltip,
     super.key,
   });
 
   final IconData icon;
   final Color color;
   final VoidCallback? onPressed;
+  final String? tooltip;
 
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-        dimension: ISpectConstants.iconButtonDimension,
-        child: IconButton(
-          iconSize: ISpectConstants.iconButtonIconSize,
-          style: IconButton.styleFrom(
-            padding: const EdgeInsets.all(4),
-            shape: RoundedRectangleBorder(
-              borderRadius: DecorationUtils.standardBorderRadius,
-            ),
-            backgroundColor: color.withValues(
-              alpha: ISpectConstants.iconButtonBackgroundOpacity,
-            ),
-          ),
-          icon: Icon(
-            icon,
-            color: context.appTheme.colorScheme.onSurface.withValues(
-              alpha: ISpectConstants.disabledOpacity,
-            ),
-          ),
-          onPressed: onPressed,
+  Widget build(BuildContext context) {
+    Widget button = GestureDetector(
+      onTap: onPressed,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
         ),
-      );
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Icon(
+            icon,
+            size: 14,
+            color: color.withValues(alpha: 0.7),
+          ),
+        ),
+      ),
+    );
+
+    if (tooltip != null) {
+      button = Tooltip(message: tooltip!, child: button);
+    }
+
+    return button;
+  }
 }
 
 class DecoratedLeadingIcon extends StatelessWidget {

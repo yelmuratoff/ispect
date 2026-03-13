@@ -4,7 +4,6 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/string.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -16,6 +15,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/services/file_processing_service.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -130,10 +130,9 @@ class _LogsScreenState extends State<LogsScreen> {
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
         _buildReverseLogsAction(context),
-        _buildCopyAllLogsAction(context),
+        _buildShareLogsAction(context),
         _buildExpandLogsAction(context),
         _buildClearHistoryAction(context),
-        if (widget.options.onShare != null) _buildShareLogsAction(context),
         if (widget.options.observer != null &&
             widget.options.observer is ISpectNavigatorObserver)
           _buildNavigationFlowAction(),
@@ -148,26 +147,6 @@ class _LogsScreenState extends State<LogsScreen> {
         title: context.ispectL10n.reverseLogs,
         icon: Icons.swap_vert,
         description: context.ispectL10n.reverseLogsDesc,
-      );
-
-  ISpectActionItem _buildCopyAllLogsAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => _logsViewController.copyAllLogsToClipboard(
-          context,
-          ISpect.logger.history,
-          (context, {required value, showValue, title}) {
-            copyClipboard(
-              context,
-              value: value,
-              title: title ?? context.ispectL10n.allLogsCopied,
-              showValue: showValue ?? false,
-            );
-          },
-          '✅ ${context.ispectL10n.allLogsCopied}',
-        ),
-        title: context.ispectL10n.copyAllLogs,
-        icon: Icons.copy,
-        description: context.ispectL10n.copyAllLogsDesc,
       );
 
   ISpectActionItem _buildExpandLogsAction(BuildContext context) =>
@@ -334,7 +313,7 @@ class _LogListItem extends StatelessWidget {
     required this.isLastItem,
     required this.dividerColor,
     required this.onItemTapped,
-    required this.onCopyPressed,
+    required this.onSharePressed,
     this.customItemBuilder,
     this.observer,
     super.key,
@@ -348,7 +327,7 @@ class _LogListItem extends StatelessWidget {
   final bool isLastItem;
   final Color dividerColor;
   final VoidCallback onItemTapped;
-  final VoidCallback onCopyPressed;
+  final VoidCallback onSharePressed;
   final ISpectLogDataBuilder? customItemBuilder;
   final ISpectNavigatorObserver? observer;
 
@@ -362,7 +341,7 @@ class _LogListItem extends StatelessWidget {
             data: logData,
             index: itemIndex,
             isExpanded: isExpanded,
-            onCopyTap: onCopyPressed,
+            onShareTap: onSharePressed,
             onTap: onItemTapped,
             observer: observer,
             dividerColor: dividerColor,
@@ -484,11 +463,10 @@ class _MainLogsView extends StatelessWidget {
               observer: options.observer is ISpectNavigatorObserver
                   ? options.observer as ISpectNavigatorObserver?
                   : null,
-              onCopyPressed: () => logsViewController.copyLogEntryText(
-                context,
-                logEntry,
-                copyClipboard,
-              ),
+              onSharePressed: () => ISpectShareLogBottomSheet(
+                data: logEntry.toJson(),
+                truncatedData: logEntry.toJson(truncated: true),
+              ).show(context),
               onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
             );
           },
