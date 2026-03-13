@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 /// Reusable header widget for bottom sheets with icon, title, subtitle,
@@ -87,20 +88,26 @@ class ISpectDragHandle extends StatelessWidget {
   const ISpectDragHandle({super.key});
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 12, bottom: 4),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: context.appTheme.colorScheme.onSurface.withValues(
-                alpha: 0.2,
-              ),
-              borderRadius: const BorderRadius.all(Radius.circular(2)),
+  Widget build(BuildContext context) {
+    // Drag handle only makes sense for phone bottom sheets, not dialogs.
+    // Keep equivalent top spacing for dialogs.
+    if (!context.screenSize.isPhone) return const SizedBox(height: 16);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.appTheme.colorScheme.onSurface.withValues(
+              alpha: 0.2,
             ),
-            child: const SizedBox(width: 36, height: 4),
+            borderRadius: const BorderRadius.all(Radius.circular(2)),
           ),
+          child: const SizedBox(width: 36, height: 4),
         ),
-      );
+      ),
+    );
+  }
 }
 
 /// An uppercase section label for grouping content in sheets.

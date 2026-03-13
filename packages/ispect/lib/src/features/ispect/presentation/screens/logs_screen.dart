@@ -48,6 +48,9 @@ class _LogsScreenState extends State<LogsScreen> {
   late final ISpectViewController _logsViewController;
   static const _fileService = FileProcessingService();
 
+  /// Persisted split ratio so it survives detail panel toggling.
+  double _splitRatio = 0.4;
+
   @override
   void initState() {
     super.initState();
@@ -110,8 +113,10 @@ class _LogsScreenState extends State<LogsScreen> {
 
             if (context.screenSize.isDesktop) {
               return ResizableSplitView(
-                minRatio: 0.25,
-                maxRatio: 0.7,
+                initialRatio: _splitRatio,
+                minRatio: 0.35,
+                maxRatio: 0.65,
+                onRatioChanged: (ratio) => _splitRatio = ratio,
                 left: logsView,
                 right: detailView,
               );
@@ -496,6 +501,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
   /// null = hidden, true = at bottom (show up arrow), false = scrolled down (show down arrow)
   final _scrollDirection = ValueNotifier<bool?>(null);
   final _keyboardFocusNode = FocusNode(debugLabel: 'DesktopLogKeyboard');
+  final _listController = ListController();
 
   @override
   void initState() {
@@ -510,6 +516,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
     widget.searchFocusNode.removeListener(_onSearchFocusChanged);
     _scrollDirection.dispose();
     _keyboardFocusNode.dispose();
+    _listController.dispose();
     super.dispose();
   }
 
@@ -581,18 +588,23 @@ class _MainLogsViewState extends State<_MainLogsView> {
       return KeyEventResult.ignored;
     }
 
+    // Enter: toggle detail panel for selected log
+    if (event.logicalKey == LogicalKeyboardKey.enter) {
+      if (activeData != null) {
+        widget.logsViewController.handleLogItemTap(activeData);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
     if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
         event.logicalKey == LogicalKeyboardKey.arrowUp) {
       final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+      int targetVisualIndex;
+
       if (activeData == null) {
         // Select first/last entry
-        final index = isDown ? 0 : filteredLogEntries.length - 1;
-        final (entry: entry, actualIndex: _) =
-            widget.logsViewController.getLogEntryAtIndex(
-          filteredLogEntries,
-          index,
-        );
-        widget.logsViewController.activeData = entry;
+        targetVisualIndex = isDown ? 0 : filteredLogEntries.length - 1;
       } else {
         // Find current index and move
         final currentIndex = filteredLogEntries.indexOf(activeData);
@@ -604,19 +616,29 @@ class _MainLogsViewState extends State<_MainLogsView> {
             ? filteredLogEntries.length - 1 - currentIndex
             : currentIndex;
 
-        final nextVisualIndex = isDown ? visualIndex + 1 : visualIndex - 1;
-        if (nextVisualIndex < 0 ||
-            nextVisualIndex >= filteredLogEntries.length) {
+        targetVisualIndex = isDown ? visualIndex + 1 : visualIndex - 1;
+        if (targetVisualIndex < 0 ||
+            targetVisualIndex >= filteredLogEntries.length) {
           return KeyEventResult.handled;
         }
-
-        final (entry: nextEntry, actualIndex: _) =
-            widget.logsViewController.getLogEntryAtIndex(
-          filteredLogEntries,
-          nextVisualIndex,
-        );
-        widget.logsViewController.activeData = nextEntry;
       }
+
+      final (entry: nextEntry, actualIndex: _) =
+          widget.logsViewController.getLogEntryAtIndex(
+        filteredLogEntries,
+        targetVisualIndex,
+      );
+      widget.logsViewController.activeData = nextEntry;
+
+      // Scroll to keep the selected row visible
+      _listController.animateToItem(
+        index: targetVisualIndex,
+        scrollController: widget.logsScrollController,
+        alignment: 0.5,
+        duration: (_) => const Duration(milliseconds: 200),
+        curve: (_) => Curves.easeOutCubic,
+      );
+
       return KeyEventResult.handled;
     }
 
@@ -655,14 +677,22 @@ class _MainLogsViewState extends State<_MainLogsView> {
               totalCount: widget.logsData.length,
             ),
             if (isDesktop)
-              const SliverToBoxAdapter(
-                child: DesktopLogTableHeader(),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyHeaderDelegate(
+                  child: DesktopLogTableHeader(
+                    backgroundColor:
+                        widget.iSpectTheme.theme.background?.resolve(context) ??
+                            context.appTheme.scaffoldBackgroundColor,
+                  ),
+                ),
               ),
             if (filteredLogEntries.isEmpty)
               const SliverToBoxAdapter(
                 child: _EmptyLogsWidget(),
               ),
             SuperSliverList.builder(
+              listController: _listController,
               itemCount: filteredLogEntries.length,
               itemBuilder: (context, index) {
                 final (entry: logEntry, actualIndex: _) =
@@ -863,6 +893,13 @@ class _DesktopStatusBar extends StatelessWidget {
             const Gap(4),
             Text(
               'navigate',
+              style: TextStyle(fontSize: 11, color: labelColor),
+            ),
+            const Gap(12),
+            _KeyBadge(label: '\u23CE', context: context),
+            const Gap(4),
+            Text(
+              'open',
               style: TextStyle(fontSize: 11, color: labelColor),
             ),
             const Gap(12),
@@ -1074,4 +1111,31 @@ class _PasteContentDialogState extends State<_PasteContentDialog> {
       ],
     );
   }
+}
+
+/// Delegate that pins the [DesktopLogTableHeader] below the [SliverAppBar].
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _StickyHeaderDelegate({required this.child});
+
+  final Widget child;
+
+  static const _height = 36.0;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) =>
+      SizedBox(height: _height, child: child);
+
+  @override
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
+      child != oldDelegate.child;
 }

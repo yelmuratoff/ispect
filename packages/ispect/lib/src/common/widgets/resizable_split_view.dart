@@ -14,6 +14,7 @@ class ResizableSplitView extends StatefulWidget {
     this.maxRatio = 0.8,
     this.dividerWidth = 8,
     this.dividerColor,
+    this.onRatioChanged,
     super.key,
   });
 
@@ -34,6 +35,9 @@ class ResizableSplitView extends StatefulWidget {
 
   /// Color of the divider line.
   final Color? dividerColor;
+
+  /// Called when the user finishes dragging the divider.
+  final ValueChanged<double>? onRatioChanged;
 
   @override
   State<ResizableSplitView> createState() => _ResizableSplitViewState();
@@ -81,7 +85,10 @@ class _ResizableSplitViewState extends State<ResizableSplitView> {
                     );
                   });
                 },
-                onDragEnd: () => setState(() => _isDragging = false),
+                onDragEnd: () {
+                  setState(() => _isDragging = false);
+                  widget.onRatioChanged?.call(_ratio);
+                },
               ),
               SizedBox(
                 width: rightWidth.clamp(0, totalWidth),

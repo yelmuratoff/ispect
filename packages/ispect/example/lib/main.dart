@@ -632,18 +632,18 @@ class _AppearanceSection extends StatelessWidget {
         // Locale dropdown
         Text('Language', style: theme.textTheme.bodySmall),
         const SizedBox(height: 4),
-        DropdownButton<Locale>(
-          value: locale,
-          isExpanded: true,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          items: [
+        DropdownMenu<Locale>(
+          initialSelection: locale,
+          expandedInsets: EdgeInsets.zero,
+          requestFocusOnTap: false,
+          dropdownMenuEntries: [
             for (final opt in _localeOptions)
-              DropdownMenuItem(
+              DropdownMenuEntry(
                 value: opt.locale,
-                child: Text(opt.label),
+                label: opt.label,
               ),
           ],
-          onChanged: (v) {
+          onSelected: (v) {
             if (v != null) onLocaleChanged(v);
           },
         ),

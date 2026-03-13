@@ -1,5 +1,7 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -408,12 +410,15 @@ class _FilterChipsList extends StatelessWidget {
       final typeColor = theme.getTypeColor(context, key: title);
       final typeIcon = theme.getTypeIcon(context, key: title);
 
+      final typeDescription = theme.getTypeDescription(context, key: title);
+
       return _LogFilterChip(
         title: title ?? '',
         count: count,
         isSelected: isSelected,
         typeColor: typeColor,
         typeIcon: typeIcon,
+        typeDescription: typeDescription,
         onSelected: (selected) {
           switch (selected) {
             case true:
@@ -434,7 +439,7 @@ class _FilterChipsList extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8),
         child: SizedBox(
           key: const ValueKey('filter'),
-          height: 32,
+          height: 36,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
@@ -458,7 +463,7 @@ class _FilterChipsList extends StatelessWidget {
   }
 }
 
-class _LogFilterChip extends StatelessWidget {
+class _LogFilterChip extends StatefulWidget {
   const _LogFilterChip({
     required this.title,
     required this.count,
@@ -466,6 +471,7 @@ class _LogFilterChip extends StatelessWidget {
     required this.typeColor,
     required this.typeIcon,
     required this.onSelected,
+    this.typeDescription,
   });
 
   final String title;
@@ -474,46 +480,146 @@ class _LogFilterChip extends StatelessWidget {
   final Color? typeColor;
   final IconData typeIcon;
   final ValueChanged<bool> onSelected;
+  final String? typeDescription;
+
+  @override
+  State<_LogFilterChip> createState() => _LogFilterChipState();
+}
+
+class _LogFilterChipState extends State<_LogFilterChip> {
+  OverlayEntry? _tooltipOverlay;
+  Timer? _tooltipTimer;
+  Offset _mousePosition = Offset.zero;
+
+  static const _tooltipDelay = Duration(milliseconds: 400);
+
+  void _scheduleTooltip() {
+    _cancelTooltip();
+    final desc = widget.typeDescription;
+    if (desc == null || desc.isEmpty) return;
+
+    _tooltipTimer = Timer(_tooltipDelay, () {
+      if (!mounted) return;
+      _showOverlayTooltip(desc);
+    });
+  }
+
+  void _showOverlayTooltip(String text) {
+    _removeTooltip();
+
+    final position = _mousePosition;
+    final overlay = Overlay.of(context);
+    _tooltipOverlay = OverlayEntry(
+      builder: (context) {
+        final screenSize = MediaQuery.sizeOf(context);
+        const tooltipMaxWidth = 300.0;
+
+        var left = position.dx + 12;
+        var top = position.dy - 32;
+
+        if (left + tooltipMaxWidth > screenSize.width - 8) {
+          left = position.dx - tooltipMaxWidth - 12;
+        }
+        if (top < 8) {
+          top = position.dy + 20;
+        }
+
+        return Positioned(
+          left: left,
+          top: top,
+          child: IgnorePointer(
+            child: Material(
+              elevation: 4,
+              shadowColor: Colors.black26,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: tooltipMaxWidth),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Text(
+                  text,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    overlay.insert(_tooltipOverlay!);
+  }
+
+  void _cancelTooltip() {
+    _tooltipTimer?.cancel();
+    _tooltipTimer = null;
+    _removeTooltip();
+  }
+
+  void _removeTooltip() {
+    _tooltipOverlay?.remove();
+    _tooltipOverlay?.dispose();
+    _tooltipOverlay = null;
+  }
+
+  @override
+  void dispose() {
+    _tooltipTimer?.cancel();
+    _removeTooltip();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = typeColor ?? Colors.grey;
+    final effectiveColor = widget.typeColor ?? Colors.grey;
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
     final borderColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
 
-    return GestureDetector(
-      onTap: () => onSelected(!isSelected),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color:
-              isSelected ? effectiveColor.withValues(alpha: 0.08) : cardColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.all(color: borderColor),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                typeIcon,
-                size: 14,
-                color: effectiveColor,
-              ),
-              const Gap(6),
-              Text(
-                '$count  $title',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected
-                      ? effectiveColor
-                      : context.appTheme.textTheme.bodyMedium?.color,
+    return MouseRegion(
+      onHover: (event) => _mousePosition = event.position,
+      onEnter: (_) => _scheduleTooltip(),
+      onExit: (_) => _cancelTooltip(),
+      child: GestureDetector(
+        onTap: () => widget.onSelected(!widget.isSelected),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.isSelected
+                ? effectiveColor.withValues(alpha: 0.08)
+                : cardColor,
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: Border.all(color: borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  widget.typeIcon,
+                  size: 14,
+                  color: effectiveColor,
                 ),
-              ),
-            ],
+                const Gap(6),
+                Text(
+                  '${widget.count}  ${widget.title}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight:
+                        widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: widget.isSelected
+                        ? effectiveColor
+                        : context.appTheme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

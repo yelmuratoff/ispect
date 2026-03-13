@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -7,7 +9,9 @@ import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.
 
 /// A sticky table header row for the desktop log table.
 class DesktopLogTableHeader extends StatelessWidget {
-  const DesktopLogTableHeader({super.key});
+  const DesktopLogTableHeader({super.key, this.backgroundColor});
+
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -22,38 +26,46 @@ class DesktopLogTableHeader extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
+        color: backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
         border: Border(bottom: BorderSide(color: borderColor, width: 1.5)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            const SizedBox(width: 24),
-            const Gap(8),
-            SizedBox(
-              width: 120,
-              child: Text(
-                'TYPE',
-                style: labelStyle.copyWith(color: labelColor),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 480;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                const SizedBox(width: 24),
+                const Gap(8),
+                SizedBox(
+                  width: isCompact ? 40 : 70,
+                  child: Text(
+                    'TYPE',
+                    style: labelStyle.copyWith(color: labelColor),
+                  ),
+                ),
+                const Gap(8),
+                if (!isCompact) ...[
+                  SizedBox(
+                    width: 140,
+                    child: Text(
+                      'TIME',
+                      style: labelStyle.copyWith(color: labelColor),
+                    ),
+                  ),
+                  const Gap(12),
+                ],
+                Expanded(
+                  child: Text(
+                    'MESSAGE',
+                    style: labelStyle.copyWith(color: labelColor),
+                  ),
+                ),
+              ],
             ),
-            const Gap(8),
-            SizedBox(
-              width: 140,
-              child: Text(
-                'TIME',
-                style: labelStyle.copyWith(color: labelColor),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: Text(
-                'MESSAGE',
-                style: labelStyle.copyWith(color: labelColor),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -97,12 +109,100 @@ class DesktopLogRow extends StatefulWidget {
 
 class _DesktopLogRowState extends State<DesktopLogRow> {
   bool _isHovered = false;
+  OverlayEntry? _tooltipOverlay;
+  Timer? _tooltipTimer;
+  Offset _mousePosition = Offset.zero;
+
+  static const _tooltipDelay = Duration(milliseconds: 400);
 
   String get _message {
     final msg = widget.data.isHttpLog
         ? widget.data.httpLogText
         : widget.data.textMessage;
     return msg ?? '';
+  }
+
+  void _scheduleTooltip(String text) {
+    _cancelTooltip();
+    if (text.isEmpty) return;
+
+    _tooltipTimer = Timer(_tooltipDelay, () {
+      if (!mounted) return;
+      _showOverlayTooltip(text);
+    });
+  }
+
+  void _showOverlayTooltip(String text) {
+    _removeTooltip();
+
+    // Capture position at the moment of showing
+    final position = _mousePosition;
+    final overlay = Overlay.of(context);
+    _tooltipOverlay = OverlayEntry(
+      builder: (context) {
+        final screenSize = MediaQuery.sizeOf(context);
+        const tooltipMaxWidth = 400.0;
+
+        // Position near cursor
+        var left = position.dx + 12;
+        var top = position.dy - 32;
+
+        // Keep tooltip within screen bounds
+        if (left + tooltipMaxWidth > screenSize.width - 8) {
+          left = position.dx - tooltipMaxWidth - 12;
+        }
+        if (top < 8) {
+          top = position.dy + 20;
+        }
+
+        return Positioned(
+          left: left,
+          top: top,
+          child: IgnorePointer(
+            child: Material(
+              elevation: 4,
+              shadowColor: Colors.black26,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: tooltipMaxWidth),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Text(
+                  text,
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    overlay.insert(_tooltipOverlay!);
+  }
+
+  void _cancelTooltip() {
+    _tooltipTimer?.cancel();
+    _tooltipTimer = null;
+    _removeTooltip();
+  }
+
+  void _removeTooltip() {
+    _tooltipOverlay?.remove();
+    _tooltipOverlay?.dispose();
+    _tooltipOverlay = null;
+  }
+
+  @override
+  void dispose() {
+    _tooltipTimer?.cancel();
+    _removeTooltip();
+    super.dispose();
   }
 
   @override
@@ -124,7 +224,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onHover: (event) => _mousePosition = event.position,
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _cancelTooltip();
+      },
       child: GestureDetector(
         onTap: widget.onTap,
         onSecondaryTapUp: (details) =>
@@ -142,67 +246,87 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
               ),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              children: [
-                Icon(widget.icon, size: 16, color: widget.color),
-                const Gap(8),
-                SizedBox(
-                  width: 120,
-                  child: Text(
-                    widget.data.key ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: widget.color,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                const Gap(8),
-                SizedBox(
-                  width: 140,
-                  child: Text(
-                    widget.data.formattedTime,
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: onSurface.withValues(alpha: 0.45),
-                      fontSize: 11,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-                const Gap(12),
-                // Message with tooltip on hover
-                Expanded(
-                  child: Tooltip(
-                    message: _message.length > 80 ? _message : '',
-                    waitDuration: const Duration(milliseconds: 500),
-                    child: Text(
-                      _message,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: onSurface.withValues(alpha: 0.75),
-                        fontSize: 12,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 480;
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                  children: [
+                    Icon(widget.icon, size: 16, color: widget.color),
+                    const Gap(8),
+                    MouseRegion(
+                      onEnter: (_) {
+                        final desc = ISpect.read(context).theme
+                            .getTypeDescription(
+                              context,
+                              key: widget.data.key,
+                            );
+                        if (desc != null) _scheduleTooltip(desc);
+                      },
+                      onExit: (_) => _cancelTooltip(),
+                      child: SizedBox(
+                        width: isCompact ? 40 : 70,
+                        child: Text(
+                          widget.data.key ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: widget.color,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const Gap(8),
+                    if (!isCompact) ...[
+                      SizedBox(
+                        width: 140,
+                        child: Text(
+                          widget.data.formattedTime,
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: onSurface.withValues(alpha: 0.45),
+                            fontSize: 11,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+                      const Gap(12),
+                    ],
+                    // Message with cursor-following tooltip on hover
+                    Expanded(
+                      child: MouseRegion(
+                        onEnter: (_) => _scheduleTooltip(_message),
+                        onExit: (_) => _cancelTooltip(),
+                        child: Text(
+                          _message,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: onSurface.withValues(alpha: 0.75),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Actions (visible on hover or selected)
+                    if (_isHovered || widget.isSelected) ...[
+                      const Gap(8),
+                      _DesktopRowActions(
+                        color: widget.color,
+                        data: widget.data,
+                        observer: widget.observer,
+                        onShareTap: widget.onShareTap,
+                        onOpenDetail: widget.onTap,
+                      ),
+                    ],
+                  ],
                 ),
-                // Actions (visible on hover or selected)
-                if (_isHovered || widget.isSelected) ...[
-                  const Gap(8),
-                  _DesktopRowActions(
-                    color: widget.color,
-                    data: widget.data,
-                    observer: widget.observer,
-                    onShareTap: widget.onShareTap,
-                  ),
-                ],
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -269,10 +393,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         final curl = widget.data.curlCommand;
         if (curl != null) copyClipboard(context, value: curl);
       case _ContextAction.openDetail:
-        JsonScreen(
-          data: widget.data.toJson(),
-          truncatedData: widget.data.toJson(truncated: true),
-        ).push(context);
+        widget.onTap();
     }
   }
 }
@@ -301,12 +422,14 @@ class _DesktopRowActions extends StatelessWidget {
     required this.data,
     required this.observer,
     required this.onShareTap,
+    required this.onOpenDetail,
   });
 
   final Color color;
   final ISpectLogData data;
   final ISpectNavigatorObserver? observer;
   final VoidCallback? onShareTap;
+  final VoidCallback onOpenDetail;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -340,10 +463,7 @@ class _DesktopRowActions extends StatelessWidget {
             icon: Icons.open_in_full_rounded,
             color: color,
             tooltip: context.ispectL10n.expandLogs,
-            onPressed: () => JsonScreen(
-              data: data.toJson(),
-              truncatedData: data.toJson(truncated: true),
-            ).push(context),
+            onPressed: onOpenDetail,
           ),
         ],
       );

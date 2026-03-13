@@ -59,9 +59,17 @@ class LogPipeline {
     return _filter?.apply(data) ?? true;
   }
 
+  bool _isDispatching = false;
+
   void dispatch(ISpectLogData data) {
-    if (!_streamController.isClosed) {
-      _streamController.add(data);
+    if (_isDispatching) return;
+    _isDispatching = true;
+    try {
+      if (!_streamController.isClosed) {
+        _streamController.add(data);
+      }
+    } finally {
+      _isDispatching = false;
     }
     _history.add(data);
 

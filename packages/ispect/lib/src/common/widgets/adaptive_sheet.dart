@@ -62,14 +62,17 @@ Future<void> showISpectSheet(
         context: context,
         useRootNavigator: useRootNavigator,
         routeSettings: routeSettings,
-        builder: (_) => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          backgroundColor: bgColor,
-          clipBehavior: Clip.antiAlias,
-          content: SizedBox(
-            height: MediaQuery.sizeOf(context).height * dialogHeightFactor,
-            width: dialogWidth,
-            child: builder(context, null),
+        builder: (_) => ScrollConfiguration(
+          behavior: const _ClampingScrollBehavior(),
+          child: AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            backgroundColor: bgColor,
+            clipBehavior: Clip.antiAlias,
+            content: SizedBox(
+              height: MediaQuery.sizeOf(context).height * dialogHeightFactor,
+              width: dialogWidth,
+              child: builder(context, null),
+            ),
           ),
         ),
       );
