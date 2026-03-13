@@ -22,11 +22,12 @@ class JsonExplorerStore extends ChangeNotifier {
   final List<SearchResult> _searchResults = <SearchResult>[];
   String _searchTerm = '';
   var _focusedSearchResultIndex = 0;
+  int _searchGeneration = 0;
+  bool _isSearching = false;
   Timer? _currentSearchOperation;
   bool _mounted = true;
 
   // Services for better separation of concerns
-  final SearchCacheService _searchCacheService = SearchCacheService();
   final NodeHierarchyCacheService _hierarchyCacheService =
       NodeHierarchyCacheService();
   JsonNodeService? _nodeService;
@@ -42,6 +43,9 @@ class JsonExplorerStore extends ChangeNotifier {
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
       UnmodifiableListView(_displayNodes);
 
+  /// Whether an async search is currently in progress.
+  bool get isSearching => _isSearching;
+
   /// Gets the current search term.
   String get searchTerm => _searchTerm;
 
@@ -53,9 +57,13 @@ class JsonExplorerStore extends ChangeNotifier {
   int get focusedSearchResultIndex => _focusedSearchResultIndex;
 
   /// Gets the current focused search result, or `null` if no results exist.
-  SearchResult? get focusedSearchResult => _searchResults.isEmpty
-      ? null
-      : _searchResults[_focusedSearchResultIndex];
+  SearchResult? get focusedSearchResult {
+    if (_searchResults.isEmpty) return null;
+    if (_focusedSearchResultIndex >= _searchResults.length) {
+      _focusedSearchResultIndex = _searchResults.length - 1;
+    }
+    return _searchResults[_focusedSearchResultIndex];
+  }
 
   /// Collapses the given `node` so its children won't be visible.
   void collapseNode(NodeViewModelState node) {
@@ -115,13 +123,17 @@ class JsonExplorerStore extends ChangeNotifier {
     _searchResults.clear();
 
     if (normalizedTerm.isEmpty) {
+      _isSearching = false;
       notifyListeners();
       return;
     }
 
     _currentSearchOperation?.cancel();
     _currentSearchOperation = null;
-    unawaited(_doSearch());
+    _searchGeneration++;
+    _isSearching = true;
+    notifyListeners();
+    unawaited(_doSearch(_searchGeneration));
   }
 
   /// Sets the focus on the next search result.
@@ -155,8 +167,6 @@ class JsonExplorerStore extends ChangeNotifier {
     Object? jsonObject, {
     bool areAllCollapsed = false,
   }) async {
-    // Clear caches first to avoid memory leaks
-    _searchCacheService.clear();
     _hierarchyCacheService.clear();
 
     // Cancel any ongoing search
@@ -196,8 +206,6 @@ class JsonExplorerStore extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Clear caches when disposing the store
-    _searchCacheService.clear();
     _hierarchyCacheService.clear();
 
     // Dispose performance manager
@@ -215,37 +223,55 @@ class JsonExplorerStore extends ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> _doSearch() async {
+  Future<void> _doSearch(int generation) async {
     final searchService = _searchService;
     if (searchService == null) return;
 
     _searchResults.clear();
 
-    // Use search service for better performance and separation of concerns
     final results = await searchService.searchInNodes(
       allNodes: _allNodes,
       searchTerm: _searchTerm,
-      isMounted: () => mounted,
+      isMounted: () => mounted && generation == _searchGeneration,
       onProgressUpdate: () {
-        if (mounted) notifyListeners();
+        if (mounted && generation == _searchGeneration) notifyListeners();
       },
     );
 
-    if (mounted) {
-      _searchResults.addAll(results.cast<SearchResult>());
-      notifyListeners();
+    // Discard stale results from a superseded search
+    if (!mounted || generation != _searchGeneration) return;
+
+    _searchResults.addAll(results.cast<SearchResult>());
+    if (_searchResults.isNotEmpty) {
+      _focusedSearchResultIndex =
+          _focusedSearchResultIndex.clamp(0, _searchResults.length - 1);
+    } else {
+      _focusedSearchResultIndex = 0;
     }
+    _isSearching = false;
+    expandSearchResults();
+    notifyListeners();
   }
 
   /// Expands all the parent nodes of each search result.
   void expandSearchResults() {
-    _nodeService?.expandSearchResults(
-      searchResults.cast<SearchResult>().toList(growable: false),
-    );
+    for (final result in _searchResults) {
+      expandParentNodes(result.node);
+    }
   }
 
-  /// Expands all the parent nodes of the given `node`.
+  /// Expands all collapsed ancestors of [node] top-down,
+  /// inserting their children into [_displayNodes].
   void expandParentNodes(NodeViewModelState node) {
-    _nodeService?.expandParentNodes(node);
+    final collapsedAncestors = <NodeViewModelState>[];
+    for (var current = node.parent; current != null; current = current.parent) {
+      if (current.isCollapsed) {
+        collapsedAncestors.add(current);
+      }
+    }
+    // Expand top-down so each parent exists in displayNodes before its children
+    for (final ancestor in collapsedAncestors.reversed) {
+      expandNode(ancestor);
+    }
   }
 }

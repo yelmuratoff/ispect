@@ -112,7 +112,7 @@ class DefaultSearchMatchFinder implements SearchMatchFinder {
           matchIndex: index,
         ),
       );
-      startIndex = index + 1;
+      startIndex = index + pattern.length;
     }
   }
 }
@@ -318,15 +318,15 @@ class JsonSearchService {
     required bool Function() isMounted,
     void Function()? onProgressUpdate,
   }) async {
-    // Create strategy if not provided
-    _strategy ??= SearchStrategyFactory.createStrategy(
-      nodeCount: allNodes.length,
-      searchTermLength: searchTerm.length,
-      matchFinder: _matchFinder,
-      progressTracker: _progressTracker,
-    );
+    final effectiveStrategy = _strategy ??
+        SearchStrategyFactory.createStrategy(
+          nodeCount: allNodes.length,
+          searchTermLength: searchTerm.length,
+          matchFinder: _matchFinder,
+          progressTracker: _progressTracker,
+        );
 
-    return _strategy!.search(
+    return effectiveStrategy.search(
       nodes: allNodes,
       searchTerm: searchTerm,
       isMounted: isMounted,
@@ -378,7 +378,7 @@ class JsonSearchService {
         final index = text.indexOf(pattern, startIndex);
         if (index == -1) break;
         indices.add(index);
-        startIndex = index + 1;
+        startIndex = index + pattern.length;
       }
 
       final result = List<int>.from(indices);

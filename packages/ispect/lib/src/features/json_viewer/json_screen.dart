@@ -75,9 +75,7 @@ class _JsonScreenState extends State<JsonScreen> {
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (mounted) {
-        _store
-          ..search(value)
-          ..expandSearchResults();
+        _store.search(value);
       }
     });
   }
@@ -85,9 +83,7 @@ class _JsonScreenState extends State<JsonScreen> {
   void _onSearchClear() {
     _searchController.clear();
     _hasSearchText.value = false;
-    _store
-      ..search('')
-      ..expandSearchResults();
+    _store.search('');
   }
 
   @override
@@ -215,16 +211,21 @@ class _JsonScreenState extends State<JsonScreen> {
                         int count,
                         int focusedIndex,
                         bool hasSearchTerm,
+                        bool isSearching,
                       })>(
                     store: _store,
                     selector: (s) => (
                       count: s.searchResults.length,
                       focusedIndex: s.focusedSearchResultIndex,
                       hasSearchTerm: s.searchTerm.isNotEmpty,
+                      isSearching: s.isSearching,
                     ),
                     builder: (context, searchData) {
                       if (!searchData.hasSearchTerm) {
                         return const SizedBox.shrink();
+                      }
+                      if (searchData.isSearching) {
+                        return const _SearchLoadingIndicator();
                       }
                       final count = searchData.count;
                       final focusedIndex = searchData.focusedIndex;
@@ -369,6 +370,23 @@ class _SearchNavigation extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SearchLoadingIndicator extends StatelessWidget {
+  const _SearchLoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
+          ),
+        ),
+      );
 }
 
 class _NoResultsLabel extends StatelessWidget {

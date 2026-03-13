@@ -13,11 +13,12 @@ class JsonColors {
 
   /// Color used for `null` values in JSON.
   static const nullColor = Colors.blueGrey;
-  static const nullColorDark = Color(0xFFB0BEC5); // blueGrey[200] — soft grey
+  static const nullColorDark = Color(0xFFB0BEC5); // blueGrey[200]
 
   /// Color used for `boolean` values in JSON.
   static const boolColor = Colors.orange;
-  static const boolColorDark = Color(0xFF4FC3F7); // lightBlue[300] — like VS Code
+  static const boolColorDark =
+      Color(0xFFFFCC80); // orange[200] — same hue, lighter
 
   /// Color used for JSON tree structure elements.
   static const jsonTreeColor = Color(0xFF2D45C3);
@@ -33,11 +34,12 @@ class JsonColors {
 
   /// Color used for numeric values in JSON.
   static const numColor = Colors.deepPurpleAccent;
-  static const numColorDark = Color(0xFFB5CEA8); // VS Code-style green for nums
+  static const numColorDark = Color(0xFFB39DDB); // deepPurple[200] — same hue
 
   /// Color used for string values in JSON.
   static const stringColor = Color(0xFFCD44D9);
-  static const stringColorDark = Color(0xFFCE9178); // VS Code-style warm orange
+  static const stringColorDark =
+      Color(0xFFF48FB1); // pink[200] — same hue family
 
   /// Background color of the JSON viewer.
   static const jsonBackgroundColor = Color(0xFFE8E8E8);
@@ -51,7 +53,8 @@ class JsonColors {
 
   /// Color used for date-time values in JSON.
   static const dateTimeColor = Colors.teal;
-  static const dateTimeColorDark = Color(0xFF80CBC4); // teal[200]
+  static const dateTimeColorDark =
+      Color(0xFFA5D6A7); // green[200] — distinct from array
 
   /// Returns the appropriate color for [Brightness].
   static Color nullColorFor(Brightness b) =>
@@ -84,7 +87,7 @@ class JsonColors {
         _ => Colors.grey,
       };
 
-  /// Maps HTTP methods to their respective colors.
+  /// Maps HTTP methods to their respective colors (light theme).
   static const methodColors = {
     'GET': Colors.green,
     'POST': Colors.blue,
@@ -94,6 +97,6 @@ class JsonColors {
     'HEAD': Colors.pink,
     'OPTIONS': Colors.teal,
     'TRACE': Colors.grey,
-    'CONNECT': Colors.brown,
+    'CONNECT': Color(0xFF8D6E63), // brown[400] — readable on both themes
   };
 }
