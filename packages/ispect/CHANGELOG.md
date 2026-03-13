@@ -2,6 +2,14 @@
 
 ## 4.7.5
 
+### UI
+
+- Redesign settings bottom sheet: replace vertical switch list with horizontal toggle cards, chip-based action buttons, and grouped log type filter chips.
+- Unify all bottom sheets (share log, share all logs, navigation flow actions) with consistent styling: drag handle, icon header, and sheet action buttons.
+- Extract reusable bottom sheet components: `ISpectDragHandle`, `ISpectBottomSheetHeader`, `ISpectSectionLabel`, `ISpectSheetActionButton`.
+- Add `description` field to `ISpectActionItem` for tooltip support on action chips.
+- Add localized descriptions for all built-in action items (12 languages).
+
 ### Security
 
 - Fix redaction bypass for data nested beyond `maxDepth`.
