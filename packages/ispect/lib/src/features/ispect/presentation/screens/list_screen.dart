@@ -140,8 +140,6 @@ class _LogListItem extends StatelessWidget {
     required this.statusIcon,
     required this.statusColor,
     required this.isExpanded,
-    required this.isLastItem,
-    required this.dividerColor,
     required this.onItemTapped,
     required this.onSharePressed,
     super.key,
@@ -152,39 +150,22 @@ class _LogListItem extends StatelessWidget {
   final IconData statusIcon;
   final Color statusColor;
   final bool isExpanded;
-  final bool isLastItem;
-  final Color dividerColor;
   final VoidCallback onItemTapped;
   final VoidCallback onSharePressed;
 
   @override
-  Widget build(BuildContext context) {
-    final itemContent = RepaintBoundary(
-      child: LogCard(
-        icon: statusIcon,
-        color: statusColor,
-        data: logData,
-        index: itemIndex,
-        isExpanded: isExpanded,
-        onShareTap: onSharePressed,
-        onTap: onItemTapped,
-        dividerColor: dividerColor,
-      ),
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        itemContent,
-        if (!isLastItem)
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: dividerColor,
-          ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: LogCard(
+          icon: statusIcon,
+          color: statusColor,
+          data: logData,
+          index: itemIndex,
+          isExpanded: isExpanded,
+          onShareTap: onSharePressed,
+          onTap: onItemTapped,
+        ),
+      );
 }
 
 /// A widget displayed when there are no logs to show.
@@ -192,21 +173,33 @@ class EmptyLogsWidget extends StatelessWidget {
   const EmptyLogsWidget();
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 40,
-            color: Colors.white70,
-          ),
-          const Gap(8),
-          Text(
-            context.ispectL10n.notFound.capitalize(),
-            style: context.appTheme.textTheme.bodyLarge,
-          ),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final onSurface = context.appTheme.colorScheme.onSurface;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: onSurface.withValues(alpha: 0.2),
+            ),
+            const Gap(12),
+            Text(
+              context.ispectL10n.notFound.capitalize(),
+              style: context.appTheme.textTheme.titleMedium?.copyWith(
+                color: onSurface.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Main logs view widget that displays the scrollable list of logs
@@ -249,13 +242,12 @@ class _MainLogsView extends StatelessWidget {
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
           backgroundColor: iSpectTheme.theme.background?.resolve(context),
+          filteredCount: filteredLogEntries.length,
+          totalCount: logsData.length,
         ),
         if (filteredLogEntries.isEmpty)
           const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(top: 24, left: 16),
-              child: EmptyLogsWidget(),
-            ),
+            child: EmptyLogsWidget(),
           ),
         SliverList.builder(
           itemCount: filteredLogEntries.length,
@@ -276,9 +268,6 @@ class _MainLogsView extends StatelessWidget {
                       Colors.grey,
               isExpanded: logsViewController.activeData == logEntry ||
                   logsViewController.expandedLogs,
-              isLastItem: index == filteredLogEntries.length - 1,
-              dividerColor: iSpectTheme.theme.divider?.resolve(context) ??
-                  context.appTheme.dividerColor,
               onSharePressed: () => ISpectShareLogBottomSheet(
                 data: logEntry.toJson(),
                 truncatedData: logEntry.toJson(truncated: true),

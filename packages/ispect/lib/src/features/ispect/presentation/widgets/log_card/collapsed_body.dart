@@ -33,7 +33,6 @@ class CollapsedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -44,16 +43,31 @@ class CollapsedBody extends StatelessWidget {
                   children: [
                     DecoratedLeadingIcon(icon: icon, color: color),
                     const Gap(ISpectConstants.standardGap),
-                    Flexible(
-                      child: Text(
-                        '$title | $dateTime',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: color,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            dateTime,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: context.appTheme.textColor
+                                  .withValues(alpha: 0.4),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -67,6 +81,40 @@ class CollapsedBody extends StatelessWidget {
               ],
             ),
           ),
+          const Gap(4),
+          _ActionButtons(
+            color: color,
+            onShareTap: onShareTap,
+            onCopyCurlTap: onCopyCurlTap,
+            onExpandTap: onExpandTap,
+            onRouteTap: onRouteTap,
+            isHTTP: isHTTP,
+          ),
+        ],
+      );
+}
+
+class _ActionButtons extends StatelessWidget {
+  const _ActionButtons({
+    required this.color,
+    required this.onShareTap,
+    required this.onCopyCurlTap,
+    required this.onExpandTap,
+    required this.onRouteTap,
+    required this.isHTTP,
+  });
+
+  final Color color;
+  final VoidCallback? onShareTap;
+  final VoidCallback? onCopyCurlTap;
+  final VoidCallback? onExpandTap;
+  final VoidCallback? onRouteTap;
+  final bool isHTTP;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           if (onRouteTap != null) ...[
             SquareIconButton(
               icon: Icons.compare_arrows_rounded,
@@ -123,13 +171,13 @@ class _CollapsedMessage extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 2),
+      padding: const EdgeInsets.only(top: 4),
       child: Text(
         displayMessage,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: color,
+          color: context.appTheme.textColor.withValues(alpha: 0.6),
           fontSize: 11,
           fontWeight: FontWeight.w400,
         ),
@@ -192,13 +240,16 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: DecorationUtils.roundedBackground(color: color),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(5),
           child: Icon(
             icon,
             color: color,
-            size: ISpectConstants.logCardIconSize,
+            size: 14,
           ),
         ),
       );
