@@ -62,7 +62,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Компонент инициализацияланды және жұмысты бастады';
 
   @override
-  String get blocEventLogDesc => 'Бірдеңе істеу командасы алынды';
+  String get blocEventLogDesc => 'Оқиға командасы алынды';
 
   @override
   String get blocTransitionLogDesc => 'Командаға жауап ретінде күй өзгерді';
@@ -120,7 +120,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String counterTimesText(Object number) {
-    return 'Сіз түймені сонша рет басқансыз: $number';
+    return 'Сіз түймені $number рет бастыңыз';
   }
 
   @override
@@ -183,7 +183,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get finished => 'Бітті';
 
   @override
-  String get fix => 'Хабарлау';
+  String get fix => 'Түзету';
 
   @override
   String get fullURL => 'Толық сілтеме';
@@ -349,7 +349,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get statusCode => 'Статус коды';
 
   @override
-  String get statusMessage => 'Cтатус';
+  String get statusMessage => 'Статус';
 
   @override
   String get submitButtonText => 'Жіберу';
@@ -518,16 +518,16 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get turnOnInspector => 'Инспекторды қосу';
 
   @override
-  String get typeMessage => 'Сұрауды теріңіз';
+  String get typeMessage => 'Хабарлама теріңіз';
 
   @override
   String get uploadImages => 'Суреттерді жүктеу';
 
   @override
-  String get useConsoleLogs => 'Консоль жазбаларын пайдалану';
+  String get useConsoleLogs => 'Консоль жазбаларын қолдану';
 
   @override
-  String get useHistory => 'Тарихты пайдалану';
+  String get useHistory => 'Тарихты қолдану';
 
   @override
   String get userEmail => 'Электрондық пошта';
@@ -557,7 +557,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copyToClipboardTruncated => 'Қысқашаны алмасу буферіне көшіру';
 
   @override
-  String get viewThemeScheme => 'Тема схемасы экранын көру';
+  String get viewThemeScheme => 'Тақырып схемасы экранын көру';
 
   @override
   String get takeScreenshotFeedback => 'Скриншот түсіру және пікір жіберу';
