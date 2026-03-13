@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
@@ -8,10 +9,12 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
@@ -78,37 +81,55 @@ class _LogsScreenState extends State<LogsScreen> {
         controller: _logsViewController,
         builder: (context, data) => ListenableBuilder(
           listenable: _logsViewController,
-          builder: (_, __) => Row(
-            children: [
-              Expanded(
-                child: _MainLogsView(
-                  logsData: data,
-                  iSpectTheme: iSpect,
-                  titleFiltersController: _titleFiltersController,
-                  searchFocusNode: _searchFocusNode,
-                  logsScrollController: _logsScrollController,
-                  logsViewController: _logsViewController,
-                  appBarTitle: widget.appBarTitle,
-                  itemsBuilder: widget.itemsBuilder,
-                  onSettingsTap: () => _openLogsSettings(context),
-                ),
-              ),
-              if (_logsViewController.activeData != null) ...[
+          builder: (_, __) {
+            final hasDetail = _logsViewController.activeData != null;
+            final showDetailPanel = hasDetail &&
+                !context.screenSize.isPhone;
+
+            final logsView = _MainLogsView(
+              logsData: data,
+              iSpectTheme: iSpect,
+              titleFiltersController: _titleFiltersController,
+              searchFocusNode: _searchFocusNode,
+              logsScrollController: _logsScrollController,
+              logsViewController: _logsViewController,
+              appBarTitle: widget.appBarTitle,
+              itemsBuilder: widget.itemsBuilder,
+              onSettingsTap: () => _openLogsSettings(context),
+              hasDetailPanel: showDetailPanel,
+            );
+
+            if (!showDetailPanel) {
+              return logsView;
+            }
+
+            final detailView = _DetailView(
+              activeData: _logsViewController.activeData!,
+              onClose: () => _logsViewController.activeData = null,
+            );
+
+            if (context.screenSize.isDesktop) {
+              return ResizableSplitView(
+                minRatio: 0.25,
+                maxRatio: 0.7,
+                left: logsView,
+                right: detailView,
+              );
+            }
+
+            // Tablet: fixed split, no drag.
+            return Row(
+              children: [
+                Expanded(flex: 5, child: logsView),
                 VerticalDivider(
                   color: context.ispectTheme.divider?.resolve(context),
                   width: 1,
                   thickness: 1,
                 ),
-                context.screenSizeMaybeWhen(
-                  phone: () => const SizedBox.shrink(),
-                  orElse: () => _DetailView(
-                    activeData: _logsViewController.activeData!,
-                    onClose: () => _logsViewController.activeData = null,
-                  ),
-                ),
+                Expanded(flex: 5, child: detailView),
               ],
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -328,20 +349,41 @@ class _LogListItem extends StatelessWidget {
   final ISpectNavigatorObserver? observer;
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) {
+    if (customItemBuilder != null) {
+      return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        child: customItemBuilder?.call(context, logData) ??
-            LogCard(
-              icon: statusIcon,
-              color: statusColor,
-              data: logData,
-              index: itemIndex,
-              isExpanded: isExpanded,
-              onShareTap: onSharePressed,
-              onTap: onItemTapped,
-              observer: observer,
-            ),
+        child: customItemBuilder!(context, logData),
       );
+    }
+
+    if (context.screenSize.isDesktop) {
+      return DesktopLogRow(
+        icon: statusIcon,
+        color: statusColor,
+        data: logData,
+        index: itemIndex,
+        isSelected: isExpanded,
+        onShareTap: onSharePressed,
+        onTap: onItemTapped,
+        observer: observer,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      child: LogCard(
+        icon: statusIcon,
+        color: statusColor,
+        data: logData,
+        index: itemIndex,
+        isExpanded: isExpanded,
+        onShareTap: onSharePressed,
+        onTap: onItemTapped,
+        observer: observer,
+      ),
+    );
+  }
 }
 
 /// A widget displayed when there are no logs to show.
@@ -432,6 +474,7 @@ class _MainLogsView extends StatefulWidget {
     required this.onSettingsTap,
     this.appBarTitle,
     this.itemsBuilder,
+    this.hasDetailPanel = false,
   });
 
   final List<ISpectLogData> logsData;
@@ -443,6 +486,7 @@ class _MainLogsView extends StatefulWidget {
   final VoidCallback onSettingsTap;
   final String? appBarTitle;
   final ISpectLogDataBuilder? itemsBuilder;
+  final bool hasDetailPanel;
 
   @override
   State<_MainLogsView> createState() => _MainLogsViewState();
@@ -451,18 +495,29 @@ class _MainLogsView extends StatefulWidget {
 class _MainLogsViewState extends State<_MainLogsView> {
   /// null = hidden, true = at bottom (show up arrow), false = scrolled down (show down arrow)
   final _scrollDirection = ValueNotifier<bool?>(null);
+  final _keyboardFocusNode = FocusNode(debugLabel: 'DesktopLogKeyboard');
 
   @override
   void initState() {
     super.initState();
     widget.logsScrollController.addListener(_onScroll);
+    widget.searchFocusNode.addListener(_onSearchFocusChanged);
   }
 
   @override
   void dispose() {
     widget.logsScrollController.removeListener(_onScroll);
+    widget.searchFocusNode.removeListener(_onSearchFocusChanged);
     _scrollDirection.dispose();
+    _keyboardFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onSearchFocusChanged() {
+    // When search loses focus, return focus to the keyboard handler
+    if (!widget.searchFocusNode.hasFocus && _keyboardFocusNode.canRequestFocus) {
+      _keyboardFocusNode.requestFocus();
+    }
   }
 
   void _onScroll() {
@@ -491,6 +546,83 @@ class _MainLogsViewState extends State<_MainLogsView> {
     );
   }
 
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+
+    // Ctrl/Cmd+K or "/" to focus search (only when search is not focused)
+    final isMetaOrCtrl = HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.isControlPressed;
+    if ((isMetaOrCtrl &&
+            event.logicalKey == LogicalKeyboardKey.keyK) ||
+        (!widget.searchFocusNode.hasFocus &&
+            event.logicalKey == LogicalKeyboardKey.slash)) {
+      widget.searchFocusNode.requestFocus();
+      return KeyEventResult.handled;
+    }
+
+    // Don't handle arrow/escape when search is focused
+    if (widget.searchFocusNode.hasFocus) {
+      return KeyEventResult.ignored;
+    }
+
+    final filteredLogEntries =
+        widget.logsViewController.applyCurrentFilters(widget.logsData);
+    if (filteredLogEntries.isEmpty) return KeyEventResult.ignored;
+
+    final activeData = widget.logsViewController.activeData;
+
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      if (activeData != null) {
+        widget.logsViewController.activeData = null;
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+        event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+      if (activeData == null) {
+        // Select first/last entry
+        final index = isDown ? 0 : filteredLogEntries.length - 1;
+        final (entry: entry, actualIndex: _) =
+            widget.logsViewController.getLogEntryAtIndex(
+          filteredLogEntries,
+          index,
+        );
+        widget.logsViewController.activeData = entry;
+      } else {
+        // Find current index and move
+        final currentIndex = filteredLogEntries.indexOf(activeData);
+        if (currentIndex == -1) return KeyEventResult.ignored;
+
+        // Convert to visual index
+        final isReversed = widget.logsViewController.isLogOrderReversed;
+        final visualIndex = isReversed
+            ? filteredLogEntries.length - 1 - currentIndex
+            : currentIndex;
+
+        final nextVisualIndex = isDown ? visualIndex + 1 : visualIndex - 1;
+        if (nextVisualIndex < 0 ||
+            nextVisualIndex >= filteredLogEntries.length) {
+          return KeyEventResult.handled;
+        }
+
+        final (entry: nextEntry, actualIndex: _) =
+            widget.logsViewController.getLogEntryAtIndex(
+          filteredLogEntries,
+          nextVisualIndex,
+        );
+        widget.logsViewController.activeData = nextEntry;
+      }
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries =
@@ -498,8 +630,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
     final titles = widget.logsViewController.getTitles(widget.logsData);
 
     final options = ISpect.read(context).options;
+    final isDesktop = context.screenSize.isDesktop;
+    final isFiltered = filteredLogEntries.length != widget.logsData.length;
 
-    return Stack(
+    Widget body = Stack(
       children: [
         CustomScrollView(
           controller: widget.logsScrollController,
@@ -520,6 +654,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
               filteredCount: filteredLogEntries.length,
               totalCount: widget.logsData.length,
             ),
+            if (isDesktop)
+              const SliverToBoxAdapter(
+                child: DesktopLogTableHeader(),
+              ),
             if (filteredLogEntries.isEmpty)
               const SliverToBoxAdapter(
                 child: _EmptyLogsWidget(),
@@ -557,7 +695,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 );
               },
             ),
-            const SliverGap(8),
+            // Extra space for status bar on desktop
+            SliverGap(isDesktop ? 36 : 8),
           ],
         ),
         ValueListenableBuilder(
@@ -566,15 +705,40 @@ class _MainLogsViewState extends State<_MainLogsView> {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             right: 16,
-            bottom: direction != null ? 16 : -56,
+            bottom: direction != null ? (isDesktop ? 44 : 16) : -56,
             child: _ScrollToEdgeFab(
               isAtBottom: direction ?? false,
               onPressed: _onFabPressed,
             ),
           ),
         ),
+        // Desktop status bar
+        if (isDesktop)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _DesktopStatusBar(
+              filteredCount: filteredLogEntries.length,
+              totalCount: widget.logsData.length,
+              isFiltered: isFiltered,
+              selectedLog: widget.logsViewController.activeData,
+            ),
+          ),
       ],
     );
+
+    // Keyboard navigation on desktop
+    if (isDesktop) {
+      body = Focus(
+        focusNode: _keyboardFocusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: body,
+      );
+    }
+
+    return body;
   }
 }
 
@@ -625,6 +789,135 @@ class _ScrollToEdgeFab extends StatelessWidget {
   }
 }
 
+/// Status bar at the bottom of the desktop log view.
+class _DesktopStatusBar extends StatelessWidget {
+  const _DesktopStatusBar({
+    required this.filteredCount,
+    required this.totalCount,
+    required this.isFiltered,
+    this.selectedLog,
+  });
+
+  final int filteredCount;
+  final int totalCount;
+  final bool isFiltered;
+  final ISpectLogData? selectedLog;
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.cardColor;
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final borderColor = onSurface.withValues(alpha: 0.1);
+    final labelColor = onSurface.withValues(alpha: 0.55);
+
+    final countText =
+        isFiltered ? '$filteredCount / $totalCount' : '$totalCount';
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: cardColor,
+        border: Border(top: BorderSide(color: borderColor)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            Icon(
+              Icons.list_alt_rounded,
+              size: 14,
+              color: labelColor,
+            ),
+            const Gap(6),
+            Text(
+              '$countText logs',
+              style: TextStyle(fontSize: 12, color: labelColor),
+            ),
+            if (selectedLog != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SizedBox(
+                  height: 12,
+                  child: VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    color: onSurface.withValues(alpha: 0.12),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  '${selectedLog!.key ?? ''} \u2014 '
+                  '${selectedLog!.formattedTime}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: onSurface.withValues(alpha: 0.45),
+                  ),
+                ),
+              ),
+            ] else
+              const Spacer(),
+            _KeyBadge(label: '\u2191\u2193', context: context),
+            const Gap(4),
+            Text(
+              'navigate',
+              style: TextStyle(fontSize: 11, color: labelColor),
+            ),
+            const Gap(12),
+            _KeyBadge(label: '/', context: context),
+            const Gap(4),
+            Text(
+              'search',
+              style: TextStyle(fontSize: 11, color: labelColor),
+            ),
+            const Gap(12),
+            _KeyBadge(label: 'Esc', context: context),
+            const Gap(4),
+            Text(
+              'close',
+              style: TextStyle(fontSize: 11, color: labelColor),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyBadge extends StatelessWidget {
+  const _KeyBadge({required this.label, required this.context});
+
+  final String label;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext innerContext) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: onSurface.withValues(alpha: 0.06),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+        border: Border.all(color: onSurface.withValues(alpha: 0.12)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: onSurface.withValues(alpha: 0.5),
+            height: 1.3,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Detail view widget for displaying selected log data
 class _DetailView extends StatelessWidget {
   const _DetailView({
@@ -638,14 +931,12 @@ class _DetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final json = activeData.toJson();
-    return Flexible(
-      child: RepaintBoundary(
-        child: JsonScreen(
-          key: ValueKey(activeData.hashCode),
-          data: json,
-          truncatedData: activeData.toJson(truncated: true),
-          onClose: onClose,
-        ),
+    return RepaintBoundary(
+      child: JsonScreen(
+        key: ValueKey(activeData.hashCode),
+        data: json,
+        truncatedData: activeData.toJson(truncated: true),
+        onClose: onClose,
       ),
     );
   }

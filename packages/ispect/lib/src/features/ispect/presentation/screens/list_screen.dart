@@ -7,7 +7,9 @@ import 'package:ispect/src/common/extensions/string.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 
@@ -80,35 +82,51 @@ class _LogsScreenState extends State<LogsV2Screen> {
       backgroundColor: iSpect.theme.background?.resolve(context),
       body: ListenableBuilder(
         listenable: _logsViewController,
-        builder: (_, __) => Row(
-          children: [
-            Expanded(
-              child: _MainLogsView(
-                logsData: _logs,
-                iSpectTheme: iSpect,
-                titleFiltersController: _titleFiltersController,
-                searchFocusNode: _searchFocusNode,
-                logsScrollController: _logsScrollController,
-                logsViewController: _logsViewController,
-                appBarTitle: widget.appBarTitle,
-              ),
-            ),
-            if (_logsViewController.activeData != null) ...[
+        builder: (_, __) {
+          final hasDetail = _logsViewController.activeData != null;
+          final showDetailPanel = hasDetail && !context.screenSize.isPhone;
+
+          final logsView = _MainLogsView(
+            logsData: _logs,
+            iSpectTheme: iSpect,
+            titleFiltersController: _titleFiltersController,
+            searchFocusNode: _searchFocusNode,
+            logsScrollController: _logsScrollController,
+            logsViewController: _logsViewController,
+            appBarTitle: widget.appBarTitle,
+          );
+
+          if (!showDetailPanel) {
+            return logsView;
+          }
+
+          final detailView = _DetailView(
+            activeData: _logsViewController.activeData!,
+            onClose: () => _logsViewController.activeData = null,
+          );
+
+          if (context.screenSize.isDesktop) {
+            return ResizableSplitView(
+              minRatio: 0.25,
+              maxRatio: 0.7,
+              left: logsView,
+              right: detailView,
+            );
+          }
+
+          // Tablet: fixed split, no drag.
+          return Row(
+            children: [
+              Expanded(flex: 5, child: logsView),
               VerticalDivider(
                 color: context.ispectTheme.divider?.resolve(context),
                 width: 1,
                 thickness: 1,
               ),
-              context.screenSizeMaybeWhen(
-                phone: () => const SizedBox.shrink(),
-                orElse: () => _DetailView(
-                  activeData: _logsViewController.activeData!,
-                  onClose: () => _logsViewController.activeData = null,
-                ),
-              ),
+              Expanded(flex: 5, child: detailView),
             ],
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -154,18 +172,32 @@ class _LogListItem extends StatelessWidget {
   final VoidCallback onSharePressed;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        child: LogCard(
-          icon: statusIcon,
-          color: statusColor,
-          data: logData,
-          index: itemIndex,
-          isExpanded: isExpanded,
-          onShareTap: onSharePressed,
-          onTap: onItemTapped,
-        ),
+  Widget build(BuildContext context) {
+    if (context.screenSize.isDesktop) {
+      return DesktopLogRow(
+        icon: statusIcon,
+        color: statusColor,
+        data: logData,
+        index: itemIndex,
+        isSelected: isExpanded,
+        onShareTap: onSharePressed,
+        onTap: onItemTapped,
       );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      child: LogCard(
+        icon: statusIcon,
+        color: statusColor,
+        data: logData,
+        index: itemIndex,
+        isExpanded: isExpanded,
+        onShareTap: onSharePressed,
+        onTap: onItemTapped,
+      ),
+    );
+  }
 }
 
 /// A widget displayed when there are no logs to show.
@@ -287,6 +319,10 @@ class _MainLogsView extends StatelessWidget {
           filteredCount: filteredLogEntries.length,
           totalCount: logsData.length,
         ),
+        if (context.screenSize.isDesktop)
+          const SliverToBoxAdapter(
+            child: DesktopLogTableHeader(),
+          ),
         if (filteredLogEntries.isEmpty)
           const SliverToBoxAdapter(
             child: EmptyLogsWidget(),
@@ -337,14 +373,12 @@ class _DetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final json = activeData.toJson();
-    return Flexible(
-      child: RepaintBoundary(
-        child: JsonScreen(
-          key: ValueKey(activeData.hashCode),
-          data: json,
-          truncatedData: activeData.toJson(truncated: true),
-          onClose: onClose,
-        ),
+    return RepaintBoundary(
+      child: JsonScreen(
+        key: ValueKey(activeData.hashCode),
+        data: json,
+        truncatedData: activeData.toJson(truncated: true),
+        onClose: onClose,
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
 
@@ -81,11 +82,16 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           builder: (context, hasText, _) {
             final showFilters = _showFilters;
 
+            final isDesktop = context.screenSize.isDesktop;
+            final filterHeight = isDesktop
+                ? (showFilters ? 160.0 : 110.0)
+                : (showFilters ? 148.0 : 110.0);
+
             return SliverAppBar(
               elevation: 0,
               pinned: true,
               floating: true,
-              expandedHeight: showFilters ? 148.0 : 110.0,
+              expandedHeight: filterHeight,
               collapsedHeight: 60,
               toolbarHeight: 60,
               leading: IconButton(
@@ -242,8 +248,14 @@ class _SearchSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardColor = context.ispectTheme.card?.resolve(context);
 
+    final horizontalPadding = context.screenSizeWhen(
+      phone: () => 16.0,
+      tablet: () => 16.0,
+      desktop: () => 20.0,
+    );
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Row(
         children: [
           Expanded(
@@ -294,6 +306,8 @@ class _SearchSection extends StatelessWidget {
                           .withValues(alpha: 0.5),
                     ),
                   ),
+                if (!hasSearchText && context.screenSize.isDesktop)
+                  const _SearchShortcutBadge(),
               ],
               hintText: context.ispectL10n.search,
               onChanged: onChanged,
@@ -385,45 +399,60 @@ class _FilterChipsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ISpect.read(context).theme;
+    final isPhone = context.screenSize.isPhone;
+
+    final chips = List.generate(uniqTitles.length, (index) {
+      final title = uniqTitles[index];
+      final count = titles.where((e) => e == title).length;
+      final isSelected = titlesController.selectedIndexes.contains(index);
+      final typeColor = theme.getTypeColor(context, key: title);
+      final typeIcon = theme.getTypeIcon(context, key: title);
+
+      return _LogFilterChip(
+        title: title ?? '',
+        count: count,
+        isSelected: isSelected,
+        typeColor: typeColor,
+        typeIcon: typeIcon,
+        onSelected: (selected) {
+          switch (selected) {
+            case true:
+              titlesController.selectIndex(index);
+            case false:
+              titlesController.unselectIndex(index);
+          }
+          onToggle(
+            title,
+            titlesController.selectedIndex == index,
+          );
+        },
+      );
+    });
+
+    if (isPhone) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: SizedBox(
+          key: const ValueKey('filter'),
+          height: 32,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            separatorBuilder: (_, __) => const Gap(8),
+            itemCount: chips.length,
+            itemBuilder: (_, index) => chips[index],
+          ),
+        ),
+      );
+    }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: SizedBox(
+      padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+      child: Wrap(
         key: const ValueKey('filter'),
-        height: 32,
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          scrollDirection: Axis.horizontal,
-          separatorBuilder: (_, __) => const Gap(8),
-          itemCount: uniqTitles.length,
-          itemBuilder: (context, index) {
-            final title = uniqTitles[index];
-            final count = titles.where((e) => e == title).length;
-            final isSelected = titlesController.selectedIndexes.contains(index);
-            final typeColor = theme.getTypeColor(context, key: title);
-            final typeIcon = theme.getTypeIcon(context, key: title);
-
-            return _LogFilterChip(
-              title: title ?? '',
-              count: count,
-              isSelected: isSelected,
-              typeColor: typeColor,
-              typeIcon: typeIcon,
-              onSelected: (selected) {
-                switch (selected) {
-                  case true:
-                    titlesController.selectIndex(index);
-                  case false:
-                    titlesController.unselectIndex(index);
-                }
-                onToggle(
-                  title,
-                  titlesController.selectedIndex == index,
-                );
-              },
-            );
-          },
-        ),
+        spacing: 8,
+        runSpacing: 6,
+        children: chips,
       ),
     );
   }
@@ -485,6 +514,42 @@ class _LogFilterChip extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchShortcutBadge extends StatelessWidget {
+  const _SearchShortcutBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final isApple = Theme.of(context).platform == TargetPlatform.macOS;
+    final label = isApple ? '\u2318K' : 'Ctrl+K';
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: onSurface.withValues(alpha: 0.05),
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          border: Border.all(
+            color: onSurface.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: onSurface.withValues(alpha: 0.35),
+              fontFamily: 'monospace',
+            ),
           ),
         ),
       ),
