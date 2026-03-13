@@ -105,7 +105,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                   icon: Icon(
                     Icons.swap_vert_rounded,
                     size: 22,
-                    color: widget.controller.isLogOrderReversed
+                    color: !widget.controller.isLogOrderReversed
                         ? context.appTheme.colorScheme.primary
                         : null,
                   ),

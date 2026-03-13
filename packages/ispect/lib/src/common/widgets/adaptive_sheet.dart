@@ -39,14 +39,17 @@ Future<void> showISpectSheet(
           final bgColor = iSpect.theme.background?.resolve(context) ??
               context.appTheme.scaffoldBackgroundColor;
 
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: topOnlyRadius
-                  ? const BorderRadius.vertical(top: Radius.circular(16))
-                  : const BorderRadius.all(Radius.circular(16)),
+          return ScrollConfiguration(
+            behavior: const _ClampingScrollBehavior(),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: topOnlyRadius
+                    ? const BorderRadius.vertical(top: Radius.circular(16))
+                    : const BorderRadius.all(Radius.circular(16)),
+              ),
+              child: builder(context, scrollController),
             ),
-            child: builder(context, scrollController),
           );
         },
       ),
@@ -72,4 +75,12 @@ Future<void> showISpectSheet(
       );
     },
   );
+}
+
+class _ClampingScrollBehavior extends ScrollBehavior {
+  const _ClampingScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
 }

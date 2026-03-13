@@ -222,9 +222,11 @@ class _SettingsContentState extends State<_SettingsContent> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                spacing: 8,
-                children: [
+              child: IntrinsicHeight(
+                child: Row(
+                  spacing: 8,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   ISpectSettingsCardItem(
                     title: context.ispectL10n.enabled,
                     enabled: currentSettings.enabled,
@@ -257,7 +259,8 @@ class _SettingsContentState extends State<_SettingsContent> {
                       );
                     },
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
