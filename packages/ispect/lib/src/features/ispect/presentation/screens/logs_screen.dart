@@ -421,7 +421,7 @@ class _EmptyLogsWidget extends StatelessWidget {
 }
 
 /// Main logs view widget that displays the scrollable list of logs
-class _MainLogsView extends StatelessWidget {
+class _MainLogsView extends StatefulWidget {
   const _MainLogsView({
     required this.logsData,
     required this.iSpectTheme,
@@ -445,67 +445,182 @@ class _MainLogsView extends StatelessWidget {
   final ISpectLogDataBuilder? itemsBuilder;
 
   @override
+  State<_MainLogsView> createState() => _MainLogsViewState();
+}
+
+class _MainLogsViewState extends State<_MainLogsView> {
+  /// null = hidden, true = at bottom (show up arrow), false = scrolled down (show down arrow)
+  final _scrollDirection = ValueNotifier<bool?>(null);
+
+  @override
+  void initState() {
+    super.initState();
+    widget.logsScrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    widget.logsScrollController.removeListener(_onScroll);
+    _scrollDirection.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final sc = widget.logsScrollController;
+    if (!sc.hasClients) return;
+    final offset = sc.offset;
+    final maxExtent = sc.position.maxScrollExtent;
+
+    if (offset < 300) {
+      _scrollDirection.value = null;
+    } else if (offset >= maxExtent - 50) {
+      _scrollDirection.value = true; // at bottom → show "go to top"
+    } else {
+      _scrollDirection.value = false; // in middle → show "go to bottom"
+    }
+  }
+
+  void _onFabPressed() {
+    final sc = widget.logsScrollController;
+    final target =
+        (_scrollDirection.value ?? false) ? 0.0 : sc.position.maxScrollExtent;
+    sc.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
-    final titles = logsViewController.getTitles(logsData);
+    final filteredLogEntries =
+        widget.logsViewController.applyCurrentFilters(widget.logsData);
+    final titles = widget.logsViewController.getTitles(widget.logsData);
 
     final options = ISpect.read(context).options;
 
-    return CustomScrollView(
-      controller: logsScrollController,
-      cacheExtent: 1000,
-      slivers: [
-        ISpectAppBar(
-          focusNode: searchFocusNode,
-          title: appBarTitle,
-          titlesController: titleFiltersController,
-          titles: titles.all,
-          uniqTitles: titles.unique,
-          controller: logsViewController,
-          onSettingsTap: onSettingsTap,
-          onToggleTitle: (title, selected) => logsViewController
-              .handleTitleFilterToggle(title, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.background?.resolve(context),
-          filteredCount: filteredLogEntries.length,
-          totalCount: logsData.length,
-        ),
-        if (filteredLogEntries.isEmpty)
-          const SliverToBoxAdapter(
-            child: _EmptyLogsWidget(),
-          ),
-        SuperSliverList.builder(
-          itemCount: filteredLogEntries.length,
-          itemBuilder: (context, index) {
-            final (entry: logEntry, actualIndex: _) =
-                logsViewController.getLogEntryAtIndex(
-              filteredLogEntries,
-              index,
-            );
-            return _LogListItem(
-              key: ObjectKey(logEntry),
-              logData: logEntry,
-              itemIndex: index,
-              statusIcon:
-                  iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
-              statusColor:
-                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: widget.logsScrollController,
+          cacheExtent: 1000,
+          slivers: [
+            ISpectAppBar(
+              focusNode: widget.searchFocusNode,
+              title: widget.appBarTitle,
+              titlesController: widget.titleFiltersController,
+              titles: titles.all,
+              uniqTitles: titles.unique,
+              controller: widget.logsViewController,
+              onSettingsTap: widget.onSettingsTap,
+              onToggleTitle: (title, selected) => widget.logsViewController
+                  .handleTitleFilterToggle(title, isSelected: selected),
+              backgroundColor:
+                  widget.iSpectTheme.theme.background?.resolve(context),
+              filteredCount: filteredLogEntries.length,
+              totalCount: widget.logsData.length,
+            ),
+            if (filteredLogEntries.isEmpty)
+              const SliverToBoxAdapter(
+                child: _EmptyLogsWidget(),
+              ),
+            SuperSliverList.builder(
+              itemCount: filteredLogEntries.length,
+              itemBuilder: (context, index) {
+                final (entry: logEntry, actualIndex: _) =
+                    widget.logsViewController.getLogEntryAtIndex(
+                  filteredLogEntries,
+                  index,
+                );
+                return _LogListItem(
+                  key: ObjectKey(logEntry),
+                  logData: logEntry,
+                  itemIndex: index,
+                  statusIcon: widget.iSpectTheme.theme
+                      .getTypeIcon(context, key: logEntry.key),
+                  statusColor: widget.iSpectTheme.theme
+                          .getTypeColor(context, key: logEntry.key) ??
                       Colors.grey,
-              isExpanded: logsViewController.activeData == logEntry ||
-                  logsViewController.expandedLogs,
-              customItemBuilder: itemsBuilder,
-              observer: options.observer is ISpectNavigatorObserver
-                  ? options.observer as ISpectNavigatorObserver?
-                  : null,
-              onSharePressed: () => ISpectShareLogBottomSheet(
-                data: logEntry.toJson(),
-                truncatedData: logEntry.toJson(truncated: true),
-              ).show(context),
-              onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
-            );
-          },
+                  isExpanded:
+                      widget.logsViewController.activeData == logEntry ||
+                          widget.logsViewController.expandedLogs,
+                  customItemBuilder: widget.itemsBuilder,
+                  observer: options.observer is ISpectNavigatorObserver
+                      ? options.observer as ISpectNavigatorObserver?
+                      : null,
+                  onSharePressed: () => ISpectShareLogBottomSheet(
+                    data: logEntry.toJson(),
+                    truncatedData: logEntry.toJson(truncated: true),
+                  ).show(context),
+                  onItemTapped: () =>
+                      widget.logsViewController.handleLogItemTap(logEntry),
+                );
+              },
+            ),
+            const SliverGap(8),
+          ],
         ),
-        const SliverGap(8),
+        ValueListenableBuilder(
+          valueListenable: _scrollDirection,
+          builder: (context, direction, _) => AnimatedPositioned(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            right: 16,
+            bottom: direction != null ? 16 : -56,
+            child: _ScrollToEdgeFab(
+              isAtBottom: direction ?? false,
+              onPressed: _onFabPressed,
+            ),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _ScrollToEdgeFab extends StatelessWidget {
+  const _ScrollToEdgeFab({
+    required this.onPressed,
+    required this.isAtBottom,
+  });
+
+  final VoidCallback onPressed;
+  final bool isAtBottom;
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.cardColor;
+    final borderColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: cardColor,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        elevation: 2,
+        shadowColor: Colors.black26,
+        child: InkWell(
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          onTap: onPressed,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              border: Border.all(color: borderColor),
+            ),
+            child: Icon(
+              isAtBottom
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              size: 22,
+              color:
+                  context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

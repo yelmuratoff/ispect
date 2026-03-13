@@ -96,14 +96,23 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               backgroundColor: widget.backgroundColor ??
                   context.ispectTheme.background?.resolve(context),
               actions: [
-                if (widget.onSettingsTap != null)
-                  UnconstrainedBox(
-                    child: IconButton(
-                      onPressed: widget.onSettingsTap,
-                      icon: const Icon(Icons.settings_rounded),
-                    ),
+                IconButton(
+                  onPressed: widget.controller.toggleLogOrder,
+                  tooltip: context.ispectL10n.reverseLogs,
+                  icon: Icon(
+                    Icons.swap_vert_rounded,
+                    size: 22,
+                    color: widget.controller.isLogOrderReversed
+                        ? context.appTheme.colorScheme.primary
+                        : null,
                   ),
-                const Gap(10),
+                ),
+                if (widget.onSettingsTap != null)
+                  IconButton(
+                    onPressed: widget.onSettingsTap,
+                    icon: const Icon(Icons.settings_rounded),
+                  ),
+                const Gap(6),
               ],
               title: _AppBarTitle(title: widget.title),
               flexibleSpace: FlexibleSpaceBar(
