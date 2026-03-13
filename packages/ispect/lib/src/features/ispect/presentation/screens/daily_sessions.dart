@@ -104,7 +104,11 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
         title: Text(
           context.ispectL10n.sessions,
           style: const TextStyle(

@@ -93,8 +93,11 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 icon: const Icon(Icons.arrow_back_rounded),
               ),
               scrolledUnderElevation: 0,
+              surfaceTintColor: Colors.transparent,
+              shadowColor: Colors.transparent,
               backgroundColor: widget.backgroundColor ??
-                  context.ispectTheme.background?.resolve(context),
+                  context.ispectTheme.background?.resolve(context) ??
+                  context.appTheme.scaffoldBackgroundColor,
               actions: [
                 IconButton(
                   onPressed: widget.controller.toggleLogOrder,

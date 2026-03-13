@@ -97,8 +97,11 @@ class _JsonScreenState extends State<JsonScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
+        elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: bgColor,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: bgColor ?? context.appTheme.scaffoldBackgroundColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
@@ -383,7 +386,8 @@ class _SearchLoadingIndicator extends StatelessWidget {
           height: 16,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
+            color:
+                context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
           ),
         ),
       );

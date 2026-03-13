@@ -41,38 +41,50 @@ class LogCard extends StatelessWidget {
     final accentColor = color.withValues(alpha: isExpanded ? 0.9 : 0.5);
 
     return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: DecoratedBox(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: cardColor,
-          border: Border(
-            top: BorderSide(color: borderColor),
-            right: BorderSide(color: borderColor),
-            bottom: BorderSide(color: borderColor),
-            left: BorderSide(
-              color: accentColor,
-              width: isExpanded ? 5 : 3,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          border: Border.all(color: borderColor),
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: isExpanded ? 5 : 3,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _LogCardHeader(
+                        icon: icon,
+                        color: color,
+                        data: data,
+                        isExpanded: isExpanded,
+                        onTap: onTap,
+                        onShareTap: onShareTap,
+                        observer: observer,
+                      ),
+                      if (isExpanded)
+                        _ExpandedContent(data: data, color: color),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _LogCardHeader(
-              icon: icon,
-              color: color,
-              data: data,
-              isExpanded: isExpanded,
-              onTap: onTap,
-              onShareTap: onShareTap,
-              observer: observer,
-            ),
-            if (isExpanded)
-              _ExpandedContent(data: data, color: color),
-          ],
-        ),
-      ),
       ),
     );
   }

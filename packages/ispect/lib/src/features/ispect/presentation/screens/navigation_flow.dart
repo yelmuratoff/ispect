@@ -51,8 +51,12 @@ class _ISpectNavigationFlowScreenState
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.ispectTheme.background?.resolve(context),
         appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.transparent,
           title: Text(context.ispectL10n.navigationFlow),
-          backgroundColor: context.ispectTheme.background?.resolve(context),
+          backgroundColor: context.ispectTheme.background?.resolve(context) ?? context.appTheme.scaffoldBackgroundColor,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded),
