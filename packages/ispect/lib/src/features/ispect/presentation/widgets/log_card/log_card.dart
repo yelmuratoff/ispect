@@ -114,7 +114,10 @@ class _LogCardHeader extends StatelessWidget {
         type: MaterialType.transparency,
         child: InkWell(
           onTap: onTap,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(10),
+            bottomRight: Radius.circular(10),
+          ),
           child: ColoredBox(
             color:
                 isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
