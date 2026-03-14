@@ -370,26 +370,28 @@ void main() {
         multipartRequest: null,
       );
 
-      // Test without redaction - should contain sensitive data
+      // Test without redaction - body should be decoded to a Map
       final unredactedJson = responseData.toJson();
-      expect(unredactedJson['body'], contains('secret123'));
-      expect(unredactedJson['body'], contains('abc123'));
+      expect(unredactedJson['body'], isA<Map<String, dynamic>>());
+      final unredactedBody = unredactedJson['body'] as Map<String, dynamic>;
+      expect(unredactedBody['password'], equals('secret123'));
+      expect(unredactedBody['token'], equals('abc123'));
 
       // Test with redaction - should not contain sensitive data
       final redactedJson = responseData.toJson(
         redactor: redactor,
       );
 
-      // Parse the redacted JSON to verify content
-      final parsedBody = jsonDecode(redactedJson['body'] as String);
-      expect(parsedBody, isA<Map<String, dynamic>>());
+      // Body should be decoded to a Map with redacted values
+      final redactedBody = redactedJson['body'] as Map<String, dynamic>;
+      expect(redactedBody, isA<Map<String, dynamic>>());
 
       // Sensitive data should be redacted (replaced with placeholders)
-      expect(parsedBody['password'], isNot(equals('secret123')));
-      expect(parsedBody['token'], isNot(equals('abc123')));
+      expect(redactedBody['password'], isNot(equals('secret123')));
+      expect(redactedBody['token'], isNot(equals('abc123')));
 
       // Non-sensitive data should remain
-      expect(parsedBody['userId'], equals(123));
+      expect(redactedBody['userId'], equals(123));
     });
 
     test('JSON export with redaction works end-to-end', () {
@@ -451,14 +453,10 @@ void main() {
       final additionalData = exportedJson['additionalData'];
       if (additionalData != null && additionalData is Map<String, dynamic>) {
         final body = additionalData['body'];
-        if (body != null && body is String) {
-          // Parse the exported body to verify it's valid JSON
-          final parsedBody = jsonDecode(body);
-          expect(parsedBody, isA<Map<String, dynamic>>());
-
+        if (body != null && body is Map<String, dynamic>) {
           // The structure should be preserved but sensitive data redacted
-          expect(parsedBody['data'], isA<Map<String, dynamic>>());
-          expect(parsedBody['data']['user'], isA<Map<String, dynamic>>());
+          expect(body['data'], isA<Map<String, dynamic>>());
+          expect(body['data']['user'], isA<Map<String, dynamic>>());
         }
       }
     });
@@ -755,6 +753,142 @@ void main() {
 
       expect(body, contains('token'));
       expect(body['token'], contains('[REDACTED]'));
+    });
+  });
+
+  group('HttpResponseData body parsing', () {
+    test('toJson decodes JSON body to Map, not String', () {
+      final request =
+          http.Request('GET', Uri.parse('https://api.example.com/data'));
+      final response = http.Response(
+        '{"id": 1, "name": "Alice", "items": [1, 2, 3]}',
+        200,
+        request: request,
+      );
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = responseData.toJson();
+      final body = json['body'];
+
+      expect(
+        body,
+        isA<Map<String, dynamic>>(),
+        reason: 'JSON body must be decoded to Map, not kept as String',
+      );
+      expect((body as Map)['id'], equals(1));
+      expect(body['name'], equals('Alice'));
+      expect(body['items'], equals([1, 2, 3]));
+    });
+
+    test('toJson decodes JSON array body to List, not String', () {
+      final request =
+          http.Request('GET', Uri.parse('https://api.example.com/list'));
+      final response = http.Response(
+        '[{"id": 1}, {"id": 2}]',
+        200,
+        request: request,
+      );
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = responseData.toJson();
+      final body = json['body'];
+
+      expect(
+        body,
+        isA<List<dynamic>>(),
+        reason: 'JSON array body must be decoded to List, not kept as String',
+      );
+      expect((body as List).length, equals(2));
+    });
+
+    test('toJson keeps non-JSON body as String', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/plain'));
+      final response = http.Response(
+        'Hello, plain text!',
+        200,
+        request: request,
+      );
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = responseData.toJson();
+      expect(
+        json['body'],
+        isA<String>(),
+        reason: 'Non-JSON body should remain as String',
+      );
+      expect(json['body'], equals('Hello, plain text!'));
+    });
+
+    test('toJson with redaction decodes body to Map, not String', () {
+      final redactor = RedactionService();
+      final request =
+          http.Request('GET', Uri.parse('https://api.example.com/user'));
+      final response = http.Response(
+        '{"userId": 1, "email": "a@b.com", "password": "secret"}',
+        200,
+        request: request,
+      );
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = responseData.toJson(redactor: redactor);
+      final body = json['body'];
+
+      expect(
+        body,
+        isA<Map<String, dynamic>>(),
+        reason: 'Redacted JSON body must be a Map, not a JSON-encoded String',
+      );
+      expect((body as Map)['userId'], equals(1));
+      expect(body['password'], isNot(equals('secret')));
+    });
+
+    test('metadata body is JSON-encodable after parsing', () {
+      final request =
+          http.Request('GET', Uri.parse('https://api.example.com/data'));
+      final response = http.Response(
+        '{"nested": {"deep": {"value": 42}}, "list": [1, "two", true]}',
+        200,
+        request: request,
+      );
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
+
+      final json = responseData.toJson();
+      expect(
+        () => jsonEncode(json),
+        returnsNormally,
+        reason: 'Decoded body in metadata must remain JSON-encodable',
+      );
     });
   });
 }
