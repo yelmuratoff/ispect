@@ -770,10 +770,3 @@ void main() {
     });
   });
 }
-
-// Helper filter functions for testing
-bool _skip2xxResponses(http.BaseResponse response) =>
-    response.statusCode < 200 || response.statusCode >= 300;
-bool _allowAllErrors(http.BaseResponse response) => true;
-bool _allowAllResponses(http.BaseResponse response) => true;
-bool _skip404Errors(http.BaseResponse response) => response.statusCode != 404;
