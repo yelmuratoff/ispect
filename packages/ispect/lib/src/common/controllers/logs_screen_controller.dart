@@ -126,7 +126,7 @@ class LogsScreenController {
 
   void handleColumnResize(int column, double delta) {
     if (column == 0) {
-      typeColumnWidth = (typeColumnWidth + delta).clamp(40, 200);
+      typeColumnWidth = (typeColumnWidth + delta).clamp(80, 200);
     } else if (column == 1) {
       timeColumnWidth = (timeColumnWidth + delta).clamp(80, 250);
     }
