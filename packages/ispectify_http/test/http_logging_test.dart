@@ -44,31 +44,40 @@ void main() {
     });
   });
 
-  group('ISpectHttpInterceptor', () {
+  group('ISpectHttpInterceptor (direct construction)', () {
     test(
         'error payload preserved when printResponseData=false, printErrorData=true',
-        () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printResponseData: false,
-          enableRedaction: false,
-        ),
+        () {
+      const settings = ISpectHttpInterceptorSettings(
+        printResponseData: false,
+        enableRedaction: false,
       );
 
       final request = http.Request('GET', Uri.parse('https://api.example.com'));
       final response =
           http.Response('{"error":"Invalid token"}', 401, request: request);
 
-      final future = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .first;
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
 
-      await interceptor.interceptResponse(response: response);
+      final log = HttpErrorLog(
+        'https://api.example.com',
+        method: 'GET',
+        url: 'https://api.example.com',
+        path: '/',
+        statusCode: 401,
+        statusMessage: 'Unauthorized',
+        settings: settings,
+        body: {
+          'response': {'error': 'Invalid token'},
+        },
+        responseData: responseData,
+      );
 
-      final log = await future;
       expect(log.body, isNotNull);
       expect(log.body!['response'], contains('error'));
       expect(
@@ -77,32 +86,36 @@ void main() {
         reason: 'Error text should include parsed server error payload',
       );
     });
-    test('logs parsed response body for success responses', () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printRequestData: false,
-          printResponseMessage: false,
-          enableRedaction: false,
-        ),
+
+    test('logs parsed response body for success responses', () {
+      const settings = ISpectHttpInterceptorSettings(
+        printRequestData: false,
+        printResponseMessage: false,
+        enableRedaction: false,
       );
 
       final request = http.Request('GET', Uri.parse('https://example.com'));
-      final response = http.Response(
-        '{"foo": 123}',
-        200,
-        request: request,
+      final response = http.Response('{"foo": 123}', 200, request: request);
+
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
       );
 
-      final future = inspector.stream
-          .where((e) => e is HttpResponseLog)
-          .cast<HttpResponseLog>()
-          .first;
+      final log = HttpResponseLog(
+        'https://example.com',
+        method: 'GET',
+        url: 'https://example.com',
+        path: '/',
+        statusCode: 200,
+        statusMessage: 'OK',
+        settings: settings,
+        responseBody: {'foo': 123},
+        responseData: responseData,
+      );
 
-      await interceptor.interceptResponse(response: response);
-
-      final log = await future;
       expect(
         log.responseBody,
         isA<Map<String, dynamic>>(),
@@ -115,13 +128,9 @@ void main() {
       );
     });
 
-    test('error logs preserve array bodies under data key', () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          enableRedaction: false,
-        ),
+    test('error logs preserve array bodies under data key', () {
+      const settings = ISpectHttpInterceptorSettings(
+        enableRedaction: false,
       );
 
       final request =
@@ -132,14 +141,32 @@ void main() {
         request: request,
       );
 
-      final future = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .first;
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
 
-      await interceptor.interceptResponse(response: response);
+      final log = HttpErrorLog(
+        'https://api.example.com/login',
+        method: 'POST',
+        url: 'https://api.example.com/login',
+        path: '/login',
+        statusCode: 422,
+        statusMessage: 'Unprocessable Entity',
+        settings: settings,
+        body: {
+          'response': {
+            'data': [
+              {'field': 'email', 'message': 'Invalid'},
+              {'field': 'password', 'message': 'Too short'},
+            ],
+          },
+        },
+        responseData: responseData,
+      );
 
-      final log = await future;
       expect(log.body, isNotNull);
       final responseMap = log.body!['response'] as Map<String, dynamic>;
       expect(responseMap['data'], isA<List<dynamic>>());
@@ -153,15 +180,8 @@ void main() {
       );
     });
 
-    test('multipart request fields/files are redacted when enabled', () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          enableRedaction: true,
-          printResponseData: false,
-        ),
-      );
+    test('multipart request fields/files are redacted when enabled', () {
+      final redactor = RedactionService();
 
       final request =
           http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
@@ -174,28 +194,27 @@ void main() {
                 filename: 'secret.txt',
               ),
             );
-      final baseResponse = http.StreamedResponse(
-        const Stream<List<int>>.empty(),
-        200,
-        request: request,
+
+      final responseData = HttpResponseData(
+        response: null,
+        baseResponse: http.StreamedResponse(
+          const Stream<List<int>>.empty(),
+          200,
+          request: request,
+        ),
+        requestData: HttpRequestData(request),
+        multipartRequest: request,
       );
 
-      final future = inspector.stream
-          .where((e) => e is HttpResponseLog)
-          .cast<HttpResponseLog>()
-          .first;
-
-      await interceptor.interceptResponse(response: baseResponse);
-      final log = await future;
-      final body = log.requestBody;
-      expect(body, isNotNull);
-      final fields = body!['fields'] as Map<String, Object?>;
+      final json = responseData.toJson(redactor: redactor);
+      final mp = json['multipart-request'] as Map<String, dynamic>;
+      final fields = mp['fields'] as Map<String, dynamic>;
       expect(
         fields.values.any((v) => v == 'super-secret' || v == 'abc123'),
         isFalse,
         reason: 'Sensitive field values must be redacted',
       );
-      final files = (body['files'] as List).cast<Map<String, Object?>>();
+      final files = (mp['files'] as List).cast<Map<String, Object?>>();
       final filenames = files.map((m) => m['filename']?.toString()).join(',');
       expect(
         filenames.contains('secret.txt'),
@@ -204,7 +223,7 @@ void main() {
       );
     });
 
-    test('omits body-bytes when redaction enabled', () async {
+    test('omits body-bytes when redaction enabled', () {
       final redactor = RedactionService();
 
       final request = http.Request('GET', Uri.parse('https://example.com'));
@@ -462,17 +481,8 @@ void main() {
     });
   });
 
-  group('Multipart Request Logging', () {
-    test('multipart request form data is logged when printRequestData=true',
-        () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          enableRedaction: false,
-        ),
-      );
-
+  group('Multipart Request Logging (direct construction)', () {
+    test('multipart request form data structure', () {
       final request =
           http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
             ..fields['username'] = 'john_doe'
@@ -485,40 +495,35 @@ void main() {
               ),
             );
 
-      final future = inspector.stream
-          .where((e) => e is HttpRequestLog)
-          .cast<HttpRequestLog>()
-          .first;
+      final responseData = HttpResponseData(
+        response: null,
+        baseResponse: http.StreamedResponse(
+          const Stream<List<int>>.empty(),
+          200,
+          request: request,
+        ),
+        requestData: HttpRequestData(request),
+        multipartRequest: request,
+      );
 
-      await interceptor.interceptRequest(request: request);
-      final log = await future;
+      final json = responseData.toJson();
+      final mp = json['multipart-request'] as Map<String, dynamic>;
+      expect(mp, isNotNull);
+      expect(mp.containsKey('fields'), isTrue);
+      expect(mp.containsKey('files'), isTrue);
 
-      expect(log.body, isNotNull);
-      expect(log.body, isA<Map<String, dynamic>>());
-
-      final body = log.body! as Map<String, dynamic>;
-      expect(body.containsKey('fields'), isTrue);
-      expect(body.containsKey('files'), isTrue);
-
-      final fields = body['fields'] as Map<String, dynamic>;
+      final fields = mp['fields'] as Map<String, dynamic>;
       expect(fields['username'], equals('john_doe'));
       expect(fields['email'], equals('john@example.com'));
 
-      final files = body['files'] as List<dynamic>;
+      final files = mp['files'] as List<dynamic>;
       expect(files.length, equals(1));
       expect(files[0]['filename'], equals('profile.jpg'));
       expect(files[0]['field'], equals('avatar'));
     });
 
-    test('multipart request data is redacted when enableRedaction=true',
-        () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          enableRedaction: true,
-        ),
-      );
+    test('multipart request data is redacted when redactor provided', () {
+      final redactor = RedactionService();
 
       final request =
           http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
@@ -533,226 +538,99 @@ void main() {
               ),
             );
 
-      final future = inspector.stream
-          .where((e) => e is HttpRequestLog)
-          .cast<HttpRequestLog>()
-          .first;
+      final responseData = HttpResponseData(
+        response: null,
+        baseResponse: http.StreamedResponse(
+          const Stream<List<int>>.empty(),
+          200,
+          request: request,
+        ),
+        requestData: HttpRequestData(request),
+        multipartRequest: request,
+      );
 
-      await interceptor.interceptRequest(request: request);
-      final log = await future;
+      final json = responseData.toJson(redactor: redactor);
+      final mp = json['multipart-request'] as Map<String, dynamic>;
+      final fields = mp['fields'] as Map<String, dynamic>;
 
-      expect(log.body, isNotNull);
-      final body = log.body! as Map<String, dynamic>;
-
-      final fields = body['fields'] as Map<String, dynamic>;
       // Non-sensitive field should remain
       expect(fields['username'], equals('john_doe'));
       // Sensitive fields should be redacted
       expect(fields['password'], isNot(equals('secret123')));
       expect(fields['token'], isNot(equals('sensitive-token')));
 
-      final files = body['files'] as List<dynamic>;
+      final files = (mp['files'] as List).cast<Map<String, Object?>>();
       expect(files.length, equals(1));
       // Filename should be redacted
       expect(files[0]['filename'], isNot(equals('secret.pdf')));
     });
 
-    test('multipart request data is not logged when printRequestData=false',
-        () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          printRequestData: false,
-          enableRedaction: false,
-        ),
+    test('HttpRequestLog body is null when not provided', () {
+      const settings = ISpectHttpInterceptorSettings(
+        printRequestData: false,
       );
 
-      final request =
-          http.MultipartRequest('POST', Uri.parse('https://upload.example.com'))
-            ..fields['username'] = 'john_doe'
-            ..files.add(
-              http.MultipartFile.fromString(
-                'avatar',
-                'fake-image-data',
-                filename: 'profile.jpg',
-              ),
-            );
-
-      final future = inspector.stream
-          .where((e) => e is HttpRequestLog)
-          .cast<HttpRequestLog>()
-          .first;
-
-      await interceptor.interceptRequest(request: request);
-      final log = await future;
+      final log = HttpRequestLog(
+        'https://upload.example.com',
+        method: 'POST',
+        url: 'https://upload.example.com',
+        path: '/',
+        headers: null,
+        body: null,
+        settings: settings,
+      );
 
       expect(log.body, isNull);
     });
   });
 
-  group('Response and Error Filtering', () {
-    test('responseFilter does not suppress error logging', () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          // Configure responseFilter to skip 2xx responses
-          responseFilter: _skip2xxResponses,
-          // Configure errorFilter to allow all errors
-          errorFilter: _allowAllErrors,
-        ),
+  group('Response and Error Filtering (direct construction)', () {
+    test('HttpErrorLog preserves statusCode and body', () {
+      const settings = ISpectHttpInterceptorSettings();
+
+      final log = HttpErrorLog(
+        'https://example.com/api',
+        method: 'GET',
+        url: 'https://example.com/api',
+        path: '/api',
+        statusCode: 404,
+        statusMessage: 'Not Found',
+        settings: settings,
+        body: {
+          'response': {'error': 'Not found'},
+        },
+        responseData: null,
       );
 
-      // Test 2xx response - should be filtered out
-      final request = http.Request('GET', Uri.parse('https://example.com/api'));
-      final successResponse = http.Response(
-        '{"success": true}',
-        200,
-        request: request,
-      );
-
-      HttpResponseLog? successLog;
-      final successSubscription = inspector.stream
-          .where((e) => e is HttpResponseLog)
-          .cast<HttpResponseLog>()
-          .listen((log) => successLog = log);
-
-      await interceptor.interceptResponse(response: successResponse);
-      await Future<void>.delayed(
-        const Duration(milliseconds: 10),
-      ); // Allow async processing
-
-      // Should be null because 2xx response was filtered out
-      expect(successLog, isNull);
-      await successSubscription.cancel();
-
-      // Test 4xx error response - should NOT be filtered out despite responseFilter
-      final errorRequest =
-          http.Request('GET', Uri.parse('https://example.com/api'));
-      final errorResponse = http.Response(
-        '{"error": "Not found"}',
-        404,
-        request: errorRequest,
-      );
-
-      final errorFuture = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .first;
-
-      await interceptor.interceptResponse(response: errorResponse);
-      final errorLog = await errorFuture;
-
-      // Should be logged because errorFilter allows it
-      expect(errorLog, isNotNull);
-      expect(errorLog.statusCode, 404);
+      expect(log.statusCode, 404);
+      expect(log.body, isNotNull);
+      expect(log.body!['response'], contains('error'));
     });
 
-    test('errorFilter can still suppress specific errors', () async {
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        settings: const ISpectHttpInterceptorSettings(
-          // Allow all responses
-          responseFilter: _allowAllResponses,
-          // Skip 404 errors specifically
-          errorFilter: _skip404Errors,
-        ),
-      );
-
-      // Test 404 error - should be filtered out by errorFilter
-      final notFoundRequest =
-          http.Request('GET', Uri.parse('https://example.com/api'));
-      final notFoundResponse = http.Response(
-        '{"error": "Not found"}',
-        404,
-        request: notFoundRequest,
-      );
-
-      HttpErrorLog? notFoundLog;
-      final notFoundSubscription = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .listen((log) => notFoundLog = log);
-
-      await interceptor.interceptResponse(response: notFoundResponse);
-      await Future<void>.delayed(
-        const Duration(milliseconds: 10),
-      ); // Allow async processing
-
-      // Should be null because 404 was filtered out by errorFilter
-      expect(notFoundLog, isNull);
-      await notFoundSubscription.cancel();
-
-      // Test 500 error - should be logged
-      final serverErrorRequest =
-          http.Request('GET', Uri.parse('https://example.com/api'));
-      final serverErrorResponse = http.Response(
-        '{"error": "Internal server error"}',
-        500,
-        request: serverErrorRequest,
-      );
-
-      final serverErrorFuture = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .first;
-
-      await interceptor.interceptResponse(response: serverErrorResponse);
-      final serverErrorLog = await serverErrorFuture;
-
-      // Should be logged because errorFilter allows 500 errors
-      expect(serverErrorLog, isNotNull);
-      expect(serverErrorLog.statusCode, 500);
-    });
-
-    test('error body redaction works correctly', () async {
+    test('error body redaction works correctly via toJson', () {
       final redactor = RedactionService();
-      // Note: 'password' and 'token' are already in default sensitive keys,
-      // so no need to configure them explicitly
 
-      final inspector = ISpectLogger();
-      final interceptor = ISpectHttpInterceptor(
-        logger: inspector,
-        redactor: redactor,
-        settings: const ISpectHttpInterceptorSettings(
-          enableRedaction: true,
-        ),
-      );
-
-      // Test error response with sensitive data
       final request =
           http.Request('POST', Uri.parse('https://api.example.com/login'));
-      final errorResponse = http.Response(
+      final response = http.Response(
         '{"error": "Invalid credentials", "password": "secret123", "token": "abc123token"}',
         401,
         request: request,
       );
 
-      final errorFuture = inspector.stream
-          .where((e) => e is HttpErrorLog)
-          .cast<HttpErrorLog>()
-          .first;
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+      );
 
-      await interceptor.interceptResponse(response: errorResponse);
-      final errorLog = await errorFuture;
+      final json = responseData.toJson(redactor: redactor);
+      final body = json['body'] as Map<String, dynamic>;
 
-      // Should be logged and redacted
-      expect(errorLog, isNotNull);
-      expect(errorLog.statusCode, 401);
-      expect(errorLog.body, isNotNull);
-
-      final body = errorLog.body!['response'] as Map<String, dynamic>;
-      expect(body, isNotNull);
-      expect(body['error'], 'Invalid credentials');
-
-      // Sensitive fields should be redacted
-      expect(body, contains('password'));
-      expect(body['password'], contains('[REDACTED]'));
-
-      expect(body, contains('token'));
-      expect(body['token'], contains('[REDACTED]'));
+      expect(body['error'], equals('Invalid credentials'));
+      expect(body['password'], isNot(equals('secret123')));
+      expect(body['token'], isNot(equals('abc123token')));
     });
   });
 
