@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispectify_db/ispectify_db.dart';
+import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:ispectify_http/ispectify_http.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -335,6 +340,12 @@ class _HomePageState extends State<_HomePage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: _logComplexPayload,
           ),
+          const SizedBox(height: 20),
+
+          // Network & DB
+          _SectionHeader(title: 'Network & Database'),
+          const SizedBox(height: 8),
+          _NetworkDbSection(),
           const SizedBox(height: 20),
 
           // Stress test
@@ -745,6 +756,342 @@ class _SectionHeader extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w600,
           ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Network & Database section
+// ---------------------------------------------------------------------------
+
+class _NetworkDbSection extends StatefulWidget {
+  @override
+  State<_NetworkDbSection> createState() => _NetworkDbSectionState();
+}
+
+class _NetworkDbSectionState extends State<_NetworkDbSection> {
+  late final Dio _dio;
+  late final InterceptedClient _httpClient;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final logger = ISpect.logger;
+
+    _dio = Dio();
+    _dio.interceptors.add(
+      ISpectDioInterceptor(
+        logger: logger,
+        settings: const ISpectDioInterceptorSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+        ),
+      ),
+    );
+
+    _httpClient = InterceptedClient.build(
+      interceptors: [
+        ISpectHttpInterceptor(logger: logger),
+      ],
+    );
+
+    ISpectDbCore.config = const ISpectDbConfig(
+      sampleRate: 1.0,
+      redact: true,
+      attachStackOnError: true,
+      enableTransactionMarkers: true,
+      slowQueryThreshold: Duration(milliseconds: 250),
+    );
+  }
+
+  @override
+  void dispose() {
+    _dio.close();
+    _httpClient.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_isLoading) const LinearProgressIndicator(),
+            if (_isLoading) const SizedBox(height: 12),
+
+            // Dio
+            Text(
+              'Dio HTTP',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('GET todo', Icons.download, Colors.blue, () {
+                  _dio.get('https://dummyjson.com/todos/1');
+                }),
+                _chip('GET products', Icons.list, Colors.blue, () {
+                  _dio.get('https://dummyjson.com/products?limit=5');
+                }),
+                _chip('POST product', Icons.upload, Colors.green, () {
+                  _dio.post(
+                    'https://dummyjson.com/products/add',
+                    data: {
+                      'title': 'ISpect Test Product',
+                      'description': 'Testing Dio interceptor',
+                      'price': 99,
+                    },
+                  );
+                }),
+                _chip('PUT product', Icons.edit, Colors.orange, () {
+                  _dio.put(
+                    'https://dummyjson.com/products/1',
+                    data: {'title': 'Updated Title'},
+                  );
+                }),
+                _chip('DELETE product', Icons.delete, Colors.red, () {
+                  _dio.delete('https://dummyjson.com/products/1');
+                }),
+                _chip('GET 404', Icons.error, Colors.red.shade800, () {
+                  _dio.get('https://dummyjson.com/products/0');
+                }),
+                _chip('Invalid URL', Icons.link_off, Colors.grey, () {
+                  _dio.get('htt://invalid-url');
+                }),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // HTTP package
+            Text(
+              'HTTP Package',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('GET users', Icons.people, Colors.blue, () {
+                  _httpClient.get(
+                    Uri.parse('https://dummyjson.com/users?limit=3'),
+                  );
+                }),
+                _chip('GET recipes', Icons.restaurant, Colors.teal, () {
+                  _httpClient.get(
+                    Uri.parse('https://dummyjson.com/recipes?limit=5'),
+                  );
+                }),
+                _chip('POST login', Icons.login, Colors.green, () {
+                  _httpClient.post(
+                    Uri.parse('https://dummyjson.com/auth/login'),
+                    body: '{"username":"emilys","password":"emilyspass"}',
+                    headers: {'Content-Type': 'application/json'},
+                  );
+                }),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Database
+            Text(
+              'Database Queries',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('SELECT users', Icons.storage, Colors.indigo, () {
+                  _runDbExample();
+                }),
+                _chip('INSERT user', Icons.person_add, Colors.green, () {
+                  _runDbInsert();
+                }),
+                _chip('UPDATE user', Icons.edit_note, Colors.orange, () {
+                  _runDbUpdate();
+                }),
+                _chip('DELETE user', Icons.person_remove, Colors.red, () {
+                  _runDbDelete();
+                }),
+                _chip('Transaction', Icons.swap_horiz, Colors.purple, () {
+                  _runDbTransaction();
+                }),
+                _chip('KV get', Icons.key, Colors.brown, () {
+                  _runDbKeyValue();
+                }),
+                _chip('Slow query', Icons.hourglass_bottom, Colors.amber, () {
+                  _runDbSlowQuery();
+                }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18, color: color),
+      label: Text(label),
+      onPressed: () {
+        setState(() => _isLoading = true);
+        onTap();
+        Future<void>.delayed(const Duration(seconds: 1), () {
+          if (mounted) setState(() => _isLoading = false);
+        });
+      },
+    );
+  }
+
+  // -- DB examples --
+
+  Future<void> _runDbExample() async {
+    await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+      source: 'drift',
+      operation: 'query',
+      table: 'users',
+      statement: 'SELECT * FROM users WHERE active = ? ORDER BY name LIMIT 10',
+      args: [true],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 15));
+        return [
+          {'id': 1, 'name': 'Alice', 'active': true},
+          {'id': 2, 'name': 'Bob', 'active': true},
+          {'id': 3, 'name': 'Charlie', 'active': true},
+        ];
+      },
+      projectResult: (rows) => {'rows': rows.length},
+    );
+  }
+
+  Future<void> _runDbInsert() async {
+    await ISpect.logger.dbTrace<int>(
+      source: 'drift',
+      operation: 'insert',
+      table: 'users',
+      statement: "INSERT INTO users (name, email, active) VALUES (?, ?, ?)",
+      args: ['Dave', 'dave@example.com', true],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 8));
+        return 4;
+      },
+      projectResult: (id) => {'insertedId': id},
+    );
+  }
+
+  Future<void> _runDbUpdate() async {
+    await ISpect.logger.dbTrace<int>(
+      source: 'drift',
+      operation: 'update',
+      table: 'users',
+      statement: 'UPDATE users SET name = ?, email = ? WHERE id = ?',
+      args: ['Dave Updated', 'dave_new@example.com', 4],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        return 1;
+      },
+      projectResult: (affected) => {'affectedRows': affected},
+    );
+  }
+
+  Future<void> _runDbDelete() async {
+    await ISpect.logger.dbTrace<int>(
+      source: 'drift',
+      operation: 'delete',
+      table: 'users',
+      statement: 'DELETE FROM users WHERE id = ?',
+      args: [4],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        return 1;
+      },
+      projectResult: (affected) => {'deletedRows': affected},
+    );
+  }
+
+  Future<void> _runDbTransaction() async {
+    await ISpect.logger.dbTransaction(
+      source: 'drift',
+      logMarkers: true,
+      run: () async {
+        await ISpect.logger.dbTrace<int>(
+          source: 'drift',
+          operation: 'update',
+          table: 'accounts',
+          statement: 'UPDATE accounts SET balance = balance - ? WHERE id = ?',
+          args: [100, 1],
+          run: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+            return 1;
+          },
+        );
+        await ISpect.logger.dbTrace<int>(
+          source: 'drift',
+          operation: 'update',
+          table: 'accounts',
+          statement: 'UPDATE accounts SET balance = balance + ? WHERE id = ?',
+          args: [100, 2],
+          run: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+            return 1;
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _runDbKeyValue() async {
+    await ISpect.logger.dbTrace<String?>(
+      source: 'hive',
+      operation: 'get',
+      key: 'session_token',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 3));
+        return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+      },
+    );
+
+    await ISpect.logger.dbTrace<bool>(
+      source: 'shared_prefs',
+      operation: 'write',
+      key: 'onboarding_done',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 2));
+        return true;
+      },
+    );
+  }
+
+  Future<void> _runDbSlowQuery() async {
+    await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
+      source: 'drift',
+      operation: 'query',
+      table: 'analytics',
+      statement:
+          'SELECT user_id, COUNT(*) as cnt, AVG(duration) as avg_dur FROM analytics GROUP BY user_id HAVING cnt > ? ORDER BY avg_dur DESC',
+      args: [10],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        return [
+          {'user_id': 1, 'cnt': 42, 'avg_dur': 1250.5},
+          {'user_id': 7, 'cnt': 28, 'avg_dur': 980.3},
+        ];
+      },
+      projectResult: (rows) => {'rows': rows.length},
     );
   }
 }

@@ -45,7 +45,7 @@ class HttpResponseData {
                 ignoredValues,
                 ignoredKeys,
               )
-            : response!.body,
+            : _tryDecodeJson(response!.body),
       if (response != null && redactor == null)
         'body-bytes': response!.bodyBytes.length.toString(),
       if (multipartRequest != null)
@@ -143,30 +143,36 @@ class HttpResponseData {
     return map;
   }
 
+  static Object _tryDecodeJson(String body) {
+    try {
+      return jsonDecode(body) as Object;
+    } catch (_) {
+      return body;
+    }
+  }
+
   /// Helper method to get redacted body content
-  static String _getRedactedBody(
+  static Object _getRedactedBody(
     String body,
     RedactionService redactor,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   ) {
     try {
-      // Try to parse as JSON and redact the parsed object
       final parsed = jsonDecode(body);
       final redacted = redactor.redact(
         parsed,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      // Return the redacted object as JSON string
-      return jsonEncode(redacted);
+      return (redacted ?? parsed) as Object;
     } catch (_) {
       final redacted = redactor.redact(
         body,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      return redacted?.toString() ?? body;
+      return redacted ?? body;
     }
   }
 }
