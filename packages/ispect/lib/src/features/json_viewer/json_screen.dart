@@ -119,17 +119,15 @@ class _JsonScreenState extends State<JsonScreen> {
                 ),
                 child: Icon(logIcon, size: 16, color: logColor),
               ),
-            if (logKey != null) ...[
-              const Gap(10),
-              Text(
-                logKey,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: logColor,
-                ),
+            const Gap(10),
+            Text(
+              logKey ?? 'JSON Viewer',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: logColor,
               ),
-            ],
+            ),
           ],
         ),
         actions: [
