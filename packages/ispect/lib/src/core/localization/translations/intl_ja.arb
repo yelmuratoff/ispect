@@ -232,5 +232,12 @@
    "transitionRemove": "削除",
    "transitionStartUserGesture": "ジェスチャー開始",
    "transitionStopUserGesture": "ジェスチャー終了",
-   "copyAsCurl": "cURLとしてコピー"
+   "copyAsCurl": "cURLとしてコピー",
+   "relativeJustNow": "たった今",
+   "relativeSecondsAgo": "{count}秒前",
+   "relativeMinutesAgo": "{count}分前",
+   "relativeHoursAgo": "{count}時間前",
+   "showOnlyThisType": "このタイプのみ表示",
+   "hideThisType": "このタイプを非表示",
+   "clearAllFilters": "すべてのフィルターをクリア"
 }

@@ -7,6 +7,7 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/string.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -703,6 +704,21 @@ class _MainLogsViewState extends State<_MainLogsView> {
       return KeyEventResult.handled;
     }
 
+    // Cmd/Ctrl+C: copy selected log message
+    if (isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.keyC) {
+      final activeData = widget.logsViewController.activeData;
+      if (activeData != null) {
+        final text = activeData.isHttpLog
+            ? (activeData.httpLogText ?? '')
+            : activeData.textMessage;
+        if (text.isNotEmpty) {
+          copyClipboard(context, value: text);
+          return KeyEventResult.handled;
+        }
+      }
+      return KeyEventResult.ignored;
+    }
+
     // Don't handle arrow/escape when search is focused
     if (widget.searchFocusNode.hasFocus) {
       return KeyEventResult.ignored;
@@ -759,6 +775,11 @@ class _MainLogsViewState extends State<_MainLogsView> {
       final visualEntries = _getVisualEntries(sortedEntries);
       final nextEntry = visualEntries[targetVisualIndex];
       widget.logsViewController.activeData = nextEntry;
+
+      // Auto-follow: if detail panel is open, update it to show the new entry
+      if (widget.logsViewController.detailData != null) {
+        widget.logsViewController.detailData = nextEntry;
+      }
 
       // Scroll to keep the selected row visible
       _listController.animateToItem(
@@ -1221,28 +1242,39 @@ class _DesktopStatusBar extends StatelessWidget {
               ),
             ),
             const Gap(10),
-            _KeyBadge(label: '\u2191\u2193', context: context),
+            const _KeyBadge(label: '\u2191\u2193'),
             const Gap(4),
             Text(
               'navigate',
               style: TextStyle(fontSize: 11, color: labelColor),
             ),
             const Gap(12),
-            _KeyBadge(label: '\u23CE', context: context),
+            const _KeyBadge(label: '\u23CE'),
             const Gap(4),
             Text(
               'open',
               style: TextStyle(fontSize: 11, color: labelColor),
             ),
             const Gap(12),
-            _KeyBadge(label: '/', context: context),
+            _KeyBadge(
+              label: Theme.of(context).platform == TargetPlatform.macOS
+                  ? '\u2318C'
+                  : 'Ctrl+C',
+            ),
+            const Gap(4),
+            Text(
+              context.ispectL10n.copy.toLowerCase(),
+              style: TextStyle(fontSize: 11, color: labelColor),
+            ),
+            const Gap(12),
+            const _KeyBadge(label: '/'),
             const Gap(4),
             Text(
               'search',
               style: TextStyle(fontSize: 11, color: labelColor),
             ),
             const Gap(12),
-            _KeyBadge(label: 'Esc', context: context),
+            const _KeyBadge(label: 'Esc'),
             const Gap(4),
             Text(
               'close',
@@ -1256,13 +1288,12 @@ class _DesktopStatusBar extends StatelessWidget {
 }
 
 class _KeyBadge extends StatelessWidget {
-  const _KeyBadge({required this.label, required this.context});
+  const _KeyBadge({required this.label});
 
   final String label;
-  final BuildContext context;
 
   @override
-  Widget build(BuildContext innerContext) {
+  Widget build(BuildContext context) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return DecoratedBox(

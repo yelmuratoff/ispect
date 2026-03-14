@@ -172,6 +172,8 @@ class ISpectViewController extends ChangeNotifier {
   void excludeTitle(String title, List<String> allTitles) =>
       _filterManager.excludeTitle(title, allTitles);
 
+  void clearAllFilters() => _filterManager.clearAllFilters();
+
   Future<void> downloadLogsFile(String logs) async =>
       _exportService.downloadLogsFile(logs);
 

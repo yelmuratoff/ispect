@@ -786,4 +786,31 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'Copiar como cURL';
+
+  @override
+  String get relativeJustNow => 'agora mesmo';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return 'há $count s';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return 'há $count min';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return 'há $count h';
+  }
+
+  @override
+  String get showOnlyThisType => 'Mostrar apenas este tipo';
+
+  @override
+  String get hideThisType => 'Ocultar este tipo';
+
+  @override
+  String get clearAllFilters => 'Limpar todos os filtros';
 }

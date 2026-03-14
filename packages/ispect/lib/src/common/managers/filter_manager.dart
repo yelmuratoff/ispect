@@ -96,6 +96,12 @@ class FilterManager {
     _updateFilter(titles: [title]);
   }
 
+  /// Clear all filters (titles, types, search query).
+  void clearAllFilters() {
+    _filterDebounce?.cancel();
+    _updateFilter(titles: <String>[], types: <Type>[], searchQuery: '');
+  }
+
   /// Exclude a specific title: add all other titles except this one.
   void excludeTitle(String title, List<String> allTitles) {
     final filtered =

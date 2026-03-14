@@ -232,5 +232,33 @@
    "transitionRemove": "Remove",
    "transitionStartUserGesture": "Start User Gesture",
    "transitionStopUserGesture": "Stop User Gesture",
-   "copyAsCurl": "Copy as cURL"
+   "copyAsCurl": "Copy as cURL",
+   "relativeJustNow": "just now",
+   "relativeSecondsAgo": "{count} sec ago",
+   "@relativeSecondsAgo": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "relativeMinutesAgo": "{count} min ago",
+   "@relativeMinutesAgo": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "relativeHoursAgo": "{count} h ago",
+   "@relativeHoursAgo": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "showOnlyThisType": "Show only this type",
+   "hideThisType": "Hide this type",
+   "clearAllFilters": "Clear all filters"
 }

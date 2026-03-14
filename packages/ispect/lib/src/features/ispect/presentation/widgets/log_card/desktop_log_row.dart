@@ -124,10 +124,12 @@ class _SortableColumnHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
+    final activeColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
 
     Widget header = MouseRegion(
-      cursor: onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      cursor:
+          onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: onTap != null ? () => onTap!(columnIndex) : null,
         child: Row(
@@ -258,7 +260,13 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
 
   String get _displayTime {
     if (widget.useRelativeTime) {
-      return ISpectDateTimeFormatter(widget.data.time).relativeFormat;
+      final l10n = context.ispectL10n;
+      return ISpectDateTimeFormatter(widget.data.time).relativeFormat(
+        justNow: l10n.relativeJustNow,
+        secondsAgo: l10n.relativeSecondsAgo,
+        minutesAgo: l10n.relativeMinutesAgo,
+        hoursAgo: l10n.relativeHoursAgo,
+      );
     }
     return widget.data.formattedTime;
   }
@@ -422,19 +430,18 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                           ? SystemMouseCursors.click
                           : SystemMouseCursors.basic,
                       onEnter: (_) {
-                        final desc = ISpect.read(context).theme
-                            .getTypeDescription(
-                              context,
-                              key: widget.data.key,
-                            );
+                        final desc =
+                            ISpect.read(context).theme.getTypeDescription(
+                                  context,
+                                  key: widget.data.key,
+                                );
                         if (desc != null) _scheduleTooltip(desc);
                       },
                       onExit: (_) => _cancelTooltip(),
                       child: GestureDetector(
                         onTap: widget.onTypeFilterTap != null &&
                                 widget.data.key != null
-                            ? () =>
-                                widget.onTypeFilterTap!(widget.data.key!)
+                            ? () => widget.onTypeFilterTap!(widget.data.key!)
                             : null,
                         child: SizedBox(
                           width: isCompact ? 40 : widget.typeColumnWidth,
@@ -467,20 +474,42 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                       ),
                       const Gap(12),
                     ],
-                    // Message with cursor-following tooltip on hover
+                    // Message with cursor-following tooltip on hover (only when truncated)
                     Expanded(
-                      child: MouseRegion(
-                        onEnter: (_) => _scheduleTooltip(_message),
-                        onExit: (_) => _cancelTooltip(),
-                        child: Text(
-                          _message,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                      child: LayoutBuilder(
+                        builder: (context, messageConstraints) {
+                          final messageStyle = TextStyle(
                             color: onSurface.withValues(alpha: 0.75),
                             fontSize: 12,
-                          ),
-                        ),
+                          );
+                          final textSpan = TextSpan(
+                            text: _message,
+                            style: messageStyle,
+                          );
+                          final tp = TextPainter(
+                            text: textSpan,
+                            maxLines: 1,
+                            textDirection: TextDirection.ltr,
+                          )..layout(
+                              maxWidth: messageConstraints.maxWidth,
+                            );
+                          final isOverflowing = tp.didExceedMaxLines;
+                          tp.dispose();
+
+                          return MouseRegion(
+                            onEnter: isOverflowing
+                                ? (_) => _scheduleTooltip(_message)
+                                : null,
+                            onExit:
+                                isOverflowing ? (_) => _cancelTooltip() : null,
+                            child: Text(
+                              _message,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: messageStyle,
+                            ),
+                          );
+                        },
                       ),
                     ),
                     // Actions (visible on hover or selected)
@@ -530,8 +559,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         PopupMenuItem(
           value: _ContextAction.share,
           height: 36,
-          child:
-              _ContextMenuRow(icon: Icons.share_rounded, label: l10n.share),
+          child: _ContextMenuRow(icon: Icons.share_rounded, label: l10n.share),
         ),
         if (widget.data.curlCommand != null)
           PopupMenuItem(
@@ -552,20 +580,20 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         ),
         if (widget.data.key != null) ...[
           const PopupMenuDivider(height: 8),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _ContextAction.showOnlyType,
             height: 36,
             child: _ContextMenuRow(
               icon: Icons.filter_alt_rounded,
-              label: 'Show only this type',
+              label: l10n.showOnlyThisType,
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _ContextAction.hideType,
             height: 36,
             child: _ContextMenuRow(
               icon: Icons.filter_alt_off_rounded,
-              label: 'Hide this type',
+              label: l10n.hideThisType,
             ),
           ),
         ],
@@ -657,8 +685,7 @@ class _DesktopRowActions extends StatelessWidget {
               icon: Icons.terminal_rounded,
               color: color,
               tooltip: context.ispectL10n.copyAsCurl,
-              onPressed: () =>
-                  copyClipboard(context, value: data.curlCommand!),
+              onPressed: () => copyClipboard(context, value: data.curlCommand!),
             ),
           _DesktopActionIcon(
             icon: Icons.open_in_full_rounded,

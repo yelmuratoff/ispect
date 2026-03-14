@@ -1516,6 +1516,48 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Copy as cURL'**
   String get copyAsCurl;
+
+  /// No description provided for @relativeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get relativeJustNow;
+
+  /// No description provided for @relativeSecondsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sec ago'**
+  String relativeSecondsAgo(int count);
+
+  /// No description provided for @relativeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String relativeMinutesAgo(int count);
+
+  /// No description provided for @relativeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h ago'**
+  String relativeHoursAgo(int count);
+
+  /// No description provided for @showOnlyThisType.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only this type'**
+  String get showOnlyThisType;
+
+  /// No description provided for @hideThisType.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this type'**
+  String get hideThisType;
+
+  /// No description provided for @clearAllFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all filters'**
+  String get clearAllFilters;
 }
 
 class _ISpectGeneratedLocalizationDelegate

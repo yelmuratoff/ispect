@@ -144,6 +144,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                           onChanged: _onSearchChanged,
                           onClear: _onSearchClear,
                           onFilterToggle: _onFilterToggle,
+                          onClearAll: _onClearAllFilters,
                         ),
                         if (showFilters)
                           Flexible(
@@ -177,6 +178,13 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   void _onFilterToggle() {
     _isFilterEnabled.value = !_isFilterEnabled.value;
+  }
+
+  void _onClearAllFilters() {
+    _searchController.clear();
+    _hasSearchText.value = false;
+    widget.titlesController.unselectAll();
+    widget.controller.clearAllFilters();
   }
 
   void _onToggle(String? title, bool selected) {
@@ -232,6 +240,7 @@ class _SearchSection extends StatelessWidget {
     required this.onChanged,
     required this.onClear,
     required this.onFilterToggle,
+    required this.onClearAll,
   });
 
   final FocusNode focusNode;
@@ -245,6 +254,7 @@ class _SearchSection extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
   final VoidCallback onFilterToggle;
+  final VoidCallback onClearAll;
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +303,24 @@ class _SearchSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (hasSearchText)
+                if (isFiltering)
+                  Tooltip(
+                    message: context.ispectL10n.clearAllFilters,
+                    child: IconButton(
+                      iconSize: 18,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: onClearAll,
+                      icon: Icon(
+                        Icons.filter_alt_off_rounded,
+                        color: context.appTheme.colorScheme.primary,
+                      ),
+                    ),
+                  )
+                else if (hasSearchText)
                   IconButton(
                     iconSize: 20,
                     constraints: const BoxConstraints.tightFor(
@@ -307,8 +334,8 @@ class _SearchSection extends StatelessWidget {
                       color: context.appTheme.colorScheme.onSurface
                           .withValues(alpha: 0.5),
                     ),
-                  ),
-                if (!hasSearchText && context.screenSize.isDesktop)
+                  )
+                else if (context.screenSize.isDesktop)
                   const _SearchShortcutBadge(),
               ],
               hintText: context.ispectL10n.search,

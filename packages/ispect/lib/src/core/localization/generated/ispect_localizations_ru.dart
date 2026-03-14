@@ -779,4 +779,31 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'Копировать как cURL';
+
+  @override
+  String get relativeJustNow => 'только что';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count сек назад';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count мин назад';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count ч назад';
+  }
+
+  @override
+  String get showOnlyThisType => 'Показать только этот тип';
+
+  @override
+  String get hideThisType => 'Скрыть этот тип';
+
+  @override
+  String get clearAllFilters => 'Сбросить все фильтры';
 }

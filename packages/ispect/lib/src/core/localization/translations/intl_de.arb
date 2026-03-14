@@ -232,5 +232,12 @@
    "transitionRemove": "Entfernen",
    "transitionStartUserGesture": "Benutzergeste starten",
    "transitionStopUserGesture": "Benutzergeste beenden",
-   "copyAsCurl": "Als cURL kopieren"
+   "copyAsCurl": "Als cURL kopieren",
+   "relativeJustNow": "gerade eben",
+   "relativeSecondsAgo": "vor {count} Sek.",
+   "relativeMinutesAgo": "vor {count} Min.",
+   "relativeHoursAgo": "vor {count} Std.",
+   "showOnlyThisType": "Nur diesen Typ anzeigen",
+   "hideThisType": "Diesen Typ ausblenden",
+   "clearAllFilters": "Alle Filter zurücksetzen"
 }

@@ -232,5 +232,12 @@
    "transitionRemove": "إزالة",
    "transitionStartUserGesture": "بدء إيماءة المستخدم",
    "transitionStopUserGesture": "إيقاف إيماءة المستخدم",
-   "copyAsCurl": "نسخ كـ cURL"
+   "copyAsCurl": "نسخ كـ cURL",
+   "relativeJustNow": "الآن",
+   "relativeSecondsAgo": "منذ {count} ث",
+   "relativeMinutesAgo": "منذ {count} د",
+   "relativeHoursAgo": "منذ {count} س",
+   "showOnlyThisType": "إظهار هذا النوع فقط",
+   "hideThisType": "إخفاء هذا النوع",
+   "clearAllFilters": "مسح جميع الفلاتر"
 }

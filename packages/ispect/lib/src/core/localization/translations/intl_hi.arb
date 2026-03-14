@@ -232,5 +232,12 @@
    "transitionRemove": "हटाएं",
    "transitionStartUserGesture": "उपयोगकर्ता जेस्चर शुरू",
    "transitionStopUserGesture": "उपयोगकर्ता जेस्चर रुकें",
-   "copyAsCurl": "cURL के रूप में कॉपी करें"
+   "copyAsCurl": "cURL के रूप में कॉपी करें",
+   "relativeJustNow": "अभी",
+   "relativeSecondsAgo": "{count} सेकंड पहले",
+   "relativeMinutesAgo": "{count} मिनट पहले",
+   "relativeHoursAgo": "{count} घंटे पहले",
+   "showOnlyThisType": "केवल यह प्रकार दिखाएं",
+   "hideThisType": "यह प्रकार छिपाएं",
+   "clearAllFilters": "सभी फ़िल्टर साफ़ करें"
 }

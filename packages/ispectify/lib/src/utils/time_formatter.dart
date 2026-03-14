@@ -32,17 +32,21 @@ class ISpectDateTimeFormatter {
   /// Uses `timeAndSeconds` as the standard compact format.
   String get format => date == null ? '' : timeAndSeconds;
 
-  /// Returns a human-readable relative time string (e.g. "2s ago", "5m ago").
+  /// Returns a localized human-readable relative time string.
   ///
-  /// Falls back to absolute format for durations > 24h.
-  String get relativeFormat {
+  /// Falls back to [format] for durations > 24h.
+  String relativeFormat({
+    required String justNow,
+    required String Function(int count) secondsAgo,
+    required String Function(int count) minutesAgo,
+    required String Function(int count) hoursAgo,
+  }) {
     if (date == null) return '';
     final diff = DateTime.now().difference(date!);
-    if (diff.isNegative) return 'just now';
-    if (diff.inSeconds < 5) return 'just now';
-    if (diff.inSeconds < 60) return '${diff.inSeconds}s ago';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.isNegative || diff.inSeconds < 5) return justNow;
+    if (diff.inSeconds < 60) return secondsAgo(diff.inSeconds);
+    if (diff.inMinutes < 60) return minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return hoursAgo(diff.inHours);
     return format;
   }
 

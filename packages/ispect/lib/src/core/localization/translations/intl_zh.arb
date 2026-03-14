@@ -232,5 +232,12 @@
    "transitionRemove": "移除",
    "transitionStartUserGesture": "开始用户手势",
    "transitionStopUserGesture": "停止用户手势",
-   "copyAsCurl": "复制为 cURL"
+   "copyAsCurl": "复制为 cURL",
+   "relativeJustNow": "刚刚",
+   "relativeSecondsAgo": "{count}秒前",
+   "relativeMinutesAgo": "{count}分钟前",
+   "relativeHoursAgo": "{count}小时前",
+   "showOnlyThisType": "仅显示此类型",
+   "hideThisType": "隐藏此类型",
+   "clearAllFilters": "清除所有筛选"
 }

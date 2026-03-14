@@ -232,5 +232,12 @@
    "transitionRemove": "제거",
    "transitionStartUserGesture": "사용자 제스처 시작",
    "transitionStopUserGesture": "사용자 제스처 종료",
-   "copyAsCurl": "cURL로 복사"
+   "copyAsCurl": "cURL로 복사",
+   "relativeJustNow": "방금",
+   "relativeSecondsAgo": "{count}초 전",
+   "relativeMinutesAgo": "{count}분 전",
+   "relativeHoursAgo": "{count}시간 전",
+   "showOnlyThisType": "이 유형만 표시",
+   "hideThisType": "이 유형 숨기기",
+   "clearAllFilters": "모든 필터 지우기"
 }

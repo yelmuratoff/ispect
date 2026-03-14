@@ -758,4 +758,31 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'cURLとしてコピー';
+
+  @override
+  String get relativeJustNow => 'たった今';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count秒前';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count分前';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count時間前';
+  }
+
+  @override
+  String get showOnlyThisType => 'このタイプのみ表示';
+
+  @override
+  String get hideThisType => 'このタイプを非表示';
+
+  @override
+  String get clearAllFilters => 'すべてのフィルターをクリア';
 }

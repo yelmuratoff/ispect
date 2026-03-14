@@ -232,5 +232,12 @@
    "transitionRemove": "Remover",
    "transitionStartUserGesture": "Início do gesto",
    "transitionStopUserGesture": "Fim do gesto",
-   "copyAsCurl": "Copiar como cURL"
+   "copyAsCurl": "Copiar como cURL",
+   "relativeJustNow": "agora mesmo",
+   "relativeSecondsAgo": "há {count} s",
+   "relativeMinutesAgo": "há {count} min",
+   "relativeHoursAgo": "há {count} h",
+   "showOnlyThisType": "Mostrar apenas este tipo",
+   "hideThisType": "Ocultar este tipo",
+   "clearAllFilters": "Limpar todos os filtros"
 }

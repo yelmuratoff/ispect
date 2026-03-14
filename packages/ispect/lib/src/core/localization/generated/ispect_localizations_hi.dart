@@ -778,4 +778,31 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'cURL के रूप में कॉपी करें';
+
+  @override
+  String get relativeJustNow => 'अभी';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count सेकंड पहले';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count मिनट पहले';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count घंटे पहले';
+  }
+
+  @override
+  String get showOnlyThisType => 'केवल यह प्रकार दिखाएं';
+
+  @override
+  String get hideThisType => 'यह प्रकार छिपाएं';
+
+  @override
+  String get clearAllFilters => 'सभी फ़िल्टर साफ़ करें';
 }

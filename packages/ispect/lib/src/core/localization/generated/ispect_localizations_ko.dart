@@ -758,4 +758,31 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'cURL로 복사';
+
+  @override
+  String get relativeJustNow => '방금';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count초 전';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count분 전';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count시간 전';
+  }
+
+  @override
+  String get showOnlyThisType => '이 유형만 표시';
+
+  @override
+  String get hideThisType => '이 유형 숨기기';
+
+  @override
+  String get clearAllFilters => '모든 필터 지우기';
 }

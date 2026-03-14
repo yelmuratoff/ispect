@@ -776,4 +776,31 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => 'cURL ретінде көшіру';
+
+  @override
+  String get relativeJustNow => 'жаңа ғана';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count сек бұрын';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count мин бұрын';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count сағ бұрын';
+  }
+
+  @override
+  String get showOnlyThisType => 'Тек осы түрді көрсету';
+
+  @override
+  String get hideThisType => 'Осы түрді жасыру';
+
+  @override
+  String get clearAllFilters => 'Барлық сүзгілерді тазалау';
 }

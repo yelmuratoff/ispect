@@ -758,4 +758,31 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get copyAsCurl => '复制为 cURL';
+
+  @override
+  String get relativeJustNow => '刚刚';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count秒前';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count分钟前';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count小时前';
+  }
+
+  @override
+  String get showOnlyThisType => '仅显示此类型';
+
+  @override
+  String get hideThisType => '隐藏此类型';
+
+  @override
+  String get clearAllFilters => '清除所有筛选';
 }

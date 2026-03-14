@@ -232,5 +232,12 @@
    "transitionRemove": "Жою",
    "transitionStartUserGesture": "Қолданушы қимылын бастау",
    "transitionStopUserGesture": "Қолданушы қимылын аяқтау",
-   "copyAsCurl": "cURL ретінде көшіру"
+   "copyAsCurl": "cURL ретінде көшіру",
+   "relativeJustNow": "жаңа ғана",
+   "relativeSecondsAgo": "{count} сек бұрын",
+   "relativeMinutesAgo": "{count} мин бұрын",
+   "relativeHoursAgo": "{count} сағ бұрын",
+   "showOnlyThisType": "Тек осы түрді көрсету",
+   "hideThisType": "Осы түрді жасыру",
+   "clearAllFilters": "Барлық сүзгілерді тазалау"
 }

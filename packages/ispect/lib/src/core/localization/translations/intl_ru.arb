@@ -232,5 +232,12 @@
    "transitionRemove": "Удаление",
    "transitionStartUserGesture": "Начало жеста",
    "transitionStopUserGesture": "Конец жеста",
-   "copyAsCurl": "Копировать как cURL"
+   "copyAsCurl": "Копировать как cURL",
+   "relativeJustNow": "только что",
+   "relativeSecondsAgo": "{count} сек назад",
+   "relativeMinutesAgo": "{count} мин назад",
+   "relativeHoursAgo": "{count} ч назад",
+   "showOnlyThisType": "Показать только этот тип",
+   "hideThisType": "Скрыть этот тип",
+   "clearAllFilters": "Сбросить все фильтры"
 }
