@@ -145,11 +145,11 @@ class _MyAppState extends State<MyApp> {
             files: req.filePaths.map(XFile.new).toList(),
           )),
         ),
-        theme: ISpectTheme(
-          pageTitle: 'Debug',
-          primary: _preset.primary,
-          background: _preset.background,
-        ),
+        // theme: ISpectTheme(
+        //   pageTitle: 'Debug',
+        //   primary: _preset.primary,
+        //   background: _preset.background,
+        // ),
       ),
       home: _MyHomePage(
         themeMode: _themeMode,
