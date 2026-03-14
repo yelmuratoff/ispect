@@ -450,23 +450,7 @@ class InspectorState extends State<Inspector> {
             animation: _panelListenable,
             builder: (context, __) => DraggablePanel(
               theme: context.ispectTheme.panelTheme ??
-                  DraggablePanelTheme(
-                    draggableButtonColor:
-                        context.ispectTheme.card?.resolve(context),
-                    panelBorder: Border.all(
-                      color: context.ispectTheme.divider?.resolve(context) ??
-                          Colors.grey.shade400,
-                      width: 0,
-                    ),
-                    panelBackgroundColor:
-                        context.ispectTheme.background?.resolve(
-                      context,
-                    ),
-                    panelItemColor: context.ispectTheme.card?.resolve(
-                      context,
-                    ),
-                    foregroundColor: Colors.white,
-                  ),
+                  _buildDefaultPanelTheme(context),
               controller: _draggablePanelController,
               items: [
                 if (context.iSpect.options.isLogPageEnabled)
@@ -629,6 +613,20 @@ class InspectorState extends State<Inspector> {
           ),
         );
       },
+    );
+  }
+
+  DraggablePanelTheme _buildDefaultPanelTheme(BuildContext context) {
+    final theme = context.ispectTheme;
+
+    return DraggablePanelTheme(
+      draggableButtonColor: theme.card?.resolve(context),
+      panelBackgroundColor: theme.background?.resolve(context),
+      panelItemColor: theme.card?.resolve(context),
+      foregroundColor: theme.foreground?.resolve(context),
+      panelBorder: theme.divider?.resolve(context) != null
+          ? Border.all(color: theme.divider!.resolve(context)!)
+          : null,
     );
   }
 
