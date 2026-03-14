@@ -7,6 +7,25 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 
+/// Proportionally scale type/time column widths so they never overflow.
+/// Both columns shrink equally when space is tight.
+({double typeWidth, double timeWidth}) _scaleColumnWidths({
+  required double available,
+  required double typeWidth,
+  required double timeWidth,
+}) {
+  final totalColumns = typeWidth + timeWidth;
+  if (totalColumns <= 0) return (typeWidth: typeWidth, timeWidth: timeWidth);
+
+  // Columns should use at most half the available width
+  final maxForColumns = available * 0.5;
+  if (totalColumns > maxForColumns) {
+    final scale = maxForColumns / totalColumns;
+    return (typeWidth: typeWidth * scale, timeWidth: timeWidth * scale);
+  }
+  return (typeWidth: typeWidth, timeWidth: timeWidth);
+}
+
 /// A sticky table header row for the desktop log table.
 class DesktopLogTableHeader extends StatelessWidget {
   const DesktopLogTableHeader({
@@ -15,7 +34,7 @@ class DesktopLogTableHeader extends StatelessWidget {
     this.sortColumn,
     this.sortDirection,
     this.onSortTap,
-    this.typeColumnWidth = 70,
+    this.typeColumnWidth = 140,
     this.timeColumnWidth = 140,
     this.onColumnResize,
   });
@@ -47,6 +66,11 @@ class DesktopLogTableHeader extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isCompact = constraints.maxWidth < 480;
+          final scaled = _scaleColumnWidths(
+            available: constraints.maxWidth,
+            typeWidth: isCompact ? 40 : typeColumnWidth,
+            timeWidth: isCompact ? 0 : timeColumnWidth,
+          );
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -55,7 +79,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                 const Gap(8),
                 _SortableColumnHeader(
                   label: 'TYPE',
-                  width: isCompact ? 40 : typeColumnWidth,
+                  width: scaled.typeWidth,
                   columnIndex: 0,
                   isActive: sortColumn == 0,
                   isAscending: sortDirection == 0,
@@ -68,7 +92,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                 if (!isCompact) ...[
                   _SortableColumnHeader(
                     label: 'TIME',
-                    width: timeColumnWidth,
+                    width: scaled.timeWidth,
                     columnIndex: 1,
                     isActive: sortColumn == 1,
                     isAscending: sortDirection == 0,
@@ -135,10 +159,12 @@ class _SortableColumnHeader extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: labelStyle.copyWith(
-                color: isActive ? activeColor : labelColor,
+            Flexible(
+              child: Text(
+                label,
+                style: labelStyle.copyWith(
+                  color: isActive ? activeColor : labelColor,
+                ),
               ),
             ),
             const Gap(2),
@@ -218,7 +244,7 @@ class DesktopLogRow extends StatefulWidget {
     this.onOpenDetail,
     this.onTypeFilterTap,
     this.useRelativeTime = false,
-    this.typeColumnWidth = 70,
+    this.typeColumnWidth = 140,
     this.timeColumnWidth = 140,
     super.key,
   });
@@ -414,37 +440,41 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
               ),
             ),
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 480;
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 480;
+                final scaled = _scaleColumnWidths(
+                  available: constraints.maxWidth,
+                  typeWidth: isCompact ? 40 : widget.typeColumnWidth,
+                  timeWidth: isCompact ? 0 : widget.timeColumnWidth,
+                );
+                return Row(
                   children: [
                     Icon(widget.icon, size: 16, color: widget.color),
                     const Gap(8),
-                    // Type column — clickable for quick filter
-                    MouseRegion(
-                      cursor: widget.onTypeFilterTap != null
-                          ? SystemMouseCursors.click
-                          : SystemMouseCursors.basic,
-                      onEnter: (_) {
-                        final desc =
-                            ISpect.read(context).theme.getTypeDescription(
-                                  context,
-                                  key: widget.data.key,
-                                );
-                        if (desc != null) _scheduleTooltip(desc);
-                      },
-                      onExit: (_) => _cancelTooltip(),
-                      child: GestureDetector(
-                        onTap: widget.onTypeFilterTap != null &&
-                                widget.data.key != null
-                            ? () => widget.onTypeFilterTap!(widget.data.key!)
-                            : null,
-                        child: SizedBox(
-                          width: isCompact ? 40 : widget.typeColumnWidth,
+                    // Type column
+                    SizedBox(
+                      width: scaled.typeWidth,
+                      child: MouseRegion(
+                        cursor: widget.onTypeFilterTap != null
+                            ? SystemMouseCursors.click
+                            : SystemMouseCursors.basic,
+                        onEnter: (_) {
+                          final desc =
+                              ISpect.read(context).theme.getTypeDescription(
+                                    context,
+                                    key: widget.data.key,
+                                  );
+                          if (desc != null) _scheduleTooltip(desc);
+                        },
+                        onExit: (_) => _cancelTooltip(),
+                        child: GestureDetector(
+                          onTap: widget.onTypeFilterTap != null &&
+                                  widget.data.key != null
+                              ? () => widget.onTypeFilterTap!(widget.data.key!)
+                              : null,
                           child: Text(
                             widget.data.key ?? '',
                             maxLines: 1,
@@ -461,10 +491,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                     const Gap(8),
                     if (!isCompact) ...[
                       SizedBox(
-                        width: widget.timeColumnWidth,
+                        width: scaled.timeWidth,
                         child: Text(
                           _displayTime,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: onSurface.withValues(alpha: 0.45),
                             fontSize: 11,
@@ -474,7 +505,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                       ),
                       const Gap(12),
                     ],
-                    // Message with cursor-following tooltip on hover (only when truncated)
+                    // Message - takes remaining space
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, messageConstraints) {
@@ -524,9 +555,9 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                       ),
                     ],
                   ],
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

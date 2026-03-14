@@ -19,7 +19,7 @@ class LogListItem extends StatelessWidget {
     this.onOpenDetail,
     this.onTypeFilterTap,
     this.useRelativeTime = false,
-    this.typeColumnWidth = 70,
+    this.typeColumnWidth = 140,
     this.timeColumnWidth = 140,
     super.key,
   });

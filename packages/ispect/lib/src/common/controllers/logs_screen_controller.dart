@@ -40,7 +40,7 @@ class LogsScreenController {
   late final ValueNotifier<bool?> scrollDirection;
   late final ValueNotifier<bool> hasNewLogs;
 
-  double typeColumnWidth = 70;
+  double typeColumnWidth = 140;
   double timeColumnWidth = 140;
 
   bool isLiveTailActive = false;
@@ -222,8 +222,7 @@ class LogsScreenController {
       return KeyEventResult.ignored;
     }
 
-    final filteredLogEntries =
-        logsViewController.applyCurrentFilters(logsData);
+    final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
     final sortedEntries = applySortingIfNeeded(filteredLogEntries);
     if (sortedEntries.isEmpty) return KeyEventResult.ignored;
 
