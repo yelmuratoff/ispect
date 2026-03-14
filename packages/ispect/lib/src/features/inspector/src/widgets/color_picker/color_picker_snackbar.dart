@@ -50,7 +50,7 @@ void showColorPickerResultSnackbar({
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: dividerColor ?? Colors.transparent,
+          color: dividerColor,
         ),
       ),
       content: Row(
@@ -68,7 +68,7 @@ void showColorPickerResultSnackbar({
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
                     border: Border.fromBorderSide(
                       BorderSide(
-                        color: dividerColor ?? Colors.transparent,
+                        color: dividerColor,
                       ),
                     ),
                   ),
