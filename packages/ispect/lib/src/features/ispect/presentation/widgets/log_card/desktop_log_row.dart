@@ -271,11 +271,9 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
   bool _isHovered = false;
   OverlayEntry? _tooltipOverlay;
   Timer? _tooltipTimer;
-  Timer? _singleClickTimer;
   Offset _mousePosition = Offset.zero;
 
   static const _tooltipDelay = Duration(milliseconds: 400);
-  static const _doubleClickWindow = Duration(milliseconds: 250);
 
   String get _message {
     final msg = widget.data.isHttpLog
@@ -373,28 +371,14 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     _tooltipOverlay = null;
   }
 
-  /// Handle tap with manual double-click detection to avoid the ~300ms delay
-  /// that Flutter adds when both onTap and onDoubleTap are on the same
-  /// GestureDetector.
+  /// Single tap opens the detail panel immediately.
   void _handleTap() {
-    if (_singleClickTimer != null) {
-      // Second tap within window → double click
-      _singleClickTimer!.cancel();
-      _singleClickTimer = null;
-      widget.onOpenDetail?.call();
-    } else {
-      // First tap → schedule single click
-      _singleClickTimer = Timer(_doubleClickWindow, () {
-        _singleClickTimer = null;
-        widget.onTap();
-      });
-    }
+    widget.onOpenDetail?.call();
   }
 
   @override
   void dispose() {
     _tooltipTimer?.cancel();
-    _singleClickTimer?.cancel();
     _removeTooltip();
     super.dispose();
   }
@@ -427,6 +411,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         onTap: widget.onOpenDetail != null ? _handleTap : widget.onTap,
         onSecondaryTapUp: (details) =>
             _showContextMenu(context, details.globalPosition),
+        onLongPress: () => _showContextMenu(context, _mousePosition),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: bgColor,
@@ -507,40 +492,20 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                     ],
                     // Message - takes remaining space
                     Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, messageConstraints) {
-                          final messageStyle = TextStyle(
+                      child: MouseRegion(
+                        onEnter: _message.isNotEmpty
+                            ? (_) => _scheduleTooltip(_message)
+                            : null,
+                        onExit: (_) => _cancelTooltip(),
+                        child: Text(
+                          _message,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
                             color: onSurface.withValues(alpha: 0.75),
                             fontSize: 12,
-                          );
-                          final textSpan = TextSpan(
-                            text: _message,
-                            style: messageStyle,
-                          );
-                          final tp = TextPainter(
-                            text: textSpan,
-                            maxLines: 1,
-                            textDirection: TextDirection.ltr,
-                          )..layout(
-                              maxWidth: messageConstraints.maxWidth,
-                            );
-                          final isOverflowing = tp.didExceedMaxLines;
-                          tp.dispose();
-
-                          return MouseRegion(
-                            onEnter: isOverflowing
-                                ? (_) => _scheduleTooltip(_message)
-                                : null,
-                            onExit:
-                                isOverflowing ? (_) => _cancelTooltip() : null,
-                            child: Text(
-                              _message,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: messageStyle,
-                            ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ),
                     // Actions (visible on hover or selected)
