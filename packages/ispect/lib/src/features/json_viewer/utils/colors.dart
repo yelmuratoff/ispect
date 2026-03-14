@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';

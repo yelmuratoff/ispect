@@ -300,12 +300,15 @@ class InspectorState extends State<Inspector> {
 
   void _handleZoomDisabled() {
     try {
-      if (_byteDataStateNotifier.value != null && _image != null) {
+      final byteData = _byteDataStateNotifier.value;
+      final image = _image;
+      final offset = _zoomImageOffsetNotifier.value;
+      if (byteData != null && image != null && offset != null) {
         final color = getPixelFromByteData(
-          _byteDataStateNotifier.value!,
-          width: _image!.width,
-          x: _zoomImageOffsetNotifier.value!.dx.round(),
-          y: _zoomImageOffsetNotifier.value!.dy.round(),
+          byteData,
+          width: image.width,
+          x: offset.dx.round(),
+          y: offset.dy.round(),
         );
 
         showColorPickerResultSnackbar(

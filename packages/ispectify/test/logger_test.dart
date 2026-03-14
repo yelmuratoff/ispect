@@ -61,7 +61,7 @@ void main() {
 
     test('should not log any messages when level is critical', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(level: LogLevel.critical, enable: false),
+        settings: LoggerSettings(level: LogLevel.critical, enabled: false),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       )
@@ -73,7 +73,7 @@ void main() {
 
     test('should not log when logging is disabled', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(enable: false),
+        settings: LoggerSettings(enabled: false),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       ).critical('Critical message');

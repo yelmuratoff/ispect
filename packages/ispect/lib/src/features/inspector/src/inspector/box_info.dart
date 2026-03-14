@@ -35,7 +35,8 @@ class BoxInfo {
   ///   - [overlayOffset]: Global offset for overlay positioning
   /// - Return: BoxInfo with target/container boxes and elements
   /// - Edge cases: Returns null target if boxes is empty (assertion will fail)
-  factory BoxInfo.fromHitTestResults(
+
+  static BoxInfo? fromHitTestResults(
     Iterable<RenderBox> boxes, {
     Offset overlayOffset = Offset.zero,
   }) {
@@ -56,8 +57,10 @@ class BoxInfo {
       }
     }
 
+    if (targetRenderBox == null) return null;
+
     return BoxInfo(
-      targetRenderBox: targetRenderBox!,
+      targetRenderBox: targetRenderBox,
       containerRenderBox: containerRenderBox,
       overlayOffset: overlayOffset,
       boxes: boxes.toList(growable: false),
@@ -71,11 +74,12 @@ class BoxInfo {
   final List<RenderBox> boxes;
   final List<Element> elements;
 
-  /// Global rectangle of the target render box
-  Rect get targetRect => getRectFromRenderBox(targetRenderBox)!;
+  /// Global rectangle of the target render box.
+  /// Returns null if the render box is detached from the tree.
+  Rect? get targetRect => getRectFromRenderBox(targetRenderBox);
 
   /// Target rectangle shifted by overlay offset for positioning
-  Rect get targetRectShifted => targetRect.shift(-overlayOffset);
+  Rect? get targetRectShifted => targetRect?.shift(-overlayOffset);
 
   /// Global rectangle of the container render box, if available
   Rect? get containerRect => containerRenderBox != null
@@ -102,15 +106,17 @@ class BoxInfo {
   /// - Return: Formatted string with 1 decimal place precision
   /// - Usage: For debugging and UI display
   /// - Edge cases: Asserts that containerRect is not null
-  String describePadding() {
-    assert(containerRect != null, 'Container rect must not be null');
+  String? describePadding() {
+    final left = paddingLeft;
+    final top = paddingTop;
+    final right = paddingRight;
+    final bottom = paddingBottom;
+    if (left == null || top == null || right == null || bottom == null) {
+      return null;
+    }
 
-    final left = paddingLeft!.toStringAsFixed(1);
-    final top = paddingTop!.toStringAsFixed(1);
-    final right = paddingRight!.toStringAsFixed(1);
-    final bottom = paddingBottom!.toStringAsFixed(1);
-
-    return '$left, $top, $right, $bottom';
+    return '${left.toStringAsFixed(1)}, ${top.toStringAsFixed(1)}, '
+        '${right.toStringAsFixed(1)}, ${bottom.toStringAsFixed(1)}';
   }
 
   /// Whether the target render box is a decorated box with BoxDecoration
@@ -146,22 +152,34 @@ class BoxInfo {
 
   double? _computePaddingLeft() {
     final container = containerRect;
-    return container != null ? targetRect.left - container.left : null;
+    final target = targetRect;
+    return (container != null && target != null)
+        ? target.left - container.left
+        : null;
   }
 
   double? _computePaddingRight() {
     final container = containerRect;
-    return container != null ? container.right - targetRect.right : null;
+    final target = targetRect;
+    return (container != null && target != null)
+        ? container.right - target.right
+        : null;
   }
 
   double? _computePaddingTop() {
     final container = containerRect;
-    return container != null ? targetRect.top - container.top : null;
+    final target = targetRect;
+    return (container != null && target != null)
+        ? target.top - container.top
+        : null;
   }
 
   double? _computePaddingBottom() {
     final container = containerRect;
-    return container != null ? container.bottom - targetRect.bottom : null;
+    final target = targetRect;
+    return (container != null && target != null)
+        ? container.bottom - target.bottom
+        : null;
   }
 
   Rect? _buildPaddingRect(_PaddingSide side) {
@@ -169,6 +187,7 @@ class BoxInfo {
     if (container == null) return null;
 
     final target = targetRect;
+    if (target == null) return null;
 
     return switch (side) {
       _PaddingSide.left => Rect.fromLTRB(

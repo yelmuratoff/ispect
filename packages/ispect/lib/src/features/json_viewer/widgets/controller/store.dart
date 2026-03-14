@@ -32,12 +32,12 @@ class JsonExplorerStore extends ChangeNotifier {
       NodeHierarchyCacheService();
   JsonNodeService? _nodeService;
   JsonSearchService? _searchService;
-  JsonPerformanceManager? _performanceManager;
+  UniversalPerformanceManager? _performanceManager;
 
   bool get mounted => _mounted;
 
   /// Gets performance manager for optimization insights
-  JsonPerformanceManager? get performanceManager => _performanceManager;
+  UniversalPerformanceManager? get performanceManager => _performanceManager;
 
   /// Gets the list of nodes to be displayed.
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
@@ -194,8 +194,8 @@ class JsonExplorerStore extends ChangeNotifier {
     // Initialize services
     _nodeService = JsonNodeService();
     _searchService = JsonSearchService();
-    _performanceManager = PerformanceManagerFactory.createDevelopmentManager()
-        as JsonPerformanceManager;
+    _performanceManager =
+        PerformanceManagerFactory.createDevelopmentManager();
 
     if (areAllCollapsed) {
       collapseAll();
@@ -209,7 +209,10 @@ class JsonExplorerStore extends ChangeNotifier {
     _hierarchyCacheService.clear();
 
     // Dispose performance manager
-    _performanceManager?.reset();
+    final pm = _performanceManager;
+    if (pm is JsonPerformanceManager) {
+      pm.reset();
+    }
 
     // Cancel any ongoing search
     _currentSearchOperation?.cancel();

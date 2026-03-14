@@ -109,15 +109,18 @@ final class BoxModelPainter extends CustomPainter {
     _paintForeground(canvas, size);
     _paintBoxSize(canvas, size);
 
-    _paintPaddingBox(
-      canvas,
-      size,
-      padding: boxInfo.paddingLeft!,
-      offset: Offset(
-        size.width / 8.0,
-        size.height / 2.0,
-      ),
-    );
+    final padding = boxInfo.paddingLeft;
+    if (padding != null) {
+      _paintPaddingBox(
+        canvas,
+        size,
+        padding: padding,
+        offset: Offset(
+          size.width / 8.0,
+          size.height / 2.0,
+        ),
+      );
+    }
   }
 
   @override

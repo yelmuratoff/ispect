@@ -18,8 +18,11 @@ class OverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final targetRectShifted = boxInfo.targetRectShifted;
+    if (targetRectShifted == null) return;
+
     canvas.drawRect(
-      boxInfo.targetRectShifted,
+      targetRectShifted,
       targetRectPaint,
     );
 
@@ -32,8 +35,9 @@ class OverlayPainter extends CustomPainter {
       ];
 
       for (final rect in paddingRects) {
+        if (rect == null) continue;
         canvas.drawRect(
-          rect!.shift(-boxInfo.overlayOffset),
+          rect.shift(-boxInfo.overlayOffset),
           containerRectPaint,
         );
       }

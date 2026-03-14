@@ -448,7 +448,7 @@ class _FilterChipsList extends StatelessWidget {
           }
           onToggle(
             title,
-            titlesController.selectedIndex == index,
+            titlesController.selectedIndexes.contains(index),
           );
         },
       );

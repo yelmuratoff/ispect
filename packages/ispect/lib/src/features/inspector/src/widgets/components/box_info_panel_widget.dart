@@ -184,7 +184,9 @@ class _MainRow extends StatelessWidget {
             theme: theme,
             backgroundColor: theme.chipTheme.backgroundColor,
             child: Text(
-              '${boxInfo.targetRect.width.toStringAsFixed(1)} × ${boxInfo.targetRect.height}',
+              boxInfo.targetRect != null
+                  ? '${boxInfo.targetRect!.width.toStringAsFixed(1)} × ${boxInfo.targetRect!.height}'
+                  : 'n/a',
             ),
           ),
           _InfoRow(
@@ -192,7 +194,7 @@ class _MainRow extends StatelessWidget {
             subtitle: 'padding (LTRB)',
             theme: theme,
             backgroundColor: theme.chipTheme.backgroundColor,
-            child: Text(boxInfo.describePadding()),
+            child: Text(boxInfo.describePadding() ?? 'n/a'),
           ),
         ],
       );

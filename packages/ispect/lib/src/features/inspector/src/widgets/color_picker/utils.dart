@@ -27,7 +27,7 @@ Color getPixelFromByteData(
 }) {
   final index = (y * width + x) * 4;
 
-  if (index >= byteData.lengthInBytes) {
+  if (index < 0 || index + 3 >= byteData.lengthInBytes) {
     return Colors.transparent;
   }
 

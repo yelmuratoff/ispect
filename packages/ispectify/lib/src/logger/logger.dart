@@ -2,7 +2,6 @@ import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/filter/logger_filter.dart';
 import 'package:ispectify/src/formatter/formatter.dart';
 import 'package:ispectify/src/logger/logger_io.dart'
-    if (dart.library.html) 'logger_html.dart'
     if (dart.library.js_interop) 'logger_web.dart';
 import 'package:ispectify/src/models/log_details.dart';
 import 'package:ispectify/src/models/log_level.dart';
@@ -63,7 +62,7 @@ class ISpectBaseLogger {
   }) {
     final selectedLevel = level ?? LogLevel.debug;
 
-    if (!settings.enable ||
+    if (!settings.enabled ||
         selectedLevel.index > settings.level.index ||
         !(_filter?.shouldLog(msg, selectedLevel) ?? true)) {
       return;
@@ -103,7 +102,7 @@ class ISpectBaseLogger {
   /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Creates a new `ISpectLoggerLogger` instance with overridden properties.
+  /// Creates a new `ISpectBaseLogger` instance with overridden properties.
   ISpectBaseLogger copyWith({
     LoggerSettings? settings,
     ILoggerFormatter? formatter,
@@ -119,5 +118,5 @@ class ISpectBaseLogger {
 
   @override
   String toString() =>
-      'ISpectBaseLogger(enabled: ${settings.enable}, level: ${settings.level})';
+      'ISpectBaseLogger(enabled: ${settings.enabled}, level: ${settings.level})';
 }

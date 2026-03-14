@@ -17,7 +17,7 @@ class LoggerSettings {
   /// - `enableColors`: Enables ANSI colors in console output (default: `true`).
   LoggerSettings({
     Map<LogLevel, AnsiPen>? colors,
-    this.enable = true,
+    this.enabled = true,
     this.defaultTitle = 'Log',
     this.level = LogLevel.verbose,
     this.lineSymbol = '─',
@@ -32,7 +32,7 @@ class LoggerSettings {
   final Map<LogLevel, AnsiPen> colors;
 
   /// Whether logging is enabled.
-  bool enable;
+  bool enabled;
 
   /// Default log title.
   final String defaultTitle;
@@ -54,7 +54,7 @@ class LoggerSettings {
   /// If a parameter is `null`, the existing value is preserved.
   LoggerSettings copyWith({
     Map<LogLevel, AnsiPen>? colors,
-    bool? enable,
+    bool? enabled,
     String? defaultTitle,
     LogLevel? level,
     String? lineSymbol,
@@ -63,7 +63,7 @@ class LoggerSettings {
   }) =>
       LoggerSettings(
         colors: colors ?? this.colors,
-        enable: enable ?? this.enable,
+        enabled: enabled ?? this.enabled,
         defaultTitle: defaultTitle ?? this.defaultTitle,
         level: level ?? this.level,
         lineSymbol: lineSymbol ?? this.lineSymbol,

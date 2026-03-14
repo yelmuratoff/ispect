@@ -62,19 +62,26 @@ class _TargetBoxSizeWidget extends StatelessWidget {
   final Color targetColor;
 
   @override
-  Widget build(BuildContext context) => Positioned(
-        top: calculateBoxPosition(
-          rect: boxInfo.targetRectShifted,
-          height: InformationBoxWidget.preferredHeight,
-        ),
-        left: boxInfo.targetRectShifted.left,
-        child: IgnorePointer(
-          child: Align(
-            child: InformationBoxWidget.size(
-              size: boxInfo.targetRect.size,
-              color: targetColor,
-            ),
+  Widget build(BuildContext context) {
+    final targetRectShifted = boxInfo.targetRectShifted;
+    final targetRect = boxInfo.targetRect;
+    if (targetRectShifted == null || targetRect == null) {
+      return const SizedBox.shrink();
+    }
+    return Positioned(
+      top: calculateBoxPosition(
+        rect: targetRectShifted,
+        height: InformationBoxWidget.preferredHeight,
+      ),
+      left: targetRectShifted.left,
+      child: IgnorePointer(
+        child: Align(
+          child: InformationBoxWidget.size(
+            size: targetRect.size,
+            color: targetColor,
           ),
         ),
-      );
+      ),
+    );
+  }
 }

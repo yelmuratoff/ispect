@@ -5,25 +5,25 @@ import 'package:test/test.dart';
 void main() {
   group('LoggerSettings', () {
     test('copyWith preserves enable=false when not overridden', () {
-      final original = LoggerSettings(enable: false);
+      final original = LoggerSettings(enabled: false);
       final copy = original.copyWith(defaultTitle: 'New Title');
 
-      expect(copy.enable, isFalse);
+      expect(copy.enabled, isFalse);
       expect(copy.defaultTitle, 'New Title');
     });
 
     test('copyWith allows overriding enable to true', () {
-      final original = LoggerSettings(enable: false);
-      final copy = original.copyWith(enable: true);
+      final original = LoggerSettings(enabled: false);
+      final copy = original.copyWith(enabled: true);
 
-      expect(copy.enable, isTrue);
+      expect(copy.enabled, isTrue);
     });
 
     test('copyWith allows overriding enable to false', () {
       final original = LoggerSettings();
-      final copy = original.copyWith(enable: false);
+      final copy = original.copyWith(enabled: false);
 
-      expect(copy.enable, isFalse);
+      expect(copy.enabled, isFalse);
     });
 
     test('copyWith preserves all other fields when enable is changed', () {
@@ -34,9 +34,9 @@ void main() {
         maxLineWidth: 100,
         enableColors: false,
       );
-      final copy = original.copyWith(enable: false);
+      final copy = original.copyWith(enabled: false);
 
-      expect(copy.enable, isFalse);
+      expect(copy.enabled, isFalse);
       expect(copy.defaultTitle, 'Original');
       expect(copy.level, LogLevel.warning);
       expect(copy.lineSymbol, '-');

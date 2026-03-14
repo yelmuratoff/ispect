@@ -159,9 +159,14 @@ class WebLogsFile extends BaseLogsFile {
       ..download = fileName
       ..style.display = 'none';
 
-    document.body!.appendChild(anchor);
-    anchor.click();
-    document.body!.removeChild(anchor);
+    final body = document.body;
+    if (body != null) {
+      body.appendChild(anchor);
+      anchor.click();
+      body.removeChild(anchor);
+    } else {
+      anchor.click();
+    }
   }
 
   /// Creates and immediately downloads a log file
@@ -197,6 +202,17 @@ class WebLogsFile extends BaseLogsFile {
         '${now.minute.toString().padLeft(2, '0')}-'
         '${now.second.toString().padLeft(2, '0')}';
     return '${fileName}_$timestamp.json';
+  }
+
+  /// Revokes all cached object URLs and clears metadata.
+  ///
+  /// Call this when the log session ends to prevent memory leaks.
+  static void disposeAll() {
+    for (final url in _objectUrls.values) {
+      URL.revokeObjectURL(url);
+    }
+    _objectUrls.clear();
+    _fileNames.clear();
   }
 
   /// Executes direct download without DOM manipulation overhead
