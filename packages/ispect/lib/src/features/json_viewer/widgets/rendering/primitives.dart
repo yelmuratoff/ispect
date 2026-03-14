@@ -32,7 +32,7 @@ class CopyButton extends StatelessWidget {
           child: Icon(
             Icons.copy_rounded,
             size: 14,
-            color: theme.rootKeyTextStyle.color,
+            color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
           ),
         ),
       );
