@@ -1,44 +1,33 @@
 # Changelog
 
-## 4.7.5
+## 4.7.5-dev01
 
 ### Security
 
-- Fix redaction bypass for data nested beyond `maxDepth`.
-- Shell-escape values in generated cURL commands.
-- Redact `error` and `message` fields in `DioErrorData`.
-- Use copy-on-write in `RedactionService` to prevent concurrent modification.
-- Truncate sensitive fields in `ISpectLogData.toString()`.
-- Limit clipboard copy to 100KB.
-- Redact query parameter values in logged URLs.
-- Log only route argument keys/types instead of values in navigator observer.
-- Redact request body in `HttpRequestData.toJson()` when redactor is provided.
-- Sanitize `fileType` parameter in log file path construction.
-- Snapshot observer list before iteration to prevent concurrent modification.
-- Replace broad `catch (_)` with `on FormatException` in redaction and HTTP interceptor to avoid masking critical errors.
+- Enhanced data redaction for deeper nested structures, HTTP/Dio interceptors, and logged URLs.
+- Added protection against concurrent modifications and command injections.
+- Implemented size limits for clipboard copying to prevent memory exhaustion and unauthorized data access.
+- Improved error handling to avoid masking critical exceptions.
 
 ### Bug Fixes
 
-- Validate all list elements in JSON import depth check.
-- Fix memory leak in `WebLogsFile` static maps.
-- Add bounds checking for `log-level` index in `fromJson` deserialization.
-- Use `DateTime.tryParse` with fallback in log import to handle malformed dates.
-- Add max depth limit (1000) to JSON viewer node builder to prevent stack overflow.
-- Fix cache key collision in `TextMatchService` by including text length.
-- Fix crash on invalid JSON in file viewer.
-- Add `mounted` guard to `JsonExplorerStore` to prevent use-after-dispose.
-- Fix null pointer crashes in `Inspector` by replacing force-unwraps with safe checks.
-- Add error handling to `_extractByteData()` in post-frame callback.
-- Fix unsafe cast in `ISpectFileUtils.writeImageToStorage`.
-- Fix `focusedSearchResult` crash when search results are empty (RangeError).
-- Add `mounted` check after async delay in `buildNodes()` to prevent use-after-dispose.
-- Replace `late final` services with nullable fields in `JsonExplorerStore` to prevent `LateInitializationError`.
-- Add 100MB file size limit in `processFileStream` to prevent OOM on large files.
-- Use typed `List.of` instead of untyped `List.from` for display nodes.
+- Fixed memory leaks, use-after-dispose issues, and UI state errors.
+- Enhanced stability for JSON parsing, log deserialization, and large file streams.
+- Resolved various null-pointer exceptions, out-of-bounds errors, and unsafe type casts.
 
 ### Documentation
 
-- Fix incorrect `enableRedaction` default value in doc comments.
+- Updated doc comments for `enableRedaction` default value.
+
+### Improvements
+
+- **Desktop layout:** Resizable split view for log details, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
+- **Log screen:** Live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, search/filter chips with counts.
+- **JSON viewer:** Async search with loading indicator, nested array support, log type in app bar, clear button for search.
+- **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components.
+- **Draggable panel:** Fixed dark mode theming, upgraded `draggable_panel` to `^2.0.0` with M3 surface-based defaults.
+- **Log cards:** Context menu on long press, improved action buttons with tooltips, conditional background on expand.
+- **Localization:** New keys for log filtering, navigation transitions, actions, and empty state hints.
 
 ## 4.7.4
 

@@ -19,6 +19,16 @@
 
 - Updated doc comments for `enableRedaction` default value.
 
+### Improvements
+
+- **Desktop layout:** Resizable split view for log details, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
+- **Log screen:** Live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, search/filter chips with counts.
+- **JSON viewer:** Async search with loading indicator, nested array support, log type in app bar, clear button for search.
+- **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components.
+- **Draggable panel:** Fixed dark mode theming, upgraded `draggable_panel` to `^2.0.0` with M3 surface-based defaults.
+- **Log cards:** Context menu on long press, improved action buttons with tooltips, conditional background on expand.
+- **Localization:** New keys for log filtering, navigation transitions, actions, and empty state hints.
+
 ## 4.7.4
 
 ### Changes
