@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -26,22 +27,76 @@ class ISpectLogsBuilder extends StatefulWidget {
 
 class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
   int _lastDataLength = 0;
+  ISpectObserverDisposer? _disposeObserver;
+  bool _rebuildScheduled = false;
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<ISpectLogData>(
-        stream: widget.logger.stream,
-        builder: (context, snapshot) {
-          // Always get fresh data from logger history
-          // StreamBuilder rebuilds when stream emits, so we always have latest data
-          final currentData = widget.logger.history;
+  void initState() {
+    super.initState();
+    _attach();
+  }
 
-          // Invalidate cache if data length changed
-          if (currentData.length != _lastDataLength) {
-            _lastDataLength = currentData.length;
-            widget.controller?.onDataChanged();
-          }
+  @override
+  void didUpdateWidget(ISpectLogsBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.logger != widget.logger) {
+      _detach();
+      _attach();
+    }
+  }
 
-          return widget.builder(context, currentData);
-        },
-      );
+  @override
+  void dispose() {
+    _detach();
+    super.dispose();
+  }
+
+  void _attach() {
+    _disposeObserver = widget.logger.observe(_LogsObserver(_onNewLog));
+  }
+
+  void _detach() {
+    _disposeObserver?.call();
+    _disposeObserver = null;
+  }
+
+  void _onNewLog() {
+    if (!mounted || _rebuildScheduled) return;
+    _rebuildScheduled = true;
+    // Schedule rebuild after the current frame to avoid setState during
+    // build/layout/paint phases (e.g. when a Flutter error triggers a log).
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _rebuildScheduled = false;
+      if (mounted) setState(() {});
+    });
+    SchedulerBinding.instance.ensureVisualUpdate();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentData = widget.logger.history;
+
+    // Invalidate filter cache when data length changes
+    if (currentData.length != _lastDataLength) {
+      _lastDataLength = currentData.length;
+      widget.controller?.onDataChanged();
+    }
+
+    return widget.builder(context, currentData);
+  }
+}
+
+class _LogsObserver implements ISpectObserver {
+  _LogsObserver(this._onLog);
+
+  final VoidCallback _onLog;
+
+  @override
+  void onLog(ISpectLogData data) => _onLog();
+
+  @override
+  void onError(ISpectLogData err) => _onLog();
+
+  @override
+  void onException(ISpectLogData err) => _onLog();
 }

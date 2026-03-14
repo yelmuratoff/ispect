@@ -65,13 +65,15 @@ class LogPipeline {
     if (_isDispatching) return;
     _isDispatching = true;
     try {
+      // Add to history BEFORE emitting to stream so that listeners
+      // (e.g. StreamBuilder) see the new entry when they read history.
+      _history.add(data);
       if (!_streamController.isClosed) {
         _streamController.add(data);
       }
     } finally {
       _isDispatching = false;
     }
-    _history.add(data);
 
     if (!_options.useConsoleLogs) return;
 

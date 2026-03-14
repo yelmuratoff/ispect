@@ -983,7 +983,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 curve: Curves.easeOutCubic,
                 left: 0,
                 right: 0,
-                top: newestAtTop ? (hasNew ? 0 : -40) : null,
+                top: newestAtTop ? (hasNew ? 100 : -40) : null,
                 bottom: newestAtTop ? null : (hasNew ? 36 : -40),
                 child: _NewLogsIndicator(
                   onTap: _scrollToNewest,
