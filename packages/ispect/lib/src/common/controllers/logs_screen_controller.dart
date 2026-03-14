@@ -40,7 +40,7 @@ class LogsScreenController {
   late final ValueNotifier<bool?> scrollDirection;
   late final ValueNotifier<bool> hasNewLogs;
 
-  double typeColumnWidth = 140;
+  double typeColumnWidth = 100;
   double timeColumnWidth = 140;
 
   bool isLiveTailActive = false;

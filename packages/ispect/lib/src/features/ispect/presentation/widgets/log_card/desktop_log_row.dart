@@ -34,7 +34,7 @@ class DesktopLogTableHeader extends StatelessWidget {
     this.sortColumn,
     this.sortDirection,
     this.onSortTap,
-    this.typeColumnWidth = 140,
+    this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
     this.onColumnResize,
   });
@@ -244,7 +244,7 @@ class DesktopLogRow extends StatefulWidget {
     this.onOpenDetail,
     this.onTypeFilterTap,
     this.useRelativeTime = false,
-    this.typeColumnWidth = 140,
+    this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
     super.key,
   });
