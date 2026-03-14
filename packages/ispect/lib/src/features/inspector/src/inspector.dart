@@ -60,9 +60,6 @@ class Inspector extends StatefulWidget {
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
       LogicalKeyboardKey.altRight,
-      LogicalKeyboardKey.meta,
-      LogicalKeyboardKey.metaLeft,
-      LogicalKeyboardKey.metaRight,
     ],
     this.colorPickerShortcuts = const [
       LogicalKeyboardKey.shift,

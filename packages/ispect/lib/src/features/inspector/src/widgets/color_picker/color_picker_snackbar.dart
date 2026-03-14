@@ -4,22 +4,16 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 import 'package:ispect/src/features/inspector/src/widgets/color_picker/utils.dart';
-import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// Displays a snackbar with the selected color information and an option to copy the color value.
 ///
 /// This function shows a snackbar that includes a preview of the selected color,
 /// its hexadecimal string representation, and a button to copy the color value to the clipboard.
-/// The snackbar is styled according to the application's theme.
+/// The snackbar is styled according to the [ISpectTheme].
 ///
 /// - Parameters:
 ///   - context: The `BuildContext` used to access theme and localization resources.
 ///   - color: The `Color` to be displayed in the snackbar.
-///
-/// The snackbar includes:
-/// - A small box showing the selected color.
-/// - A text displaying the color's hexadecimal value.
-/// - A button to copy the color value to the clipboard.
 ///
 /// Example usage:
 /// ```dart
@@ -34,19 +28,29 @@ void showColorPickerResultSnackbar({
   required Color color,
 }) {
   final colorString = colorToHexString(color);
+  final theme = context.ispectTheme;
+
+  final colorScheme = Theme.of(context).colorScheme;
+  final backgroundColor = theme.background?.resolve(context) ??
+      colorScheme.surfaceContainerHighest;
+  final foregroundColor =
+      theme.foreground?.resolve(context) ?? colorScheme.onSurface;
+  final dividerColor =
+      theme.divider?.resolve(context) ?? colorScheme.outlineVariant;
+  final cardColor = theme.card?.resolve(context) ??
+      colorScheme.surfaceContainer;
 
   ScaffoldMessenger.of(context).clearSnackBars();
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: context.ispectTheme.card?.resolve(context),
+      backgroundColor: backgroundColor,
       elevation: 0,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         side: BorderSide(
-          color: context.ispectTheme.divider?.resolve(context) ??
-              Colors.transparent,
+          color: dividerColor ?? Colors.transparent,
         ),
       ),
       content: Row(
@@ -64,7 +68,7 @@ void showColorPickerResultSnackbar({
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
                     border: Border.fromBorderSide(
                       BorderSide(
-                        color: color.contrastText(),
+                        color: dividerColor ?? Colors.transparent,
                       ),
                     ),
                   ),
@@ -73,14 +77,17 @@ void showColorPickerResultSnackbar({
               const Gap(8),
               Text(
                 'Color: $colorString',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foregroundColor,
+                    ),
               ),
             ],
           ),
           const Gap(8),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: context.ispectTheme.background?.resolve(context),
+              backgroundColor: cardColor,
+              foregroundColor: foregroundColor,
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();

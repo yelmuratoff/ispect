@@ -84,10 +84,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           builder: (context, hasText, _) {
             final showFilters = _showFilters;
 
-            final isDesktop = context.screenSize.isDesktop;
-            final filterHeight = isDesktop
-                ? (showFilters ? 160.0 : 110.0)
-                : (showFilters ? 148.0 : 110.0);
+            final filterHeight = showFilters ? 150.0 : 110.0;
 
             return SliverAppBar(
               elevation: 0,
@@ -147,13 +144,11 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                           onClearAll: _onClearAllFilters,
                         ),
                         if (showFilters)
-                          Flexible(
-                            child: _FilterChipsList(
-                              titles: widget.titles,
-                              uniqTitles: widget.uniqTitles,
-                              titlesController: widget.titlesController,
-                              onToggle: _onToggle,
-                            ),
+                          _FilterChipsList(
+                            titles: widget.titles,
+                            uniqTitles: widget.uniqTitles,
+                            titlesController: widget.titlesController,
+                            onToggle: _onToggle,
                           ),
                       ],
                     ),
@@ -428,8 +423,6 @@ class _FilterChipsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ISpect.read(context).theme;
-    final isPhone = context.screenSize.isPhone;
-
     final chips = List.generate(uniqTitles.length, (index) {
       final title = uniqTitles[index];
       final count = titles.where((e) => e == title).length;
@@ -461,30 +454,18 @@ class _FilterChipsList extends StatelessWidget {
       );
     });
 
-    if (isPhone) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SizedBox(
-          key: const ValueKey('filter'),
-          height: 36,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            separatorBuilder: (_, __) => const Gap(8),
-            itemCount: chips.length,
-            itemBuilder: (_, index) => chips[index],
-          ),
-        ),
-      );
-    }
-
     return Padding(
-      padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-      child: Wrap(
+      padding: const EdgeInsets.only(top: 8),
+      child: SizedBox(
         key: const ValueKey('filter'),
-        spacing: 8,
-        runSpacing: 6,
-        children: chips,
+        height: 36,
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          scrollDirection: Axis.horizontal,
+          separatorBuilder: (_, __) => const Gap(8),
+          itemCount: chips.length,
+          itemBuilder: (_, index) => chips[index],
+        ),
       ),
     );
   }

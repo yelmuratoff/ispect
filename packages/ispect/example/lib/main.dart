@@ -145,7 +145,6 @@ class _MyAppState extends State<MyApp> {
           )),
         ),
         theme: ISpectTheme(
-          pageTitle: 'Debug',
           primary: _preset.primary,
           background: _preset.background,
         ),
@@ -253,9 +252,7 @@ class _HomePageState extends State<_HomePage> {
               child: Row(
                 children: [
                   Icon(
-                    kISpectEnabled
-                        ? Icons.check_circle
-                        : Icons.cancel,
+                    kISpectEnabled ? Icons.check_circle : Icons.cancel,
                     color: cs.onPrimaryContainer,
                   ),
                   const SizedBox(width: 12),
@@ -506,9 +503,8 @@ class _HomePageState extends State<_HomePage> {
             'title': 'Item #$i',
             'tags': List.generate(3, (j) => 'tag_${i}_$j'),
             'metadata': {
-              'created': DateTime.now()
-                  .subtract(Duration(hours: i))
-                  .toIso8601String(),
+              'created':
+                  DateTime.now().subtract(Duration(hours: i)).toIso8601String(),
               'weight': (i * 1.5).toStringAsFixed(2),
             },
           },
@@ -552,14 +548,14 @@ class _HomePageState extends State<_HomePage> {
           final t = types[i % types.length];
           switch (t) {
             case 'info':
-              ISpect.logger.info('Mixed #$n [INFO]',
-                  additionalData: {'d': data});
+              ISpect.logger
+                  .info('Mixed #$n [INFO]', additionalData: {'d': data});
             case 'debug':
-              ISpect.logger.debug('Mixed #$n [DEBUG]',
-                  additionalData: {'d': nested});
+              ISpect.logger
+                  .debug('Mixed #$n [DEBUG]', additionalData: {'d': nested});
             case 'warning':
-              ISpect.logger.warning('Mixed #$n [WARN]',
-                  additionalData: {'d': data});
+              ISpect.logger
+                  .warning('Mixed #$n [WARN]', additionalData: {'d': data});
             case 'error':
               ISpect.logger.error(
                 'Mixed #$n [ERROR]',
@@ -596,14 +592,17 @@ class _HomePageState extends State<_HomePage> {
   }
 
   List<Map<String, dynamic>> _buildList(int size, int nestingDepth) {
-    return List.generate(size, (i) => {
-          'index': i,
-          'id': 'item_${i.toString().padLeft(4, '0')}',
-          'name': 'Element #$i',
-          'active': i.isEven,
-          if (nestingDepth > 0)
-            'nested': _buildNestedMap(nestingDepth, (size ~/ 3).clamp(1, 3)),
-        });
+    return List.generate(
+        size,
+        (i) => {
+              'index': i,
+              'id': 'item_${i.toString().padLeft(4, '0')}',
+              'name': 'Element #$i',
+              'active': i.isEven,
+              if (nestingDepth > 0)
+                'nested':
+                    _buildNestedMap(nestingDepth, (size ~/ 3).clamp(1, 3)),
+            });
   }
 }
 
@@ -615,14 +614,30 @@ class _QuickLogsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logs = <(String, IconData, Color, VoidCallback)>[
-      ('Info', Icons.info_outline, Colors.blue,
-          () => ISpect.logger.info('Info message')),
-      ('Debug', Icons.bug_report_outlined, Colors.green,
-          () => ISpect.logger.debug('Debug message')),
-      ('Warning', Icons.warning_amber, Colors.orange,
-          () => ISpect.logger.warning('Warning message')),
-      ('Error', Icons.error_outline, Colors.red,
-          () => ISpect.logger.error('Error message')),
+      (
+        'Info',
+        Icons.info_outline,
+        Colors.blue,
+        () => ISpect.logger.info('Info message')
+      ),
+      (
+        'Debug',
+        Icons.bug_report_outlined,
+        Colors.green,
+        () => ISpect.logger.debug('Debug message')
+      ),
+      (
+        'Warning',
+        Icons.warning_amber,
+        Colors.orange,
+        () => ISpect.logger.warning('Warning message')
+      ),
+      (
+        'Error',
+        Icons.error_outline,
+        Colors.red,
+        () => ISpect.logger.error('Error message')
+      ),
       (
         'Exception',
         Icons.dangerous_outlined,
@@ -642,12 +657,24 @@ class _QuickLogsGrid extends StatelessWidget {
               stackTrace: StackTrace.current,
             )
       ),
-      ('Good', Icons.check_circle_outline, Colors.teal,
-          () => ISpect.logger.good('All systems operational')),
-      ('Verbose', Icons.text_snippet_outlined, Colors.grey,
-          () => ISpect.logger.verbose('Verbose trace')),
-      ('Print', Icons.terminal, Colors.blueGrey,
-          () => ISpect.logger.print('Print log')),
+      (
+        'Good',
+        Icons.check_circle_outline,
+        Colors.teal,
+        () => ISpect.logger.good('All systems operational')
+      ),
+      (
+        'Verbose',
+        Icons.text_snippet_outlined,
+        Colors.grey,
+        () => ISpect.logger.verbose('Verbose trace')
+      ),
+      (
+        'Print',
+        Icons.terminal,
+        Colors.blueGrey,
+        () => ISpect.logger.print('Print log')
+      ),
     ];
 
     return Wrap(
