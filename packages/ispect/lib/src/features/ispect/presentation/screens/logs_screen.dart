@@ -93,8 +93,7 @@ class _LogsScreenState extends State<LogsScreen> {
             final hasDetail = isDesktop
                 ? _logsViewController.detailData != null
                 : _logsViewController.activeData != null;
-            final showDetailPanel = hasDetail &&
-                !context.screenSize.isPhone;
+            final showDetailPanel = hasDetail && !context.screenSize.isPhone;
 
             final logsView = _MainLogsView(
               logsData: data,
@@ -585,9 +584,16 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
   void _onSearchFocusChanged() {
     // When search loses focus, return focus to the keyboard handler
-    if (!widget.searchFocusNode.hasFocus && _keyboardFocusNode.canRequestFocus) {
+    if (!widget.searchFocusNode.hasFocus &&
+        _keyboardFocusNode.canRequestFocus) {
       _keyboardFocusNode.requestFocus();
     }
+  }
+
+  /// Whether newest logs appear at scroll offset 0 (top).
+  bool get _isNewestAtTop {
+    final vc = widget.logsViewController;
+    return vc.sortColumn == LogSortColumn.time && vc.isLogOrderReversed;
   }
 
   void _onScroll() {
@@ -596,15 +602,31 @@ class _MainLogsViewState extends State<_MainLogsView> {
     final offset = sc.offset;
     final maxExtent = sc.position.maxScrollExtent;
 
+    // FAB visibility/direction: same logic regardless of sort order.
+    // null = hidden, true = at bottom (show up arrow), false = away from bottom (show down arrow)
     if (offset < 300) {
       _scrollDirection.value = null;
     } else if (offset >= maxExtent - 50) {
-      _scrollDirection.value = true; // at bottom → show "go to top"
-      _isLiveTailActive = true;
-      _hasNewLogs.value = false;
+      _scrollDirection.value = true;
     } else {
-      _scrollDirection.value = false; // in middle → show "go to bottom"
-      _isLiveTailActive = false;
+      _scrollDirection.value = false;
+    }
+
+    // Live tail: track whether user is at the newest-logs edge.
+    if (_isNewestAtTop) {
+      if (offset <= 50) {
+        _isLiveTailActive = true;
+        _hasNewLogs.value = false;
+      } else {
+        _isLiveTailActive = false;
+      }
+    } else {
+      if (offset >= maxExtent - 50) {
+        _isLiveTailActive = true;
+        _hasNewLogs.value = false;
+      } else {
+        _isLiveTailActive = false;
+      }
     }
   }
 
@@ -619,11 +641,12 @@ class _MainLogsViewState extends State<_MainLogsView> {
     );
   }
 
-  void _scrollToBottom() {
+  void _scrollToNewest() {
     final sc = widget.logsScrollController;
     if (!sc.hasClients) return;
+    final target = _isNewestAtTop ? 0.0 : sc.position.maxScrollExtent;
     sc.animateTo(
-      sc.position.maxScrollExtent,
+      target,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
     );
@@ -659,8 +682,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
     // Simple click on type: toggle — if already filtering by this type, clear
     final currentTitles = widget.logsViewController.filter.titles;
     if (currentTitles.length == 1 && currentTitles.first == typeAction) {
-      widget.logsViewController.filter = widget.logsViewController.filter
-          .copyWith(titles: <String>[]);
+      widget.logsViewController.filter =
+          widget.logsViewController.filter.copyWith(titles: <String>[]);
       widget.titleFiltersController.unselectAll();
     } else {
       widget.logsViewController.setOnlyTitle(typeAction);
@@ -696,8 +719,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
         HardwareKeyboard.instance.isControlPressed;
 
     // Ctrl/Cmd+K or "/" to focus search (only when search is not focused)
-    if ((isMetaOrCtrl &&
-            event.logicalKey == LogicalKeyboardKey.keyK) ||
+    if ((isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.keyK) ||
         (!widget.searchFocusNode.hasFocus &&
             event.logicalKey == LogicalKeyboardKey.slash)) {
       widget.searchFocusNode.requestFocus();
@@ -774,11 +796,12 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
       final visualEntries = _getVisualEntries(sortedEntries);
       final nextEntry = visualEntries[targetVisualIndex];
-      widget.logsViewController.activeData = nextEntry;
 
-      // Auto-follow: if detail panel is open, update it to show the new entry
+      // Auto-follow: if detail panel is open, update both in one notification
       if (widget.logsViewController.detailData != null) {
-        widget.logsViewController.detailData = nextEntry;
+        widget.logsViewController.selectAndFollowDetail(nextEntry);
+      } else {
+        widget.logsViewController.activeData = nextEntry;
       }
 
       // Scroll to keep the selected row visible
@@ -830,7 +853,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
       if (rawCount > _lastLogCount && _lastLogCount > 0) {
         if (_isLiveTailActive) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _scrollToBottom();
+            if (mounted) _scrollToNewest();
           });
         } else {
           _hasNewLogs.value = true;
@@ -840,12 +863,14 @@ class _MainLogsViewState extends State<_MainLogsView> {
     }
 
     // Sort column/direction as ints for the header
-    final sortColumnIdx =
-        widget.logsViewController.sortColumn.index;
+    final sortColumnIdx = widget.logsViewController.sortColumn.index;
     // For time column, direction is based on isLogOrderReversed
-    final sortDirIdx = widget.logsViewController.sortColumn == LogSortColumn.time
-        ? (widget.logsViewController.isLogOrderReversed ? 1 : 0) // descending when reversed
-        : widget.logsViewController.sortDirection.index;
+    final sortDirIdx =
+        widget.logsViewController.sortColumn == LogSortColumn.time
+            ? (widget.logsViewController.isLogOrderReversed
+                ? 1
+                : 0) // descending when reversed
+            : widget.logsViewController.sortDirection.index;
 
     Widget body = Stack(
       children: [
@@ -919,8 +944,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   statusColor: widget.iSpectTheme.theme
                           .getTypeColor(context, key: logEntry.key) ??
                       Colors.grey,
-                  isExpanded: isSelected ||
-                      widget.logsViewController.expandedLogs,
+                  isExpanded:
+                      isSelected || widget.logsViewController.expandedLogs,
                   customItemBuilder: widget.itemsBuilder,
                   observer: options.observer is ISpectNavigatorObserver
                       ? options.observer as ISpectNavigatorObserver?
@@ -931,15 +956,13 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   ).show(context),
                   onItemTapped: isDesktop
                       ? () => widget.logsViewController.selectLog(logEntry)
-                      : () => widget.logsViewController
-                          .handleLogItemTap(logEntry),
+                      : () =>
+                          widget.logsViewController.handleLogItemTap(logEntry),
                   onOpenDetail: isDesktop
-                      ? () =>
-                          widget.logsViewController.openLogDetail(logEntry)
+                      ? () => widget.logsViewController.openLogDetail(logEntry)
                       : null,
                   onTypeFilterTap: isDesktop ? _handleTypeFilter : null,
-                  useRelativeTime:
-                      widget.logsViewController.useRelativeTime,
+                  useRelativeTime: widget.logsViewController.useRelativeTime,
                   typeColumnWidth: _typeColumnWidth,
                   timeColumnWidth: _timeColumnWidth,
                 );
@@ -949,18 +972,25 @@ class _MainLogsViewState extends State<_MainLogsView> {
             SliverGap(isDesktop ? 36 : 8),
           ],
         ),
-        // New logs indicator
+        // New logs indicator — near the newest-logs edge
         if (isDesktop)
           ValueListenableBuilder(
             valueListenable: _hasNewLogs,
-            builder: (context, hasNew, _) => AnimatedPositioned(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              left: 0,
-              right: 0,
-              bottom: hasNew ? 36 : -40,
-              child: _NewLogsIndicator(onTap: _scrollToBottom),
-            ),
+            builder: (context, hasNew, _) {
+              final newestAtTop = _isNewestAtTop;
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                left: 0,
+                right: 0,
+                top: newestAtTop ? (hasNew ? 0 : -40) : null,
+                bottom: newestAtTop ? null : (hasNew ? 36 : -40),
+                child: _NewLogsIndicator(
+                  onTap: _scrollToNewest,
+                  pointUp: newestAtTop,
+                ),
+              );
+            },
           ),
         ValueListenableBuilder(
           valueListenable: _scrollDirection,
@@ -1025,9 +1055,13 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
 /// Indicator shown when new logs arrive while user is scrolled away.
 class _NewLogsIndicator extends StatelessWidget {
-  const _NewLogsIndicator({required this.onTap});
+  const _NewLogsIndicator({
+    required this.onTap,
+    this.pointUp = false,
+  });
 
   final VoidCallback onTap;
+  final bool pointUp;
 
   @override
   Widget build(BuildContext context) {
@@ -1048,7 +1082,9 @@ class _NewLogsIndicator extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.arrow_downward_rounded,
+                  pointUp
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded,
                   size: 14,
                   color: context.appTheme.colorScheme.onPrimary,
                 ),
@@ -1228,7 +1264,8 @@ class _DesktopStatusBar extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(4)),
                 onTap: onToggleTimestamp,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Icon(
                     useRelativeTime
                         ? Icons.access_time_rounded

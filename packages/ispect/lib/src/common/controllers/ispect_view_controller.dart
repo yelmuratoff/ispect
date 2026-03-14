@@ -85,6 +85,13 @@ class ISpectViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Select a log and update the detail panel in a single notification.
+  void selectAndFollowDetail(ISpectLogData entry) {
+    _activeData = entry;
+    _detailData = entry;
+    notifyListeners();
+  }
+
   /// Close the detail panel without clearing selection.
   void closeDetail() {
     if (_detailData == null) return;
