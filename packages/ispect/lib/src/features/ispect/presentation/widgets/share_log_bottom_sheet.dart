@@ -40,6 +40,7 @@ class _InfoDescription extends StatelessWidget {
     final shareCallback = context.iSpect.options.onShare;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const ISpectDragHandle(),
         const Gap(8),
