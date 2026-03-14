@@ -9,9 +9,24 @@ import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.
 
 /// A sticky table header row for the desktop log table.
 class DesktopLogTableHeader extends StatelessWidget {
-  const DesktopLogTableHeader({super.key, this.backgroundColor});
+  const DesktopLogTableHeader({
+    super.key,
+    this.backgroundColor,
+    this.sortColumn,
+    this.sortDirection,
+    this.onSortTap,
+    this.typeColumnWidth = 70,
+    this.timeColumnWidth = 140,
+    this.onColumnResize,
+  });
 
   final Color? backgroundColor;
+  final int? sortColumn;
+  final int? sortDirection;
+  final void Function(int column)? onSortTap;
+  final double typeColumnWidth;
+  final double timeColumnWidth;
+  final void Function(int column, double delta)? onColumnResize;
 
   @override
   Widget build(BuildContext context) {
@@ -38,28 +53,41 @@ class DesktopLogTableHeader extends StatelessWidget {
               children: [
                 const SizedBox(width: 24),
                 const Gap(8),
-                SizedBox(
-                  width: isCompact ? 40 : 70,
-                  child: Text(
-                    'TYPE',
-                    style: labelStyle.copyWith(color: labelColor),
-                  ),
+                _SortableColumnHeader(
+                  label: 'TYPE',
+                  width: isCompact ? 40 : typeColumnWidth,
+                  columnIndex: 0,
+                  isActive: sortColumn == 0,
+                  isAscending: sortDirection == 0,
+                  onTap: onSortTap,
+                  labelStyle: labelStyle,
+                  labelColor: labelColor,
+                  onResize: onColumnResize,
                 ),
                 const Gap(8),
                 if (!isCompact) ...[
-                  SizedBox(
-                    width: 140,
-                    child: Text(
-                      'TIME',
-                      style: labelStyle.copyWith(color: labelColor),
-                    ),
+                  _SortableColumnHeader(
+                    label: 'TIME',
+                    width: timeColumnWidth,
+                    columnIndex: 1,
+                    isActive: sortColumn == 1,
+                    isAscending: sortDirection == 0,
+                    onTap: onSortTap,
+                    labelStyle: labelStyle,
+                    labelColor: labelColor,
+                    onResize: onColumnResize,
                   ),
                   const Gap(12),
                 ],
                 Expanded(
-                  child: Text(
-                    'MESSAGE',
-                    style: labelStyle.copyWith(color: labelColor),
+                  child: _SortableColumnHeader(
+                    label: 'MESSAGE',
+                    columnIndex: 2,
+                    isActive: sortColumn == 2,
+                    isAscending: sortDirection == 0,
+                    onTap: onSortTap,
+                    labelStyle: labelStyle,
+                    labelColor: labelColor,
                   ),
                 ),
               ],
@@ -68,6 +96,100 @@ class DesktopLogTableHeader extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class _SortableColumnHeader extends StatelessWidget {
+  const _SortableColumnHeader({
+    required this.label,
+    required this.columnIndex,
+    required this.isActive,
+    required this.isAscending,
+    required this.labelStyle,
+    required this.labelColor,
+    this.width,
+    this.onTap,
+    this.onResize,
+  });
+
+  final String label;
+  final int columnIndex;
+  final double? width;
+  final bool isActive;
+  final bool isAscending;
+  final void Function(int column)? onTap;
+  final TextStyle labelStyle;
+  final Color labelColor;
+  final void Function(int column, double delta)? onResize;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
+
+    Widget header = MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: onTap != null ? () => onTap!(columnIndex) : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: labelStyle.copyWith(
+                color: isActive ? activeColor : labelColor,
+              ),
+            ),
+            const Gap(2),
+            Icon(
+              isActive
+                  ? (isAscending
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded)
+                  : Icons.unfold_more_rounded,
+              size: 12,
+              color: isActive ? activeColor : labelColor.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (width != null) {
+      header = SizedBox(
+        width: width,
+        child: Row(
+          children: [
+            Expanded(child: header),
+            if (onResize != null)
+              MouseRegion(
+                cursor: SystemMouseCursors.resizeColumn,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragUpdate: (details) =>
+                      onResize!(columnIndex, details.delta.dx),
+                  child: SizedBox(
+                    width: 12,
+                    height: 20,
+                    child: Center(
+                      child: Container(
+                        width: 2,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: labelColor.withValues(alpha: 0.3),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(1)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    return header;
   }
 }
 
@@ -91,6 +213,11 @@ class DesktopLogRow extends StatefulWidget {
     this.index = 0,
     this.observer,
     this.onShareTap,
+    this.onOpenDetail,
+    this.onTypeFilterTap,
+    this.useRelativeTime = false,
+    this.typeColumnWidth = 70,
+    this.timeColumnWidth = 140,
     super.key,
   });
 
@@ -100,8 +227,13 @@ class DesktopLogRow extends StatefulWidget {
   final int index;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onOpenDetail;
   final VoidCallback? onShareTap;
+  final void Function(String type)? onTypeFilterTap;
   final ISpectNavigatorObserver? observer;
+  final bool useRelativeTime;
+  final double typeColumnWidth;
+  final double timeColumnWidth;
 
   @override
   State<DesktopLogRow> createState() => _DesktopLogRowState();
@@ -111,15 +243,24 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
   bool _isHovered = false;
   OverlayEntry? _tooltipOverlay;
   Timer? _tooltipTimer;
+  Timer? _singleClickTimer;
   Offset _mousePosition = Offset.zero;
 
   static const _tooltipDelay = Duration(milliseconds: 400);
+  static const _doubleClickWindow = Duration(milliseconds: 250);
 
   String get _message {
     final msg = widget.data.isHttpLog
         ? widget.data.httpLogText
         : widget.data.textMessage;
     return msg ?? '';
+  }
+
+  String get _displayTime {
+    if (widget.useRelativeTime) {
+      return ISpectDateTimeFormatter(widget.data.time).relativeFormat;
+    }
+    return widget.data.formattedTime;
   }
 
   void _scheduleTooltip(String text) {
@@ -198,9 +339,28 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     _tooltipOverlay = null;
   }
 
+  /// Handle tap with manual double-click detection to avoid the ~300ms delay
+  /// that Flutter adds when both onTap and onDoubleTap are on the same
+  /// GestureDetector.
+  void _handleTap() {
+    if (_singleClickTimer != null) {
+      // Second tap within window → double click
+      _singleClickTimer!.cancel();
+      _singleClickTimer = null;
+      widget.onOpenDetail?.call();
+    } else {
+      // First tap → schedule single click
+      _singleClickTimer = Timer(_doubleClickWindow, () {
+        _singleClickTimer = null;
+        widget.onTap();
+      });
+    }
+  }
+
   @override
   void dispose() {
     _tooltipTimer?.cancel();
+    _singleClickTimer?.cancel();
     _removeTooltip();
     super.dispose();
   }
@@ -230,7 +390,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         _cancelTooltip();
       },
       child: GestureDetector(
-        onTap: widget.onTap,
+        onTap: widget.onOpenDetail != null ? _handleTap : widget.onTap,
         onSecondaryTapUp: (details) =>
             _showContextMenu(context, details.globalPosition),
         child: DecoratedBox(
@@ -256,7 +416,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                   children: [
                     Icon(widget.icon, size: 16, color: widget.color),
                     const Gap(8),
+                    // Type column — clickable for quick filter
                     MouseRegion(
+                      cursor: widget.onTypeFilterTap != null
+                          ? SystemMouseCursors.click
+                          : SystemMouseCursors.basic,
                       onEnter: (_) {
                         final desc = ISpect.read(context).theme
                             .getTypeDescription(
@@ -266,16 +430,23 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                         if (desc != null) _scheduleTooltip(desc);
                       },
                       onExit: (_) => _cancelTooltip(),
-                      child: SizedBox(
-                        width: isCompact ? 40 : 70,
-                        child: Text(
-                          widget.data.key ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: widget.color,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                      child: GestureDetector(
+                        onTap: widget.onTypeFilterTap != null &&
+                                widget.data.key != null
+                            ? () =>
+                                widget.onTypeFilterTap!(widget.data.key!)
+                            : null,
+                        child: SizedBox(
+                          width: isCompact ? 40 : widget.typeColumnWidth,
+                          child: Text(
+                            widget.data.key ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: widget.color,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -283,9 +454,9 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                     const Gap(8),
                     if (!isCompact) ...[
                       SizedBox(
-                        width: 140,
+                        width: widget.timeColumnWidth,
                         child: Text(
-                          widget.data.formattedTime,
+                          _displayTime,
                           maxLines: 1,
                           style: TextStyle(
                             color: onSurface.withValues(alpha: 0.45),
@@ -320,7 +491,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                         data: widget.data,
                         observer: widget.observer,
                         onShareTap: widget.onShareTap,
-                        onOpenDetail: widget.onTap,
+                        onOpenDetail: widget.onOpenDetail ?? widget.onTap,
                       ),
                     ],
                   ],
@@ -379,6 +550,25 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
             label: l10n.expandLogs,
           ),
         ),
+        if (widget.data.key != null) ...[
+          const PopupMenuDivider(height: 8),
+          const PopupMenuItem(
+            value: _ContextAction.showOnlyType,
+            height: 36,
+            child: _ContextMenuRow(
+              icon: Icons.filter_alt_rounded,
+              label: 'Show only this type',
+            ),
+          ),
+          const PopupMenuItem(
+            value: _ContextAction.hideType,
+            height: 36,
+            child: _ContextMenuRow(
+              icon: Icons.filter_alt_off_rounded,
+              label: 'Hide this type',
+            ),
+          ),
+        ],
       ],
     );
 
@@ -393,12 +583,23 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         final curl = widget.data.curlCommand;
         if (curl != null) copyClipboard(context, value: curl);
       case _ContextAction.openDetail:
-        widget.onTap();
+        (widget.onOpenDetail ?? widget.onTap).call();
+      case _ContextAction.showOnlyType:
+        widget.onTypeFilterTap?.call('__show_only__${widget.data.key!}');
+      case _ContextAction.hideType:
+        widget.onTypeFilterTap?.call('__hide__${widget.data.key!}');
     }
   }
 }
 
-enum _ContextAction { copyMessage, share, copyCurl, openDetail }
+enum _ContextAction {
+  copyMessage,
+  share,
+  copyCurl,
+  openDetail,
+  showOnlyType,
+  hideType,
+}
 
 class _ContextMenuRow extends StatelessWidget {
   const _ContextMenuRow({required this.icon, required this.label});

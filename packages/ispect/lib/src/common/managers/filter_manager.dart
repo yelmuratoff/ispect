@@ -91,6 +91,18 @@ class FilterManager {
     }
   }
 
+  /// Clear all title filters and set only the given title.
+  void setOnlyTitle(String title) {
+    _updateFilter(titles: [title]);
+  }
+
+  /// Exclude a specific title: add all other titles except this one.
+  void excludeTitle(String title, List<String> allTitles) {
+    final filtered =
+        allTitles.where((t) => t != title).toList(growable: false);
+    _updateFilter(titles: filtered);
+  }
+
   void _updateFilter({
     List<String>? titles,
     List<Type>? types,

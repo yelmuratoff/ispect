@@ -5,6 +5,12 @@ import 'package:ispect/src/common/managers/settings_manager.dart';
 import 'package:ispect/src/common/services/log_export_service.dart';
 import 'package:ispect/src/common/services/log_import_service.dart';
 
+/// Column used for sorting desktop log table.
+enum LogSortColumn { type, time, message }
+
+/// Direction for sorting desktop log table.
+enum LogSortDirection { ascending, descending }
+
 class ISpectViewController extends ChangeNotifier {
   ISpectViewController({
     ISpectShareCallback? onShare,
@@ -30,6 +36,16 @@ class ISpectViewController extends ChangeNotifier {
   bool _isLogOrderReversed = true;
   ISpectLogData? _activeData;
 
+  // --- Desktop: detail panel data (separate from selection highlight) ---
+  ISpectLogData? _detailData;
+
+  // --- Desktop: relative time toggle ---
+  bool _useRelativeTime = false;
+
+  // --- Desktop: column sorting ---
+  LogSortColumn _sortColumn = LogSortColumn.time;
+  LogSortDirection _sortDirection = LogSortDirection.descending;
+
   ISpectSettingsState get settings => _settingsManager.settings;
 
   void updateSettings(ISpectSettingsState newSettings) =>
@@ -45,6 +61,83 @@ class ISpectViewController extends ChangeNotifier {
     if (_activeData == data) return;
     _activeData = data;
     notifyListeners();
+  }
+
+  // --- Detail panel (desktop: double-click opens detail) ---
+  ISpectLogData? get detailData => _detailData;
+
+  set detailData(ISpectLogData? data) {
+    if (_detailData == data) return;
+    _detailData = data;
+    notifyListeners();
+  }
+
+  /// Single click on desktop: select/highlight only.
+  // ignore: use_setters_to_change_properties
+  void selectLog(ISpectLogData entry) {
+    activeData = entry;
+  }
+
+  /// Double click on desktop: open detail panel.
+  void openLogDetail(ISpectLogData entry) {
+    _activeData = entry;
+    _detailData = _detailData == entry ? null : entry;
+    notifyListeners();
+  }
+
+  /// Close the detail panel without clearing selection.
+  void closeDetail() {
+    if (_detailData == null) return;
+    _detailData = null;
+    notifyListeners();
+  }
+
+  // --- Relative time ---
+  bool get useRelativeTime => _useRelativeTime;
+
+  void toggleTimestampFormat() {
+    _useRelativeTime = !_useRelativeTime;
+    notifyListeners();
+  }
+
+  // --- Column sorting ---
+  LogSortColumn get sortColumn => _sortColumn;
+  LogSortDirection get sortDirection => _sortDirection;
+
+  void toggleSort(LogSortColumn column) {
+    if (_sortColumn == column) {
+      _sortDirection = _sortDirection == LogSortDirection.ascending
+          ? LogSortDirection.descending
+          : LogSortDirection.ascending;
+    } else {
+      _sortColumn = column;
+      _sortDirection = LogSortDirection.ascending;
+    }
+    notifyListeners();
+  }
+
+  /// Sort a filtered list by the current sort column/direction.
+  List<ISpectLogData> applySorting(List<ISpectLogData> entries) {
+    if (_sortColumn == LogSortColumn.time) {
+      return entries;
+    }
+    final sorted = List<ISpectLogData>.of(entries);
+    switch (_sortColumn) {
+      case LogSortColumn.type:
+        sorted.sort((a, b) => (a.key ?? '').compareTo(b.key ?? ''));
+      case LogSortColumn.message:
+        sorted.sort((a, b) {
+          final aMsg = a.isHttpLog ? (a.httpLogText ?? '') : (a.textMessage);
+          final bMsg = b.isHttpLog ? (b.httpLogText ?? '') : (b.textMessage);
+          return aMsg.compareTo(bMsg);
+        });
+      case LogSortColumn.time:
+        break; // handled above
+    }
+    if (_sortDirection == LogSortDirection.descending) {
+      return sorted.reversed.toList();
+    }
+    return sorted;
   }
 
   bool get expandedLogs => _expandedLogs;
@@ -73,6 +166,11 @@ class ISpectViewController extends ChangeNotifier {
 
   void removeFilterTitle(String title) =>
       _filterManager.removeFilterTitle(title);
+
+  void setOnlyTitle(String title) => _filterManager.setOnlyTitle(title);
+
+  void excludeTitle(String title, List<String> allTitles) =>
+      _filterManager.excludeTitle(title, allTitles);
 
   Future<void> downloadLogsFile(String logs) async =>
       _exportService.downloadLogsFile(logs);

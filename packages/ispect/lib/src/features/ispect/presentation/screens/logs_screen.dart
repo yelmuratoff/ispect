@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
@@ -77,6 +79,7 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
+    final isDesktop = context.screenSize.isDesktop;
     return Scaffold(
       backgroundColor: iSpect.theme.background?.resolve(context),
       body: ISpectLogsBuilder(
@@ -85,7 +88,10 @@ class _LogsScreenState extends State<LogsScreen> {
         builder: (context, data) => ListenableBuilder(
           listenable: _logsViewController,
           builder: (_, __) {
-            final hasDetail = _logsViewController.activeData != null;
+            // Desktop uses detailData for the panel; mobile/tablet uses activeData.
+            final hasDetail = isDesktop
+                ? _logsViewController.detailData != null
+                : _logsViewController.activeData != null;
             final showDetailPanel = hasDetail &&
                 !context.screenSize.isPhone;
 
@@ -106,12 +112,22 @@ class _LogsScreenState extends State<LogsScreen> {
               return logsView;
             }
 
+            final activeForDetail = isDesktop
+                ? _logsViewController.detailData!
+                : _logsViewController.activeData!;
+
             final detailView = _DetailView(
-              activeData: _logsViewController.activeData!,
-              onClose: () => _logsViewController.activeData = null,
+              activeData: activeForDetail,
+              onClose: () {
+                if (isDesktop) {
+                  _logsViewController.closeDetail();
+                } else {
+                  _logsViewController.activeData = null;
+                }
+              },
             );
 
-            if (context.screenSize.isDesktop) {
+            if (isDesktop) {
               return ResizableSplitView(
                 initialRatio: _splitRatio,
                 minRatio: 0.35,
@@ -340,6 +356,11 @@ class _LogListItem extends StatelessWidget {
     required this.onSharePressed,
     this.customItemBuilder,
     this.observer,
+    this.onOpenDetail,
+    this.onTypeFilterTap,
+    this.useRelativeTime = false,
+    this.typeColumnWidth = 70,
+    this.timeColumnWidth = 140,
     super.key,
   });
 
@@ -352,6 +373,11 @@ class _LogListItem extends StatelessWidget {
   final VoidCallback onSharePressed;
   final ISpectLogDataBuilder? customItemBuilder;
   final ISpectNavigatorObserver? observer;
+  final VoidCallback? onOpenDetail;
+  final void Function(String type)? onTypeFilterTap;
+  final bool useRelativeTime;
+  final double typeColumnWidth;
+  final double timeColumnWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +397,12 @@ class _LogListItem extends StatelessWidget {
         isSelected: isExpanded,
         onShareTap: onSharePressed,
         onTap: onItemTapped,
+        onOpenDetail: onOpenDetail,
+        onTypeFilterTap: onTypeFilterTap,
         observer: observer,
+        useRelativeTime: useRelativeTime,
+        typeColumnWidth: typeColumnWidth,
+        timeColumnWidth: timeColumnWidth,
       );
     }
 
@@ -503,21 +534,52 @@ class _MainLogsViewState extends State<_MainLogsView> {
   final _keyboardFocusNode = FocusNode(debugLabel: 'DesktopLogKeyboard');
   final _listController = ListController();
 
+  // --- Column resizing ---
+  double _typeColumnWidth = 70;
+  double _timeColumnWidth = 140;
+
+  // --- Live tail / auto-scroll ---
+  bool _isLiveTailActive = false;
+  int _lastLogCount = 0;
+  final _hasNewLogs = ValueNotifier<bool>(false);
+
+  // --- Relative time refresh timer ---
+  Timer? _relativeTimeTimer;
+
   @override
   void initState() {
     super.initState();
     widget.logsScrollController.addListener(_onScroll);
     widget.searchFocusNode.addListener(_onSearchFocusChanged);
+    widget.logsViewController.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
     widget.logsScrollController.removeListener(_onScroll);
     widget.searchFocusNode.removeListener(_onSearchFocusChanged);
+    widget.logsViewController.removeListener(_onControllerChanged);
     _scrollDirection.dispose();
     _keyboardFocusNode.dispose();
     _listController.dispose();
+    _hasNewLogs.dispose();
+    _relativeTimeTimer?.cancel();
     super.dispose();
+  }
+
+  void _onControllerChanged() {
+    // Manage relative time refresh timer
+    if (widget.logsViewController.useRelativeTime) {
+      _relativeTimeTimer ??= Timer.periodic(
+        const Duration(seconds: 5),
+        (_) {
+          if (mounted) setState(() {});
+        },
+      );
+    } else {
+      _relativeTimeTimer?.cancel();
+      _relativeTimeTimer = null;
+    }
   }
 
   void _onSearchFocusChanged() {
@@ -537,8 +599,11 @@ class _MainLogsViewState extends State<_MainLogsView> {
       _scrollDirection.value = null;
     } else if (offset >= maxExtent - 50) {
       _scrollDirection.value = true; // at bottom → show "go to top"
+      _isLiveTailActive = true;
+      _hasNewLogs.value = false;
     } else {
       _scrollDirection.value = false; // in middle → show "go to bottom"
+      _isLiveTailActive = false;
     }
   }
 
@@ -553,14 +618,83 @@ class _MainLogsViewState extends State<_MainLogsView> {
     );
   }
 
+  void _scrollToBottom() {
+    final sc = widget.logsScrollController;
+    if (!sc.hasClients) return;
+    sc.animateTo(
+      sc.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+    _hasNewLogs.value = false;
+  }
+
+  void _handleColumnResize(int column, double delta) {
+    setState(() {
+      if (column == 0) {
+        _typeColumnWidth = (_typeColumnWidth + delta).clamp(40, 200);
+      } else if (column == 1) {
+        _timeColumnWidth = (_timeColumnWidth + delta).clamp(80, 250);
+      }
+    });
+  }
+
+  void _handleTypeFilter(String typeAction) {
+    final titles = widget.logsViewController.getTitles(widget.logsData);
+    final uniq = titles.unique;
+
+    if (typeAction.startsWith('__show_only__')) {
+      final type = typeAction.replaceFirst('__show_only__', '');
+      widget.logsViewController.setOnlyTitle(type);
+      _syncChipsToFilter(type, uniq, showOnly: true);
+      return;
+    }
+    if (typeAction.startsWith('__hide__')) {
+      final type = typeAction.replaceFirst('__hide__', '');
+      widget.logsViewController.excludeTitle(type, uniq);
+      _syncChipsToFilter(type, uniq, showOnly: false);
+      return;
+    }
+    // Simple click on type: toggle — if already filtering by this type, clear
+    final currentTitles = widget.logsViewController.filter.titles;
+    if (currentTitles.length == 1 && currentTitles.first == typeAction) {
+      widget.logsViewController.filter = widget.logsViewController.filter
+          .copyWith(titles: <String>[]);
+      widget.titleFiltersController.unselectAll();
+    } else {
+      widget.logsViewController.setOnlyTitle(typeAction);
+      _syncChipsToFilter(typeAction, uniq, showOnly: true);
+    }
+  }
+
+  /// Sync the GroupButtonController chip selection to match the applied filter.
+  void _syncChipsToFilter(
+    String type,
+    List<String> uniqTitles, {
+    required bool showOnly,
+  }) {
+    final controller = widget.titleFiltersController..unselectAll();
+    if (showOnly) {
+      // Select only the chip matching the type
+      final idx = uniqTitles.indexOf(type);
+      if (idx != -1) controller.selectIndex(idx);
+    } else {
+      // Select all chips except the hidden type
+      for (var i = 0; i < uniqTitles.length; i++) {
+        if (uniqTitles[i] != type) controller.selectIndex(i);
+      }
+    }
+  }
+
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
 
-    // Ctrl/Cmd+K or "/" to focus search (only when search is not focused)
     final isMetaOrCtrl = HardwareKeyboard.instance.isMetaPressed ||
         HardwareKeyboard.instance.isControlPressed;
+
+    // Ctrl/Cmd+K or "/" to focus search (only when search is not focused)
     if ((isMetaOrCtrl &&
             event.logicalKey == LogicalKeyboardKey.keyK) ||
         (!widget.searchFocusNode.hasFocus &&
@@ -576,11 +710,16 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
     final filteredLogEntries =
         widget.logsViewController.applyCurrentFilters(widget.logsData);
-    if (filteredLogEntries.isEmpty) return KeyEventResult.ignored;
+    final sortedEntries = _applySortingIfNeeded(filteredLogEntries);
+    if (sortedEntries.isEmpty) return KeyEventResult.ignored;
 
     final activeData = widget.logsViewController.activeData;
 
     if (event.logicalKey == LogicalKeyboardKey.escape) {
+      if (widget.logsViewController.detailData != null) {
+        widget.logsViewController.closeDetail();
+        return KeyEventResult.handled;
+      }
       if (activeData != null) {
         widget.logsViewController.activeData = null;
         return KeyEventResult.handled;
@@ -588,10 +727,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
       return KeyEventResult.ignored;
     }
 
-    // Enter: toggle detail panel for selected log
+    // Enter: open detail panel for selected log
     if (event.logicalKey == LogicalKeyboardKey.enter) {
       if (activeData != null) {
-        widget.logsViewController.handleLogItemTap(activeData);
+        widget.logsViewController.openLogDetail(activeData);
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -603,31 +742,22 @@ class _MainLogsViewState extends State<_MainLogsView> {
       int targetVisualIndex;
 
       if (activeData == null) {
-        // Select first/last entry
-        targetVisualIndex = isDown ? 0 : filteredLogEntries.length - 1;
+        targetVisualIndex = isDown ? 0 : sortedEntries.length - 1;
       } else {
-        // Find current index and move
-        final currentIndex = filteredLogEntries.indexOf(activeData);
-        if (currentIndex == -1) return KeyEventResult.ignored;
+        final visualEntries = _getVisualEntries(sortedEntries);
+        final currentVisualIndex = visualEntries.indexOf(activeData);
+        if (currentVisualIndex == -1) return KeyEventResult.ignored;
 
-        // Convert to visual index
-        final isReversed = widget.logsViewController.isLogOrderReversed;
-        final visualIndex = isReversed
-            ? filteredLogEntries.length - 1 - currentIndex
-            : currentIndex;
-
-        targetVisualIndex = isDown ? visualIndex + 1 : visualIndex - 1;
+        targetVisualIndex =
+            isDown ? currentVisualIndex + 1 : currentVisualIndex - 1;
         if (targetVisualIndex < 0 ||
-            targetVisualIndex >= filteredLogEntries.length) {
+            targetVisualIndex >= visualEntries.length) {
           return KeyEventResult.handled;
         }
       }
 
-      final (entry: nextEntry, actualIndex: _) =
-          widget.logsViewController.getLogEntryAtIndex(
-        filteredLogEntries,
-        targetVisualIndex,
-      );
+      final visualEntries = _getVisualEntries(sortedEntries);
+      final nextEntry = visualEntries[targetVisualIndex];
       widget.logsViewController.activeData = nextEntry;
 
       // Scroll to keep the selected row visible
@@ -645,15 +775,56 @@ class _MainLogsViewState extends State<_MainLogsView> {
     return KeyEventResult.ignored;
   }
 
+  /// Get entries in visual display order (after sorting + reversing).
+  List<ISpectLogData> _getVisualEntries(List<ISpectLogData> sortedEntries) {
+    if (widget.logsViewController.sortColumn == LogSortColumn.time &&
+        widget.logsViewController.isLogOrderReversed) {
+      return sortedEntries.reversed.toList();
+    }
+    return sortedEntries;
+  }
+
+  /// Apply column sorting if not sorting by time (time uses existing reverse logic).
+  List<ISpectLogData> _applySortingIfNeeded(List<ISpectLogData> entries) {
+    if (widget.logsViewController.sortColumn != LogSortColumn.time) {
+      return widget.logsViewController.applySorting(entries);
+    }
+    return entries;
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredLogEntries =
         widget.logsViewController.applyCurrentFilters(widget.logsData);
+    final sortedEntries = _applySortingIfNeeded(filteredLogEntries);
     final titles = widget.logsViewController.getTitles(widget.logsData);
 
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
     final isFiltered = filteredLogEntries.length != widget.logsData.length;
+
+    // Live tail: auto-scroll when new REAL logs arrive (track raw data, not filtered)
+    final rawCount = widget.logsData.length;
+    if (isDesktop && rawCount != _lastLogCount) {
+      if (rawCount > _lastLogCount && _lastLogCount > 0) {
+        if (_isLiveTailActive) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _scrollToBottom();
+          });
+        } else {
+          _hasNewLogs.value = true;
+        }
+      }
+      _lastLogCount = rawCount;
+    }
+
+    // Sort column/direction as ints for the header
+    final sortColumnIdx =
+        widget.logsViewController.sortColumn.index;
+    // For time column, direction is based on isLogOrderReversed
+    final sortDirIdx = widget.logsViewController.sortColumn == LogSortColumn.time
+        ? (widget.logsViewController.isLogOrderReversed ? 1 : 0) // descending when reversed
+        : widget.logsViewController.sortDirection.index;
 
     Widget body = Stack(
       children: [
@@ -684,22 +855,40 @@ class _MainLogsViewState extends State<_MainLogsView> {
                     backgroundColor:
                         widget.iSpectTheme.theme.background?.resolve(context) ??
                             context.appTheme.scaffoldBackgroundColor,
+                    sortColumn: sortColumnIdx,
+                    sortDirection: sortDirIdx,
+                    onSortTap: (colIdx) {
+                      final col = LogSortColumn.values[colIdx];
+                      if (col == LogSortColumn.time) {
+                        // Time column uses existing reverse logic
+                        widget.logsViewController.toggleLogOrder();
+                        // Ensure sort column is set to time
+                        if (widget.logsViewController.sortColumn !=
+                            LogSortColumn.time) {
+                          widget.logsViewController.toggleSort(col);
+                        }
+                      } else {
+                        widget.logsViewController.toggleSort(col);
+                      }
+                    },
+                    typeColumnWidth: _typeColumnWidth,
+                    timeColumnWidth: _timeColumnWidth,
+                    onColumnResize: _handleColumnResize,
                   ),
                 ),
               ),
-            if (filteredLogEntries.isEmpty)
+            if (sortedEntries.isEmpty)
               const SliverToBoxAdapter(
                 child: _EmptyLogsWidget(),
               ),
             SuperSliverList.builder(
               listController: _listController,
-              itemCount: filteredLogEntries.length,
+              itemCount: sortedEntries.length,
               itemBuilder: (context, index) {
-                final (entry: logEntry, actualIndex: _) =
-                    widget.logsViewController.getLogEntryAtIndex(
-                  filteredLogEntries,
-                  index,
-                );
+                final logEntry = _getEntryAtVisualIndex(sortedEntries, index);
+                final isSelected =
+                    widget.logsViewController.activeData == logEntry;
+
                 return _LogListItem(
                   key: ObjectKey(logEntry),
                   logData: logEntry,
@@ -709,9 +898,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   statusColor: widget.iSpectTheme.theme
                           .getTypeColor(context, key: logEntry.key) ??
                       Colors.grey,
-                  isExpanded:
-                      widget.logsViewController.activeData == logEntry ||
-                          widget.logsViewController.expandedLogs,
+                  isExpanded: isSelected ||
+                      widget.logsViewController.expandedLogs,
                   customItemBuilder: widget.itemsBuilder,
                   observer: options.observer is ISpectNavigatorObserver
                       ? options.observer as ISpectNavigatorObserver?
@@ -720,8 +908,19 @@ class _MainLogsViewState extends State<_MainLogsView> {
                     data: logEntry.toJson(),
                     truncatedData: logEntry.toJson(truncated: true),
                   ).show(context),
-                  onItemTapped: () =>
-                      widget.logsViewController.handleLogItemTap(logEntry),
+                  onItemTapped: isDesktop
+                      ? () => widget.logsViewController.selectLog(logEntry)
+                      : () => widget.logsViewController
+                          .handleLogItemTap(logEntry),
+                  onOpenDetail: isDesktop
+                      ? () =>
+                          widget.logsViewController.openLogDetail(logEntry)
+                      : null,
+                  onTypeFilterTap: isDesktop ? _handleTypeFilter : null,
+                  useRelativeTime:
+                      widget.logsViewController.useRelativeTime,
+                  typeColumnWidth: _typeColumnWidth,
+                  timeColumnWidth: _timeColumnWidth,
                 );
               },
             ),
@@ -729,6 +928,19 @@ class _MainLogsViewState extends State<_MainLogsView> {
             SliverGap(isDesktop ? 36 : 8),
           ],
         ),
+        // New logs indicator
+        if (isDesktop)
+          ValueListenableBuilder(
+            valueListenable: _hasNewLogs,
+            builder: (context, hasNew, _) => AnimatedPositioned(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              left: 0,
+              right: 0,
+              bottom: hasNew ? 36 : -40,
+              child: _NewLogsIndicator(onTap: _scrollToBottom),
+            ),
+          ),
         ValueListenableBuilder(
           valueListenable: _scrollDirection,
           builder: (context, direction, _) => AnimatedPositioned(
@@ -753,6 +965,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
               totalCount: widget.logsData.length,
               isFiltered: isFiltered,
               selectedLog: widget.logsViewController.activeData,
+              isLiveTailActive: _isLiveTailActive,
+              useRelativeTime: widget.logsViewController.useRelativeTime,
+              onToggleTimestamp:
+                  widget.logsViewController.toggleTimestampFormat,
             ),
           ),
       ],
@@ -769,6 +985,67 @@ class _MainLogsViewState extends State<_MainLogsView> {
     }
 
     return body;
+  }
+
+  ISpectLogData _getEntryAtVisualIndex(
+    List<ISpectLogData> sortedEntries,
+    int index,
+  ) {
+    if (widget.logsViewController.sortColumn == LogSortColumn.time) {
+      // Use existing reverse logic for time column
+      final (entry: logEntry, actualIndex: _) =
+          widget.logsViewController.getLogEntryAtIndex(sortedEntries, index);
+      return logEntry;
+    }
+    // For other sort columns, entries are already in correct order
+    return sortedEntries[index];
+  }
+}
+
+/// Indicator shown when new logs arrive while user is scrolled away.
+class _NewLogsIndicator extends StatelessWidget {
+  const _NewLogsIndicator({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = context.appTheme.colorScheme.primary;
+
+    return Center(
+      child: Material(
+        color: primary,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        elevation: 4,
+        shadowColor: Colors.black26,
+        child: InkWell(
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.arrow_downward_rounded,
+                  size: 14,
+                  color: context.appTheme.colorScheme.onPrimary,
+                ),
+                const Gap(6),
+                Text(
+                  'New logs',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: context.appTheme.colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -825,13 +1102,19 @@ class _DesktopStatusBar extends StatelessWidget {
     required this.filteredCount,
     required this.totalCount,
     required this.isFiltered,
+    required this.useRelativeTime,
+    required this.onToggleTimestamp,
     this.selectedLog,
+    this.isLiveTailActive = false,
   });
 
   final int filteredCount;
   final int totalCount;
   final bool isFiltered;
   final ISpectLogData? selectedLog;
+  final bool isLiveTailActive;
+  final bool useRelativeTime;
+  final VoidCallback onToggleTimestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -853,6 +1136,34 @@ class _DesktopStatusBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           children: [
+            // Live tail indicator
+            if (isLiveTailActive) ...[
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.4),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(6),
+              const Text(
+                'LIVE',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Gap(10),
+            ],
             Icon(
               Icons.list_alt_rounded,
               size: 14,
@@ -889,6 +1200,27 @@ class _DesktopStatusBar extends StatelessWidget {
               ),
             ] else
               const Spacer(),
+            // Timestamp format toggle
+            Tooltip(
+              message: useRelativeTime ? 'Absolute time' : 'Relative time',
+              child: InkWell(
+                borderRadius: const BorderRadius.all(Radius.circular(4)),
+                onTap: onToggleTimestamp,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Icon(
+                    useRelativeTime
+                        ? Icons.access_time_rounded
+                        : Icons.schedule_rounded,
+                    size: 14,
+                    color: useRelativeTime
+                        ? context.appTheme.colorScheme.primary
+                        : labelColor,
+                  ),
+                ),
+              ),
+            ),
+            const Gap(10),
             _KeyBadge(label: '\u2191\u2193', context: context),
             const Gap(4),
             Text(
@@ -1136,6 +1468,5 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
       SizedBox(height: _height, child: child);
 
   @override
-  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
-      child != oldDelegate.child;
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) => true;
 }
