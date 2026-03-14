@@ -1,9 +1,14 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+
+// ---------------------------------------------------------------------------
+// Observer example
+// ---------------------------------------------------------------------------
 
 class SentryISpectObserver implements ISpectObserver {
   @override
@@ -15,14 +20,8 @@ class SentryISpectObserver implements ISpectObserver {
   void onLog(ISpectLogData data) => log('Sentry onLog: ${data.message}');
 }
 
-void main() {
-  final logger = ISpectFlutter.init();
-  logger.addObserver(SentryISpectObserver());
-  ISpect.run(logger: logger, () => runApp(const MyApp()));
-}
-
 // ---------------------------------------------------------------------------
-// Color presets for quick theme switching
+// Theme presets
 // ---------------------------------------------------------------------------
 
 class _ThemePreset {
@@ -34,12 +33,7 @@ class _ThemePreset {
 }
 
 const _themePresets = <_ThemePreset>[
-  _ThemePreset(
-    'Default',
-    Colors.deepPurple,
-    null,
-    null,
-  ),
+  _ThemePreset('Default', Colors.deepPurple, null, null),
   _ThemePreset(
     'Ocean',
     Colors.blue,
@@ -67,7 +61,7 @@ const _themePresets = <_ThemePreset>[
 ];
 
 // ---------------------------------------------------------------------------
-// Supported locales with display names
+// Locales
 // ---------------------------------------------------------------------------
 
 class _LocaleOption {
@@ -92,26 +86,31 @@ const _localeOptions = <_LocaleOption>[
 ];
 
 // ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
+void main() {
+  final logger = ISpectFlutter.init();
+  logger.addObserver(SentryISpectObserver());
+  ISpect.run(logger: logger, () => runApp(const MyApp()));
+}
+
+// ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final observer = ISpectNavigatorObserver();
+  final _observer = ISpectNavigatorObserver();
 
   ThemeMode _themeMode = ThemeMode.system;
   _ThemePreset _preset = _themePresets.first;
   Locale _locale = const Locale('en');
-
-  void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
-  void _setPreset(_ThemePreset preset) => setState(() => _preset = preset);
-  void _setLocale(Locale locale) => setState(() => _locale = locale);
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +119,7 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: ISpectLocalizations.delegates(),
       navigatorObservers:
-          ISpectNavigatorObserver.observers(additional: [observer]),
+          ISpectNavigatorObserver.observers(additional: [_observer]),
       themeMode: _themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -137,7 +136,7 @@ class _MyAppState extends State<MyApp> {
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
         options: ISpectOptions(
-          observer: observer,
+          observer: _observer,
           onOpenFile: (path) async => OpenFilex.open(path),
           onShare: (req) async => SharePlus.instance.share(ShareParams(
             text: req.text,
@@ -145,19 +144,19 @@ class _MyAppState extends State<MyApp> {
             files: req.filePaths.map(XFile.new).toList(),
           )),
         ),
-        // theme: ISpectTheme(
-        //   pageTitle: 'Debug',
-        //   primary: _preset.primary,
-        //   background: _preset.background,
-        // ),
+        theme: ISpectTheme(
+          pageTitle: 'Debug',
+          primary: _preset.primary,
+          background: _preset.background,
+        ),
       ),
-      home: _MyHomePage(
+      home: _HomePage(
         themeMode: _themeMode,
         preset: _preset,
         locale: _locale,
-        onThemeModeChanged: _setThemeMode,
-        onPresetChanged: _setPreset,
-        onLocaleChanged: _setLocale,
+        onThemeModeChanged: (v) => setState(() => _themeMode = v),
+        onPresetChanged: (v) => setState(() => _preset = v),
+        onLocaleChanged: (v) => setState(() => _locale = v),
       ),
     );
   }
@@ -167,8 +166,8 @@ class _MyAppState extends State<MyApp> {
 // Home page
 // ---------------------------------------------------------------------------
 
-class _MyHomePage extends StatefulWidget {
-  const _MyHomePage({
+class _HomePage extends StatefulWidget {
+  const _HomePage({
     required this.themeMode,
     required this.preset,
     required this.locale,
@@ -185,20 +184,405 @@ class _MyHomePage extends StatefulWidget {
   final ValueChanged<Locale> onLocaleChanged;
 
   @override
-  State<_MyHomePage> createState() => _MyHomePageState();
+  State<_HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<_MyHomePage> {
+class _HomePageState extends State<_HomePage> {
+  // Stress test
   double _logCount = 10;
   double _listSize = 5;
   double _nestingDepth = 2;
   bool _isGenerating = false;
 
+  // Periodic logger
+  Timer? _periodicTimer;
+  int _periodicCounter = 0;
+
+  @override
+  void dispose() {
+    _periodicTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ISpect Example'),
+        actions: [
+          // Theme mode
+          IconButton(
+            icon: Icon(switch (widget.themeMode) {
+              ThemeMode.light => Icons.light_mode,
+              ThemeMode.dark => Icons.dark_mode,
+              ThemeMode.system => Icons.settings_brightness,
+            }),
+            onPressed: () {
+              const modes = ThemeMode.values;
+              final next =
+                  modes[(modes.indexOf(widget.themeMode) + 1) % modes.length];
+              widget.onThemeModeChanged(next);
+            },
+            tooltip: 'Theme: ${widget.themeMode.name}',
+          ),
+          // Locale
+          PopupMenuButton<Locale>(
+            icon: const Icon(Icons.language),
+            tooltip: 'Language',
+            onSelected: widget.onLocaleChanged,
+            itemBuilder: (_) => [
+              for (final opt in _localeOptions)
+                PopupMenuItem(
+                  value: opt.locale,
+                  child: Text(opt.label),
+                ),
+            ],
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        children: [
+          // Status
+          Card(
+            color: cs.primaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    kISpectEnabled
+                        ? Icons.check_circle
+                        : Icons.cancel,
+                    color: cs.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'ISpect ${kISpectEnabled ? "ENABLED" : "DISABLED"}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: cs.onPrimaryContainer,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Color presets
+          _SectionHeader(title: 'Color Preset'),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _themePresets.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) {
+                final p = _themePresets[i];
+                final selected = widget.preset.label == p.label;
+                return ChoiceChip(
+                  label: Text(p.label),
+                  avatar: CircleAvatar(backgroundColor: p.seed, radius: 8),
+                  selected: selected,
+                  onSelected: (_) => widget.onPresetChanged(p),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Quick logs
+          _SectionHeader(title: 'Quick Logs'),
+          const SizedBox(height: 8),
+          _QuickLogsGrid(),
+          const SizedBox(height: 20),
+
+          // Scenarios
+          _SectionHeader(title: 'Scenarios'),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.timer,
+            title: 'Periodic Logger',
+            subtitle: _periodicTimer != null
+                ? 'Running ($_periodicCounter logs)'
+                : 'Logs every second',
+            trailing: Switch(
+              value: _periodicTimer != null,
+              onChanged: (_) => _togglePeriodicLogger(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.navigation,
+            title: 'Navigation Test',
+            subtitle: 'Push a detail page',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _navigateToDetail(context),
+          ),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.error_outline,
+            title: 'Crash Simulation',
+            subtitle: 'Unhandled exception via Zone',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _simulateCrash,
+          ),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.data_object,
+            title: 'Complex Payload',
+            subtitle: 'Log deeply nested JSON',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _logComplexPayload,
+          ),
+          const SizedBox(height: 20),
+
+          // Stress test
+          _SectionHeader(title: 'Stress Test'),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _SliderControl(
+                    label: 'Count',
+                    value: _logCount,
+                    min: 1,
+                    max: 10000,
+                    divisions: 99,
+                    displayValue: _logCount.round().toString(),
+                    onChanged: (v) => setState(() => _logCount = v),
+                  ),
+                  _SliderControl(
+                    label: 'List size',
+                    value: _listSize,
+                    min: 1,
+                    max: 100,
+                    divisions: 99,
+                    displayValue: _listSize.round().toString(),
+                    onChanged: (v) => setState(() => _listSize = v),
+                  ),
+                  _SliderControl(
+                    label: 'Nesting',
+                    value: _nestingDepth,
+                    min: 0,
+                    max: 6,
+                    divisions: 6,
+                    displayValue: _nestingDepth.round().toString(),
+                    onChanged: (v) => setState(() => _nestingDepth = v),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_isGenerating)
+                    const LinearProgressIndicator()
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (final e in [
+                          ('Info', Colors.blue, 'info'),
+                          ('Debug', Colors.green, 'debug'),
+                          ('Warning', Colors.orange, 'warning'),
+                          ('Error', Colors.red, 'error'),
+                          ('Mixed', Colors.purple, 'mixed'),
+                        ])
+                          FilledButton.tonal(
+                            onPressed: () => _generateLogs(type: e.$3),
+                            style: FilledButton.styleFrom(
+                              foregroundColor: e.$2,
+                            ),
+                            child: Text(e.$1),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -- Actions --
+
+  void _togglePeriodicLogger() {
+    setState(() {
+      if (_periodicTimer != null) {
+        _periodicTimer!.cancel();
+        _periodicTimer = null;
+        ISpect.logger.info(
+          'Periodic logger stopped after $_periodicCounter logs',
+        );
+        _periodicCounter = 0;
+      } else {
+        _periodicCounter = 0;
+        _periodicTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+          _periodicCounter++;
+          final types = ['info', 'debug', 'warning', 'verbose', 'good'];
+          final type = types[_periodicCounter % types.length];
+          switch (type) {
+            case 'info':
+              ISpect.logger.info('Periodic #$_periodicCounter');
+            case 'debug':
+              ISpect.logger.debug('Periodic #$_periodicCounter: state OK');
+            case 'warning':
+              ISpect.logger.warning(
+                'Periodic #$_periodicCounter: memory usage high',
+              );
+            case 'verbose':
+              ISpect.logger.verbose('Periodic #$_periodicCounter: tick');
+            case 'good':
+              ISpect.logger.good('Periodic #$_periodicCounter: healthy');
+          }
+          setState(() {});
+        });
+        ISpect.logger.info('Periodic logger started');
+      }
+    });
+  }
+
+  void _navigateToDetail(BuildContext context) {
+    ISpect.logger.info('Navigating to detail page');
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/detail'),
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Detail Page')),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('This tests navigation observer logging.'),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () {
+                    ISpect.logger.info('Going back from detail');
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _simulateCrash() {
+    ISpect.logger.warning('About to simulate crash...');
+    Future<void>.delayed(const Duration(milliseconds: 100), () {
+      throw StateError('Simulated crash for ISpect testing');
+    });
+  }
+
+  void _logComplexPayload() {
+    ISpect.logger.info(
+      'Complex payload with deep nesting',
+      additionalData: {
+        'user': {
+          'id': 42,
+          'name': 'John Doe',
+          'roles': ['admin', 'editor'],
+          'preferences': {
+            'theme': 'dark',
+            'notifications': {
+              'email': true,
+              'push': false,
+              'sms': {'enabled': true, 'number': '+1234567890'},
+            },
+          },
+        },
+        'items': List.generate(
+          10,
+          (i) => {
+            'id': i,
+            'title': 'Item #$i',
+            'tags': List.generate(3, (j) => 'tag_${i}_$j'),
+            'metadata': {
+              'created': DateTime.now()
+                  .subtract(Duration(hours: i))
+                  .toIso8601String(),
+              'weight': (i * 1.5).toStringAsFixed(2),
+            },
+          },
+        ),
+        'pagination': {
+          'page': 1,
+          'perPage': 10,
+          'total': 156,
+          'hasNext': true,
+        },
+      },
+    );
+  }
+
+  Future<void> _generateLogs({required String type}) async {
+    setState(() => _isGenerating = true);
+    final count = _logCount.round();
+    final listSize = _listSize.round();
+    final nestingDepth = _nestingDepth.round();
+    final data = _buildList(listSize, nestingDepth);
+    final nested = _buildNestedMap(nestingDepth, listSize.clamp(1, 5));
+
+    for (var i = 0; i < count; i++) {
+      final n = i + 1;
+      switch (type) {
+        case 'info':
+          ISpect.logger.info('Info #$n', additionalData: {'items': data});
+        case 'debug':
+          ISpect.logger.debug('Debug #$n', additionalData: {'nested': nested});
+        case 'warning':
+          ISpect.logger.warning('Warning #$n', additionalData: {'rows': data});
+        case 'error':
+          ISpect.logger.error(
+            'Error #$n',
+            exception: Exception('BatchError #$n'),
+            stackTrace: StackTrace.current,
+            additionalData: {'input': data},
+          );
+        case 'mixed':
+          final types = ['info', 'debug', 'warning', 'error', 'verbose'];
+          final t = types[i % types.length];
+          switch (t) {
+            case 'info':
+              ISpect.logger.info('Mixed #$n [INFO]',
+                  additionalData: {'d': data});
+            case 'debug':
+              ISpect.logger.debug('Mixed #$n [DEBUG]',
+                  additionalData: {'d': nested});
+            case 'warning':
+              ISpect.logger.warning('Mixed #$n [WARN]',
+                  additionalData: {'d': data});
+            case 'error':
+              ISpect.logger.error(
+                'Mixed #$n [ERROR]',
+                exception: Exception('MixedError #$n'),
+                stackTrace: StackTrace.current,
+              );
+            case 'verbose':
+              ISpect.logger.verbose('Mixed #$n [VERBOSE]',
+                  additionalData: {'d': nested});
+          }
+      }
+      if (i % 100 == 99) await Future<void>.delayed(Duration.zero);
+    }
+    setState(() => _isGenerating = false);
+  }
+
+  // -- Data builders --
+
   Map<String, dynamic> _buildNestedMap(int depth, int breadth) {
     if (depth <= 0) {
       return {
-        'value': 'leaf_data',
-        'timestamp': DateTime.now().toIso8601String(),
+        'value': 'leaf',
+        'ts': DateTime.now().toIso8601String(),
         'tags': List.generate(breadth, (i) => 'tag_$i'),
       };
     }
@@ -208,477 +592,139 @@ class _MyHomePageState extends State<_MyHomePage> {
         breadth,
         (i) => {'item_$i': _buildNestedMap(depth - 1, breadth.clamp(1, 3))},
       ),
-      'metadata': {
-        'created': DateTime.now().toIso8601String(),
-        'depth': depth,
-        'childCount': breadth,
-      },
     };
   }
 
   List<Map<String, dynamic>> _buildList(int size, int nestingDepth) {
-    return List.generate(size, (i) {
-      return {
-        'index': i,
-        'id': 'item_${i.toString().padLeft(4, '0')}',
-        'name': 'Element #$i',
-        'active': i.isEven,
-        'score': (i * 3.14).toStringAsFixed(2),
-        if (nestingDepth > 0)
-          'nested': _buildNestedMap(nestingDepth, (size ~/ 3).clamp(1, 3)),
-      };
-    });
-  }
-
-  Future<void> _generateLogs({
-    required String type,
-    required int count,
-    required int listSize,
-    required int nestingDepth,
-  }) async {
-    setState(() => _isGenerating = true);
-
-    final data = _buildList(listSize, nestingDepth);
-    final nestedPayload = _buildNestedMap(nestingDepth, listSize.clamp(1, 5));
-
-    for (var i = 0; i < count; i++) {
-      final index = i + 1;
-      switch (type) {
-        case 'info':
-          ISpect.logger.info(
-            'Info log #$index: Processing batch with $listSize items, '
-            'nesting depth: $nestingDepth',
-            additionalData: {
-              'batchIndex': index,
-              'totalBatches': count,
-              'payload': nestedPayload,
-              'items': data,
-            },
-          );
-        case 'debug':
-          ISpect.logger.debug(
-            'Debug log #$index: State snapshot with ${data.length} entries',
-            additionalData: {
-              'snapshot': {
-                'index': index,
-                'list': data,
-                'nested': nestedPayload,
-                'config': {
-                  'listSize': listSize,
-                  'nestingDepth': nestingDepth,
-                  'totalLogs': count,
-                },
-              },
-            },
-          );
-        case 'warning':
-          ISpect.logger.warning(
-            'Warning log #$index: Slow query detected — '
-            '$listSize rows, depth $nestingDepth',
-            additionalData: {
-              'query': 'SELECT * FROM items LIMIT $listSize',
-              'duration_ms': index * 42,
-              'rows': data,
-              'plan': nestedPayload,
-            },
-          );
-        case 'error':
-          ISpect.logger.error(
-            'Error log #$index: Failed to process batch',
-            exception: Exception(
-              'BatchProcessingError: $listSize items, depth $nestingDepth',
-            ),
-            stackTrace: StackTrace.current,
-            additionalData: {
-              'failedAt': index,
-              'input': data,
-              'context': nestedPayload,
-            },
-          );
-        case 'verbose':
-          ISpect.logger.verbose(
-            'Verbose log #$index: Full trace — $listSize items, '
-            'nesting $nestingDepth',
-            additionalData: {
-              'trace': {
-                'step': index,
-                'data': data,
-                'tree': nestedPayload,
-                'env': {
-                  'platform': 'flutter',
-                  'mode': 'debug',
-                  'timestamp': DateTime.now().toIso8601String(),
-                },
-              },
-            },
-          );
-        case 'critical':
-          ISpect.logger.critical(
-            'Critical log #$index: System failure detected',
-            exception: Exception(
-              'CriticalFailure: cascade at depth $nestingDepth',
-            ),
-            stackTrace: StackTrace.current,
-            additionalData: {
-              'severity': 'critical',
-              'affectedItems': data,
-              'failureTree': nestedPayload,
-            },
-          );
-        case 'mixed':
-          final logTypes = ['info', 'debug', 'warning', 'error', 'verbose'];
-          final logType = logTypes[i % logTypes.length];
-          switch (logType) {
-            case 'info':
-              ISpect.logger.info('Mixed #$index [INFO]: batch item',
-                  additionalData: {'items': data, 'nested': nestedPayload});
-            case 'debug':
-              ISpect.logger.debug('Mixed #$index [DEBUG]: state dump',
-                  additionalData: {'items': data, 'nested': nestedPayload});
-            case 'warning':
-              ISpect.logger.warning('Mixed #$index [WARN]: threshold reached',
-                  additionalData: {'items': data, 'nested': nestedPayload});
-            case 'error':
-              ISpect.logger.error(
-                'Mixed #$index [ERROR]: operation failed',
-                exception: Exception('MixedError #$index'),
-                stackTrace: StackTrace.current,
-                additionalData: {'items': data, 'nested': nestedPayload},
-              );
-            case 'verbose':
-              ISpect.logger.verbose('Mixed #$index [VERBOSE]: full details',
-                  additionalData: {'items': data, 'nested': nestedPayload});
-          }
-      }
-
-      // Yield to UI every 100 logs to avoid freezing.
-      if (i % 100 == 99) {
-        await Future<void>.delayed(Duration.zero);
-      }
-    }
-
-    setState(() => _isGenerating = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final count = _logCount.round();
-    final listSize = _listSize.round();
-    final nestingDepth = _nestingDepth.round();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('ISpect Example')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'ISpect: ${kISpectEnabled ? "ENABLED" : "DISABLED"}',
-            style: theme.textTheme.headlineMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-
-          // --- Appearance settings ---
-          Text('Appearance', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          _AppearanceSection(
-            themeMode: widget.themeMode,
-            preset: widget.preset,
-            locale: widget.locale,
-            onThemeModeChanged: widget.onThemeModeChanged,
-            onPresetChanged: widget.onPresetChanged,
-            onLocaleChanged: widget.onLocaleChanged,
-          ),
-          const Divider(height: 32),
-
-          // --- Simple logs ---
-          Text('Simple Logs', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _SimpleLogButton(
-                label: 'Info',
-                icon: Icons.info,
-                color: Colors.blue,
-                onPressed: () => ISpect.logger.info('Info message!'),
-              ),
-              _SimpleLogButton(
-                label: 'Warning',
-                icon: Icons.warning,
-                color: Colors.orange,
-                onPressed: () => ISpect.logger.warning('Warning!'),
-              ),
-              _SimpleLogButton(
-                label: 'Error',
-                icon: Icons.error,
-                color: Colors.red,
-                onPressed: () => ISpect.logger.error('Error!'),
-              ),
-              _SimpleLogButton(
-                label: 'Exception',
-                icon: Icons.dangerous,
-                color: Colors.red.shade900,
-                onPressed: () => ISpect.logger.handle(
-                  exception: Exception('Test'),
-                  stackTrace: StackTrace.current,
-                ),
-              ),
-              _SimpleLogButton(
-                label: 'Debug',
-                icon: Icons.bug_report,
-                color: Colors.green,
-                onPressed: () => ISpect.logger.debug('Debug message!'),
-              ),
-              _SimpleLogButton(
-                label: 'Verbose',
-                icon: Icons.text_snippet,
-                color: Colors.grey,
-                onPressed: () => ISpect.logger.verbose('Verbose message!'),
-              ),
-              _SimpleLogButton(
-                label: 'Critical',
-                icon: Icons.local_fire_department,
-                color: Colors.deepOrange,
-                onPressed: () => ISpect.logger.critical(
-                  'Critical failure!',
-                  exception: Exception('CriticalTest'),
-                  stackTrace: StackTrace.current,
-                ),
-              ),
-              _SimpleLogButton(
-                label: 'Good',
-                icon: Icons.check_circle,
-                color: Colors.teal,
-                onPressed: () => ISpect.logger.good('All systems operational'),
-              ),
-              _SimpleLogButton(
-                label: 'Print',
-                icon: Icons.print,
-                color: Colors.blueGrey,
-                onPressed: () => ISpect.logger.print('Simple print log'),
-              ),
-            ],
-          ),
-          const Divider(height: 32),
-
-          // --- Stress test controls ---
-          Text('Stress Test', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 12),
-
-          _SliderControl(
-            label: 'Log count',
-            value: _logCount,
-            min: 1,
-            max: 10000,
-            divisions: 99,
-            displayValue: count.toString(),
-            onChanged: (v) => setState(() => _logCount = v),
-          ),
-          _SliderControl(
-            label: 'List size per log',
-            value: _listSize,
-            min: 1,
-            max: 100,
-            divisions: 99,
-            displayValue: listSize.toString(),
-            onChanged: (v) => setState(() => _listSize = v),
-          ),
-          _SliderControl(
-            label: 'Nesting depth',
-            value: _nestingDepth,
-            min: 0,
-            max: 6,
-            divisions: 6,
-            displayValue: nestingDepth.toString(),
-            onChanged: (v) => setState(() => _nestingDepth = v),
-          ),
-
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                '$count logs × $listSize list items × '
-                '$nestingDepth nesting depth',
-                style: theme.textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          if (_isGenerating)
-            const Center(child: CircularProgressIndicator())
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                for (final entry in [
-                  ('Info', Icons.info, Colors.blue, 'info'),
-                  ('Debug', Icons.bug_report, Colors.green, 'debug'),
-                  ('Warning', Icons.warning, Colors.orange, 'warning'),
-                  ('Error', Icons.error, Colors.red, 'error'),
-                  ('Verbose', Icons.text_snippet, Colors.grey, 'verbose'),
-                  (
-                    'Critical',
-                    Icons.local_fire_department,
-                    Colors.deepOrange,
-                    'critical'
-                  ),
-                  ('Mixed', Icons.shuffle, Colors.purple, 'mixed'),
-                ])
-                  FilledButton.tonalIcon(
-                    onPressed: () => _generateLogs(
-                      type: entry.$4,
-                      count: count,
-                      listSize: listSize,
-                      nestingDepth: nestingDepth,
-                    ),
-                    icon: Icon(entry.$2, size: 18),
-                    label: Text(entry.$1),
-                    style: FilledButton.styleFrom(
-                      foregroundColor: entry.$3,
-                    ),
-                  ),
-              ],
-            ),
-
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
+    return List.generate(size, (i) => {
+          'index': i,
+          'id': 'item_${i.toString().padLeft(4, '0')}',
+          'name': 'Element #$i',
+          'active': i.isEven,
+          if (nestingDepth > 0)
+            'nested': _buildNestedMap(nestingDepth, (size ~/ 3).clamp(1, 3)),
+        });
   }
 }
 
 // ---------------------------------------------------------------------------
-// Appearance section: theme mode, color preset, locale
+// Quick log buttons grid
 // ---------------------------------------------------------------------------
 
-class _AppearanceSection extends StatelessWidget {
-  const _AppearanceSection({
-    required this.themeMode,
-    required this.preset,
-    required this.locale,
-    required this.onThemeModeChanged,
-    required this.onPresetChanged,
-    required this.onLocaleChanged,
-  });
-
-  final ThemeMode themeMode;
-  final _ThemePreset preset;
-  final Locale locale;
-  final ValueChanged<ThemeMode> onThemeModeChanged;
-  final ValueChanged<_ThemePreset> onPresetChanged;
-  final ValueChanged<Locale> onLocaleChanged;
-
+class _QuickLogsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final logs = <(String, IconData, Color, VoidCallback)>[
+      ('Info', Icons.info_outline, Colors.blue,
+          () => ISpect.logger.info('Info message')),
+      ('Debug', Icons.bug_report_outlined, Colors.green,
+          () => ISpect.logger.debug('Debug message')),
+      ('Warning', Icons.warning_amber, Colors.orange,
+          () => ISpect.logger.warning('Warning message')),
+      ('Error', Icons.error_outline, Colors.red,
+          () => ISpect.logger.error('Error message')),
+      (
+        'Exception',
+        Icons.dangerous_outlined,
+        Colors.red.shade800,
+        () => ISpect.logger.handle(
+              exception: Exception('Test exception'),
+              stackTrace: StackTrace.current,
+            )
+      ),
+      (
+        'Critical',
+        Icons.local_fire_department,
+        Colors.deepOrange,
+        () => ISpect.logger.critical(
+              'Critical failure',
+              exception: Exception('CriticalTest'),
+              stackTrace: StackTrace.current,
+            )
+      ),
+      ('Good', Icons.check_circle_outline, Colors.teal,
+          () => ISpect.logger.good('All systems operational')),
+      ('Verbose', Icons.text_snippet_outlined, Colors.grey,
+          () => ISpect.logger.verbose('Verbose trace')),
+      ('Print', Icons.terminal, Colors.blueGrey,
+          () => ISpect.logger.print('Print log')),
+    ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        // Theme mode toggle
-        SegmentedButton<ThemeMode>(
-          segments: const [
-            ButtonSegment(
-              value: ThemeMode.light,
-              icon: Icon(Icons.light_mode, size: 18),
-              label: Text('Light'),
-            ),
-            ButtonSegment(
-              value: ThemeMode.system,
-              icon: Icon(Icons.settings_brightness, size: 18),
-              label: Text('System'),
-            ),
-            ButtonSegment(
-              value: ThemeMode.dark,
-              icon: Icon(Icons.dark_mode, size: 18),
-              label: Text('Dark'),
-            ),
-          ],
-          selected: {themeMode},
-          onSelectionChanged: (v) => onThemeModeChanged(v.first),
-          showSelectedIcon: false,
-        ),
-        const SizedBox(height: 12),
-
-        // Color preset chips
-        Text('Color preset', style: theme.textTheme.bodySmall),
-        const SizedBox(height: 4),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final p in _themePresets)
-              ChoiceChip(
-                label: Text(p.label),
-                avatar: CircleAvatar(
-                  backgroundColor: p.seed,
-                  radius: 8,
-                ),
-                selected: preset.label == p.label,
-                onSelected: (_) => onPresetChanged(p),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        // Locale dropdown
-        Text('Language', style: theme.textTheme.bodySmall),
-        const SizedBox(height: 4),
-        DropdownMenu<Locale>(
-          initialSelection: locale,
-          expandedInsets: EdgeInsets.zero,
-          requestFocusOnTap: false,
-          dropdownMenuEntries: [
-            for (final opt in _localeOptions)
-              DropdownMenuEntry(
-                value: opt.locale,
-                label: opt.label,
-              ),
-          ],
-          onSelected: (v) {
-            if (v != null) onLocaleChanged(v);
-          },
-        ),
+        for (final (label, icon, color, onTap) in logs)
+          ActionChip(
+            avatar: Icon(icon, size: 18, color: color),
+            label: Text(label),
+            onPressed: onTap,
+          ),
       ],
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Reusable widgets
+// Scenario card
 // ---------------------------------------------------------------------------
 
-class _SimpleLogButton extends StatelessWidget {
-  const _SimpleLogButton({
-    required this.label,
+class _ScenarioCard extends StatelessWidget {
+  const _ScenarioCard({
     required this.icon,
-    required this.color,
-    required this.onPressed,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    this.onTap,
   });
 
-  final String label;
   final IconData icon;
-  final Color color;
-  final VoidCallback onPressed;
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(foregroundColor: color),
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: trailing,
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Section header
+// ---------------------------------------------------------------------------
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slider control
+// ---------------------------------------------------------------------------
 
 class _SliderControl extends StatelessWidget {
   const _SliderControl({
@@ -704,7 +750,7 @@ class _SliderControl extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 120,
+          width: 72,
           child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
         Expanded(
@@ -718,7 +764,7 @@ class _SliderControl extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: 56,
+          width: 48,
           child: Text(
             displayValue,
             style: Theme.of(context).textTheme.titleSmall,

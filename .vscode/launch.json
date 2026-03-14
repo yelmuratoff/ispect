@@ -14,6 +14,32 @@
       "request": "launch",
       "type": "dart",
       "args": ["-t", "lib/main.dart", "--release"]
+    },
+    {
+      "name": "Debug Web Logs Viewer",
+      "cwd": "web_logs_viewer",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-t",
+        "lib/main.dart",
+        "--dart-define=ISPECT_ENABLED=true",
+        "-d",
+        "chrome"
+      ]
+    },
+    {
+      "name": "Debug Web Logs Viewer (macOS)",
+      "cwd": "web_logs_viewer",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-t",
+        "lib/main.dart",
+        "--dart-define=ISPECT_ENABLED=true",
+        "-d",
+        "macos"
+      ]
     }
   ]
 }
