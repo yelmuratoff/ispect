@@ -280,6 +280,7 @@ class DemoScreenState extends State<DemoScreen> {
         label: 'Send HTTP request with Token',
         onPressed: () {
           dio.options.headers.addAll({
+            // Demo-only dummy token for testing header redaction.
             'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
           });
           dio.get<dynamic>('/posts/1');
@@ -291,6 +292,7 @@ class DemoScreenState extends State<DemoScreen> {
         onPressed: () async {
           await client.get(
             Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+            // Demo-only dummy token for testing header redaction.
             headers: {'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw'},
           );
         },

@@ -355,7 +355,12 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusPreviousSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object _) {}),
+                scrollToSearchMatch(store).catchError((Object error) {
+                  assert(() {
+                    debugPrint('scrollToSearchMatch failed: $error');
+                    return true;
+                  }());
+                }),
               );
             },
           ),
@@ -375,7 +380,12 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusNextSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object _) {}),
+                scrollToSearchMatch(store).catchError((Object error) {
+                  assert(() {
+                    debugPrint('scrollToSearchMatch failed: $error');
+                    return true;
+                  }());
+                }),
               );
             },
           ),

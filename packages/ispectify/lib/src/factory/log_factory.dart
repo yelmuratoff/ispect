@@ -34,36 +34,4 @@ class LogFactory {
     );
   }
 
-  /// Creates a standardized log entry from the given parameters.
-  ///
-  /// - `level`: The severity level of the log
-  /// - `message`: The log message content
-  /// - `exception`: Optional exception associated with the log
-  /// - `stackTrace`: Optional stack trace for debugging
-  /// - `pen`: Optional custom styling for console output
-  /// - `options`: Configuration options for title and pen defaults
-  ///
-  /// Returns an `ISpectLogData` instance configured according to the log level.
-  @Deprecated(
-    'Use fromType(type: ISpectLogType.fromLogLevel(level), ...) instead',
-  )
-  static ISpectLogData createLog({
-    required LogLevel level,
-    required Object? message,
-    Object? exception,
-    StackTrace? stackTrace,
-    AnsiPen? pen,
-    ISpectLoggerOptions? options,
-    Map<String, dynamic>? additionalData,
-  }) =>
-      fromType(
-        type: ISpectLogType.fromLogLevel(level),
-        level: level,
-        message: message,
-        exception: exception,
-        stackTrace: stackTrace,
-        pen: pen,
-        options: options,
-        additionalData: additionalData,
-      );
 }

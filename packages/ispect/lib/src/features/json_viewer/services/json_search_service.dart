@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
-import 'package:ispect/src/features/json_viewer/services/json_object_pool.dart';
 
 /// Interface for search strategy following Strategy pattern
 abstract interface class SearchStrategy {
@@ -363,28 +362,4 @@ class JsonSearchService {
     return null;
   }
 
-  /// Legacy method for backward compatibility
-  @Deprecated('Use _findAndAddMatches instead for better performance')
-  static List<int> findAllOccurrences(String text, String pattern) {
-    if (text.isEmpty || pattern.isEmpty) {
-      return const <int>[];
-    }
-
-    final indices = JsonObjectPool.instance.getIntList();
-    var startIndex = 0;
-
-    try {
-      while (true) {
-        final index = text.indexOf(pattern, startIndex);
-        if (index == -1) break;
-        indices.add(index);
-        startIndex = index + pattern.length;
-      }
-
-      final result = List<int>.from(indices);
-      return result;
-    } finally {
-      JsonObjectPool.instance.releaseIntList(indices);
-    }
-  }
 }

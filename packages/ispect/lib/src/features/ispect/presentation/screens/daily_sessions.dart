@@ -334,7 +334,14 @@ class _SessionListTileState extends State<_SessionListTile> {
     final openFile = context.iSpect.options.onOpenFile;
     final path = await fileLogHistory?.getLogPathByDate(session);
     if (path != null && openFile != null) {
-      unawaited(openFile(path).catchError((Object _) {}));
+      unawaited(
+        openFile(path).catchError((Object error) {
+          assert(() {
+            debugPrint('Failed to open file: $error');
+            return true;
+          }());
+        }),
+      );
     }
   }
 }

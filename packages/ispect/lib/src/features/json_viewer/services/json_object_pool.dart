@@ -307,13 +307,6 @@ class JsonObjectPool implements UniversalObjectPool {
         'typedMapPools': _typedMapPools.length,
       };
 
-  /// Legacy method for backward compatibility
-  @Deprecated('Use get<List<int>>() instead')
-  List<int> borrowIntList() => getIntList();
-
-  /// Legacy method for backward compatibility
-  @Deprecated('Use release(list) instead')
-  void returnIntList(List<int> list) => releaseIntList(list);
 }
 
 /// Factory for creating object pools with dependency injection

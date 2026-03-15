@@ -134,11 +134,15 @@ class JsonExplorerStore extends ChangeNotifier {
     _isSearching = true;
     notifyListeners();
     unawaited(
-      _doSearch(generation).catchError((_) {
+      _doSearch(generation).catchError((Object error) {
         if (mounted && generation == _searchGeneration) {
           _isSearching = false;
           notifyListeners();
         }
+        assert(() {
+          debugPrint('JsonExplorerStore: search failed: $error');
+          return true;
+        }());
       }),
     );
   }
