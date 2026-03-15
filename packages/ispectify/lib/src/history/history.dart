@@ -15,6 +15,12 @@ abstract interface class ILogHistory {
 
   /// Adds a new log entry to the history.
   void add(ISpectLogData data);
+
+  /// Releases any resources held by this history implementation.
+  ///
+  /// For example, [FileLogHistory] implementations should cancel auto-save
+  /// timers. The default in-memory implementation is a no-op.
+  void dispose();
 }
 
 /// The default implementation of `ILogHistory` for managing log history.
@@ -51,6 +57,11 @@ class DefaultISpectLoggerHistory implements ILogHistory {
   void clear() {
     _history.clear();
     _cachedHistory = null;
+  }
+
+  @override
+  void dispose() {
+    // No-op for in-memory history; nothing to clean up.
   }
 
   @override

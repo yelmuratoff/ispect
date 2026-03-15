@@ -45,7 +45,12 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) : _loggerStreamController =
+  }) : _hasCustomErrorHandler = errorHandler != null,
+       _loggerStreamController =
+            // Note: This is a synchronous broadcast controller. If a listener
+            // throws, the exception will propagate and prevent subsequent
+            // listeners from being notified for that event. Consider wrapping
+            // listener callbacks in try-catch if robustness is required.
             StreamController<ISpectLogData>.broadcast(sync: true) {
     final resolvedOptions = options ?? ISpectLoggerOptions();
     _options = resolvedOptions;
@@ -66,6 +71,9 @@ class ISpectLogger {
 
   /// Broadcast stream controller for log events.
   final StreamController<ISpectLogData> _loggerStreamController;
+
+  /// Tracks whether a custom errorHandler was provided by the user.
+  bool _hasCustomErrorHandler;
 
   bool _isDisposed = false;
 
@@ -178,8 +186,10 @@ class ISpectLogger {
 
     if (errorHandler != null) {
       _errorHandler = errorHandler;
-    } else {
-      // Rebuild default handler when options change.
+      _hasCustomErrorHandler = true;
+    } else if (!_hasCustomErrorHandler) {
+      // Rebuild default handler when options change, but only if no custom
+      // handler was ever provided (via constructor or previous configure call).
       _errorHandler = ISpectErrorHandler(_options);
     }
 
@@ -566,6 +576,7 @@ class ISpectLogger {
     if (_isDisposed) return;
     _isDisposed = true;
     _observerManager.clear();
+    _history.dispose();
     await _loggerStreamController.close();
   }
 }

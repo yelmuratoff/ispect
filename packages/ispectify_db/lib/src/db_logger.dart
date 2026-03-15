@@ -298,7 +298,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final additional = ISpectDbCore.clean({
       'source': source,
       'operation': operation,
-      'statement': stmt,
+      'statement': useRedact ? digest : stmt,
       'statementDigest': digest,
       'target': target,
       'table': table,

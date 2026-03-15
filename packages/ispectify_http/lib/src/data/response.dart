@@ -17,6 +17,12 @@ class HttpResponseData {
   final MultipartRequest? multipartRequest;
   final HttpRequestData requestData;
 
+  /// Converts this response data to a JSON-compatible map.
+  ///
+  /// When [redactor] is null, raw data (including URL query parameters,
+  /// headers with auth tokens, body content, and multipart filenames)
+  /// is returned without any sanitization. Callers opting out of
+  /// redaction accept responsibility for handling sensitive data.
   Map<String, dynamic> toJson({
     RedactionService? redactor,
     Set<String>? ignoredValues,
@@ -54,10 +60,24 @@ class HttpResponseData {
           'files': multipartRequest!.files
               .map(
                 (file) => {
-                  'filename': file.filename,
+                  'filename': redactor != null
+                      ? redactor.redact(
+                          file.filename,
+                          keyName: 'filename',
+                          ignoredValues: ignoredValues,
+                          ignoredKeys: ignoredKeys,
+                        )
+                      : file.filename,
                   'length': file.length,
                   'contentType': file.contentType.toString(),
-                  'field': file.field,
+                  'field': redactor != null
+                      ? redactor.redact(
+                          file.field,
+                          keyName: 'field',
+                          ignoredValues: ignoredValues,
+                          ignoredKeys: ignoredKeys,
+                        )
+                      : file.field,
                 },
               )
               .toList(),

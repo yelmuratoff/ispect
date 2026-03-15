@@ -16,9 +16,13 @@ part 'transition.dart';
 ///
 /// Provides a shared contract for building messages lazily while keeping the
 /// underlying [ISpectLogData] immutable.
+///
+/// Stores only the bloc's runtime type name and hash code instead of a live
+/// reference to the [BlocBase] instance, so logs do not prevent garbage
+/// collection of closed blocs.
 sealed class BlocLifecycleLog extends ISpectLogData {
   BlocLifecycleLog({
-    required this.bloc,
+    required BlocBase<dynamic> bloc,
     required super.key,
     required super.title,
     required String Function() messageBuilder,
@@ -27,7 +31,9 @@ sealed class BlocLifecycleLog extends ISpectLogData {
     Error? error,
     StackTrace? stackTrace,
     LogLevel? logLevel,
-  })  : _messageBuilder = messageBuilder,
+  })  : blocTypeName = bloc.runtimeType.toString(),
+        blocHashCode = bloc.hashCode,
+        _messageBuilder = messageBuilder,
         super(
           '',
           exception: exception,
@@ -37,8 +43,11 @@ sealed class BlocLifecycleLog extends ISpectLogData {
           logLevel: logLevel,
         );
 
-  /// The originating Bloc or Cubit.
-  final BlocBase<dynamic> bloc;
+  /// The runtime type name of the originating Bloc or Cubit.
+  final String blocTypeName;
+
+  /// The hash code of the originating Bloc or Cubit (for identification).
+  final int blocHashCode;
 
   final String Function() _messageBuilder;
 

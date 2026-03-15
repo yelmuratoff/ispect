@@ -8,13 +8,15 @@ part of 'base.dart';
 /// Only applies to Bloc (not Cubit), as transitions require events.
 final class BlocTransitionLog extends BlocLifecycleLog {
   BlocTransitionLog({
-    required Bloc<dynamic, dynamic> super.bloc,
+    required Bloc<dynamic, dynamic> bloc,
     required this.transition,
     required this.settings,
   }) : super(
+          bloc: bloc,
           key: logKey,
           title: logKey,
           messageBuilder: () {
+            final blocType = bloc.runtimeType;
             final eventPayload = settings.printEventFullData
                 ? transition.event
                 : transition.event.runtimeType;
@@ -24,14 +26,14 @@ final class BlocTransitionLog extends BlocLifecycleLog {
             final nextPayload = settings.printStateFullData
                 ? transition.nextState
                 : transition.nextState.runtimeType;
-            return '${bloc.runtimeType} transitioned from $currentPayload to $nextPayload'
+            return '$blocType transitioned from $currentPayload to $nextPayload'
                 '\nEVENT: $eventPayload';
           },
-          additionalData: <String, dynamic>{
+          additionalData: settings.redactAdditionalData(<String, dynamic>{
             'event': transition.event,
             'currentState': transition.currentState,
             'nextState': transition.nextState,
-          },
+          }),
         );
 
   final Transition<dynamic, dynamic> transition;

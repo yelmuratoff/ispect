@@ -187,6 +187,15 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     return hash.toUnsigned(64).toRadixString(36);
   }
 
+  /// Extracts lightweight [RouteMetadata] from a live [Route] object.
+  static RouteMetadata? _extractMetadata(Route<dynamic>? route) {
+    if (route == null) return null;
+    return RouteMetadata(
+      name: route.routeName,
+      routeType: route.routeType,
+    );
+  }
+
   /// Creates a RouteTransition instance with proper ID generation.
   RouteTransition _createRouteTransition({
     required TransitionType type,
@@ -198,8 +207,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     return RouteTransition(
       id: id,
-      from: previousRoute,
-      to: route,
+      from: _extractMetadata(previousRoute),
+      to: _extractMetadata(route),
       type: type,
       timestamp: timestamp,
       arguments: route?.settings.arguments,

@@ -109,7 +109,7 @@ final class ISpect {
     }
 
     final effectiveLogger = logger ?? ISpectFlutter.init();
-    initialize(effectiveLogger);
+    initialize(effectiveLogger, force: true);
     _errorHandler =
         ErrorHandlerService(logger: effectiveLogger, filters: filters);
 

@@ -205,6 +205,7 @@ class FilterManager {
   }
 
   void _notify() {
+    if (_isDisposed) return;
     final cb = _onChanged;
     if (cb != null) cb();
   }

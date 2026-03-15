@@ -7,23 +7,25 @@ part of 'base.dart';
 /// May include error details if the handler threw an exception.
 final class BlocDoneLog extends BlocLifecycleLog {
   BlocDoneLog({
-    required Bloc<dynamic, dynamic> super.bloc,
+    required Bloc<dynamic, dynamic> bloc,
     required this.settings,
     required this.event,
     required this.hasError,
     Object? error,
     StackTrace? stackTrace,
   }) : super(
+          bloc: bloc,
           key: logKey,
           title: logKey,
           messageBuilder: () {
+            final blocType = bloc.runtimeType;
             final payload = settings.printEventFullData
                 ? event
                 : event?.runtimeType ?? 'null';
             final status = hasError ? 'failed' : 'completed';
             return event == null
-                ? '${bloc.runtimeType} event handler $status'
-                : '${bloc.runtimeType} event handler $status'
+                ? '$blocType event handler $status'
+                : '$blocType event handler $status'
                     '\nEVENT: $payload';
           },
           exception: error is Exception ? error : null,
@@ -32,10 +34,10 @@ final class BlocDoneLog extends BlocLifecycleLog {
               ? stackTrace
               : null,
           logLevel: hasError ? LogLevel.error : LogLevel.info,
-          additionalData: <String, dynamic>{
+          additionalData: settings.redactAdditionalData(<String, dynamic>{
             if (event != null) 'event': event,
             'completed-with-error': hasError,
-          },
+          }),
         );
 
   final ISpectBlocSettings settings;

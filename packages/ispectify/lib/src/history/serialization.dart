@@ -88,10 +88,17 @@ class _StringException implements Exception {
 }
 
 /// Helper class to represent errors deserialized from JSON.
+///
+/// Overrides [stackTrace] with [StackTrace.empty] to avoid capturing a
+/// spurious stack trace at construction time, since these are reconstructed
+/// from serialized data and do not represent real throw sites.
 class _StringError extends Error {
   _StringError(this.message);
 
   final String message;
+
+  @override
+  StackTrace get stackTrace => StackTrace.empty;
 
   @override
   String toString() => message;

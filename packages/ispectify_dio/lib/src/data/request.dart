@@ -45,6 +45,21 @@ class DioRequestData {
       return map;
     }
 
+    // Redact path and base-url which may contain credentials or sensitive
+    // segments (e.g. base-url with userInfo like https://user:pass@host).
+    final rawPath = map['path'];
+    if (rawPath is String) {
+      map['path'] = redactor.redact(rawPath, keyName: 'path') ?? rawPath;
+    }
+    final rawBaseUrl = map['base-url'];
+    if (rawBaseUrl is String) {
+      final baseUri = Uri.tryParse(rawBaseUrl);
+      if (baseUri != null && baseUri.userInfo.isNotEmpty) {
+        map['base-url'] =
+            baseUri.replace(userInfo: '[REDACTED]').toString();
+      }
+    }
+
     // Redact URL query parameters and userInfo credentials
     final url = map['url'];
     if (url is String) {

@@ -33,13 +33,17 @@ class LogsJsonService {
 
   /// Exports logs to JSON format with metadata
   ///
-  /// - Parameters: logs (list of entries), includeMetadata (flag for metadata)
+  /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
+  ///   redactionService (optional, applies redaction to log data when provided),
+  ///   enableRedaction (default: false for backward compatibility)
   /// - Return: JSON string ready for file export
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
   Future<String> exportToJson(
     List<ISpectLogData> logs, {
     bool includeMetadata = true,
+    RedactionService? redactionService,
+    bool enableRedaction = false,
   }) async {
     final exportData = <String, dynamic>{};
 
@@ -47,7 +51,12 @@ class LogsJsonService {
       exportData['metadata'] = _createExportMetadata(logs.length);
     }
 
-    exportData['logs'] = await _processLogsInChunks(logs);
+    final logsJson = await _processLogsInChunks(logs);
+    if (enableRedaction && redactionService != null) {
+      exportData['logs'] = _redactLogsList(logsJson, redactionService);
+    } else {
+      exportData['logs'] = logsJson;
+    }
 
     const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     return encoder.convert(exportData);
@@ -218,14 +227,20 @@ class LogsJsonService {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
+    RedactionService? redactionService,
+    bool enableRedaction = false,
   }) async {
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
       return;
     }
 
-    final jsonContent =
-        await exportToJson(logs, includeMetadata: includeMetadata);
+    final jsonContent = await exportToJson(
+      logs,
+      includeMetadata: includeMetadata,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+    );
     await LogsFileFactory.downloadFile(
       jsonContent,
       fileName: fileName,
@@ -246,6 +261,8 @@ class LogsJsonService {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
+    RedactionService? redactionService,
+    bool enableRedaction = false,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');
@@ -253,6 +270,12 @@ class LogsJsonService {
     }
 
     final exportData = _createFilteredExportData(logs, filteredLogs, filter);
+    if (enableRedaction && redactionService != null) {
+      final logsData = exportData['logs'];
+      if (logsData is List<Map<String, dynamic>>) {
+        exportData['logs'] = _redactLogsList(logsData, redactionService);
+      }
+    }
     const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     final jsonContent = encoder.convert(exportData);
 
@@ -296,6 +319,18 @@ class LogsJsonService {
         'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,
         'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
       };
+
+  /// Applies redaction to a list of serialized log entries.
+  List<Map<String, dynamic>> _redactLogsList(
+    List<Map<String, dynamic>> logsJson,
+    RedactionService redactionService,
+  ) =>
+      logsJson.map((log) {
+        final redacted = redactionService.redact(log);
+        return redacted is Map<String, dynamic>
+            ? redacted
+            : log; // fallback if redaction returns unexpected type
+      }).toList(growable: false);
 
   /// Validates JSON structure for logs import
   ///

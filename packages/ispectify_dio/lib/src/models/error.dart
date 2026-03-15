@@ -19,7 +19,11 @@ class DioErrorLog extends NetworkErrorLog {
   })  : _settings = settings,
         _errorData = errorData,
         super(
-          statusMessage: statusMessage ?? errorData.exception?.message,
+          statusMessage: statusMessage ??
+              _redactExceptionMessage(
+                errorData.exception?.message,
+                redactor: redactor,
+              ),
           settings: settings,
           headers: headers?.map(MapEntry.new),
           capturedException: errorData.exception,
@@ -28,6 +32,40 @@ class DioErrorLog extends NetworkErrorLog {
             redactor: redactor,
           ),
         );
+
+  /// Redacts URLs embedded in the DioException message when a redactor is
+  /// provided. This prevents sensitive query parameters and userInfo from
+  /// leaking through the fallback status message.
+  static String? _redactExceptionMessage(
+    String? message, {
+    RedactionService? redactor,
+  }) {
+    if (message == null || redactor == null) return message;
+    return message.replaceAllMapped(
+      RegExp(r'https?://[^\s,\]}>)]+'),
+      (match) {
+        final url = match.group(0)!;
+        final uri = Uri.tryParse(url);
+        if (uri == null) return url;
+        final hasParams = uri.queryParameters.isNotEmpty;
+        final hasUserInfo = uri.userInfo.isNotEmpty;
+        if (!hasParams && !hasUserInfo) return url;
+        final redactedParams = hasParams
+            ? uri.queryParameters.map(
+                (key, value) =>
+                    MapEntry(key, redactor.redact(value, keyName: key)),
+              )
+            : null;
+        return uri
+            .replace(
+              userInfo: hasUserInfo ? '[REDACTED]' : null,
+              queryParameters:
+                  redactedParams?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+            )
+            .toString();
+      },
+    );
+  }
 
   final ISpectDioInterceptorSettings _settings;
   final DioErrorData _errorData;

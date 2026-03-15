@@ -121,4 +121,40 @@ class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
 
   @override
   AnsiPen? get responsePen => _receivedPen;
+
+  /// Creates a copy of this settings with the given fields replaced.
+  ISpectWSInterceptorSettings copyWith({
+    bool? enabled,
+    bool? enableRedaction,
+    bool? printReceivedData,
+    bool? printReceivedMessage,
+    bool? printErrorData,
+    bool? printErrorMessage,
+    bool? printSentData,
+    bool? printReceivedHeaders,
+    bool? printSentHeaders,
+    AnsiPen? sentPen,
+    AnsiPen? receivedPen,
+    AnsiPen? errorPen,
+    bool Function(WSSentLog request)? sentFilter,
+    bool Function(WSReceivedLog response)? receivedFilter,
+    bool Function(WSErrorLog response)? errorFilter,
+  }) =>
+      ISpectWSInterceptorSettings(
+      enabled: enabled ?? this.enabled,
+      enableRedaction: enableRedaction ?? this.enableRedaction,
+      printReceivedData: printReceivedData ?? this.printReceivedData,
+      printReceivedMessage: printReceivedMessage ?? this.printReceivedMessage,
+      printErrorData: printErrorData ?? this.printErrorData,
+      printErrorMessage: printErrorMessage ?? this.printErrorMessage,
+      printSentData: printSentData ?? this.printSentData,
+      printReceivedHeaders: printReceivedHeaders ?? this.printReceivedHeaders,
+      printSentHeaders: printSentHeaders ?? this.printSentHeaders,
+      sentPen: sentPen ?? _sentPen,
+      receivedPen: receivedPen ?? _receivedPen,
+      errorPen: errorPen ?? _errorPen,
+      sentFilter: sentFilter ?? this.sentFilter,
+      receivedFilter: receivedFilter ?? this.receivedFilter,
+      errorFilter: errorFilter ?? this.errorFilter,
+    );
 }

@@ -20,7 +20,11 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     initializeInterceptor(logger: logger, redactor: redactor);
   }
 
-  /// `ISpectDioInterceptor` settings and customization
+  /// `ISpectDioInterceptor` settings and customization.
+  ///
+  /// This field is publicly mutable for backward compatibility. Prefer
+  /// [configure] for partial updates. Direct assignment is **not thread-safe**
+  /// — avoid replacing this value while HTTP requests are in flight.
   ISpectDioInterceptorSettings settings;
 
   /// ISpectLogger addon functionality
@@ -69,13 +73,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onRequest(options, handler);
     if (!_shouldProcessRequest(options)) return;
 
-    final useRedaction = settings.enableRedaction;
-    logger.logData(
-      _buildRequestLog(
-        options: options,
-        useRedaction: useRedaction,
-      ),
-    );
+    try {
+      final useRedaction = settings.enableRedaction;
+      logger.logData(
+        _buildRequestLog(
+          options: options,
+          useRedaction: useRedaction,
+        ),
+      );
+    } catch (e, st) {
+      logger.log(
+        'Failed to build request log: $e',
+        stackTrace: st,
+      );
+    }
   }
 
   @override
@@ -86,13 +97,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onResponse(response, handler);
     if (!_shouldProcessResponse(response)) return;
 
-    final useRedaction = settings.enableRedaction;
-    logger.logData(
-      _buildResponseLog(
-        response: response,
-        useRedaction: useRedaction,
-      ),
-    );
+    try {
+      final useRedaction = settings.enableRedaction;
+      logger.logData(
+        _buildResponseLog(
+          response: response,
+          useRedaction: useRedaction,
+        ),
+      );
+    } catch (e, st) {
+      logger.log(
+        'Failed to build response log: $e',
+        stackTrace: st,
+      );
+    }
   }
 
   @override
@@ -100,13 +118,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onError(err, handler);
     if (!_shouldProcessError(err)) return;
 
-    final useRedaction = settings.enableRedaction;
-    logger.logData(
-      _buildErrorLog(
-        error: err,
-        useRedaction: useRedaction,
-      ),
-    );
+    try {
+      final useRedaction = settings.enableRedaction;
+      logger.logData(
+        _buildErrorLog(
+          error: err,
+          useRedaction: useRedaction,
+        ),
+      );
+    } catch (e, st) {
+      logger.log(
+        'Failed to build error log: $e',
+        stackTrace: st,
+      );
+    }
   }
 
   bool _shouldProcessRequest(RequestOptions options) =>
@@ -126,11 +151,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       options.uri.toString(),
       useRedaction: useRedaction,
     );
+    final path = redactUrl(
+      options.uri.path,
+      useRedaction: useRedaction,
+    );
     return DioRequestLog(
       url,
       method: options.method,
       url: url,
-      path: options.uri.path,
+      path: path,
       headers: payload.headersMap(
         options.headers,
         enableRedaction: useRedaction,
@@ -165,12 +194,16 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       requestOptions.uri.toString(),
       useRedaction: useRedaction,
     );
+    final path = redactUrl(
+      requestOptions.uri.path,
+      useRedaction: useRedaction,
+    );
     return DioResponseLog(
       url,
       settings: settings,
       method: requestOptions.method,
       url: url,
-      path: requestOptions.uri.path,
+      path: path,
       statusCode: response.statusCode,
       statusMessage: response.statusMessage,
       requestHeaders: requestHeaders,
@@ -222,13 +255,21 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       requestOptions.uri.toString(),
       useRedaction: useRedaction,
     );
+    final path = redactUrl(
+      requestOptions.uri.path,
+      useRedaction: useRedaction,
+    );
+    final statusMessage = _redactErrorMessage(
+      response?.statusMessage,
+      useRedaction: useRedaction,
+    );
     return DioErrorLog(
       url,
       method: requestOptions.method,
       url: url,
-      path: requestOptions.uri.path,
+      path: path,
       statusCode: response?.statusCode,
-      statusMessage: response?.statusMessage,
+      statusMessage: statusMessage,
       requestHeaders: requestHeaders,
       headers: responseHeaders,
       body: _errorBodyPayload(response?.data, useRedaction),
@@ -270,4 +311,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       payload.ensureMap(
         _responseBodyPayload(data, useRedaction),
       );
+
+  /// Redacts any URLs found in an error message string.
+  ///
+  /// DioException.message often embeds full URLs with sensitive query
+  /// parameters. This method finds and redacts those URLs.
+  String? _redactErrorMessage(
+    String? message, {
+    required bool useRedaction,
+  }) {
+    if (message == null || !useRedaction) return message;
+    // Match URLs in the message and redact each one
+    return message.replaceAllMapped(
+      RegExp(r'https?://[^\s,\]}>)]+'),
+      (match) => redactUrl(match.group(0)!, useRedaction: true),
+    );
+  }
 }

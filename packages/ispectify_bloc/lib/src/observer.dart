@@ -101,8 +101,8 @@ class ISpectBlocObserver extends BlocObserver {
   ) {
     try {
       onBlocError?.call(bloc, error, stackTrace);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocError', callbackError);
     }
     try {
       _logger.logData(
@@ -114,6 +114,27 @@ class ISpectBlocObserver extends BlocObserver {
       );
     } catch (_) {
       // Prevent logging failure from propagating.
+    }
+  }
+
+  /// Safely logs data, preventing logger exceptions from propagating into
+  /// the Bloc framework.
+  void _safeLogData(ISpectLogData data) {
+    try {
+      _logger.logData(data);
+    } catch (_) {
+      // Prevent logging failure from propagating into the Bloc framework.
+    }
+  }
+
+  /// Logs a warning when a user-provided callback throws.
+  void _logCallbackError(String callbackName, Object error) {
+    try {
+      _logger.warning(
+        'ISpectBlocObserver: $callbackName callback threw: $error',
+      );
+    } catch (_) {
+      // Last resort — nothing we can do if the logger itself fails.
     }
   }
 
@@ -129,10 +150,10 @@ class ISpectBlocObserver extends BlocObserver {
     }
     try {
       onBlocEvent?.call(bloc, event);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocEvent', callbackError);
     }
-    _logger.logData(
+    _safeLogData(
       BlocEventLog(
         bloc: bloc,
         event: event,
@@ -156,10 +177,10 @@ class ISpectBlocObserver extends BlocObserver {
     }
     try {
       onBlocTransition?.call(bloc, transition);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocTransition', callbackError);
     }
-    _logger.logData(
+    _safeLogData(
       BlocTransitionLog(
         bloc: bloc,
         transition: transition,
@@ -180,10 +201,10 @@ class ISpectBlocObserver extends BlocObserver {
     }
     try {
       onBlocChange?.call(bloc, change);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocChange', callbackError);
     }
-    _logger.logData(
+    _safeLogData(
       BlocStateLog(
         bloc: bloc,
         change: change,
@@ -209,10 +230,10 @@ class ISpectBlocObserver extends BlocObserver {
     }
     try {
       onBlocCreate?.call(bloc);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocCreate', callbackError);
     }
-    _logger.logData(BlocCreateLog(bloc: bloc));
+    _safeLogData(BlocCreateLog(bloc: bloc));
   }
 
   @override
@@ -223,10 +244,10 @@ class ISpectBlocObserver extends BlocObserver {
     }
     try {
       onBlocClose?.call(bloc);
-    } catch (_) {
-      // Prevent user callback from breaking the observer.
+    } catch (callbackError) {
+      _logCallbackError('onBlocClose', callbackError);
     }
-    _logger.logData(BlocCloseLog(bloc: bloc));
+    _safeLogData(BlocCloseLog(bloc: bloc));
   }
 
   @override
@@ -246,7 +267,7 @@ class ISpectBlocObserver extends BlocObserver {
     if (!shouldLogCompletion) {
       return;
     }
-    _logger.logData(
+    _safeLogData(
       BlocDoneLog(
         bloc: bloc,
         settings: settings,

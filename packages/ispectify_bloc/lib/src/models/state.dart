@@ -14,18 +14,19 @@ final class BlocStateLog extends BlocLifecycleLog {
           key: logKey,
           title: logKey,
           messageBuilder: () {
+            final blocType = bloc.runtimeType;
             final currentPayload = settings.printStateFullData
                 ? change.currentState
                 : change.currentState.runtimeType;
             final nextPayload = settings.printStateFullData
                 ? change.nextState
                 : change.nextState.runtimeType;
-            return '${bloc.runtimeType} changed from $currentPayload to $nextPayload';
+            return '$blocType changed from $currentPayload to $nextPayload';
           },
-          additionalData: <String, dynamic>{
+          additionalData: settings.redactAdditionalData(<String, dynamic>{
             'current-state': change.currentState,
             'next-state': change.nextState,
-          },
+          }),
         );
 
   final Change<dynamic> change;

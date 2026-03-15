@@ -85,18 +85,23 @@ class LogPipeline {
 
     if (!_options.useConsoleLogs) return;
 
-    final level = data.logLevel ?? (data.isError ? LogLevel.error : null);
-    final pen = data.pen ?? _options.penByKey(data.key);
+    try {
+      final level = data.logLevel ?? (data.isError ? LogLevel.error : null);
+      final pen = data.pen ?? _options.penByKey(data.key);
 
-    _consoleLogger.log(
-      '${data.header}${data.textMessage}'.truncate(
-        maxLength: _options.logTruncateLength,
-      ),
-      level: level,
-      pen: pen,
-      error: data.error ?? data.exception,
-      stackTrace: data.stackTrace,
-      time: data.time,
-    );
+      _consoleLogger.log(
+        '${data.header}${data.textMessage}'.truncate(
+          maxLength: _options.logTruncateLength,
+        ),
+        level: level,
+        pen: pen,
+        error: data.error ?? data.exception,
+        stackTrace: data.stackTrace,
+        time: data.time,
+      );
+    } catch (e) {
+      // Prevent console logging errors from propagating.
+      log('[ISpect] Console logging failed: $e');
+    }
   }
 }

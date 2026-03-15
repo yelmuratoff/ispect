@@ -261,23 +261,27 @@ final class ISpectOptions {
         other.initialSettings == initialSettings;
   }
 
+  static const _deepEquality = DeepCollectionEquality();
+
   @override
   int get hashCode {
-    return locale.hashCode ^
-        observer.hashCode ^
-        isLogPageEnabled.hashCode ^
-        isPerformanceEnabled.hashCode ^
-        isInspectorEnabled.hashCode ^
-        isColorPickerEnabled.hashCode ^
-        actionItems.hashCode ^
-        panelItems.hashCode ^
-        panelButtons.hashCode ^
-        itemsBuilder.hashCode ^
-        onShare.hashCode ^
-        onOpenFile.hashCode ^
-        onLoadLogContent.hashCode ^
-        onSettingsChanged.hashCode ^
-        initialSettings.hashCode;
+    return Object.hash(
+      locale,
+      observer,
+      isLogPageEnabled,
+      isPerformanceEnabled,
+      isInspectorEnabled,
+      isColorPickerEnabled,
+      _deepEquality.hash(actionItems),
+      _deepEquality.hash(panelItems),
+      _deepEquality.hash(panelButtons),
+      itemsBuilder,
+      onShare,
+      onOpenFile,
+      onLoadLogContent,
+      onSettingsChanged,
+      initialSettings,
+    );
   }
 
   @override

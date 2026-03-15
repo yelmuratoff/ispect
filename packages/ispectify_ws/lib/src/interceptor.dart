@@ -52,8 +52,20 @@ final class ISpectWSInterceptor
       return;
     }
 
-    final uri = Uri.tryParse(_client?.metrics.lastUrl ?? '');
+    if (_client == null) {
+      logger.logData(
+        ISpectLogData(
+          'WS interceptor: _client is null during $type logging. '
+          'Call setClient() before sending or receiving messages.',
+          logLevel: LogLevel.warning,
+        ),
+      );
+    }
+
+    final rawUrl = _client?.metrics.lastUrl ?? '';
     final useRedaction = settings.enableRedaction;
+    final redactedUrl = redactUrl(rawUrl, useRedaction: useRedaction);
+    final uri = Uri.tryParse(redactedUrl);
 
     try {
       final safeData = _safeRedact(data, useRedaction);

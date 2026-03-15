@@ -6,6 +6,12 @@ class HttpRequestData {
 
   final BaseRequest? requestOptions;
 
+  /// Converts this request data to a JSON-compatible map.
+  ///
+  /// When [redactor] is null, raw data (including URL query parameters,
+  /// headers with auth tokens, and body content) is returned without
+  /// any sanitization. Callers opting out of redaction accept
+  /// responsibility for handling sensitive data appropriately.
   Map<String, dynamic> toJson({
     RedactionService? redactor,
     Set<String>? ignoredValues,

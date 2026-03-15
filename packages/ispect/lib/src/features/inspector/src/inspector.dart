@@ -586,11 +586,12 @@ class InspectorState extends State<Inspector> {
         final imageOffset = _zoomImageOffsetNotifier.value;
         final byteData = _byteDataStateNotifier.value;
         final zoomScale = _zoomScaleNotifier.value;
+        final image = _image;
 
         if (offset == null ||
             byteData == null ||
             imageOffset == null ||
-            _image == null) {
+            image == null) {
           return const SizedBox.shrink();
         }
 
@@ -606,7 +607,7 @@ class InspectorState extends State<Inspector> {
               .clamp(0, screenSize.height - overlaySize),
           child: IgnorePointer(
             child: CombinedOverlayWidget(
-              image: _image!,
+              image: image,
               overlayOffset: offset,
               imageOffset: imageOffset,
               overlaySize: overlaySize,
@@ -614,7 +615,7 @@ class InspectorState extends State<Inspector> {
               pixelRatio: MediaQuery.devicePixelRatioOf(context),
               color: getPixelFromByteData(
                 byteData,
-                width: _image!.width,
+                width: image.width,
                 x: imageOffset.dx.round(),
                 y: imageOffset.dy.round(),
               ),

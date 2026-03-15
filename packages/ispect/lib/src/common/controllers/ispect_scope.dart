@@ -18,11 +18,12 @@ class ISpectScopeModel extends ChangeNotifier {
     bool isPerformanceTrackingEnabled = false,
     ISpectOptions? options,
     ISpectTheme theme = const ISpectTheme(),
-    this.observer,
+    NavigatorObserver? observer,
   })  : _isISpectEnabled = isISpectEnabled,
         _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
         _options = options ?? ISpectOptions(observer: observer),
-        _theme = theme;
+        _theme = theme,
+        _observer = observer;
 
   // Private fields to store state
   bool _isISpectEnabled;
@@ -68,8 +69,13 @@ class ISpectScopeModel extends ChangeNotifier {
     _updateValue(_theme, updatedTheme, (v) => _theme = v);
   }
 
+  // Private field for observer
+  NavigatorObserver? _observer;
+
   /// A navigator observer for tracking navigation events.
-  NavigatorObserver? observer;
+  NavigatorObserver? get observer => _observer;
+  set observer(NavigatorObserver? value) =>
+      _updateValue(_observer, value, (v) => _observer = v);
 
   /// Toggles the ISpect state.
   void toggleISpect() {
