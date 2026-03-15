@@ -42,9 +42,15 @@ class WebLogsFile extends BaseLogsFile {
     return '${safeFileName}_$timestamp.$fileType';
   }
 
-  /// Sanitizes filename for web compatibility
-  String _sanitizeFileName(String fileName) =>
-      fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  /// Sanitizes filename for web compatibility.
+  ///
+  /// Strips directory separators to prevent path traversal, then removes
+  /// any remaining non-alphanumeric characters except dashes, underscores,
+  /// and dots.
+  String _sanitizeFileName(String fileName) {
+    final baseName = fileName.split(RegExp(r'[/\\]')).last;
+    return baseName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  }
 
   /// Creates Blob from log string using web API
   Blob _createBlobFromLogs(String logs) {
@@ -52,9 +58,28 @@ class WebLogsFile extends BaseLogsFile {
     return Blob(jsArray, BlobPropertyBag(type: 'text/plain'));
   }
 
-  /// Stores filename metadata for later retrieval
+  /// Stores filename metadata for later retrieval.
+  ///
+  /// Evicts the oldest entry when the cache exceeds [_maxCacheSize]
+  /// to prevent unbounded memory growth in long-running sessions.
   void _storeFileNameMetadata(Blob blob, String fileName) {
+    if (_fileNames.length >= _maxCacheSize) {
+      _evictOldest();
+    }
     _fileNames[blob] = fileName;
+  }
+
+  static const int _maxCacheSize = 50;
+
+  /// Evicts the oldest cached blob entry, revoking its object URL.
+  static void _evictOldest() {
+    if (_fileNames.isEmpty) return;
+    final oldest = _fileNames.keys.first;
+    final url = _objectUrls.remove(oldest);
+    if (url != null) {
+      URL.revokeObjectURL(url);
+    }
+    _fileNames.remove(oldest);
   }
 
   @override

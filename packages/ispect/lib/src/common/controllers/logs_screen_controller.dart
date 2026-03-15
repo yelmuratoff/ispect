@@ -57,6 +57,7 @@ class LogsScreenController {
     listController.dispose();
     hasNewLogs.dispose();
     _relativeTimeTimer?.cancel();
+    _relativeTimeTimer = null;
   }
 
   // --- Scroll tracking ---

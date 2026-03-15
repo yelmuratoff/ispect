@@ -25,6 +25,7 @@ class FilterManager {
 
   // Debounce for search query updates
   Timer? _filterDebounce;
+  bool _isDisposed = false;
 
   // Lightweight caches for current filter parts
   List<String>? _cachedTitles;
@@ -49,6 +50,7 @@ class FilterManager {
   void updateFilterSearchQuery(String query) {
     _filterDebounce?.cancel();
     _filterDebounce = Timer(_debounceDuration, () {
+      if (_isDisposed) return;
       _filter = _filter.copyWith(searchQuery: query);
       _invalidateFilterCache();
       _notify();
@@ -162,7 +164,9 @@ class FilterManager {
   }
 
   void dispose() {
+    _isDisposed = true;
     _filterDebounce?.cancel();
+    _filterDebounce = null;
   }
 
   // Internal helpers

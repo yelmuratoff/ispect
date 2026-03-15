@@ -6,15 +6,10 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
 
 Object? _toEncodable(dynamic object) {
-  if (object is Uri) {
-    return object.toString();
-  }
-  try {
-    // ignore: avoid_dynamic_calls
-    return object.toJson();
-  } catch (_) {
-    return object.toString();
-  }
+  if (object is Uri) return object.toString();
+  if (object is DateTime) return object.toIso8601String();
+  if (object is Enum) return object.name;
+  return object.toString();
 }
 
 /// Service for managing JSON export/import operations for logs.
@@ -27,8 +22,8 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
-  /// Maximum allowed JSON string size (500MB)
-  static const int maxJsonSize = 500 * 1024 * 1024;
+  /// Maximum allowed JSON string size (100MB)
+  static const int maxJsonSize = 100 * 1024 * 1024;
 
   /// Maximum allowed JSON nesting depth
   static const int maxJsonDepth = 1000;

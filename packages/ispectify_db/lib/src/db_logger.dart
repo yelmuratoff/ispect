@@ -223,23 +223,23 @@ extension ISpectLoggerDb on ISpectLogger {
     final aBase = args == null
         ? null
         : (useRedact ? ISpectDbCore.redact(args, rKeys) : args);
-    final a =
-        aBase == null ? null : truncateLeaves(aBase, maxArgs) as List<Object?>?;
+    final aRaw = aBase == null ? null : truncateLeaves(aBase, maxArgs);
+    final a = aRaw is List ? aRaw.cast<Object?>() : null;
 
-    final naBase = namedArgs == null
+    final naRedacted = namedArgs == null
         ? null
-        : (useRedact
-            ? ISpectDbCore.redact(namedArgs, rKeys) as Map<String, Object?>
-            : namedArgs);
-    final na = naBase == null
-        ? null
-        : truncateLeaves(naBase, maxArgs) as Map<String, Object?>?;
+        : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
+    final naBase =
+        naRedacted is Map<String, Object?> ? naRedacted : namedArgs;
+    final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
+    final na = naRaw is Map
+        ? naRaw.map((k, v) => MapEntry(k.toString(), v))
+        : null;
 
-    final m = meta == null
+    final mRedacted = meta == null
         ? null
-        : (useRedact
-            ? ISpectDbCore.redact(meta, rKeys) as Map<String, Object?>
-            : meta);
+        : (useRedact ? ISpectDbCore.redact(meta, rKeys) : meta);
+    final m = mRedacted is Map<String, Object?> ? mRedacted : meta;
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 

@@ -34,9 +34,19 @@ extension ISpectLogDataSerialization on ISpectLogData {
 class ISpectLogDataJsonUtils {
   /// Creates ISpectLogData from JSON Map.
   ///
+  /// Throws [FormatException] if the JSON is missing required fields
+  /// (`message` or `time`).
+  ///
   /// Note: AnsiPen, Exception, Error, and StackTrace are reconstructed
   /// from string representations with some limitations.
-  static ISpectLogData fromJson(Map<String, dynamic> json) => ISpectLogData(
+  static ISpectLogData fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey('message') && !json.containsKey('time')) {
+      throw const FormatException(
+        'Invalid log entry: missing both "message" and "time" fields',
+      );
+    }
+
+    return ISpectLogData(
         json['message']?.toString(),
         time:
             DateTime.tryParse(json['time']?.toString() ?? '') ?? DateTime.now(),
@@ -57,6 +67,7 @@ class ISpectLogDataJsonUtils {
             ? StackTrace.fromString(json['stack-trace'].toString())
             : null,
       );
+  }
 }
 
 LogLevel? _parseLogLevel(String? value) {

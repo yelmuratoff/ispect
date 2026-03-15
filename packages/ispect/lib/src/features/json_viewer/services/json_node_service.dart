@@ -101,8 +101,9 @@ class DefaultNodeExpansionService
 
     final nodeIndex = index + 1;
     final childrenCount = _countVisibleChildren(node) - 1;
+    final endIndex = (nodeIndex + childrenCount).clamp(nodeIndex, displayNodes.length);
 
-    displayNodes.removeRange(nodeIndex, nodeIndex + childrenCount);
+    displayNodes.removeRange(nodeIndex, endIndex);
     node.collapse();
     return displayNodes;
   }

@@ -22,6 +22,10 @@ void main() {
     );
   });
 
+  tearDown(() {
+    ISpectDbCore.config = const ISpectDbConfig();
+  });
+
   test('db logs fields and digest/truncation', () async {
     logger.db(
       source: 'sqflite',

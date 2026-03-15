@@ -65,9 +65,15 @@ class NativeLogsFile extends BaseLogsFile {
     return file;
   }
 
-  /// Sanitizes filename for cross-platform compatibility
-  String _sanitizeFileName(String fileName) =>
-      fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  /// Sanitizes filename for cross-platform compatibility.
+  ///
+  /// Strips directory separators to prevent path traversal, then removes
+  /// any remaining non-alphanumeric characters except dashes, underscores,
+  /// and dots.
+  String _sanitizeFileName(String fileName) {
+    final baseName = fileName.split(RegExp(r'[/\\]')).last;
+    return baseName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  }
 
   @override
   String getFilePath(Object file) {
