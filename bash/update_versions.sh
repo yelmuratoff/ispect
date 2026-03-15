@@ -114,7 +114,7 @@ update_internal_refs() { # $1=file
   for pkg in "${PACKAGE_NAMES[@]}"; do
     # Only adjust lines inside dependencies or dev_dependencies
     if grep -q "^  $pkg: \^" "$file"; then
-      if ! grep -q "^  $pkg: \^$VERSION" "$file"; then
+      if ! grep -q "^  $pkg: \^${VERSION}$" "$file"; then
         echo "[CHG] $file -> $pkg ^$VERSION"
         if [[ $DRY_RUN -eq 0 ]]; then
           # Use awk to scope modifications

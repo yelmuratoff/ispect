@@ -12,7 +12,7 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ispectify: ^4.7.5-dev01
+  ispectify: ^4.7.5
 
 dev_dependencies:
   lints: ^5.1.1
