@@ -2,6 +2,10 @@
 
 ## 4.7.5-dev01
 
+### Behavioral Changes
+
+- **Redaction is now enabled by default** for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).
+
 ### Security
 
 - Enhanced data redaction for deeper nested structures, HTTP/Dio interceptors, and logged URLs.
@@ -15,19 +19,24 @@
 - Enhanced stability for JSON parsing, log deserialization, and large file streams.
 - Resolved various null-pointer exceptions, out-of-bounds errors, and unsafe type casts.
 
-### Documentation
-
-- Updated doc comments for `enableRedaction` default value.
-
 ### Improvements
 
 - **Desktop layout:** Resizable split view for log details, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
-- **Log screen:** Live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, search/filter chips with counts.
+- **Log screen:** Live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, search/filter chips with counts. Extracted `LogsScreenController` for cleaner architecture.
 - **JSON viewer:** Async search with loading indicator, nested array support, log type in app bar, clear button for search.
-- **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components.
+- **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components. Added `showISpectSheet` for adaptive display (dialog on desktop, sheet on mobile).
 - **Draggable panel:** Fixed dark mode theming, upgraded `draggable_panel` to `^2.0.0` with M3 surface-based defaults.
 - **Log cards:** Context menu on long press, improved action buttons with tooltips, conditional background on expand.
-- **Localization:** New keys for log filtering, navigation transitions, actions, and empty state hints.
+- **Localization:** New keys for log filtering, navigation transitions, actions, empty state hints, and updated Kazakh translations.
+
+### CI
+
+- Introduced GitHub Actions workflow for testing and analysis.
+
+### Tests
+
+- Updated `HttpResponseData.toJson` tests to verify JSON/non-JSON body parsing and redaction scenarios.
+- Refactored HTTP logging tests to directly construct log objects for verification.
 
 ## 4.7.4
 
