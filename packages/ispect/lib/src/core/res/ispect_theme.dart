@@ -50,8 +50,15 @@ class ISpectDynamicColor {
 
   String toJson() => json.encode(toMap());
 
-  factory ISpectDynamicColor.fromJson(String source) =>
-      ISpectDynamicColor.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory ISpectDynamicColor.fromJson(String source) {
+    final decoded = json.decode(source);
+    if (decoded is! Map<String, dynamic>) {
+      throw FormatException(
+        'Expected Map<String, dynamic>, got ${decoded.runtimeType}',
+      );
+    }
+    return ISpectDynamicColor.fromMap(decoded);
+  }
 
   @override
   String toString() => '''ISpectDynamicColor(
@@ -254,8 +261,15 @@ class ISpectTheme {
 
   String toJson() => json.encode(toMap());
 
-  factory ISpectTheme.fromJson(String source) =>
-      ISpectTheme.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory ISpectTheme.fromJson(String source) {
+    final decoded = json.decode(source);
+    if (decoded is! Map<String, dynamic>) {
+      throw FormatException(
+        'Expected Map<String, dynamic>, got ${decoded.runtimeType}',
+      );
+    }
+    return ISpectTheme.fromMap(decoded);
+  }
 
   @override
   String toString() {

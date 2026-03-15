@@ -165,7 +165,13 @@ class LogsJsonService {
   /// Extracts logs array from JSON data supporting both formats
   List<dynamic> _extractLogsFromJsonData(dynamic jsonData) {
     if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
-      return jsonData['logs'] as List<dynamic>;
+      final logs = jsonData['logs'];
+      if (logs is! List<dynamic>) {
+        throw FormatException(
+          'Expected "logs" to be a List, got ${logs.runtimeType}',
+        );
+      }
+      return logs;
     }
 
     if (jsonData is List<dynamic>) {
@@ -186,9 +192,8 @@ class LogsJsonService {
     for (final chunk in Chunking.chunks(logsJson, chunkSize)) {
       for (final logJson in chunk) {
         try {
-          final log = ISpectLogDataJsonUtils.fromJson(
-            logJson as Map<String, dynamic>,
-          );
+          if (logJson is! Map<String, dynamic>) continue;
+          final log = ISpectLogDataJsonUtils.fromJson(logJson);
           logs.add(log);
         } catch (_) {
           continue;
@@ -331,7 +336,8 @@ class LogsJsonService {
   /// Extracts metadata from JSON data if available
   Map<String, dynamic>? _extractMetadata(dynamic jsonData) {
     if (jsonData is Map<String, dynamic> && jsonData.containsKey('metadata')) {
-      return jsonData['metadata'] as Map<String, dynamic>;
+      final metadata = jsonData['metadata'];
+      if (metadata is Map<String, dynamic>) return metadata;
     }
     return null;
   }

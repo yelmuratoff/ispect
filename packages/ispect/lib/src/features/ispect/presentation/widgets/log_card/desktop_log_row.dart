@@ -609,9 +609,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
       case _ContextAction.openDetail:
         (widget.onOpenDetail ?? widget.onTap).call();
       case _ContextAction.showOnlyType:
-        widget.onTypeFilterTap?.call('__show_only__${widget.data.key!}');
+        final key = widget.data.key;
+        if (key != null) widget.onTypeFilterTap?.call('__show_only__$key');
       case _ContextAction.hideType:
-        widget.onTypeFilterTap?.call('__hide__${widget.data.key!}');
+        final key = widget.data.key;
+        if (key != null) widget.onTypeFilterTap?.call('__hide__$key');
     }
   }
 }

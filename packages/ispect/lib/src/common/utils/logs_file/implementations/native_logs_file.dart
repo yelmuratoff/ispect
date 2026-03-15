@@ -155,7 +155,7 @@ class NativeLogsFile extends BaseLogsFile {
       throw Exception('Failed to create and share log file: $e');
     } finally {
       try {
-        if (file != null && file.existsSync()) {
+        if (file != null && await file.exists()) {
           await file.delete();
         }
       } catch (_) {

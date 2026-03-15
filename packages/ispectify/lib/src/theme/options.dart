@@ -40,7 +40,12 @@ class ISpectLoggerOptions {
     int logTruncateLength = 10000,
     Map<String, String>? customTitles,
     Map<String, AnsiPen>? customColors,
-  })  : _useHistory = useHistory,
+  })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
+        assert(
+          logTruncateLength >= 0,
+          'logTruncateLength must be non-negative',
+        ),
+        _useHistory = useHistory,
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,

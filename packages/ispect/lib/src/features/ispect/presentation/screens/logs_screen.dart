@@ -230,12 +230,13 @@ class _LogsScreenState extends State<LogsScreen> {
       observer is ISpectNavigatorObserver,
       'observer must be ISpectNavigatorObserver',
     );
+    final navObserver = observer! as ISpectNavigatorObserver;
     return ISpectActionItem(
       title: context.ispectL10n.navigationFlow,
       icon: Icons.route_rounded,
       description: context.ispectL10n.navigationFlowDesc,
       onTap: (context) => ISpectNavigationFlowScreen(
-        observer: observer! as ISpectNavigatorObserver,
+        observer: navObserver,
       ).push(context),
     );
   }

@@ -23,7 +23,8 @@ class LoggerSettings {
     this.lineSymbol = '─',
     this.maxLineWidth = 110,
     this.enableColors = true,
-  }) : colors = Map<LogLevel, AnsiPen>.unmodifiable({
+  })  : assert(maxLineWidth > 0, 'maxLineWidth must be positive'),
+        colors = Map<LogLevel, AnsiPen>.unmodifiable({
           ...ConsoleUtils.ansiColors,
           if (colors != null) ...colors,
         });
