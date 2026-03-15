@@ -82,8 +82,9 @@ class DioResponseData {
       ignoredKeys: ignoredKeys,
     );
 
-    final hdrs = (map['headers'] as Map?)?.cast<String, dynamic>();
-    if (hdrs != null) {
+    final rawHdrs = map['headers'];
+    if (rawHdrs is Map) {
+      final hdrs = Map<String, dynamic>.from(rawHdrs);
       map['headers'] = redactor.redactHeaders(
         hdrs,
         ignoredValues: ignoredValues,
@@ -92,7 +93,8 @@ class DioResponseData {
     }
 
     // Extra may contain sensitive data depending on adapters
-    final extra = (map['extra'] as Map?)?.cast<String, dynamic>();
+    final rawExtra = map['extra'];
+    final extra = rawExtra is Map ? Map<String, dynamic>.from(rawExtra) : null;
     if (extra != null) {
       map['extra'] = redactor.redact(
         extra,

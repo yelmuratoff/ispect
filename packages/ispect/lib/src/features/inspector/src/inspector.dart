@@ -284,6 +284,7 @@ class InspectorState extends State<Inspector> {
             exception: e,
             stackTrace: s,
           );
+          if (mounted) _handleZoomDisabled();
           return;
         }
 
@@ -346,9 +347,15 @@ class InspectorState extends State<Inspector> {
     }
 
     _image = image;
-    final byteData = await image.toByteData();
-    if (!mounted) return;
-    _byteDataStateNotifier.value = byteData;
+    try {
+      final byteData = await image.toByteData();
+      if (!mounted) return;
+      _byteDataStateNotifier.value = byteData;
+    } catch (e) {
+      _image?.dispose();
+      _image = null;
+      rethrow;
+    }
   }
 
   Offset? _extractShiftedOffset(Offset offset) {

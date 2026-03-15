@@ -197,10 +197,12 @@ class JsonExplorerStore extends ChangeNotifier {
     _performanceManager =
         PerformanceManagerFactory.createDevelopmentManager();
 
+    if (!mounted) return;
+
     if (areAllCollapsed) {
       collapseAll();
     } else {
-      if (mounted) notifyListeners();
+      notifyListeners();
     }
   }
 
@@ -251,6 +253,11 @@ class JsonExplorerStore extends ChangeNotifier {
     } else {
       _focusedSearchResultIndex = 0;
     }
+
+    // Re-check generation after updating results, in case a new search
+    // was triggered while we were processing.
+    if (!mounted || generation != _searchGeneration) return;
+
     _isSearching = false;
     expandSearchResults();
     notifyListeners();

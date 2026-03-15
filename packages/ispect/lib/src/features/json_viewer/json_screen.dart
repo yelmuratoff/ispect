@@ -74,7 +74,7 @@ class _JsonScreenState extends State<JsonScreen> {
     _hasSearchText.value = value.isNotEmpty;
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) {
+      if (mounted && _store.mounted) {
         _store.search(value);
       }
     });

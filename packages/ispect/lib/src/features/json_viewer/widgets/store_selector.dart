@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
+import 'package:ispect/src/ispect.dart';
 
 typedef JsonStoreSelectorBuilder<T extends Object> = Widget Function(
   BuildContext context,
@@ -48,7 +49,11 @@ class _JsonStoreSelectorState<T extends Object>
   void didUpdateWidget(JsonStoreSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.store != widget.store) {
-      oldWidget.store.removeListener(_handleStoreChanged);
+      try {
+        oldWidget.store.removeListener(_handleStoreChanged);
+      } catch (e, s) {
+        ISpect.logger.handle(exception: e, stackTrace: s);
+      }
       final newValue = widget.selector(widget.store);
       if (_shouldRebuild(_value, newValue)) {
         setState(() => _value = newValue);

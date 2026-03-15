@@ -200,9 +200,10 @@ extension ISpectLoggerDb on ISpectLogger {
     final maxStmt = maxStatementLength ?? cfg.maxStatementLength;
     final maxArgs = maxArgsLength ?? cfg.maxArgsLength;
 
-    final stmt = statement == null
+    final stmtRaw = statement == null
         ? null
-        : ISpectDbCore.truncateValue(statement, maxStmt) as String?;
+        : ISpectDbCore.truncateValue(statement, maxStmt);
+    final stmt = stmtRaw is String ? stmtRaw : stmtRaw?.toString();
 
     Object? truncateLeaves(Object? input, int maxLen) {
       if (input == null) return null;
