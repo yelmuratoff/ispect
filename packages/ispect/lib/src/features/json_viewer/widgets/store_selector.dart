@@ -38,29 +38,29 @@ class _JsonStoreSelectorState<T extends Object>
     extends State<JsonStoreSelector<T>> {
   late T _value;
 
+  /// Tracks all stores we've attached listeners to, so we can guarantee
+  /// cleanup in [dispose] even if [didUpdateWidget] removal failed.
+  final _attachedStores = <JsonExplorerStore>{};
+
   @override
   void initState() {
     super.initState();
     _value = widget.selector(widget.store);
-    widget.store.addListener(_handleStoreChanged);
+    _addListener(widget.store);
   }
 
   @override
   void didUpdateWidget(JsonStoreSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.store != widget.store) {
-      try {
-        oldWidget.store.removeListener(_handleStoreChanged);
-      } catch (e, s) {
-        ISpect.logger.handle(exception: e, stackTrace: s);
-      }
+      _removeListener(oldWidget.store);
       final newValue = widget.selector(widget.store);
       if (_shouldRebuild(_value, newValue)) {
         setState(() => _value = newValue);
       } else {
         _value = newValue;
       }
-      widget.store.addListener(_handleStoreChanged);
+      _addListener(widget.store);
     } else {
       final newValue = widget.selector(widget.store);
       if (_shouldRebuild(_value, newValue)) {
@@ -71,8 +71,29 @@ class _JsonStoreSelectorState<T extends Object>
 
   @override
   void dispose() {
-    widget.store.removeListener(_handleStoreChanged);
+    for (final store in _attachedStores) {
+      try {
+        store.removeListener(_handleStoreChanged);
+      } catch (e, s) {
+        ISpect.logger.handle(exception: e, stackTrace: s);
+      }
+    }
+    _attachedStores.clear();
     super.dispose();
+  }
+
+  void _addListener(JsonExplorerStore store) {
+    store.addListener(_handleStoreChanged);
+    _attachedStores.add(store);
+  }
+
+  void _removeListener(JsonExplorerStore store) {
+    try {
+      store.removeListener(_handleStoreChanged);
+      _attachedStores.remove(store);
+    } catch (e, s) {
+      ISpect.logger.handle(exception: e, stackTrace: s);
+    }
   }
 
   @override

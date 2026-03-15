@@ -36,30 +36,37 @@ mixin BaseNetworkInterceptor {
   }
 
   /// Gets the current logger instance.
+  ///
+  /// Throws [StateError] if [initializeInterceptor] has not been called.
   ISpectLogger get logger {
-    assert(
-      _isInitialized,
-      'Call initializeInterceptor() before accessing logger',
-    );
+    _checkInitialized('logger');
     return _logger;
   }
 
   /// Gets the current redaction service.
+  ///
+  /// Throws [StateError] if [initializeInterceptor] has not been called.
   RedactionService get redactor {
-    assert(
-      _isInitialized,
-      'Call initializeInterceptor() before accessing redactor',
-    );
+    _checkInitialized('redactor');
     return _redactor;
   }
 
   /// Provides helper functions for sanitizing headers and bodies.
+  ///
+  /// Throws [StateError] if [initializeInterceptor] has not been called.
   NetworkPayloadSanitizer get payload {
-    assert(
-      _isInitialized,
-      'Call initializeInterceptor() before accessing payload',
-    );
+    _checkInitialized('payload');
     return _payloadSanitizer;
+  }
+
+  /// Verifies that the interceptor has been initialized.
+  void _checkInitialized(String accessor) {
+    if (!_isInitialized) {
+      throw StateError(
+        'BaseNetworkInterceptor is not initialized. '
+        'Call initializeInterceptor() before accessing $accessor.',
+      );
+    }
   }
 
   /// Indicates whether redaction is enabled for this interceptor.

@@ -946,7 +946,9 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
                         _accessToken = data['accessToken'] as String?;
                         _refreshToken = data['refreshToken'] as String?;
                       });
-                    } catch (_) {}
+                    } catch (e, st) {
+                      ISpect.logger.handle(exception: e, stackTrace: st);
+                    }
                   },
                 ),
                 // Step 2: Use real access token
@@ -984,7 +986,9 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
                         _accessToken = data['accessToken'] as String?;
                         _refreshToken = data['refreshToken'] as String?;
                       });
-                    } catch (_) {}
+                    } catch (e, st) {
+                      ISpect.logger.handle(exception: e, stackTrace: st);
+                    }
                   },
                 ),
                 // API key + client secret headers

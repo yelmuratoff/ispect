@@ -163,9 +163,9 @@ class FilterManager {
   }
 
   void dispose() {
-    _isDisposed = true;
     _filterDebounce?.cancel();
     _filterDebounce = null;
+    _isDisposed = true;
   }
 
   // Internal helpers
