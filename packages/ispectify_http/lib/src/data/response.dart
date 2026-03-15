@@ -145,7 +145,9 @@ class HttpResponseData {
 
   static Object _tryDecodeJson(String body) {
     try {
-      return jsonDecode(body) as Object;
+      final decoded = jsonDecode(body);
+      if (decoded is Object) return decoded;
+      return body;
     } catch (_) {
       return body;
     }
@@ -160,19 +162,20 @@ class HttpResponseData {
   ) {
     try {
       final parsed = jsonDecode(body);
+      if (parsed is! Object) return body;
       final redacted = redactor.redact(
         parsed,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      return (redacted ?? parsed) as Object;
+      return redacted is Object ? redacted : parsed;
     } catch (_) {
       final redacted = redactor.redact(
         body,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      return redacted ?? body;
+      return redacted is Object ? redacted : body;
     }
   }
 }

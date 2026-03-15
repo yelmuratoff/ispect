@@ -130,10 +130,17 @@ class JsonExplorerStore extends ChangeNotifier {
 
     _currentSearchOperation?.cancel();
     _currentSearchOperation = null;
-    _searchGeneration++;
+    final generation = ++_searchGeneration;
     _isSearching = true;
     notifyListeners();
-    unawaited(_doSearch(_searchGeneration));
+    unawaited(
+      _doSearch(generation).catchError((_) {
+        if (mounted && generation == _searchGeneration) {
+          _isSearching = false;
+          notifyListeners();
+        }
+      }),
+    );
   }
 
   /// Sets the focus on the next search result.

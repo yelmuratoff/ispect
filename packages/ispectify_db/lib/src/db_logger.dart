@@ -17,6 +17,16 @@ final class ISpectDbCore {
   /// to make configuration changes explicit and intentional.
   static set config(ISpectDbConfig value) => _config = value;
 
+  static final Random _random = _createRandom();
+
+  static Random _createRandom() {
+    try {
+      return Random.secure();
+    } catch (_) {
+      return Random();
+    }
+  }
+
   static final RegExp _singleQuoteRe = RegExp(r"'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
   static final RegExp _digitRe = RegExp(r'\b\d+\b');
@@ -27,13 +37,13 @@ final class ISpectDbCore {
     if (s == null) return true;
     if (s <= 0) return false;
     if (s >= 1) return true;
-    // Use a fresh Random per call to avoid shared mutable state across isolates.
-    return Random().nextDouble() < s;
+
+    return _random.nextDouble() < s;
   }
 
   static String genId() {
     final now = DateTime.now().microsecondsSinceEpoch;
-    final r = Random().nextInt(0x7fffffff);
+    final r = _random.nextInt(0x7fffffff);
 
     return (now & 0xffffffff).toRadixString(16).padLeft(8, '0') +
         r.toRadixString(16).padLeft(8, '0');
@@ -239,8 +249,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final naRedacted = namedArgs == null
         ? null
         : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
-    final naBase =
-        naRedacted is Map<String, Object?> ? naRedacted : naRedacted;
+    final naBase = naRedacted is Map<String, Object?> ? naRedacted : naRedacted;
     final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(

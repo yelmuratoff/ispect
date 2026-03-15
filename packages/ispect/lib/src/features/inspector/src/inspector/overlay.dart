@@ -30,12 +30,12 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
 
   @override
   void dispose() {
-    _disposed = true;
     final id = _frameCallbackId;
     if (id != null) {
       WidgetsBinding.instance.cancelFrameCallbackWithId(id);
       _frameCallbackId = null;
     }
+    _disposed = true;
     _panelVisibilityNotifier.dispose();
     super.dispose();
   }

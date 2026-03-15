@@ -199,22 +199,18 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   Future<void> _navigateToSession(DateTime session) async {
-    try {
-      if (!mounted) {
-        return;
-      }
+    if (!mounted) return;
 
-      unawaited(
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            settings: RouteSettings(
-              name: 'ISpect Daily Session Logs',
-              arguments: {'date': session.toIso8601String()},
-            ),
-            builder: (_) => LogsV2Screen(
-              sessionDate: session,
-              onShare: context.iSpect.options.onShare,
-            ),
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(
+            name: 'ISpect Daily Session Logs',
+            arguments: {'date': session.toIso8601String()},
+          ),
+          builder: (_) => LogsV2Screen(
+            sessionDate: session,
+            onShare: context.iSpect.options.onShare,
           ),
         ),
       );
