@@ -38,7 +38,7 @@ class ISpectHttpInterceptorSettingsBuilder {
   /// Creates a builder with default settings (moderate verbosity).
   ISpectHttpInterceptorSettingsBuilder()
       : _enabled = true,
-        _enableRedaction = false,
+        _enableRedaction = true,
         _printResponseData = true,
         _printResponseHeaders = false,
         _printResponseMessage = true,

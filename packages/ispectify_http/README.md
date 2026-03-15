@@ -266,15 +266,15 @@ void main() {
 
 Sensitive data is automatically masked before it reaches logs or observers. Built-in patterns cover auth tokens, passwords, API keys, PII (SSN, passport), credit cards, and bank accounts.
 
-> **Important:** Network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`) have `enableRedaction: false` by default. This means Authorization headers, tokens, passwords, and other sensitive data will be logged unredacted unless you explicitly enable it. For any environment that handles real user data, always enable redaction:
+> **Note:** Network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`) have `enableRedaction: true` by default. Authorization headers, tokens, passwords, and other sensitive data are automatically redacted. If you need to see unredacted data during debugging, you can opt out:
 >
 > ```dart
 > ISpectDioInterceptor(
->   settings: const ISpectDioInterceptorSettings(enableRedaction: true),
+>   settings: const ISpectDioInterceptorSettings(enableRedaction: false),
 > );
 > ```
 >
-> Alternatively, use the built-in `SettingsBuilder.production()` or `SettingsBuilder.staging()` factory constructors, which enable redaction automatically.
+> The built-in `SettingsBuilder.production()` and `SettingsBuilder.staging()` factory constructors also enable redaction automatically.
 
 ```dart
 // Extend redaction with your own keys

@@ -7,7 +7,7 @@ void main() {
       final settings = ISpectHttpInterceptorSettingsBuilder().build();
 
       expect(settings.enabled, true);
-      expect(settings.enableRedaction, false);
+      expect(settings.enableRedaction, true);
       expect(settings.printResponseData, true);
       expect(settings.printResponseHeaders, false);
       expect(settings.printRequestData, true);

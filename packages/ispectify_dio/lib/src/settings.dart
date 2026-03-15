@@ -5,7 +5,7 @@ import 'package:ispectify/ispectify.dart';
 class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
   const ISpectDioInterceptorSettings({
     this.enabled = true,
-    this.enableRedaction = false,
+    this.enableRedaction = true,
     this.printResponseData = true,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,
@@ -25,7 +25,7 @@ class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
   // Print Dio logger if true
   final bool enabled;
 
-  /// Enable sensitive data redaction if true (default: false)
+  /// Enable sensitive data redaction if true (default: true)
   final bool enableRedaction;
 
   /// Print `response.data` if true

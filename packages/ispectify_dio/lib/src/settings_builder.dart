@@ -38,7 +38,7 @@ class ISpectDioInterceptorSettingsBuilder {
   /// Creates a builder with default settings (moderate verbosity).
   ISpectDioInterceptorSettingsBuilder()
       : _enabled = true,
-        _enableRedaction = false,
+        _enableRedaction = true,
         _printResponseData = true,
         _printResponseHeaders = false,
         _printResponseMessage = true,

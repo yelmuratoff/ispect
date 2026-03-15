@@ -5,7 +5,7 @@ import 'package:ispectify_ws/ispectify_ws.dart';
 class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
   const ISpectWSInterceptorSettings({
     this.enabled = true,
-    this.enableRedaction = false,
+    this.enableRedaction = true,
     this.printReceivedData = true,
     this.printReceivedMessage = true,
     this.printErrorData = true,
@@ -26,7 +26,7 @@ class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
   /// Print WS logger if true
   final bool enabled;
 
-  /// Enable sensitive data redaction if true (default: false)
+  /// Enable sensitive data redaction if true (default: true)
   final bool enableRedaction;
 
   /// Print response data if true
