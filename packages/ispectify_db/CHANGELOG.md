@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.7.5-dev01
+## 4.7.5
 
 ### Behavioral Changes
 
