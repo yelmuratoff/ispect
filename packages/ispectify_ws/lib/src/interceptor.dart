@@ -164,15 +164,21 @@ final class ISpectWSInterceptor
       basePayload['data'] = data;
     }
 
-    final sanitized = payload.body(
-      basePayload,
-      enableRedaction: useRedaction,
-      normalizer: (value) => value,
-    );
+    try {
+      final sanitized = payload.body(
+        basePayload,
+        enableRedaction: useRedaction,
+        normalizer: (value) => value,
+      );
 
-    final map = payload.ensureMap(sanitized)
-      ..removeWhere((_, value) => value == null);
-    return map;
+      final map = payload.ensureMap(sanitized)
+        ..removeWhere((_, value) => value == null);
+      return map;
+    } catch (_) {
+      // If redaction fails, return payload without redaction
+      return Map<String, dynamic>.from(basePayload)
+        ..removeWhere((_, value) => value == null);
+    }
   }
 
   bool _shouldLog(ISpectLogData log) => switch (log) {

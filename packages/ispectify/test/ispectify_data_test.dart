@@ -112,9 +112,9 @@ void main() {
 
       final curl = data.curlCommand;
       expect(curl, isNotNull);
-      expect(curl, contains('curl -X POST "https://example.com/api"'));
-      expect(curl, contains('-H "Content-Type: application/json"'));
-      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+      expect(curl, contains("curl -X 'POST' 'https://example.com/api'"));
+      expect(curl, contains("-H 'Content-Type: application/json'"));
+      expect(curl, contains("""-d '{"key": "value"}'"""));
     });
 
     test('curlCommand generates cURL for HTTP response logs', () {
@@ -133,9 +133,9 @@ void main() {
 
       final curl = data.curlCommand;
       expect(curl, isNotNull);
-      expect(curl, contains('curl -X POST "https://example.com/api"'));
-      expect(curl, contains('-H "Content-Type: application/json"'));
-      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+      expect(curl, contains("curl -X 'POST' 'https://example.com/api'"));
+      expect(curl, contains("-H 'Content-Type: application/json'"));
+      expect(curl, contains("""-d '{"key": "value"}'"""));
     });
 
     test('curlCommand generates cURL for HTTP error logs', () {
@@ -155,7 +155,7 @@ void main() {
       expect(
         curl,
         equals(
-          'curl -X GET "https://example.com/fail" -H "Authorization: Bearer token"',
+          "curl -X 'GET' 'https://example.com/fail' -H 'Authorization: Bearer token'",
         ),
       );
     });

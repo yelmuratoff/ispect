@@ -512,7 +512,6 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    if (!kISpectEnabled) return;
     if (!_ensureActive()) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
@@ -545,7 +544,6 @@ class ISpectLogger {
     ISpectLogData data, {
     bool skipObserverNotification = false,
   }) {
-    if (!kISpectEnabled) return;
     if (!_ensureActive()) return;
     if (!_pipeline.shouldProcess(data)) return;
 
