@@ -55,8 +55,7 @@ class DioRequestData {
     if (rawBaseUrl is String) {
       final baseUri = Uri.tryParse(rawBaseUrl);
       if (baseUri != null && baseUri.userInfo.isNotEmpty) {
-        map['base-url'] =
-            baseUri.replace(userInfo: '[REDACTED]').toString();
+        map['base-url'] = baseUri.replace(userInfo: '[REDACTED]').toString();
       }
     }
 

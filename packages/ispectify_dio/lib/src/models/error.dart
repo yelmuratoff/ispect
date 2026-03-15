@@ -60,8 +60,8 @@ class DioErrorLog extends NetworkErrorLog {
         return uri
             .replace(
               userInfo: hasUserInfo ? '[REDACTED]' : null,
-              queryParameters:
-                  redactedParams?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+              queryParameters: redactedParams
+                  ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
             )
             .toString();
       },

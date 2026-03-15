@@ -45,9 +45,8 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) : _hasCustomErrorHandler = errorHandler != null,
-       _loggerStreamController =
-            StreamController<ISpectLogData>.broadcast() {
+  })  : _hasCustomErrorHandler = errorHandler != null,
+        _loggerStreamController = StreamController<ISpectLogData>.broadcast() {
     final resolvedOptions = options ?? ISpectLoggerOptions();
     _options = resolvedOptions;
     _logger = logger ?? ISpectBaseLogger();

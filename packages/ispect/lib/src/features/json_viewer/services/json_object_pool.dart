@@ -306,7 +306,6 @@ class JsonObjectPool implements UniversalObjectPool {
         'typedSetPools': _typedSetPools.length,
         'typedMapPools': _typedMapPools.length,
       };
-
 }
 
 /// Factory for creating object pools with dependency injection

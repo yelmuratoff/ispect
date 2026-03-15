@@ -5,6 +5,7 @@ Maintenance scripts, quality gates, and release helpers for the ISpect monorepo.
 ## Contents
 
 Scripts:
+
 - pre-commit.sh – Local git hook (version sync, internal deps, changelog presence).
 - publish.sh – Ordered multi‑package publish with preflight validation, dry‑run & auto mode.
 - update_versions.sh – Semantic bump & propagation of version + internal dependency constraints.
@@ -15,9 +16,11 @@ Scripts:
 - bump_version.sh – Legacy bump helper (kept for backward compatibility; prefer update_versions.sh --bump).
 
 ```bash
-./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh
+./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh && dart format .
 ```
+
 and if everything is ok, run
+
 ```bash
 ./bash/publish.sh --auto
 ```
@@ -40,6 +43,7 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).
 
 Semantic bump + propagate (recommended):
+
 ```bash
 # Dry-run (see what would change)
 ./bash/update_versions.sh --dry-run
@@ -55,6 +59,7 @@ Semantic bump + propagate (recommended):
 ```
 
 The script:
+
 - Updates each package `version:` line.
 - Aligns internal dependency references (`^<VERSION>`).
 - Updates example pubspec internal references.
@@ -62,6 +67,7 @@ The script:
 - Supports `--dry-run` for a non‑destructive preview.
 
 Legacy (still works):
+
 ```bash
 ./bash/bump_version.sh patch
 ```
@@ -69,6 +75,7 @@ Legacy (still works):
 ## Changelog Propagation
 
 `update_changelog.sh` modes:
+
 ```bash
 # Append latest root section to packages (default safest mode)
 ./bash/update_changelog.sh
@@ -83,6 +90,7 @@ Legacy (still works):
 ## README Synchronization
 
 `sync_readme.sh` copies the root README.md to all packages.
+
 ```bash
 # Sync README from workspace root to all packages
 ./bash/sync_readme.sh
@@ -91,6 +99,7 @@ Legacy (still works):
 ## Publish Workflow
 
 Best‑practice multi‑package release (dry‑run first):
+
 ```bash
 # Ensure working tree clean & versions aligned
 ./bash/update_versions.sh --dry-run
@@ -109,6 +118,7 @@ Best‑practice multi‑package release (dry‑run first):
 ```
 
 Features in `publish.sh`:
+
 - Ordered dependency publishing.
 - Preflight: forbids `any` constraints & committed Podfile.lock.
 - Failure summarization with per‑package logs in `.publish_logs`.
@@ -117,11 +127,13 @@ Features in `publish.sh`:
 ## Pre-Commit Hook
 
 Install:
+
 ```bash
 cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
 Checks performed:
+
 - Version synchronization with `version.config`.
 - Internal dependency versions (`^<VERSION>`).
 - Root changelog contains current version.
@@ -145,11 +157,13 @@ Checks performed:
 ```
 
 ## Notes
+
 - Internal path overrides during local development may trigger pub.dev hints (acceptable for monorepo cycles).
 - Always inspect dry-run output before real publish.
 - Use semantic bump flags for consistent version progression.
 
 ## Old Personal Shortcut (Updated)
+
 ```bash
 ./bash/update_versions.sh --bump patch \
 	&& ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2) \
@@ -157,4 +171,5 @@ Checks performed:
 ```
 
 ---
+
 Keep automation simple, deterministic, auditable.

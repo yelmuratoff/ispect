@@ -2,6 +2,11 @@
 
 ## 4.8.0
 
+### Code Quality
+
+- Removed deprecated APIs and unused code.
+- Added debug-mode error logging to silent error handlers.
+
 ### Behavioral Changes
 
 - **Redaction is now enabled by default** for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).

@@ -33,5 +33,4 @@ class LogFactory {
       additionalData: additionalData,
     );
   }
-
 }

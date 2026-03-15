@@ -361,5 +361,4 @@ class JsonSearchService {
     onSearch();
     return null;
   }
-
 }

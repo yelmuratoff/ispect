@@ -70,9 +70,7 @@ final class ISpectDbCore {
   static Object? truncateValue(Object? value, int maxLen) {
     if (value == null) return null;
     if (value is String) {
-      return value.length <= maxLen
-          ? value
-          : '${value.substring(0, maxLen)}…';
+      return value.length <= maxLen ? value : '${value.substring(0, maxLen)}…';
     }
 
     return value;
@@ -398,8 +396,7 @@ extension ISpectLoggerDb on ISpectLogger {
       try {
         final success = err == null;
         final items = success
-            ? (itemsCountFromLength ??
-                (result is List ? result.length : null))
+            ? (itemsCountFromLength ?? (result is List ? result.length : null))
             : null;
         final projection =
             success && projectResult != null ? projectResult(result) : null;

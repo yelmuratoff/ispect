@@ -596,10 +596,11 @@ class InspectorState extends State<Inspector> {
         }
 
         final overlaySize = ui.lerpDouble(
-          _overlayMinSize,
-          _overlayMaxSize,
-          ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-        ) ?? _overlayMinSize;
+              _overlayMinSize,
+              _overlayMaxSize,
+              ((zoomScale - 2.0) / 10.0).clamp(0, 1),
+            ) ??
+            _overlayMinSize;
 
         return Positioned(
           left: offset.dx.clamp(0, screenSize.width - overlaySize),

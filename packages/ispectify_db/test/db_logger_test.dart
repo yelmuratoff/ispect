@@ -104,10 +104,12 @@ void main() {
       },
     );
 
-    final txLogs = logger.history.where((e) =>
-        (e.additionalData?['operation'] as String?)
-                ?.startsWith('transaction-') ??
-            false,);
+    final txLogs = logger.history.where(
+      (e) =>
+          (e.additionalData?['operation'] as String?)
+              ?.startsWith('transaction-') ??
+          false,
+    );
     expect(txLogs.length, greaterThanOrEqualTo(2));
     final ids = txLogs
         .map((e) => e.additionalData?['transactionId'])
@@ -126,10 +128,12 @@ void main() {
       throwsA(isA<StateError>()),
     );
 
-    final txLogs = logger.history.where((e) =>
-        (e.additionalData?['operation'] as String?)
-                ?.startsWith('transaction-') ??
-            false,);
+    final txLogs = logger.history.where(
+      (e) =>
+          (e.additionalData?['operation'] as String?)
+              ?.startsWith('transaction-') ??
+          false,
+    );
     final ops = txLogs.map((e) => e.additionalData?['operation']).toList();
     expect(ops, contains('transaction-begin'));
     expect(ops, contains('transaction-rollback'));

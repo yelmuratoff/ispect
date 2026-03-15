@@ -39,15 +39,15 @@ class ISpectDbConfig {
     Duration? slowQueryThreshold,
   }) =>
       ISpectDbConfig(
-      sampleRate: sampleRate ?? this.sampleRate,
-      redact: redact ?? this.redact,
-      redactKeys: redactKeys ?? this.redactKeys,
-      maxValueLength: maxValueLength ?? this.maxValueLength,
-      maxArgsLength: maxArgsLength ?? this.maxArgsLength,
-      maxStatementLength: maxStatementLength ?? this.maxStatementLength,
-      attachStackOnError: attachStackOnError ?? this.attachStackOnError,
-      enableTransactionMarkers:
-          enableTransactionMarkers ?? this.enableTransactionMarkers,
-      slowQueryThreshold: slowQueryThreshold ?? this.slowQueryThreshold,
-    );
+        sampleRate: sampleRate ?? this.sampleRate,
+        redact: redact ?? this.redact,
+        redactKeys: redactKeys ?? this.redactKeys,
+        maxValueLength: maxValueLength ?? this.maxValueLength,
+        maxArgsLength: maxArgsLength ?? this.maxArgsLength,
+        maxStatementLength: maxStatementLength ?? this.maxStatementLength,
+        attachStackOnError: attachStackOnError ?? this.attachStackOnError,
+        enableTransactionMarkers:
+            enableTransactionMarkers ?? this.enableTransactionMarkers,
+        slowQueryThreshold: slowQueryThreshold ?? this.slowQueryThreshold,
+      );
 }
