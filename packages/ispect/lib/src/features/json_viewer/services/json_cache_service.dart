@@ -41,7 +41,7 @@ class LRUCache<K, V> implements CacheService<K, V> {
   @override
   void maintain({int? maxEntries}) {
     final limit = maxEntries ?? this.maxEntries;
-    while (_cache.length > limit) {
+    while (_cache.length > limit && _cache.isNotEmpty) {
       _cache.remove(_cache.keys.first);
     }
   }

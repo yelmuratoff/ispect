@@ -120,9 +120,10 @@ class BoxInfo {
   }
 
   /// Whether the target render box is a decorated box with BoxDecoration
-  bool get isDecoratedBox =>
-      targetRenderBox is RenderDecoratedBox &&
-      (targetRenderBox as RenderDecoratedBox).decoration is BoxDecoration;
+  bool get isDecoratedBox {
+    final box = targetRenderBox;
+    return box is RenderDecoratedBox && box.decoration is BoxDecoration;
+  }
 
   /// Gets the decoration color if available
   ///
@@ -146,9 +147,13 @@ class BoxInfo {
 
   // Private helpers for optimized calculations
 
-  BoxDecoration? get _boxDecoration => isDecoratedBox
-      ? (targetRenderBox as RenderDecoratedBox).decoration as BoxDecoration?
-      : null;
+  BoxDecoration? get _boxDecoration {
+    final box = targetRenderBox;
+    if (box is RenderDecoratedBox && box.decoration is BoxDecoration) {
+      return box.decoration as BoxDecoration;
+    }
+    return null;
+  }
 
   double? _computePaddingLeft() {
     final container = containerRect;

@@ -89,7 +89,8 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
       final widgets = <Widget>[];
 
       for (final item in event.session.items) {
-        final reader = item.dataReader!;
+        final reader = item.dataReader;
+        if (reader == null) continue;
 
         ISpect.logger.info(
           'Available formats: ${item.platformFormats.join(', ')}',
@@ -99,8 +100,9 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
 
         await _processDropItem(reader, item);
 
-        if (item.localData != null) {
-          widgets.add(LocalDataWidget(localData: item.localData!));
+        final localData = item.localData;
+        if (localData != null) {
+          widgets.add(LocalDataWidget(localData: localData));
         }
       }
 
@@ -245,9 +247,10 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         }
 
         String? content;
-        if (kIsWeb && file.bytes != null) {
+        final fileBytes = file.bytes;
+        if (kIsWeb && fileBytes != null) {
           try {
-            content = utf8.decode(file.bytes!);
+            content = utf8.decode(fileBytes);
           } catch (e, st) {
             ISpect.logger.handle(
               message: 'Error decoding file bytes',
@@ -273,11 +276,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           continue;
         }
 
-        final fileInfo = detectFileType(content, fileName);
+        final validContent = content;
+        final fileInfo = detectFileType(validContent, fileName);
 
         if (fileInfo.mimeType == 'application/json') {
           try {
-            jsonDecode(content);
+            jsonDecode(validContent);
           } catch (e) {
             _showSnackBar(
               'Warning: ${file.name} contains invalid JSON',
@@ -287,7 +291,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         }
 
         final mockFile = MockFileWithPlatformFile(
-          content: content,
+          content: validContent,
           fileName: file.name,
           size: file.size,
           platformFile: file,
@@ -297,7 +301,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           setState(() {
             _addWidgetToContent(
               FileContentWidget(
-                content: content!,
+                content: validContent,
                 file: mockFile,
                 displayName: fileInfo.displayName,
                 mimeType: fileInfo.mimeType,

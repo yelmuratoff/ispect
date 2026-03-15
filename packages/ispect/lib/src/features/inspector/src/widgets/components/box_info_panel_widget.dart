@@ -210,9 +210,10 @@ class _RenderParagraphInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final renderParagraph = boxInfo.targetRenderBox as RenderParagraph;
+    final targetBox = boxInfo.targetRenderBox;
+    if (targetBox is! RenderParagraph) return const SizedBox.shrink();
 
-    final style = renderParagraph.text.style;
+    final style = targetBox.text.style;
 
     if (style == null) return const SizedBox.shrink();
     return Wrap(
@@ -247,7 +248,7 @@ class _RenderParagraphInfo extends StatelessWidget {
           iconColor: style.color,
           backgroundColor: theme.chipTheme.backgroundColor,
           child: Text(
-            renderParagraph.text.style?.color != null
+            style.color != null
                 ? colorToHexString(style.color!, withAlpha: true)
                 : 'n/a',
             style: TextStyle(

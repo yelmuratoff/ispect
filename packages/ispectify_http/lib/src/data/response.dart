@@ -34,6 +34,9 @@ class HttpResponseData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
+    final resp = response;
+    final preDecoded = preDecodedBody;
+    final multipart = multipartRequest;
     final map = <String, dynamic>{
       'url': baseResponse.request?.url.toString(),
       'method': baseResponse.request?.method,
@@ -49,30 +52,30 @@ class HttpResponseData {
       'is-redirect': baseResponse.isRedirect,
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
-      if (response != null)
-        'body': preDecodedBody != null
+      if (resp != null)
+        'body': preDecoded != null
             ? (redactor != null
                 ? _redactPreDecoded(
-                    preDecodedBody!,
+                    preDecoded,
                     redactor,
                     ignoredValues,
                     ignoredKeys,
                   )
-                : preDecodedBody)
+                : preDecoded)
             : (redactor != null
                 ? _getRedactedBody(
-                    response!.body,
+                    resp.body,
                     redactor,
                     ignoredValues,
                     ignoredKeys,
                   )
-                : _tryDecodeJson(response!.body)),
-      if (response != null && redactor == null)
-        'body-bytes': response!.bodyBytes.length.toString(),
-      if (multipartRequest != null)
+                : _tryDecodeJson(resp.body)),
+      if (resp != null && redactor == null)
+        'body-bytes': resp.bodyBytes.length.toString(),
+      if (multipart != null)
         'multipart-request': {
-          'fields': multipartRequest!.fields,
-          'files': multipartRequest!.files
+          'fields': multipart.fields,
+          'files': multipart.files
               .map(
                 (file) => {
                   'filename': redactor != null
@@ -138,7 +141,7 @@ class HttpResponseData {
         .map((k, v) => MapEntry(k, v?.toString() ?? ''));
 
     // Redact multipart request fields/files and mask filenames
-    if (multipartRequest != null && map['multipart-request'] is Map) {
+    if (multipart != null && map['multipart-request'] is Map) {
       final mp = Map<String, dynamic>.from(
         map['multipart-request'] as Map,
       );

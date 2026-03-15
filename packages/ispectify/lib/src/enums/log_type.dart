@@ -214,5 +214,5 @@ extension ISpectLogTypeExt on ISpectLogType {
   ///
   /// These are the built-in colors that will be used if no custom
   /// override is provided via `ISpectLoggerOptions`.
-  AnsiPen get defaultPen => _defaultPens[this]!;
+  AnsiPen get defaultPen => _defaultPens[this] ?? (AnsiPen()..gray());
 }

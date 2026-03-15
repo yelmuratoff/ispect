@@ -40,8 +40,9 @@ class PasteDialogState extends State<PasteDialog> {
                     DropdownMenuItem(value: 'text', child: Text('Plain Text')),
                   ],
                   onChanged: (value) {
+                    if (value == null) return;
                     setState(() {
-                      _selectedFormat = value!;
+                      _selectedFormat = value;
                     });
                   },
                 ),

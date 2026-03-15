@@ -209,15 +209,25 @@ class DemoScreenState extends State<DemoScreen> {
       (
         label: 'Get last log',
         onPressed: () async {
-          final lastLog = ISpect.logger.history.last;
+          final history = ISpect.logger.history;
+          if (history.isEmpty) {
+            ISpect.logger.info('No logs in history');
+            return;
+          }
+          final lastLog = history.last;
           ISpect.logger.info('Last log: ${lastLog.toJson()}');
         },
       ),
       (
         label: 'Get first log',
         onPressed: () async {
-          final firstLog = ISpect.logger.history.first;
-          ISpect.logger.info('Last log: ${firstLog.toJson()}');
+          final history = ISpect.logger.history;
+          if (history.isEmpty) {
+            ISpect.logger.info('No logs in history');
+            return;
+          }
+          final firstLog = history.first;
+          ISpect.logger.info('First log: ${firstLog.toJson()}');
         },
       ),
       (

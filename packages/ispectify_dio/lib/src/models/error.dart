@@ -44,7 +44,8 @@ class DioErrorLog extends NetworkErrorLog {
     return message.replaceAllMapped(
       RegExp(r'https?://[^\s,\]}>)]+'),
       (match) {
-        final url = match.group(0)!;
+        final url = match.group(0);
+        if (url == null) return match.input;
         final uri = Uri.tryParse(url);
         if (uri == null) return url;
         final hasParams = uri.queryParameters.isNotEmpty;

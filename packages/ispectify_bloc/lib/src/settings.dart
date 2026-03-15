@@ -125,8 +125,10 @@ class ISpectBlocSettings {
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
-    if (data == null || !isRedactionActive) return data;
-    final redactorInstance = redactor!;
+    final redactorInstance = redactor;
+    if (data == null || !isRedactionActive || redactorInstance == null) {
+      return data;
+    }
     return data.map(
       (key, value) => MapEntry(
         key,
