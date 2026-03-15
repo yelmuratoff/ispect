@@ -19,7 +19,10 @@ abstract class FileLogHistory implements ILogHistory {
   /// - Parameters: None
   /// - Return: Future<void> completing when save is done
   /// - Usage example: await fileHistory.saveToDailyFile()
-  /// - Edge case notes: Creates directory if not exists, handles concurrent writes
+  /// - Edge case notes: Creates directory if not exists, handles concurrent writes.
+  ///   Implementations should enforce [SessionStatistics.maxFileSize] to prevent
+  ///   unbounded disk usage and apply [SessionStatistics.cleanupStrategy] when
+  ///   the total storage exceeds the configured limit.
   Future<void> saveToDailyFile();
 
   /// Loads history from a specific date.

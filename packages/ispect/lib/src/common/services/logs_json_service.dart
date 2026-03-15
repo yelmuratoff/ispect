@@ -87,7 +87,7 @@ class LogsJsonService {
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   ///
   /// **Validation:**
-  /// - Size: Max 500MB
+  /// - Size: Max 100MB
   /// - Depth: Max 1000 levels
   /// - Count: Max 100,000 entries
   ///
