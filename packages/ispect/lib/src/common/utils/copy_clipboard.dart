@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
@@ -39,16 +41,21 @@ void copyClipboard(
     truncatedValue = value;
   }
 
-  Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
-    if (!context.mounted) return;
-    ISpectToaster.showCopiedToast(
-      context,
-      value: truncatedValue,
-      title: title,
-      showValue: showValue,
-    );
-  }).catchError((_) {
-    if (!context.mounted) return;
-    ISpectToaster.showErrorToast(context, title: 'Failed to copy to clipboard');
-  });
+  unawaited(
+    Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
+      if (!context.mounted) return;
+      ISpectToaster.showCopiedToast(
+        context,
+        value: truncatedValue,
+        title: title,
+        showValue: showValue,
+      );
+    }).catchError((Object _) {
+      if (!context.mounted) return;
+      ISpectToaster.showErrorToast(
+        context,
+        title: 'Failed to copy to clipboard',
+      );
+    }),
+  );
 }

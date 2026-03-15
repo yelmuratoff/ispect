@@ -10,8 +10,6 @@ void main() {
   setUp(() {
     logger = ISpectLogger();
     ISpectDbCore.config = ISpectDbConfig(
-      sampleRate: null,
-      redact: true,
       redactKeys: const ['password', 'token'],
       maxValueLength: 50,
       maxArgsLength: 12,
@@ -30,7 +28,7 @@ void main() {
     logger.db(
       source: 'sqflite',
       operation: 'query',
-      statement: 'SELECT * FROM users WHERE name = \"VeryVeryLongName\"',
+      statement: 'SELECT * FROM users WHERE name = "VeryVeryLongName"',
       table: 'users',
       args: ['aaaaaaaaaaaa-too-long'],
       namedArgs: {'password': 'secret', 'q': 'short'},
@@ -42,7 +40,7 @@ void main() {
     expect(logger.history, isNotEmpty);
     final e = logger.history.last;
     expect(e.key, anyOf('db-query', 'db-result'));
-    final add = e.additionalData!;
+    final add = e.additionalData ?? {};
     expect(add['statement'], isA<String>());
     expect(add['statementDigest'], isA<String>());
     expect((add['args'] as List).first.toString().contains('…'), isTrue);
@@ -68,7 +66,7 @@ void main() {
     final e = logger.history.last;
     expect(e.key, 'db-error');
     expect(e.stackTrace, isNotNull);
-    final add = e.additionalData!;
+    final add = e.additionalData ?? {};
     expect(add['success'], isFalse);
     expect(add['key'], 'a');
   });
@@ -86,7 +84,7 @@ void main() {
     );
     expect(res.length, 2);
     final e = logger.history.last;
-    final add = e.additionalData!;
+    final add = e.additionalData ?? {};
     expect(add['items'], 2);
     expect((add['value'] as String).contains('rows: 2'), isTrue);
   });
@@ -108,8 +106,8 @@ void main() {
 
     final txLogs = logger.history.where((e) =>
         (e.additionalData?['operation'] as String?)
-            ?.startsWith('transaction-') ==
-        true);
+                ?.startsWith('transaction-') ??
+            false,);
     expect(txLogs.length, greaterThanOrEqualTo(2));
     final ids = txLogs
         .map((e) => e.additionalData?['transactionId'])
@@ -130,8 +128,8 @@ void main() {
 
     final txLogs = logger.history.where((e) =>
         (e.additionalData?['operation'] as String?)
-            ?.startsWith('transaction-') ==
-        true);
+                ?.startsWith('transaction-') ??
+            false,);
     final ops = txLogs.map((e) => e.additionalData?['operation']).toList();
     expect(ops, contains('transaction-begin'));
     expect(ops, contains('transaction-rollback'));

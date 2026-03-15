@@ -599,7 +599,7 @@ class InspectorState extends State<Inspector> {
           _overlayMinSize,
           _overlayMaxSize,
           ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-        )!;
+        ) ?? _overlayMinSize;
 
         return Positioned(
           left: offset.dx.clamp(0, screenSize.width - overlaySize),
@@ -634,9 +634,10 @@ class InspectorState extends State<Inspector> {
       panelBackgroundColor: theme.background?.resolve(context),
       panelItemColor: theme.card?.resolve(context),
       foregroundColor: theme.foreground?.resolve(context),
-      panelBorder: theme.divider?.resolve(context) != null
-          ? Border.all(color: theme.divider!.resolve(context)!)
-          : null,
+      panelBorder: switch (theme.divider?.resolve(context)) {
+        final color? => Border.all(color: color),
+        null => null,
+      },
     );
   }
 
@@ -658,11 +659,10 @@ class InspectorState extends State<Inspector> {
     } else {
       _controller.setInLoggerPage(isLoggerPage: true);
 
-      await context.iSpect.options.push(context, iSpectScreen).then((_) {
-        if (context.mounted) {
-          _controller.setInLoggerPage(isLoggerPage: false);
-        }
-      });
+      await context.iSpect.options.push(context, iSpectScreen);
+      if (context.mounted) {
+        _controller.setInLoggerPage(isLoggerPage: false);
+      }
     }
   }
 }

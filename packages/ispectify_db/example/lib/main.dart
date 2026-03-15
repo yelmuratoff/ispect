@@ -8,8 +8,7 @@ void main() async {
   final logger = ISpectLogger();
 
   ISpectDbCore.config = ISpectDbConfig(
-    sampleRate: 1.0,
-    redact: true,
+    sampleRate: 1,
     attachStackOnError: true,
     enableTransactionMarkers: true,
     slowQueryThreshold: const Duration(milliseconds: 250),

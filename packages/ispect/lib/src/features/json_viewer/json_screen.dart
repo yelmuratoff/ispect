@@ -354,7 +354,9 @@ class _SearchNavigation extends StatelessWidget {
             icon: Icons.keyboard_arrow_up_rounded,
             onPressed: () {
               store.focusPreviousSearchResult(loop: true);
-              unawaited(scrollToSearchMatch(store));
+              unawaited(
+                scrollToSearchMatch(store).catchError((Object _) {}),
+              );
             },
           ),
           Padding(
@@ -372,7 +374,9 @@ class _SearchNavigation extends StatelessWidget {
             icon: Icons.keyboard_arrow_down_rounded,
             onPressed: () {
               store.focusNextSearchResult(loop: true);
-              unawaited(scrollToSearchMatch(store));
+              unawaited(
+                scrollToSearchMatch(store).catchError((Object _) {}),
+              );
             },
           ),
         ],

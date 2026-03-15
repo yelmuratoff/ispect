@@ -137,10 +137,12 @@ class FilterManager {
   }
 
   TitlesResult getTitles(List<ISpectLogData> logsData) {
-    if (_lastTitlesGeneration == _dataGeneration &&
-        _cachedAllTitles != null &&
-        _cachedUniqueTitles != null) {
-      return (all: _cachedAllTitles!, unique: _cachedUniqueTitles!);
+    if (_lastTitlesGeneration == _dataGeneration) {
+      final cachedAll = _cachedAllTitles;
+      final cachedUnique = _cachedUniqueTitles;
+      if (cachedAll != null && cachedUnique != null) {
+        return (all: cachedAll, unique: cachedUnique);
+      }
     }
 
     final allTitles = <String>[];
@@ -177,19 +179,21 @@ class FilterManager {
   }
 
   List<String> _getCurrentTitles() {
-    if (!_filterCacheValid || _cachedTitles == null) {
-      _cachedTitles = _filter.titles.toList(growable: false);
-      _filterCacheValid = true;
-    }
-    return _cachedTitles!;
+    final cached = _cachedTitles;
+    if (_filterCacheValid && cached != null) return cached;
+    final titles = _filter.titles.toList(growable: false);
+    _cachedTitles = titles;
+    _filterCacheValid = true;
+    return titles;
   }
 
   Set<Type> _getCurrentTypesSet() {
-    if (!_filterCacheValid || _cachedTypesSet == null) {
-      _cachedTypesSet = _filter.types.toSet();
-      _filterCacheValid = true;
-    }
-    return _cachedTypesSet!;
+    final cached = _cachedTypesSet;
+    if (_filterCacheValid && cached != null) return cached;
+    final types = _filter.types.toSet();
+    _cachedTypesSet = types;
+    _filterCacheValid = true;
+    return types;
   }
 
   List<Type> _getCurrentTypes() =>

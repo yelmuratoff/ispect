@@ -1,9 +1,11 @@
+// ignore_for_file: unnecessary_getters_setters
+
 import 'dart:async';
 import 'dart:math';
 
 import 'package:ispectify/ispectify.dart';
-import 'config.dart';
-import 'transaction.dart';
+import 'package:ispectify_db/src/config.dart';
+import 'package:ispectify_db/src/transaction.dart';
 
 final class ISpectDbCore {
   const ISpectDbCore._();
@@ -27,7 +29,7 @@ final class ISpectDbCore {
     }
   }
 
-  static final RegExp _singleQuoteRe = RegExp(r"'[^']*'");
+  static final RegExp _singleQuoteRe = RegExp("'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
   static final RegExp _digitRe = RegExp(r'\b\d+\b');
   static final RegExp _whitespaceRe = RegExp(r'\s+');
@@ -68,7 +70,9 @@ final class ISpectDbCore {
   static Object? truncateValue(Object? value, int maxLen) {
     if (value == null) return null;
     if (value is String) {
-      return value.length <= maxLen ? value : value.substring(0, maxLen) + '…';
+      return value.length <= maxLen
+          ? value
+          : '${value.substring(0, maxLen)}…';
     }
 
     return value;
@@ -301,21 +305,21 @@ extension ISpectLoggerDb on ISpectLogger {
         ISpectDbCore.pickLogKey(isError: isError, operation: operation);
 
     final message = ISpectDbCore.buildMessage(
-        source: source,
-        operation: operation,
-        table: table,
-        target: target,
-        key: key,
-        items: items,
-        affected: affected,
-        duration: duration,
-        success: success,
-        value: valTrunc);
+      source: source,
+      operation: operation,
+      table: table,
+      target: target,
+      key: key,
+      items: items,
+      affected: affected,
+      duration: duration,
+      success: success,
+      value: valTrunc,
+    );
 
+    final threshold = ISpectDbCore.config.slowQueryThreshold;
     final isSlow =
-        duration != null && ISpectDbCore.config.slowQueryThreshold != null
-            ? duration > ISpectDbCore.config.slowQueryThreshold!
-            : false;
+        duration != null && threshold != null && duration > threshold;
 
     final additional = ISpectDbCore.clean({
       'source': source,
@@ -382,7 +386,8 @@ extension ISpectLoggerDb on ISpectLogger {
     Object? err;
     StackTrace? st;
     try {
-      result = await run();
+      // ignore: join_return_with_assignment
+      result = await run(); // `result` is used in `finally`.
       return result;
     } catch (e, s) {
       err = e;
@@ -440,22 +445,21 @@ extension ISpectLoggerDb on ISpectLogger {
     Map<String, Object?>? namedArgs,
     Map<String, Object?>? meta,
     String? transactionId,
-  }) {
-    return ISpectDbToken(
-      id: ISpectDbCore.genId(),
-      startedAt: DateTime.now(),
-      source: source,
-      operation: operation,
-      statement: statement,
-      target: target,
-      table: table,
-      key: key,
-      args: args,
-      namedArgs: namedArgs,
-      meta: meta,
-      transactionId: transactionId ?? ISpectDbTxn.currentTransactionId(),
-    );
-  }
+  }) =>
+      ISpectDbToken(
+        id: ISpectDbCore.genId(),
+        startedAt: DateTime.now(),
+        source: source,
+        operation: operation,
+        statement: statement,
+        target: target,
+        table: table,
+        key: key,
+        args: args,
+        namedArgs: namedArgs,
+        meta: meta,
+        transactionId: transactionId ?? ISpectDbTxn.currentTransactionId(),
+      );
 
   void dbEnd(
     ISpectDbToken token, {

@@ -37,8 +37,8 @@ class ISpectDbConfig {
     bool? attachStackOnError,
     bool? enableTransactionMarkers,
     Duration? slowQueryThreshold,
-  }) {
-    return ISpectDbConfig(
+  }) =>
+      ISpectDbConfig(
       sampleRate: sampleRate ?? this.sampleRate,
       redact: redact ?? this.redact,
       redactKeys: redactKeys ?? this.redactKeys,
@@ -50,5 +50,4 @@ class ISpectDbConfig {
           enableTransactionMarkers ?? this.enableTransactionMarkers,
       slowQueryThreshold: slowQueryThreshold ?? this.slowQueryThreshold,
     );
-  }
 }

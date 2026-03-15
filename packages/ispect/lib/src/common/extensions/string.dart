@@ -33,7 +33,10 @@ extension ISpectStringExtension on String? {
   /// print(''.isNullOrEmpty);        // Output: true
   /// print('hello'.isNullOrEmpty);   // Output: false
   /// ```
-  bool get isNullOrEmpty => this == null || this!.isEmpty;
+  bool get isNullOrEmpty {
+    final value = this;
+    return value == null || value.isEmpty;
+  }
 
   /// Returns `true` if the string is not null and not empty.
   ///
@@ -53,5 +56,9 @@ extension ISpectStringExtension on String? {
   /// print(''.orDefault('default'));       // Output: 'default'
   /// print('value'.orDefault('default'));  // Output: 'value'
   /// ```
-  String orDefault(String defaultValue) => isNullOrEmpty ? defaultValue : this!;
+  String orDefault(String defaultValue) {
+    final value = this;
+    if (value == null || value.isEmpty) return defaultValue;
+    return value;
+  }
 }
