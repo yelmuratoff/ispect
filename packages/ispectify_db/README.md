@@ -31,15 +31,15 @@
 **[Live Web Demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
 
 <div align="center">
-  <img src="assets/desktop.png" width="700" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="700" />
 </div>
 
 <div align="center">
-  <img src="assets/inspector.png" width="160" />
-  <img src="assets/color_picker.png" width="160" />
-  <img src="assets/settings.png" width="160" />
-  <img src="assets/json_viewer.png" width="160" />
-  <img src="assets/share.png" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="160" />
 </div>
 
 ---
