@@ -174,10 +174,16 @@ final class ISpectWSInterceptor
       final map = payload.ensureMap(sanitized)
         ..removeWhere((_, value) => value == null);
       return map;
-    } catch (_) {
-      // If redaction fails, return payload without redaction
-      return Map<String, dynamic>.from(basePayload)
-        ..removeWhere((_, value) => value == null);
+    } catch (e, s) {
+      // If redaction fails, log the error and omit sensitive data
+      logger.logData(
+        ISpectLogData(
+          'Payload redaction failed, sensitive data omitted: $e',
+          logLevel: LogLevel.warning,
+          stackTrace: s,
+        ),
+      );
+      return <String, dynamic>{'metrics': basePayload['metrics']};
     }
   }
 

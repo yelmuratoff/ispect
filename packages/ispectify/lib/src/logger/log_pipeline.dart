@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:ispectify/src/filter/filter.dart';
 import 'package:ispectify/src/history/history.dart';
@@ -75,8 +76,9 @@ class LogPipeline {
       if (!_streamController.isClosed) {
         _streamController.add(data);
       }
-    } catch (_) {
+    } catch (e) {
       // Prevent dispatch errors from crashing the logger.
+      log('[ISpect] Log dispatch failed: $e');
     } finally {
       _isDispatching = false;
     }

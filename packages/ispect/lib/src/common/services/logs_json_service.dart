@@ -129,8 +129,7 @@ class LogsJsonService {
 
   /// Validates JSON nesting depth to prevent stack overflow.
   ///
-  /// Uses an iterative BFS approach to avoid stack overflow on deeply
-  /// nested input — the very scenario this method is meant to catch.
+
   void _validateJsonDepth(dynamic data) {
     // Each entry is (node, depth).
     final queue = <(dynamic, int)>[(data, 0)];

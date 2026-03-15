@@ -269,7 +269,7 @@ class ISpectHttpInterceptor extends InterceptorContract
     if (value.isEmpty) return null;
     try {
       return jsonDecode(value);
-    } on FormatException {
+    } catch (_) {
       return value;
     }
   }

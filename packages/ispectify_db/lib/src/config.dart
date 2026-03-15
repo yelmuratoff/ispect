@@ -1,5 +1,5 @@
 class ISpectDbConfig {
-  ISpectDbConfig({
+  const ISpectDbConfig({
     this.sampleRate,
     this.redact = true,
     this.redactKeys = const ['password', 'token', 'secret', 'apiKey'],
@@ -9,15 +9,10 @@ class ISpectDbConfig {
     this.attachStackOnError = false,
     this.enableTransactionMarkers = false,
     this.slowQueryThreshold,
-  }) {
-    if (sampleRate != null && (sampleRate! < 0 || sampleRate! > 1)) {
-      throw ArgumentError.value(
-        sampleRate,
-        'sampleRate',
-        'Must be between 0.0 and 1.0 (inclusive)',
-      );
-    }
-  }
+  }) : assert(
+          sampleRate == null || (sampleRate >= 0 && sampleRate <= 1),
+          'sampleRate must be between 0.0 and 1.0 (inclusive)',
+        );
 
   final double? sampleRate;
   final bool redact;

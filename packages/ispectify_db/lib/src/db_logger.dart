@@ -8,7 +8,14 @@ import 'transaction.dart';
 final class ISpectDbCore {
   const ISpectDbCore._();
 
-  static ISpectDbConfig config = ISpectDbConfig();
+  static ISpectDbConfig _config = const ISpectDbConfig();
+
+  /// Current configuration. Use [configure] to update.
+  static ISpectDbConfig get config => _config;
+
+  /// Updates the configuration. Prefer using [configure] over direct assignment
+  /// to make configuration changes explicit and intentional.
+  static set config(ISpectDbConfig value) => _config = value;
 
   static final RegExp _singleQuoteRe = RegExp(r"'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
@@ -232,7 +239,8 @@ extension ISpectLoggerDb on ISpectLogger {
     final naRedacted = namedArgs == null
         ? null
         : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
-    final naBase = naRedacted is Map<String, Object?> ? naRedacted : namedArgs;
+    final naBase =
+        naRedacted is Map<String, Object?> ? naRedacted : naRedacted;
     final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(
@@ -245,7 +253,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final mRedacted = meta == null
         ? null
         : (useRedact ? ISpectDbCore.redact(meta, rKeys) : meta);
-    final m = mRedacted is Map<String, Object?> ? mRedacted : meta;
+    final m = mRedacted is Map<String, Object?> ? mRedacted : mRedacted;
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 

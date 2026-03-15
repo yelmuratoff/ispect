@@ -48,13 +48,14 @@ class ISpectHttpInterceptorSettingsBuilder {
         _printRequestData = true,
         _printRequestHeaders = false;
 
-  /// Creates a builder configured for development (verbose, no redaction).
+  /// Creates a builder configured for development (verbose, with redaction).
   ///
   /// Ideal for local debugging with full visibility into all requests/responses.
+  /// Redaction remains enabled to prevent accidental credential leakage in logs.
   factory ISpectHttpInterceptorSettingsBuilder.development() =>
       ISpectHttpInterceptorSettingsBuilder()
         ..withAllHeaders()
-        ..withoutRedaction()
+        ..withRedaction()
         ..withAllData();
 
   /// Creates a builder configured for production (minimal, with redaction).

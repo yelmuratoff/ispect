@@ -136,7 +136,7 @@ mixin BaseNetworkInterceptor {
     try {
       return payload.stringKeyMap(map);
     } catch (_) {
-      return <String, dynamic>{'raw': map.toString()};
+      return <String, dynamic>{'raw': '[conversion failed]'};
     }
   }
 
@@ -168,8 +168,12 @@ mixin BaseNetworkInterceptor {
       final mapToConvert = redacted is Map ? redacted : data;
       return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
     } catch (_) {
-      // Fallback: convert original data
-      return payload.stringKeyMap(data);
+      // Fallback: convert original data with safe keys
+      try {
+        return payload.stringKeyMap(data);
+      } catch (_) {
+        return <String, dynamic>{'raw': '[conversion failed]'};
+      }
     }
   }
 }
