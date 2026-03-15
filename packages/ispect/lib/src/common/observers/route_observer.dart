@@ -40,6 +40,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.onStartUserGesture,
     this.onStopUserGesture,
     this.maxTransitions = 200,
+    this.enableArgumentRedaction = true,
   });
 
   /// Returns a list of navigator observers for use in MaterialApp.
@@ -107,6 +108,11 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onStartUserGesture;
   final VoidCallback? onStopUserGesture;
+
+  /// When true, route arguments are redacted in log messages by showing
+  /// only their type and key names (no values). Defaults to true for security.
+  /// Set to false to include full argument details in logs.
+  final bool enableArgumentRedaction;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -176,13 +182,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
   String _generateTransitionId(DateTime timestamp, Route<dynamic>? route) {
     final micro = timestamp.microsecondsSinceEpoch;
-
     final routeId = route?.hashCode ?? 0;
     final instanceId = identityHashCode(this);
 
-    final String raw = '$micro$routeId$instanceId';
-
-    final int hash = raw.codeUnits.fold(0, (prev, e) => 31 * prev + e);
+    final hash = Object.hash(micro, routeId, instanceId);
 
     return hash.toUnsigned(64).toRadixString(36);
   }
@@ -230,14 +233,22 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
-    // Arguments info (only type and key names)
+    // Arguments info — redacted by default (only type and key names)
     switch (route?.settings.arguments) {
       case null:
         break;
       case final Map<String, dynamic> args:
-        buffer.writeln('Arguments: {${args.keys.join(', ')}}');
+        if (enableArgumentRedaction) {
+          buffer.writeln('Arguments: {${args.keys.join(', ')}}');
+        } else {
+          buffer.writeln('Arguments: $args');
+        }
       case final Object args:
-        buffer.writeln('Arguments: (${args.runtimeType})');
+        if (enableArgumentRedaction) {
+          buffer.writeln('Arguments: (${args.runtimeType})');
+        } else {
+          buffer.writeln('Arguments: $args');
+        }
     }
 
     return buffer.toString().trim();

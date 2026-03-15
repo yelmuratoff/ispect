@@ -141,7 +141,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!_shouldLog(toggle: settings.printEvents, candidate: event)) {
+    if (!_shouldLog(toggle: settings.printEvents, candidate: bloc)) {
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
@@ -168,7 +168,7 @@ class ISpectBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    if (!_shouldLog(toggle: settings.printTransitions, candidate: transition)) {
+    if (!_shouldLog(toggle: settings.printTransitions, candidate: bloc)) {
       return;
     }
     final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
@@ -192,7 +192,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!_shouldLog(toggle: settings.printChanges, candidate: change)) {
+    if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) {
       return;
     }
     final accepted = settings.changeFilter?.call(bloc, change) ?? true;

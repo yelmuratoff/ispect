@@ -149,6 +149,12 @@ class ISpectViewController extends ChangeNotifier {
 
   bool get expandedLogs => _expandedLogs;
 
+  set expandedLogs(bool value) {
+    if (_expandedLogs == value) return;
+    _expandedLogs = value;
+    notifyListeners();
+  }
+
   void toggleExpandedLogs() {
     _expandedLogs = !_expandedLogs;
     notifyListeners();

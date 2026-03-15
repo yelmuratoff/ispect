@@ -1,15 +1,18 @@
+import 'package:ispectify/ispectify.dart' show kDefaultSensitiveKeys;
+
 class ISpectDbConfig {
-  const ISpectDbConfig({
+  ISpectDbConfig({
     this.sampleRate,
     this.redact = true,
-    this.redactKeys = const ['password', 'token', 'secret', 'apiKey'],
+    List<String>? redactKeys,
     this.maxValueLength = 500,
     this.maxArgsLength = 500,
     this.maxStatementLength = 2000,
     this.attachStackOnError = false,
     this.enableTransactionMarkers = false,
     this.slowQueryThreshold,
-  }) : assert(
+  })  : redactKeys = redactKeys ?? kDefaultSensitiveKeys.toList(),
+        assert(
           sampleRate == null || (sampleRate >= 0 && sampleRate <= 1),
           'sampleRate must be between 0.0 and 1.0 (inclusive)',
         );

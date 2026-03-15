@@ -13,6 +13,8 @@ import 'package:ispectify/ispectify.dart';
 /// Implementing classes should use this mixin and call [initializeInterceptor]
 /// in their constructor to set up the logger and redactor.
 mixin BaseNetworkInterceptor {
+  bool _isInitialized = false;
+
   late final ISpectLogger _logger;
   late RedactionService _redactor;
   late NetworkPayloadSanitizer _payloadSanitizer;
@@ -30,16 +32,35 @@ mixin BaseNetworkInterceptor {
     _logger = logger ?? ISpectLogger();
     _redactor = redactor ?? RedactionService();
     _payloadSanitizer = NetworkPayloadSanitizer(_redactor);
+    _isInitialized = true;
   }
 
   /// Gets the current logger instance.
-  ISpectLogger get logger => _logger;
+  ISpectLogger get logger {
+    assert(
+      _isInitialized,
+      'Call initializeInterceptor() before accessing logger',
+    );
+    return _logger;
+  }
 
   /// Gets the current redaction service.
-  RedactionService get redactor => _redactor;
+  RedactionService get redactor {
+    assert(
+      _isInitialized,
+      'Call initializeInterceptor() before accessing redactor',
+    );
+    return _redactor;
+  }
 
   /// Provides helper functions for sanitizing headers and bodies.
-  NetworkPayloadSanitizer get payload => _payloadSanitizer;
+  NetworkPayloadSanitizer get payload {
+    assert(
+      _isInitialized,
+      'Call initializeInterceptor() before accessing payload',
+    );
+    return _payloadSanitizer;
+  }
 
   /// Indicates whether redaction is enabled for this interceptor.
   ///

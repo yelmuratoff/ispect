@@ -10,12 +10,18 @@ class HttpResponseData {
     required this.baseResponse,
     required this.requestData,
     required this.multipartRequest,
+    this.preDecodedBody,
   });
 
   final BaseResponse baseResponse;
   final Response? response;
   final MultipartRequest? multipartRequest;
   final HttpRequestData requestData;
+
+  /// Optional pre-decoded body to avoid redundant JSON parsing.
+  /// When provided, [toJson] will use this value instead of re-decoding
+  /// [response.body].
+  final Object? preDecodedBody;
 
   /// Converts this response data to a JSON-compatible map.
   ///
@@ -44,14 +50,23 @@ class HttpResponseData {
       'content-length': baseResponse.contentLength,
       'persistent-connection': baseResponse.persistentConnection,
       if (response != null)
-        'body': redactor != null
-            ? _getRedactedBody(
-                response!.body,
-                redactor,
-                ignoredValues,
-                ignoredKeys,
-              )
-            : _tryDecodeJson(response!.body),
+        'body': preDecodedBody != null
+            ? (redactor != null
+                ? _redactPreDecoded(
+                    preDecodedBody!,
+                    redactor,
+                    ignoredValues,
+                    ignoredKeys,
+                  )
+                : preDecodedBody)
+            : (redactor != null
+                ? _getRedactedBody(
+                    response!.body,
+                    redactor,
+                    ignoredValues,
+                    ignoredKeys,
+                  )
+                : _tryDecodeJson(response!.body)),
       if (response != null && redactor == null)
         'body-bytes': response!.bodyBytes.length.toString(),
       if (multipartRequest != null)
@@ -161,6 +176,21 @@ class HttpResponseData {
     }
 
     return map;
+  }
+
+  /// Redacts an already-decoded body value without re-parsing JSON.
+  static Object _redactPreDecoded(
+    Object body,
+    RedactionService redactor,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  ) {
+    final redacted = redactor.redact(
+      body,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    return redacted is Object ? redacted : body;
   }
 
   static Object _tryDecodeJson(String body) {

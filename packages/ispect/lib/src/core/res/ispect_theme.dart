@@ -76,7 +76,7 @@ class ISpectDynamicColor {
   }
 
   @override
-  int get hashCode => dark.hashCode ^ light.hashCode;
+  int get hashCode => Object.hash(dark, light);
 }
 
 /// Defines the theme configuration for `ISpect`, including colors, icons, and log descriptions.
@@ -307,16 +307,19 @@ class ISpectTheme {
 
   @override
   int get hashCode {
-    return pageTitle.hashCode ^
-        background.hashCode ^
-        foreground.hashCode ^
-        divider.hashCode ^
-        primary.hashCode ^
-        card.hashCode ^
-        logColors.hashCode ^
-        logIcons.hashCode ^
-        logDescriptions.hashCode ^
-        panelTheme.hashCode;
+    const equality = DeepCollectionEquality();
+    return Object.hash(
+      pageTitle,
+      background,
+      foreground,
+      divider,
+      primary,
+      card,
+      equality.hash(logColors),
+      equality.hash(logIcons),
+      equality.hash(logDescriptions),
+      panelTheme,
+    );
   }
 
   factory ISpectTheme.fromMap(Map<String, dynamic> map) {

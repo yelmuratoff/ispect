@@ -805,7 +805,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       ],
     );
 
-    ISpectDbCore.config = const ISpectDbConfig(
+    ISpectDbCore.config = ISpectDbConfig(
       sampleRate: 1.0,
       redact: true,
       attachStackOnError: true,

@@ -80,7 +80,7 @@ class RedactionService {
               PatternBasedRedaction(),
             ]),
         _config = _RedactionConfig(
-          sensitiveKeysLower: (sensitiveKeys ?? _kDefaultSensitiveKeys)
+          sensitiveKeysLower: (sensitiveKeys ?? kDefaultSensitiveKeys)
               .map((e) => e.toLowerCase())
               .toSet(),
           sensitiveKeyPatterns:
@@ -556,7 +556,11 @@ class _RedactionWalker {
   }
 }
 
-const Set<String> _kDefaultSensitiveKeys = <String>{
+/// The canonical set of sensitive key names used for redaction across all
+/// ispect packages. This is the **single source of truth** — other packages
+/// (e.g. `ispectify_db`) reference this constant instead of maintaining
+/// their own lists.
+const Set<String> kDefaultSensitiveKeys = <String>{
   // Authentication & Authorization
   'authorization',
   'proxy-authorization',

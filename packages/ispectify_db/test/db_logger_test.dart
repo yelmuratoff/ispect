@@ -9,21 +9,21 @@ void main() {
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = const ISpectDbConfig(
+    ISpectDbCore.config = ISpectDbConfig(
       sampleRate: null,
       redact: true,
-      redactKeys: ['password', 'token'],
+      redactKeys: const ['password', 'token'],
       maxValueLength: 50,
       maxArgsLength: 12,
       maxStatementLength: 40,
       attachStackOnError: true,
       enableTransactionMarkers: true,
-      slowQueryThreshold: Duration(milliseconds: 1),
+      slowQueryThreshold: const Duration(milliseconds: 1),
     );
   });
 
   tearDown(() {
-    ISpectDbCore.config = const ISpectDbConfig();
+    ISpectDbCore.config = ISpectDbConfig();
   });
 
   test('db logs fields and digest/truncation', () async {

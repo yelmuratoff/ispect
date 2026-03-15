@@ -6,11 +6,32 @@ part of 'base.dart';
 /// Called after an event handler finishes processing, regardless of success or failure.
 /// May include error details if the handler threw an exception.
 final class BlocDoneLog extends BlocLifecycleLog {
-  BlocDoneLog({
+  factory BlocDoneLog({
+    required Bloc<dynamic, dynamic> bloc,
+    required ISpectBlocSettings settings,
+    required Object? event,
+    required bool hasError,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    final typeName = bloc.runtimeType.toString();
+    return BlocDoneLog._internal(
+      bloc: bloc,
+      settings: settings,
+      event: event,
+      hasError: hasError,
+      error: error,
+      stackTrace: stackTrace,
+      typeName: typeName,
+    );
+  }
+
+  BlocDoneLog._internal({
     required Bloc<dynamic, dynamic> bloc,
     required this.settings,
     required this.event,
     required this.hasError,
+    required String typeName,
     Object? error,
     StackTrace? stackTrace,
   }) : super(
@@ -18,14 +39,13 @@ final class BlocDoneLog extends BlocLifecycleLog {
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final blocType = bloc.runtimeType;
             final payload = settings.printEventFullData
                 ? event
                 : event?.runtimeType ?? 'null';
             final status = hasError ? 'failed' : 'completed';
             return event == null
-                ? '$blocType event handler $status'
-                : '$blocType event handler $status'
+                ? '$typeName event handler $status'
+                : '$typeName event handler $status'
                     '\nEVENT: $payload';
           },
           exception: error is Exception ? error : null,

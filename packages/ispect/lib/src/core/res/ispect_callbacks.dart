@@ -117,11 +117,12 @@ final class ISpectSettingsState {
   }
 
   @override
-  int get hashCode =>
-      enabled.hashCode ^
-      useConsoleLogs.hashCode ^
-      useHistory.hashCode ^
-      disabledLogTypes.hashCode;
+  int get hashCode => Object.hash(
+        enabled,
+        useConsoleLogs,
+        useHistory,
+        const DeepCollectionEquality().hash(disabledLogTypes),
+      );
 
   @override
   String toString() => '''ISpectSettingsState(
@@ -159,7 +160,11 @@ final class ISpectShareRequest {
   }
 
   @override
-  int get hashCode => subject.hashCode ^ text.hashCode ^ filePaths.hashCode;
+  int get hashCode => Object.hash(
+        subject,
+        text,
+        const DeepCollectionEquality().hash(filePaths),
+      );
 
   @override
   String toString() => '''ISpectShareRequest(

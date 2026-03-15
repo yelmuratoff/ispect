@@ -7,16 +7,30 @@ part of 'base.dart';
 /// Includes the triggering event, current state, and next state.
 /// Only applies to Bloc (not Cubit), as transitions require events.
 final class BlocTransitionLog extends BlocLifecycleLog {
-  BlocTransitionLog({
+  factory BlocTransitionLog({
+    required Bloc<dynamic, dynamic> bloc,
+    required Transition<dynamic, dynamic> transition,
+    required ISpectBlocSettings settings,
+  }) {
+    final typeName = bloc.runtimeType.toString();
+    return BlocTransitionLog._internal(
+      bloc: bloc,
+      transition: transition,
+      settings: settings,
+      typeName: typeName,
+    );
+  }
+
+  BlocTransitionLog._internal({
     required Bloc<dynamic, dynamic> bloc,
     required this.transition,
     required this.settings,
+    required String typeName,
   }) : super(
           bloc: bloc,
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final blocType = bloc.runtimeType;
             final eventPayload = settings.printEventFullData
                 ? transition.event
                 : transition.event.runtimeType;
@@ -26,7 +40,7 @@ final class BlocTransitionLog extends BlocLifecycleLog {
             final nextPayload = settings.printStateFullData
                 ? transition.nextState
                 : transition.nextState.runtimeType;
-            return '$blocType transitioned from $currentPayload to $nextPayload'
+            return '$typeName transitioned from $currentPayload to $nextPayload'
                 '\nEVENT: $eventPayload';
           },
           additionalData: settings.redactAdditionalData(<String, dynamic>{

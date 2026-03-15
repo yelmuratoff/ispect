@@ -35,7 +35,7 @@ class LogsJsonService {
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
   ///   redactionService (optional, applies redaction to log data when provided),
-  ///   enableRedaction (default: false for backward compatibility)
+  ///   enableRedaction (default: true for security; pass false to disable)
   /// - Return: JSON string ready for file export
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
@@ -43,7 +43,7 @@ class LogsJsonService {
     List<ISpectLogData> logs, {
     bool includeMetadata = true,
     RedactionService? redactionService,
-    bool enableRedaction = false,
+    bool enableRedaction = true,
   }) async {
     final exportData = <String, dynamic>{};
 
@@ -228,7 +228,7 @@ class LogsJsonService {
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
     RedactionService? redactionService,
-    bool enableRedaction = false,
+    bool enableRedaction = true,
   }) async {
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
@@ -262,7 +262,7 @@ class LogsJsonService {
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
     RedactionService? redactionService,
-    bool enableRedaction = false,
+    bool enableRedaction = true,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');

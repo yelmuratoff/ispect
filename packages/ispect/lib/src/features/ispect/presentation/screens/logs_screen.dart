@@ -62,7 +62,7 @@ class _LogsScreenState extends State<LogsScreen> {
           onShare: widget.options.onShare,
           initialSettings: widget.options.initialSettings,
         );
-    _logsViewController.toggleExpandedLogs();
+    _logsViewController.expandedLogs = false;
   }
 
   @override
@@ -622,5 +622,6 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
       SizedBox(height: _height, child: child);
 
   @override
-  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
+      child != oldDelegate.child;
 }

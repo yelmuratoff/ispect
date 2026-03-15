@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
@@ -62,31 +63,44 @@ class ISpectHttpInterceptor extends InterceptorContract
   }) async {
     if (!_shouldProcessRequest(request)) return request;
 
-    final useRedaction = settings.enableRedaction;
+    try {
+      final useRedaction = settings.enableRedaction;
 
-    final headers = settings.printRequestHeaders
-        ? _stringHeaders(request.headers, useRedaction)
-        : null;
+      final headers = settings.printRequestHeaders
+          ? _stringHeaders(request.headers, useRedaction)
+          : null;
 
-    final body = settings.printRequestData
-        ? _requestBodyPayload(request, useRedaction)
-        : null;
+      final body = settings.printRequestData
+          ? _requestBodyPayload(request, useRedaction)
+          : null;
 
-    final url = redactUrl(
-      request.url.toString(),
-      useRedaction: useRedaction,
-    );
-    logger.logData(
-      HttpRequestLog(
-        url,
-        method: request.method,
-        url: url,
-        path: request.url.path,
-        headers: headers,
-        settings: settings,
-        body: body,
-      ),
-    );
+      final url = redactUrl(
+        request.url.toString(),
+        useRedaction: useRedaction,
+      );
+      final path = redactUrl(
+        request.url.path,
+        useRedaction: useRedaction,
+      );
+      logger.logData(
+        HttpRequestLog(
+          url,
+          method: request.method,
+          url: url,
+          path: path,
+          headers: headers,
+          settings: settings,
+          body: body,
+        ),
+      );
+    } catch (e, st) {
+      developer.log(
+        'Failed to log HTTP request: $e',
+        name: 'ISpectHttpInterceptor',
+        error: e,
+        stackTrace: st,
+      );
+    }
     return request;
   }
 
@@ -99,81 +113,99 @@ class ISpectHttpInterceptor extends InterceptorContract
     if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
     if (isErrorResponse && !_shouldProcessError(response)) return response;
 
-    final useRedaction = settings.enableRedaction;
+    try {
+      final useRedaction = settings.enableRedaction;
 
-    final responseBody = _responseBodyPayload(
-      response,
-      useRedaction,
-      include: isErrorResponse
-          ? settings.printErrorData
-          : settings.printResponseData,
-    );
-
-    final requestBody = settings.printRequestData
-        ? _requestBodyPayload(response.request, useRedaction)
-        : null;
-
-    final responseData = HttpResponseData(
-      baseResponse: response,
-      requestData: HttpRequestData(response.request),
-      response: response is Response ? response : null,
-      multipartRequest: response.request is MultipartRequest
-          ? response.request! as MultipartRequest
-          : null,
-    );
-
-    if (isErrorResponse) {
-      final errorUrl = redactUrl(
-        response.request?.url.toString() ?? '',
-        useRedaction: useRedaction,
+      final responseBody = _responseBodyPayload(
+        response,
+        useRedaction,
+        include: isErrorResponse
+            ? settings.printErrorData
+            : settings.printResponseData,
       );
-      logger.logData(
-        HttpErrorLog(
-          errorUrl,
-          method: response.request?.method,
-          url: errorUrl,
-          path: response.request?.url.path,
-          statusCode: response.statusCode,
-          settings: settings,
-          statusMessage:
-              settings.printErrorMessage ? response.reasonPhrase : null,
-          requestHeaders: settings.printRequestHeaders
-              ? _stringHeaders(response.request?.headers, useRedaction)
-              : null,
-          headers: settings.printErrorHeaders
-              ? _stringHeaders(response.headers, useRedaction)
-              : null,
-          body: _errorBodyPayload(responseBody, requestBody),
-          responseData: responseData,
-          redactor: useRedaction ? redactor : null,
-        ),
+
+      final requestBody = settings.printRequestData
+          ? _requestBodyPayload(response.request, useRedaction)
+          : null;
+
+      final responseData = HttpResponseData(
+        baseResponse: response,
+        requestData: HttpRequestData(response.request),
+        response: response is Response ? response : null,
+        multipartRequest: response.request is MultipartRequest
+            ? response.request! as MultipartRequest
+            : null,
+        preDecodedBody: responseBody,
       );
-    } else {
-      final respUrl = redactUrl(
-        response.request?.url.toString() ?? '',
-        useRedaction: useRedaction,
-      );
-      logger.logData(
-        HttpResponseLog(
-          respUrl,
-          method: response.request?.method,
-          url: respUrl,
-          path: response.request?.url.path,
-          statusCode: response.statusCode,
-          statusMessage:
-              settings.printResponseMessage ? response.reasonPhrase : null,
-          requestHeaders: settings.printRequestHeaders
-              ? _stringHeaders(response.request?.headers, useRedaction)
-              : null,
-          headers: settings.printResponseHeaders
-              ? _stringHeaders(response.headers, useRedaction)
-              : null,
-          requestBody: requestBody,
-          responseBody: responseBody,
-          settings: settings,
-          responseData: responseData,
-          redactor: useRedaction ? redactor : null,
-        ),
+
+      if (isErrorResponse) {
+        final errorUrl = redactUrl(
+          response.request?.url.toString() ?? '',
+          useRedaction: useRedaction,
+        );
+        final errorPath = redactUrl(
+          response.request?.url.path ?? '',
+          useRedaction: useRedaction,
+        );
+        logger.logData(
+          HttpErrorLog(
+            errorUrl,
+            method: response.request?.method,
+            url: errorUrl,
+            path: errorPath,
+            statusCode: response.statusCode,
+            settings: settings,
+            statusMessage:
+                settings.printErrorMessage ? response.reasonPhrase : null,
+            requestHeaders: settings.printRequestHeaders
+                ? _stringHeaders(response.request?.headers, useRedaction)
+                : null,
+            headers: settings.printErrorHeaders
+                ? _stringHeaders(response.headers, useRedaction)
+                : null,
+            body: _errorBodyPayload(responseBody, requestBody),
+            responseData: responseData,
+            redactor: useRedaction ? redactor : null,
+          ),
+        );
+      } else {
+        final respUrl = redactUrl(
+          response.request?.url.toString() ?? '',
+          useRedaction: useRedaction,
+        );
+        final respPath = redactUrl(
+          response.request?.url.path ?? '',
+          useRedaction: useRedaction,
+        );
+        logger.logData(
+          HttpResponseLog(
+            respUrl,
+            method: response.request?.method,
+            url: respUrl,
+            path: respPath,
+            statusCode: response.statusCode,
+            statusMessage:
+                settings.printResponseMessage ? response.reasonPhrase : null,
+            requestHeaders: settings.printRequestHeaders
+                ? _stringHeaders(response.request?.headers, useRedaction)
+                : null,
+            headers: settings.printResponseHeaders
+                ? _stringHeaders(response.headers, useRedaction)
+                : null,
+            requestBody: requestBody,
+            responseBody: responseBody,
+            settings: settings,
+            responseData: responseData,
+            redactor: useRedaction ? redactor : null,
+          ),
+        );
+      }
+    } catch (e, st) {
+      developer.log(
+        'Failed to log HTTP response: $e',
+        name: 'ISpectHttpInterceptor',
+        error: e,
+        stackTrace: st,
       );
     }
 

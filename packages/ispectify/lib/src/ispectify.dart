@@ -47,11 +47,7 @@ class ISpectLogger {
     ILogHistory? history,
   }) : _hasCustomErrorHandler = errorHandler != null,
        _loggerStreamController =
-            // Note: This is a synchronous broadcast controller. If a listener
-            // throws, the exception will propagate and prevent subsequent
-            // listeners from being notified for that event. Consider wrapping
-            // listener callbacks in try-catch if robustness is required.
-            StreamController<ISpectLogData>.broadcast(sync: true) {
+            StreamController<ISpectLogData>.broadcast() {
     final resolvedOptions = options ?? ISpectLoggerOptions();
     _options = resolvedOptions;
     _logger = logger ?? ISpectBaseLogger();
@@ -194,6 +190,9 @@ class ISpectLogger {
     }
 
     if (history != null) {
+      // Dispose the old history to release resources (e.g. auto-save timers
+      // in FileLogHistory) before replacing it.
+      _history.dispose();
       _history = history;
     } else if (_history is DefaultISpectLoggerHistory) {
       // Rebuild default history to inherit updated options while

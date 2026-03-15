@@ -93,7 +93,10 @@ final class ISpectWSInterceptor
     final url = uri?.toString() ?? '';
     final path = uri?.path ?? '';
     final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => payload.stringKeyMap(map),
+      final Map<dynamic, dynamic> map => processMapData(
+          map,
+          useRedaction: useRedaction,
+        ),
       _ => null,
     };
 
@@ -141,7 +144,10 @@ final class ISpectWSInterceptor
     final safeData = _safeRedact(data, useRedaction);
     final metrics = _client?.metrics.toJson();
     final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => payload.stringKeyMap(map),
+      final Map<dynamic, dynamic> map => processMapData(
+          map,
+          useRedaction: useRedaction,
+        ),
       _ => null,
     };
 

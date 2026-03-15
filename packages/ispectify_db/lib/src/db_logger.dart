@@ -8,7 +8,7 @@ import 'transaction.dart';
 final class ISpectDbCore {
   const ISpectDbCore._();
 
-  static ISpectDbConfig _config = const ISpectDbConfig();
+  static ISpectDbConfig _config = ISpectDbConfig();
 
   /// Current configuration. Use [configure] to update.
   static ISpectDbConfig get config => _config;
@@ -92,6 +92,26 @@ final class ISpectDbCore {
       return data.map((e) => redact(e, keys, depth + 1)).toList();
     }
     return data;
+  }
+
+  /// Redacts positional arguments in a [List] when the SQL [statement]
+  /// references columns that match any of the [keys].
+  ///
+  /// Because positional parameters (`?`) cannot be reliably mapped to specific
+  /// column names in all SQL dialects, this method redacts **all** list values
+  /// when the statement mentions at least one sensitive column name.
+  /// If [statement] is `null`, all values are redacted as a precaution.
+  static List<Object?> redactPositionalArgs(
+    List<Object?> args,
+    List<String> keys,
+    String? statement,
+  ) {
+    if (args.isEmpty) return args;
+    final stmtLower = statement?.toLowerCase();
+    final sensitive = stmtLower == null ||
+        keys.any((k) => stmtLower.contains(k.toLowerCase()));
+    if (!sensitive) return args;
+    return args.map((e) => e == null ? null : '***').toList();
   }
 
   static Map<String, Object?> clean(Map<String, Object?> m) {
@@ -242,14 +262,16 @@ extension ISpectLoggerDb on ISpectLogger {
 
     final aBase = args == null
         ? null
-        : (useRedact ? ISpectDbCore.redact(args, rKeys) : args);
+        : (useRedact
+            ? ISpectDbCore.redactPositionalArgs(args, rKeys, statement)
+            : args);
     final aRaw = aBase == null ? null : truncateLeaves(aBase, maxArgs);
     final a = aRaw is List ? aRaw.cast<Object?>() : null;
 
     final naRedacted = namedArgs == null
         ? null
         : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
-    final naBase = naRedacted is Map<String, Object?> ? naRedacted : naRedacted;
+    final naBase = naRedacted;
     final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(
@@ -262,7 +284,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final mRedacted = meta == null
         ? null
         : (useRedact ? ISpectDbCore.redact(meta, rKeys) : meta);
-    final m = mRedacted is Map<String, Object?> ? mRedacted : mRedacted;
+    final m = mRedacted;
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 

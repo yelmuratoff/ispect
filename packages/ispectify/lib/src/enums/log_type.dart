@@ -175,41 +175,44 @@ extension ISpectLogTypeExt on ISpectLogType {
         _ => LogLevel.info,
       };
 
+  /// Cached default pens per log type, created once and reused.
+  static final Map<ISpectLogType, AnsiPen> _defaultPens = {
+    ISpectLogType.critical: AnsiPen()..red(),
+    ISpectLogType.error: AnsiPen()..red(),
+    ISpectLogType.exception: AnsiPen()..red(),
+    ISpectLogType.httpError: AnsiPen()..red(),
+    ISpectLogType.blocError: AnsiPen()..red(),
+    ISpectLogType.riverpodFail: AnsiPen()..red(),
+    ISpectLogType.dbError: AnsiPen()..red(),
+    ISpectLogType.warning: AnsiPen()..xterm(172),
+    ISpectLogType.verbose: AnsiPen()..xterm(08),
+    ISpectLogType.info: AnsiPen()..blue(),
+    ISpectLogType.debug: AnsiPen()..gray(),
+    ISpectLogType.httpRequest: AnsiPen()..xterm(207),
+    ISpectLogType.httpResponse: AnsiPen()..xterm(35),
+    ISpectLogType.blocEvent: AnsiPen()..xterm(51),
+    ISpectLogType.blocTransition: AnsiPen()..xterm(49),
+    ISpectLogType.blocCreate: AnsiPen()..xterm(35),
+    ISpectLogType.blocClose: AnsiPen()..xterm(198),
+    ISpectLogType.blocState: AnsiPen()..xterm(38),
+    ISpectLogType.blocDone: AnsiPen()..green(),
+    ISpectLogType.riverpodAdd: AnsiPen()..xterm(51),
+    ISpectLogType.riverpodUpdate: AnsiPen()..xterm(49),
+    ISpectLogType.riverpodDispose: AnsiPen()..xterm(198),
+    ISpectLogType.route: AnsiPen()..xterm(135),
+    ISpectLogType.good: AnsiPen()..green(),
+    ISpectLogType.analytics: AnsiPen()..yellow(),
+    ISpectLogType.provider: AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
+    ISpectLogType.print: AnsiPen()..blue(),
+    ISpectLogType.dbQuery: AnsiPen()..blue(),
+    ISpectLogType.dbResult: AnsiPen()..green(),
+    ISpectLogType.wsSent: AnsiPen()..xterm(207),
+    ISpectLogType.wsReceived: AnsiPen()..xterm(35),
+  };
+
   /// Returns the default ANSI pen (color) for this log type.
   ///
   /// These are the built-in colors that will be used if no custom
   /// override is provided via `ISpectLoggerOptions`.
-  AnsiPen get defaultPen => switch (this) {
-        ISpectLogType.critical => AnsiPen()..red(),
-        ISpectLogType.error => AnsiPen()..red(),
-        ISpectLogType.exception => AnsiPen()..red(),
-        ISpectLogType.httpError => AnsiPen()..red(),
-        ISpectLogType.blocError => AnsiPen()..red(),
-        ISpectLogType.riverpodFail => AnsiPen()..red(),
-        ISpectLogType.dbError => AnsiPen()..red(),
-        ISpectLogType.warning => AnsiPen()..xterm(172),
-        ISpectLogType.verbose => AnsiPen()..xterm(08),
-        ISpectLogType.info => AnsiPen()..blue(),
-        ISpectLogType.debug => AnsiPen()..gray(),
-        ISpectLogType.httpRequest => AnsiPen()..xterm(207),
-        ISpectLogType.httpResponse => AnsiPen()..xterm(35),
-        ISpectLogType.blocEvent => AnsiPen()..xterm(51),
-        ISpectLogType.blocTransition => AnsiPen()..xterm(49),
-        ISpectLogType.blocCreate => AnsiPen()..xterm(35),
-        ISpectLogType.blocClose => AnsiPen()..xterm(198),
-        ISpectLogType.blocState => AnsiPen()..xterm(38),
-        ISpectLogType.blocDone => AnsiPen()..green(),
-        ISpectLogType.riverpodAdd => AnsiPen()..xterm(51),
-        ISpectLogType.riverpodUpdate => AnsiPen()..xterm(49),
-        ISpectLogType.riverpodDispose => AnsiPen()..xterm(198),
-        ISpectLogType.route => AnsiPen()..xterm(135),
-        ISpectLogType.good => AnsiPen()..green(),
-        ISpectLogType.analytics => AnsiPen()..yellow(),
-        ISpectLogType.provider => AnsiPen()..rgb(r: 0.2, g: 0.8, b: 0.9),
-        ISpectLogType.print => AnsiPen()..blue(),
-        ISpectLogType.dbQuery => AnsiPen()..blue(),
-        ISpectLogType.dbResult => AnsiPen()..green(),
-        ISpectLogType.wsSent => AnsiPen()..xterm(207),
-        ISpectLogType.wsReceived => AnsiPen()..xterm(35),
-      };
+  AnsiPen get defaultPen => _defaultPens[this]!;
 }

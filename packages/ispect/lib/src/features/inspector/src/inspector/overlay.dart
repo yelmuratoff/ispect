@@ -29,6 +29,15 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
   }
 
   @override
+  void didUpdateWidget(covariant InspectorOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Resume frame scheduling when boxInfo becomes non-null.
+    if (widget.boxInfo != null && _frameCallbackId == null && !_disposed) {
+      _onTick(null);
+    }
+  }
+
+  @override
   void dispose() {
     final id = _frameCallbackId;
     if (id != null) {
@@ -54,10 +63,15 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
       setState(() {});
     }
 
-    _frameCallbackId = WidgetsBinding.instance.scheduleFrameCallback(
-      _onTick,
-      rescheduling: tick != null,
-    );
+    // Only continue scheduling frames when there is an active box to track.
+    if (boxInfo != null) {
+      _frameCallbackId = WidgetsBinding.instance.scheduleFrameCallback(
+        _onTick,
+        rescheduling: tick != null,
+      );
+    } else {
+      _frameCallbackId = null;
+    }
   }
 
   bool get _canRender => widget.boxInfo?.targetRenderBox.attached ?? false;

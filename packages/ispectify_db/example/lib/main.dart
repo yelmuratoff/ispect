@@ -7,12 +7,12 @@ import 'package:ispectify_db/ispectify_db.dart';
 void main() async {
   final logger = ISpectLogger();
 
-  ISpectDbCore.config = const ISpectDbConfig(
+  ISpectDbCore.config = ISpectDbConfig(
     sampleRate: 1.0,
     redact: true,
     attachStackOnError: true,
     enableTransactionMarkers: true,
-    slowQueryThreshold: Duration(milliseconds: 250),
+    slowQueryThreshold: const Duration(milliseconds: 250),
   );
 
   // Drift-like usage (raw SQL or generated queries)

@@ -5,12 +5,20 @@ part of 'base.dart';
 /// Corresponds to [BlocObserver.onCreate].
 /// Useful for tracking when lazy-loaded blocs are created.
 final class BlocCreateLog extends BlocLifecycleLog {
-  BlocCreateLog({
+  factory BlocCreateLog({
+    required BlocBase<dynamic> bloc,
+  }) {
+    final typeName = bloc.runtimeType.toString();
+    return BlocCreateLog._internal(bloc: bloc, typeName: typeName);
+  }
+
+  BlocCreateLog._internal({
     required super.bloc,
+    required String typeName,
   }) : super(
           key: logKey,
           title: logKey,
-          messageBuilder: () => '${bloc.runtimeType} created',
+          messageBuilder: () => '$typeName created',
         );
 
   static const String logKey = 'bloc-create';

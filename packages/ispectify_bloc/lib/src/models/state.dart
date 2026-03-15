@@ -6,22 +6,36 @@ part of 'base.dart';
 /// Called before the bloc's state is updated with the new value.
 /// Includes current and next states, but NOT the triggering event (use [BlocTransitionLog] for that).
 final class BlocStateLog extends BlocLifecycleLog {
-  BlocStateLog({
+  factory BlocStateLog({
+    required BlocBase<dynamic> bloc,
+    required Change<dynamic> change,
+    required ISpectBlocSettings settings,
+  }) {
+    final typeName = bloc.runtimeType.toString();
+    return BlocStateLog._internal(
+      bloc: bloc,
+      change: change,
+      settings: settings,
+      typeName: typeName,
+    );
+  }
+
+  BlocStateLog._internal({
     required super.bloc,
     required this.change,
     required this.settings,
+    required String typeName,
   }) : super(
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final blocType = bloc.runtimeType;
             final currentPayload = settings.printStateFullData
                 ? change.currentState
                 : change.currentState.runtimeType;
             final nextPayload = settings.printStateFullData
                 ? change.nextState
                 : change.nextState.runtimeType;
-            return '$blocType changed from $currentPayload to $nextPayload';
+            return '$typeName changed from $currentPayload to $nextPayload';
           },
           additionalData: settings.redactAdditionalData(<String, dynamic>{
             'current-state': change.currentState,
