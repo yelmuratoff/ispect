@@ -54,6 +54,14 @@ class _JsonScreenState extends State<JsonScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant JsonScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.data, widget.data)) {
+      _store.buildNodes(widget.data);
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);

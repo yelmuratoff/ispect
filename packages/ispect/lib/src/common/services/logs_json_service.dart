@@ -26,7 +26,7 @@ class LogsJsonService {
   static const int maxJsonSize = 100 * 1024 * 1024;
 
   /// Maximum allowed JSON nesting depth
-  static const int maxJsonDepth = 1000;
+  static const int maxJsonDepth = 500;
 
   /// Maximum number of log entries allowed in import
   static const int maxLogEntries = 100000;
@@ -127,22 +127,30 @@ class LogsJsonService {
     }
   }
 
-  /// Validates JSON nesting depth to prevent stack overflow
-  void _validateJsonDepth(dynamic data, [int currentDepth = 0]) {
-    if (currentDepth >= maxJsonDepth) {
-      throw FormatException(
-        'JSON nesting depth ($currentDepth) exceeds maximum allowed '
-        'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
-      );
-    }
+  /// Validates JSON nesting depth to prevent stack overflow.
+  ///
+  /// Uses an iterative BFS approach to avoid stack overflow on deeply
+  /// nested input — the very scenario this method is meant to catch.
+  void _validateJsonDepth(dynamic data) {
+    // Each entry is (node, depth).
+    final queue = <(dynamic, int)>[(data, 0)];
 
-    if (data is Map) {
-      for (final value in data.values) {
-        _validateJsonDepth(value, currentDepth + 1);
+    while (queue.isNotEmpty) {
+      final (node, depth) = queue.removeLast();
+      if (depth >= maxJsonDepth) {
+        throw FormatException(
+          'JSON nesting depth ($depth) exceeds maximum allowed '
+          'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
+        );
       }
-    } else if (data is List) {
-      for (final item in data) {
-        _validateJsonDepth(item, currentDepth + 1);
+      if (node is Map) {
+        for (final value in node.values) {
+          queue.add((value, depth + 1));
+        }
+      } else if (node is List) {
+        for (final item in node) {
+          queue.add((item, depth + 1));
+        }
       }
     }
   }

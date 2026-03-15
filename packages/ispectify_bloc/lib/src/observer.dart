@@ -99,14 +99,22 @@ class ISpectBlocObserver extends BlocObserver {
     Object error,
     StackTrace stackTrace,
   ) {
-    onBlocError?.call(bloc, error, stackTrace);
-    _logger.logData(
-      BlocErrorLog(
-        bloc: bloc,
-        thrown: error,
-        stackTrace: stackTrace,
-      ),
-    );
+    try {
+      onBlocError?.call(bloc, error, stackTrace);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
+    try {
+      _logger.logData(
+        BlocErrorLog(
+          bloc: bloc,
+          thrown: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    } catch (_) {
+      // Prevent logging failure from propagating.
+    }
   }
 
   @override
@@ -119,7 +127,11 @@ class ISpectBlocObserver extends BlocObserver {
     if (!accepted) {
       return;
     }
-    onBlocEvent?.call(bloc, event);
+    try {
+      onBlocEvent?.call(bloc, event);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
     _logger.logData(
       BlocEventLog(
         bloc: bloc,
@@ -142,7 +154,11 @@ class ISpectBlocObserver extends BlocObserver {
     if (!accepted) {
       return;
     }
-    onBlocTransition?.call(bloc, transition);
+    try {
+      onBlocTransition?.call(bloc, transition);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
     _logger.logData(
       BlocTransitionLog(
         bloc: bloc,
@@ -162,7 +178,11 @@ class ISpectBlocObserver extends BlocObserver {
     if (!accepted) {
       return;
     }
-    onBlocChange?.call(bloc, change);
+    try {
+      onBlocChange?.call(bloc, change);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
     _logger.logData(
       BlocStateLog(
         bloc: bloc,
@@ -187,7 +207,11 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printCreations, candidate: bloc)) {
       return;
     }
-    onBlocCreate?.call(bloc);
+    try {
+      onBlocCreate?.call(bloc);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
     _logger.logData(BlocCreateLog(bloc: bloc));
   }
 
@@ -197,7 +221,11 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printClosings, candidate: bloc)) {
       return;
     }
-    onBlocClose?.call(bloc);
+    try {
+      onBlocClose?.call(bloc);
+    } catch (_) {
+      // Prevent user callback from breaking the observer.
+    }
     _logger.logData(BlocCloseLog(bloc: bloc));
   }
 

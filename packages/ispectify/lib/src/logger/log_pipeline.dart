@@ -59,6 +59,10 @@ class LogPipeline {
     return _filter?.apply(data) ?? true;
   }
 
+  /// Guards against re-entrant dispatch (e.g. a listener that logs).
+  ///
+  /// Safe in Dart's single-threaded event loop: only one synchronous call
+  /// chain can execute at a time, so no atomic/lock is needed.
   bool _isDispatching = false;
 
   void dispatch(ISpectLogData data) {
@@ -71,6 +75,8 @@ class LogPipeline {
       if (!_streamController.isClosed) {
         _streamController.add(data);
       }
+    } catch (_) {
+      // Prevent dispatch errors from crashing the logger.
     } finally {
       _isDispatching = false;
     }

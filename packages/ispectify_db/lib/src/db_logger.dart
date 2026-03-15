@@ -8,8 +8,7 @@ import 'transaction.dart';
 final class ISpectDbCore {
   const ISpectDbCore._();
 
-  static ISpectDbConfig config = const ISpectDbConfig();
-  static final Random _rng = Random();
+  static ISpectDbConfig config = ISpectDbConfig();
 
   static final RegExp _singleQuoteRe = RegExp(r"'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
@@ -21,12 +20,13 @@ final class ISpectDbCore {
     if (s == null) return true;
     if (s <= 0) return false;
     if (s >= 1) return true;
-    return _rng.nextDouble() < s;
+    // Use a fresh Random per call to avoid shared mutable state across isolates.
+    return Random().nextDouble() < s;
   }
 
   static String genId() {
     final now = DateTime.now().microsecondsSinceEpoch;
-    final r = _rng.nextInt(0x7fffffff);
+    final r = Random().nextInt(0x7fffffff);
 
     return (now & 0xffffffff).toRadixString(16).padLeft(8, '0') +
         r.toRadixString(16).padLeft(8, '0');
@@ -57,20 +57,22 @@ final class ISpectDbCore {
     return value;
   }
 
-  static Object? redact(Object? data, List<String> keys) {
-    if (data == null) return null;
+  static const int _maxRedactDepth = 50;
+
+  static Object? redact(Object? data, List<String> keys, [int depth = 0]) {
+    if (data == null || depth >= _maxRedactDepth) return data;
     if (data is Map) {
       final out = <String, Object?>{};
       data.forEach((k, v) {
         final keyStr = k.toString();
         final keyLower = keyStr.toLowerCase();
         final hit = keys.any((rk) => rk.toLowerCase() == keyLower);
-        out[keyStr] = hit ? '***' : redact(v, keys);
+        out[keyStr] = hit ? '***' : redact(v, keys, depth + 1);
       });
       return out;
     }
     if (data is Iterable) {
-      return data.map((e) => redact(e, keys)).toList();
+      return data.map((e) => redact(e, keys, depth + 1)).toList();
     }
     return data;
   }
@@ -234,8 +236,12 @@ extension ISpectLoggerDb on ISpectLogger {
         naRedacted is Map<String, Object?> ? naRedacted : namedArgs;
     final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
     final na = naRaw is Map
-        ? naRaw.map((k, v) => MapEntry(k.toString(), v))
-        : null;
+        ? Map<String, Object?>.fromEntries(
+            naRaw.entries.map((e) => MapEntry(e.key.toString(), e.value)),
+          )
+        : naRaw is Iterable
+            ? <String, Object?>{'values': naRaw}
+            : null;
 
     final mRedacted = meta == null
         ? null
@@ -346,38 +352,42 @@ extension ISpectLoggerDb on ISpectLogger {
       rethrow;
     } finally {
       sw.stop();
-      final success = err == null;
-      final items = success
-          ? (itemsCountFromLength ??
-              (result is List ? (result as List).length : null))
-          : null;
-      final projection =
-          success && projectResult != null ? projectResult(result) : null;
-      db(
-        source: source,
-        operation: operation,
-        statement: statement,
-        target: target,
-        table: table,
-        key: key,
-        args: args,
-        namedArgs: namedArgs,
-        success: success,
-        error: err,
-        affected: affectedOverride,
-        items: items,
-        duration: sw.elapsed,
-        meta: meta,
-        projection: projection,
-        sample: sample,
-        redact: redact,
-        redactKeys: redactKeys,
-        maxValueLength: maxValueLength,
-        maxArgsLength: maxArgsLength,
-        maxStatementLength: maxStatementLength,
-        transactionId: transactionId,
-        errorStackTrace: st,
-      );
+      try {
+        final success = err == null;
+        final items = success
+            ? (itemsCountFromLength ??
+                (result is List ? (result as List).length : null))
+            : null;
+        final projection =
+            success && projectResult != null ? projectResult(result) : null;
+        db(
+          source: source,
+          operation: operation,
+          statement: statement,
+          target: target,
+          table: table,
+          key: key,
+          args: args,
+          namedArgs: namedArgs,
+          success: success,
+          error: err,
+          affected: affectedOverride,
+          items: items,
+          duration: sw.elapsed,
+          meta: meta,
+          projection: projection,
+          sample: sample,
+          redact: redact,
+          redactKeys: redactKeys,
+          maxValueLength: maxValueLength,
+          maxArgsLength: maxArgsLength,
+          maxStatementLength: maxStatementLength,
+          transactionId: transactionId,
+          errorStackTrace: st,
+        );
+      } catch (_) {
+        // Prevent logging failure from masking the original error.
+      }
     }
   }
 

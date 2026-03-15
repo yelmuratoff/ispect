@@ -82,19 +82,21 @@ class LogsScreenController {
       scrollDirection.value = false;
     }
 
-    // Live tail: track whether user is at the newest-logs edge.
+    const activateThreshold = 50.0;
+    const deactivateThreshold = 120.0;
+
     if (isNewestAtTop) {
-      if (offset <= 50) {
+      if (offset <= activateThreshold) {
         isLiveTailActive = true;
         hasNewLogs.value = false;
-      } else {
+      } else if (offset > deactivateThreshold) {
         isLiveTailActive = false;
       }
     } else {
-      if (offset >= maxExtent - 50) {
+      if (offset >= maxExtent - activateThreshold) {
         isLiveTailActive = true;
         hasNewLogs.value = false;
-      } else {
+      } else if (offset < maxExtent - deactivateThreshold) {
         isLiveTailActive = false;
       }
     }
@@ -318,9 +320,9 @@ class LogsScreenController {
     int index,
   ) {
     if (logsViewController.sortColumn == LogSortColumn.time) {
-      final (entry: logEntry, actualIndex: _) =
+      final result =
           logsViewController.getLogEntryAtIndex(sortedEntries, index);
-      return logEntry;
+      if (result != null) return result.entry;
     }
     return sortedEntries[index];
   }
