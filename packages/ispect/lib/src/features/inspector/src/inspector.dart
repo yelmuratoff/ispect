@@ -346,7 +346,9 @@ class InspectorState extends State<Inspector> {
     }
 
     _image = image;
-    _byteDataStateNotifier.value = await _image!.toByteData();
+    final byteData = await image.toByteData();
+    if (!mounted) return;
+    _byteDataStateNotifier.value = byteData;
   }
 
   Offset? _extractShiftedOffset(Offset offset) {

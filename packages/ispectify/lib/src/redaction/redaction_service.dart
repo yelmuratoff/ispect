@@ -633,6 +633,12 @@ const Set<String> _kDefaultSensitiveKeys = <String>{
   'swift-code',
   'bic',
 
+  // Cryptocurrency
+  'wallet',
+  'wallet_address',
+  'walletaddress',
+  'wallet-address',
+
   // Personal Contact Information (context-dependent)
   'phone',
   'phone_number',
@@ -646,6 +652,17 @@ const Set<String> _kDefaultSensitiveKeys = <String>{
   'cell_phone',
   'cellphone',
   'cell-phone',
+
+  // Location / Address (specific fields, not generic 'address')
+  'postal_code',
+  'postalcode',
+  'postal-code',
+  'zip_code',
+  'zipcode',
+  'zip-code',
+  'street_address',
+  'streetaddress',
+  'street-address',
 };
 
 final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
@@ -679,6 +696,9 @@ final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
   ),
   RegExp(r'(?:^|[_\-])iban(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])swift(?:$|[_\-])', caseSensitive: false),
+
+  // Cryptocurrency patterns
+  RegExp(r'(?:^|[_\-])wallet(?:$|[_\-])', caseSensitive: false),
 
   // Contact information patterns
   RegExp(r'(?:^|[_\-])phone(?:$|[_\-])', caseSensitive: false),

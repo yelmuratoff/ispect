@@ -773,6 +773,8 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
   late final Dio _dio;
   late final InterceptedClient _httpClient;
   bool _isLoading = false;
+  String? _accessToken;
+  String? _refreshToken;
 
   @override
   void initState() {
@@ -786,13 +788,20 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
+          enableRedaction: true,
         ),
       ),
     );
 
     _httpClient = InterceptedClient.build(
       interceptors: [
-        ISpectHttpInterceptor(logger: logger),
+        ISpectHttpInterceptor(
+          logger: logger,
+          settings: ISpectHttpInterceptorSettingsBuilder()
+              .withAllHeaders()
+              .withRedaction()
+              .build(),
+        ),
       ],
     );
 
@@ -895,6 +904,225 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
                     headers: {'Content-Type': 'application/json'},
                   );
                 }),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Redaction examples
+            Text(
+              'Redaction (Auth & Sensitive Data)',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _accessToken != null
+                  ? 'Logged in (token cached)'
+                  : 'Tap "Login" first to get real tokens',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: _accessToken != null ? Colors.green : Colors.grey,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // Step 1: Login to get real tokens
+                _chip(
+                  'Login (get tokens)',
+                  Icons.login,
+                  Colors.deepPurple,
+                  () async {
+                    try {
+                      final response = await _dio.post(
+                        'https://dummyjson.com/auth/login',
+                        data: {
+                          'username': 'emilys',
+                          'password': 'emilyspass',
+                        },
+                      );
+                      final data = response.data as Map<String, dynamic>;
+                      setState(() {
+                        _accessToken = data['accessToken'] as String?;
+                        _refreshToken = data['refreshToken'] as String?;
+                      });
+                    } catch (_) {}
+                  },
+                ),
+                // Step 2: Use real access token
+                _chip(
+                  'GET /auth/me',
+                  Icons.person,
+                  Colors.deepPurple.shade300,
+                  () {
+                    _dio.get(
+                      'https://dummyjson.com/auth/me',
+                      options: Options(
+                        headers: {
+                          'Authorization':
+                              'Bearer ${_accessToken ?? 'NO_TOKEN'}',
+                        },
+                      ),
+                    );
+                  },
+                ),
+                // Step 3: Refresh token flow
+                _chip(
+                  'Refresh token',
+                  Icons.refresh,
+                  Colors.deepPurple.shade200,
+                  () async {
+                    try {
+                      final response = await _dio.post(
+                        'https://dummyjson.com/auth/refresh',
+                        data: {
+                          'refreshToken': _refreshToken ?? 'NO_TOKEN',
+                        },
+                      );
+                      final data = response.data as Map<String, dynamic>;
+                      setState(() {
+                        _accessToken = data['accessToken'] as String?;
+                        _refreshToken = data['refreshToken'] as String?;
+                      });
+                    } catch (_) {}
+                  },
+                ),
+                // API key + client secret headers
+                _chip(
+                  'API Key header',
+                  Icons.vpn_key,
+                  Colors.indigo,
+                  () {
+                    _dio.get(
+                      'https://dummyjson.com/products/1',
+                      options: Options(
+                        headers: {
+                          'Authorization':
+                              'Bearer ${_accessToken ?? 'NO_TOKEN'}',
+                          'X-Api-Key': 'sk-proj-abc123def456ghi789',
+                          'X-Client-Secret': 'cs_live_xR7kL9mP2qW5nV8',
+                        },
+                      ),
+                    );
+                  },
+                ),
+                // Cookie header
+                _chip(
+                  'Cookie header',
+                  Icons.cookie,
+                  Colors.brown,
+                  () {
+                    _dio.get(
+                      'https://dummyjson.com/users/1',
+                      options: Options(
+                        headers: {
+                          'Cookie': 'session=abc123xyz; '
+                              'accessToken=${_accessToken ?? 'NO_TOKEN'}',
+                        },
+                      ),
+                    );
+                  },
+                ),
+                // Sensitive body (PII, financial)
+                _chip(
+                  'Sensitive body',
+                  Icons.security,
+                  Colors.red.shade700,
+                  () {
+                    _dio.post(
+                      'https://dummyjson.com/users/add',
+                      data: {
+                        'firstName': 'John',
+                        'lastName': 'Doe',
+                        'email': 'john@example.com',
+                        'phone': '+1-555-0123',
+                        'password': 'SuperSecret123!',
+                        'ssn': '123-45-6789',
+                        'credit_card': '4111111111111111',
+                        'cvv': '123',
+                        'bank_account': '9876543210',
+                      },
+                      options: Options(
+                        headers: {
+                          'Authorization':
+                              'Bearer ${_accessToken ?? 'NO_TOKEN'}',
+                        },
+                      ),
+                    );
+                  },
+                ),
+                // Nested secrets in body
+                _chip(
+                  'Nested secrets',
+                  Icons.account_tree,
+                  Colors.teal.shade700,
+                  () {
+                    _dio.post(
+                      'https://dummyjson.com/products/add',
+                      data: {
+                        'title': 'Test',
+                        'metadata': {
+                          'api_key': 'ak_test_51234567890',
+                          'private_key': '-----BEGIN RSA PRIVATE KEY-----',
+                          'config': {
+                            'client_secret': 'whsec_abcdef123456',
+                            'access_token': _accessToken ?? 'NO_TOKEN',
+                            'refresh_token': _refreshToken ?? 'NO_TOKEN',
+                          },
+                        },
+                      },
+                    );
+                  },
+                ),
+                // Query params with secrets
+                _chip(
+                  'Query params',
+                  Icons.link,
+                  Colors.indigo.shade400,
+                  () {
+                    _dio.get(
+                      'https://dummyjson.com/products/search'
+                      '?q=phone'
+                      '&api_key=sk-12345'
+                      '&token=${_accessToken ?? 'NO_TOKEN'}',
+                    );
+                  },
+                ),
+                // HTTP package with real token
+                _chip(
+                  'HTTP + auth',
+                  Icons.http,
+                  Colors.deepPurple.shade400,
+                  () {
+                    _httpClient.get(
+                      Uri.parse('https://dummyjson.com/auth/me'),
+                      headers: {
+                        'Authorization': 'Bearer ${_accessToken ?? 'NO_TOKEN'}',
+                        'X-Api-Key': 'sk-proj-abc123def456',
+                      },
+                    );
+                  },
+                ),
+                // HTTP package login with creds
+                _chip(
+                  'HTTP + creds body',
+                  Icons.password,
+                  Colors.red.shade400,
+                  () {
+                    _httpClient.post(
+                      Uri.parse('https://dummyjson.com/auth/login'),
+                      body: '{'
+                          '"username":"emilys",'
+                          '"password":"emilyspass",'
+                          '"expiresInMins":1'
+                          '}',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic dXNlcjpwYXNzd29yZA==',
+                      },
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 16),

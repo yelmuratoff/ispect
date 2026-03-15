@@ -144,7 +144,9 @@ class _LogsScreenState extends State<LogsV2Screen> {
     }
     if (!mounted) return;
     if (logs != null && logs.isNotEmpty) {
-      _logs.addAll(logs);
+      _logs
+        ..clear()
+        ..addAll(logs);
       setState(() {});
     }
   }
