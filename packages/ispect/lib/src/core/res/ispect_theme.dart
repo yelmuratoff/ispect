@@ -344,8 +344,7 @@ class ISpectTheme {
               ?.map((k, v) => MapEntry(k, Color((v as num?)?.toInt() ?? 0))) ??
           const <String, Color>{},
       logIcons: cast<Map<String, dynamic>?>('log_icons')?.map(
-              (k, v) =>
-                  MapEntry(k, IconData((v as num?)?.toInt() ?? 0))) ??
+              (k, v) => MapEntry(k, IconData((v as num?)?.toInt() ?? 0))) ??
           const <String, IconData>{},
       logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
               ?.map((k, v) => MapEntry(k, v.toString())) ??

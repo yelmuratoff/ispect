@@ -106,8 +106,7 @@ class FilterManager {
 
   /// Exclude a specific title: add all other titles except this one.
   void excludeTitle(String title, List<String> allTitles) {
-    final filtered =
-        allTitles.where((t) => t != title).toList(growable: false);
+    final filtered = allTitles.where((t) => t != title).toList(growable: false);
     _updateFilter(titles: filtered);
   }
 

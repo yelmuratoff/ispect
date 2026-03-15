@@ -45,8 +45,8 @@ class JsonColorsUtils {
       'Authorization' =>
         JsonColors.stringColorFor(brightness),
       'status_code' => JsonColors.statusColor(
-        value is int ? value : int.tryParse(value.toString()),
-      ),
+          value is int ? value : int.tryParse(value.toString()),
+        ),
       'exception' => theme.getTypeColor(context, key: 'exception'),
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),

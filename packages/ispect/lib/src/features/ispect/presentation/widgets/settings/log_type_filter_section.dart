@@ -51,8 +51,7 @@ class LogTypeFilterSection extends StatelessWidget {
                 Text(
                   context.ispectL10n.iSpectifyLogsInfo.toUpperCase(),
                   style: context.appTheme.textTheme.labelSmall?.copyWith(
-                    color:
-                        context.appTheme.textColor.withValues(alpha: 0.45),
+                    color: context.appTheme.textColor.withValues(alpha: 0.45),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
                   ),
@@ -160,8 +159,7 @@ class _LogTypeGroup extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 6,
                 children: logTypes.map((logType) {
-                  final isEnabled =
-                      !disabledLogTypes.contains(logType.key);
+                  final isEnabled = !disabledLogTypes.contains(logType.key);
                   return _LogTypeChip(
                     logType: logType,
                     isEnabled: isEnabled,
@@ -193,12 +191,12 @@ class _LogTypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeColor = context.iSpect.theme
-        .getTypeColor(context, key: logType.key);
-    final typeIcon = context.iSpect.theme
-        .getTypeIcon(context, key: logType.key);
-    final description = context.iSpect.theme
-        .getTypeDescription(context, key: logType.key);
+    final typeColor =
+        context.iSpect.theme.getTypeColor(context, key: logType.key);
+    final typeIcon =
+        context.iSpect.theme.getTypeIcon(context, key: logType.key);
+    final description =
+        context.iSpect.theme.getTypeDescription(context, key: logType.key);
     final effectiveColor = isEnabled
         ? typeColor
         : context.appTheme.textColor.withValues(alpha: 0.25);
@@ -219,8 +217,7 @@ class _LogTypeChip extends StatelessWidget {
             borderRadius: const BorderRadius.all(Radius.circular(8)),
             border: Border.all(
               color: isEnabled
-                  ? effectiveColor?.withValues(alpha: 0.3) ??
-                      Colors.transparent
+                  ? effectiveColor?.withValues(alpha: 0.3) ?? Colors.transparent
                   : context.appTheme.colorScheme.onSurface
                       .withValues(alpha: 0.08),
             ),

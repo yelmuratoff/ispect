@@ -127,19 +127,19 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       useRedaction: useRedaction,
     );
     return DioRequestLog(
-        url,
-        method: options.method,
-        url: url,
-        path: options.uri.path,
-        headers: payload.headersMap(
-          options.headers,
-          enableRedaction: useRedaction,
-        ),
-        body: _requestBodyPayload(options.data, useRedaction),
-        settings: settings,
-        requestData: DioRequestData(options),
-        redactor: useRedaction ? redactor : null,
-      );
+      url,
+      method: options.method,
+      url: url,
+      path: options.uri.path,
+      headers: payload.headersMap(
+        options.headers,
+        enableRedaction: useRedaction,
+      ),
+      body: _requestBodyPayload(options.data, useRedaction),
+      settings: settings,
+      requestData: DioRequestData(options),
+      redactor: useRedaction ? redactor : null,
+    );
   }
 
   DioResponseLog _buildResponseLog({

@@ -20,7 +20,8 @@ class TextMatchService {
 
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
-    final key = '${lowerText.hashCode}:${lowerQuery.hashCode}:${lowerText.length}:${lowerQuery.length}';
+    final key =
+        '${lowerText.hashCode}:${lowerQuery.hashCode}:${lowerText.length}:${lowerQuery.length}';
 
     final cached = _cache.get(key);
     if (cached != null) return cached;

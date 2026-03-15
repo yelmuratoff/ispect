@@ -56,7 +56,8 @@ class _ISpectNavigationFlowScreenState
           surfaceTintColor: Colors.transparent,
           shadowColor: Colors.transparent,
           title: Text(context.ispectL10n.navigationFlow),
-          backgroundColor: context.ispectTheme.background?.resolve(context) ?? context.appTheme.scaffoldBackgroundColor,
+          backgroundColor: context.ispectTheme.background?.resolve(context) ??
+              context.appTheme.scaffoldBackgroundColor,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded),

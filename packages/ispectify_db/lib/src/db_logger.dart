@@ -232,8 +232,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final naRedacted = namedArgs == null
         ? null
         : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
-    final naBase =
-        naRedacted is Map<String, Object?> ? naRedacted : namedArgs;
+    final naBase = naRedacted is Map<String, Object?> ? naRedacted : namedArgs;
     final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(

@@ -31,14 +31,14 @@ void showColorPickerResultSnackbar({
   final theme = context.ispectTheme;
 
   final colorScheme = Theme.of(context).colorScheme;
-  final backgroundColor = theme.background?.resolve(context) ??
-      colorScheme.surfaceContainerHighest;
+  final backgroundColor =
+      theme.background?.resolve(context) ?? colorScheme.surfaceContainerHighest;
   final foregroundColor =
       theme.foreground?.resolve(context) ?? colorScheme.onSurface;
   final dividerColor =
       theme.divider?.resolve(context) ?? colorScheme.outlineVariant;
-  final cardColor = theme.card?.resolve(context) ??
-      colorScheme.surfaceContainer;
+  final cardColor =
+      theme.card?.resolve(context) ?? colorScheme.surfaceContainer;
 
   ScaffoldMessenger.of(context).clearSnackBars();
 

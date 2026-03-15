@@ -108,7 +108,8 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        backgroundColor: backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
+        backgroundColor:
+            backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
         title: Text(
           context.ispectL10n.sessions,
           style: const TextStyle(

@@ -54,8 +54,7 @@ void main() {
       // Still includes URL line prefix even if empty
       expect(sent.first.textMessage.startsWith('URL:'), isTrue);
       // Payload should not contain data when printSentData=false
-      final body =
-          sent.first.additionalData?['body'] as Map<String, dynamic>?;
+      final body = sent.first.additionalData?['body'] as Map<String, dynamic>?;
       if (body != null) {
         expect(body.containsKey('data'), isFalse);
       }
@@ -77,8 +76,7 @@ void main() {
       expect(rec, isNotEmpty);
       expect(rec.first.textMessage.contains('Data: {'), isFalse);
       // Payload should not contain data when printReceivedData=false
-      final body =
-          rec.first.additionalData?['body'] as Map<String, dynamic>?;
+      final body = rec.first.additionalData?['body'] as Map<String, dynamic>?;
       if (body != null) {
         expect(body.containsKey('data'), isFalse);
       }

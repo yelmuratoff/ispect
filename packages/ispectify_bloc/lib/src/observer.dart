@@ -241,8 +241,7 @@ class ISpectBlocObserver extends BlocObserver {
     if (!isEnabled) {
       return;
     }
-    final shouldLogCompletion =
-        (settings.printCompletions && error == null) ||
+    final shouldLogCompletion = (settings.printCompletions && error == null) ||
         (settings.printErrors && error != null);
     if (!shouldLogCompletion) {
       return;

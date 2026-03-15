@@ -57,8 +57,7 @@ class ISpectBottomSheetHeader extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: context.appTheme.textTheme.bodySmall?.copyWith(
-                      color:
-                          context.appTheme.textColor.withValues(alpha: 0.5),
+                      color: context.appTheme.textColor.withValues(alpha: 0.5),
                     ),
                   ),
               ],

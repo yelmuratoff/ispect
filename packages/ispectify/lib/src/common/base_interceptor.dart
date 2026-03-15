@@ -113,16 +113,15 @@ mixin BaseNetworkInterceptor {
 
     final redactedParams = hasParams
         ? uri.queryParameters.map(
-            (key, value) =>
-                MapEntry(key, redactor.redact(value, keyName: key)),
+            (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
           )
         : null;
 
     return uri
         .replace(
           userInfo: hasUserInfo ? '[REDACTED]' : null,
-          queryParameters: redactedParams
-              ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+          queryParameters:
+              redactedParams?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
         )
         .toString();
   }

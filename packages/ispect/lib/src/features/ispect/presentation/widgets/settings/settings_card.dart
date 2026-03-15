@@ -30,8 +30,7 @@ class ISpectSettingsCardItem extends StatelessWidget {
         context.appTheme.cardColor;
 
     final activeColor = enabled ? primaryColor : null;
-    final inactiveTextColor =
-        context.appTheme.textColor.withValues(alpha: 0.4);
+    final inactiveTextColor = context.appTheme.textColor.withValues(alpha: 0.4);
 
     return Expanded(
       child: AnimatedOpacity(
@@ -44,9 +43,7 @@ class ISpectSettingsCardItem extends StatelessWidget {
             curve: Curves.easeInOut,
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             decoration: BoxDecoration(
-              color: enabled
-                  ? primaryColor.withValues(alpha: 0.1)
-                  : cardColor,
+              color: enabled ? primaryColor.withValues(alpha: 0.1) : cardColor,
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               border: Border.all(
                 color: enabled

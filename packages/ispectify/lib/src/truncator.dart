@@ -212,7 +212,8 @@ class JsonTruncatorService {
     if (value.length <= _stringTruncateLimit) return value;
     // Avoid splitting a surrogate pair at the truncation boundary.
     var end = _stringTruncateLimit;
-    if (end > 0 && value.codeUnitAt(end - 1) >= 0xD800 &&
+    if (end > 0 &&
+        value.codeUnitAt(end - 1) >= 0xD800 &&
         value.codeUnitAt(end - 1) <= 0xDBFF) {
       end--;
     }

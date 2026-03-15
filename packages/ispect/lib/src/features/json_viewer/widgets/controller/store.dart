@@ -194,8 +194,7 @@ class JsonExplorerStore extends ChangeNotifier {
     // Initialize services
     _nodeService = JsonNodeService();
     _searchService = JsonSearchService();
-    _performanceManager =
-        PerformanceManagerFactory.createDevelopmentManager();
+    _performanceManager = PerformanceManagerFactory.createDevelopmentManager();
 
     if (!mounted) return;
 

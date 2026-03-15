@@ -76,8 +76,7 @@ class _SettingsContentState extends State<_SettingsContent> {
   @override
   void initState() {
     super.initState();
-    _scrollController =
-        widget.externalScrollController ?? ScrollController();
+    _scrollController = widget.externalScrollController ?? ScrollController();
     widget.logger.addListener(_handleUpdate);
     widget.controller.addListener(_handleUpdate);
 
@@ -227,38 +226,38 @@ class _SettingsContentState extends State<_SettingsContent> {
                   spacing: 8,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                  ISpectSettingsCardItem(
-                    title: context.ispectL10n.enabled,
-                    enabled: currentSettings.enabled,
-                    icon: Icons.power_settings_new_rounded,
-                    onChanged: (enabled) {
-                      _onSettingChanged(
-                        currentSettings.copyWith(enabled: enabled),
-                      );
-                    },
-                  ),
-                  ISpectSettingsCardItem(
-                    canEdit: currentSettings.enabled,
-                    title: context.ispectL10n.useConsoleLogs,
-                    icon: Icons.terminal_rounded,
-                    enabled: currentSettings.useConsoleLogs,
-                    onChanged: (enabled) {
-                      _onSettingChanged(
-                        currentSettings.copyWith(useConsoleLogs: enabled),
-                      );
-                    },
-                  ),
-                  ISpectSettingsCardItem(
-                    canEdit: currentSettings.enabled,
-                    title: context.ispectL10n.useHistory,
-                    icon: Icons.history_rounded,
-                    enabled: currentSettings.useHistory,
-                    onChanged: (enabled) {
-                      _onSettingChanged(
-                        currentSettings.copyWith(useHistory: enabled),
-                      );
-                    },
-                  ),
+                    ISpectSettingsCardItem(
+                      title: context.ispectL10n.enabled,
+                      enabled: currentSettings.enabled,
+                      icon: Icons.power_settings_new_rounded,
+                      onChanged: (enabled) {
+                        _onSettingChanged(
+                          currentSettings.copyWith(enabled: enabled),
+                        );
+                      },
+                    ),
+                    ISpectSettingsCardItem(
+                      canEdit: currentSettings.enabled,
+                      title: context.ispectL10n.useConsoleLogs,
+                      icon: Icons.terminal_rounded,
+                      enabled: currentSettings.useConsoleLogs,
+                      onChanged: (enabled) {
+                        _onSettingChanged(
+                          currentSettings.copyWith(useConsoleLogs: enabled),
+                        );
+                      },
+                    ),
+                    ISpectSettingsCardItem(
+                      canEdit: currentSettings.enabled,
+                      title: context.ispectL10n.useHistory,
+                      icon: Icons.history_rounded,
+                      enabled: currentSettings.useHistory,
+                      onChanged: (enabled) {
+                        _onSettingChanged(
+                          currentSettings.copyWith(useHistory: enabled),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

@@ -402,8 +402,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
   Widget build(BuildContext context) {
     final filteredLogEntries =
         widget.logsViewController.applyCurrentFilters(widget.logsData);
-    final sortedEntries =
-        _controller.applySortingIfNeeded(filteredLogEntries);
+    final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
     final titles = widget.logsViewController.getTitles(widget.logsData);
 
     final options = ISpect.read(context).options;
