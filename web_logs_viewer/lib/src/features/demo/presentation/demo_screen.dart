@@ -368,7 +368,9 @@ class DemoScreenState extends State<DemoScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+        title: Text(
+          ExampleGeneratedLocalization.of(context)?.app_title ?? 'ISpect Demo',
+        ),
         leading: IconButton(
           icon: const Icon(IconsaxPlusLinear.arrow_left),
           onPressed: () {

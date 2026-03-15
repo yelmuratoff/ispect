@@ -48,7 +48,9 @@ void main() {
       try {
         // ignore: inference_failure_on_function_invocation
         await dio.get('asdsada');
-      } catch (_) {}
+      } catch (_) {
+        // Expected: Dio throws on invalid URL.
+      }
       expect(logger.history, isNotEmpty);
       expect(logger.history.last, isA<DioErrorLog>());
     });

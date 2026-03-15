@@ -14,7 +14,7 @@ dependency_overrides:
 dependencies:
   ispectify: ^4.7.5
   bloc: ^9.1.0
-  meta: ^1.8.0
+  meta: ^1.16.0
 
 dev_dependencies:
   lints: ^5.1.1

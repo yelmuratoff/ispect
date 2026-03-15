@@ -33,7 +33,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   meta: ^1.16.0
-  collection: ^1.19.0
+  collection: ^1.19.1
 
   # Logging
   ispectify: ^4.7.5

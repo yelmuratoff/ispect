@@ -141,10 +141,9 @@ class HttpResponseData {
         .map((k, v) => MapEntry(k, v?.toString() ?? ''));
 
     // Redact multipart request fields/files and mask filenames
-    if (multipart != null && map['multipart-request'] is Map) {
-      final mp = Map<String, dynamic>.from(
-        map['multipart-request'] as Map,
-      );
+    final multipartData = map['multipart-request'];
+    if (multipart != null && multipartData is Map) {
+      final mp = Map<String, dynamic>.from(multipartData);
 
       // Fields
       final fields = mp['fields'];

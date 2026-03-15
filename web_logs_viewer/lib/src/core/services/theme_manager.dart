@@ -11,13 +11,21 @@ class ThemeProvider extends StatefulWidget {
   static ThemeMode themeMode(BuildContext context) {
     final inheritedTheme = context
         .dependOnInheritedWidgetOfExactType<InheritedTheme>();
-    return inheritedTheme!.themeMode;
+    assert(
+      inheritedTheme != null,
+      'ThemeProvider.themeMode() called without a ThemeProvider ancestor',
+    );
+    return inheritedTheme?.themeMode ?? ThemeMode.dark;
   }
 
   static void toggleTheme(BuildContext context) {
     final inheritedTheme = context
         .dependOnInheritedWidgetOfExactType<InheritedTheme>();
-    inheritedTheme!.toggleTheme();
+    assert(
+      inheritedTheme != null,
+      'ThemeProvider.toggleTheme() called without a ThemeProvider ancestor',
+    );
+    inheritedTheme?.toggleTheme();
   }
 }
 

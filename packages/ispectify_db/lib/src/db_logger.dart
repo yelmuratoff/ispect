@@ -394,7 +394,7 @@ extension ISpectLoggerDb on ISpectLogger {
         final success = err == null;
         final items = success
             ? (itemsCountFromLength ??
-                (result is List ? (result as List).length : null))
+                (result is List ? result.length : null))
             : null;
         final projection =
             success && projectResult != null ? projectResult(result) : null;
