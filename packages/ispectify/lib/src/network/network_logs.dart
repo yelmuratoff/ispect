@@ -158,7 +158,7 @@ class NetworkResponseLog extends ISpectLogData {
 
   @override
   String get textMessage {
-    final header = '[$logKey] [${method ?? '-'}] ${message ?? ''}';
+    final header = '[${method ?? '-'}] ${message ?? ''}';
     return _composeNetworkMessage(
       header,
       [
