@@ -8,7 +8,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 /// On phone, wraps content in [DraggableScrollableSheet] with a decorated
 /// background (rounded corners). On tablet/desktop, wraps content in
 /// [AlertDialog].
-Future<void> showISpectSheet(
+Future<T?> showISpectSheet<T>(
   BuildContext context, {
   required Widget Function(
     BuildContext context,
@@ -23,8 +23,8 @@ Future<void> showISpectSheet(
   RouteSettings? routeSettings,
   bool useRootNavigator = true,
 }) async {
-  await context.screenSizeMaybeWhen(
-    phone: () => showModalBottomSheet<void>(
+  return context.screenSizeMaybeWhen(
+    phone: () => showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -58,18 +58,17 @@ Future<void> showISpectSheet(
       final iSpect = ISpect.read(context);
       final bgColor = iSpect.theme.background?.resolve(context);
 
-      return showDialog<void>(
+      return showDialog<T>(
         context: context,
         useRootNavigator: useRootNavigator,
         routeSettings: routeSettings,
         builder: (_) => ScrollConfiguration(
           behavior: const _ClampingScrollBehavior(),
           child: AlertDialog(
-            contentPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.only(bottom: 16),
             backgroundColor: bgColor,
             clipBehavior: Clip.antiAlias,
             content: SizedBox(
-              height: MediaQuery.sizeOf(context).height * dialogHeightFactor,
               width: dialogWidth,
               child: builder(context, null),
             ),

@@ -27,8 +27,7 @@ class ISpectShareSheet extends StatelessWidget {
   }) =>
       showISpectSheet(
         context,
-        initialChildSize: 0.25,
-        maxChildSize: 0.35,
+        initialChildSize: 0.35,
         topOnlyRadius: true,
         builder: (context, _) => SafeArea(
           child: ISpectShareSheet(
