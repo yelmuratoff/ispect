@@ -693,19 +693,25 @@ class _MainLogsViewState extends State<_MainLogsView> {
     bool isDesktop,
     ISpectOptions options,
   ) {
-    // Apply the same visual ordering as the flat list.
-    final visualEntries = _controller.getVisualEntries(sortedEntries);
+    // Group from chronological order, then apply visual reversal.
+    // This prevents time ordering bugs where a transaction positioned
+    // at the response's slot shows the request's (older) time.
     final grouped = _transactionService.getGroupedEntries(
-      visualEntries,
-      visualEntries.length, // Use length as a simple generation proxy.
+      sortedEntries,
+      sortedEntries.length,
     );
     final entries = grouped.entries;
+    final isReversed =
+        widget.logsViewController.sortColumn == LogSortColumn.time &&
+            widget.logsViewController.isLogOrderReversed;
 
     return SuperSliverList.builder(
       listController: _controller.listController,
       itemCount: entries.length,
       itemBuilder: (context, index) {
-        final entry = entries[index];
+        final visualIndex =
+            isReversed ? entries.length - 1 - index : index;
+        final entry = entries[visualIndex];
 
         if (entry is NetworkTransaction) {
           return NetworkTransactionCard(
