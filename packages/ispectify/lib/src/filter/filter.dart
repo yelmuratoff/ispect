@@ -88,47 +88,53 @@ class SearchFilter implements Filter<ISpectLogData> {
     // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
-    // Check formatted time (e.g. "15:03", "15:03:42")
-    if (item.formattedTime.contains(_lowerQuery)) return true;
+    // 1. Cheap field checks first (short strings, no allocation)
 
-    // Check log type key (e.g. "route", "http-request", "error")
+    // Log type key (e.g. "route", "http-request", "error")
     final key = item.key;
     if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
 
-    // Check title
+    // Title (usually same as key)
     final title = item.title;
-    if (title != null && title.toLowerCase().contains(_lowerQuery)) return true;
+    if (title != null &&
+        title != key &&
+        title.toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
 
-    // Check log level name (e.g. "error", "warning", "info")
+    // Log level name (e.g. "error", "warning", "info")
     final logLevel = item.logLevel;
     if (logLevel != null && logLevel.name.toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
-    // Check if the query is in message or textMessage
+    // Formatted time (e.g. "15:03", "15:03:42")
+    if (item.formattedTime.contains(_lowerQuery)) return true;
+
+    // 2. Message fields (medium cost — may be longer strings)
+
     final message = item.message;
     if (message != null && message.toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
-    // Check in textMessage if available
     final textMessage = item.textMessage;
     if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
 
-    // Check in exception (e.g. "SocketException", "FormatException")
+    // 3. Error fields (toString() may allocate)
+
     final exception = item.exception;
     if (exception != null &&
         exception.toString().toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
-    // Check in error
     final error = item.error;
     if (error != null && error.toString().toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
-    // Check in additional data recursively only if data exists
+    // 4. Deep search in additional data (most expensive — recursive)
     final additionalData = item.additionalData;
     return additionalData != null &&
         _deepSearchIterative(additionalData, _lowerQuery);
