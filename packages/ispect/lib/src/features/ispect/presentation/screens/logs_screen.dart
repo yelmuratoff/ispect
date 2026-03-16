@@ -21,7 +21,6 @@ import 'package:ispect/src/features/ispect/presentation/widgets/log_card/network
 import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_scroll_indicators.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_viewer_dialogs.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/onboarding_dialog.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
@@ -474,7 +473,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
         if (mounted) setState(() {});
       },
     );
-    ISpectOnboardingDialog.showIfNeeded(context);
+    // Tips dialog moved to app bar icon button.
   }
 
   @override

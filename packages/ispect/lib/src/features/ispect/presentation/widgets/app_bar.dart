@@ -11,6 +11,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/onboarding_dialog.dart';
 
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
@@ -113,6 +114,14 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                     color: !widget.controller.isLogOrderReversed
                         ? context.appTheme.colorScheme.primary
                         : null,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => ISpectOnboardingDialog.show(context),
+                  tooltip: 'Tips',
+                  icon: const Icon(
+                    Icons.lightbulb_outline_rounded,
+                    size: 22,
                   ),
                 ),
                 if (widget.onSettingsTap != null)

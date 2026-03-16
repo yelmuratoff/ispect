@@ -6,24 +6,13 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 ///
 /// Uses a static flag to track whether the dialog has been shown this session.
 class ISpectOnboardingDialog {
-  static bool _hasShown = false;
-
-  /// Resets the shown flag (useful for testing).
-  @visibleForTesting
-  static void reset() => _hasShown = false;
-
-  static void showIfNeeded(BuildContext context) {
-    if (_hasShown) return;
-    _hasShown = true;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!context.mounted) return;
-      showDialog<void>(
-        context: context,
-        builder: (_) =>
-            _OnboardingContent(isDesktop: context.screenSize.isDesktop),
-      );
-    });
+  /// Shows the tips dialog.
+  static void show(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) =>
+          _OnboardingContent(isDesktop: context.screenSize.isDesktop),
+    );
   }
 }
 
@@ -76,7 +65,7 @@ class _OnboardingContent extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Got it'),
           ),
