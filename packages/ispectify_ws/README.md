@@ -263,33 +263,95 @@ void main() {
 
 ## Data Redaction
 
-Sensitive data is automatically masked before it reaches logs or observers. Built-in patterns cover auth tokens, passwords, API keys, PII (SSN, passport), credit cards, and bank accounts.
+Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** in all network interceptors.
 
-> **Note:** Network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`) have `enableRedaction: true` by default. Authorization headers, tokens, passwords, and other sensitive data are automatically redacted. If you need to see unredacted data during debugging, you can opt out:
->
-> ```dart
-> ISpectDioInterceptor(
->   settings: const ISpectDioInterceptorSettings(enableRedaction: false),
-> );
-> ```
->
-> The built-in `SettingsBuilder.production()` and `SettingsBuilder.staging()` factory constructors also enable redaction automatically.
+> **Note:** Network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`) have `enableRedaction: true` by default. The built-in `SettingsBuilder.production()` and `SettingsBuilder.staging()` factory constructors also enable redaction automatically.
+
+Built-in rules cover most common sensitive data: auth headers and tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, bank accounts, IBAN), phone numbers, and more.
+
+If a key is being redacted that you don't want masked (e.g., `?mobile=true` used as a platform flag, not a phone number), or you need to add your own sensitive keys — you can customize the `RedactionService`.
+
+### Customizing RedactionService
+
+Pass a configured `RedactionService` to the interceptor:
 
 ```dart
-// Extend redaction with your own keys
-final redactor = RedactionService();
-redactor.ignoreKeys(['authorization', 'x-api-key']);
-redactor.ignoreValues(['<test-token>']);
+final redactor = RedactionService(
+  // Add your own sensitive keys on top of the defaults
+  sensitiveKeys: {
+    ...kDefaultSensitiveKeys,
+    'x-custom-secret',
+    'internal_token',
+  },
 
-// Database-level redaction
+  // Add custom regex patterns for sensitive key detection
+  sensitiveKeyPatterns: [
+    RegExp(r'my_app_secret_\w+', caseSensitive: false),
+  ],
+
+  // Keys to fully mask (value replaced entirely with placeholder)
+  fullyMaskedKeys: {'filename'},
+
+  // Change the placeholder text (default: '[REDACTED]')
+  placeholder: '***',
+
+  // Number of characters visible at each edge of masked strings (default: 2)
+  // e.g., "Bearer abc...xyz ([REDACTED])"
+  stringEdgeVisible: 3,
+
+  // Control binary and base64 redaction
+  redactBinary: true,   // default: true
+  redactBase64: true,    // default: true
+);
+
+ISpectDioInterceptor(
+  redactor: redactor,
+);
+```
+
+### Ignoring keys and values
+
+If a default key is being redacted but shouldn't be in your context, pass `ignoredKeys` or `ignoredValues` in the constructor:
+
+```dart
+final redactor = RedactionService(
+  // "mobile" won't be redacted (e.g., ?mobile=true for platform detection)
+  ignoredKeys: {'mobile', 'platform_token'},
+  // Specific values that should never be masked
+  ignoredValues: {'<test-token>', 'public-api-key'},
+);
+```
+
+You can also pass ignored keys/values per-call:
+
+```dart
+redactor.redact(
+  data,
+  ignoredKeys: {'mobile'},
+  ignoredValues: {'public'},
+);
+```
+
+### Disabling redaction
+
+```dart
+// Via settings
+ISpectDioInterceptor(
+  settings: const ISpectDioInterceptorSettings(enableRedaction: false),
+);
+
+// Via builder
+final settings = ISpectDioInterceptorSettingsBuilder()
+    .withoutRedaction()
+    .build();
+```
+
+### Database-level redaction
+
+```dart
 ISpectDbCore.config = const ISpectDbConfig(
   redact: true,
   redactKeys: ['password', 'token', 'secret'],
-);
-
-// Disable for non-sensitive test data
-ISpectDioInterceptor(
-  settings: const ISpectDioInterceptorSettings(enableRedaction: false),
 );
 ```
 
