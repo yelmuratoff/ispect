@@ -22,62 +22,61 @@ Future<T?> showISpectSheet<T>(
   bool topOnlyRadius = false,
   RouteSettings? routeSettings,
   bool useRootNavigator = true,
-}) async {
-  return context.screenSizeMaybeWhen(
-    phone: () => showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      routeSettings: routeSettings,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: initialChildSize,
-        minChildSize: minChildSize,
-        maxChildSize: maxChildSize,
-        expand: false,
-        builder: (context, scrollController) {
-          final iSpect = ISpect.read(context);
-          final bgColor = iSpect.theme.background?.resolve(context) ??
-              context.appTheme.scaffoldBackgroundColor;
-
-          return ScrollConfiguration(
-            behavior: const _ClampingScrollBehavior(),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: topOnlyRadius
-                    ? const BorderRadius.vertical(top: Radius.circular(16))
-                    : const BorderRadius.all(Radius.circular(16)),
-              ),
-              child: builder(context, scrollController),
-            ),
-          );
-        },
-      ),
-    ),
-    orElse: () {
-      final iSpect = ISpect.read(context);
-      final bgColor = iSpect.theme.background?.resolve(context);
-
-      return showDialog<T>(
+}) async =>
+    context.screenSizeMaybeWhen(
+      phone: () => showModalBottomSheet<T>(
         context: context,
-        useRootNavigator: useRootNavigator,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
         routeSettings: routeSettings,
-        builder: (_) => ScrollConfiguration(
-          behavior: const _ClampingScrollBehavior(),
-          child: AlertDialog(
-            contentPadding: const EdgeInsets.only(bottom: 16),
-            backgroundColor: bgColor,
-            clipBehavior: Clip.antiAlias,
-            content: SizedBox(
-              width: dialogWidth,
-              child: builder(context, null),
+        builder: (_) => DraggableScrollableSheet(
+          initialChildSize: initialChildSize,
+          minChildSize: minChildSize,
+          maxChildSize: maxChildSize,
+          expand: false,
+          builder: (context, scrollController) {
+            final iSpect = ISpect.read(context);
+            final bgColor = iSpect.theme.background?.resolve(context) ??
+                context.appTheme.scaffoldBackgroundColor;
+
+            return ScrollConfiguration(
+              behavior: const _ClampingScrollBehavior(),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: topOnlyRadius
+                      ? const BorderRadius.vertical(top: Radius.circular(16))
+                      : const BorderRadius.all(Radius.circular(16)),
+                ),
+                child: builder(context, scrollController),
+              ),
+            );
+          },
+        ),
+      ),
+      orElse: () {
+        final iSpect = ISpect.read(context);
+        final bgColor = iSpect.theme.background?.resolve(context);
+
+        return showDialog<T>(
+          context: context,
+          useRootNavigator: useRootNavigator,
+          routeSettings: routeSettings,
+          builder: (_) => ScrollConfiguration(
+            behavior: const _ClampingScrollBehavior(),
+            child: AlertDialog(
+              contentPadding: const EdgeInsets.only(bottom: 16),
+              backgroundColor: bgColor,
+              clipBehavior: Clip.antiAlias,
+              content: SizedBox(
+                width: dialogWidth,
+                child: builder(context, null),
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
 
 class _ClampingScrollBehavior extends ScrollBehavior {
   const _ClampingScrollBehavior();
