@@ -35,7 +35,9 @@ class ISpectBaseLogger {
     LoggerOutput? output,
   })  : settings = settings ?? LoggerSettings(),
         _filter = filter,
-        _output = output ?? outputLog;
+        _output = output ?? outputLog {
+    ansiColorDisabled = false;
+  }
 
   /// Logger settings such as enabled state and color mapping.
   final LoggerSettings settings;
