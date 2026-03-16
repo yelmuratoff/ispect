@@ -35,11 +35,11 @@
 </div>
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="160" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="160" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="250" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="250" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="250" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="250" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="250" />
 </div>
 
 ---
