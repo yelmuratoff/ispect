@@ -9,9 +9,13 @@ import 'package:ispect/src/common/widgets/share_sheet.dart';
 class ISpectShareAllLogsBottomSheet {
   const ISpectShareAllLogsBottomSheet({
     required this.controller,
+    this.filteredCount,
+    this.isFiltered = false,
   });
 
   final ISpectViewController controller;
+  final int? filteredCount;
+  final bool isFiltered;
 
   Future<void> show(BuildContext context) {
     final shareCallback = context.iSpect.options.onShare;
@@ -37,6 +41,27 @@ class ISpectShareAllLogsBottomSheet {
               );
             },
           ),
+          if (isFiltered && filteredCount != null) ...[
+            ISpectSheetActionButton(
+              icon: Icons.filter_list_rounded,
+              label:
+                  '${context.ispectL10n.shareLogsFile} — $filteredCount filtered (JSON)',
+              onPressed: () {
+                controller.shareLogsAsFile(ISpect.logger.history);
+              },
+            ),
+            ISpectSheetActionButton(
+              icon: Icons.filter_list_rounded,
+              label:
+                  '${context.ispectL10n.shareLogsFile} — $filteredCount filtered (txt)',
+              onPressed: () {
+                controller.shareLogsAsFile(
+                  ISpect.logger.history,
+                  fileType: 'txt',
+                );
+              },
+            ),
+          ],
         ],
         ISpectSheetActionButton(
           icon: Icons.copy_rounded,

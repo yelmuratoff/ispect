@@ -24,6 +24,7 @@ class JsonExplorerStore extends ChangeNotifier {
   var _focusedSearchResultIndex = 0;
   int _searchGeneration = 0;
   bool _isSearching = false;
+  NodeViewModelState? _selectedNode;
   Timer? _currentSearchOperation;
   bool _mounted = true;
 
@@ -48,6 +49,16 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Gets the current search term.
   String get searchTerm => _searchTerm;
+
+  /// Gets the currently selected node (for breadcrumb display).
+  NodeViewModelState? get selectedNode => _selectedNode;
+
+  /// Selects a node to display its path in the breadcrumb.
+  void selectNode(NodeViewModelState? node) {
+    if (_selectedNode == node) return;
+    _selectedNode = node;
+    notifyListeners();
+  }
 
   /// Gets a list containing the nodes found by the current search term.
   UnmodifiableListView<SearchResult> get searchResults =>

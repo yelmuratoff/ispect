@@ -14,6 +14,7 @@ class CollapsedBody extends StatelessWidget {
     required this.errorMessage,
     required this.expanded,
     required this.isHTTP,
+    this.statusCode,
     super.key,
   });
 
@@ -30,6 +31,7 @@ class CollapsedBody extends StatelessWidget {
   final String? errorMessage;
   final bool expanded;
   final bool isHTTP;
+  final int? statusCode;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -81,6 +83,10 @@ class CollapsedBody extends StatelessWidget {
               ],
             ),
           ),
+          if (statusCode != null) ...[
+            const Gap(4),
+            _StatusCodeBadge(statusCode: statusCode!),
+          ],
           const Gap(4),
           _ActionButtons(
             color: color,
@@ -122,7 +128,7 @@ class _ActionButtons extends StatelessWidget {
               tooltip: context.ispectL10n.navigationFlow,
               onPressed: onRouteTap,
             ),
-            const Gap(3),
+            const Gap(2),
           ],
           SquareIconButton(
             icon: Icons.share_rounded,
@@ -138,7 +144,7 @@ class _ActionButtons extends StatelessWidget {
               tooltip: context.ispectL10n.copyAsCurl,
               onPressed: onCopyCurlTap,
             ),
-            const Gap(3),
+            const Gap(2),
           ],
           SquareIconButton(
             icon: Icons.open_in_full_rounded,
@@ -204,17 +210,20 @@ class SquareIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget button = GestureDetector(
       onTap: onPressed,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Icon(
-            icon,
-            size: 14,
-            color: color.withValues(alpha: 0.7),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              icon,
+              size: 15,
+              color: color.withValues(alpha: 0.7),
+            ),
           ),
         ),
       ),
@@ -245,12 +254,47 @@ class DecoratedLeadingIcon extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(6),
           child: Icon(
             icon,
             color: color,
-            size: 14,
+            size: 16,
           ),
         ),
       );
+}
+
+class _StatusCodeBadge extends StatelessWidget {
+  const _StatusCodeBadge({required this.statusCode});
+
+  final int statusCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bgColor, textColor) = _colorsForStatus(statusCode);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.12),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        child: Text(
+          '$statusCode',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static (Color, Color) _colorsForStatus(int code) => switch (code) {
+        < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
+        < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
+        _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
+      };
 }

@@ -19,6 +19,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_lis
 import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_scroll_indicators.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_viewer_dialogs.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/onboarding_dialog.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
@@ -214,15 +215,22 @@ class _LogsScreenState extends State<LogsScreen> {
         description: context.ispectL10n.clearHistoryDesc,
       );
 
-  ISpectActionItem _buildShareLogsAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => ISpectShareAllLogsBottomSheet(
-          controller: _logsViewController,
-        ).show(context),
-        title: context.ispectL10n.shareLogsFile,
-        icon: Icons.ios_share_outlined,
-        description: context.ispectL10n.shareLogsFileDesc,
-      );
+  ISpectActionItem _buildShareLogsAction(BuildContext context) {
+    final allLogs = ISpect.logger.history;
+    final filteredLogs = _logsViewController.applyCurrentFilters(allLogs);
+    final isFiltered = filteredLogs.length != allLogs.length;
+
+    return ISpectActionItem(
+      onTap: (_) => ISpectShareAllLogsBottomSheet(
+        controller: _logsViewController,
+        filteredCount: filteredLogs.length,
+        isFiltered: isFiltered,
+      ).show(context),
+      title: context.ispectL10n.shareLogsFile,
+      icon: Icons.ios_share_outlined,
+      description: context.ispectL10n.shareLogsFileDesc,
+    );
+  }
 
   ISpectActionItem _buildNavigationFlowAction() {
     final observer = widget.options.observer;
@@ -390,6 +398,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
         if (mounted) setState(() {});
       },
     );
+    ISpectOnboardingDialog.showIfNeeded(context);
   }
 
   @override
@@ -573,6 +582,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
               isFiltered: isFiltered,
               selectedLog: widget.logsViewController.activeData,
               isLiveTailActive: _controller.isLiveTailActive,
+              isLiveTailPaused: _controller.isLiveTailPaused,
+              onToggleLiveTail: _controller.toggleLiveTailPause,
               useRelativeTime: widget.logsViewController.useRelativeTime,
               onToggleTimestamp:
                   widget.logsViewController.toggleTimestampFormat,

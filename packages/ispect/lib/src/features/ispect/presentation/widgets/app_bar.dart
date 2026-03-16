@@ -301,17 +301,25 @@ class _SearchSection extends StatelessWidget {
                 if (isFiltering)
                   Tooltip(
                     message: context.ispectL10n.clearAllFilters,
-                    child: IconButton(
-                      iconSize: 18,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: context.appTheme.colorScheme.primary
+                            .withValues(alpha: 0.1),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(6)),
                       ),
-                      padding: EdgeInsets.zero,
-                      onPressed: onClearAll,
-                      icon: Icon(
-                        Icons.filter_alt_off_rounded,
-                        color: context.appTheme.colorScheme.primary,
+                      child: IconButton(
+                        iconSize: 20,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: onClearAll,
+                        icon: Icon(
+                          Icons.filter_alt_off_rounded,
+                          color: context.appTheme.colorScheme.primary,
+                        ),
                       ),
                     ),
                   )
@@ -517,19 +525,27 @@ class _LogFilterChipState extends State<_LogFilterChip> {
 
     final position = _mousePosition;
     final overlay = Overlay.of(context);
+
+    // Convert global mouse position to overlay-local coordinates
+    final overlayBox =
+        overlay.context.findRenderObject()! as RenderBox;
+    final overlayLocal = overlayBox.globalToLocal(position);
+
     _tooltipOverlay = OverlayEntry(
       builder: (context) {
-        final screenSize = MediaQuery.sizeOf(context);
+        final overlaySize = overlayBox.size;
         const tooltipMaxWidth = 300.0;
 
-        var left = position.dx + 12;
-        var top = position.dy - 32;
+        var left = overlayLocal.dx + 12;
+        var top = overlayLocal.dy - 32;
 
-        if (left + tooltipMaxWidth > screenSize.width - 8) {
-          left = position.dx - tooltipMaxWidth - 12;
+        // Clamp to stay within overlay bounds
+        if (left + tooltipMaxWidth > overlaySize.width - 8) {
+          left = overlaySize.width - tooltipMaxWidth - 8;
         }
+        if (left < 8) left = 8;
         if (top < 8) {
-          top = position.dy + 20;
+          top = overlayLocal.dy + 20;
         }
 
         return Positioned(

@@ -6,6 +6,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
 
 /// Proportionally scale type/time column widths so they never overflow.
 /// Both columns shrink equally when space is tight.
@@ -395,9 +396,9 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     final zebraColor = isOdd ? onSurface.withValues(alpha: 0.015) : cardColor;
 
     final bgColor = widget.isSelected
-        ? widget.color.withValues(alpha: 0.1)
+        ? widget.color.withValues(alpha: 0.16)
         : _isHovered
-            ? onSurface.withValues(alpha: 0.04)
+            ? onSurface.withValues(alpha: 0.08)
             : zebraColor;
 
     return MouseRegion(
@@ -420,7 +421,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
               left: BorderSide(
                 color: widget.isSelected
                     ? widget.color
-                    : widget.color.withValues(alpha: 0.3),
+                    : widget.color.withValues(alpha: 0.4),
                 width: widget.isSelected ? 3 : 2,
               ),
             ),
@@ -490,6 +491,12 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                       ),
                       const Gap(12),
                     ],
+                    // Status code badge for HTTP responses
+                    if (widget.data.additionalData?['statusCode']
+                        case final int statusCode) ...[
+                      _DesktopStatusCodeBadge(statusCode: statusCode),
+                      const Gap(8),
+                    ],
                     // Message - takes remaining space
                     Expanded(
                       child: MouseRegion(
@@ -532,114 +539,15 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
   Future<void> _showContextMenu(
     BuildContext context,
     Offset position,
-  ) async {
-    final l10n = context.ispectL10n;
-    final overlay =
-        Overlay.of(context).context.findRenderObject()! as RenderBox;
-
-    final action = await showMenu<_ContextAction>(
-      context: context,
-      position: RelativeRect.fromRect(
-        position & const Size(1, 1),
-        Offset.zero & overlay.size,
-      ),
-      items: [
-        PopupMenuItem(
-          value: _ContextAction.copyMessage,
-          height: 36,
-          child: _ContextMenuRow(
-            icon: Icons.content_copy_rounded,
-            label: l10n.copy,
-          ),
-        ),
-        PopupMenuItem(
-          value: _ContextAction.share,
-          height: 36,
-          child: _ContextMenuRow(icon: Icons.share_rounded, label: l10n.share),
-        ),
-        if (widget.data.curlCommand != null)
-          PopupMenuItem(
-            value: _ContextAction.copyCurl,
-            height: 36,
-            child: _ContextMenuRow(
-              icon: Icons.terminal_rounded,
-              label: l10n.copyAsCurl,
-            ),
-          ),
-        PopupMenuItem(
-          value: _ContextAction.openDetail,
-          height: 36,
-          child: _ContextMenuRow(
-            icon: Icons.open_in_full_rounded,
-            label: l10n.expandLogs,
-          ),
-        ),
-        if (widget.data.key != null) ...[
-          const PopupMenuDivider(height: 8),
-          PopupMenuItem(
-            value: _ContextAction.showOnlyType,
-            height: 36,
-            child: _ContextMenuRow(
-              icon: Icons.filter_alt_rounded,
-              label: l10n.showOnlyThisType,
-            ),
-          ),
-          PopupMenuItem(
-            value: _ContextAction.hideType,
-            height: 36,
-            child: _ContextMenuRow(
-              icon: Icons.filter_alt_off_rounded,
-              label: l10n.hideThisType,
-            ),
-          ),
-        ],
-      ],
-    );
-
-    if (action == null || !context.mounted) return;
-
-    switch (action) {
-      case _ContextAction.copyMessage:
-        copyClipboard(context, value: _message);
-      case _ContextAction.share:
-        widget.onShareTap?.call();
-      case _ContextAction.copyCurl:
-        final curl = widget.data.curlCommand;
-        if (curl != null) copyClipboard(context, value: curl);
-      case _ContextAction.openDetail:
-        (widget.onOpenDetail ?? widget.onTap).call();
-      case _ContextAction.showOnlyType:
-        final key = widget.data.key;
-        if (key != null) widget.onTypeFilterTap?.call('__show_only__$key');
-      case _ContextAction.hideType:
-        final key = widget.data.key;
-        if (key != null) widget.onTypeFilterTap?.call('__hide__$key');
-    }
-  }
-}
-
-enum _ContextAction {
-  copyMessage,
-  share,
-  copyCurl,
-  openDetail,
-  showOnlyType,
-  hideType,
-}
-
-class _ContextMenuRow extends StatelessWidget {
-  const _ContextMenuRow({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Icon(icon, size: 16),
-          const Gap(10),
-          Text(label, style: const TextStyle(fontSize: 13)),
-        ],
+  ) =>
+      showLogContextMenu(
+        context: context,
+        position: position,
+        data: widget.data,
+        message: _message,
+        onShareTap: widget.onShareTap,
+        onOpenDetail: widget.onOpenDetail ?? widget.onTap,
+        onTypeFilterTap: widget.onTypeFilterTap,
       );
 }
 
@@ -724,4 +632,37 @@ class _DesktopActionIcon extends StatelessWidget {
           ),
         ),
       );
+}
+
+class _DesktopStatusCodeBadge extends StatelessWidget {
+  const _DesktopStatusCodeBadge({required this.statusCode});
+
+  final int statusCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bgColor, textColor) = switch (statusCode) {
+      < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
+      < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
+      _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
+    };
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.12),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        child: Text(
+          '$statusCode',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ),
+    );
+  }
 }

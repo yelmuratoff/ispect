@@ -13,6 +13,8 @@ class DesktopStatusBar extends StatelessWidget {
     required this.onToggleTimestamp,
     this.selectedLog,
     this.isLiveTailActive = false,
+    this.isLiveTailPaused = false,
+    this.onToggleLiveTail,
     super.key,
   });
 
@@ -21,8 +23,10 @@ class DesktopStatusBar extends StatelessWidget {
   final bool isFiltered;
   final ISpectLogData? selectedLog;
   final bool isLiveTailActive;
+  final bool isLiveTailPaused;
   final bool useRelativeTime;
   final VoidCallback onToggleTimestamp;
+  final VoidCallback? onToggleLiveTail;
 
   @override
   Widget build(BuildContext context) {
@@ -49,30 +53,60 @@ class DesktopStatusBar extends StatelessWidget {
 
             return Row(
               children: [
-                // Live tail indicator
-                if (isLiveTailActive) ...[
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.green.withValues(alpha: 0.4),
-                          blurRadius: 4,
+                // Live tail indicator (clickable to pause/resume)
+                if (isLiveTailActive || isLiveTailPaused) ...[
+                  Tooltip(
+                    message:
+                        isLiveTailPaused ? 'Resume live tail' : 'Pause live tail',
+                    child: InkWell(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(4)),
+                      onTap: onToggleLiveTail,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
                         ),
-                      ],
-                    ),
-                  ),
-                  const Gap(6),
-                  const Text(
-                    'LIVE',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.green,
-                      letterSpacing: 0.5,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isLiveTailPaused)
+                              Icon(
+                                Icons.pause_circle_filled_rounded,
+                                size: 12,
+                                color: Colors.orange.withValues(alpha: 0.8),
+                              )
+                            else
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.green.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            const Gap(6),
+                            Text(
+                              isLiveTailPaused ? 'PAUSED' : 'LIVE',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: isLiveTailPaused
+                                    ? Colors.orange
+                                    : Colors.green,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const Gap(10),

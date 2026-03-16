@@ -6,6 +6,7 @@ import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
 
 part 'collapsed_body.dart';
 
@@ -109,16 +110,33 @@ class _LogCardHeader extends StatelessWidget {
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
 
+  String get _message {
+    final msg = data.isHttpLog ? data.httpLogText : data.textMessage;
+    return msg ?? '';
+  }
+
   @override
   Widget build(BuildContext context) => Material(
         type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(10),
-            bottomRight: Radius.circular(10),
+        child: GestureDetector(
+          onLongPressStart: (details) => showLogContextMenu(
+            context: context,
+            position: details.globalPosition,
+            data: data,
+            message: _message,
+            onShareTap: onShareTap,
+            onOpenDetail: () => JsonScreen(
+              data: data.toJson(),
+              truncatedData: data.toJson(truncated: true),
+            ).push(context),
           ),
-          child: ColoredBox(
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+            child: ColoredBox(
             color:
                 isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
             child: Padding(
@@ -146,6 +164,7 @@ class _LogCardHeader extends StatelessWidget {
                 errorMessage: data.httpLogText,
                 expanded: isExpanded,
                 isHTTP: data.key == ISpectLogType.httpRequest.key,
+                statusCode: data.additionalData?['statusCode'] as int?,
                 onCopyCurlTap: () {
                   final curl = data.curlCommand;
                   if (curl != null) {
@@ -154,6 +173,7 @@ class _LogCardHeader extends StatelessWidget {
                 },
               ),
             ),
+          ),
           ),
         ),
       );

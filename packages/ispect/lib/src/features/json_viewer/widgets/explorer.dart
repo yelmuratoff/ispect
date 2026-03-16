@@ -68,6 +68,7 @@ class JsonExplorer extends StatelessWidget {
     this.propertyNameFormatter,
     this.valueFormatter,
     this.valueStyleBuilder,
+    this.onNodeTap,
     this.itemSpacing = 4,
     this.physics,
     this.maxRootNodeWidth,
@@ -135,6 +136,9 @@ class JsonExplorer extends StatelessWidget {
   /// Sets the scroll physics of the list.
   final ScrollPhysics? physics;
 
+  /// Called when a node is tapped.
+  final ValueChanged<NodeViewModelState>? onNodeTap;
+
   final double? maxRootNodeWidth;
 
   @override
@@ -145,7 +149,7 @@ class JsonExplorer extends StatelessWidget {
           listController: listController,
           itemBuilder: (context, index) {
             final node = nodes[index];
-            return _JsonAttributeItem(
+            final item = _JsonAttributeItem(
               node: node,
               store: store,
               theme: theme,
@@ -158,6 +162,12 @@ class JsonExplorer extends StatelessWidget {
               valueStyleBuilder: valueStyleBuilder,
               itemSpacing: itemSpacing,
               maxRootNodeWidth: maxRootNodeWidth,
+            );
+            if (onNodeTap == null) return item;
+            return GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => onNodeTap!(node),
+              child: item,
             );
           },
           physics: physics,

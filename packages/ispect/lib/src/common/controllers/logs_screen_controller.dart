@@ -44,6 +44,7 @@ class LogsScreenController {
   double timeColumnWidth = 140;
 
   bool isLiveTailActive = false;
+  bool isLiveTailPaused = false;
   int lastLogCount = 0;
 
   Timer? _relativeTimeTimer;
@@ -85,21 +86,31 @@ class LogsScreenController {
     const activateThreshold = 50.0;
     const deactivateThreshold = 120.0;
 
-    if (isNewestAtTop) {
-      if (offset <= activateThreshold) {
-        isLiveTailActive = true;
-        hasNewLogs.value = false;
-      } else if (offset > deactivateThreshold) {
-        isLiveTailActive = false;
-      }
-    } else {
-      if (offset >= maxExtent - activateThreshold) {
-        isLiveTailActive = true;
-        hasNewLogs.value = false;
-      } else if (offset < maxExtent - deactivateThreshold) {
-        isLiveTailActive = false;
+    if (!isLiveTailPaused) {
+      if (isNewestAtTop) {
+        if (offset <= activateThreshold) {
+          isLiveTailActive = true;
+          hasNewLogs.value = false;
+        } else if (offset > deactivateThreshold) {
+          isLiveTailActive = false;
+        }
+      } else {
+        if (offset >= maxExtent - activateThreshold) {
+          isLiveTailActive = true;
+          hasNewLogs.value = false;
+        } else if (offset < maxExtent - deactivateThreshold) {
+          isLiveTailActive = false;
+        }
       }
     }
+  }
+
+  void toggleLiveTailPause() {
+    isLiveTailPaused = !isLiveTailPaused;
+    if (isLiveTailPaused) {
+      isLiveTailActive = false;
+    }
+    _onStateChanged();
   }
 
   void onFabPressed() {

@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
+import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
@@ -128,12 +129,14 @@ class _JsonScreenState extends State<JsonScreen> {
                 child: Icon(logIcon, size: 16, color: logColor),
               ),
             const Gap(10),
-            Text(
-              logKey ?? 'JSON Viewer',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: logColor,
+            Flexible(
+              child: Text(
+                logKey ?? 'JSON Viewer',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: logColor,
+                ),
               ),
             ),
           ],
@@ -253,6 +256,30 @@ class _JsonScreenState extends State<JsonScreen> {
               ),
             ),
           ),
+          // Breadcrumb path
+          AnimatedBuilder(
+            animation: _store,
+            builder: (context, _) {
+              final selectedNode = _store.selectedNode;
+              if (selectedNode == null) return const SizedBox.shrink();
+              return _BreadcrumbBar(
+                node: selectedNode,
+                onSegmentTap: (node) {
+                  _store.selectNode(node);
+                  final index = _store.displayNodes.indexOf(node);
+                  if (index >= 0) {
+                    _listController.animateToItem(
+                      index: index,
+                      scrollController: _scrollController,
+                      alignment: 0.3,
+                      duration: (_) => const Duration(milliseconds: 300),
+                      curve: (_) => Curves.easeOutCubic,
+                    );
+                  }
+                },
+              );
+            },
+          ),
           // JSON viewer
           Expanded(
             child: AnimatedBuilder(
@@ -265,6 +292,7 @@ class _JsonScreenState extends State<JsonScreen> {
                   listController: _listController,
                   scrollController: _scrollController,
                   theme: _jsonTheme,
+                  onNodeTap: _store.selectNode,
                 ),
               ),
             ),
@@ -278,7 +306,9 @@ class _JsonScreenState extends State<JsonScreen> {
     final searchResult = store.focusedSearchResult;
     if (searchResult == null || !mounted) return;
 
-    _store.expandParentNodes(searchResult.node);
+    _store
+      ..selectNode(searchResult.node)
+      ..expandParentNodes(searchResult.node);
 
     await Future<void>.delayed(const Duration(milliseconds: 200));
     if (!mounted) return;
@@ -449,4 +479,69 @@ class _NavButton extends StatelessWidget {
           color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       );
+}
+
+class _BreadcrumbBar extends StatelessWidget {
+  const _BreadcrumbBar({
+    required this.node,
+    required this.onSegmentTap,
+  });
+
+  final NodeViewModelState node;
+  final ValueChanged<NodeViewModelState> onSegmentTap;
+
+  List<NodeViewModelState> _buildPath(NodeViewModelState node) {
+    final path = <NodeViewModelState>[];
+    NodeViewModelState? current = node;
+    while (current != null) {
+      path.add(current);
+      current = current.parent;
+    }
+    return path.reversed.toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = _buildPath(node);
+    final mutedColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4);
+    final activeColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: SizedBox(
+        height: 24,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: path.length,
+          separatorBuilder: (_, __) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Icon(
+              Icons.chevron_right_rounded,
+              size: 14,
+              color: mutedColor,
+            ),
+          ),
+          itemBuilder: (context, index) {
+            final segment = path[index];
+            final isLast = index == path.length - 1;
+            return GestureDetector(
+              onTap: () => onSegmentTap(segment),
+              child: Center(
+                child: Text(
+                  segment.key,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isLast ? FontWeight.w600 : FontWeight.w400,
+                    color: isLast ? activeColor : mutedColor,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
