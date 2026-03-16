@@ -88,6 +88,9 @@ class SearchFilter implements Filter<ISpectLogData> {
     // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
+    // Check formatted time (e.g. "15:03", "15:03:42")
+    if (item.formattedTime.contains(_lowerQuery)) return true;
+
     // Check log type key (e.g. "route", "http-request", "error")
     final key = item.key;
     if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
