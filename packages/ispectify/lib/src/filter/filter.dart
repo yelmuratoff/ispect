@@ -85,16 +85,11 @@ class SearchFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
-    // 1. Cheap field checks first (short strings, no allocation)
-
-    // Log type key (e.g. "route", "http-request", "error")
     final key = item.key;
     if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
 
-    // Title (usually same as key)
     final title = item.title;
     if (title != null &&
         title != key &&
@@ -102,16 +97,12 @@ class SearchFilter implements Filter<ISpectLogData> {
       return true;
     }
 
-    // Log level name (e.g. "error", "warning", "info")
     final logLevel = item.logLevel;
     if (logLevel != null && logLevel.name.toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
-    // Formatted time (e.g. "15:03", "15:03:42")
     if (item.formattedTime.contains(_lowerQuery)) return true;
-
-    // 2. Message fields (medium cost — may be longer strings)
 
     final message = item.message;
     if (message != null && message.toLowerCase().contains(_lowerQuery)) {
@@ -120,8 +111,6 @@ class SearchFilter implements Filter<ISpectLogData> {
 
     final textMessage = item.textMessage;
     if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
-
-    // 3. Error fields (toString() may allocate)
 
     final exception = item.exception;
     if (exception != null &&
@@ -134,7 +123,6 @@ class SearchFilter implements Filter<ISpectLogData> {
       return true;
     }
 
-    // 4. Deep search in additional data (most expensive — recursive)
     final additionalData = item.additionalData;
     return additionalData != null &&
         _deepSearchIterative(additionalData, _lowerQuery);
