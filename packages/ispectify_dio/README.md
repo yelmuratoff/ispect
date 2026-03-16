@@ -54,6 +54,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 | **Visual inspector**      | Tap any widget to see its render box, padding, constraints, and color        |
 | **Structured logs**       | Typed log entries with levels, filtering, export/import, and session history |
 | **Network capture**       | Request/response inspection for Dio, http, and WebSocket clients             |
+| **Transaction grouping**  | Correlated request/response pairs with duration, status, and cross-navigation |
 | **Automatic redaction**   | Tokens, passwords, PII, and credit cards masked before they reach logs       |
 | **Observer hooks**        | Forward log events to Sentry, Crashlytics, or any backend in real-time       |
 | **12 languages**          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                               |
@@ -64,7 +65,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 
 ```yaml
 dependencies:
-  ispect: ^4.8.0-dev05
+  ispect: ^4.8.0-dev06
 ```
 
 ```dart
@@ -363,13 +364,13 @@ Install only what your project needs. Each package works independently.
 
 ```yaml
 dependencies:
-  ispect: ^4.8.0-dev05 # Core UI, inspector, log viewer
-  ispectify: ^4.8.0-dev05 # Logging backbone (Dart-only, no Flutter)
-  ispectify_dio: ^4.8.0-dev05 # Dio HTTP interceptor
-  ispectify_http: ^4.8.0-dev05 # http package interceptor
-  ispectify_ws: ^4.8.0-dev05 # WebSocket traffic capture
-  ispectify_db: ^4.8.0-dev05 # Database operation tracking
-  ispectify_bloc: ^4.8.0-dev05 # BLoC event/state observer
+  ispect: ^4.8.0-dev06 # Core UI, inspector, log viewer
+  ispectify: ^4.8.0-dev06 # Logging backbone (Dart-only, no Flutter)
+  ispectify_dio: ^4.8.0-dev06 # Dio HTTP interceptor
+  ispectify_http: ^4.8.0-dev06 # http package interceptor
+  ispectify_ws: ^4.8.0-dev06 # WebSocket traffic capture
+  ispectify_db: ^4.8.0-dev06 # Database operation tracking
+  ispectify_bloc: ^4.8.0-dev06 # BLoC event/state observer
 ```
 
 ### Dio

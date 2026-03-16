@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.8.0-dev05
+## 4.8.0-dev06
 
 ### Code Quality
 
@@ -10,6 +10,8 @@
 ### Behavioral Changes
 
 - **Redaction is now enabled by default** for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).
+- **HTTP transaction grouping** enabled by default — correlated request/response/error logs displayed as expandable transaction cards with duration and status badges. Configurable via `ISpectViewController(groupHttpLogs:)`.
+- **Search** now matches across all log fields: key, title, log level, time, message, exception, error, and additional data.
 
 ### Security
 
@@ -32,7 +34,9 @@
 - **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components. Added `showISpectSheet` for adaptive display (dialog on desktop, sheet on mobile).
 - **Draggable panel:** Fixed dark mode theming, upgraded `draggable_panel` to `^2.0.0` with M3 surface-based defaults.
 - **Log cards:** Context menu on long press, improved action buttons with tooltips, conditional background on expand.
-- **Localization:** New keys for log filtering, navigation transitions, actions, empty state hints, and updated Kazakh translations.
+- **Network logs:** Request-response correlation via `requestId`, cross-navigation between correlated logs in detail view, transaction share with request/response choice.
+- **Tips dialog:** Moved from auto-popup to app bar icon button.
+- **Localization:** New keys for log filtering, navigation transitions, actions, tips, HTTP grouping, and updated translations across all 12 languages.
 
 ### CI
 
