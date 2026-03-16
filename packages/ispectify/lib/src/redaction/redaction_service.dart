@@ -648,14 +648,18 @@ const Set<String> kDefaultSensitiveKeys = <String>{
   'phone_number',
   'phonenumber',
   'phone-number',
-  'mobile',
   'mobile_number',
   'mobilenumber',
   'mobile-number',
-  'cell',
+  'mobile_phone',
+  'mobilephone',
+  'mobile-phone',
   'cell_phone',
   'cellphone',
   'cell-phone',
+  'cell_number',
+  'cellnumber',
+  'cell-number',
 
   // Location / Address (specific fields, not generic 'address')
   'postal_code',
@@ -706,8 +710,8 @@ final List<RegExp> _kDefaultSensitiveKeyRegexps = <RegExp>[
 
   // Contact information patterns
   RegExp(r'(?:^|[_\-])phone(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])mobile(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])cell(?:$|[_\-])', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])mobile[_\-](?:num|phone)', caseSensitive: false),
+  RegExp(r'(?:^|[_\-])cell[_\-]?(?:phone|num)', caseSensitive: false),
 ];
 
 final RegExp _schemeRegex = RegExp(
