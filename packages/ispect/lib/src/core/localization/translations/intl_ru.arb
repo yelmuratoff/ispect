@@ -245,5 +245,7 @@
    "pending": "В ожидании",
    "groupHttpLogs": "Группировка HTTP",
    "groupHttpLogsDesc": "Группировать связанные HTTP запросы и ответы",
-   "duration": "Длительность"
+   "duration": "Длительность",
+   "ungroupHttpLogs": "Разгруппировать HTTP",
+   "ungroupHttpLogsDesc": "Показывать HTTP запросы и ответы отдельными записями"
 }

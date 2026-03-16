@@ -820,4 +820,11 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get duration => 'Duration';
+
+  @override
+  String get ungroupHttpLogs => 'Ungroup HTTP Logs';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Show HTTP requests and responses as separate entries';
 }

@@ -803,4 +803,10 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get duration => '소요 시간';
+
+  @override
+  String get ungroupHttpLogs => 'HTTP 그룹 해제';
+
+  @override
+  String get ungroupHttpLogsDesc => 'HTTP 요청과 응답을 별도의 항목으로 표시';
 }

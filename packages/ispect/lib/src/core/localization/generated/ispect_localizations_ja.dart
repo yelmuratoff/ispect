@@ -803,4 +803,10 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get duration => '所要時間';
+
+  @override
+  String get ungroupHttpLogs => 'HTTPグループ化解除';
+
+  @override
+  String get ungroupHttpLogsDesc => 'HTTPリクエストとレスポンスを個別のエントリとして表示';
 }

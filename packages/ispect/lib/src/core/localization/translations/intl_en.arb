@@ -266,5 +266,7 @@
    "pending": "Pending",
    "groupHttpLogs": "Group HTTP Logs",
    "groupHttpLogsDesc": "Group related HTTP requests and responses together",
-   "duration": "Duration"
+   "duration": "Duration",
+   "ungroupHttpLogs": "Ungroup HTTP Logs",
+   "ungroupHttpLogsDesc": "Show HTTP requests and responses as separate entries"
 }

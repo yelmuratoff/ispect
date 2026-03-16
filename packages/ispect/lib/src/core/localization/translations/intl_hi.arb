@@ -245,5 +245,7 @@
    "pending": "लंबित",
    "groupHttpLogs": "HTTP समूहीकरण",
    "groupHttpLogsDesc": "संबंधित HTTP अनुरोधों और प्रतिक्रियाओं को एक साथ समूहित करें",
-   "duration": "अवधि"
+   "duration": "अवधि",
+   "ungroupHttpLogs": "HTTP समूहीकरण हटाएं",
+   "ungroupHttpLogsDesc": "HTTP अनुरोधों और प्रतिक्रियाओं को अलग प्रविष्टियों के रूप में दिखाएं"
 }

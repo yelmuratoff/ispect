@@ -1594,6 +1594,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Duration'**
   String get duration;
+
+  /// No description provided for @ungroupHttpLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungroup HTTP Logs'**
+  String get ungroupHttpLogs;
+
+  /// No description provided for @ungroupHttpLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show HTTP requests and responses as separate entries'**
+  String get ungroupHttpLogsDesc;
 }
 
 class _ISpectGeneratedLocalizationDelegate

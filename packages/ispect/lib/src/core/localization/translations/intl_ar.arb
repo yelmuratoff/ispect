@@ -245,5 +245,7 @@
    "pending": "قيد الانتظار",
    "groupHttpLogs": "تجميع HTTP",
    "groupHttpLogsDesc": "تجميع طلبات واستجابات HTTP المرتبطة معًا",
-   "duration": "المدة"
+   "duration": "المدة",
+   "ungroupHttpLogs": "إلغاء تجميع HTTP",
+   "ungroupHttpLogsDesc": "عرض طلبات واستجابات HTTP كإدخالات منفصلة"
 }

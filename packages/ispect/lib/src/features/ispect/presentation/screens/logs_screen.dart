@@ -243,17 +243,21 @@ class _LogsScreenState extends State<LogsScreen> {
         ...widget.options.actionItems,
       ];
 
-  ISpectActionItem _buildGroupHttpAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => _logsViewController.toggleGroupHttpLogs(),
-        title: _logsViewController.groupHttpLogs
-            ? context.ispectL10n.groupHttpLogs
-            : context.ispectL10n.groupHttpLogs,
-        icon: _logsViewController.groupHttpLogs
-            ? Icons.account_tree_rounded
-            : Icons.account_tree_outlined,
-        description: context.ispectL10n.groupHttpLogsDesc,
-      );
+  ISpectActionItem _buildGroupHttpAction(BuildContext context) {
+    final isGrouped = _logsViewController.groupHttpLogs;
+    return ISpectActionItem(
+      onTap: (_) => _logsViewController.toggleGroupHttpLogs(),
+      title: isGrouped
+          ? context.ispectL10n.ungroupHttpLogs
+          : context.ispectL10n.groupHttpLogs,
+      icon: isGrouped
+          ? Icons.account_tree_rounded
+          : Icons.account_tree_outlined,
+      description: isGrouped
+          ? context.ispectL10n.ungroupHttpLogsDesc
+          : context.ispectL10n.groupHttpLogsDesc,
+    );
+  }
 
   ISpectActionItem _buildReverseLogsAction(BuildContext context) =>
       ISpectActionItem(

@@ -245,5 +245,7 @@
    "pending": "대기 중",
    "groupHttpLogs": "HTTP 그룹화",
    "groupHttpLogsDesc": "관련 HTTP 요청과 응답을 함께 그룹화",
-   "duration": "소요 시간"
+   "duration": "소요 시간",
+   "ungroupHttpLogs": "HTTP 그룹 해제",
+   "ungroupHttpLogsDesc": "HTTP 요청과 응답을 별도의 항목으로 표시"
 }

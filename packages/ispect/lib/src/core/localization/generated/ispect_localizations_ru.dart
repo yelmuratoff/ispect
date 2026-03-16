@@ -825,4 +825,11 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get duration => 'Длительность';
+
+  @override
+  String get ungroupHttpLogs => 'Разгруппировать HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Показывать HTTP запросы и ответы отдельными записями';
 }

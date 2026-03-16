@@ -245,5 +245,7 @@
    "pending": "等待中",
    "groupHttpLogs": "分组HTTP日志",
    "groupHttpLogsDesc": "将相关的HTTP请求和响应分组在一起",
-   "duration": "持续时间"
+   "duration": "持续时间",
+   "ungroupHttpLogs": "取消HTTP分组",
+   "ungroupHttpLogsDesc": "将HTTP请求和响应显示为单独的条目"
 }

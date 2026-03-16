@@ -822,4 +822,11 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get duration => 'Ұзақтығы';
+
+  @override
+  String get ungroupHttpLogs => 'HTTP топтан шығару';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'HTTP сұраныстар мен жауаптарды бөлек жазбалар ретінде көрсету';
 }

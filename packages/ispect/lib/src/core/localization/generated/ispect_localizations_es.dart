@@ -831,4 +831,11 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get duration => 'Duración';
+
+  @override
+  String get ungroupHttpLogs => 'Desagrupar HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Mostrar solicitudes y respuestas HTTP como entradas separadas';
 }

@@ -245,5 +245,7 @@
    "pending": "Күтуде",
    "groupHttpLogs": "HTTP топтау",
    "groupHttpLogsDesc": "Байланысты HTTP сұраныстар мен жауаптарды топтау",
-   "duration": "Ұзақтығы"
+   "duration": "Ұзақтығы",
+   "ungroupHttpLogs": "HTTP топтан шығару",
+   "ungroupHttpLogsDesc": "HTTP сұраныстар мен жауаптарды бөлек жазбалар ретінде көрсету"
 }

@@ -803,4 +803,10 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get duration => '持续时间';
+
+  @override
+  String get ungroupHttpLogs => '取消HTTP分组';
+
+  @override
+  String get ungroupHttpLogsDesc => '将HTTP请求和响应显示为单独的条目';
 }

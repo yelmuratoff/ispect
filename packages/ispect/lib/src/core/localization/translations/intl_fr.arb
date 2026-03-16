@@ -245,5 +245,7 @@
    "pending": "En attente",
    "groupHttpLogs": "Grouper HTTP",
    "groupHttpLogsDesc": "Grouper les requêtes et réponses HTTP associées",
-   "duration": "Durée"
+   "duration": "Durée",
+   "ungroupHttpLogs": "Dégrouper HTTP",
+   "ungroupHttpLogsDesc": "Afficher les requêtes et réponses HTTP comme entrées séparées"
 }

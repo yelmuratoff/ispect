@@ -810,4 +810,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get duration => 'المدة';
+
+  @override
+  String get ungroupHttpLogs => 'إلغاء تجميع HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc => 'عرض طلبات واستجابات HTTP كإدخالات منفصلة';
 }

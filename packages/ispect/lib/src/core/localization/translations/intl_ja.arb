@@ -245,5 +245,7 @@
    "pending": "保留中",
    "groupHttpLogs": "HTTPグループ化",
    "groupHttpLogsDesc": "関連するHTTPリクエストとレスポンスをグループ化",
-   "duration": "所要時間"
+   "duration": "所要時間",
+   "ungroupHttpLogs": "HTTPグループ化解除",
+   "ungroupHttpLogsDesc": "HTTPリクエストとレスポンスを個別のエントリとして表示"
 }
