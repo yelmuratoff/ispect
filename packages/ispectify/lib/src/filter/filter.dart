@@ -96,6 +96,12 @@ class SearchFilter implements Filter<ISpectLogData> {
     final title = item.title;
     if (title != null && title.toLowerCase().contains(_lowerQuery)) return true;
 
+    // Check log level name (e.g. "error", "warning", "info")
+    final logLevel = item.logLevel;
+    if (logLevel != null && logLevel.name.toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
+
     // Check if the query is in message or textMessage
     final message = item.message;
     if (message != null && message.toLowerCase().contains(_lowerQuery)) {
@@ -105,6 +111,19 @@ class SearchFilter implements Filter<ISpectLogData> {
     // Check in textMessage if available
     final textMessage = item.textMessage;
     if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
+
+    // Check in exception (e.g. "SocketException", "FormatException")
+    final exception = item.exception;
+    if (exception != null &&
+        exception.toString().toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
+
+    // Check in error
+    final error = item.error;
+    if (error != null && error.toString().toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
 
     // Check in additional data recursively only if data exists
     final additionalData = item.additionalData;
