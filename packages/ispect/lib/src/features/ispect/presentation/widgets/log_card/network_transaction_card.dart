@@ -260,53 +260,65 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   Widget build(BuildContext context) {
     final color = _transactionColor(tx);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.04),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        border: Border.all(color: color.withValues(alpha: 0.12)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                setState(() => _expanded = !_expanded);
-                widget.onTap?.call();
-              },
-              child: _MobileHeader(tx: tx, color: color, expanded: _expanded),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: _expanded
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _TransactionDetails(tx: tx, color: color),
-                          const Gap(8),
-                          Row(
-                            children: _buildActionWidgets(
-                              context: context,
-                              tx: tx,
-                              color: color,
-                              useDesktopStyle: false,
-                              onOpenRequestDetail: widget.onOpenRequestDetail,
-                              onOpenResponseDetail: widget.onOpenResponseDetail,
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.04),
+          border: Border(
+            left: BorderSide(color: color, width: 3),
+            top: BorderSide(color: color.withValues(alpha: 0.12)),
+            right: BorderSide(color: color.withValues(alpha: 0.12)),
+            bottom: BorderSide(color: color.withValues(alpha: 0.12)),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() => _expanded = !_expanded);
+                  widget.onTap?.call();
+                },
+                child: _MobileHeader(
+                  tx: tx,
+                  color: color,
+                  expanded: _expanded,
+                ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: _expanded
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _TransactionDetails(tx: tx, color: color),
+                            const Gap(8),
+                            Row(
+                              children: _buildActionWidgets(
+                                context: context,
+                                tx: tx,
+                                color: color,
+                                useDesktopStyle: false,
+                                onOpenRequestDetail: widget.onOpenRequestDetail,
+                                onOpenResponseDetail:
+                                    widget.onOpenResponseDetail,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
+                          ],
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
         ),
       ),
     );
