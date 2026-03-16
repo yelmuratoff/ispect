@@ -56,11 +56,11 @@ class DesktopStatusBar extends StatelessWidget {
                 // Live tail indicator (clickable to pause/resume)
                 if (isLiveTailActive || isLiveTailPaused) ...[
                   Tooltip(
-                    message:
-                        isLiveTailPaused ? 'Resume live tail' : 'Pause live tail',
+                    message: isLiveTailPaused
+                        ? 'Resume live tail'
+                        : 'Pause live tail',
                     child: InkWell(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(4)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                       onTap: onToggleLiveTail,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

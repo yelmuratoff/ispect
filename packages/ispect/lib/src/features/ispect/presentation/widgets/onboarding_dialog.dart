@@ -20,7 +20,8 @@ class ISpectOnboardingDialog {
       if (!context.mounted) return;
       showDialog<void>(
         context: context,
-        builder: (_) => _OnboardingContent(isDesktop: context.screenSize.isDesktop),
+        builder: (_) =>
+            _OnboardingContent(isDesktop: context.screenSize.isDesktop),
       );
     });
   }
@@ -96,8 +97,7 @@ class _HintRow extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
           ),
           const Gap(10),
           Expanded(

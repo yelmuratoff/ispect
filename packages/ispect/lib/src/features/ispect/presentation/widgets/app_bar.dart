@@ -527,8 +527,7 @@ class _LogFilterChipState extends State<_LogFilterChip> {
     final overlay = Overlay.of(context);
 
     // Convert global mouse position to overlay-local coordinates
-    final overlayBox =
-        overlay.context.findRenderObject()! as RenderBox;
+    final overlayBox = overlay.context.findRenderObject()! as RenderBox;
     final overlayLocal = overlayBox.globalToLocal(position);
 
     _tooltipOverlay = OverlayEntry(

@@ -137,43 +137,44 @@ class _LogCardHeader extends StatelessWidget {
               bottomRight: Radius.circular(10),
             ),
             child: ColoredBox(
-            color:
-                isExpanded ? color.withValues(alpha: 0.08) : Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 8,
-              ),
-              child: CollapsedBody(
-                icon: icon,
-                color: color,
-                title: data.key,
-                dateTime: data.formattedTime,
-                onShareTap: onShareTap,
-                onRouteTap: data is RouteLog && observer != null
-                    ? () => ISpectNavigationFlowScreen(
-                          observer: observer!,
-                          log: data as RouteLog,
-                        ).push(context)
-                    : null,
-                onExpandTap: () => JsonScreen(
-                  data: data.toJson(),
-                  truncatedData: data.toJson(truncated: true),
-                ).push(context),
-                message: data.textMessage,
-                errorMessage: data.httpLogText,
-                expanded: isExpanded,
-                isHTTP: data.key == ISpectLogType.httpRequest.key,
-                statusCode: data.additionalData?['statusCode'] as int?,
-                onCopyCurlTap: () {
-                  final curl = data.curlCommand;
-                  if (curl != null) {
-                    copyClipboard(context, value: curl);
-                  }
-                },
+              color: isExpanded
+                  ? color.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                child: CollapsedBody(
+                  icon: icon,
+                  color: color,
+                  title: data.key,
+                  dateTime: data.formattedTime,
+                  onShareTap: onShareTap,
+                  onRouteTap: data is RouteLog && observer != null
+                      ? () => ISpectNavigationFlowScreen(
+                            observer: observer!,
+                            log: data as RouteLog,
+                          ).push(context)
+                      : null,
+                  onExpandTap: () => JsonScreen(
+                    data: data.toJson(),
+                    truncatedData: data.toJson(truncated: true),
+                  ).push(context),
+                  message: data.textMessage,
+                  errorMessage: data.httpLogText,
+                  expanded: isExpanded,
+                  isHTTP: data.key == ISpectLogType.httpRequest.key,
+                  statusCode: data.additionalData?['statusCode'] as int?,
+                  onCopyCurlTap: () {
+                    final curl = data.curlCommand;
+                    if (curl != null) {
+                      copyClipboard(context, value: curl);
+                    }
+                  },
+                ),
               ),
             ),
-          ),
           ),
         ),
       );
