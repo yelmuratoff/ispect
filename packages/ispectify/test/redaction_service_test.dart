@@ -27,7 +27,7 @@ void main() {
     });
 
     test('honours ignored values', () {
-      final service = RedactionService()..ignoreValue('SAFE');
+      final service = RedactionService(ignoredValues: {'SAFE'});
 
       final map = service.redact({'token': 'SAFE'}) as Map<String, Object?>?;
       expect(map, isNotNull);
