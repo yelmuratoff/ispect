@@ -54,6 +54,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 | **Visual inspector**      | Tap any widget to see its render box, padding, constraints, and color        |
 | **Structured logs**       | Typed log entries with levels, filtering, export/import, and session history |
 | **Network capture**       | Request/response inspection for Dio, http, and WebSocket clients             |
+| **Transaction grouping**  | Correlated request/response pairs with duration, status, and cross-navigation |
 | **Automatic redaction**   | Tokens, passwords, PII, and credit cards masked before they reach logs       |
 | **Observer hooks**        | Forward log events to Sentry, Crashlytics, or any backend in real-time       |
 | **12 languages**          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                               |

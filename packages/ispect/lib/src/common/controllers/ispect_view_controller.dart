@@ -15,7 +15,9 @@ class ISpectViewController extends ChangeNotifier {
   ISpectViewController({
     ISpectShareCallback? onShare,
     ISpectSettingsState? initialSettings,
-  })  : _exportService = LogExportService(onShare: onShare),
+    bool groupHttpLogs = true,
+  })  : _groupHttpLogs = groupHttpLogs,
+        _exportService = LogExportService(onShare: onShare),
         _importService = const LogImportService() {
     _settingsManager = SettingsManager(
       initialSettings: initialSettings,
@@ -34,7 +36,7 @@ class ISpectViewController extends ChangeNotifier {
 
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
-  bool _groupHttpLogs = false;
+  bool _groupHttpLogs;
   ISpectLogData? _activeData;
 
   // --- Desktop: detail panel data (separate from selection highlight) ---
