@@ -118,7 +118,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 ),
                 IconButton(
                   onPressed: () => ISpectOnboardingDialog.show(context),
-                  tooltip: 'Tips',
+                  tooltip: context.ispectL10n.tips,
                   icon: const Icon(
                     Icons.lightbulb_outline_rounded,
                     size: 22,
@@ -127,6 +127,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 if (widget.onSettingsTap != null)
                   IconButton(
                     onPressed: widget.onSettingsTap,
+                    tooltip: context.ispectL10n.settings,
                     icon: const Icon(Icons.settings_rounded),
                   ),
                 const Gap(6),
@@ -384,15 +385,17 @@ class _FilterToggleButton extends StatelessWidget {
     final primaryColor = context.appTheme.colorScheme.primary;
     final cardColor = context.ispectTheme.card?.resolve(context);
 
-    return SizedBox(
-      width: 45,
-      height: 45,
-      child: Material(
-        color: isActive ? primaryColor.withValues(alpha: 0.12) : cardColor,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: InkWell(
+    return Tooltip(
+      message: context.ispectL10n.filters,
+      child: SizedBox(
+        width: 45,
+        height: 45,
+        child: Material(
+          color: isActive ? primaryColor.withValues(alpha: 0.12) : cardColor,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
-          onTap: onPressed,
+          child: InkWell(
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            onTap: onPressed,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -419,6 +422,7 @@ class _FilterToggleButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

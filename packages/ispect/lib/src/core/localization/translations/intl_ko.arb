@@ -247,5 +247,13 @@
    "groupHttpLogsDesc": "관련 HTTP 요청과 응답을 함께 그룹화",
    "duration": "소요 시간",
    "ungroupHttpLogs": "HTTP 그룹 해제",
-   "ungroupHttpLogsDesc": "HTTP 요청과 응답을 별도의 항목으로 표시"
+   "ungroupHttpLogsDesc": "HTTP 요청과 응답을 별도의 항목으로 표시",
+   "tips": "팁",
+   "tipSearchLogs": "텍스트로 로그 검색 — 전체 JSON 본문도 검색합니다",
+   "tipLongPress": "로그 카드를 길게 눌러 빠른 작업 실행",
+   "tipFilter": "칩이나 설정을 사용하여 로그 유형별 필터링",
+   "tipExpand": "확장을 눌러 검색 가능한 전체 JSON 보기",
+   "tipKeyboard": "화살표 키로 이동, Enter로 열기, /로 검색",
+   "gotIt": "확인",
+   "filters": "필터"
 }

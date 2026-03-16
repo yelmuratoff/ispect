@@ -832,4 +832,30 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   @override
   String get ungroupHttpLogsDesc =>
       'Показывать HTTP запросы и ответы отдельными записями';
+
+  @override
+  String get tips => 'Подсказки';
+
+  @override
+  String get tipSearchLogs => 'Поиск по тексту — ищет также в JSON теле лога';
+
+  @override
+  String get tipLongPress =>
+      'Долгое нажатие на карточку лога для быстрых действий';
+
+  @override
+  String get tipFilter => 'Фильтрация по типу лога через чипы или настройки';
+
+  @override
+  String get tipExpand => 'Нажмите развернуть для просмотра JSON с поиском';
+
+  @override
+  String get tipKeyboard =>
+      'Стрелки для навигации, Enter для открытия, / для поиска';
+
+  @override
+  String get gotIt => 'Понятно';
+
+  @override
+  String get filters => 'Фильтры';
 }

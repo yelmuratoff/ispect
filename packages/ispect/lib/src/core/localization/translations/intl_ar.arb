@@ -247,5 +247,13 @@
    "groupHttpLogsDesc": "تجميع طلبات واستجابات HTTP المرتبطة معًا",
    "duration": "المدة",
    "ungroupHttpLogs": "إلغاء تجميع HTTP",
-   "ungroupHttpLogsDesc": "عرض طلبات واستجابات HTTP كإدخالات منفصلة"
+   "ungroupHttpLogsDesc": "عرض طلبات واستجابات HTTP كإدخالات منفصلة",
+   "tips": "نصائح",
+   "tipSearchLogs": "البحث في السجلات بالنص — يبحث أيضاً في محتوى JSON الكامل",
+   "tipLongPress": "اضغط مطولاً على بطاقة السجل للإجراءات السريعة",
+   "tipFilter": "تصفية حسب نوع السجل باستخدام الشرائح أو الإعدادات",
+   "tipExpand": "انقر على توسيع لعرض JSON الكامل مع البحث",
+   "tipKeyboard": "مفاتيح الأسهم للتنقل، Enter للفتح، / للبحث",
+   "gotIt": "فهمت",
+   "filters": "تصفية"
 }

@@ -809,4 +809,28 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get ungroupHttpLogsDesc => '将HTTP请求和响应显示为单独的条目';
+
+  @override
+  String get tips => '提示';
+
+  @override
+  String get tipSearchLogs => '按文本搜索日志 — 也搜索完整的JSON内容';
+
+  @override
+  String get tipLongPress => '长按日志卡片可快速操作';
+
+  @override
+  String get tipFilter => '使用标签或设置按日志类型筛选';
+
+  @override
+  String get tipExpand => '点击展开查看完整JSON并搜索';
+
+  @override
+  String get tipKeyboard => '方向键导航，回车打开，/ 搜索';
+
+  @override
+  String get gotIt => '知道了';
+
+  @override
+  String get filters => '筛选';
 }

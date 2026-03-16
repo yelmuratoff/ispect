@@ -829,4 +829,31 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   @override
   String get ungroupHttpLogsDesc =>
       'HTTP сұраныстар мен жауаптарды бөлек жазбалар ретінде көрсету';
+
+  @override
+  String get tips => 'Кеңестер';
+
+  @override
+  String get tipSearchLogs => 'Мәтін бойынша іздеу — JSON денесінен де іздейді';
+
+  @override
+  String get tipLongPress =>
+      'Жылдам әрекеттер үшін лог карточкасын ұзақ басыңыз';
+
+  @override
+  String get tipFilter =>
+      'Чиптер немесе параметрлер арқылы лог түрі бойынша сүзу';
+
+  @override
+  String get tipExpand => 'Іздеумен толық JSON көру үшін кеңейтуді басыңыз';
+
+  @override
+  String get tipKeyboard =>
+      'Навигация үшін көрсеткілер, ашу үшін Enter, іздеу үшін /';
+
+  @override
+  String get gotIt => 'Түсінікті';
+
+  @override
+  String get filters => 'Сүзгі';
 }

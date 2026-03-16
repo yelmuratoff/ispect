@@ -1606,6 +1606,54 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Show HTTP requests and responses as separate entries'**
   String get ungroupHttpLogsDesc;
+
+  /// No description provided for @tips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get tips;
+
+  /// No description provided for @tipSearchLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search logs by text — searches full JSON body too'**
+  String get tipSearchLogs;
+
+  /// No description provided for @tipLongPress.
+  ///
+  /// In en, this message translates to:
+  /// **'Long press a log card for quick actions'**
+  String get tipLongPress;
+
+  /// No description provided for @tipFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by log type using chips or settings'**
+  String get tipFilter;
+
+  /// No description provided for @tipExpand.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap expand to view full JSON with search'**
+  String get tipExpand;
+
+  /// No description provided for @tipKeyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Use arrow keys to navigate, Enter to open, / to search'**
+  String get tipKeyboard;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
 }
 
 class _ISpectGeneratedLocalizationDelegate

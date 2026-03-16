@@ -247,5 +247,13 @@
    "groupHttpLogsDesc": "関連するHTTPリクエストとレスポンスをグループ化",
    "duration": "所要時間",
    "ungroupHttpLogs": "HTTPグループ化解除",
-   "ungroupHttpLogsDesc": "HTTPリクエストとレスポンスを個別のエントリとして表示"
+   "ungroupHttpLogsDesc": "HTTPリクエストとレスポンスを個別のエントリとして表示",
+   "tips": "ヒント",
+   "tipSearchLogs": "テキストでログを検索 — JSON本文全体も検索します",
+   "tipLongPress": "ログカードを長押しでクイックアクション",
+   "tipFilter": "チップや設定でログタイプ別にフィルタリング",
+   "tipExpand": "展開をタップして検索付きの完全なJSONを表示",
+   "tipKeyboard": "矢印キーで移動、Enterで開く、/で検索",
+   "gotIt": "了解",
+   "filters": "フィルター"
 }

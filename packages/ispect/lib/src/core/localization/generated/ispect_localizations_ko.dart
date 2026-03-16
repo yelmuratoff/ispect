@@ -809,4 +809,28 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get ungroupHttpLogsDesc => 'HTTP 요청과 응답을 별도의 항목으로 표시';
+
+  @override
+  String get tips => '팁';
+
+  @override
+  String get tipSearchLogs => '텍스트로 로그 검색 — 전체 JSON 본문도 검색합니다';
+
+  @override
+  String get tipLongPress => '로그 카드를 길게 눌러 빠른 작업 실행';
+
+  @override
+  String get tipFilter => '칩이나 설정을 사용하여 로그 유형별 필터링';
+
+  @override
+  String get tipExpand => '확장을 눌러 검색 가능한 전체 JSON 보기';
+
+  @override
+  String get tipKeyboard => '화살표 키로 이동, Enter로 열기, /로 검색';
+
+  @override
+  String get gotIt => '확인';
+
+  @override
+  String get filters => '필터';
 }

@@ -268,5 +268,13 @@
    "groupHttpLogsDesc": "Group related HTTP requests and responses together",
    "duration": "Duration",
    "ungroupHttpLogs": "Ungroup HTTP Logs",
-   "ungroupHttpLogsDesc": "Show HTTP requests and responses as separate entries"
+   "ungroupHttpLogsDesc": "Show HTTP requests and responses as separate entries",
+   "tips": "Tips",
+   "tipSearchLogs": "Search logs by text — searches full JSON body too",
+   "tipLongPress": "Long press a log card for quick actions",
+   "tipFilter": "Filter by log type using chips or settings",
+   "tipExpand": "Tap expand to view full JSON with search",
+   "tipKeyboard": "Use arrow keys to navigate, Enter to open, / to search",
+   "gotIt": "Got it",
+   "filters": "Filters"
 }

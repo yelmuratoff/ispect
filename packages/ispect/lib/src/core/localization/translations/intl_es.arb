@@ -247,5 +247,13 @@
    "groupHttpLogsDesc": "Agrupar solicitudes y respuestas HTTP relacionadas",
    "duration": "Duración",
    "ungroupHttpLogs": "Desagrupar HTTP",
-   "ungroupHttpLogsDesc": "Mostrar solicitudes y respuestas HTTP como entradas separadas"
+   "ungroupHttpLogsDesc": "Mostrar solicitudes y respuestas HTTP como entradas separadas",
+   "tips": "Consejos",
+   "tipSearchLogs": "Buscar logs por texto — también busca en el JSON completo",
+   "tipLongPress": "Mantén presionada una tarjeta de log para acciones rápidas",
+   "tipFilter": "Filtra por tipo de log usando chips o ajustes",
+   "tipExpand": "Toca expandir para ver JSON completo con búsqueda",
+   "tipKeyboard": "Flechas para navegar, Enter para abrir, / para buscar",
+   "gotIt": "Entendido",
+   "filters": "Filtros"
 }

@@ -838,4 +838,31 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   @override
   String get ungroupHttpLogsDesc =>
       'Mostrar solicitudes y respuestas HTTP como entradas separadas';
+
+  @override
+  String get tips => 'Consejos';
+
+  @override
+  String get tipSearchLogs =>
+      'Buscar logs por texto — también busca en el JSON completo';
+
+  @override
+  String get tipLongPress =>
+      'Mantén presionada una tarjeta de log para acciones rápidas';
+
+  @override
+  String get tipFilter => 'Filtra por tipo de log usando chips o ajustes';
+
+  @override
+  String get tipExpand => 'Toca expandir para ver JSON completo con búsqueda';
+
+  @override
+  String get tipKeyboard =>
+      'Flechas para navegar, Enter para abrir, / para buscar';
+
+  @override
+  String get gotIt => 'Entendido';
+
+  @override
+  String get filters => 'Filtros';
 }

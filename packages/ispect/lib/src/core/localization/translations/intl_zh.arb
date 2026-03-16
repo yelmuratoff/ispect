@@ -247,5 +247,13 @@
    "groupHttpLogsDesc": "将相关的HTTP请求和响应分组在一起",
    "duration": "持续时间",
    "ungroupHttpLogs": "取消HTTP分组",
-   "ungroupHttpLogsDesc": "将HTTP请求和响应显示为单独的条目"
+   "ungroupHttpLogsDesc": "将HTTP请求和响应显示为单独的条目",
+   "tips": "提示",
+   "tipSearchLogs": "按文本搜索日志 — 也搜索完整的JSON内容",
+   "tipLongPress": "长按日志卡片可快速操作",
+   "tipFilter": "使用标签或设置按日志类型筛选",
+   "tipExpand": "点击展开查看完整JSON并搜索",
+   "tipKeyboard": "方向键导航，回车打开，/ 搜索",
+   "gotIt": "知道了",
+   "filters": "筛选"
 }
