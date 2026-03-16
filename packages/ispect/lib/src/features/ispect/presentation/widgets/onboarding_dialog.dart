@@ -88,8 +88,7 @@ class _HintRow extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
           ),
           const Gap(10),
           Expanded(

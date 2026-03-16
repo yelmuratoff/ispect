@@ -249,9 +249,8 @@ class _LogsScreenState extends State<LogsScreen> {
       title: isGrouped
           ? context.ispectL10n.ungroupHttpLogs
           : context.ispectL10n.groupHttpLogs,
-      icon: isGrouped
-          ? Icons.account_tree_rounded
-          : Icons.account_tree_outlined,
+      icon:
+          isGrouped ? Icons.account_tree_rounded : Icons.account_tree_outlined,
       description: isGrouped
           ? context.ispectL10n.ungroupHttpLogsDesc
           : context.ispectL10n.groupHttpLogsDesc,
@@ -713,8 +712,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
       listController: _controller.listController,
       itemCount: entries.length,
       itemBuilder: (context, index) {
-        final visualIndex =
-            isReversed ? entries.length - 1 - index : index;
+        final visualIndex = isReversed ? entries.length - 1 - index : index;
         final entry = entries[visualIndex];
 
         if (entry is NetworkTransaction) {

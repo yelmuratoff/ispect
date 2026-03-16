@@ -131,8 +131,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onError(err, handler);
     if (!_shouldProcessError(err)) return;
 
-    final requestId =
-        err.requestOptions.extra[_requestIdExtraKey] as String?;
+    final requestId = err.requestOptions.extra[_requestIdExtraKey] as String?;
 
     try {
       final useRedaction = settings.enableRedaction;

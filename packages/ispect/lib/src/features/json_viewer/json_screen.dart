@@ -587,8 +587,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                       correlatedLogLabel: _reverseLabel(correlatedLogLabel),
                       correlationDuration: correlationDuration,
                     ),
-                    settings:
-                        const RouteSettings(name: 'ISpect Log Screen'),
+                    settings: const RouteSettings(name: 'ISpect Log Screen'),
                   ),
                 );
               },
@@ -597,8 +596,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: targetColor.withValues(alpha: 0.1),
-                    borderRadius:
-                        const BorderRadius.all(Radius.circular(6)),
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

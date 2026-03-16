@@ -396,33 +396,33 @@ class _FilterToggleButton extends StatelessWidget {
           child: InkWell(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             onTap: onPressed,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                Icons.tune_rounded,
-                size: 22,
-                color: isActive
-                    ? primaryColor
-                    : context.appTheme.colorScheme.onSurface
-                        .withValues(alpha: 0.6),
-              ),
-              if (hasActiveFilters)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const SizedBox(width: 8, height: 8),
-                  ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.tune_rounded,
+                  size: 22,
+                  color: isActive
+                      ? primaryColor
+                      : context.appTheme.colorScheme.onSurface
+                          .withValues(alpha: 0.6),
                 ),
-            ],
+                if (hasActiveFilters)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const SizedBox(width: 8, height: 8),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

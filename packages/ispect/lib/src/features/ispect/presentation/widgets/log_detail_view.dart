@@ -71,19 +71,16 @@ class _CorrelationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isViewingRequest =
-        activeData.key == ISpectLogType.httpRequest.key;
+    final isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
     final l10n = ISpectLocalization.of(context);
     final theme = context.iSpect.theme;
 
-    final targetLabel =
-        isViewingRequest ? l10n.httpResponse : l10n.httpRequest;
+    final targetLabel = isViewingRequest ? l10n.httpResponse : l10n.httpRequest;
     final targetKey = isViewingRequest
         ? ISpectLogType.httpResponse.key
         : ISpectLogType.httpRequest.key;
-    final targetColor =
-        theme.getTypeColor(context, key: targetKey) ??
-            context.appTheme.colorScheme.primary;
+    final targetColor = theme.getTypeColor(context, key: targetKey) ??
+        context.appTheme.colorScheme.primary;
 
     return DecoratedBox(
       decoration: BoxDecoration(

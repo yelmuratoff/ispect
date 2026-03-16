@@ -70,10 +70,10 @@ class NetworkTransactionService {
       final requestId = _extractRequestId(log);
       if (requestId == null) continue;
 
-      final isRequest = log is NetworkRequestLog ||
-          log.key == ISpectLogType.httpRequest.key;
-      final isError = log is NetworkErrorLog ||
-          log.key == ISpectLogType.httpError.key;
+      final isRequest =
+          log is NetworkRequestLog || log.key == ISpectLogType.httpRequest.key;
+      final isError =
+          log is NetworkErrorLog || log.key == ISpectLogType.httpError.key;
 
       if (isRequest) {
         transactions[requestId] = NetworkTransaction(
