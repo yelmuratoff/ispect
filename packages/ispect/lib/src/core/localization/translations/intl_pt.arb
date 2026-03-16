@@ -239,5 +239,11 @@
    "relativeHoursAgo": "há {count} h",
    "showOnlyThisType": "Mostrar apenas este tipo",
    "hideThisType": "Ocultar este tipo",
-   "clearAllFilters": "Limpar todos os filtros"
+   "clearAllFilters": "Limpar todos os filtros",
+   "httpRequest": "Solicitação",
+   "httpResponse": "Resposta",
+   "pending": "Pendente",
+   "groupHttpLogs": "Agrupar HTTP",
+   "groupHttpLogsDesc": "Agrupar solicitações e respostas HTTP relacionadas",
+   "duration": "Duração"
 }

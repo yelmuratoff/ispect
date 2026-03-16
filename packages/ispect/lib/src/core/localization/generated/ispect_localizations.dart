@@ -1558,6 +1558,42 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Clear all filters'**
   String get clearAllFilters;
+
+  /// No description provided for @httpRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get httpRequest;
+
+  /// No description provided for @httpResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Response'**
+  String get httpResponse;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @groupHttpLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Group HTTP Logs'**
+  String get groupHttpLogs;
+
+  /// No description provided for @groupHttpLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Group related HTTP requests and responses together'**
+  String get groupHttpLogsDesc;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
 }
 
 class _ISpectGeneratedLocalizationDelegate

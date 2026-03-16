@@ -785,4 +785,22 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => 'すべてのフィルターをクリア';
+
+  @override
+  String get httpRequest => 'リクエスト';
+
+  @override
+  String get httpResponse => 'レスポンス';
+
+  @override
+  String get pending => '保留中';
+
+  @override
+  String get groupHttpLogs => 'HTTPグループ化';
+
+  @override
+  String get groupHttpLogsDesc => '関連するHTTPリクエストとレスポンスをグループ化';
+
+  @override
+  String get duration => '所要時間';
 }

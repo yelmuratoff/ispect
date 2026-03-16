@@ -239,5 +239,11 @@
    "relativeHoursAgo": "{count} घंटे पहले",
    "showOnlyThisType": "केवल यह प्रकार दिखाएं",
    "hideThisType": "यह प्रकार छिपाएं",
-   "clearAllFilters": "सभी फ़िल्टर साफ़ करें"
+   "clearAllFilters": "सभी फ़िल्टर साफ़ करें",
+   "httpRequest": "अनुरोध",
+   "httpResponse": "प्रतिक्रिया",
+   "pending": "लंबित",
+   "groupHttpLogs": "HTTP समूहीकरण",
+   "groupHttpLogsDesc": "संबंधित HTTP अनुरोधों और प्रतिक्रियाओं को एक साथ समूहित करें",
+   "duration": "अवधि"
 }

@@ -239,5 +239,11 @@
    "relativeHoursAgo": "{count}시간 전",
    "showOnlyThisType": "이 유형만 표시",
    "hideThisType": "이 유형 숨기기",
-   "clearAllFilters": "모든 필터 지우기"
+   "clearAllFilters": "모든 필터 지우기",
+   "httpRequest": "요청",
+   "httpResponse": "응답",
+   "pending": "대기 중",
+   "groupHttpLogs": "HTTP 그룹화",
+   "groupHttpLogsDesc": "관련 HTTP 요청과 응답을 함께 그룹화",
+   "duration": "소요 시간"
 }

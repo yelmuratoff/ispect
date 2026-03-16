@@ -785,4 +785,22 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => '清除所有筛选';
+
+  @override
+  String get httpRequest => '请求';
+
+  @override
+  String get httpResponse => '响应';
+
+  @override
+  String get pending => '等待中';
+
+  @override
+  String get groupHttpLogs => '分组HTTP日志';
+
+  @override
+  String get groupHttpLogsDesc => '将相关的HTTP请求和响应分组在一起';
+
+  @override
+  String get duration => '持续时间';
 }

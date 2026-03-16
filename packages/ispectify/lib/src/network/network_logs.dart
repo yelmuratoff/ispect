@@ -6,9 +6,22 @@ import 'package:ispectify/src/network/network_log_options.dart';
 import 'package:ispectify/src/truncator.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
+/// Key used to store the request ID in [ISpectLogData.additionalData].
+const String kRequestIdKey = 'request-id';
+
 Map<String, dynamic>? _metadata(Map<String, Object?> source) {
   if (source.isEmpty) return null;
   return Map<String, dynamic>.from(source);
+}
+
+/// Injects [requestId] into [base] metadata if non-null.
+Map<String, dynamic>? _withRequestId(
+  Map<String, dynamic>? base,
+  String? requestId,
+) {
+  if (requestId == null) return base;
+  if (base == null) return {kRequestIdKey: requestId};
+  return {...base, kRequestIdKey: requestId};
 }
 
 String _composeNetworkMessage(
@@ -44,6 +57,7 @@ class NetworkRequestLog extends ISpectLogData {
     required this.url,
     required this.path,
     required this.settings,
+    this.requestId,
     Map<String, dynamic>? headers,
     this.body,
     String? logKey,
@@ -57,17 +71,23 @@ class NetworkRequestLog extends ISpectLogData {
           pen: pen ??
               settings.requestPen ??
               ISpectLogType.httpRequest.defaultPen,
-          additionalData: metadata ??
-              _metadata(
-                {
-                  if (method != null) 'method': method,
-                  if (url != null) 'url': url,
-                  if (path != null) 'path': path,
-                  if (headers != null) 'headers': headers,
-                  if (body != null) 'body': body,
-                },
-              ),
+          additionalData: _withRequestId(
+            metadata ??
+                _metadata(
+                  {
+                    if (method != null) 'method': method,
+                    if (url != null) 'url': url,
+                    if (path != null) 'path': path,
+                    if (headers != null) 'headers': headers,
+                    if (body != null) 'body': body,
+                  },
+                ),
+            requestId,
+          ),
         );
+
+  /// Unique ID correlating this request with its response/error.
+  final String? requestId;
 
   final String? method;
   final String? url;
@@ -109,6 +129,7 @@ class NetworkResponseLog extends ISpectLogData {
     required this.statusCode,
     required this.statusMessage,
     required this.settings,
+    this.requestId,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? requestBody,
@@ -128,21 +149,28 @@ class NetworkResponseLog extends ISpectLogData {
           pen: pen ??
               settings.responsePen ??
               ISpectLogType.httpResponse.defaultPen,
-          additionalData: metadata ??
-              _metadata(
-                {
-                  if (method != null) 'method': method,
-                  if (url != null) 'url': url,
-                  if (path != null) 'path': path,
-                  if (statusCode != null) 'statusCode': statusCode,
-                  if (statusMessage != null) 'statusMessage': statusMessage,
-                  if (requestHeaders != null) 'requestHeaders': requestHeaders,
-                  if (headers != null) 'headers': headers,
-                  if (requestBody != null) 'requestBody': requestBody,
-                  if (responseBody != null) 'responseBody': responseBody,
-                },
-              ),
+          additionalData: _withRequestId(
+            metadata ??
+                _metadata(
+                  {
+                    if (method != null) 'method': method,
+                    if (url != null) 'url': url,
+                    if (path != null) 'path': path,
+                    if (statusCode != null) 'statusCode': statusCode,
+                    if (statusMessage != null) 'statusMessage': statusMessage,
+                    if (requestHeaders != null)
+                      'requestHeaders': requestHeaders,
+                    if (headers != null) 'headers': headers,
+                    if (requestBody != null) 'requestBody': requestBody,
+                    if (responseBody != null) 'responseBody': responseBody,
+                  },
+                ),
+            requestId,
+          ),
         );
+
+  /// Unique ID correlating this response with its originating request.
+  final String? requestId;
 
   final String? method;
   final String? url;
@@ -192,6 +220,7 @@ class NetworkErrorLog extends ISpectLogData {
     required this.statusCode,
     required this.statusMessage,
     required this.settings,
+    this.requestId,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? body,
@@ -212,24 +241,31 @@ class NetworkErrorLog extends ISpectLogData {
           logLevel: LogLevel.error,
           exception: capturedException,
           stackTrace: capturedStackTrace,
-          additionalData: metadata ??
-              _metadata(
-                {
-                  if (method != null) 'method': method,
-                  if (url != null) 'url': url,
-                  if (path != null) 'path': path,
-                  if (statusCode != null) 'statusCode': statusCode,
-                  if (statusMessage != null) 'statusMessage': statusMessage,
-                  if (requestHeaders != null) 'requestHeaders': requestHeaders,
-                  if (headers != null) 'headers': headers,
-                  if (body != null) 'body': body,
-                  if (capturedException != null)
-                    'exception': '$capturedException',
-                  if (capturedStackTrace != null)
-                    'stackTrace': '$capturedStackTrace',
-                },
-              ),
+          additionalData: _withRequestId(
+            metadata ??
+                _metadata(
+                  {
+                    if (method != null) 'method': method,
+                    if (url != null) 'url': url,
+                    if (path != null) 'path': path,
+                    if (statusCode != null) 'statusCode': statusCode,
+                    if (statusMessage != null) 'statusMessage': statusMessage,
+                    if (requestHeaders != null)
+                      'requestHeaders': requestHeaders,
+                    if (headers != null) 'headers': headers,
+                    if (body != null) 'body': body,
+                    if (capturedException != null)
+                      'exception': '$capturedException',
+                    if (capturedStackTrace != null)
+                      'stackTrace': '$capturedStackTrace',
+                  },
+                ),
+            requestId,
+          ),
         );
+
+  /// Unique ID correlating this error with its originating request.
+  final String? requestId;
 
   final String? method;
   final String? url;

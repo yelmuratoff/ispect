@@ -12,6 +12,7 @@ class DioErrorLog extends NetworkErrorLog {
     required String? statusMessage,
     required ISpectDioInterceptorSettings settings,
     required DioErrorData errorData,
+    super.requestId,
     super.requestHeaders,
     Map<String, String>? headers,
     super.body,

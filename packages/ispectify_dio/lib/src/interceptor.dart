@@ -20,6 +20,11 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     initializeInterceptor(logger: logger, redactor: redactor);
   }
 
+  /// Internal key used to store the request ID in [RequestOptions.extra].
+  static const _requestIdExtraKey = '_ispect_rid';
+
+  final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
+
   /// `ISpectDioInterceptor` settings and customization.
   ///
   /// This field is publicly mutable for backward compatibility. Prefer
@@ -73,11 +78,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onRequest(options, handler);
     if (!_shouldProcessRequest(options)) return;
 
+    final requestId = _requestIdGenerator.next();
+    options.extra[_requestIdExtraKey] = requestId;
+
     try {
       final useRedaction = settings.enableRedaction;
       logger.logData(
         _buildRequestLog(
           options: options,
+          requestId: requestId,
           useRedaction: useRedaction,
         ),
       );
@@ -97,11 +106,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onResponse(response, handler);
     if (!_shouldProcessResponse(response)) return;
 
+    final requestId =
+        response.requestOptions.extra[_requestIdExtraKey] as String?;
+
     try {
       final useRedaction = settings.enableRedaction;
       logger.logData(
         _buildResponseLog(
           response: response,
+          requestId: requestId,
           useRedaction: useRedaction,
         ),
       );
@@ -118,11 +131,15 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     super.onError(err, handler);
     if (!_shouldProcessError(err)) return;
 
+    final requestId =
+        err.requestOptions.extra[_requestIdExtraKey] as String?;
+
     try {
       final useRedaction = settings.enableRedaction;
       logger.logData(
         _buildErrorLog(
           error: err,
+          requestId: requestId,
           useRedaction: useRedaction,
         ),
       );
@@ -145,6 +162,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
   DioRequestLog _buildRequestLog({
     required RequestOptions options,
+    required String requestId,
     required bool useRedaction,
   }) {
     final url = redactUrl(
@@ -160,6 +178,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       method: options.method,
       url: url,
       path: path,
+      requestId: requestId,
       headers: payload.headersMap(
         options.headers,
         enableRedaction: useRedaction,
@@ -174,6 +193,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   DioResponseLog _buildResponseLog({
     required Response<dynamic> response,
     required bool useRedaction,
+    String? requestId,
   }) {
     final requestOptions = response.requestOptions;
     final requestHeaders = settings.printRequestHeaders
@@ -204,6 +224,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       method: requestOptions.method,
       url: url,
       path: path,
+      requestId: requestId,
       statusCode: response.statusCode,
       statusMessage: response.statusMessage,
       requestHeaders: requestHeaders,
@@ -225,6 +246,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   DioErrorLog _buildErrorLog({
     required DioException error,
     required bool useRedaction,
+    String? requestId,
   }) {
     final requestOptions = error.requestOptions;
     final response = error.response;
@@ -268,6 +290,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       method: requestOptions.method,
       url: url,
       path: path,
+      requestId: requestId,
       statusCode: response?.statusCode,
       statusMessage: statusMessage,
       requestHeaders: requestHeaders,

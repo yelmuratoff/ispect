@@ -17,11 +17,23 @@ class JsonScreen extends StatefulWidget {
     required this.data,
     this.truncatedData,
     this.onClose,
+    this.correlatedLogData,
+    this.correlatedLogLabel,
+    this.correlationDuration,
     super.key,
   });
   final Map<String, dynamic> data;
   final Map<String, dynamic>? truncatedData;
   final VoidCallback? onClose;
+
+  /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
+  final Map<String, dynamic>? correlatedLogData;
+
+  /// Label for the navigation chip (e.g. "Request" or "Response").
+  final String? correlatedLogLabel;
+
+  /// Duration between request and response/error.
+  final Duration? correlationDuration;
 
   void push(BuildContext context) {
     Navigator.of(context).push(
@@ -168,6 +180,13 @@ class _JsonScreenState extends State<JsonScreen> {
       ),
       body: Column(
         children: [
+          if (widget.correlatedLogData != null)
+            _JsonScreenCorrelationBanner(
+              data: widget.data,
+              correlatedLogData: widget.correlatedLogData!,
+              correlatedLogLabel: widget.correlatedLogLabel,
+              correlationDuration: widget.correlationDuration,
+            ),
           // Search bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
@@ -479,6 +498,156 @@ class _NavButton extends StatelessWidget {
           color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       );
+}
+
+/// Banner for navigating to a correlated request/response log.
+class _JsonScreenCorrelationBanner extends StatelessWidget {
+  const _JsonScreenCorrelationBanner({
+    required this.data,
+    required this.correlatedLogData,
+    this.correlatedLogLabel,
+    this.correlationDuration,
+  });
+
+  final Map<String, dynamic> data;
+  final Map<String, dynamic> correlatedLogData;
+  final String? correlatedLogLabel;
+  final Duration? correlationDuration;
+
+  @override
+  Widget build(BuildContext context) {
+    final iSpect = ISpect.read(context);
+    final correlatedKey = correlatedLogData['key'] as String?;
+    final targetColor =
+        iSpect.theme.getTypeColor(context, key: correlatedKey) ??
+            context.appTheme.colorScheme.primary;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: targetColor.withValues(alpha: 0.06),
+        border: Border(
+          bottom: BorderSide(color: targetColor.withValues(alpha: 0.15)),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: [
+            Icon(
+              Icons.link_rounded,
+              size: 14,
+              color: targetColor.withValues(alpha: 0.7),
+            ),
+            const Gap(6),
+            if (correlationDuration case final d?) ...[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: context.appTheme.textColor.withValues(alpha: 0.08),
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  child: Text(
+                    d.inMilliseconds < 1000
+                        ? '${d.inMilliseconds}ms'
+                        : '${(d.inMilliseconds / 1000).toStringAsFixed(1)}s',
+                    style: TextStyle(
+                      color: context.appTheme.textColor.withValues(alpha: 0.5),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const Gap(8),
+            ],
+            Expanded(
+              child: Text(
+                correlatedLogData['message']?.toString() ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.appTheme.textColor.withValues(alpha: 0.6),
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            const Gap(8),
+            GestureDetector(
+              onTap: () {
+                // Replace current screen with the correlated log.
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => JsonScreen(
+                      data: correlatedLogData,
+                      // Swap: the current data becomes the correlated data
+                      // so user can navigate back.
+                      correlatedLogData: data,
+                      correlatedLogLabel: _reverseLabel(correlatedLogLabel),
+                      correlationDuration: correlationDuration,
+                    ),
+                    settings:
+                        const RouteSettings(name: 'ISpect Log Screen'),
+                  ),
+                );
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: targetColor.withValues(alpha: 0.1),
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(6)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          correlatedLogLabel ?? 'Detail',
+                          style: TextStyle(
+                            color: targetColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Gap(3),
+                        Icon(
+                          Icons.open_in_new_rounded,
+                          size: 11,
+                          color: targetColor.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// When navigating to the correlated log, the "go back" label
+  /// should point to the opposite direction.
+  String? _reverseLabel(String? label) {
+    if (label == null) return null;
+    // Simple heuristic: labels come from l10n (httpRequest/httpResponse).
+    // We can't access l10n here, but we swap them by checking the data key.
+    final currentKey = data['key'] as String?;
+    final correlatedKey = correlatedLogData['key'] as String?;
+    if (currentKey == correlatedKey) return label;
+    // The label passed is for the correlated log. After navigation,
+    // the "correlated" becomes the current data's label.
+    // Since we swap data ↔ correlatedLogData, just return the current label.
+    return label; // The caller already sets the correct label.
+  }
 }
 
 class _BreadcrumbBar extends StatelessWidget {

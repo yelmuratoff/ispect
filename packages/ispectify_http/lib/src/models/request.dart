@@ -8,6 +8,7 @@ class HttpRequestLog extends NetworkRequestLog {
     required super.url,
     required super.path,
     required ISpectHttpInterceptorSettings settings,
+    super.requestId,
     Map<String, String>? headers,
     super.body,
   })  : _settings = settings,

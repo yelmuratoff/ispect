@@ -21,6 +21,12 @@ class ISpectHttpInterceptor extends InterceptorContract
   /// `ISpectHttpInterceptor` settings and customization
   ISpectHttpInterceptorSettings settings;
 
+  final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
+
+  /// Tracks request IDs using [Expando] — auto-cleaned by GC when the
+  /// [BaseRequest] is collected, avoiding memory leaks and hashCode collisions.
+  final Expando<String> _requestIds = Expando<String>('ispect_rid');
+
   @override
   bool get enableRedaction => settings.enableRedaction;
 
@@ -63,6 +69,9 @@ class ISpectHttpInterceptor extends InterceptorContract
   }) async {
     if (!_shouldProcessRequest(request)) return request;
 
+    final requestId = _requestIdGenerator.next();
+    _requestIds[request] = requestId;
+
     try {
       final useRedaction = settings.enableRedaction;
 
@@ -88,6 +97,7 @@ class ISpectHttpInterceptor extends InterceptorContract
           method: request.method,
           url: url,
           path: path,
+          requestId: requestId,
           headers: headers,
           settings: settings,
           body: body,
@@ -112,6 +122,9 @@ class ISpectHttpInterceptor extends InterceptorContract
         response.statusCode >= 400 && response.statusCode < 600;
     if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
     if (isErrorResponse && !_shouldProcessError(response)) return response;
+
+    final requestId =
+        response.request != null ? _requestIds[response.request!] : null;
 
     try {
       final useRedaction = settings.enableRedaction;
@@ -153,6 +166,7 @@ class ISpectHttpInterceptor extends InterceptorContract
             method: response.request?.method,
             url: errorUrl,
             path: errorPath,
+            requestId: requestId,
             statusCode: response.statusCode,
             settings: settings,
             statusMessage:
@@ -183,6 +197,7 @@ class ISpectHttpInterceptor extends InterceptorContract
             method: response.request?.method,
             url: respUrl,
             path: respPath,
+            requestId: requestId,
             statusCode: response.statusCode,
             statusMessage:
                 settings.printResponseMessage ? response.reasonPhrase : null,

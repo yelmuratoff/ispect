@@ -4,6 +4,7 @@ import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
@@ -16,6 +17,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/desktop_status_b
 import 'package:ispect/src/features/ispect/presentation/widgets/empty_logs_widget.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_list_item.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_card/network_transaction_card.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_scroll_indicators.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_viewer_dialogs.dart';
@@ -117,6 +119,12 @@ class _LogsScreenState extends State<LogsScreen> {
                 ? _logsViewController.detailData!
                 : _logsViewController.activeData!;
 
+            // Find correlated log for cross-navigation.
+            final correlation = _findCorrelation(
+              activeForDetail,
+              data,
+            );
+
             final detailView = LogDetailView(
               activeData: activeForDetail,
               onClose: () {
@@ -126,6 +134,18 @@ class _LogsScreenState extends State<LogsScreen> {
                   _logsViewController.activeData = null;
                 }
               },
+              correlatedLog: correlation?.log,
+              correlationDuration: correlation?.duration,
+              onNavigateToCorrelated: correlation?.log != null
+                  ? () {
+                      if (isDesktop) {
+                        _logsViewController
+                            .selectAndFollowDetail(correlation!.log!);
+                      } else {
+                        _logsViewController.activeData = correlation!.log;
+                      }
+                    }
+                  : null,
             );
 
             if (isDesktop) {
@@ -157,6 +177,44 @@ class _LogsScreenState extends State<LogsScreen> {
     );
   }
 
+  /// Finds a correlated log entry for the given [activeLog].
+  ///
+  /// For a response/error, returns the matching request (and vice versa)
+  /// using the requestId stored in additionalData.
+  ({ISpectLogData? log, Duration? duration})? _findCorrelation(
+    ISpectLogData activeLog,
+    List<ISpectLogData> allLogs,
+  ) {
+    if (!activeLog.isHttpLog) return null;
+
+    final requestId = activeLog.additionalData?[kRequestIdKey] as String?;
+    if (requestId == null) return null;
+
+    final isRequest = activeLog.key == ISpectLogType.httpRequest.key;
+
+    for (final log in allLogs) {
+      if (identical(log, activeLog)) continue;
+      final logRid = log.additionalData?[kRequestIdKey] as String?;
+      if (logRid != requestId) continue;
+
+      // If viewing request, find its response/error.
+      // If viewing response/error, find the request.
+      if (isRequest && log.key != ISpectLogType.httpRequest.key) {
+        return (
+          log: log,
+          duration: log.time.difference(activeLog.time),
+        );
+      }
+      if (!isRequest && log.key == ISpectLogType.httpRequest.key) {
+        return (
+          log: log,
+          duration: activeLog.time.difference(log.time),
+        );
+      }
+    }
+    return null;
+  }
+
   Future<void> _openLogsSettings(BuildContext context) async {
     final logger = ValueNotifier(ISpect.logger);
     try {
@@ -173,6 +231,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
         _buildReverseLogsAction(context),
+        _buildGroupHttpAction(context),
         _buildShareLogsAction(context),
         _buildExpandLogsAction(context),
         _buildClearHistoryAction(context),
@@ -183,6 +242,18 @@ class _LogsScreenState extends State<LogsScreen> {
         _buildLogViewerAction(),
         ...widget.options.actionItems,
       ];
+
+  ISpectActionItem _buildGroupHttpAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => _logsViewController.toggleGroupHttpLogs(),
+        title: _logsViewController.groupHttpLogs
+            ? context.ispectL10n.groupHttpLogs
+            : context.ispectL10n.groupHttpLogs,
+        icon: _logsViewController.groupHttpLogs
+            ? Icons.account_tree_rounded
+            : Icons.account_tree_outlined,
+        description: context.ispectL10n.groupHttpLogsDesc,
+      );
 
   ISpectActionItem _buildReverseLogsAction(BuildContext context) =>
       ISpectActionItem(
@@ -385,6 +456,7 @@ class _MainLogsView extends StatefulWidget {
 
 class _MainLogsViewState extends State<_MainLogsView> {
   late final LogsScreenController _controller;
+  final _transactionService = NetworkTransactionService();
 
   @override
   void initState() {
@@ -488,51 +560,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
               const SliverToBoxAdapter(
                 child: EmptyLogsWidget(),
               ),
-            SuperSliverList.builder(
-              listController: _controller.listController,
-              itemCount: sortedEntries.length,
-              itemBuilder: (context, index) {
-                final logEntry =
-                    _controller.getEntryAtVisualIndex(sortedEntries, index);
-                final isSelected =
-                    widget.logsViewController.activeData == logEntry;
-
-                return LogListItem(
-                  key: ObjectKey(logEntry),
-                  logData: logEntry,
-                  itemIndex: index,
-                  statusIcon: widget.iSpectTheme.theme
-                      .getTypeIcon(context, key: logEntry.key),
-                  statusColor: widget.iSpectTheme.theme
-                          .getTypeColor(context, key: logEntry.key) ??
-                      Colors.grey,
-                  isExpanded:
-                      isSelected || widget.logsViewController.expandedLogs,
-                  customItemBuilder: widget.itemsBuilder,
-                  observer: options.observer is ISpectNavigatorObserver
-                      ? options.observer as ISpectNavigatorObserver?
-                      : null,
-                  onSharePressed: () => ISpectShareLogBottomSheet(
-                    data: logEntry.toJson(),
-                    truncatedData: logEntry.toJson(truncated: true),
-                  ).show(context),
-                  onItemTapped: isDesktop
-                      ? () => widget.logsViewController.selectLog(logEntry)
-                      : () =>
-                          widget.logsViewController.handleLogItemTap(logEntry),
-                  onOpenDetail: isDesktop
-                      ? () => widget.logsViewController.openLogDetail(logEntry)
-                      : null,
-                  onTypeFilterTap: isDesktop
-                      ? (type) =>
-                          _controller.handleTypeFilter(type, widget.logsData)
-                      : null,
-                  useRelativeTime: widget.logsViewController.useRelativeTime,
-                  typeColumnWidth: _controller.typeColumnWidth,
-                  timeColumnWidth: _controller.timeColumnWidth,
-                );
-              },
-            ),
+            if (widget.logsViewController.groupHttpLogs)
+              _buildGroupedList(sortedEntries, isDesktop, options)
+            else
+              _buildFlatList(sortedEntries, isDesktop, options),
             // Extra space for status bar on desktop
             SliverGap(isDesktop ? 36 : 8),
           ],
@@ -608,6 +639,158 @@ class _MainLogsViewState extends State<_MainLogsView> {
     }
 
     return body;
+  }
+
+  Widget _buildFlatList(
+    List<ISpectLogData> sortedEntries,
+    bool isDesktop,
+    ISpectOptions options,
+  ) =>
+      SuperSliverList.builder(
+        listController: _controller.listController,
+        itemCount: sortedEntries.length,
+        itemBuilder: (context, index) {
+          final logEntry =
+              _controller.getEntryAtVisualIndex(sortedEntries, index);
+          final isSelected = widget.logsViewController.activeData == logEntry;
+
+          return LogListItem(
+            key: ObjectKey(logEntry),
+            logData: logEntry,
+            itemIndex: index,
+            statusIcon: widget.iSpectTheme.theme
+                .getTypeIcon(context, key: logEntry.key),
+            statusColor: widget.iSpectTheme.theme
+                    .getTypeColor(context, key: logEntry.key) ??
+                Colors.grey,
+            isExpanded: isSelected || widget.logsViewController.expandedLogs,
+            customItemBuilder: widget.itemsBuilder,
+            observer: options.observer is ISpectNavigatorObserver
+                ? options.observer as ISpectNavigatorObserver?
+                : null,
+            onSharePressed: () => ISpectShareLogBottomSheet(
+              data: logEntry.toJson(),
+              truncatedData: logEntry.toJson(truncated: true),
+            ).show(context),
+            onItemTapped: isDesktop
+                ? () => widget.logsViewController.selectLog(logEntry)
+                : () => widget.logsViewController.handleLogItemTap(logEntry),
+            onOpenDetail: isDesktop
+                ? () => widget.logsViewController.openLogDetail(logEntry)
+                : null,
+            onTypeFilterTap: isDesktop
+                ? (type) => _controller.handleTypeFilter(type, widget.logsData)
+                : null,
+            useRelativeTime: widget.logsViewController.useRelativeTime,
+            typeColumnWidth: _controller.typeColumnWidth,
+            timeColumnWidth: _controller.timeColumnWidth,
+          );
+        },
+      );
+
+  Widget _buildGroupedList(
+    List<ISpectLogData> sortedEntries,
+    bool isDesktop,
+    ISpectOptions options,
+  ) {
+    // Apply the same visual ordering as the flat list.
+    final visualEntries = _controller.getVisualEntries(sortedEntries);
+    final grouped = _transactionService.getGroupedEntries(
+      visualEntries,
+      visualEntries.length, // Use length as a simple generation proxy.
+    );
+    final entries = grouped.entries;
+
+    return SuperSliverList.builder(
+      listController: _controller.listController,
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+
+        if (entry is NetworkTransaction) {
+          return NetworkTransactionCard(
+            key: ValueKey(entry.requestId),
+            transaction: entry,
+            typeColumnWidth: _controller.typeColumnWidth,
+            timeColumnWidth: _controller.timeColumnWidth,
+            onTap: () {
+              if (isDesktop) {
+                widget.logsViewController.selectLog(entry.request);
+              } else {
+                widget.logsViewController.handleLogItemTap(entry.request);
+              }
+            },
+            onOpenRequestDetail: isDesktop
+                ? () => widget.logsViewController
+                    .selectAndFollowDetail(entry.request)
+                : () {
+                    final responseLog = entry.response ?? entry.error;
+                    final l10n = ISpectLocalization.of(context);
+                    JsonScreen(
+                      data: entry.request.toJson(),
+                      truncatedData: entry.request.toJson(truncated: true),
+                      correlatedLogData: responseLog?.toJson(),
+                      correlatedLogLabel:
+                          responseLog != null ? l10n.httpResponse : null,
+                      correlationDuration: entry.duration,
+                    ).push(context);
+                  },
+            onOpenResponseDetail: (entry.response ?? entry.error) != null
+                ? isDesktop
+                    ? () => widget.logsViewController.selectAndFollowDetail(
+                          entry.response ?? entry.error!,
+                        )
+                    : () {
+                        final log = entry.response ?? entry.error!;
+                        final l10n = ISpectLocalization.of(context);
+                        JsonScreen(
+                          data: log.toJson(),
+                          truncatedData: log.toJson(truncated: true),
+                          correlatedLogData: entry.request.toJson(),
+                          correlatedLogLabel: l10n.httpRequest,
+                          correlationDuration: entry.duration,
+                        ).push(context);
+                      }
+                : null,
+          );
+        }
+
+        final logEntry = entry as ISpectLogData;
+        final isSelected = widget.logsViewController.activeData == logEntry;
+
+        return LogListItem(
+          key: ObjectKey(logEntry),
+          logData: logEntry,
+          itemIndex: index,
+          statusIcon:
+              widget.iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+          statusColor: widget.iSpectTheme.theme
+                  .getTypeColor(context, key: logEntry.key) ??
+              Colors.grey,
+          isExpanded: isSelected || widget.logsViewController.expandedLogs,
+          customItemBuilder: widget.itemsBuilder,
+          observer: options.observer is ISpectNavigatorObserver
+              ? options.observer as ISpectNavigatorObserver?
+              : null,
+          onSharePressed: () => ISpectShareLogBottomSheet(
+            data: logEntry.toJson(),
+            truncatedData: logEntry.toJson(truncated: true),
+          ).show(context),
+          onItemTapped: isDesktop
+              ? () => widget.logsViewController.selectLog(logEntry)
+              : () => widget.logsViewController.handleLogItemTap(logEntry),
+          onOpenDetail: isDesktop
+              ? () => widget.logsViewController.openLogDetail(logEntry)
+              : null,
+          onTypeFilterTap: isDesktop
+              ? (type) => _controller.handleTypeFilter(type, widget.logsData)
+              : null,
+          useRelativeTime: widget.logsViewController.useRelativeTime,
+          typeColumnWidth: _controller.typeColumnWidth,
+          timeColumnWidth: _controller.timeColumnWidth,
+        );
+      },
+    );
   }
 }
 

@@ -806,4 +806,23 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => 'Сбросить все фильтры';
+
+  @override
+  String get httpRequest => 'Запрос';
+
+  @override
+  String get httpResponse => 'Ответ';
+
+  @override
+  String get pending => 'В ожидании';
+
+  @override
+  String get groupHttpLogs => 'Группировка HTTP';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Группировать связанные HTTP запросы и ответы';
+
+  @override
+  String get duration => 'Длительность';
 }

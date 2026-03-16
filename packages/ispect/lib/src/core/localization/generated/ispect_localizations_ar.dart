@@ -792,4 +792,22 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => 'مسح جميع الفلاتر';
+
+  @override
+  String get httpRequest => 'طلب';
+
+  @override
+  String get httpResponse => 'استجابة';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get groupHttpLogs => 'تجميع HTTP';
+
+  @override
+  String get groupHttpLogsDesc => 'تجميع طلبات واستجابات HTTP المرتبطة معًا';
+
+  @override
+  String get duration => 'المدة';
 }

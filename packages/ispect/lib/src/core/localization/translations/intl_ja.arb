@@ -239,5 +239,11 @@
    "relativeHoursAgo": "{count}時間前",
    "showOnlyThisType": "このタイプのみ表示",
    "hideThisType": "このタイプを非表示",
-   "clearAllFilters": "すべてのフィルターをクリア"
+   "clearAllFilters": "すべてのフィルターをクリア",
+   "httpRequest": "リクエスト",
+   "httpResponse": "レスポンス",
+   "pending": "保留中",
+   "groupHttpLogs": "HTTPグループ化",
+   "groupHttpLogsDesc": "関連するHTTPリクエストとレスポンスをグループ化",
+   "duration": "所要時間"
 }

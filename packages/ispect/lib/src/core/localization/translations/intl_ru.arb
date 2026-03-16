@@ -239,5 +239,11 @@
    "relativeHoursAgo": "{count} ч назад",
    "showOnlyThisType": "Показать только этот тип",
    "hideThisType": "Скрыть этот тип",
-   "clearAllFilters": "Сбросить все фильтры"
+   "clearAllFilters": "Сбросить все фильтры",
+   "httpRequest": "Запрос",
+   "httpResponse": "Ответ",
+   "pending": "В ожидании",
+   "groupHttpLogs": "Группировка HTTP",
+   "groupHttpLogsDesc": "Группировать связанные HTTP запросы и ответы",
+   "duration": "Длительность"
 }

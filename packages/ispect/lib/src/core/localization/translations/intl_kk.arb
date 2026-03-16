@@ -239,5 +239,11 @@
    "relativeHoursAgo": "{count} сағ бұрын",
    "showOnlyThisType": "Тек осы түрді көрсету",
    "hideThisType": "Осы түрді жасыру",
-   "clearAllFilters": "Барлық сүзгілерді тазалау"
+   "clearAllFilters": "Барлық сүзгілерді тазалау",
+   "httpRequest": "Сұраныс",
+   "httpResponse": "Жауап",
+   "pending": "Күтуде",
+   "groupHttpLogs": "HTTP топтау",
+   "groupHttpLogsDesc": "Байланысты HTTP сұраныстар мен жауаптарды топтау",
+   "duration": "Ұзақтығы"
 }

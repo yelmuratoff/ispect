@@ -801,4 +801,23 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => 'Clear all filters';
+
+  @override
+  String get httpRequest => 'Request';
+
+  @override
+  String get httpResponse => 'Response';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get groupHttpLogs => 'Group HTTP Logs';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Group related HTTP requests and responses together';
+
+  @override
+  String get duration => 'Duration';
 }

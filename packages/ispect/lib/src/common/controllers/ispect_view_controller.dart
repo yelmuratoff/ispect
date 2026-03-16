@@ -34,6 +34,7 @@ class ISpectViewController extends ChangeNotifier {
 
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
+  bool _groupHttpLogs = false;
   ISpectLogData? _activeData;
 
   // --- Desktop: detail panel data (separate from selection highlight) ---
@@ -161,6 +162,14 @@ class ISpectViewController extends ChangeNotifier {
   }
 
   bool get isLogOrderReversed => _isLogOrderReversed;
+
+  // --- HTTP transaction grouping ---
+  bool get groupHttpLogs => _groupHttpLogs;
+
+  void toggleGroupHttpLogs() {
+    _groupHttpLogs = !_groupHttpLogs;
+    notifyListeners();
+  }
 
   void toggleLogOrder() {
     _isLogOrderReversed = !_isLogOrderReversed;

@@ -12,6 +12,7 @@ class DioResponseLog extends NetworkResponseLog {
     required super.statusMessage,
     required ISpectDioInterceptorSettings settings,
     required DioResponseData responseData,
+    super.requestId,
     super.requestHeaders,
     super.headers,
     super.requestBody,

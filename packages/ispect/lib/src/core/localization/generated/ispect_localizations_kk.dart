@@ -803,4 +803,23 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => 'Барлық сүзгілерді тазалау';
+
+  @override
+  String get httpRequest => 'Сұраныс';
+
+  @override
+  String get httpResponse => 'Жауап';
+
+  @override
+  String get pending => 'Күтуде';
+
+  @override
+  String get groupHttpLogs => 'HTTP топтау';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Байланысты HTTP сұраныстар мен жауаптарды топтау';
+
+  @override
+  String get duration => 'Ұзақтығы';
 }

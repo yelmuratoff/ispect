@@ -109,12 +109,18 @@ class DioRequestData {
           ignoredKeys: ignoredKeys,
         ) ??
         normalizedQuery;
-    map['extra'] = redactor.redact(
+    final redactedExtra = redactor.redact(
           normalizedExtra,
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
         ) ??
         normalizedExtra;
+    // Preserve internal request ID from redaction.
+    if (redactedExtra is Map<String, dynamic> &&
+        normalizedExtra.containsKey('_ispect_rid')) {
+      redactedExtra['_ispect_rid'] = normalizedExtra['_ispect_rid'];
+    }
+    map['extra'] = redactedExtra;
 
     return map;
   }

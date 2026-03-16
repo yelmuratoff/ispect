@@ -16,6 +16,8 @@ export 'src/models/models.dart';
 export 'src/network/network_log_options.dart';
 export 'src/network/network_logs.dart';
 export 'src/network/network_payload_sanitizer.dart';
+export 'src/network/network_transaction.dart';
+export 'src/network/request_id_generator.dart';
 export 'src/observer.dart';
 export 'src/redaction/redaction_service.dart';
 export 'src/redaction/strategies/composite_redaction_strategy.dart';

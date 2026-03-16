@@ -239,5 +239,11 @@
    "relativeHoursAgo": "منذ {count} س",
    "showOnlyThisType": "إظهار هذا النوع فقط",
    "hideThisType": "إخفاء هذا النوع",
-   "clearAllFilters": "مسح جميع الفلاتر"
+   "clearAllFilters": "مسح جميع الفلاتر",
+   "httpRequest": "طلب",
+   "httpResponse": "استجابة",
+   "pending": "قيد الانتظار",
+   "groupHttpLogs": "تجميع HTTP",
+   "groupHttpLogsDesc": "تجميع طلبات واستجابات HTTP المرتبطة معًا",
+   "duration": "المدة"
 }

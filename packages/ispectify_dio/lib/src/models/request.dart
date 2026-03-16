@@ -10,6 +10,7 @@ class DioRequestLog extends NetworkRequestLog {
     required super.path,
     required ISpectDioInterceptorSettings settings,
     required DioRequestData requestData,
+    super.requestId,
     super.headers,
     super.body,
     RedactionService? redactor,

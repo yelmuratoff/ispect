@@ -785,4 +785,22 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get clearAllFilters => '모든 필터 지우기';
+
+  @override
+  String get httpRequest => '요청';
+
+  @override
+  String get httpResponse => '응답';
+
+  @override
+  String get pending => '대기 중';
+
+  @override
+  String get groupHttpLogs => 'HTTP 그룹화';
+
+  @override
+  String get groupHttpLogsDesc => '관련 HTTP 요청과 응답을 함께 그룹화';
+
+  @override
+  String get duration => '소요 시간';
 }

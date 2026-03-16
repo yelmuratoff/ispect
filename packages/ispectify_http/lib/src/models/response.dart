@@ -12,6 +12,7 @@ class HttpResponseLog extends NetworkResponseLog {
     required super.statusMessage,
     required ISpectHttpInterceptorSettings settings,
     required HttpResponseData? responseData,
+    super.requestId,
     Map<String, String>? requestHeaders,
     Map<String, String>? headers,
     super.requestBody,
