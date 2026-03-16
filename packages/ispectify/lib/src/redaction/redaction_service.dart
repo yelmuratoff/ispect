@@ -608,6 +608,8 @@ const Set<String> kDefaultSensitiveKeys = <String>{
   'creditcard',
   'credit-card',
   'card_number',
+  'card_expire',
+  'cardexpire',
   'cardnumber',
   'card-number',
   'cc_number',
