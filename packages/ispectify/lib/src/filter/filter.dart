@@ -88,6 +88,14 @@ class SearchFilter implements Filter<ISpectLogData> {
     // Early return if query is empty (matches everything)
     if (_lowerQuery.isEmpty) return true;
 
+    // Check log type key (e.g. "route", "http-request", "error")
+    final key = item.key;
+    if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
+
+    // Check title
+    final title = item.title;
+    if (title != null && title.toLowerCase().contains(_lowerQuery)) return true;
+
     // Check if the query is in message or textMessage
     final message = item.message;
     if (message != null && message.toLowerCase().contains(_lowerQuery)) {
