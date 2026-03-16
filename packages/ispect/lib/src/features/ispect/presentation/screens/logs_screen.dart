@@ -474,6 +474,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   ),
                 ),
               ),
+            const SliverGap(4),
             if (sortedEntries.isEmpty)
               const SliverToBoxAdapter(
                 child: EmptyLogsWidget(),
