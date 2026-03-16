@@ -46,7 +46,7 @@ for package in "${PACKAGES[@]}"; do
     if [ -d "$package_dir" ]; then
         cp "$ROOT_README" "$target_readme"
         echo -e "${GREEN}✓${NC} Synced README to packages/$package"
-        ((synced_count++))
+        synced_count=$((synced_count + 1))
     else
         echo -e "${YELLOW}⚠${NC} Package directory not found: packages/$package"
     fi
