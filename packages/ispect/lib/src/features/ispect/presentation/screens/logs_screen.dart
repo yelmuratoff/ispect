@@ -564,7 +564,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
               const SliverToBoxAdapter(
                 child: EmptyLogsWidget(),
               ),
-            if (widget.logsViewController.groupHttpLogs)
+            if (widget.logsViewController.groupHttpLogs &&
+                widget.logsViewController.filter.titles.isEmpty)
               _buildGroupedList(sortedEntries, isDesktop, options)
             else
               _buildFlatList(sortedEntries, isDesktop, options),
