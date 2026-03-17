@@ -260,21 +260,33 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   Widget build(BuildContext context) {
     final color = _transactionColor(tx);
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(12)),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.04),
-          border: Border(
-            left: BorderSide(color: color, width: 3),
-            top: BorderSide(color: color.withValues(alpha: 0.12)),
-            right: BorderSide(color: color.withValues(alpha: 0.12)),
-            bottom: BorderSide(color: color.withValues(alpha: 0.12)),
+    final borderColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.cardColor;
+    final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.5);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        border: Border.all(color: borderColor),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: accentColor,
+                width: _expanded ? 5 : 3,
+              ),
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
@@ -283,10 +295,13 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                   setState(() => _expanded = !_expanded);
                   widget.onTap?.call();
                 },
-                child: _MobileHeader(
-                  tx: tx,
-                  color: color,
-                  expanded: _expanded,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: _MobileHeader(
+                    tx: tx,
+                    color: color,
+                    expanded: _expanded,
+                  ),
                 ),
               ),
               AnimatedSize(
@@ -295,7 +310,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                 alignment: Alignment.topCenter,
                 child: _expanded
                     ? Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
