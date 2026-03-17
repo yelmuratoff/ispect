@@ -118,6 +118,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
                   height: 16,
                   color: iSpect.theme.divider?.resolve(context),
                 ),
+                _RenderDecoratedBoxInfo(boxInfo: boxInfo, theme: theme),
               ],
             ],
           ),
@@ -341,45 +342,13 @@ class _CompareDistanceRow extends StatelessWidget {
       boxInfoB.targetRenderBox,
     );
 
-    // LTRB edge distances — semantic logic:
-    // Separated: shows gap between nearest edges.
-    // Overlapping: shows edge-to-edge misalignment.
-    var left = 0.0;
-    var right = 0.0;
-    var top = 0.0;
-    var bottom = 0.0;
-
-    // Horizontal
-    if (from.right <= to.left) {
-      // from is left of to → gap on right side
-      right = to.left - from.right;
-    } else if (to.right <= from.left) {
-      // from is right of to → gap on left side
-      left = from.left - to.right;
-    } else {
-      // Overlapping horizontally → show edge diffs
-      left = (from.left - to.left).abs();
-      right = (from.right - to.right).abs();
-    }
-
-    // Vertical
-    if (from.bottom <= to.top) {
-      // from is above to → gap below
-      bottom = to.top - from.bottom;
-    } else if (to.bottom <= from.top) {
-      // from is below to → gap above
-      top = from.top - to.bottom;
-    } else {
-      // Overlapping vertically → show edge diffs
-      top = (from.top - to.top).abs();
-      bottom = (from.bottom - to.bottom).abs();
-    }
+    final distances = computeCompareDistances(from, to);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${context.ispectL10n.comparedWith}: ${comparedElement?.widget.toString() ?? 'Unknown'}',
+          '${context.ispectL10n.comparedWith}: ${comparedElement?.widget.runtimeType ?? 'Unknown'}',
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 10,
             color: Colors.green.shade700,
@@ -390,38 +359,15 @@ class _CompareDistanceRow extends StatelessWidget {
           spacing: 12,
           runSpacing: 8,
           children: [
-            _InfoRow(
-              icon: Icons.arrow_back,
-              subtitle: context.ispectL10n.distanceLeft,
-              theme: theme,
-              iconColor: Colors.green.shade700,
-              backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(left.toStringAsFixed(1)),
-            ),
-            _InfoRow(
-              icon: Icons.arrow_upward,
-              subtitle: context.ispectL10n.distanceTop,
-              theme: theme,
-              iconColor: Colors.green.shade700,
-              backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(top.toStringAsFixed(1)),
-            ),
-            _InfoRow(
-              icon: Icons.arrow_forward,
-              subtitle: context.ispectL10n.distanceRight,
-              theme: theme,
-              iconColor: Colors.green.shade700,
-              backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(right.toStringAsFixed(1)),
-            ),
-            _InfoRow(
-              icon: Icons.arrow_downward,
-              subtitle: context.ispectL10n.distanceBottom,
-              theme: theme,
-              iconColor: Colors.green.shade700,
-              backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(bottom.toStringAsFixed(1)),
-            ),
+            for (final d in distances)
+              _InfoRow(
+                icon: d.icon,
+                subtitle: d.labelOf(context),
+                theme: theme,
+                iconColor: Colors.green.shade700,
+                backgroundColor: Colors.green.withValues(alpha: .1),
+                child: Text(d.value.toStringAsFixed(1)),
+              ),
           ],
         ),
       ],
@@ -564,6 +510,61 @@ class _RenderParagraphInfo extends StatelessWidget {
       text.length > maxLength ? '${text.substring(0, maxLength)}…' : text;
 }
 
+// --- Decorated Box Inspection ---
+
+class _RenderDecoratedBoxInfo extends StatelessWidget {
+  const _RenderDecoratedBoxInfo({
+    required this.boxInfo,
+    required this.theme,
+  });
+
+  final BoxInfo boxInfo;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final targetBox = boxInfo.targetRenderBox;
+    if (targetBox is! RenderDecoratedBox) return const SizedBox.shrink();
+
+    final decoration = targetBox.decoration;
+    if (decoration is! BoxDecoration) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        if (decoration.borderRadius != null)
+          _InfoRow(
+            icon: Icons.rounded_corner,
+            subtitle: 'border radius',
+            theme: theme,
+            backgroundColor: theme.chipTheme.backgroundColor,
+            child: Text(decoration.borderRadius.toString()),
+          ),
+        _InfoRow(
+          icon: Icons.circle_outlined,
+          subtitle: 'shape',
+          theme: theme,
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(decoration.shape.name),
+        ),
+        _InfoRow(
+          icon: Icons.palette,
+          subtitle: 'color',
+          theme: theme,
+          iconColor: decoration.color,
+          backgroundColor: theme.chipTheme.backgroundColor,
+          child: Text(
+            decoration.color != null
+                ? colorToHexString(decoration.color!, withAlpha: true)
+                : 'n/a',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Extracted span info: text content + associated style.
 class _SpanInfo {
   const _SpanInfo({required this.text, required this.style});
@@ -591,4 +592,174 @@ List<_SpanInfo> _extractSpanInfo(InlineSpan span, [List<_SpanInfo>? result]) {
   }
 
   return result;
+}
+
+// --- Figma-style compare distances ---
+
+/// A single distance measurement to display.
+class CompareDistance {
+  const CompareDistance({
+    required this.side,
+    required this.value,
+    required this.icon,
+    required this.startOffset,
+    required this.endOffset,
+    required this.isHorizontal,
+  });
+
+  final CompareSide side;
+  final double value;
+  final IconData icon;
+
+  /// Start and end positions for drawing the overlay line.
+  final Offset startOffset;
+  final Offset endOffset;
+  final bool isHorizontal;
+
+  String labelOf(BuildContext context) => switch (side) {
+        CompareSide.left => context.ispectL10n.distanceLeft,
+        CompareSide.top => context.ispectL10n.distanceTop,
+        CompareSide.right => context.ispectL10n.distanceRight,
+        CompareSide.bottom => context.ispectL10n.distanceBottom,
+      };
+}
+
+enum CompareSide { left, top, right, bottom }
+
+/// Computes Figma-style distances between two rects.
+///
+/// - **Separated on one axis**: shows only the gap on that axis.
+/// - **Separated on both axes**: shows both gaps.
+/// - **Overlapping on both axes**: shows LTRB edge alignment distances.
+List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
+  final hSeparated = from.right <= to.left || to.right <= from.left;
+  final vSeparated = from.bottom <= to.top || to.bottom <= from.top;
+
+  final results = <CompareDistance>[];
+
+  if (hSeparated) {
+    // Horizontal gap line at FROM's vertical center
+    final y = from.center.dy;
+    if (from.right <= to.left) {
+      results.add(
+        CompareDistance(
+          side: CompareSide.right,
+          value: to.left - from.right,
+          icon: Icons.arrow_forward,
+          startOffset: Offset(from.right, y),
+          endOffset: Offset(to.left, y),
+          isHorizontal: true,
+        ),
+      );
+    } else {
+      results.add(
+        CompareDistance(
+          side: CompareSide.left,
+          value: from.left - to.right,
+          icon: Icons.arrow_back,
+          startOffset: Offset(to.right, y),
+          endOffset: Offset(from.left, y),
+          isHorizontal: true,
+        ),
+      );
+    }
+  }
+
+  if (vSeparated) {
+    // Vertical gap line at TO's horizontal center
+    final x = to.center.dx;
+    if (from.bottom <= to.top) {
+      results.add(
+        CompareDistance(
+          side: CompareSide.bottom,
+          value: to.top - from.bottom,
+          icon: Icons.arrow_downward,
+          startOffset: Offset(x, from.bottom),
+          endOffset: Offset(x, to.top),
+          isHorizontal: false,
+        ),
+      );
+    } else {
+      results.add(
+        CompareDistance(
+          side: CompareSide.top,
+          value: from.top - to.bottom,
+          icon: Icons.arrow_upward,
+          startOffset: Offset(x, to.bottom),
+          endOffset: Offset(x, from.top),
+          isHorizontal: false,
+        ),
+      );
+    }
+  }
+
+  // Overlapping on both axes → show LTRB alignment
+  if (!hSeparated && !vSeparated) {
+    final left = (from.left - to.left).abs();
+    final right = (from.right - to.right).abs();
+    final top = (from.top - to.top).abs();
+    final bottom = (from.bottom - to.bottom).abs();
+
+    final midY = (from.center.dy + to.center.dy) / 2;
+    final midX = (from.center.dx + to.center.dx) / 2;
+
+    if (left > 0.5) {
+      final minL = from.left < to.left ? from.left : to.left;
+      final maxL = from.left > to.left ? from.left : to.left;
+      results.add(
+        CompareDistance(
+          side: CompareSide.left,
+          value: left,
+          icon: Icons.arrow_back,
+          startOffset: Offset(minL, midY - 6),
+          endOffset: Offset(maxL, midY - 6),
+          isHorizontal: true,
+        ),
+      );
+    }
+    if (right > 0.5) {
+      final minR = from.right < to.right ? from.right : to.right;
+      final maxR = from.right > to.right ? from.right : to.right;
+      results.add(
+        CompareDistance(
+          side: CompareSide.right,
+          value: right,
+          icon: Icons.arrow_forward,
+          startOffset: Offset(minR, midY + 6),
+          endOffset: Offset(maxR, midY + 6),
+          isHorizontal: true,
+        ),
+      );
+    }
+    if (top > 0.5) {
+      final minT = from.top < to.top ? from.top : to.top;
+      final maxT = from.top > to.top ? from.top : to.top;
+      results.add(
+        CompareDistance(
+          side: CompareSide.top,
+          value: top,
+          icon: Icons.arrow_upward,
+          startOffset: Offset(midX - 6, minT),
+          endOffset: Offset(midX - 6, maxT),
+          isHorizontal: false,
+        ),
+      );
+    }
+    if (bottom > 0.5) {
+      final minB = from.bottom < to.bottom ? from.bottom : to.bottom;
+      final maxB = from.bottom > to.bottom ? from.bottom : to.bottom;
+      results.add(
+        CompareDistance(
+          side: CompareSide.bottom,
+          value: bottom,
+          icon: Icons.arrow_downward,
+          startOffset: Offset(midX + 6, minB),
+          endOffset: Offset(midX + 6, maxB),
+          isHorizontal: false,
+        ),
+      );
+    }
+  }
+
+  return results;
 }

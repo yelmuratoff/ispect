@@ -277,7 +277,8 @@ class InspectorState extends State<Inspector> {
   void _onPointerHover(Offset pointerOffset) {
     _updatePointerPosition(pointerOffset);
 
-    // In compare mode on desktop, show hover preview of compared widget.
+    // In compare mode on desktop, directly update compared box (live
+    // comparison with distances) instead of showing a hover preview.
     // Throttled to avoid tree traversal on every pointer move event.
     if (_inspectorStateNotifier.value && _compareModeNotifier.value) {
       if (_compareHoverTimer?.isActive ?? false) return;
@@ -285,13 +286,13 @@ class InspectorState extends State<Inspector> {
       _compareHoverTimer = Timer(_compareHoverThrottleDuration, () {
         if (!mounted) return;
 
-        final hovered =
-            _computeBoxInfoAt(pointerOffset, findContainer: false);
-        if (hovered?.targetRenderBox !=
+        _hoveredRenderBoxNotifier.value = null;
+        final compare = _computeBoxInfoAt(pointerOffset);
+        if (compare?.targetRenderBox !=
             _currentRenderBoxNotifier.value?.targetRenderBox) {
-          _hoveredRenderBoxNotifier.value = hovered;
+          _comparedRenderBoxNotifier.value = compare;
         } else {
-          _hoveredRenderBoxNotifier.value = null;
+          _comparedRenderBoxNotifier.value = null;
         }
       });
     } else {
