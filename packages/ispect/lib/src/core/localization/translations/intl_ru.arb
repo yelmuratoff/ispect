@@ -255,5 +255,12 @@
    "tipExpand": "Нажмите развернуть для просмотра JSON с поиском",
    "tipKeyboard": "Стрелки для навигации, Enter для открытия, / для поиска",
    "gotIt": "Понятно",
-   "filters": "Фильтры"
+   "filters": "Фильтры",
+   "compare": "Сравнить",
+   "cancelCompare": "Отмена",
+   "tapWidgetToCompare": "Нажмите на виджет для сравнения",
+   "comparedWith": "Сравнение с",
+   "horizontalDistance": "горизонтально",
+   "verticalDistance": "вертикально",
+   "offset": "смещение (dx, dy)"
 }

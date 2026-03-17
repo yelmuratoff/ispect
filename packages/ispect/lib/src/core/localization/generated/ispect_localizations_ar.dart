@@ -841,4 +841,25 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'تصفية';
+
+  @override
+  String get compare => 'مقارنة';
+
+  @override
+  String get cancelCompare => 'إلغاء';
+
+  @override
+  String get tapWidgetToCompare => 'انقر على عنصر للمقارنة';
+
+  @override
+  String get comparedWith => 'مقارنة مع';
+
+  @override
+  String get horizontalDistance => 'أفقي';
+
+  @override
+  String get verticalDistance => 'عمودي';
+
+  @override
+  String get offset => 'الإزاحة (dx, dy)';
 }

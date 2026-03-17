@@ -255,5 +255,12 @@
    "tipExpand": "انقر على توسيع لعرض JSON الكامل مع البحث",
    "tipKeyboard": "مفاتيح الأسهم للتنقل، Enter للفتح، / للبحث",
    "gotIt": "فهمت",
-   "filters": "تصفية"
+   "filters": "تصفية",
+   "compare": "مقارنة",
+   "cancelCompare": "إلغاء",
+   "tapWidgetToCompare": "انقر على عنصر للمقارنة",
+   "comparedWith": "مقارنة مع",
+   "horizontalDistance": "أفقي",
+   "verticalDistance": "عمودي",
+   "offset": "الإزاحة (dx, dy)"
 }

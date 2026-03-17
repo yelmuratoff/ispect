@@ -859,4 +859,25 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'फ़िल्टर';
+
+  @override
+  String get compare => 'तुलना करें';
+
+  @override
+  String get cancelCompare => 'रद्द करें';
+
+  @override
+  String get tapWidgetToCompare => 'तुलना करने के लिए विजेट पर टैप करें';
+
+  @override
+  String get comparedWith => 'इसके साथ तुलना';
+
+  @override
+  String get horizontalDistance => 'क्षैतिज दूरी';
+
+  @override
+  String get verticalDistance => 'ऊर्ध्वाधर दूरी';
+
+  @override
+  String get offset => 'ऑफ़सेट (dx, dy)';
 }

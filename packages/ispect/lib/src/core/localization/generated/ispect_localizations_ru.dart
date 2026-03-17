@@ -858,4 +858,25 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'Фильтры';
+
+  @override
+  String get compare => 'Сравнить';
+
+  @override
+  String get cancelCompare => 'Отмена';
+
+  @override
+  String get tapWidgetToCompare => 'Нажмите на виджет для сравнения';
+
+  @override
+  String get comparedWith => 'Сравнение с';
+
+  @override
+  String get horizontalDistance => 'горизонтально';
+
+  @override
+  String get verticalDistance => 'вертикально';
+
+  @override
+  String get offset => 'смещение (dx, dy)';
 }

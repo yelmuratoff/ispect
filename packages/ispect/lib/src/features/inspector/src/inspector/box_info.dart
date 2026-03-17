@@ -40,33 +40,49 @@ class BoxInfo {
     Iterable<RenderBox> boxes, {
     Offset overlayOffset = Offset.zero,
   }) {
-    RenderBox? targetRenderBox;
+    final boxList = boxes.toList(growable: false);
+    if (boxList.isEmpty) return null;
+
+    // Find the smallest box by area — this is the most specific widget.
+    final targetRenderBox = boxList.reduce(
+      (a, b) => _area(a) <= _area(b) ? a : b,
+    );
+
+    // Find the smallest container that is strictly larger than target
+    // and is an ancestor of target in the render tree.
     RenderBox? containerRenderBox;
-    final elements = <Element>[];
+    var containerArea = double.infinity;
 
-    for (final box in boxes) {
-      targetRenderBox ??= box;
-      final tempElement = InspectorUtils.getElementFromRenderBox(box);
-      if (tempElement != null) {
-        elements.add(tempElement);
-      }
+    for (final box in boxList) {
+      if (identical(box, targetRenderBox)) continue;
 
-      if (targetRenderBox.size < box.size) {
+      final area = _area(box);
+      if (area > _area(targetRenderBox) && area < containerArea) {
         containerRenderBox = box;
-        break;
+        containerArea = area;
       }
     }
 
-    if (targetRenderBox == null) return null;
+    // Collect elements for all boxes.
+    final elements = <Element>[];
+    for (final box in boxList) {
+      final element = InspectorUtils.getElementFromRenderBox(box);
+      if (element != null) {
+        elements.add(element);
+      }
+    }
 
     return BoxInfo(
       targetRenderBox: targetRenderBox,
       containerRenderBox: containerRenderBox,
       overlayOffset: overlayOffset,
-      boxes: boxes.toList(growable: false),
+      boxes: boxList,
       elements: elements,
     );
   }
+
+  /// Computes area of a [RenderBox] for size comparison.
+  static double _area(RenderBox box) => box.size.width * box.size.height;
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;

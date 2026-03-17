@@ -255,5 +255,12 @@
    "tipExpand": "点击展开查看完整JSON并搜索",
    "tipKeyboard": "方向键导航，回车打开，/ 搜索",
    "gotIt": "知道了",
-   "filters": "筛选"
+   "filters": "筛选",
+   "compare": "比较",
+   "cancelCompare": "取消",
+   "tapWidgetToCompare": "点击一个组件进行比较",
+   "comparedWith": "与之比较",
+   "horizontalDistance": "水平距离",
+   "verticalDistance": "垂直距离",
+   "offset": "偏移 (dx, dy)"
 }

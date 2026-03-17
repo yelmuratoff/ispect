@@ -833,4 +833,25 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get filters => '필터';
+
+  @override
+  String get compare => '비교';
+
+  @override
+  String get cancelCompare => '취소';
+
+  @override
+  String get tapWidgetToCompare => '비교할 위젯을 탭하세요';
+
+  @override
+  String get comparedWith => '비교 대상';
+
+  @override
+  String get horizontalDistance => '수평 거리';
+
+  @override
+  String get verticalDistance => '수직 거리';
+
+  @override
+  String get offset => '오프셋 (dx, dy)';
 }

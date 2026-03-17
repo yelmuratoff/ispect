@@ -35,6 +35,7 @@ class KeyboardHandler {
   KeyboardHandler({
     required this.onInspectorStateChanged,
     required this.onZoomStateChanged,
+    required this.onCompareStateChanged,
     this.inspectorStateKeys = const [
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
@@ -42,6 +43,9 @@ class KeyboardHandler {
     ],
     this.zoomStateKeys = const [
       LogicalKeyboardKey.keyZ,
+    ],
+    this.compareStateKeys = const [
+      LogicalKeyboardKey.keyY,
     ],
   });
 
@@ -55,11 +59,19 @@ class KeyboardHandler {
   /// Called with [value] true on key down, false on key up
   final void Function({required bool value}) onZoomStateChanged;
 
+  /// Callback triggered when compare state changes (Y key)
+  ///
+  /// Called with [value] true on key down, false on key up
+  final void Function({required bool value}) onCompareStateChanged;
+
   /// Keys that toggle the inspector state (default: Alt keys)
   final List<LogicalKeyboardKey> inspectorStateKeys;
 
   /// Keys that toggle zoom mode (default: Z key)
   final List<LogicalKeyboardKey> zoomStateKeys;
+
+  /// Keys that toggle compare mode (default: Y key)
+  final List<LogicalKeyboardKey> compareStateKeys;
 
   /// Tracks whether keyboard handler is currently registered
   bool _isRegistered = false;
@@ -106,6 +118,12 @@ class KeyboardHandler {
     // Check if pressed key is a zoom toggle key
     if (zoomStateKeys.contains(pressedKey)) {
       onZoomStateChanged(value: isKeyDown);
+      return false;
+    }
+
+    // Check if pressed key is a compare toggle key
+    if (compareStateKeys.contains(pressedKey)) {
+      onCompareStateChanged(value: isKeyDown);
       return false;
     }
 

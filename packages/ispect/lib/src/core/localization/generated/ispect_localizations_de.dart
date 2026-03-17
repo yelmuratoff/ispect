@@ -874,4 +874,25 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'Filter';
+
+  @override
+  String get compare => 'Vergleichen';
+
+  @override
+  String get cancelCompare => 'Abbrechen';
+
+  @override
+  String get tapWidgetToCompare => 'Tippen Sie auf ein Widget zum Vergleichen';
+
+  @override
+  String get comparedWith => 'Verglichen mit';
+
+  @override
+  String get horizontalDistance => 'horizontal';
+
+  @override
+  String get verticalDistance => 'vertikal';
+
+  @override
+  String get offset => 'Versatz (dx, dy)';
 }

@@ -833,4 +833,25 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'フィルター';
+
+  @override
+  String get compare => '比較';
+
+  @override
+  String get cancelCompare => 'キャンセル';
+
+  @override
+  String get tapWidgetToCompare => '比較するウィジェットをタップ';
+
+  @override
+  String get comparedWith => '比較対象';
+
+  @override
+  String get horizontalDistance => '水平距離';
+
+  @override
+  String get verticalDistance => '垂直距離';
+
+  @override
+  String get offset => 'オフセット (dx, dy)';
 }

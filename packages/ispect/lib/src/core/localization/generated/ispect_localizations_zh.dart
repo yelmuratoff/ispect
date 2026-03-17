@@ -833,4 +833,25 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get filters => '筛选';
+
+  @override
+  String get compare => '比较';
+
+  @override
+  String get cancelCompare => '取消';
+
+  @override
+  String get tapWidgetToCompare => '点击一个组件进行比较';
+
+  @override
+  String get comparedWith => '与之比较';
+
+  @override
+  String get horizontalDistance => '水平距离';
+
+  @override
+  String get verticalDistance => '垂直距离';
+
+  @override
+  String get offset => '偏移 (dx, dy)';
 }

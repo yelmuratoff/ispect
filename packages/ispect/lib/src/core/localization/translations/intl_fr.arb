@@ -255,5 +255,12 @@
    "tipExpand": "Appuyez sur développer pour voir le JSON complet avec recherche",
    "tipKeyboard": "Flèches pour naviguer, Entrée pour ouvrir, / pour rechercher",
    "gotIt": "Compris",
-   "filters": "Filtres"
+   "filters": "Filtres",
+   "compare": "Comparer",
+   "cancelCompare": "Annuler",
+   "tapWidgetToCompare": "Appuyez sur un widget pour comparer",
+   "comparedWith": "Comparé avec",
+   "horizontalDistance": "horizontal",
+   "verticalDistance": "vertical",
+   "offset": "décalage (dx, dy)"
 }

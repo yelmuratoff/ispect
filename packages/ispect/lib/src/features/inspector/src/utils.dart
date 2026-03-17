@@ -58,42 +58,72 @@ class InspectorUtils {
     return (current is RenderAbsorbPointer) ? current.child : current;
   }
 
-  /// Performs hit testing at a given screen coordinate and returns all intersected RenderBox objects
+  /// Finds all [RenderBox] objects at a given screen coordinate using direct
+  /// render tree traversal instead of hit testing.
+  ///
+  /// This approach bypasses pointer event handling, making it possible to
+  /// select boxes that aren't hit-testable but are visible on screen
+  /// (e.g. widgets behind [AbsorbPointer] or [IgnorePointer]).
   ///
   /// - Parameters:
-  ///   - context: BuildContext to start hit testing from (must be mounted)
+  ///   - context: BuildContext to start traversal from (must be mounted)
   ///   - pointerOffset: Global screen coordinate to test
-  /// - Return: Iterable of RenderBox objects at the tap location, ordered by render tree depth
-  /// - Usage: Used to identify tappable widgets during inspection
-  /// - Edge case: Returns empty iterable if context unmounted or no valid render objects
-  static Iterable<RenderBox> onTap(BuildContext context, Offset pointerOffset) {
-    // Early exit for unmounted context
-    if (!context.mounted) {
-      return const <RenderBox>[];
-    }
+  /// - Return: List of RenderBox objects at the offset, deepest first
+  /// - Edge case: Returns empty list if context unmounted or no render objects found
+  static List<RenderBox> findRenderBoxesAt(
+    BuildContext context,
+    Offset pointerOffset,
+  ) {
+    if (!context.mounted) return const <RenderBox>[];
 
-    // Get the render object, safely cast to RenderProxyBox
     final renderObject = context.findRenderObject();
-    if (renderObject is! RenderProxyBox) {
-      return const <RenderBox>[];
-    }
+    if (renderObject is! RenderProxyBox) return const <RenderBox>[];
 
-    // Bypass any AbsorbPointer widgets to enable hit testing
     final targetRenderObject = _bypassAbsorbPointer(renderObject);
-    if (targetRenderObject == null) {
-      return const <RenderBox>[];
+    if (targetRenderObject == null) return const <RenderBox>[];
+
+    final results = <RenderBox>[];
+    _collectRenderBoxesAt(targetRenderObject, pointerOffset, results);
+    return results;
+  }
+
+  /// Recursively collects [RenderBox] objects that contain [offset].
+  ///
+  /// Handles special container types:
+  /// - [RenderViewportBase]: only traverses [RenderSliver] children
+  /// - [RenderStack]: reverses child order for correct z-ordering
+  /// - Generic containers: visits children in paint order
+  static void _collectRenderBoxesAt(
+    RenderObject renderObject,
+    Offset offset,
+    List<RenderBox> results,
+  ) {
+    if (renderObject is RenderViewportBase) {
+      // Viewports: traverse children via visitor
+      renderObject.visitChildren((child) {
+        _collectRenderBoxesAt(child, offset, results);
+      });
+    } else if (renderObject is RenderStack) {
+      // Stacks: reverse order so topmost (last painted) comes first
+      final children = <RenderObject>[];
+      renderObject.visitChildren(children.add);
+      for (final child in children.reversed) {
+        _collectRenderBoxesAt(child, offset, results);
+      }
+    } else {
+      // Generic containers
+      renderObject.visitChildren((child) {
+        _collectRenderBoxesAt(child, offset, results);
+      });
     }
 
-    // Perform hit test at the specified global coordinate
-    final hitTestResult = BoxHitTestResult();
-    final localPosition = targetRenderObject.globalToLocal(pointerOffset);
-
-    targetRenderObject.hitTest(hitTestResult, position: localPosition);
-
-    // Extract RenderBox objects from hit test results
-    return hitTestResult.path
-        .map((entry) => entry.target)
-        .whereType<RenderBox>();
+    // Check if this box contains the offset
+    if (renderObject is RenderBox && renderObject.attached) {
+      final localOffset = renderObject.globalToLocal(offset);
+      if (renderObject.size.contains(localOffset)) {
+        results.add(renderObject);
+      }
+    }
   }
 
   /// Finds the associated Element from a given RenderBox

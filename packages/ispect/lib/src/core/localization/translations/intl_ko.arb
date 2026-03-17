@@ -255,5 +255,12 @@
    "tipExpand": "확장을 눌러 검색 가능한 전체 JSON 보기",
    "tipKeyboard": "화살표 키로 이동, Enter로 열기, /로 검색",
    "gotIt": "확인",
-   "filters": "필터"
+   "filters": "필터",
+   "compare": "비교",
+   "cancelCompare": "취소",
+   "tapWidgetToCompare": "비교할 위젯을 탭하세요",
+   "comparedWith": "비교 대상",
+   "horizontalDistance": "수평 거리",
+   "verticalDistance": "수직 거리",
+   "offset": "오프셋 (dx, dy)"
 }

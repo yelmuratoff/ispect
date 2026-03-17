@@ -255,5 +255,12 @@
    "tipExpand": "Іздеумен толық JSON көру үшін кеңейтуді басыңыз",
    "tipKeyboard": "Навигация үшін көрсеткілер, ашу үшін Enter, іздеу үшін /",
    "gotIt": "Түсінікті",
-   "filters": "Сүзгі"
+   "filters": "Сүзгі",
+   "compare": "Салыстыру",
+   "cancelCompare": "Болдырмау",
+   "tapWidgetToCompare": "Салыстыру үшін виджетті басыңыз",
+   "comparedWith": "Салыстыру нысаны",
+   "horizontalDistance": "көлденең",
+   "verticalDistance": "тік",
+   "offset": "ығысу (dx, dy)"
 }

@@ -255,5 +255,12 @@
    "tipExpand": "खोज के साथ पूरा JSON देखने के लिए विस्तार पर टैप करें",
    "tipKeyboard": "नेविगेट करने के लिए तीर कुंजियाँ, खोलने के लिए Enter, खोज के लिए /",
    "gotIt": "समझ गया",
-   "filters": "फ़िल्टर"
+   "filters": "फ़िल्टर",
+   "compare": "तुलना करें",
+   "cancelCompare": "रद्द करें",
+   "tapWidgetToCompare": "तुलना करने के लिए विजेट पर टैप करें",
+   "comparedWith": "इसके साथ तुलना",
+   "horizontalDistance": "क्षैतिज दूरी",
+   "verticalDistance": "ऊर्ध्वाधर दूरी",
+   "offset": "ऑफ़सेट (dx, dy)"
 }

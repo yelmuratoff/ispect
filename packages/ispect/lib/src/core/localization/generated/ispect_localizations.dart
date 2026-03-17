@@ -1654,6 +1654,48 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Filters'**
   String get filters;
+
+  /// No description provided for @compare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get compare;
+
+  /// No description provided for @cancelCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelCompare;
+
+  /// No description provided for @tapWidgetToCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a widget to compare'**
+  String get tapWidgetToCompare;
+
+  /// No description provided for @comparedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Compared with'**
+  String get comparedWith;
+
+  /// No description provided for @horizontalDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'horizontal'**
+  String get horizontalDistance;
+
+  /// No description provided for @verticalDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'vertical'**
+  String get verticalDistance;
+
+  /// No description provided for @offset.
+  ///
+  /// In en, this message translates to:
+  /// **'offset (dx, dy)'**
+  String get offset;
 }
 
 class _ISpectGeneratedLocalizationDelegate

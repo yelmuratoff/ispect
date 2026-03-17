@@ -856,4 +856,25 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get filters => 'Сүзгі';
+
+  @override
+  String get compare => 'Салыстыру';
+
+  @override
+  String get cancelCompare => 'Болдырмау';
+
+  @override
+  String get tapWidgetToCompare => 'Салыстыру үшін виджетті басыңыз';
+
+  @override
+  String get comparedWith => 'Салыстыру нысаны';
+
+  @override
+  String get horizontalDistance => 'көлденең';
+
+  @override
+  String get verticalDistance => 'тік';
+
+  @override
+  String get offset => 'ығысу (dx, dy)';
 }

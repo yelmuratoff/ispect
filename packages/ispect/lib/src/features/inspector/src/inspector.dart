@@ -69,6 +69,9 @@ class Inspector extends StatefulWidget {
     this.zoomShortcuts = const [
       LogicalKeyboardKey.keyZ,
     ],
+    this.compareShortcuts = const [
+      LogicalKeyboardKey.keyY,
+    ],
     this.isEnabled,
   });
 
@@ -80,6 +83,7 @@ class Inspector extends StatefulWidget {
   final List<LogicalKeyboardKey> widgetInspectorShortcuts;
   final List<LogicalKeyboardKey> colorPickerShortcuts;
   final List<LogicalKeyboardKey> zoomShortcuts;
+  final List<LogicalKeyboardKey> compareShortcuts;
   final bool? isEnabled;
   final Color? backgroundColor;
   final Color? textColor;
@@ -132,6 +136,14 @@ class InspectorState extends State<Inspector> {
   final _byteDataStateNotifier = ValueNotifier<ByteData?>(null);
 
   final _currentRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
+  final _comparedRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
+  final _compareModeNotifier = ValueNotifier<bool>(false);
+  final _hoveredRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
+
+  /// Throttle timer for compare hover — limits tree traversal to once
+  /// per [_compareHoverThrottleDuration] to avoid jank on pointer move.
+  Timer? _compareHoverTimer;
+  static const _compareHoverThrottleDuration = Duration(milliseconds: 100);
 
   final _inspectorStateNotifier = ValueNotifier<bool>(false);
   final _zoomStateNotifier = ValueNotifier<bool>(false);
@@ -169,8 +181,12 @@ class InspectorState extends State<Inspector> {
       onZoomStateChanged: ({required value}) {
         _onZoomStateChanged(value);
       },
+      onCompareStateChanged: ({required value}) {
+        _onCompareStateChanged(value);
+      },
       inspectorStateKeys: widget.widgetInspectorShortcuts,
       zoomStateKeys: widget.zoomShortcuts,
+      compareStateKeys: widget.compareShortcuts,
     );
 
     if (_isPanelVisible && widget.areKeyboardShortcutsEnabled) {
@@ -195,38 +211,54 @@ class InspectorState extends State<Inspector> {
 
   // Gestures
 
+  BoxInfo? _computeBoxInfoAt(Offset pointerOffset) {
+    final absorbContext = _absorbPointerKey.currentContext;
+    if (absorbContext == null) return null;
+
+    final boxes = InspectorUtils.findRenderBoxesAt(
+      absorbContext,
+      pointerOffset,
+    );
+    if (boxes.isEmpty) return null;
+
+    final stackRenderObject =
+        _stackKey.currentContext?.findRenderObject() as RenderStack?;
+    if (stackRenderObject == null) return null;
+
+    final overlayOffset = stackRenderObject.localToGlobal(Offset.zero);
+
+    return BoxInfo.fromHitTestResults(
+      boxes,
+      overlayOffset: overlayOffset,
+    );
+  }
+
   void _onTap(Offset? pointerOffset) {
     if (_zoomStateNotifier.value) {
       _onZoomStateChanged(false);
       return;
     }
 
-    if (!_inspectorStateNotifier.value) {
+    if (!_inspectorStateNotifier.value) return;
+    if (pointerOffset == null) return;
+
+    // Compare mode: second tap selects the compared widget
+    if (_compareModeNotifier.value) {
+      final compared = _computeBoxInfoAt(pointerOffset);
+      if (compared != null &&
+          compared.targetRenderBox !=
+              _currentRenderBoxNotifier.value?.targetRenderBox) {
+        _comparedRenderBoxNotifier.value = compared;
+      }
+      _compareModeNotifier.value = false;
       return;
     }
 
-    if (pointerOffset == null) return;
+    final boxInfo = _computeBoxInfoAt(pointerOffset);
+    if (boxInfo == null) return;
 
-    final absorbContext = _absorbPointerKey.currentContext;
-    if (absorbContext == null) return;
-
-    final boxes = InspectorUtils.onTap(
-      absorbContext,
-      pointerOffset,
-    );
-
-    if (boxes.isEmpty) return;
-
-    final stackRenderObject =
-        _stackKey.currentContext?.findRenderObject() as RenderStack?;
-    if (stackRenderObject == null) return;
-
-    final overlayOffset = stackRenderObject.localToGlobal(Offset.zero);
-
-    _currentRenderBoxNotifier.value = BoxInfo.fromHitTestResults(
-      boxes,
-      overlayOffset: overlayOffset,
-    );
+    _currentRenderBoxNotifier.value = boxInfo;
+    _comparedRenderBoxNotifier.value = null;
   }
 
   void _onPointerMove(Offset pointerOffset) {
@@ -235,6 +267,26 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerHover(Offset pointerOffset) {
     _updatePointerPosition(pointerOffset);
+
+    // In compare mode on desktop, show hover preview of compared widget.
+    // Throttled to avoid tree traversal on every pointer move event.
+    if (_inspectorStateNotifier.value && _compareModeNotifier.value) {
+      if (_compareHoverTimer?.isActive ?? false) return;
+
+      _compareHoverTimer = Timer(_compareHoverThrottleDuration, () {
+        if (!mounted) return;
+
+        final hovered = _computeBoxInfoAt(pointerOffset);
+        if (hovered?.targetRenderBox !=
+            _currentRenderBoxNotifier.value?.targetRenderBox) {
+          _hoveredRenderBoxNotifier.value = hovered;
+        } else {
+          _hoveredRenderBoxNotifier.value = null;
+        }
+      });
+    } else {
+      _hoveredRenderBoxNotifier.value = null;
+    }
   }
 
   void _updatePointerPosition(Offset pointerOffset) {
@@ -258,6 +310,37 @@ class InspectorState extends State<Inspector> {
       _onZoomStateChanged(false);
     } else {
       _currentRenderBoxNotifier.value = null;
+      exitCompareMode();
+    }
+  }
+
+  // Compare
+
+  /// Enters compare mode: the next tap will select the second widget
+  /// to compare against the currently selected one.
+  /// Called from the UI "Compare" button (mobile) or Y key (desktop).
+  void enterCompareMode() {
+    if (_currentRenderBoxNotifier.value == null) return;
+    _compareModeNotifier.value = true;
+    _comparedRenderBoxNotifier.value = null;
+  }
+
+  /// Exits compare mode and clears comparison data.
+  void exitCompareMode() {
+    _compareHoverTimer?.cancel();
+    _compareModeNotifier.value = false;
+    _comparedRenderBoxNotifier.value = null;
+    _hoveredRenderBoxNotifier.value = null;
+  }
+
+  void _onCompareStateChanged(bool isEnabled) {
+    if (!_inspectorStateNotifier.value) return;
+    if (_currentRenderBoxNotifier.value == null) return;
+
+    if (isEnabled) {
+      enterCompareMode();
+    } else {
+      exitCompareMode();
     }
   }
 
@@ -429,6 +512,10 @@ class InspectorState extends State<Inspector> {
     _zoomStateNotifier.dispose();
     _inspectorStateNotifier.dispose();
     _currentRenderBoxNotifier.dispose();
+    _comparedRenderBoxNotifier.dispose();
+    _compareModeNotifier.dispose();
+    _hoveredRenderBoxNotifier.dispose();
+    _compareHoverTimer?.cancel();
     _image?.dispose();
     _byteDataStateNotifier.dispose();
     _keyboardHandler.dispose();
@@ -554,6 +641,9 @@ class InspectorState extends State<Inspector> {
     return MultiValueListenableBuilder(
       valueListenables: [
         _currentRenderBoxNotifier,
+        _comparedRenderBoxNotifier,
+        _compareModeNotifier,
+        _hoveredRenderBoxNotifier,
         _inspectorStateNotifier,
         _zoomStateNotifier,
       ],
@@ -563,6 +653,11 @@ class InspectorState extends State<Inspector> {
             ? InspectorOverlay(
                 size: constraints.biggest,
                 boxInfo: _currentRenderBoxNotifier.value,
+                comparedBoxInfo: _comparedRenderBoxNotifier.value,
+                hoveredBoxInfo: _hoveredRenderBoxNotifier.value,
+                isCompareMode: _compareModeNotifier.value,
+                onEnterCompareMode: enterCompareMode,
+                onExitCompareMode: exitCompareMode,
               )
             : const SizedBox.shrink(),
       ),
