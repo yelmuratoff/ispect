@@ -98,10 +98,19 @@ class InspectorUtils {
     Offset offset,
     List<RenderBox> results,
   ) {
+    // Early bounds check using paintBounds (accounts for transforms/clips).
+    // Only for RenderBox — non-box objects (slivers, etc.) are always visited.
+    if (renderObject is RenderBox) {
+      final localOffset = renderObject.globalToLocal(offset);
+      if (!renderObject.paintBounds.contains(localOffset)) return;
+    }
+
     if (renderObject is RenderViewportBase) {
-      // Viewports: traverse children via visitor
+      // Viewports: traverse only RenderSliver children
       renderObject.visitChildren((child) {
-        _collectRenderBoxesAt(child, offset, results);
+        if (child is RenderSliver) {
+          _collectRenderBoxesAt(child, offset, results);
+        }
       });
     } else if (renderObject is RenderStack) {
       // Stacks: reverse order so topmost (last painted) comes first
@@ -117,12 +126,9 @@ class InspectorUtils {
       });
     }
 
-    // Check if this box contains the offset
+    // Add this box to results (children are already added above)
     if (renderObject is RenderBox && renderObject.attached) {
-      final localOffset = renderObject.globalToLocal(offset);
-      if (renderObject.size.contains(localOffset)) {
-        results.add(renderObject);
-      }
+      results.add(renderObject);
     }
   }
 

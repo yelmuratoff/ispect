@@ -333,19 +333,47 @@ class _CompareDistanceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rectA = boxInfoA.targetRect;
-    final rectB = boxInfoB.targetRect;
-    if (rectA == null || rectB == null) return const SizedBox.shrink();
+    final from = boxInfoA.targetRect;
+    final to = boxInfoB.targetRect;
+    if (from == null || to == null) return const SizedBox.shrink();
 
     final comparedElement = InspectorUtils.getElementFromRenderBox(
       boxInfoB.targetRenderBox,
     );
 
-    // LTRB edge distances
-    final left = (rectB.left - rectA.left).abs();
-    final top = (rectB.top - rectA.top).abs();
-    final right = (rectB.right - rectA.right).abs();
-    final bottom = (rectB.bottom - rectA.bottom).abs();
+    // LTRB edge distances — semantic logic:
+    // Separated: shows gap between nearest edges.
+    // Overlapping: shows edge-to-edge misalignment.
+    var left = 0.0;
+    var right = 0.0;
+    var top = 0.0;
+    var bottom = 0.0;
+
+    // Horizontal
+    if (from.right <= to.left) {
+      // from is left of to → gap on right side
+      right = to.left - from.right;
+    } else if (to.right <= from.left) {
+      // from is right of to → gap on left side
+      left = from.left - to.right;
+    } else {
+      // Overlapping horizontally → show edge diffs
+      left = (from.left - to.left).abs();
+      right = (from.right - to.right).abs();
+    }
+
+    // Vertical
+    if (from.bottom <= to.top) {
+      // from is above to → gap below
+      bottom = to.top - from.bottom;
+    } else if (to.bottom <= from.top) {
+      // from is below to → gap above
+      top = from.top - to.bottom;
+    } else {
+      // Overlapping vertically → show edge diffs
+      top = (from.top - to.top).abs();
+      bottom = (from.bottom - to.bottom).abs();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
