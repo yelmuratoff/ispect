@@ -873,11 +873,14 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get comparedWith => 'इसके साथ तुलना';
 
   @override
-  String get horizontalDistance => 'क्षैतिज दूरी';
+  String get distanceLeft => 'बाएं';
 
   @override
-  String get verticalDistance => 'ऊर्ध्वाधर दूरी';
+  String get distanceTop => 'ऊपर';
 
   @override
-  String get offset => 'ऑफ़सेट (dx, dy)';
+  String get distanceRight => 'दाएं';
+
+  @override
+  String get distanceBottom => 'नीचे';
 }

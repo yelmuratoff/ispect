@@ -260,7 +260,8 @@
    "cancelCompare": "キャンセル",
    "tapWidgetToCompare": "比較するウィジェットをタップ",
    "comparedWith": "比較対象",
-   "horizontalDistance": "水平距離",
-   "verticalDistance": "垂直距離",
-   "offset": "オフセット (dx, dy)"
+   "distanceLeft": "左",
+   "distanceTop": "上",
+   "distanceRight": "右",
+   "distanceBottom": "下"
 }

@@ -260,7 +260,8 @@
    "cancelCompare": "Отмена",
    "tapWidgetToCompare": "Нажмите на виджет для сравнения",
    "comparedWith": "Сравнение с",
-   "horizontalDistance": "горизонтально",
-   "verticalDistance": "вертикально",
-   "offset": "смещение (dx, dy)"
+   "distanceLeft": "слева",
+   "distanceTop": "сверху",
+   "distanceRight": "справа",
+   "distanceBottom": "снизу"
 }

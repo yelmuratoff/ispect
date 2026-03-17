@@ -211,7 +211,15 @@ class InspectorState extends State<Inspector> {
 
   // Gestures
 
-  BoxInfo? _computeBoxInfoAt(Offset pointerOffset) {
+  /// Computes [BoxInfo] at a screen position.
+  ///
+  /// When [findContainer] is true (default), also detects the closest
+  /// ancestor container for padding display. Set to false for hover
+  /// previews to skip the ancestor walk.
+  BoxInfo? _computeBoxInfoAt(
+    Offset pointerOffset, {
+    bool findContainer = true,
+  }) {
     final absorbContext = _absorbPointerKey.currentContext;
     if (absorbContext == null) return null;
 
@@ -230,6 +238,7 @@ class InspectorState extends State<Inspector> {
     return BoxInfo.fromHitTestResults(
       boxes,
       overlayOffset: overlayOffset,
+      findContainer: findContainer,
     );
   }
 
@@ -276,7 +285,8 @@ class InspectorState extends State<Inspector> {
       _compareHoverTimer = Timer(_compareHoverThrottleDuration, () {
         if (!mounted) return;
 
-        final hovered = _computeBoxInfoAt(pointerOffset);
+        final hovered =
+            _computeBoxInfoAt(pointerOffset, findContainer: false);
         if (hovered?.targetRenderBox !=
             _currentRenderBoxNotifier.value?.targetRenderBox) {
           _hoveredRenderBoxNotifier.value = hovered;

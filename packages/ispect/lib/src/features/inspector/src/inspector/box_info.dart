@@ -36,9 +36,15 @@ class BoxInfo {
   /// - Return: BoxInfo with target/container boxes and elements
   /// - Edge cases: Returns null target if boxes is empty (assertion will fail)
 
+  /// Creates [BoxInfo] from a list of render boxes found at a screen position.
+  ///
+  /// When [findContainer] is true (default, used for tap/selection), also
+  /// detects the closest ancestor container for padding display.
+  /// Set to false for hover previews to skip the ancestor check.
   static BoxInfo? fromHitTestResults(
     Iterable<RenderBox> boxes, {
     Offset overlayOffset = Offset.zero,
+    bool findContainer = true,
   }) {
     final boxList = boxes.toList(growable: false);
     if (boxList.isEmpty) return null;
@@ -49,17 +55,23 @@ class BoxInfo {
     );
 
     // Find the smallest container that is strictly larger than target
-    // and is an ancestor of target in the render tree.
+    // AND is an actual ancestor of target in the render tree.
     RenderBox? containerRenderBox;
-    var containerArea = double.infinity;
 
-    for (final box in boxList) {
-      if (identical(box, targetRenderBox)) continue;
+    if (findContainer) {
+      var containerArea = double.infinity;
+      final targetArea = _area(targetRenderBox);
 
-      final area = _area(box);
-      if (area > _area(targetRenderBox) && area < containerArea) {
-        containerRenderBox = box;
-        containerArea = area;
+      for (final box in boxList) {
+        if (identical(box, targetRenderBox)) continue;
+
+        final area = _area(box);
+        if (area > targetArea &&
+            area < containerArea &&
+            _isDescendantOf(targetRenderBox, box)) {
+          containerRenderBox = box;
+          containerArea = area;
+        }
       }
     }
 
@@ -83,6 +95,16 @@ class BoxInfo {
 
   /// Computes area of a [RenderBox] for size comparison.
   static double _area(RenderBox box) => box.size.width * box.size.height;
+
+  /// Checks if [child] is a descendant of [ancestor] in the render tree.
+  static bool _isDescendantOf(RenderObject child, RenderObject ancestor) {
+    var current = child.parent;
+    while (current != null) {
+      if (identical(current, ancestor)) return true;
+      current = current.parent;
+    }
+    return false;
+  }
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;

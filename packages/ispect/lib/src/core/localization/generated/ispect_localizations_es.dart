@@ -879,11 +879,14 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get comparedWith => 'Comparado con';
 
   @override
-  String get horizontalDistance => 'horizontal';
+  String get distanceLeft => 'izquierda';
 
   @override
-  String get verticalDistance => 'vertical';
+  String get distanceTop => 'arriba';
 
   @override
-  String get offset => 'desplazamiento (dx, dy)';
+  String get distanceRight => 'derecha';
+
+  @override
+  String get distanceBottom => 'abajo';
 }

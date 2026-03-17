@@ -260,7 +260,8 @@
    "cancelCompare": "Болдырмау",
    "tapWidgetToCompare": "Салыстыру үшін виджетті басыңыз",
    "comparedWith": "Салыстыру нысаны",
-   "horizontalDistance": "көлденең",
-   "verticalDistance": "тік",
-   "offset": "ығысу (dx, dy)"
+   "distanceLeft": "сол",
+   "distanceTop": "жоғары",
+   "distanceRight": "оң",
+   "distanceBottom": "төмен"
 }

@@ -870,11 +870,14 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get comparedWith => 'Салыстыру нысаны';
 
   @override
-  String get horizontalDistance => 'көлденең';
+  String get distanceLeft => 'сол';
 
   @override
-  String get verticalDistance => 'тік';
+  String get distanceTop => 'жоғары';
 
   @override
-  String get offset => 'ығысу (dx, dy)';
+  String get distanceRight => 'оң';
+
+  @override
+  String get distanceBottom => 'төмен';
 }

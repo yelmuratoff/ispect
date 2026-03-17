@@ -855,11 +855,14 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get comparedWith => 'مقارنة مع';
 
   @override
-  String get horizontalDistance => 'أفقي';
+  String get distanceLeft => 'يسار';
 
   @override
-  String get verticalDistance => 'عمودي';
+  String get distanceTop => 'أعلى';
 
   @override
-  String get offset => 'الإزاحة (dx, dy)';
+  String get distanceRight => 'يمين';
+
+  @override
+  String get distanceBottom => 'أسفل';
 }

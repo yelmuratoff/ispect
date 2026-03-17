@@ -260,7 +260,8 @@
    "cancelCompare": "取消",
    "tapWidgetToCompare": "点击一个组件进行比较",
    "comparedWith": "与之比较",
-   "horizontalDistance": "水平距离",
-   "verticalDistance": "垂直距离",
-   "offset": "偏移 (dx, dy)"
+   "distanceLeft": "左",
+   "distanceTop": "上",
+   "distanceRight": "右",
+   "distanceBottom": "下"
 }

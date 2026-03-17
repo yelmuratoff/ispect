@@ -260,7 +260,8 @@
    "cancelCompare": "취소",
    "tapWidgetToCompare": "비교할 위젯을 탭하세요",
    "comparedWith": "비교 대상",
-   "horizontalDistance": "수평 거리",
-   "verticalDistance": "수직 거리",
-   "offset": "오프셋 (dx, dy)"
+   "distanceLeft": "왼쪽",
+   "distanceTop": "위",
+   "distanceRight": "오른쪽",
+   "distanceBottom": "아래"
 }

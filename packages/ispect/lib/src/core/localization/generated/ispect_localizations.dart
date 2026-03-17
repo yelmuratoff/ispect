@@ -1679,23 +1679,29 @@ abstract class ISpectGeneratedLocalization {
   /// **'Compared with'**
   String get comparedWith;
 
-  /// No description provided for @horizontalDistance.
+  /// No description provided for @distanceLeft.
   ///
   /// In en, this message translates to:
-  /// **'horizontal'**
-  String get horizontalDistance;
+  /// **'left'**
+  String get distanceLeft;
 
-  /// No description provided for @verticalDistance.
+  /// No description provided for @distanceTop.
   ///
   /// In en, this message translates to:
-  /// **'vertical'**
-  String get verticalDistance;
+  /// **'top'**
+  String get distanceTop;
 
-  /// No description provided for @offset.
+  /// No description provided for @distanceRight.
   ///
   /// In en, this message translates to:
-  /// **'offset (dx, dy)'**
-  String get offset;
+  /// **'right'**
+  String get distanceRight;
+
+  /// No description provided for @distanceBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'bottom'**
+  String get distanceBottom;
 }
 
 class _ISpectGeneratedLocalizationDelegate

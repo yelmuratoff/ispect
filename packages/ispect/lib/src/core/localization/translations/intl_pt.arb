@@ -260,7 +260,8 @@
    "cancelCompare": "Cancelar",
    "tapWidgetToCompare": "Toque em um widget para comparar",
    "comparedWith": "Comparado com",
-   "horizontalDistance": "horizontal",
-   "verticalDistance": "vertical",
-   "offset": "deslocamento (dx, dy)"
+   "distanceLeft": "esquerda",
+   "distanceTop": "topo",
+   "distanceRight": "direita",
+   "distanceBottom": "baixo"
 }

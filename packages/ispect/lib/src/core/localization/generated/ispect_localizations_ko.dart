@@ -847,11 +847,14 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get comparedWith => '비교 대상';
 
   @override
-  String get horizontalDistance => '수평 거리';
+  String get distanceLeft => '왼쪽';
 
   @override
-  String get verticalDistance => '수직 거리';
+  String get distanceTop => '위';
 
   @override
-  String get offset => '오프셋 (dx, dy)';
+  String get distanceRight => '오른쪽';
+
+  @override
+  String get distanceBottom => '아래';
 }

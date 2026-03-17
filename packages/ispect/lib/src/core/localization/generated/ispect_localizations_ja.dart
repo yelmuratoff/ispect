@@ -847,11 +847,14 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get comparedWith => '比較対象';
 
   @override
-  String get horizontalDistance => '水平距離';
+  String get distanceLeft => '左';
 
   @override
-  String get verticalDistance => '垂直距離';
+  String get distanceTop => '上';
 
   @override
-  String get offset => 'オフセット (dx, dy)';
+  String get distanceRight => '右';
+
+  @override
+  String get distanceBottom => '下';
 }

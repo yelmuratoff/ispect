@@ -341,19 +341,11 @@ class _CompareDistanceRow extends StatelessWidget {
       boxInfoB.targetRenderBox,
     );
 
-    // Edge-to-edge distances
-    final hGap = _edgeDistance(
-      aMin: rectA.left,
-      aMax: rectA.right,
-      bMin: rectB.left,
-      bMax: rectB.right,
-    );
-    final vGap = _edgeDistance(
-      aMin: rectA.top,
-      aMax: rectA.bottom,
-      bMin: rectB.top,
-      bMax: rectB.bottom,
-    );
+    // LTRB edge distances
+    final left = (rectB.left - rectA.left).abs();
+    final top = (rectB.top - rectA.top).abs();
+    final right = (rectB.right - rectA.right).abs();
+    final bottom = (rectB.bottom - rectA.bottom).abs();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,44 +363,41 @@ class _CompareDistanceRow extends StatelessWidget {
           runSpacing: 8,
           children: [
             _InfoRow(
-              icon: Icons.swap_horiz,
-              subtitle: context.ispectL10n.horizontalDistance,
+              icon: Icons.arrow_back,
+              subtitle: context.ispectL10n.distanceLeft,
               theme: theme,
               iconColor: Colors.green.shade700,
               backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(hGap.toStringAsFixed(1)),
+              child: Text(left.toStringAsFixed(1)),
             ),
             _InfoRow(
-              icon: Icons.swap_vert,
-              subtitle: context.ispectL10n.verticalDistance,
+              icon: Icons.arrow_upward,
+              subtitle: context.ispectL10n.distanceTop,
               theme: theme,
               iconColor: Colors.green.shade700,
               backgroundColor: Colors.green.withValues(alpha: .1),
-              child: Text(vGap.toStringAsFixed(1)),
+              child: Text(top.toStringAsFixed(1)),
+            ),
+            _InfoRow(
+              icon: Icons.arrow_forward,
+              subtitle: context.ispectL10n.distanceRight,
+              theme: theme,
+              iconColor: Colors.green.shade700,
+              backgroundColor: Colors.green.withValues(alpha: .1),
+              child: Text(right.toStringAsFixed(1)),
+            ),
+            _InfoRow(
+              icon: Icons.arrow_downward,
+              subtitle: context.ispectL10n.distanceBottom,
+              theme: theme,
+              iconColor: Colors.green.shade700,
+              backgroundColor: Colors.green.withValues(alpha: .1),
+              child: Text(bottom.toStringAsFixed(1)),
             ),
           ],
         ),
       ],
     );
-  }
-
-  /// Computes edge-to-edge distance on a single axis.
-  ///
-  /// - No overlap: gap between nearest edges (positive).
-  /// - One inside the other: distance from inner edge to outer edge.
-  /// - Partial overlap: distance between left/top edges.
-  static double _edgeDistance({
-    required double aMin,
-    required double aMax,
-    required double bMin,
-    required double bMax,
-  }) {
-    // B is entirely after A
-    if (bMin >= aMax) return bMin - aMax;
-    // A is entirely after B
-    if (aMin >= bMax) return aMin - bMax;
-    // Overlapping — distance between left/top edges
-    return (bMin - aMin).abs();
   }
 }
 

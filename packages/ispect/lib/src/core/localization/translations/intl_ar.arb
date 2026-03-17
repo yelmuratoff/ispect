@@ -260,7 +260,8 @@
    "cancelCompare": "إلغاء",
    "tapWidgetToCompare": "انقر على عنصر للمقارنة",
    "comparedWith": "مقارنة مع",
-   "horizontalDistance": "أفقي",
-   "verticalDistance": "عمودي",
-   "offset": "الإزاحة (dx, dy)"
+   "distanceLeft": "يسار",
+   "distanceTop": "أعلى",
+   "distanceRight": "يمين",
+   "distanceBottom": "أسفل"
 }
