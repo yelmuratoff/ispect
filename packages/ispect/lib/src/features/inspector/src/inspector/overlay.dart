@@ -10,14 +10,12 @@ class InspectorOverlay extends StatefulWidget {
     required this.onExitCompareMode,
     super.key,
     this.comparedBoxInfo,
-    this.hoveredBoxInfo,
     this.isCompareMode = false,
   });
 
   final Size size;
   final BoxInfo? boxInfo;
   final BoxInfo? comparedBoxInfo;
-  final BoxInfo? hoveredBoxInfo;
   final bool isCompareMode;
   final VoidCallback onEnterCompareMode;
   final VoidCallback onExitCompareMode;
@@ -100,7 +98,6 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
         builder: (_, isVisible, __) => BoxInfoWidget(
           boxInfo: widget.boxInfo!,
           comparedBoxInfo: widget.comparedBoxInfo,
-          hoveredBoxInfo: widget.hoveredBoxInfo,
           isCompareMode: widget.isCompareMode,
           isPanelVisible: isVisible,
           onPanelVisibilityChanged: (v) => _panelVisibilityNotifier.value = v,

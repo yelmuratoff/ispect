@@ -14,13 +14,11 @@ class BoxInfoWidget extends StatelessWidget {
     required this.onExitCompareMode,
     super.key,
     this.comparedBoxInfo,
-    this.hoveredBoxInfo,
     this.isCompareMode = false,
   });
 
   final BoxInfo boxInfo;
   final BoxInfo? comparedBoxInfo;
-  final BoxInfo? hoveredBoxInfo;
   final bool isCompareMode;
 
   final bool isPanelVisible;
@@ -31,7 +29,6 @@ class BoxInfoWidget extends StatelessWidget {
   Color get _targetColor => Colors.blue.shade700;
   Color get _containerColor => Colors.yellow.shade700;
   Color get _comparedColor => Colors.green.shade700;
-  Color get _hoveredColor => Colors.orange.shade700;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -53,17 +50,6 @@ class BoxInfoWidget extends StatelessWidget {
                 painter: OverlayPainter(
                   boxInfo: comparedBoxInfo!,
                   targetRectColor: _comparedColor.withValues(alpha: 0.35),
-                  containerRectColor: Colors.transparent,
-                ),
-              ),
-            ),
-          // Hovered box overlay (desktop compare preview)
-          if (hoveredBoxInfo?.targetRenderBox.attached ?? false)
-            IgnorePointer(
-              child: CustomPaint(
-                painter: OverlayPainter(
-                  boxInfo: hoveredBoxInfo!,
-                  targetRectColor: _hoveredColor.withValues(alpha: 0.25),
                   containerRectColor: Colors.transparent,
                 ),
               ),

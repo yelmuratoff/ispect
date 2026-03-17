@@ -138,13 +138,6 @@ class InspectorState extends State<Inspector> {
   final _currentRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
   final _comparedRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
   final _compareModeNotifier = ValueNotifier<bool>(false);
-  final _hoveredRenderBoxNotifier = ValueNotifier<BoxInfo?>(null);
-
-  /// Throttle timer for compare hover — limits tree traversal to once
-  /// per [_compareHoverThrottleDuration] to avoid jank on pointer move.
-  Timer? _compareHoverTimer;
-  static const _compareHoverThrottleDuration = Duration(milliseconds: 100);
-
   final _inspectorStateNotifier = ValueNotifier<bool>(false);
   final _zoomStateNotifier = ValueNotifier<bool>(false);
 
@@ -276,28 +269,6 @@ class InspectorState extends State<Inspector> {
 
   void _onPointerHover(Offset pointerOffset) {
     _updatePointerPosition(pointerOffset);
-
-    // In compare mode on desktop, directly update compared box (live
-    // comparison with distances) instead of showing a hover preview.
-    // Throttled to avoid tree traversal on every pointer move event.
-    if (_inspectorStateNotifier.value && _compareModeNotifier.value) {
-      if (_compareHoverTimer?.isActive ?? false) return;
-
-      _compareHoverTimer = Timer(_compareHoverThrottleDuration, () {
-        if (!mounted) return;
-
-        _hoveredRenderBoxNotifier.value = null;
-        final compare = _computeBoxInfoAt(pointerOffset);
-        if (compare?.targetRenderBox !=
-            _currentRenderBoxNotifier.value?.targetRenderBox) {
-          _comparedRenderBoxNotifier.value = compare;
-        } else {
-          _comparedRenderBoxNotifier.value = null;
-        }
-      });
-    } else {
-      _hoveredRenderBoxNotifier.value = null;
-    }
   }
 
   void _updatePointerPosition(Offset pointerOffset) {
@@ -338,10 +309,8 @@ class InspectorState extends State<Inspector> {
 
   /// Exits compare mode and clears comparison data.
   void exitCompareMode() {
-    _compareHoverTimer?.cancel();
     _compareModeNotifier.value = false;
     _comparedRenderBoxNotifier.value = null;
-    _hoveredRenderBoxNotifier.value = null;
   }
 
   void _onCompareStateChanged(bool isEnabled) {
@@ -525,8 +494,6 @@ class InspectorState extends State<Inspector> {
     _currentRenderBoxNotifier.dispose();
     _comparedRenderBoxNotifier.dispose();
     _compareModeNotifier.dispose();
-    _hoveredRenderBoxNotifier.dispose();
-    _compareHoverTimer?.cancel();
     _image?.dispose();
     _byteDataStateNotifier.dispose();
     _keyboardHandler.dispose();
@@ -654,7 +621,6 @@ class InspectorState extends State<Inspector> {
         _currentRenderBoxNotifier,
         _comparedRenderBoxNotifier,
         _compareModeNotifier,
-        _hoveredRenderBoxNotifier,
         _inspectorStateNotifier,
         _zoomStateNotifier,
       ],
@@ -665,7 +631,6 @@ class InspectorState extends State<Inspector> {
                 size: constraints.biggest,
                 boxInfo: _currentRenderBoxNotifier.value,
                 comparedBoxInfo: _comparedRenderBoxNotifier.value,
-                hoveredBoxInfo: _hoveredRenderBoxNotifier.value,
                 isCompareMode: _compareModeNotifier.value,
                 onEnterCompareMode: enterCompareMode,
                 onExitCompareMode: exitCompareMode,
