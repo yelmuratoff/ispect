@@ -101,8 +101,7 @@ class _TargetBoxSizeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetRectShifted = boxInfo.targetRectShifted;
-    final targetRect = boxInfo.targetRect;
-    if (targetRectShifted == null || targetRect == null) {
+    if (targetRectShifted == null) {
       return const SizedBox.shrink();
     }
     return Positioned(
@@ -114,7 +113,7 @@ class _TargetBoxSizeWidget extends StatelessWidget {
       child: IgnorePointer(
         child: Align(
           child: InformationBoxWidget.size(
-            size: targetRect.size,
+            size: boxInfo.targetRenderBox.size,
             color: targetColor,
           ),
         ),

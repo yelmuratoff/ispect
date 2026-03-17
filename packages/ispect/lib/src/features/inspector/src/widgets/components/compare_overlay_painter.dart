@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/inspector/src/inspector/box_info.dart';
 import 'package:ispect/src/features/inspector/src/widgets/components/box_info_panel_widget.dart';
 
-/// Paints Figma-style distance measurement lines between two compared widgets.
+/// Paints distance measurement lines between two compared widgets.
 ///
 /// Uses [computeCompareDistances] — the same logic as the panel — so
 /// the drawn lines always match the displayed numbers.
@@ -25,7 +25,11 @@ class CompareOverlayPainter extends CustomPainter {
     final to = boxInfoB.targetRectShifted;
     if (from == null || to == null) return;
 
-    final distances = computeCompareDistances(from, to);
+    final distances = computeCompareDistances(
+      from,
+      to,
+      scale: boxInfoA.scale,
+    );
 
     final linePaint = Paint()
       ..color = lineColor

@@ -112,6 +112,17 @@ class BoxInfo {
   final List<RenderBox> boxes;
   final List<Element> elements;
 
+  /// Scale factor between visual (on-screen) and logical (code) coordinates.
+  ///
+  /// When a widget is inside a scaled container (e.g. [InteractiveViewer]
+  /// with zoom), the visual rect differs from the logical size.
+  /// Returns 1.0 when no transform is applied.
+  double get scale {
+    final visual = targetRect;
+    if (visual == null || targetRenderBox.size.width <= 0) return 1;
+    return visual.width / targetRenderBox.size.width;
+  }
+
   /// Global rectangle of the target render box.
   /// Returns null if the render box is detached from the tree.
   Rect? get targetRect => getRectFromRenderBox(targetRenderBox);
@@ -153,8 +164,9 @@ class BoxInfo {
       return null;
     }
 
-    return '${left.toStringAsFixed(1)}, ${top.toStringAsFixed(1)}, '
-        '${right.toStringAsFixed(1)}, ${bottom.toStringAsFixed(1)}';
+    final s = scale;
+    return '${(left / s).toStringAsFixed(1)}, ${(top / s).toStringAsFixed(1)}, '
+        '${(right / s).toStringAsFixed(1)}, ${(bottom / s).toStringAsFixed(1)}';
   }
 
   /// Whether the target render box is a decorated box with BoxDecoration
@@ -271,9 +283,16 @@ enum _PaddingSide { left, top, right, bottom }
 /// - Return: Global Rect if attached, null if detached
 /// - Usage: Used for positioning overlays and calculating bounds
 /// - Edge cases: Returns null if render box is not attached to render tree
-Rect? getRectFromRenderBox(RenderBox renderBox) => renderBox.attached
-    ? renderBox.localToGlobal(Offset.zero) & renderBox.size
-    : null;
+Rect? getRectFromRenderBox(RenderBox renderBox) {
+  if (!renderBox.attached) return null;
+
+  final topLeft = renderBox.localToGlobal(Offset.zero);
+  final bottomRight = renderBox.localToGlobal(
+    Offset(renderBox.size.width, renderBox.size.height),
+  );
+
+  return Rect.fromPoints(topLeft, bottomRight);
+}
 
 /// Calculates optimal vertical position for overlay boxes
 ///

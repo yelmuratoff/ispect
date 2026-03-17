@@ -62,8 +62,7 @@ class _InspectorOverlayState extends State<InspectorOverlay> {
 
     final boxInfo = widget.boxInfo;
     final currentRect = _canRender && boxInfo != null
-        ? boxInfo.targetRenderBox.localToGlobal(Offset.zero) &
-            boxInfo.targetRenderBox.size
+        ? getRectFromRenderBox(boxInfo.targetRenderBox)
         : null;
 
     if (currentRect != _lastTargetRect) {

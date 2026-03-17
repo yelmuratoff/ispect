@@ -202,9 +202,7 @@ class _MainRow extends StatelessWidget {
             theme: theme,
             backgroundColor: theme.chipTheme.backgroundColor,
             child: Text(
-              boxInfo.targetRect != null
-                  ? '${boxInfo.targetRect!.width.toStringAsFixed(1)} × ${boxInfo.targetRect!.height}'
-                  : 'n/a',
+              '${boxInfo.targetRenderBox.size.width.toStringAsFixed(1)} × ${boxInfo.targetRenderBox.size.height.toStringAsFixed(1)}',
             ),
           ),
           _InfoRow(
@@ -342,7 +340,7 @@ class _CompareDistanceRow extends StatelessWidget {
       boxInfoB.targetRenderBox,
     );
 
-    final distances = computeCompareDistances(from, to);
+    final distances = computeCompareDistances(from, to, scale: boxInfoA.scale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -594,8 +592,6 @@ List<_SpanInfo> _extractSpanInfo(InlineSpan span, [List<_SpanInfo>? result]) {
   return result;
 }
 
-// --- Figma-style compare distances ---
-
 /// A single distance measurement to display.
 class CompareDistance {
   const CompareDistance({
@@ -626,12 +622,19 @@ class CompareDistance {
 
 enum CompareSide { left, top, right, bottom }
 
-/// Computes Figma-style distances between two rects.
+/// Computes distances between two rects.
+///
+/// When [scale] is provided, distance values are converted to logical
+/// (pre-transform) coordinates while offsets remain in visual space.
 ///
 /// - **Separated on one axis**: shows only the gap on that axis.
 /// - **Separated on both axes**: shows both gaps.
 /// - **Overlapping on both axes**: shows LTRB edge alignment distances.
-List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
+List<CompareDistance> computeCompareDistances(
+  Rect from,
+  Rect to, {
+  double scale = 1.0,
+}) {
   final hSeparated = from.right <= to.left || to.right <= from.left;
   final vSeparated = from.bottom <= to.top || to.bottom <= from.top;
 
@@ -644,7 +647,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.right,
-          value: to.left - from.right,
+          value: (to.left - from.right) / scale,
           icon: Icons.arrow_forward,
           startOffset: Offset(from.right, y),
           endOffset: Offset(to.left, y),
@@ -655,7 +658,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.left,
-          value: from.left - to.right,
+          value: (from.left - to.right) / scale,
           icon: Icons.arrow_back,
           startOffset: Offset(to.right, y),
           endOffset: Offset(from.left, y),
@@ -672,7 +675,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.bottom,
-          value: to.top - from.bottom,
+          value: (to.top - from.bottom) / scale,
           icon: Icons.arrow_downward,
           startOffset: Offset(x, from.bottom),
           endOffset: Offset(x, to.top),
@@ -683,7 +686,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.top,
-          value: from.top - to.bottom,
+          value: (from.top - to.bottom) / scale,
           icon: Icons.arrow_upward,
           startOffset: Offset(x, to.bottom),
           endOffset: Offset(x, from.top),
@@ -709,7 +712,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.left,
-          value: left,
+          value: left / scale,
           icon: Icons.arrow_back,
           startOffset: Offset(minL, midY - 6),
           endOffset: Offset(maxL, midY - 6),
@@ -723,7 +726,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.right,
-          value: right,
+          value: right / scale,
           icon: Icons.arrow_forward,
           startOffset: Offset(minR, midY + 6),
           endOffset: Offset(maxR, midY + 6),
@@ -737,7 +740,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.top,
-          value: top,
+          value: top / scale,
           icon: Icons.arrow_upward,
           startOffset: Offset(midX - 6, minT),
           endOffset: Offset(midX - 6, maxT),
@@ -751,7 +754,7 @@ List<CompareDistance> computeCompareDistances(Rect from, Rect to) {
       results.add(
         CompareDistance(
           side: CompareSide.bottom,
-          value: bottom,
+          value: bottom / scale,
           icon: Icons.arrow_downward,
           startOffset: Offset(midX + 6, minB),
           endOffset: Offset(midX + 6, maxB),
