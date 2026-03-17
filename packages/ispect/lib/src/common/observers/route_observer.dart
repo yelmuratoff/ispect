@@ -33,6 +33,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.isLogPages = true,
     this.isLogModals = false,
     this.isLogOtherTypes = true,
+    this.isLogInternalRoutes = false,
     this.onPush,
     this.onReplace,
     this.onPop,
@@ -96,6 +97,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogPages;
   final bool isLogModals;
   final bool isLogOtherTypes;
+
+  final bool isLogInternalRoutes;
 
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onPush;
@@ -270,6 +273,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   ///
   /// Returns true if the route transition should be logged based on current settings.
   bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
+    if (!isLogInternalRoutes && _isInternalRoute(route)) return false;
+
     return switch ((route, previousRoute)) {
       // Both pages
       (PageRoute(), PageRoute()) => isLogPages,
@@ -280,5 +285,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       // Other types
       _ => isLogOtherTypes,
     };
+  }
+
+  /// Prefix used by all internal ISpect route names.
+  static const _internalRoutePrefix = 'ISpect';
+
+  /// Returns true if the route belongs to the ISpect inspector UI itself.
+  static bool _isInternalRoute(Route<dynamic>? route) {
+    final name = route?.settings.name;
+    return name != null && name.startsWith(_internalRoutePrefix);
   }
 }
