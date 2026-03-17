@@ -208,6 +208,10 @@ class ISpectViewController extends ChangeNotifier {
 
   void onDataChanged() => _filterManager.onDataChanged();
 
+  /// Generation counter for the filtered output, incremented on both
+  /// data and filter changes. Used to invalidate grouped-transaction cache.
+  int get outputGeneration => _filterManager.outputGeneration;
+
   // Single-pass unique title extraction with simple length-based cache
   TitlesResult getTitles(List<ISpectLogData> logsData) =>
       _filterManager.getTitles(logsData);

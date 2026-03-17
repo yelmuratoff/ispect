@@ -701,7 +701,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
     // at the response's slot shows the request's (older) time.
     final grouped = _transactionService.getGroupedEntries(
       sortedEntries,
-      sortedEntries.length,
+      widget.logsViewController.outputGeneration,
     );
     final entries = grouped.entries;
     final isReversed =

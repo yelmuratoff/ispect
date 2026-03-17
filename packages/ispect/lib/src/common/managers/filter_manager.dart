@@ -23,6 +23,12 @@ class FilterManager {
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
 
+  /// Combined generation counter that increments on both data and filter
+  /// changes. Use this to invalidate caches that depend on the filtered output
+  /// (e.g. grouped network transactions).
+  int get outputGeneration => _outputGeneration;
+  int _outputGeneration = 0;
+
   // Debounce for search query updates
   Timer? _filterDebounce;
   bool _isDisposed = false;
@@ -133,6 +139,7 @@ class FilterManager {
 
   void onDataChanged() {
     _dataGeneration++;
+    _outputGeneration++;
     _filterCache.invalidate();
   }
 
@@ -172,6 +179,7 @@ class FilterManager {
 
   // Internal helpers
   void _invalidateFilterCache() {
+    _outputGeneration++;
     _filterCacheValid = false;
     _cachedTitles = null;
     _cachedTypesSet = null;
