@@ -721,13 +721,9 @@ class _MainLogsViewState extends State<_MainLogsView> {
             transaction: entry,
             typeColumnWidth: _controller.typeColumnWidth,
             timeColumnWidth: _controller.timeColumnWidth,
-            onTap: () {
-              if (isDesktop) {
-                widget.logsViewController.selectLog(entry.request);
-              } else {
-                widget.logsViewController.handleLogItemTap(entry.request);
-              }
-            },
+            onTap: isDesktop
+                ? () => widget.logsViewController.selectLog(entry.request)
+                : null,
             onOpenRequestDetail: isDesktop
                 ? () => widget.logsViewController
                     .selectAndFollowDetail(entry.request)
