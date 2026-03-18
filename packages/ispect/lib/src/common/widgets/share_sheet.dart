@@ -20,19 +20,23 @@ class ISpectShareSheet extends StatelessWidget {
   final List<Widget> actions;
 
   /// Shows the share sheet using [showISpectSheet].
+  ///
+  /// [actionsBuilder] receives the sheet's own [BuildContext] so that
+  /// callbacks (e.g. `Navigator.of(ctx).pop()`) use a context that is
+  /// guaranteed to be mounted inside the sheet's navigator.
   static Future<void> show(
     BuildContext context, {
-    required List<Widget> actions,
+    required List<Widget> Function(BuildContext sheetContext) actionsBuilder,
     IconData icon = Icons.ios_share_rounded,
   }) =>
       showISpectSheet(
         context,
         initialChildSize: 0.35,
         topOnlyRadius: true,
-        builder: (context, _) => SafeArea(
+        builder: (sheetContext, _) => SafeArea(
           child: ISpectShareSheet(
             icon: icon,
-            actions: actions,
+            actions: actionsBuilder(sheetContext),
           ),
         ),
       );

@@ -106,12 +106,12 @@ void _showTransactionShareSheet(
 }) {
   ISpectShareSheet.show(
     context,
-    actions: [
+    actionsBuilder: (sheetContext) => [
       ISpectSheetActionButton(
         icon: Icons.arrow_upward_rounded,
         label: requestLabel,
         onPressed: () {
-          Navigator.of(context).pop();
+          Navigator.of(sheetContext).pop();
           ISpectShareLogBottomSheet(
             data: request.toJson(),
             truncatedData: request.toJson(truncated: true),
@@ -122,7 +122,7 @@ void _showTransactionShareSheet(
         icon: Icons.arrow_downward_rounded,
         label: responseLabel,
         onPressed: () {
-          Navigator.of(context).pop();
+          Navigator.of(sheetContext).pop();
           ISpectShareLogBottomSheet(
             data: response.toJson(),
             truncatedData: response.toJson(truncated: true),

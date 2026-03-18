@@ -24,13 +24,13 @@ class ISpectNavigationFlowActionsSheet {
     return ISpectShareSheet.show(
       context,
       icon: Icons.route_rounded,
-      actions: [
+      actionsBuilder: (sheetContext) => [
         if (shareCallback != null)
           ISpectSheetActionButton(
             icon: Icons.share_rounded,
             label: context.ispectL10n.shareLogFull,
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(sheetContext).pop();
               final String text;
               if (transition == null) {
                 text = items.transitionsText();
@@ -51,7 +51,7 @@ class ISpectNavigationFlowActionsSheet {
           icon: Icons.copy_rounded,
           label: context.ispectL10n.copyToClipboardTruncated,
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(sheetContext).pop();
             final String text;
             if (transition == null) {
               text = items.transitionsText();

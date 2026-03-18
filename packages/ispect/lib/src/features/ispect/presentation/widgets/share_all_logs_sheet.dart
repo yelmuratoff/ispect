@@ -22,7 +22,7 @@ class ISpectShareAllLogsBottomSheet {
 
     return ISpectShareSheet.show(
       context,
-      actions: [
+      actionsBuilder: (sheetContext) => [
         if (shareCallback != null) ...[
           ISpectSheetActionButton(
             icon: Icons.share_rounded,
@@ -73,7 +73,7 @@ class ISpectShareAllLogsBottomSheet {
                   (log) => log.toJson(truncated: true).toString(),
                 )
                 .join('\n');
-            Navigator.of(context).pop();
+            Navigator.of(sheetContext).pop();
             copyClipboard(
               context,
               value: logsText,

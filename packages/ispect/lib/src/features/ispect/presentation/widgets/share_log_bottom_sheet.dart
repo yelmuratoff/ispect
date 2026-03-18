@@ -19,7 +19,7 @@ class ISpectShareLogBottomSheet {
 
     return ISpectShareSheet.show(
       context,
-      actions: [
+      actionsBuilder: (sheetContext) => [
         if (shareCallback != null)
           ISpectSheetActionButton(
             icon: Icons.share_rounded,
@@ -30,7 +30,7 @@ class ISpectShareLogBottomSheet {
                 maxDepth: 500,
                 maxIterableSize: 10000,
               );
-              Navigator.of(context).pop();
+              Navigator.of(sheetContext).pop();
               LogsFileFactory.downloadFile(
                 valueToShare,
                 fileName: 'ispect_log',
@@ -45,7 +45,7 @@ class ISpectShareLogBottomSheet {
             final valueToShare = JsonTruncatorService.pretty(
               truncatedData,
             );
-            Navigator.of(context).pop();
+            Navigator.of(sheetContext).pop();
             copyClipboard(
               context,
               value: valueToShare,
