@@ -112,8 +112,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
                   color: iSpect.theme.divider?.resolve(context),
                 ),
                 _RenderParagraphInfo(boxInfo: boxInfo, theme: theme),
-              ],
-              if (boxInfo.targetRenderBox is RenderDecoratedBox) ...[
+              ] else if (_findDecoratedBox(boxInfo) != null) ...[
                 Divider(
                   height: 16,
                   color: iSpect.theme.divider?.resolve(context),
@@ -521,10 +520,10 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final targetBox = boxInfo.targetRenderBox;
-    if (targetBox is! RenderDecoratedBox) return const SizedBox.shrink();
+    final decoratedBox = _findDecoratedBox(boxInfo);
+    if (decoratedBox == null) return const SizedBox.shrink();
 
-    final decoration = targetBox.decoration;
+    final decoration = decoratedBox.decoration;
     if (decoration is! BoxDecoration) return const SizedBox.shrink();
 
     return Wrap(
@@ -534,18 +533,19 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
         if (decoration.borderRadius != null)
           _InfoRow(
             icon: Icons.rounded_corner,
-            subtitle: 'border radius',
+            subtitle: 'border radius (LTRB)',
             theme: theme,
             backgroundColor: theme.chipTheme.backgroundColor,
-            child: Text(decoration.borderRadius.toString()),
+            child: Text(_formatBorderRadius(decoration.borderRadius!)),
           ),
-        _InfoRow(
-          icon: Icons.circle_outlined,
-          subtitle: 'shape',
-          theme: theme,
-          backgroundColor: theme.chipTheme.backgroundColor,
-          child: Text(decoration.shape.name),
-        ),
+        if (decoration.shape != BoxShape.rectangle)
+          _InfoRow(
+            icon: Icons.circle_outlined,
+            subtitle: 'shape',
+            theme: theme,
+            backgroundColor: theme.chipTheme.backgroundColor,
+            child: Text(decoration.shape.name),
+          ),
         _InfoRow(
           icon: Icons.palette,
           subtitle: 'color',
@@ -561,6 +561,32 @@ class _RenderDecoratedBoxInfo extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Finds the nearest [RenderDecoratedBox] with a [BoxDecoration].
+///
+/// Prefers the target itself; falls back to searching [BoxInfo.boxes]
+/// (the hit test path) so decoration info is shown even when the target
+/// is a child of a Container (e.g. alignment wrapper).
+RenderDecoratedBox? _findDecoratedBox(BoxInfo boxInfo) {
+  final target = boxInfo.targetRenderBox;
+  if (target is RenderDecoratedBox && target.decoration is BoxDecoration) {
+    return target;
+  }
+  for (final box in boxInfo.boxes) {
+    if (box is RenderDecoratedBox && box.decoration is BoxDecoration) {
+      return box;
+    }
+  }
+  return null;
+}
+
+/// Formats [BorderRadiusGeometry] as "tl, tr, br, bl".
+String _formatBorderRadius(BorderRadiusGeometry geometry) {
+  final resolved = geometry.resolve(TextDirection.ltr);
+  String f(double v) => v.toStringAsFixed(1);
+  return '${f(resolved.topLeft.x)}, ${f(resolved.topRight.x)}, '
+      '${f(resolved.bottomRight.x)}, ${f(resolved.bottomLeft.x)}';
 }
 
 /// Extracted span info: text content + associated style.
