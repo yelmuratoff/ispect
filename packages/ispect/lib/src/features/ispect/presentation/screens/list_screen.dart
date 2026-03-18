@@ -61,8 +61,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
     super.initState();
     _logsViewController = ISpectViewController(
       onShare: widget.onShare,
-    );
-    _logsViewController.toggleExpandedLogs();
+    )..toggleExpandedLogs();
     getLogs();
   }
 
@@ -162,6 +161,7 @@ class _LogListItem extends StatelessWidget {
     required this.isExpanded,
     required this.onItemTapped,
     required this.onSharePressed,
+    this.searchMatchState = SearchMatchState.none,
     super.key,
   });
 
@@ -172,6 +172,7 @@ class _LogListItem extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onItemTapped;
   final VoidCallback onSharePressed;
+  final SearchMatchState searchMatchState;
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +183,7 @@ class _LogListItem extends StatelessWidget {
         data: logData,
         index: itemIndex,
         isSelected: isExpanded,
+        searchMatchState: searchMatchState,
         onShareTap: onSharePressed,
         onTap: onItemTapped,
       );
@@ -195,6 +197,7 @@ class _LogListItem extends StatelessWidget {
         data: logData,
         index: itemIndex,
         isExpanded: isExpanded,
+        searchMatchState: searchMatchState,
         onShareTap: onSharePressed,
         onTap: onItemTapped,
       ),
@@ -301,7 +304,25 @@ class _MainLogsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
+    final isHighlightMode =
+        logsViewController.searchMode == SearchMode.highlight;
+
+    // In highlight mode, apply only title/type filters (not search).
+    // In filter mode, apply all filters including search.
+    final filteredLogEntries = isHighlightMode
+        ? logsViewController.applyFiltersWithoutSearch(logsData)
+        : logsViewController.applyCurrentFilters(logsData);
+
+    // Compute search matches for highlight mode using log IDs.
+    if (isHighlightMode) {
+      var matches =
+          logsViewController.findSearchMatches(filteredLogEntries);
+      if (logsViewController.isLogOrderReversed && matches.isNotEmpty) {
+        matches = matches.reversed.toList();
+      }
+      logsViewController.updateSearchMatches(matches);
+    }
+
     final titles = logsViewController.getTitles(logsData);
 
     return CustomScrollView(
@@ -318,8 +339,11 @@ class _MainLogsView extends StatelessWidget {
           onToggleTitle: (title, selected) => logsViewController
               .handleTitleFilterToggle(title, isSelected: selected),
           backgroundColor: iSpectTheme.theme.background?.resolve(context),
-          filteredCount: filteredLogEntries.length,
-          totalCount: logsData.length,
+          filteredCount: isHighlightMode
+              ? logsViewController.searchMatchCount
+              : filteredLogEntries.length,
+          totalCount:
+              isHighlightMode ? filteredLogEntries.length : logsData.length,
         ),
         if (context.screenSize.isDesktop)
           const SliverToBoxAdapter(
@@ -338,6 +362,21 @@ class _MainLogsView extends StatelessWidget {
             );
             if (result == null) return const SizedBox.shrink();
             final (entry: logEntry, actualIndex: _) = result;
+
+            final SearchMatchState matchState;
+            if (isHighlightMode) {
+              final logId = logEntry.id;
+              if (logId == logsViewController.focusedMatchId) {
+                matchState = SearchMatchState.focused;
+              } else if (logsViewController.searchMatchIdSet.contains(logId)) {
+                matchState = SearchMatchState.match;
+              } else {
+                matchState = SearchMatchState.none;
+              }
+            } else {
+              matchState = SearchMatchState.none;
+            }
+
             return _LogListItem(
               key: ObjectKey(logEntry),
               logData: logEntry,
@@ -349,6 +388,7 @@ class _MainLogsView extends StatelessWidget {
                       Colors.grey,
               isExpanded: logsViewController.activeData == logEntry ||
                   logsViewController.expandedLogs,
+              searchMatchState: matchState,
               onSharePressed: () => ISpectShareLogBottomSheet(
                 data: logEntry.toJson(),
                 truncatedData: logEntry.toJson(truncated: true),

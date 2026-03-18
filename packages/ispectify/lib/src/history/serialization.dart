@@ -9,6 +9,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     bool truncated = false,
   }) =>
       {
+        'id': id,
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
         if (title != null)

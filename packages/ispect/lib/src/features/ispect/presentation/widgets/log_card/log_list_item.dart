@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
@@ -21,6 +22,7 @@ class LogListItem extends StatelessWidget {
     this.useRelativeTime = false,
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 100,
+    this.searchMatchState = SearchMatchState.none,
     super.key,
   });
 
@@ -38,6 +40,7 @@ class LogListItem extends StatelessWidget {
   final bool useRelativeTime;
   final double typeColumnWidth;
   final double timeColumnWidth;
+  final SearchMatchState searchMatchState;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +58,7 @@ class LogListItem extends StatelessWidget {
         data: logData,
         index: itemIndex,
         isSelected: isExpanded,
+        searchMatchState: searchMatchState,
         onShareTap: onSharePressed,
         onTap: onItemTapped,
         onOpenDetail: onOpenDetail,
@@ -74,6 +78,7 @@ class LogListItem extends StatelessWidget {
         data: logData,
         index: itemIndex,
         isExpanded: isExpanded,
+        searchMatchState: searchMatchState,
         onShareTap: onSharePressed,
         onTap: onItemTapped,
         observer: observer,

@@ -137,6 +137,34 @@ class FilterManager {
     return _filterCache.getFiltered(logsData, filter, _dataGeneration);
   }
 
+  /// Applies only title/type filters (no search query) and returns the result.
+  List<ISpectLogData> applyFiltersWithoutSearch(
+    List<ISpectLogData> logsData,
+  ) {
+    if (logsData.isEmpty) return <ISpectLogData>[];
+    final noSearchFilter = ISpectFilter(
+      titles: _filter.titles.toList(),
+      types: _filter.types.toList(),
+      logTypeKeys: _filter.logTypeKeys.toList(),
+    );
+    if (noSearchFilter.titles.isEmpty &&
+        noSearchFilter.types.isEmpty &&
+        noSearchFilter.logTypeKeys.isEmpty) {
+      return logsData;
+    }
+    return logsData.where(noSearchFilter.apply).toList();
+  }
+
+  /// Returns log entries from [logsData] that match the current search query.
+  List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) {
+    final query = _filter.searchQuery;
+    if (query == null || query.trim().isEmpty || logsData.isEmpty) {
+      return const [];
+    }
+    final searchFilter = SearchFilter(query);
+    return logsData.where(searchFilter.apply).toList();
+  }
+
   void onDataChanged() {
     _dataGeneration++;
     _outputGeneration++;

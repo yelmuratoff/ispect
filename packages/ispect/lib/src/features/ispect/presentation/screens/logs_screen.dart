@@ -108,6 +108,8 @@ class _LogsScreenState extends State<LogsScreen> {
               itemsBuilder: widget.itemsBuilder,
               onSettingsTap: () => _openLogsSettings(context),
               hasDetailPanel: showDetailPanel,
+
+
             );
 
             if (!showDetailPanel) {
@@ -481,11 +483,65 @@ class _MainLogsViewState extends State<_MainLogsView> {
     super.dispose();
   }
 
+  void _scrollToFocusedMatch() {
+    final focusedId = widget.logsViewController.focusedMatchId;
+    if (focusedId < 0) return;
+
+    final isReversed =
+        widget.logsViewController.sortColumn == LogSortColumn.time &&
+            widget.logsViewController.isLogOrderReversed;
+
+    // Recompute filtered+sorted entries to find the visual index of the
+    // focused match by its ID. This is the same data the list builder uses.
+    final filteredEntries =
+        widget.logsViewController.searchMode == SearchMode.highlight
+            ? widget.logsViewController
+                .applyFiltersWithoutSearch(widget.logsData)
+            : widget.logsViewController.applyCurrentFilters(widget.logsData);
+    final sortedEntries =
+        _controller.applySortingIfNeeded(filteredEntries);
+
+    for (var i = 0; i < sortedEntries.length; i++) {
+      if (sortedEntries[i].id == focusedId) {
+        final visualIndex =
+            isReversed ? sortedEntries.length - 1 - i : i;
+        _controller.listController.animateToItem(
+          index: visualIndex,
+          scrollController: widget.logsScrollController,
+          alignment: 0.3,
+          duration: (_) => const Duration(milliseconds: 250),
+          curve: (_) => Curves.easeOutCubic,
+        );
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filteredLogEntries =
-        widget.logsViewController.applyCurrentFilters(widget.logsData);
+    final isHighlightMode =
+        widget.logsViewController.searchMode == SearchMode.highlight;
+
+    final filteredLogEntries = isHighlightMode
+        ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
+        : widget.logsViewController.applyCurrentFilters(widget.logsData);
+
     final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
+
+    // Compute search matches for highlight mode using log IDs.
+    // Reverse match order when the list is visually reversed so that
+    // "next" (↓) moves down the screen and "previous" (↑) moves up.
+    if (isHighlightMode) {
+      var matches =
+          widget.logsViewController.findSearchMatches(sortedEntries);
+      final isReversed =
+          widget.logsViewController.sortColumn == LogSortColumn.time &&
+              widget.logsViewController.isLogOrderReversed;
+      if (isReversed && matches.isNotEmpty) {
+        matches = matches.reversed.toList();
+      }
+      widget.logsViewController.updateSearchMatches(matches);
+    }
     final titles = widget.logsViewController.getTitles(widget.logsData);
 
     final options = ISpect.read(context).options;
@@ -526,8 +582,13 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   .handleTitleFilterToggle(title, isSelected: selected),
               backgroundColor:
                   widget.iSpectTheme.theme.background?.resolve(context),
-              filteredCount: filteredLogEntries.length,
-              totalCount: widget.logsData.length,
+              filteredCount: isHighlightMode
+                  ? widget.logsViewController.searchMatchCount
+                  : filteredLogEntries.length,
+              totalCount: isHighlightMode
+                  ? filteredLogEntries.length
+                  : widget.logsData.length,
+              onScrollToFocusedMatch: _scrollToFocusedMatch,
             ),
             if (isDesktop)
               SliverPersistentHeader(
@@ -644,6 +705,15 @@ class _MainLogsViewState extends State<_MainLogsView> {
     return body;
   }
 
+  SearchMatchState _matchStateForLog(ISpectLogData logEntry) {
+    final vc = widget.logsViewController;
+    if (vc.searchMode != SearchMode.highlight) return SearchMatchState.none;
+    final logId = logEntry.id;
+    if (logId == vc.focusedMatchId) return SearchMatchState.focused;
+    if (vc.searchMatchIdSet.contains(logId)) return SearchMatchState.match;
+    return SearchMatchState.none;
+  }
+
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
@@ -667,6 +737,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                     .getTypeColor(context, key: logEntry.key) ??
                 Colors.grey,
             isExpanded: isSelected || widget.logsViewController.expandedLogs,
+            searchMatchState: _matchStateForLog(logEntry),
             customItemBuilder: widget.itemsBuilder,
             observer: options.observer is ISpectNavigatorObserver
                 ? options.observer as ISpectNavigatorObserver?
@@ -772,6 +843,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   .getTypeColor(context, key: logEntry.key) ??
               Colors.grey,
           isExpanded: isSelected || widget.logsViewController.expandedLogs,
+          searchMatchState: _matchStateForLog(logEntry),
           customItemBuilder: widget.itemsBuilder,
           observer: options.observer is ISpectNavigatorObserver
               ? options.observer as ISpectNavigatorObserver?

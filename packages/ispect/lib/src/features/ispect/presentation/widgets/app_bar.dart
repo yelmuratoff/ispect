@@ -8,6 +8,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/extensions/string.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
@@ -26,6 +27,7 @@ class ISpectAppBar extends StatefulWidget {
     this.backgroundColor,
     this.filteredCount,
     this.totalCount,
+    this.onScrollToFocusedMatch,
     super.key,
   });
 
@@ -47,6 +49,9 @@ class ISpectAppBar extends StatefulWidget {
 
   final int? filteredCount;
   final int? totalCount;
+
+  /// Called when the user taps ↑/↓ arrows to navigate search matches.
+  final VoidCallback? onScrollToFocusedMatch;
 
   @override
   State<ISpectAppBar> createState() => _ISpectAppBarState();
@@ -85,15 +90,13 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           builder: (context, hasText, _) {
             final showFilters = _showFilters;
 
-            final filterHeight = showFilters ? 150.0 : 110.0;
+            // Search + filter chips are placed in `bottom`, which always
+            // stays visible when pinned — no collapsing.
+            final bottomHeight = showFilters ? 90.0 : 50.0;
 
             return SliverAppBar(
               elevation: 0,
               pinned: true,
-              floating: true,
-              expandedHeight: filterHeight,
-              collapsedHeight: 60,
-              toolbarHeight: 60,
               leading: IconButton(
                 onPressed: () => context.iSpect.options.pop(context),
                 icon: const Icon(Icons.arrow_back_rounded),
@@ -133,36 +136,49 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 const Gap(6),
               ],
               title: _AppBarTitle(title: widget.title),
-              flexibleSpace: FlexibleSpaceBar(
-                background: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 60),
-                    child: Column(
-                      children: [
-                        _SearchSection(
-                          focusNode: widget.focusNode,
-                          searchController: _searchController,
-                          hasSearchText: hasText,
-                          hasActiveFilters: _hasActiveFilters,
-                          isFilterExpanded: filterExpanded,
-                          isFiltering: _isFiltering,
-                          filteredCount: widget.filteredCount,
-                          totalCount: widget.totalCount,
-                          onChanged: _onSearchChanged,
-                          onClear: _onSearchClear,
-                          onFilterToggle: _onFilterToggle,
-                          onClearAll: _onClearAllFilters,
-                        ),
-                        if (showFilters)
-                          _FilterChipsList(
-                            titles: widget.titles,
-                            uniqTitles: widget.uniqTitles,
-                            titlesController: widget.titlesController,
-                            onToggle: _onToggle,
-                          ),
-                      ],
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(bottomHeight),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SearchSection(
+                      focusNode: widget.focusNode,
+                      searchController: _searchController,
+                      hasSearchText: hasText,
+                      hasActiveFilters: _hasActiveFilters,
+                      isFilterExpanded: filterExpanded,
+                      isFiltering: _isFiltering,
+                      filteredCount: widget.filteredCount,
+                      totalCount: widget.totalCount,
+                      onChanged: _onSearchChanged,
+                      onClear: _onSearchClear,
+                      onFilterToggle: _onFilterToggle,
+                      onClearAll: _onClearAllFilters,
+                      searchMode: widget.controller.searchMode,
+                      focusedMatchPosition:
+                          widget.controller.focusedMatchPosition,
+                      searchMatchCount:
+                          widget.controller.searchMatchCount,
+                      onNextMatch: () {
+                        widget.controller.focusNextMatch();
+                        widget.onScrollToFocusedMatch?.call();
+                      },
+                      onPreviousMatch: () {
+                        widget.controller.focusPreviousMatch();
+                        widget.onScrollToFocusedMatch?.call();
+                      },
+                      onSearchModeToggle:
+                          widget.controller.toggleSearchMode,
                     ),
-                  ),
+                    if (showFilters)
+                      _FilterChipsList(
+                        titles: widget.titles,
+                        uniqTitles: widget.uniqTitles,
+                        titlesController: widget.titlesController,
+                        onToggle: _onToggle,
+                      ),
+                    const Gap(4),
+                  ],
                 ),
               ),
             );
@@ -246,6 +262,12 @@ class _SearchSection extends StatelessWidget {
     required this.onClear,
     required this.onFilterToggle,
     required this.onClearAll,
+    required this.searchMode,
+    required this.focusedMatchPosition,
+    required this.searchMatchCount,
+    required this.onNextMatch,
+    required this.onPreviousMatch,
+    required this.onSearchModeToggle,
   });
 
   final FocusNode focusNode;
@@ -260,10 +282,19 @@ class _SearchSection extends StatelessWidget {
   final VoidCallback onClear;
   final VoidCallback onFilterToggle;
   final VoidCallback onClearAll;
+  final SearchMode searchMode;
+  final int focusedMatchPosition;
+  final int searchMatchCount;
+  final VoidCallback onNextMatch;
+  final VoidCallback onPreviousMatch;
+  final VoidCallback onSearchModeToggle;
+
+  bool get _isHighlightMode => searchMode == SearchMode.highlight;
 
   @override
   Widget build(BuildContext context) {
     final cardColor = context.ispectTheme.card?.resolve(context);
+    final primaryColor = context.appTheme.colorScheme.primary;
 
     final horizontalPadding = context.screenSizeWhen(
       phone: () => 16.0,
@@ -296,65 +327,83 @@ class _SearchSection extends StatelessWidget {
                 ),
               ),
               trailing: [
-                if (isFiltering && filteredCount != null)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: Text(
-                      '$filteredCount',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: context.appTheme.colorScheme.primary,
-                      ),
-                    ),
+                // Highlight mode: show navigation (← 3/12 →)
+                if (_isHighlightMode && hasSearchText) ...[
+                  _SearchMatchNavigation(
+                    focusedPosition: focusedMatchPosition,
+                    totalMatches: searchMatchCount,
+                    onNext: onNextMatch,
+                    onPrevious: onPreviousMatch,
                   ),
-                if (isFiltering)
-                  Tooltip(
-                    message: context.ispectL10n.clearAllFilters,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: context.appTheme.colorScheme.primary
-                            .withValues(alpha: 0.1),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(6)),
-                      ),
-                      child: IconButton(
-                        iconSize: 20,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 32,
-                        ),
-                        padding: EdgeInsets.zero,
-                        onPressed: onClearAll,
-                        icon: Icon(
-                          Icons.filter_alt_off_rounded,
-                          color: context.appTheme.colorScheme.primary,
+                ] else ...[
+                  if (isFiltering && filteredCount != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Text(
+                        '$filteredCount',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
                         ),
                       ),
                     ),
-                  )
-                else if (hasSearchText)
-                  IconButton(
-                    iconSize: 20,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 32,
-                      height: 32,
+                  if (isFiltering)
+                    Tooltip(
+                      message: context.ispectL10n.clearAllFilters,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(6)),
+                        ),
+                        child: IconButton(
+                          iconSize: 20,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 32,
+                            height: 32,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onPressed: onClearAll,
+                          icon: Icon(
+                            Icons.filter_alt_off_rounded,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
                     ),
-                    padding: EdgeInsets.zero,
-                    onPressed: onClear,
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: context.appTheme.colorScheme.onSurface
-                          .withValues(alpha: 0.5),
-                    ),
-                  )
-                else if (context.screenSize.isDesktop)
-                  const _SearchShortcutBadge(),
+                ],
+                if (!isFiltering && !(_isHighlightMode && hasSearchText))
+                  if (hasSearchText)
+                    IconButton(
+                      iconSize: 20,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: onClear,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: context.appTheme.colorScheme.onSurface
+                            .withValues(alpha: 0.5),
+                      ),
+                    )
+                  else if (context.screenSize.isDesktop)
+                    const _SearchShortcutBadge(),
               ],
-              hintText: context.ispectL10n.search,
+              hintText: _isHighlightMode
+                  ? context.ispectL10n.search
+                  : '${context.ispectL10n.search} (${context.ispectL10n.filters.toLowerCase()})',
               onChanged: onChanged,
               elevation: const WidgetStatePropertyAll(0),
             ),
+          ),
+          const Gap(8),
+          // Search mode toggle (highlight / filter)
+          _SearchModeToggle(
+            searchMode: searchMode,
+            onPressed: onSearchModeToggle,
           ),
           const Gap(8),
           _FilterToggleButton(
@@ -363,6 +412,118 @@ class _SearchSection extends StatelessWidget {
             onPressed: onFilterToggle,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Navigation widget for search matches: ← 3/12 →
+class _SearchMatchNavigation extends StatelessWidget {
+  const _SearchMatchNavigation({
+    required this.focusedPosition,
+    required this.totalMatches,
+    required this.onNext,
+    required this.onPrevious,
+  });
+
+  final int focusedPosition;
+  final int totalMatches;
+  final VoidCallback onNext;
+  final VoidCallback onPrevious;
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final hasMatches = totalMatches > 0;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          iconSize: 18,
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+          padding: EdgeInsets.zero,
+          onPressed: hasMatches ? onPrevious : null,
+          icon: Icon(
+            Icons.keyboard_arrow_up_rounded,
+            color: hasMatches
+                ? primaryColor
+                : context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.25),
+          ),
+        ),
+        Text(
+          hasMatches ? '$focusedPosition/$totalMatches' : '0/0',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: hasMatches
+                ? primaryColor
+                : context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.35),
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        IconButton(
+          iconSize: 18,
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+          padding: EdgeInsets.zero,
+          onPressed: hasMatches ? onNext : null,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: hasMatches
+                ? primaryColor
+                : context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.25),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Toggle button to switch between highlight and filter search modes.
+class _SearchModeToggle extends StatelessWidget {
+  const _SearchModeToggle({
+    required this.searchMode,
+    required this.onPressed,
+  });
+
+  final SearchMode searchMode;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFilterMode = searchMode == SearchMode.filter;
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final cardColor = context.ispectTheme.card?.resolve(context);
+
+    return Tooltip(
+      message: isFilterMode
+          ? context.ispectL10n.search.capitalize()
+          : context.ispectL10n.filters.capitalize(),
+      child: SizedBox(
+        width: 45,
+        height: 45,
+        child: Material(
+          color:
+              isFilterMode ? primaryColor.withValues(alpha: 0.12) : cardColor,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          child: InkWell(
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            onTap: onPressed,
+            child: Icon(
+              isFilterMode
+                  ? Icons.filter_list_rounded
+                  : Icons.manage_search_rounded,
+              size: 22,
+              color: isFilterMode
+                  ? primaryColor
+                  : context.appTheme.colorScheme.onSurface
+                      .withValues(alpha: 0.6),
+            ),
+          ),
+        ),
       ),
     );
   }

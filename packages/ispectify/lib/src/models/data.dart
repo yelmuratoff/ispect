@@ -29,13 +29,19 @@ class ISpectLogData {
     this.pen,
     this.key,
     Map<String, dynamic>? additionalData,
-  })  : message = message?.toString(),
+  })  : id = _nextId++,
+        message = message?.toString(),
         additionalData = additionalData == null
             ? null
             : Map<String, dynamic>.unmodifiable(
                 Map<String, dynamic>.from(additionalData),
               ),
         _time = time ?? DateTime.now();
+
+  static int _nextId = 0;
+
+  /// Auto-generated unique identifier for this log entry.
+  final int id;
 
   /// The timestamp when the log entry was created.
   final DateTime _time;

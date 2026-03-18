@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
@@ -20,6 +21,7 @@ class LogCard extends StatelessWidget {
     required this.onTap,
     this.observer,
     this.onShareTap,
+    this.searchMatchState = SearchMatchState.none,
     super.key,
   });
 
@@ -31,22 +33,59 @@ class LogCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
+  final SearchMatchState searchMatchState;
 
   @override
   Widget build(BuildContext context) {
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
 
-    final borderColor =
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final isFocused = searchMatchState == SearchMatchState.focused;
+    final isMatch = searchMatchState == SearchMatchState.match;
+
+    final defaultBorder =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
     final accentColor = color.withValues(alpha: isExpanded ? 0.9 : 0.5);
+
+    final Color effectiveBg;
+    final Color effectiveBorder;
+    final double borderWidth;
+    final List<BoxShadow>? boxShadow;
+
+    if (isFocused) {
+      effectiveBg = primaryColor.withValues(alpha: 0.12);
+      effectiveBorder = primaryColor;
+      borderWidth = 2;
+      boxShadow = [
+        BoxShadow(
+          color: primaryColor.withValues(alpha: 0.25),
+          blurRadius: 10,
+          spreadRadius: 1,
+        ),
+      ];
+    } else if (isMatch) {
+      effectiveBg = primaryColor.withValues(alpha: 0.06);
+      effectiveBorder = primaryColor.withValues(alpha: 0.5);
+      borderWidth = 1.5;
+      boxShadow = null;
+    } else {
+      effectiveBg = cardColor;
+      effectiveBorder = defaultBorder;
+      borderWidth = 1;
+      boxShadow = null;
+    }
 
     return RepaintBoundary(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: cardColor,
+          color: effectiveBg,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.all(color: borderColor),
+          border: Border.all(
+            color: effectiveBorder,
+            width: borderWidth,
+          ),
+          boxShadow: boxShadow,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(10)),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -247,6 +248,7 @@ class DesktopLogRow extends StatefulWidget {
     this.useRelativeTime = false,
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
+    this.searchMatchState = SearchMatchState.none,
     super.key,
   });
 
@@ -263,6 +265,7 @@ class DesktopLogRow extends StatefulWidget {
   final bool useRelativeTime;
   final double typeColumnWidth;
   final double timeColumnWidth;
+  final SearchMatchState searchMatchState;
 
   @override
   State<DesktopLogRow> createState() => _DesktopLogRowState();
@@ -395,11 +398,22 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     final isOdd = widget.index.isOdd;
     final zebraColor = isOdd ? onSurface.withValues(alpha: 0.015) : cardColor;
 
-    final bgColor = widget.isSelected
-        ? widget.color.withValues(alpha: 0.16)
-        : _isHovered
-            ? onSurface.withValues(alpha: 0.08)
-            : zebraColor;
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final isFocused = widget.searchMatchState == SearchMatchState.focused;
+    final isMatch = widget.searchMatchState == SearchMatchState.match;
+
+    final Color bgColor;
+    if (isFocused) {
+      bgColor = primaryColor.withValues(alpha: 0.16);
+    } else if (isMatch) {
+      bgColor = primaryColor.withValues(alpha: 0.08);
+    } else if (widget.isSelected) {
+      bgColor = widget.color.withValues(alpha: 0.16);
+    } else if (_isHovered) {
+      bgColor = onSurface.withValues(alpha: 0.08);
+    } else {
+      bgColor = zebraColor;
+    }
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -419,10 +433,14 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
             border: Border(
               bottom: BorderSide(color: borderColor),
               left: BorderSide(
-                color: widget.isSelected
-                    ? widget.color
-                    : widget.color.withValues(alpha: 0.4),
-                width: widget.isSelected ? 3 : 2,
+                color: isFocused
+                    ? primaryColor
+                    : isMatch
+                        ? primaryColor.withValues(alpha: 0.6)
+                        : widget.isSelected
+                            ? widget.color
+                            : widget.color.withValues(alpha: 0.4),
+                width: isFocused || widget.isSelected ? 3 : 2,
               ),
             ),
           ),

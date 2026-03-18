@@ -11,6 +11,27 @@ enum LogSortColumn { type, time, message }
 /// Direction for sorting desktop log table.
 enum LogSortDirection { ascending, descending }
 
+/// Search behavior mode.
+enum SearchMode {
+  /// Highlights matching cards and scrolls to them, keeping all logs visible.
+  highlight,
+
+  /// Filters out non-matching logs (legacy behavior).
+  filter,
+}
+
+/// Visual state of a log card relative to the current search.
+enum SearchMatchState {
+  /// Not a search match.
+  none,
+
+  /// Matches the search query but is not the currently focused result.
+  match,
+
+  /// The currently focused search result (navigated to via ↑/↓).
+  focused,
+}
+
 class ISpectViewController extends ChangeNotifier {
   ISpectViewController({
     ISpectShareCallback? onShare,
@@ -44,6 +65,12 @@ class ISpectViewController extends ChangeNotifier {
 
   // --- Desktop: relative time toggle ---
   bool _useRelativeTime = false;
+
+  // --- Search mode: highlight vs filter ---
+  SearchMode _searchMode = SearchMode.highlight;
+  List<int> _searchMatchIds = const [];
+  Set<int> _searchMatchIdSet = const {};
+  int _focusedMatchIndex = -1;
 
   // --- Desktop: column sorting ---
   LogSortColumn _sortColumn = LogSortColumn.time;
@@ -268,6 +295,97 @@ class ISpectViewController extends ChangeNotifier {
       showValue: false,
     );
   }
+
+  // --- Search mode ---
+
+  SearchMode get searchMode => _searchMode;
+
+  /// Ordered list of matched log IDs.
+  List<int> get searchMatchIds => _searchMatchIds;
+
+  /// Set of matched log IDs for O(1) lookup.
+  Set<int> get searchMatchIdSet => _searchMatchIdSet;
+
+  int get focusedMatchIndex => _focusedMatchIndex;
+
+  /// 1-based position of the focused match for display (e.g. "3/12").
+  int get focusedMatchPosition =>
+      _focusedMatchIndex >= 0 ? _focusedMatchIndex + 1 : 0;
+
+  int get searchMatchCount => _searchMatchIds.length;
+
+  bool get hasSearchMatches => _searchMatchIds.isNotEmpty;
+
+  /// The ID of the currently focused search match, or -1.
+  int get focusedMatchId {
+    if (_focusedMatchIndex < 0 ||
+        _focusedMatchIndex >= _searchMatchIds.length) {
+      return -1;
+    }
+    return _searchMatchIds[_focusedMatchIndex];
+  }
+
+  void toggleSearchMode() {
+    _searchMode = switch (_searchMode) {
+      SearchMode.highlight => SearchMode.filter,
+      SearchMode.filter => SearchMode.highlight,
+    };
+    _searchMatchIds = const [];
+    _searchMatchIdSet = const {};
+    _focusedMatchIndex = -1;
+    notifyListeners();
+  }
+
+  /// Updates the search matches by log IDs.
+  ///
+  /// Only resets the focused index when matches actually change.
+  void updateSearchMatches(List<ISpectLogData> matches) {
+    final newIds = matches.map((e) => e.id).toList();
+    if (_searchMatchIds.length == newIds.length &&
+        _idsEqual(newIds)) {
+      return;
+    }
+    _searchMatchIds = newIds;
+    _searchMatchIdSet = newIds.toSet();
+    if (newIds.isEmpty) {
+      _focusedMatchIndex = -1;
+    } else if (_focusedMatchIndex < 0 ||
+        _focusedMatchIndex >= newIds.length) {
+      _focusedMatchIndex = 0;
+    }
+  }
+
+  bool _idsEqual(List<int> other) {
+    for (var i = 0; i < _searchMatchIds.length; i++) {
+      if (_searchMatchIds[i] != other[i]) return false;
+    }
+    return true;
+  }
+
+  void focusNextMatch() {
+    if (_searchMatchIds.isEmpty) return;
+    _focusedMatchIndex =
+        (_focusedMatchIndex + 1) % _searchMatchIds.length;
+    notifyListeners();
+  }
+
+  void focusPreviousMatch() {
+    if (_searchMatchIds.isEmpty) return;
+    _focusedMatchIndex =
+        (_focusedMatchIndex - 1 + _searchMatchIds.length) %
+            _searchMatchIds.length;
+    notifyListeners();
+  }
+
+  /// Applies title/type filters only (no search query filtering).
+  List<ISpectLogData> applyFiltersWithoutSearch(
+    List<ISpectLogData> logsData,
+  ) =>
+      _filterManager.applyFiltersWithoutSearch(logsData);
+
+  /// Finds log entries matching the current search query.
+  List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) =>
+      _filterManager.findSearchMatches(logsData);
 
   void clearLogsHistory(VoidCallback clearHistory) {
     clearHistory();
