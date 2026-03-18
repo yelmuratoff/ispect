@@ -112,6 +112,7 @@ void _showTransactionShareSheet(
         label: requestLabel,
         onPressed: () {
           Navigator.of(sheetContext).pop();
+          if (!context.mounted) return;
           ISpectShareLogBottomSheet(
             data: request.toJson(),
             truncatedData: request.toJson(truncated: true),
@@ -123,6 +124,7 @@ void _showTransactionShareSheet(
         label: responseLabel,
         onPressed: () {
           Navigator.of(sheetContext).pop();
+          if (!context.mounted) return;
           ISpectShareLogBottomSheet(
             data: response.toJson(),
             truncatedData: response.toJson(truncated: true),
