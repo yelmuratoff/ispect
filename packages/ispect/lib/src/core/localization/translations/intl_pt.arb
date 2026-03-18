@@ -263,5 +263,7 @@
    "distanceLeft": "esquerda",
    "distanceTop": "topo",
    "distanceRight": "direita",
-   "distanceBottom": "baixo"
+   "distanceBottom": "baixo",
+   "searchMode": "Modo de pesquisa",
+   "logTypes": "Tipos de registro"
 }

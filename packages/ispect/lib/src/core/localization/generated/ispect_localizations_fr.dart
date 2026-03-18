@@ -900,4 +900,10 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'bas';
+
+  @override
+  String get searchMode => 'Mode de recherche';
+
+  @override
+  String get logTypes => 'Types de journaux';
 }

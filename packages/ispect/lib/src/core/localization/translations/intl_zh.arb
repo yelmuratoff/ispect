@@ -263,5 +263,7 @@
    "distanceLeft": "左",
    "distanceTop": "上",
    "distanceRight": "右",
-   "distanceBottom": "下"
+   "distanceBottom": "下",
+   "searchMode": "搜索模式",
+   "logTypes": "日志类型"
 }

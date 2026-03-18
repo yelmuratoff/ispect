@@ -263,5 +263,7 @@
    "distanceLeft": "يسار",
    "distanceTop": "أعلى",
    "distanceRight": "يمين",
-   "distanceBottom": "أسفل"
+   "distanceBottom": "أسفل",
+   "searchMode": "وضع البحث",
+   "logTypes": "أنواع السجلات"
 }

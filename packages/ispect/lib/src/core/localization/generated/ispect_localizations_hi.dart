@@ -883,4 +883,10 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'नीचे';
+
+  @override
+  String get searchMode => 'खोज मोड';
+
+  @override
+  String get logTypes => 'लॉग प्रकार';
 }

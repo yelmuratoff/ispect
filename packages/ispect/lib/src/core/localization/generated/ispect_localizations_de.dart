@@ -898,4 +898,10 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'unten';
+
+  @override
+  String get searchMode => 'Suchmodus';
+
+  @override
+  String get logTypes => 'Logtypen';
 }

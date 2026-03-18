@@ -263,5 +263,7 @@
    "distanceLeft": "बाएं",
    "distanceTop": "ऊपर",
    "distanceRight": "दाएं",
-   "distanceBottom": "नीचे"
+   "distanceBottom": "नीचे",
+   "searchMode": "खोज मोड",
+   "logTypes": "लॉग प्रकार"
 }

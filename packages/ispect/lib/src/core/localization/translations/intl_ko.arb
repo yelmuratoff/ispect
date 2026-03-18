@@ -263,5 +263,7 @@
    "distanceLeft": "왼쪽",
    "distanceTop": "위",
    "distanceRight": "오른쪽",
-   "distanceBottom": "아래"
+   "distanceBottom": "아래",
+   "searchMode": "검색 모드",
+   "logTypes": "로그 유형"
 }

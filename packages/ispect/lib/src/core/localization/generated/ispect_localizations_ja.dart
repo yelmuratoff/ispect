@@ -857,4 +857,10 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => '下';
+
+  @override
+  String get searchMode => '検索モード';
+
+  @override
+  String get logTypes => 'ログタイプ';
 }

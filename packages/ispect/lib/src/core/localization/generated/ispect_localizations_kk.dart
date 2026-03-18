@@ -880,4 +880,10 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'төмен';
+
+  @override
+  String get searchMode => 'Іздеу режимі';
+
+  @override
+  String get logTypes => 'Лог түрлері';
 }

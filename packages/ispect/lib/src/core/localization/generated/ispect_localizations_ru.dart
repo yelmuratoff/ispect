@@ -882,4 +882,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'снизу';
+
+  @override
+  String get searchMode => 'Режим поиска';
+
+  @override
+  String get logTypes => 'Типы логов';
 }

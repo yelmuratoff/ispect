@@ -263,5 +263,7 @@
    "distanceLeft": "слева",
    "distanceTop": "сверху",
    "distanceRight": "справа",
-   "distanceBottom": "снизу"
+   "distanceBottom": "снизу",
+   "searchMode": "Режим поиска",
+   "logTypes": "Типы логов"
 }

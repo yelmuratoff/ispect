@@ -857,4 +857,10 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => '下';
+
+  @override
+  String get searchMode => '搜索模式';
+
+  @override
+  String get logTypes => '日志类型';
 }

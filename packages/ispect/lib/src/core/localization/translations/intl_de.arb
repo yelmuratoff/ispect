@@ -263,5 +263,7 @@
    "distanceLeft": "links",
    "distanceTop": "oben",
    "distanceRight": "rechts",
-   "distanceBottom": "unten"
+   "distanceBottom": "unten",
+   "searchMode": "Suchmodus",
+   "logTypes": "Logtypen"
 }

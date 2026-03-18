@@ -284,5 +284,7 @@
    "distanceLeft": "left",
    "distanceTop": "top",
    "distanceRight": "right",
-   "distanceBottom": "bottom"
+   "distanceBottom": "bottom",
+   "searchMode": "Search mode",
+   "logTypes": "Log types"
 }

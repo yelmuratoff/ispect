@@ -857,4 +857,10 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => '아래';
+
+  @override
+  String get searchMode => '검색 모드';
+
+  @override
+  String get logTypes => '로그 유형';
 }

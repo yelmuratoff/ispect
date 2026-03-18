@@ -263,5 +263,7 @@
    "distanceLeft": "сол",
    "distanceTop": "жоғары",
    "distanceRight": "оң",
-   "distanceBottom": "төмен"
+   "distanceBottom": "төмен",
+   "searchMode": "Іздеу режимі",
+   "logTypes": "Лог түрлері"
 }

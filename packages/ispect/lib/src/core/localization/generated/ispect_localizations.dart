@@ -1702,6 +1702,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'bottom'**
   String get distanceBottom;
+
+  /// No description provided for @searchMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Search mode'**
+  String get searchMode;
+
+  /// No description provided for @logTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Log types'**
+  String get logTypes;
 }
 
 class _ISpectGeneratedLocalizationDelegate

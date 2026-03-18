@@ -889,4 +889,10 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'abajo';
+
+  @override
+  String get searchMode => 'Modo de búsqueda';
+
+  @override
+  String get logTypes => 'Tipos de registro';
 }

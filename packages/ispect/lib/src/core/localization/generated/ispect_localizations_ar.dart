@@ -865,4 +865,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get distanceBottom => 'أسفل';
+
+  @override
+  String get searchMode => 'وضع البحث';
+
+  @override
+  String get logTypes => 'أنواع السجلات';
 }

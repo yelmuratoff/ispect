@@ -263,5 +263,7 @@
    "distanceLeft": "gauche",
    "distanceTop": "haut",
    "distanceRight": "droite",
-   "distanceBottom": "bas"
+   "distanceBottom": "bas",
+   "searchMode": "Mode de recherche",
+   "logTypes": "Types de journaux"
 }
