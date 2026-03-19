@@ -362,20 +362,6 @@ class _MainLogsView extends StatelessWidget {
             if (result == null) return const SizedBox.shrink();
             final (entry: logEntry, actualIndex: _) = result;
 
-            final SearchMatchState matchState;
-            if (isHighlightMode) {
-              final logId = logEntry.id;
-              if (logId == logsViewController.focusedMatchId) {
-                matchState = SearchMatchState.focused;
-              } else if (logsViewController.searchMatchIdSet.contains(logId)) {
-                matchState = SearchMatchState.match;
-              } else {
-                matchState = SearchMatchState.none;
-              }
-            } else {
-              matchState = SearchMatchState.none;
-            }
-
             return _LogListItem(
               key: ValueKey(logEntry.id),
               logData: logEntry,
@@ -387,7 +373,7 @@ class _MainLogsView extends StatelessWidget {
                       Colors.grey,
               isExpanded: logsViewController.activeData == logEntry ||
                   logsViewController.expandedLogs,
-              searchMatchState: matchState,
+              searchMatchState: logsViewController.matchStateFor(logEntry),
               onSharePressed: () => ISpectShareLogBottomSheet(
                 data: logEntry.toJson(),
                 truncatedData: logEntry.toJson(truncated: true),

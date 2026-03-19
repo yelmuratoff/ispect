@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
@@ -334,14 +335,11 @@ class ISpectViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates the search matches by log IDs.
+  /// Synchronizes the search match state with the given log entries.
   ///
-  /// Only resets the focused index when matches actually change.
   void updateSearchMatches(List<ISpectLogData> matches) {
     final newIds = matches.map((e) => e.id).toList();
-    if (_searchMatchIds.length == newIds.length && _idsEqual(newIds)) {
-      return;
-    }
+    if (listEquals(_searchMatchIds, newIds)) return;
     _searchMatchIds = newIds;
     _searchMatchIdSet = newIds.toSet();
     if (newIds.isEmpty) {
@@ -351,11 +349,13 @@ class ISpectViewController extends ChangeNotifier {
     }
   }
 
-  bool _idsEqual(List<int> other) {
-    for (var i = 0; i < _searchMatchIds.length; i++) {
-      if (_searchMatchIds[i] != other[i]) return false;
-    }
-    return true;
+  /// Returns the [SearchMatchState] for a given log entry.
+  SearchMatchState matchStateFor(ISpectLogData logEntry) {
+    if (_searchMode != SearchMode.highlight) return SearchMatchState.none;
+    final logId = logEntry.id;
+    if (logId == focusedMatchId) return SearchMatchState.focused;
+    if (_searchMatchIdSet.contains(logId)) return SearchMatchState.match;
+    return SearchMatchState.none;
   }
 
   void focusNextMatch() {

@@ -494,13 +494,17 @@ class _MainLogsViewState extends State<_MainLogsView> {
     final visualIndex =
         _cachedIsReversed ? _cachedSortedLength - 1 - dataIndex : dataIndex;
 
-    _controller.listController.animateToItem(
-      index: visualIndex,
-      scrollController: widget.logsScrollController,
-      alignment: 0.3,
-      duration: (_) => const Duration(milliseconds: 250),
-      curve: (_) => Curves.easeOutCubic,
-    );
+    try {
+      _controller.listController.animateToItem(
+        index: visualIndex,
+        scrollController: widget.logsScrollController,
+        alignment: 0.3,
+        duration: (_) => const Duration(milliseconds: 250),
+        curve: (_) => Curves.easeOutCubic,
+      );
+    } on Object catch (error, stackTrace) {
+      ISpect.logger.handle(exception: error, stackTrace: stackTrace);
+    }
   }
 
   @override
@@ -700,15 +704,6 @@ class _MainLogsViewState extends State<_MainLogsView> {
     return body;
   }
 
-  SearchMatchState _matchStateForLog(ISpectLogData logEntry) {
-    final vc = widget.logsViewController;
-    if (vc.searchMode != SearchMode.highlight) return SearchMatchState.none;
-    final logId = logEntry.id;
-    if (logId == vc.focusedMatchId) return SearchMatchState.focused;
-    if (vc.searchMatchIdSet.contains(logId)) return SearchMatchState.match;
-    return SearchMatchState.none;
-  }
-
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
@@ -732,7 +727,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                     .getTypeColor(context, key: logEntry.key) ??
                 Colors.grey,
             isExpanded: isSelected || widget.logsViewController.expandedLogs,
-            searchMatchState: _matchStateForLog(logEntry),
+            searchMatchState: widget.logsViewController.matchStateFor(logEntry),
             customItemBuilder: widget.itemsBuilder,
             observer: options.observer is ISpectNavigatorObserver
                 ? options.observer as ISpectNavigatorObserver?
@@ -838,7 +833,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                   .getTypeColor(context, key: logEntry.key) ??
               Colors.grey,
           isExpanded: isSelected || widget.logsViewController.expandedLogs,
-          searchMatchState: _matchStateForLog(logEntry),
+          searchMatchState: widget.logsViewController.matchStateFor(logEntry),
           customItemBuilder: widget.itemsBuilder,
           observer: options.observer is ISpectNavigatorObserver
               ? options.observer as ISpectNavigatorObserver?
