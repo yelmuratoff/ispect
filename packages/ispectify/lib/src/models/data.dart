@@ -125,10 +125,11 @@ class ISpectLogData {
     }
   }
 
+  static const _deepEquality = DeepCollectionEquality();
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    final mapEquals = const DeepCollectionEquality().equals;
 
     return other is ISpectLogData &&
         other._time == _time &&
@@ -137,7 +138,7 @@ class ISpectLogData {
         other.logLevel == logLevel &&
         other.title == title &&
         other.pen == pen &&
-        mapEquals(other.additionalData, additionalData) &&
+        _deepEquality.equals(other.additionalData, additionalData) &&
         other.exception == exception &&
         other.error == error &&
         other.stackTrace == stackTrace;
@@ -152,7 +153,7 @@ class ISpectLogData {
       logLevel,
       title,
       pen,
-      const DeepCollectionEquality().hash(additionalData),
+      _deepEquality.hash(additionalData),
       exception,
       error,
       stackTrace,

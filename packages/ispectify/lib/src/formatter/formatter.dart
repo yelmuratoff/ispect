@@ -58,14 +58,9 @@ class ExtendedLoggerFormatter implements ILoggerFormatter {
       ];
     }
 
-    // Construct the final log output.
-    final formattedLines = [
-      ...msgBorderedLines,
-    ];
-
     // Apply colorization if enabled, otherwise return the plain log.
     return settings.enableColors
-        ? formattedLines.map(details.pen.write).join('\n')
-        : formattedLines.join('\n');
+        ? msgBorderedLines.map(details.pen.write).join('\n')
+        : msgBorderedLines.join('\n');
   }
 }
