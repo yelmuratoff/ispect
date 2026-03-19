@@ -340,12 +340,20 @@ class ISpectViewController extends ChangeNotifier {
   void updateSearchMatches(List<ISpectLogData> matches) {
     final newIds = matches.map((e) => e.id).toList();
     if (listEquals(_searchMatchIds, newIds)) return;
+
+    final oldFocused = _focusedMatchIndex;
     _searchMatchIds = newIds;
     _searchMatchIdSet = newIds.toSet();
     if (newIds.isEmpty) {
       _focusedMatchIndex = -1;
     } else if (_focusedMatchIndex < 0 || _focusedMatchIndex >= newIds.length) {
       _focusedMatchIndex = 0;
+    }
+
+    if (_focusedMatchIndex != oldFocused) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 

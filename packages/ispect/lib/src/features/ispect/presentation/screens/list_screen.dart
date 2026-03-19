@@ -207,7 +207,7 @@ class _LogListItem extends StatelessWidget {
 
 /// A widget displayed when there are no logs to show.
 class EmptyLogsWidget extends StatelessWidget {
-  const EmptyLogsWidget();
+  const EmptyLogsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
