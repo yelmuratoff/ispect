@@ -460,6 +460,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
   late final LogsScreenController _controller;
   final _transactionService = NetworkTransactionService();
 
+  Map<int, int> _idToDataIndex = const {};
+  int _cachedSortedLength = 0;
+  bool _cachedIsReversed = false;
+
   @override
   void initState() {
     super.initState();
@@ -472,7 +476,6 @@ class _MainLogsViewState extends State<_MainLogsView> {
         if (mounted) setState(() {});
       },
     );
-    // Tips dialog moved to app bar icon button.
   }
 
   @override
@@ -485,31 +488,19 @@ class _MainLogsViewState extends State<_MainLogsView> {
     final focusedId = widget.logsViewController.focusedMatchId;
     if (focusedId < 0) return;
 
-    final isReversed =
-        widget.logsViewController.sortColumn == LogSortColumn.time &&
-            widget.logsViewController.isLogOrderReversed;
+    final dataIndex = _idToDataIndex[focusedId];
+    if (dataIndex == null) return;
 
-    // Recompute filtered+sorted entries to find the visual index of the
-    // focused match by its ID. This is the same data the list builder uses.
-    final filteredEntries = widget.logsViewController.searchMode ==
-            SearchMode.highlight
-        ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
-        : widget.logsViewController.applyCurrentFilters(widget.logsData);
-    final sortedEntries = _controller.applySortingIfNeeded(filteredEntries);
+    final visualIndex =
+        _cachedIsReversed ? _cachedSortedLength - 1 - dataIndex : dataIndex;
 
-    for (var i = 0; i < sortedEntries.length; i++) {
-      if (sortedEntries[i].id == focusedId) {
-        final visualIndex = isReversed ? sortedEntries.length - 1 - i : i;
-        _controller.listController.animateToItem(
-          index: visualIndex,
-          scrollController: widget.logsScrollController,
-          alignment: 0.3,
-          duration: (_) => const Duration(milliseconds: 250),
-          curve: (_) => Curves.easeOutCubic,
-        );
-        return;
-      }
-    }
+    _controller.listController.animateToItem(
+      index: visualIndex,
+      scrollController: widget.logsScrollController,
+      alignment: 0.3,
+      duration: (_) => const Duration(milliseconds: 250),
+      curve: (_) => Curves.easeOutCubic,
+    );
   }
 
   @override
@@ -523,18 +514,28 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
     final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
 
+    _cachedIsReversed =
+        widget.logsViewController.sortColumn == LogSortColumn.time &&
+            widget.logsViewController.isLogOrderReversed;
+    _cachedSortedLength = sortedEntries.length;
+
     // Compute search matches for highlight mode using log IDs.
     // Reverse match order when the list is visually reversed so that
     // "next" (↓) moves down the screen and "previous" (↑) moves up.
     if (isHighlightMode) {
       var matches = widget.logsViewController.findSearchMatches(sortedEntries);
-      final isReversed =
-          widget.logsViewController.sortColumn == LogSortColumn.time &&
-              widget.logsViewController.isLogOrderReversed;
-      if (isReversed && matches.isNotEmpty) {
+      if (_cachedIsReversed && matches.isNotEmpty) {
         matches = matches.reversed.toList();
       }
       widget.logsViewController.updateSearchMatches(matches);
+
+      final map = <int, int>{};
+      for (var i = 0; i < sortedEntries.length; i++) {
+        map[sortedEntries[i].id] = i;
+      }
+      _idToDataIndex = map;
+    } else {
+      _idToDataIndex = const {};
     }
     final titles = widget.logsViewController.getTitles(widget.logsData);
 
@@ -722,7 +723,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
           final isSelected = widget.logsViewController.activeData == logEntry;
 
           return LogListItem(
-            key: ObjectKey(logEntry),
+            key: ValueKey(logEntry.id),
             logData: logEntry,
             itemIndex: index,
             statusIcon: widget.iSpectTheme.theme

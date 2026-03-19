@@ -377,7 +377,7 @@ class _MainLogsView extends StatelessWidget {
             }
 
             return _LogListItem(
-              key: ObjectKey(logEntry),
+              key: ValueKey(logEntry.id),
               logData: logEntry,
               itemIndex: index,
               statusIcon:

@@ -325,11 +325,9 @@ class ISpectViewController extends ChangeNotifier {
     return _searchMatchIds[_focusedMatchIndex];
   }
 
-  void toggleSearchMode() {
-    _searchMode = switch (_searchMode) {
-      SearchMode.highlight => SearchMode.filter,
-      SearchMode.filter => SearchMode.highlight,
-    };
+  set searchMode(SearchMode mode) {
+    if (_searchMode == mode) return;
+    _searchMode = mode;
     _searchMatchIds = const [];
     _searchMatchIdSet = const {};
     _focusedMatchIndex = -1;
