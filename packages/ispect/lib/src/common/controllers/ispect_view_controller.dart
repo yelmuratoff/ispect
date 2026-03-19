@@ -341,16 +341,14 @@ class ISpectViewController extends ChangeNotifier {
   /// Only resets the focused index when matches actually change.
   void updateSearchMatches(List<ISpectLogData> matches) {
     final newIds = matches.map((e) => e.id).toList();
-    if (_searchMatchIds.length == newIds.length &&
-        _idsEqual(newIds)) {
+    if (_searchMatchIds.length == newIds.length && _idsEqual(newIds)) {
       return;
     }
     _searchMatchIds = newIds;
     _searchMatchIdSet = newIds.toSet();
     if (newIds.isEmpty) {
       _focusedMatchIndex = -1;
-    } else if (_focusedMatchIndex < 0 ||
-        _focusedMatchIndex >= newIds.length) {
+    } else if (_focusedMatchIndex < 0 || _focusedMatchIndex >= newIds.length) {
       _focusedMatchIndex = 0;
     }
   }
@@ -364,16 +362,14 @@ class ISpectViewController extends ChangeNotifier {
 
   void focusNextMatch() {
     if (_searchMatchIds.isEmpty) return;
-    _focusedMatchIndex =
-        (_focusedMatchIndex + 1) % _searchMatchIds.length;
+    _focusedMatchIndex = (_focusedMatchIndex + 1) % _searchMatchIds.length;
     notifyListeners();
   }
 
   void focusPreviousMatch() {
     if (_searchMatchIds.isEmpty) return;
-    _focusedMatchIndex =
-        (_focusedMatchIndex - 1 + _searchMatchIds.length) %
-            _searchMatchIds.length;
+    _focusedMatchIndex = (_focusedMatchIndex - 1 + _searchMatchIds.length) %
+        _searchMatchIds.length;
     notifyListeners();
   }
 

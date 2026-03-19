@@ -71,8 +71,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
       widget.titlesController.selectedIndexes.isNotEmpty;
 
   bool get _hasAnyActiveState =>
-      _hasActiveFilters ||
-      widget.controller.searchMode == SearchMode.filter;
+      _hasActiveFilters || widget.controller.searchMode == SearchMode.filter;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder(
@@ -142,12 +141,11 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                       focusNode: widget.focusNode,
                       searchController: _searchController,
                       hasSearchText: hasText,
-                      isHighlightMode: widget.controller.searchMode ==
-                          SearchMode.highlight,
+                      isHighlightMode:
+                          widget.controller.searchMode == SearchMode.highlight,
                       focusedMatchPosition:
                           widget.controller.focusedMatchPosition,
-                      searchMatchCount:
-                          widget.controller.searchMatchCount,
+                      searchMatchCount: widget.controller.searchMatchCount,
                       onChanged: _onSearchChanged,
                       onClear: _onSearchClear,
                       onNextMatch: () {
@@ -290,8 +288,7 @@ class _SearchBar extends StatelessWidget {
         child: Icon(
           Icons.search_rounded,
           size: 22,
-          color: context.appTheme.colorScheme.onSurface
-              .withValues(alpha: 0.5),
+          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
         ),
       ),
       trailing: [
@@ -313,8 +310,8 @@ class _SearchBar extends StatelessWidget {
             onPressed: onClear,
             icon: Icon(
               Icons.close_rounded,
-              color: context.appTheme.colorScheme.onSurface
-                  .withValues(alpha: 0.5),
+              color:
+                  context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           )
         else if (context.screenSize.isDesktop)
@@ -427,9 +424,8 @@ class _FilterButton extends StatelessWidget {
         width: 45,
         height: 45,
         child: Material(
-          color: hasActiveState
-              ? primaryColor.withValues(alpha: 0.12)
-              : cardColor,
+          color:
+              hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           child: InkWell(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -496,8 +492,7 @@ class _FilterSheetContent extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        final hasSelectedChips =
-            titlesController.selectedIndexes.isNotEmpty;
+        final hasSelectedChips = titlesController.selectedIndexes.isNotEmpty;
 
         return ListView(
           controller: scrollController,
@@ -553,8 +548,7 @@ class _FilterSheetContent extends StatelessWidget {
                             .withValues(alpha: 0.3),
                       ),
                       shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.all(Radius.circular(12)),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -599,7 +593,9 @@ class _SearchModeSection extends StatelessWidget {
               segments: [
                 ButtonSegment<SearchMode>(
                   value: SearchMode.highlight,
-                  icon: Icon(Icons.manage_search_rounded, size: 18,
+                  icon: Icon(
+                    Icons.manage_search_rounded,
+                    size: 18,
                     color: searchMode == SearchMode.highlight
                         ? primaryColor
                         : null,
@@ -608,17 +604,17 @@ class _SearchModeSection extends StatelessWidget {
                 ),
                 ButtonSegment<SearchMode>(
                   value: SearchMode.filter,
-                  icon: Icon(Icons.filter_list_rounded, size: 18,
-                    color: searchMode == SearchMode.filter
-                        ? primaryColor
-                        : null,
+                  icon: Icon(
+                    Icons.filter_list_rounded,
+                    size: 18,
+                    color:
+                        searchMode == SearchMode.filter ? primaryColor : null,
                   ),
                   label: Text(context.ispectL10n.filters),
                 ),
               ],
               selected: {searchMode},
-              onSelectionChanged: (selected) =>
-                  onChanged(selected.first),
+              onSelectionChanged: (selected) => onChanged(selected.first),
               style: SegmentedButton.styleFrom(
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -660,8 +656,7 @@ class _LogTypeChipsWrap extends StatelessWidget {
           children: List.generate(uniqTitles.length, (index) {
             final title = uniqTitles[index];
             final count = titles.where((e) => e == title).length;
-            final isSelected =
-                titlesController.selectedIndexes.contains(index);
+            final isSelected = titlesController.selectedIndexes.contains(index);
             final typeColor =
                 theme.getTypeColor(context, key: title) ?? Colors.grey;
             final typeIcon = theme.getTypeIcon(context, key: title);
@@ -720,14 +715,10 @@ class _LogTypeChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: isSelected
-              ? typeColor.withValues(alpha: 0.1)
-              : cardColor,
+          color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           border: Border.all(
-            color: isSelected
-                ? typeColor.withValues(alpha: 0.4)
-                : borderColor,
+            color: isSelected ? typeColor.withValues(alpha: 0.4) : borderColor,
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),

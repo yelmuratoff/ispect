@@ -108,8 +108,6 @@ class _LogsScreenState extends State<LogsScreen> {
               itemsBuilder: widget.itemsBuilder,
               onSettingsTap: () => _openLogsSettings(context),
               hasDetailPanel: showDetailPanel,
-
-
             );
 
             if (!showDetailPanel) {
@@ -493,18 +491,15 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
     // Recompute filtered+sorted entries to find the visual index of the
     // focused match by its ID. This is the same data the list builder uses.
-    final filteredEntries =
-        widget.logsViewController.searchMode == SearchMode.highlight
-            ? widget.logsViewController
-                .applyFiltersWithoutSearch(widget.logsData)
-            : widget.logsViewController.applyCurrentFilters(widget.logsData);
-    final sortedEntries =
-        _controller.applySortingIfNeeded(filteredEntries);
+    final filteredEntries = widget.logsViewController.searchMode ==
+            SearchMode.highlight
+        ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
+        : widget.logsViewController.applyCurrentFilters(widget.logsData);
+    final sortedEntries = _controller.applySortingIfNeeded(filteredEntries);
 
     for (var i = 0; i < sortedEntries.length; i++) {
       if (sortedEntries[i].id == focusedId) {
-        final visualIndex =
-            isReversed ? sortedEntries.length - 1 - i : i;
+        final visualIndex = isReversed ? sortedEntries.length - 1 - i : i;
         _controller.listController.animateToItem(
           index: visualIndex,
           scrollController: widget.logsScrollController,
@@ -532,8 +527,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
     // Reverse match order when the list is visually reversed so that
     // "next" (↓) moves down the screen and "previous" (↑) moves up.
     if (isHighlightMode) {
-      var matches =
-          widget.logsViewController.findSearchMatches(sortedEntries);
+      var matches = widget.logsViewController.findSearchMatches(sortedEntries);
       final isReversed =
           widget.logsViewController.sortColumn == LogSortColumn.time &&
               widget.logsViewController.isLogOrderReversed;

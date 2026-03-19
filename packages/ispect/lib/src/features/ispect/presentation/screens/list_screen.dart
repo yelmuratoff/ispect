@@ -315,8 +315,7 @@ class _MainLogsView extends StatelessWidget {
 
     // Compute search matches for highlight mode using log IDs.
     if (isHighlightMode) {
-      var matches =
-          logsViewController.findSearchMatches(filteredLogEntries);
+      var matches = logsViewController.findSearchMatches(filteredLogEntries);
       if (logsViewController.isLogOrderReversed && matches.isNotEmpty) {
         matches = matches.reversed.toList();
       }

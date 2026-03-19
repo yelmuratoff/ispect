@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.8.0-dev09
+## 4.8.0-dev10
 
 ### Code Quality
 
@@ -9,9 +9,9 @@
 
 ### Behavioral Changes
 
-- **Redaction is now enabled by default** for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).
-- **HTTP transaction grouping** enabled by default — correlated request/response/error logs displayed as expandable transaction cards with duration and status badges. Configurable via `ISpectViewController(groupHttpLogs:)`.
-- **Search** now matches across all log fields: key, title, log level, time, message, exception, error, and additional data.
+- Redaction enabled by default for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).
+- HTTP transaction grouping enabled by default — correlated request/response/error logs as expandable cards with duration and status badges. Configurable via `ISpectViewController(groupHttpLogs:)`.
+- Search now matches across all log fields: key, title, log level, time, message, exception, error, and additional data.
 
 ### Security
 
@@ -28,15 +28,18 @@
 
 ### Improvements
 
-- **Desktop layout:** Resizable split view for log details, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
-- **Log screen:** Live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, search/filter chips with counts. Extracted `LogsScreenController` for cleaner architecture.
-- **JSON viewer:** Async search with loading indicator, nested array support, log type in app bar, clear button for search.
-- **Bottom sheets:** Unified share sheets into `ISpectShareSheet`, redesigned settings sheet, reusable bottom sheet components. Added `showISpectSheet` for adaptive display (dialog on desktop, sheet on mobile).
-- **Draggable panel:** Fixed dark mode theming, upgraded `draggable_panel` to `^2.0.0` with M3 surface-based defaults.
-- **Log cards:** Context menu on long press, improved action buttons with tooltips, conditional background on expand.
-- **Network logs:** Request-response correlation via `requestId`, cross-navigation between correlated logs in detail view, transaction share with request/response choice.
-- **Tips dialog:** Moved from auto-popup to app bar icon button.
-- **Localization:** New keys for log filtering, navigation transitions, actions, tips, HTTP grouping, and updated translations across all 12 languages.
+- Desktop layout with resizable split view, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
+- Log screen live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, and search/filter chips with counts.
+- JSON viewer async search with loading indicator, nested array support, and clear button.
+- Unified share sheets into `ISpectShareSheet`, redesigned settings sheet. Added `showISpectSheet` for adaptive display (dialog on desktop, sheet on mobile).
+- Draggable panel dark mode theming fix, upgraded `draggable_panel` to `^2.0.0` with M3 defaults.
+- Log cards context menu on long press, improved action buttons with tooltips.
+- Network logs request-response correlation via `requestId`, cross-navigation between correlated logs, transaction share.
+- Search highlights matching cards and scrolls to them by default; filter mode available via filter sheet. Inline ↑/↓ navigation in the search bar.
+- Replaced inline filter chips and mode toggle with a single filter button opening an adaptive sheet with search mode control and log type chips.
+- `ISpectLogData` now has an auto-generated unique `id` field.
+- Tips dialog moved from auto-popup to app bar icon button.
+- New localization keys for search mode, log types, and updated translations across all 12 languages.
 
 ### CI
 
