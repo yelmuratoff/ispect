@@ -325,8 +325,7 @@ class LogsScreenController {
       return _cachedVisualEntries!;
     }
 
-    final result =
-        isReversed ? sortedEntries.reversed.toList() : sortedEntries;
+    final result = isReversed ? sortedEntries.reversed.toList() : sortedEntries;
     _cachedVisualEntries = result;
     _lastVisualEntriesInput = sortedEntries;
     _lastVisualEntriesReversed = isReversed;

@@ -12,8 +12,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
         'id': id,
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
-        if (title != null)
-          'title': truncated ? title.truncate() : title,
+        if (title != null) 'title': truncated ? title.truncate() : title,
         if (logLevel != null) 'log-level': logLevel!.index.toString(),
         if (message != null)
           'message': truncated ? message.truncate() : message,

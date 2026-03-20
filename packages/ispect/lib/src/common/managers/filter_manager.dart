@@ -160,8 +160,7 @@ class FilterManager {
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
     );
-    final result =
-        logsData.where(noSearchFilter.apply).toList(growable: false);
+    final result = logsData.where(noSearchFilter.apply).toList(growable: false);
     _cachedNoSearchResult = UnmodifiableListView(result);
     _noSearchResultGeneration = _outputGeneration;
     return _cachedNoSearchResult!;
