@@ -461,8 +461,12 @@ class _MainLogsViewState extends State<_MainLogsView> {
   final _transactionService = NetworkTransactionService();
 
   Map<int, int> _idToDataIndex = const {};
+  List<ISpectLogData>? _lastIdToDataIndexInput;
   int _cachedSortedLength = 0;
   bool _cachedIsReversed = false;
+
+  List<ISpectLogData>? _lastRawMatches;
+  List<ISpectLogData> _reversedMatchesCache = const [];
 
   @override
   void initState() {
@@ -523,23 +527,28 @@ class _MainLogsViewState extends State<_MainLogsView> {
             widget.logsViewController.isLogOrderReversed;
     _cachedSortedLength = sortedEntries.length;
 
-    // Compute search matches for highlight mode using log IDs.
-    // Reverse match order when the list is visually reversed so that
-    // "next" (↓) moves down the screen and "previous" (↑) moves up.
     if (isHighlightMode) {
       var matches = widget.logsViewController.findSearchMatches(sortedEntries);
       if (_cachedIsReversed && matches.isNotEmpty) {
-        matches = matches.reversed.toList();
+        if (!identical(matches, _lastRawMatches)) {
+          _reversedMatchesCache = matches.reversed.toList();
+          _lastRawMatches = matches;
+        }
+        matches = _reversedMatchesCache;
       }
       widget.logsViewController.updateSearchMatches(matches);
 
-      final map = <int, int>{};
-      for (var i = 0; i < sortedEntries.length; i++) {
-        map[sortedEntries[i].id] = i;
+      if (!identical(sortedEntries, _lastIdToDataIndexInput)) {
+        final map = <int, int>{};
+        for (var i = 0; i < sortedEntries.length; i++) {
+          map[sortedEntries[i].id] = i;
+        }
+        _idToDataIndex = map;
+        _lastIdToDataIndexInput = sortedEntries;
       }
-      _idToDataIndex = map;
     } else {
       _idToDataIndex = const {};
+      _lastIdToDataIndexInput = null;
     }
     final titles = widget.logsViewController.getTitles(widget.logsData);
 

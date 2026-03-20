@@ -72,6 +72,7 @@ class ISpectViewController extends ChangeNotifier {
   List<int> _searchMatchIds = const [];
   Set<int> _searchMatchIdSet = const {};
   int _focusedMatchIndex = -1;
+  List<ISpectLogData>? _lastUpdateMatchesInput;
 
   // --- Desktop: column sorting ---
   LogSortColumn _sortColumn = LogSortColumn.time;
@@ -332,13 +333,16 @@ class ISpectViewController extends ChangeNotifier {
     _searchMatchIds = const [];
     _searchMatchIdSet = const {};
     _focusedMatchIndex = -1;
+    _lastUpdateMatchesInput = null;
     notifyListeners();
   }
 
   /// Synchronizes the search match state with the given log entries.
-  ///
   void updateSearchMatches(List<ISpectLogData> matches) {
-    final newIds = matches.map((e) => e.id).toList();
+    if (identical(matches, _lastUpdateMatchesInput)) return;
+    _lastUpdateMatchesInput = matches;
+
+    final newIds = matches.map((e) => e.id).toList(growable: false);
     if (listEquals(_searchMatchIds, newIds)) return;
 
     final oldFocused = _focusedMatchIndex;

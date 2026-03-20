@@ -193,7 +193,14 @@ class LogsScreenController {
     }
   }
 
-  // --- Keyboard navigation ---
+  List<ISpectLogData>? _cachedSortedEntries;
+  int _sortedEntriesGeneration = -1;
+  LogSortColumn? _lastSortColumn;
+  LogSortDirection? _lastSortDirection;
+
+  List<ISpectLogData>? _cachedVisualEntries;
+  List<ISpectLogData>? _lastVisualEntriesInput;
+  bool _lastVisualEntriesReversed = false;
 
   KeyEventResult handleKeyEvent(
     FocusNode node,
@@ -266,12 +273,12 @@ class LogsScreenController {
     if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
         event.logicalKey == LogicalKeyboardKey.arrowUp) {
       final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+      final visualEntries = getVisualEntries(sortedEntries);
       int targetVisualIndex;
 
       if (activeData == null) {
-        targetVisualIndex = isDown ? 0 : sortedEntries.length - 1;
+        targetVisualIndex = isDown ? 0 : visualEntries.length - 1;
       } else {
-        final visualEntries = getVisualEntries(sortedEntries);
         final currentVisualIndex = visualEntries.indexOf(activeData);
         if (currentVisualIndex == -1) return KeyEventResult.ignored;
 
@@ -283,7 +290,6 @@ class LogsScreenController {
         }
       }
 
-      final visualEntries = getVisualEntries(sortedEntries);
       final nextEntry = visualEntries[targetVisualIndex];
 
       if (logsViewController.detailData != null) {
@@ -308,21 +314,46 @@ class LogsScreenController {
 
   // --- Helper methods ---
 
-  /// Get entries in visual display order (after sorting + reversing).
+  /// Returns entries in visual display order. Cached by input identity + reverse state.
   List<ISpectLogData> getVisualEntries(List<ISpectLogData> sortedEntries) {
-    if (logsViewController.sortColumn == LogSortColumn.time &&
-        logsViewController.isLogOrderReversed) {
-      return sortedEntries.reversed.toList();
+    final isReversed = logsViewController.sortColumn == LogSortColumn.time &&
+        logsViewController.isLogOrderReversed;
+
+    if (identical(sortedEntries, _lastVisualEntriesInput) &&
+        _lastVisualEntriesReversed == isReversed &&
+        _cachedVisualEntries != null) {
+      return _cachedVisualEntries!;
     }
-    return sortedEntries;
+
+    final result =
+        isReversed ? sortedEntries.reversed.toList() : sortedEntries;
+    _cachedVisualEntries = result;
+    _lastVisualEntriesInput = sortedEntries;
+    _lastVisualEntriesReversed = isReversed;
+    return result;
   }
 
-  /// Apply column sorting if not sorting by time.
+  /// Applies column sorting if needed. Cached by generation + column + direction.
   List<ISpectLogData> applySortingIfNeeded(List<ISpectLogData> entries) {
-    if (logsViewController.sortColumn != LogSortColumn.time) {
-      return logsViewController.applySorting(entries);
+    final column = logsViewController.sortColumn;
+    if (column == LogSortColumn.time) return entries;
+
+    final generation = logsViewController.outputGeneration;
+    final direction = logsViewController.sortDirection;
+
+    if (_sortedEntriesGeneration == generation &&
+        _lastSortColumn == column &&
+        _lastSortDirection == direction &&
+        _cachedSortedEntries != null) {
+      return _cachedSortedEntries!;
     }
-    return entries;
+
+    final sorted = logsViewController.applySorting(entries);
+    _cachedSortedEntries = sorted;
+    _sortedEntriesGeneration = generation;
+    _lastSortColumn = column;
+    _lastSortDirection = direction;
+    return sorted;
   }
 
   /// Get the log entry at a visual index, accounting for sort order.

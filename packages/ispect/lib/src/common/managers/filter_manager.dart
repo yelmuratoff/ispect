@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
@@ -19,27 +20,29 @@ class FilterManager {
   final void Function()? _onChanged;
   final Duration _debounceDuration;
 
-  // Generation-based cache for filtered results
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
 
-  /// Combined generation counter that increments on both data and filter
-  /// changes. Use this to invalidate caches that depend on the filtered output
-  /// (e.g. grouped network transactions).
   int get outputGeneration => _outputGeneration;
   int _outputGeneration = 0;
 
-  // Debounce for search query updates
   Timer? _filterDebounce;
   bool _isDisposed = false;
 
-  // Lightweight caches for current filter parts
   List<String>? _cachedTitles;
   Set<Type>? _cachedTypesSet;
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
 
-  // Cache for title extraction
+  // Cannot use FilterCache here because ISpectFilter uses identity equality.
+  List<ISpectLogData>? _cachedNoSearchResult;
+  int _noSearchResultGeneration = -1;
+
+  List<ISpectLogData> _cachedSearchMatches = const [];
+  int _searchMatchesGeneration = -1;
+  String? _lastSearchMatchQuery;
+  List<ISpectLogData>? _lastSearchMatchInput;
+
   List<String>? _cachedAllTitles;
   List<String>? _cachedUniqueTitles;
   int _lastTitlesGeneration = -1;
@@ -137,38 +140,62 @@ class FilterManager {
     return _filterCache.getFiltered(logsData, filter, _dataGeneration);
   }
 
-  /// Applies only title/type filters (no search query) and returns the result.
+  /// Applies only title/type filters (no search query).
+  /// Returns a stable reference on cache hits for [identical] checks.
   List<ISpectLogData> applyFiltersWithoutSearch(
     List<ISpectLogData> logsData,
   ) {
     if (logsData.isEmpty) return <ISpectLogData>[];
+    if (_filter.titles.isEmpty &&
+        _filter.types.isEmpty &&
+        _filter.logTypeKeys.isEmpty) {
+      return logsData;
+    }
+    if (_noSearchResultGeneration == _outputGeneration &&
+        _cachedNoSearchResult != null) {
+      return _cachedNoSearchResult!;
+    }
     final noSearchFilter = ISpectFilter(
       titles: _filter.titles.toList(),
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
     );
-    if (noSearchFilter.titles.isEmpty &&
-        noSearchFilter.types.isEmpty &&
-        noSearchFilter.logTypeKeys.isEmpty) {
-      return logsData;
-    }
-    return logsData.where(noSearchFilter.apply).toList();
+    final result =
+        logsData.where(noSearchFilter.apply).toList(growable: false);
+    _cachedNoSearchResult = UnmodifiableListView(result);
+    _noSearchResultGeneration = _outputGeneration;
+    return _cachedNoSearchResult!;
   }
 
-  /// Returns log entries from [logsData] that match the current search query.
+  /// Returns log entries matching the current search query.
+  /// Cached by generation + query + input list identity.
   List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) {
     final query = _filter.searchQuery;
     if (query == null || query.trim().isEmpty || logsData.isEmpty) {
       return const [];
     }
+    if (_searchMatchesGeneration == _outputGeneration &&
+        _lastSearchMatchQuery == query &&
+        identical(logsData, _lastSearchMatchInput)) {
+      return _cachedSearchMatches;
+    }
     final searchFilter = SearchFilter(query);
-    return logsData.where(searchFilter.apply).toList();
+    _cachedSearchMatches =
+        logsData.where(searchFilter.apply).toList(growable: false);
+    _searchMatchesGeneration = _outputGeneration;
+    _lastSearchMatchQuery = query;
+    _lastSearchMatchInput = logsData;
+    return _cachedSearchMatches;
   }
 
   void onDataChanged() {
     _dataGeneration++;
     _outputGeneration++;
     _filterCache.invalidate();
+    _noSearchResultGeneration = -1;
+    _cachedNoSearchResult = null;
+    _searchMatchesGeneration = -1;
+    _lastSearchMatchInput = null;
   }
 
   TitlesResult getTitles(List<ISpectLogData> logsData) {
@@ -205,13 +232,16 @@ class FilterManager {
     _isDisposed = true;
   }
 
-  // Internal helpers
   void _invalidateFilterCache() {
     _outputGeneration++;
     _filterCacheValid = false;
     _cachedTitles = null;
     _cachedTypesSet = null;
     _cachedSearchQuery = null;
+    _noSearchResultGeneration = -1;
+    _cachedNoSearchResult = null;
+    _searchMatchesGeneration = -1;
+    _lastSearchMatchInput = null;
   }
 
   List<String> _getCurrentTitles() {
