@@ -81,11 +81,11 @@ class ISpectLogData {
 
   /// Returns the full message, including error/exception and stack trace if available.
   late final String textMessage = joinLogParts([
-        messageText,
-        errorText,
-        exceptionText,
-        stackTraceText,
-      ]);
+    messageText,
+    errorText,
+    exceptionText,
+    stackTraceText,
+  ]);
 
   /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
