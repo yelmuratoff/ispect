@@ -33,7 +33,7 @@ class ConsoleSettings {
   final Map<LogLevel, AnsiPen> colors;
 
   /// Whether logging is enabled.
-  bool enabled;
+  final bool enabled;
 
   /// Default log title.
   final String defaultTitle;

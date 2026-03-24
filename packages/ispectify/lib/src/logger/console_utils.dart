@@ -18,6 +18,9 @@ abstract class ConsoleUtils {
     return withCorner ? '└$line' : line;
   }
 
+  /// Default gray pen used as a fallback when no specific color is configured.
+  static final AnsiPen fallbackPen = AnsiPen()..gray();
+
   /// Default ANSI colors per [LogLevel].
   static final Map<LogLevel, AnsiPen> ansiColors = Map.unmodifiable({
     LogLevel.critical: AnsiPen()..red(),

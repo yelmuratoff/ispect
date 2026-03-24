@@ -112,8 +112,6 @@ extension ISpectLogTypeExt on ISpectLogType {
         _ => LogLevel.info,
       };
 
-  static final AnsiPen _fallbackPen = AnsiPen()..gray();
-
   static final Map<ISpectLogType, AnsiPen> _defaultPens = {
     ISpectLogType.critical: AnsiPen()..red(),
     ISpectLogType.error: AnsiPen()..red(),
@@ -149,5 +147,5 @@ extension ISpectLogTypeExt on ISpectLogType {
   };
 
   /// Built-in ANSI color for this log type.
-  AnsiPen get defaultPen => _defaultPens[this] ?? _fallbackPen;
+  AnsiPen get defaultPen => _defaultPens[this] ?? ConsoleUtils.fallbackPen;
 }

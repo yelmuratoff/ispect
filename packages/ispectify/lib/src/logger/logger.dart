@@ -1,6 +1,7 @@
 import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/filter/filter.dart';
+import 'package:ispectify/src/logger/console_utils.dart';
 import 'package:ispectify/src/logger/formatter.dart';
 import 'package:ispectify/src/logger/logger_io.dart'
     if (dart.library.js_interop) 'logger_web.dart';
@@ -33,8 +34,6 @@ class ISpectBaseLogger {
     ansiColorDisabled = false;
   }
 
-  static final AnsiPen _fallbackPen = AnsiPen()..gray();
-
   final ConsoleSettings settings;
   final ILoggerFormatter formatter;
   final LoggerOutput _output;
@@ -57,7 +56,7 @@ class ISpectBaseLogger {
     }
 
     final selectedPen =
-        pen ?? settings.colors[selectedLevel] ?? _fallbackPen;
+        pen ?? settings.colors[selectedLevel] ?? ConsoleUtils.fallbackPen;
 
     final formattedMsg = formatter.format(
       LogDetails(message: msg, level: selectedLevel, pen: selectedPen),

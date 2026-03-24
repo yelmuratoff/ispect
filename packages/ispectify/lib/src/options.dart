@@ -1,12 +1,5 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Fallback color for logs without a predefined color.
-final AnsiPen _fallbackPen = AnsiPen()..gray();
-
-/// Helper function to get default pen for a log type key.
-AnsiPen? _getDefaultPenByKey(String key) =>
-    ISpectLogType.fromKey(key)?.defaultPen;
-
 /// Configuration options for ISpectLogger logging.
 ///
 /// This class allows customization of logging behavior, including
@@ -31,7 +24,7 @@ class ISpectLoggerOptions {
     bool useHistory = true,
     bool useConsoleLogs = true,
     int maxHistoryItems = 10000,
-    int logTruncateLength = 10000,
+    int logTruncateLength = kDefaultStringTruncateLimit,
     Map<String, String>? customTitles,
     Map<String, AnsiPen>? customColors,
   })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
@@ -65,7 +58,7 @@ class ISpectLoggerOptions {
   final int _logTruncateLength;
 
   /// Whether logging is globally enabled.
-  bool enabled;
+  final bool enabled;
 
   /// Custom title overrides (immutable after creation).
   final Map<String, String>? _customTitles;
@@ -90,18 +83,18 @@ class ISpectLoggerOptions {
   /// First checks custom overrides, then built-in defaults from ISpectLogType,
   /// then provided fallback, finally falls back to default gray.
   AnsiPen penByKey(String? key, {AnsiPen? fallbackPen}) {
-    if (key == null) return fallbackPen ?? _fallbackPen;
+    if (key == null) return fallbackPen ?? ConsoleUtils.fallbackPen;
 
     // 1. Check custom override
     final customPen = _customColors?[key];
     if (customPen != null) return customPen;
 
     // 2. Check built-in defaults
-    final defaultPen = _getDefaultPenByKey(key);
+    final defaultPen = ISpectLogType.fromKey(key)?.defaultPen;
     if (defaultPen != null) return defaultPen;
 
     // 3. Use provided fallback or default
-    return fallbackPen ?? _fallbackPen;
+    return fallbackPen ?? ConsoleUtils.fallbackPen;
   }
 
   /// Creates a new `ISpectLoggerOptions` instance with modified properties.

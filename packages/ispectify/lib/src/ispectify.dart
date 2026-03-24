@@ -95,7 +95,7 @@ class ISpectLogger {
 
   late ILogHistory _history;
 
-  bool _isActive() => !_isDisposed;
+  bool get _isActive => !_isDisposed;
 
   // ======= OBSERVER METHODS =======
 
@@ -105,13 +105,13 @@ class ISpectLogger {
   ///
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _observerManager.add(observer);
   }
 
   /// Registers an observer and returns a disposer to remove it later.
   ISpectObserverDisposer observe(ISpectObserver observer) {
-    if (!_isActive()) return () {};
+    if (!_isActive) return () {};
     return _observerManager.observe(observer);
   }
 
@@ -119,13 +119,13 @@ class ISpectLogger {
   ///
   /// - `observer`: The observer to remove.
   void removeObserver(ISpectObserver observer) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _observerManager.remove(observer);
   }
 
   /// Removes all registered observers.
   void clearObservers() {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _observerManager.clear();
   }
 
@@ -137,7 +137,7 @@ class ISpectLogger {
   /// Wraps each observer call in a try-catch to prevent one failing
   /// observer from affecting others.
   void _notifyObservers(void Function(ISpectObserver) notify) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _observerManager.notify(notify);
   }
 
@@ -161,7 +161,7 @@ class ISpectLogger {
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
 
     if (filter != null) {
       _filter = filter;
@@ -212,7 +212,7 @@ class ISpectLogger {
 
   /// Removes the current filter so that all logs are processed.
   void clearFilter() {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _filter = null;
     _pipeline.clearFilter();
   }
@@ -236,7 +236,7 @@ class ISpectLogger {
 
   /// Clears all log entries from history.
   void clearHistory() {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _history.clear();
   }
 
@@ -244,16 +244,18 @@ class ISpectLogger {
   ///
   /// When enabled, log entries will be processed and stored.
   void enable() {
-    if (!_isActive()) return;
-    _options.enabled = true;
+    if (!_isActive) return;
+    _options = _options.copyWith(enabled: true);
+    _pipeline.update(options: _options);
   }
 
   /// Disables the inspector.
   ///
   /// When disabled, log entries will not be processed or stored.
   void disable() {
-    if (!_isActive()) return;
-    _options.enabled = false;
+    if (!_isActive) return;
+    _options = _options.copyWith(enabled: false);
+    _pipeline.update(options: _options);
   }
 
   // ======= LOGGING METHODS =======
@@ -272,7 +274,7 @@ class ISpectLogger {
     StackTrace? stackTrace,
     Object? message,
   }) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
 
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
@@ -320,7 +322,7 @@ class ISpectLogger {
   ///
   /// - `log`: The custom log data to process.
   void logData(ISpectLogData log) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     _processLog(log);
   }
 
@@ -532,7 +534,7 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
     final data = LogFactory.fromType(
@@ -560,7 +562,7 @@ class ISpectLogger {
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectLogData` object.
   void _processLog(ISpectLogData data) {
-    if (!_isActive()) return;
+    if (!_isActive) return;
     if (!_pipeline.shouldProcess(data)) return;
 
     _notifyObservers(data.notifyObserver);
