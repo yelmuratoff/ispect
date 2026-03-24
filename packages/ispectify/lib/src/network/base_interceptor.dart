@@ -123,6 +123,31 @@ mixin BaseNetworkInterceptor {
     }
   }
 
+  /// Wraps a log-building callback in try-catch, logging a warning on failure
+  /// instead of propagating the exception.
+  ///
+  /// Use this in interceptor hooks (`onRequest`, `onResponse`, `onError`)
+  /// to prevent log-building failures from breaking the HTTP pipeline.
+  void safeLog(ISpectLogData Function() builder) {
+    try {
+      logger.logData(builder());
+    } catch (e, st) {
+      logger.log('Failed to build log: $e', stackTrace: st);
+    }
+  }
+
+  /// Returns `true` when the interceptor is [enabled] and the optional
+  /// [filter] either is `null` or returns `true` for [value].
+  ///
+  /// Consolidates the `settings.enabled && (filter?.call(x) ?? true)` pattern
+  /// used across all network interceptors.
+  bool shouldProcess<T>({
+    required bool enabled,
+    required bool Function(T)? filter,
+    required T value,
+  }) =>
+      enabled && (filter?.call(value) ?? true);
+
   /// Processes and redacts a map, ensuring string keys.
   ///
   /// Applies redaction if enabled, then converts to Map<String, dynamic>.

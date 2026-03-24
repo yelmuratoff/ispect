@@ -195,4 +195,56 @@ class RedactionService {
         urlPattern,
         (match) => redactUrl(match.group(0)!),
       );
+
+  // ---------------------------------------------------------------------------
+  // Lightweight key-based redaction (static)
+  // ---------------------------------------------------------------------------
+
+  /// Recursively redacts map values whose keys match any of the provided [keys]
+  /// (case-insensitive).
+  ///
+  /// Unlike [redact], this method performs **only** exact key-name matching —
+  /// no pattern-based content detection, no strategies. It is intended for
+  /// call sites that need simple, per-call key lists (e.g. database logging).
+  ///
+  /// Returns the original [data] unchanged when it is not a [Map] or [Iterable],
+  /// or when [keys] is empty.
+  static Object? redactByKeys(
+    Object? data,
+    List<String> keys, {
+    int maxDepth = 50,
+    String placeholder = '***',
+  }) {
+    if (data == null || keys.isEmpty || maxDepth <= 0) return data;
+    if (data is Map) {
+      final out = <String, Object?>{};
+      data.forEach((k, v) {
+        final keyStr = k.toString();
+        final keyLower = keyStr.toLowerCase();
+        final hit = keys.any((rk) => rk.toLowerCase() == keyLower);
+        out[keyStr] = hit
+            ? placeholder
+            : redactByKeys(
+                v,
+                keys,
+                maxDepth: maxDepth - 1,
+                placeholder: placeholder,
+              );
+      });
+      return out;
+    }
+    if (data is Iterable) {
+      return data
+          .map(
+            (e) => redactByKeys(
+              e as Object?,
+              keys,
+              maxDepth: maxDepth - 1,
+              placeholder: placeholder,
+            ),
+          )
+          .toList();
+    }
+    return data;
+  }
 }

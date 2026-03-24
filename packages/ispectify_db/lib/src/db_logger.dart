@@ -73,25 +73,12 @@ final class ISpectDbCore {
     return value;
   }
 
-  static const int _maxRedactDepth = 50;
-
-  static Object? redact(Object? data, List<String> keys, [int depth = 0]) {
-    if (data == null || depth >= _maxRedactDepth) return data;
-    if (data is Map) {
-      final out = <String, Object?>{};
-      data.forEach((k, v) {
-        final keyStr = k.toString();
-        final keyLower = keyStr.toLowerCase();
-        final hit = keys.any((rk) => rk.toLowerCase() == keyLower);
-        out[keyStr] = hit ? '***' : redact(v, keys, depth + 1);
-      });
-      return out;
-    }
-    if (data is Iterable) {
-      return data.map((e) => redact(e, keys, depth + 1)).toList();
-    }
-    return data;
-  }
+  /// Redacts values in [data] whose keys match any of the provided [keys].
+  ///
+  /// Delegates to [RedactionService.redactByKeys] — the shared implementation
+  /// in the `ispectify` package.
+  static Object? redact(Object? data, List<String> keys) =>
+      RedactionService.redactByKeys(data, keys);
 
   /// Redacts positional arguments in a [List] when the SQL [statement]
   /// references columns that match any of the [keys].

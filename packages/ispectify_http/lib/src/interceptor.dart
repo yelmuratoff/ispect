@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
@@ -77,12 +75,18 @@ class ISpectHttpInterceptor extends InterceptorContract
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
-    if (!_shouldProcessRequest(request)) return request;
+    if (!shouldProcess(
+      enabled: settings.enabled,
+      filter: settings.requestFilter,
+      value: request,
+    )) {
+      return request;
+    }
 
     final requestId = _requestIdGenerator.next();
     _requestIds[request] = requestId;
 
-    try {
+    safeLog(() {
       final useRedaction = settings.enableRedaction;
 
       final headers = settings.printRequestHeaders
@@ -97,26 +101,17 @@ class ISpectHttpInterceptor extends InterceptorContract
         request.url,
         useRedaction: useRedaction,
       );
-      logger.logData(
-        HttpRequestLog(
-          url,
-          method: request.method,
-          url: url,
-          path: path,
-          requestId: requestId,
-          headers: headers,
-          settings: settings,
-          body: body,
-        ),
+      return HttpRequestLog(
+        url,
+        method: request.method,
+        url: url,
+        path: path,
+        requestId: requestId,
+        headers: headers,
+        settings: settings,
+        body: body,
       );
-    } catch (e, st) {
-      developer.log(
-        'Failed to log HTTP request: $e',
-        name: 'ISpectHttpInterceptor',
-        error: e,
-        stackTrace: st,
-      );
-    }
+    });
     return request;
   }
 
@@ -126,13 +121,28 @@ class ISpectHttpInterceptor extends InterceptorContract
   }) async {
     final isErrorResponse =
         response.statusCode >= 400 && response.statusCode < 600;
-    if (!isErrorResponse && !_shouldProcessResponse(response)) return response;
-    if (isErrorResponse && !_shouldProcessError(response)) return response;
+
+    if (!isErrorResponse &&
+        !shouldProcess(
+          enabled: settings.enabled,
+          filter: settings.responseFilter,
+          value: response,
+        )) {
+      return response;
+    }
+    if (isErrorResponse &&
+        !shouldProcess(
+          enabled: settings.enabled,
+          filter: settings.errorFilter,
+          value: response,
+        )) {
+      return response;
+    }
 
     final requestId =
         response.request != null ? _requestIds[response.request!] : null;
 
-    try {
+    safeLog(() {
       final useRedaction = settings.enableRedaction;
 
       final responseBody = _responseBodyPayload(
@@ -162,77 +172,57 @@ class ISpectHttpInterceptor extends InterceptorContract
         final errorUrl = requestUrl != null
             ? redactUrlAndPath(requestUrl, useRedaction: useRedaction)
             : (url: '', path: '');
-        logger.logData(
-          HttpErrorLog(
-            errorUrl.url,
-            method: response.request?.method,
-            url: errorUrl.url,
-            path: errorUrl.path,
-            requestId: requestId,
-            statusCode: response.statusCode,
-            settings: settings,
-            statusMessage:
-                settings.printErrorMessage ? response.reasonPhrase : null,
-            requestHeaders: settings.printRequestHeaders
-                ? _stringHeaders(response.request?.headers, useRedaction)
-                : null,
-            headers: settings.printErrorHeaders
-                ? _stringHeaders(response.headers, useRedaction)
-                : null,
-            body: _errorBodyPayload(responseBody, requestBody),
-            responseData: responseData,
-            redactor: useRedaction ? redactor : null,
-          ),
+        return HttpErrorLog(
+          errorUrl.url,
+          method: response.request?.method,
+          url: errorUrl.url,
+          path: errorUrl.path,
+          requestId: requestId,
+          statusCode: response.statusCode,
+          settings: settings,
+          statusMessage:
+              settings.printErrorMessage ? response.reasonPhrase : null,
+          requestHeaders: settings.printRequestHeaders
+              ? _stringHeaders(response.request?.headers, useRedaction)
+              : null,
+          headers: settings.printErrorHeaders
+              ? _stringHeaders(response.headers, useRedaction)
+              : null,
+          body: _errorBodyPayload(responseBody, requestBody),
+          responseData: responseData,
+          redactor: useRedaction ? redactor : null,
         );
       } else {
         final responseUrl = response.request?.url;
         final resp = responseUrl != null
             ? redactUrlAndPath(responseUrl, useRedaction: useRedaction)
             : (url: '', path: '');
-        logger.logData(
-          HttpResponseLog(
-            resp.url,
-            method: response.request?.method,
-            url: resp.url,
-            path: resp.path,
-            requestId: requestId,
-            statusCode: response.statusCode,
-            statusMessage:
-                settings.printResponseMessage ? response.reasonPhrase : null,
-            requestHeaders: settings.printRequestHeaders
-                ? _stringHeaders(response.request?.headers, useRedaction)
-                : null,
-            headers: settings.printResponseHeaders
-                ? _stringHeaders(response.headers, useRedaction)
-                : null,
-            requestBody: requestBody,
-            responseBody: responseBody,
-            settings: settings,
-            responseData: responseData,
-            redactor: useRedaction ? redactor : null,
-          ),
+        return HttpResponseLog(
+          resp.url,
+          method: response.request?.method,
+          url: resp.url,
+          path: resp.path,
+          requestId: requestId,
+          statusCode: response.statusCode,
+          statusMessage:
+              settings.printResponseMessage ? response.reasonPhrase : null,
+          requestHeaders: settings.printRequestHeaders
+              ? _stringHeaders(response.request?.headers, useRedaction)
+              : null,
+          headers: settings.printResponseHeaders
+              ? _stringHeaders(response.headers, useRedaction)
+              : null,
+          requestBody: requestBody,
+          responseBody: responseBody,
+          settings: settings,
+          responseData: responseData,
+          redactor: useRedaction ? redactor : null,
         );
       }
-    } catch (e, st) {
-      developer.log(
-        'Failed to log HTTP response: $e',
-        name: 'ISpectHttpInterceptor',
-        error: e,
-        stackTrace: st,
-      );
-    }
+    });
 
     return response;
   }
-
-  bool _shouldProcessRequest(BaseRequest request) =>
-      settings.enabled && (settings.requestFilter?.call(request) ?? true);
-
-  bool _shouldProcessResponse(BaseResponse response) =>
-      settings.enabled && (settings.responseFilter?.call(response) ?? true);
-
-  bool _shouldProcessError(BaseResponse response) =>
-      settings.enabled && (settings.errorFilter?.call(response) ?? true);
 
   Map<String, String>? _stringHeaders(
     Map<String, String>? headers,
@@ -267,7 +257,7 @@ class ISpectHttpInterceptor extends InterceptorContract
       return bodyAsMap(
         request.body,
         useRedaction: useRedaction,
-        normalizer: _decodeJsonGracefully,
+        normalizer: NetworkPayloadSanitizer.decodeJsonGracefully,
       );
     }
 
@@ -285,7 +275,7 @@ class ISpectHttpInterceptor extends InterceptorContract
     return payload.body(
       response.body,
       enableRedaction: useRedaction,
-      normalizer: _decodeJsonGracefully,
+      normalizer: NetworkPayloadSanitizer.decodeJsonGracefully,
     );
   }
 
@@ -306,6 +296,5 @@ class ISpectHttpInterceptor extends InterceptorContract
     return payloadMap;
   }
 
-  static Object? _decodeJsonGracefully(Object? value) =>
-      NetworkPayloadSanitizer.decodeJsonGracefully(value);
+
 }

@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/request.dart';
+import 'package:ispectify_http/src/utils/multipart_serializer.dart';
 
 class HttpResponseData {
   HttpResponseData({
@@ -73,19 +72,7 @@ class HttpResponseData {
       if (resp != null && redactor == null)
         'body-bytes': resp.bodyBytes.length.toString(),
       if (multipart != null)
-        'multipart-request': {
-          'fields': multipart.fields,
-          'files': multipart.files
-              .map(
-                (file) => <String, Object?>{
-                  'filename': file.filename,
-                  'length': file.length,
-                  'contentType': file.contentType.toString(),
-                  'field': file.field,
-                },
-              )
-              .toList(),
-        },
+        'multipart-request': HttpMultipartSerializer.serialize(multipart),
       'headers': baseResponse.headers,
     };
 
@@ -162,15 +149,8 @@ class HttpResponseData {
     return redacted is Object ? redacted : body;
   }
 
-  static Object _tryDecodeJson(String body) {
-    try {
-      final decoded = jsonDecode(body);
-      if (decoded is Object) return decoded;
-      return body;
-    } catch (_) {
-      return body;
-    }
-  }
+  static Object _tryDecodeJson(String body) =>
+      NetworkPayloadSanitizer.decodeJsonGracefully(body) ?? body;
 
   /// Helper method to get redacted body content
   static Object _getRedactedBody(
@@ -179,22 +159,12 @@ class HttpResponseData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   ) {
-    try {
-      final parsed = jsonDecode(body);
-      if (parsed is! Object) return body;
-      final redacted = redactor.redact(
-        parsed,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      return redacted is Object ? redacted : parsed;
-    } catch (_) {
-      final redacted = redactor.redact(
-        body,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      return redacted is Object ? redacted : body;
-    }
+    final decoded = NetworkPayloadSanitizer.decodeJsonGracefully(body) ?? body;
+    final redacted = redactor.redact(
+      decoded,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    return redacted is Object ? redacted : decoded;
   }
 }

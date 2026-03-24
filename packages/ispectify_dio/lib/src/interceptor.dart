@@ -82,26 +82,20 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     RequestInterceptorHandler handler,
   ) {
     super.onRequest(options, handler);
-    if (!_shouldProcessRequest(options)) return;
+    if (!shouldProcess(enabled: settings.enabled, filter: settings.requestFilter, value: options)) {
+      return;
+    }
 
     final requestId = _requestIdGenerator.next();
     options.extra[_requestIdExtraKey] = requestId;
 
-    try {
-      final useRedaction = settings.enableRedaction;
-      logger.logData(
-        _buildRequestLog(
-          options: options,
-          requestId: requestId,
-          useRedaction: useRedaction,
-        ),
-      );
-    } catch (e, st) {
-      logger.log(
-        'Failed to build request log: $e',
-        stackTrace: st,
-      );
-    }
+    safeLog(
+      () => _buildRequestLog(
+        options: options,
+        requestId: requestId,
+        useRedaction: settings.enableRedaction,
+      ),
+    );
   }
 
   @override
@@ -110,60 +104,37 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
-    if (!_shouldProcessResponse(response)) return;
+    if (!shouldProcess(enabled: settings.enabled, filter: settings.responseFilter, value: response)) {
+      return;
+    }
 
     final requestId =
         response.requestOptions.extra[_requestIdExtraKey] as String?;
 
-    try {
-      final useRedaction = settings.enableRedaction;
-      logger.logData(
-        _buildResponseLog(
-          response: response,
-          requestId: requestId,
-          useRedaction: useRedaction,
-        ),
-      );
-    } catch (e, st) {
-      logger.log(
-        'Failed to build response log: $e',
-        stackTrace: st,
-      );
-    }
+    safeLog(
+      () => _buildResponseLog(
+        response: response,
+        requestId: requestId,
+        useRedaction: settings.enableRedaction,
+      ),
+    );
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
-    if (!_shouldProcessError(err)) return;
+    if (!shouldProcess(enabled: settings.enabled, filter: settings.errorFilter, value: err)) return;
 
     final requestId = err.requestOptions.extra[_requestIdExtraKey] as String?;
 
-    try {
-      final useRedaction = settings.enableRedaction;
-      logger.logData(
-        _buildErrorLog(
-          error: err,
-          requestId: requestId,
-          useRedaction: useRedaction,
-        ),
-      );
-    } catch (e, st) {
-      logger.log(
-        'Failed to build error log: $e',
-        stackTrace: st,
-      );
-    }
+    safeLog(
+      () => _buildErrorLog(
+        error: err,
+        requestId: requestId,
+        useRedaction: settings.enableRedaction,
+      ),
+    );
   }
-
-  bool _shouldProcessRequest(RequestOptions options) =>
-      settings.enabled && (settings.requestFilter?.call(options) ?? true);
-
-  bool _shouldProcessResponse(Response<dynamic> response) =>
-      settings.enabled && (settings.responseFilter?.call(response) ?? true);
-
-  bool _shouldProcessError(DioException err) =>
-      settings.enabled && (settings.errorFilter?.call(err) ?? true);
 
   DioRequestLog _buildRequestLog({
     required RequestOptions options,
