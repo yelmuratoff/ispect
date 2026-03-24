@@ -280,7 +280,7 @@ Pass a configured `RedactionService` to the interceptor:
 final redactor = RedactionService(
   // Add your own sensitive keys on top of the defaults
   sensitiveKeys: {
-    ...kDefaultSensitiveKeys,
+    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
@@ -298,7 +298,7 @@ final redactor = RedactionService(
 
   // Number of characters visible at each edge of masked strings (default: 2)
   // e.g., "Bearer abc...xyz ([REDACTED])"
-  stringEdgeVisible: 3,
+  visibleEdgeLength: 3,
 
   // Control binary and base64 redaction
   redactBinary: true,   // default: true

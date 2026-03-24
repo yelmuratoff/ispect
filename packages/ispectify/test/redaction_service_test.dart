@@ -34,12 +34,20 @@ void main() {
       expect(map!['token'], 'SAFE');
     });
 
-    test('fully masks configured keys', () {
+    test('fully masks configured keys that are also sensitive', () {
       final service = RedactionService(fullyMaskedKeys: {'apiKey'});
       final map =
           service.redact({'apiKey': '123456789'}) as Map<String, Object?>?;
       expect(map, isNotNull);
       expect(map!['apiKey'], '[REDACTED]');
+    });
+
+    test('fully masks configured keys even when not sensitive', () {
+      final service = RedactionService(fullyMaskedKeys: {'filename'});
+      final map =
+          service.redact({'filename': 'report.pdf'}) as Map<String, Object?>?;
+      expect(map, isNotNull);
+      expect(map!['filename'], '[REDACTED]');
     });
 
     test('redacts binary payloads when enabled', () {
@@ -52,6 +60,11 @@ void main() {
       expect(redacted, isNotNull);
       expect(identical(redacted, data), isFalse);
       expect(redacted!.length, data.length);
+    });
+
+    test('deprecated kDefaultSensitiveKeys alias still works', () {
+      // ignore: deprecated_member_use_from_same_package
+      expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
     });
   });
 }
