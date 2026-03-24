@@ -3,14 +3,7 @@ import 'dart:js_interop';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:web/web.dart';
 
-/// Outputs a log message to the browser's console.
-///
-/// Splits the provided `message` by newline characters and logs each line
-/// individually to the console using the `console.log` method.
-///
-/// - `message`: The log message to be output. Each line of the message
-///   will be converted to a JavaScript string using the `toJS` method
-///   before being logged.
+/// Logs each line of [message] to the browser console.
 void outputLog(
   String message, {
   LogLevel? logLevel,
@@ -19,5 +12,5 @@ void outputLog(
   DateTime? time,
 }) =>
     message.split('\n').forEach(
-          (element) => console.log(element.toJS),
+          (line) => console.log(line.toJS),
         );

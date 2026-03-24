@@ -1,33 +1,13 @@
 import 'package:ispectify/ispectify.dart';
 
-/// A utility class for console output formatting.
-///
-/// The `ConsoleUtils` class provides static methods for generating
-/// top and bottom border lines, as well as ANSI color mappings
-/// for log levels. This class is non-instantiable.
+/// Static helpers for console output: border lines and ANSI color mapping.
 abstract class ConsoleUtils {
-  /// Prevents instantiation of `ConsoleUtils`.
-  /// This is a utility class with only static methods.
-  ConsoleUtils._();
-
-  /// Generates a bottom border line for console messages.
+  /// Generates a bottom border line of [length] repeated [lineSymbol]s.
   ///
-  /// This method returns a string consisting of a repeated `lineSymbol`
-  /// for the specified `length`. Optionally, a bottom-left corner ('└')
-  /// can be added if `withCorner` is `true`.
-  ///
-  /// ### Example:
   /// ```dart
-  /// print(ConsoleUtils.bottomLine(5)); // Output: ─────
-  /// print(ConsoleUtils.bottomLine(5, withCorner: true)); // Output: └─────
+  /// ConsoleUtils.bottomLine(5);                    // ─────
+  /// ConsoleUtils.bottomLine(5, withCorner: true);  // └─────
   /// ```
-  ///
-  /// - `length`: The number of `lineSymbol` characters in the line.
-  /// - `lineSymbol`: The character used to construct the line. Defaults to '─'.
-  /// - `withCorner`: If `true`, adds a bottom-left corner symbol. Defaults to `false`.
-  ///
-  /// Returns:
-  /// A formatted string representing the bottom border line.
   static String bottomLine(
     int length, {
     String lineSymbol = '─',
@@ -38,9 +18,7 @@ abstract class ConsoleUtils {
     return withCorner ? '└$line' : line;
   }
 
-  /// ANSI color mapping for different log levels.
-  ///
-  /// This map associates each `LogLevel` with a corresponding ANSI color.
+  /// Default ANSI colors per [LogLevel].
   static final Map<LogLevel, AnsiPen> ansiColors = Map.unmodifiable({
     LogLevel.critical: AnsiPen()..red(),
     LogLevel.error: AnsiPen()..red(),

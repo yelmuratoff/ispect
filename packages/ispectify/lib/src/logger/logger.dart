@@ -7,12 +7,7 @@ import 'package:ispectify/src/logger/logger_io.dart'
 import 'package:ispectify/src/models/log_details.dart';
 import 'package:ispectify/src/models/log_level.dart';
 
-/// A logger class for structured and formatted logging.
-///
-/// Supports multiple log levels, colorized output, filtering,
-/// and customizable formatting/output handling.
-///
-/// Typedef for a custom log output function.
+/// Callback signature for custom log output.
 typedef LoggerOutput = void Function(
   String message, {
   LogLevel? logLevel,
@@ -21,13 +16,12 @@ typedef LoggerOutput = void Function(
   DateTime? time,
 });
 
+/// Console logger: formats messages via [ILoggerFormatter] and writes
+/// them through a [LoggerOutput] function.
+///
+/// Supports log-level filtering via [ConsoleSettings] and [ILoggerFilter],
+/// plus ANSI colorization.
 class ISpectBaseLogger {
-  /// Creates an instance of `ISpectBaseLogger` with optional configurations.
-  ///
-  /// - `settings`: Logger configuration settings. Defaults to `ConsoleSettings()`.
-  /// - `formatter`: Formatter for log messages. Defaults to `ExtendedLoggerFormatter()`.
-  /// - `filter`: Optional log filter.
-  /// - `output`: Optional output function (e.g., `print`).
   ISpectBaseLogger({
     ConsoleSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
@@ -39,19 +33,13 @@ class ISpectBaseLogger {
     ansiColorDisabled = false;
   }
 
-  /// Logger settings such as enabled state and color mapping.
+  static final AnsiPen _fallbackPen = AnsiPen()..gray();
+
   final ConsoleSettings settings;
-
-  /// Formatter for structuring log messages.
   final ILoggerFormatter formatter;
-
-  /// Output function to handle final log message.
   final LoggerOutput _output;
-
-  /// Optional filter to determine whether a log should be logged.
   final ILoggerFilter? _filter;
 
-  /// Logs a message at a specified level with optional ANSI color pen.
   void log(
     Object? msg, {
     LogLevel? level,
@@ -69,7 +57,7 @@ class ISpectBaseLogger {
     }
 
     final selectedPen =
-        pen ?? settings.colors[selectedLevel] ?? (AnsiPen()..gray());
+        pen ?? settings.colors[selectedLevel] ?? _fallbackPen;
 
     final formattedMsg = formatter.format(
       LogDetails(message: msg, level: selectedLevel, pen: selectedPen),
@@ -84,25 +72,13 @@ class ISpectBaseLogger {
     );
   }
 
-  /// Logs a critical-level message.
   void critical(Object? msg) => log(msg, level: LogLevel.critical);
-
-  /// Logs an error-level message.
   void error(Object? msg) => log(msg, level: LogLevel.error);
-
-  /// Logs a warning-level message.
   void warning(Object? msg) => log(msg, level: LogLevel.warning);
-
-  /// Logs a debug-level message.
   void debug(Object? msg) => log(msg, level: LogLevel.debug);
-
-  /// Logs a verbose-level message.
   void verbose(Object? msg) => log(msg, level: LogLevel.verbose);
-
-  /// Logs an info-level message.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
-  /// Creates a new `ISpectBaseLogger` instance with overridden properties.
   ISpectBaseLogger copyWith({
     ConsoleSettings? settings,
     ILoggerFormatter? formatter,
