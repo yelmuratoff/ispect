@@ -52,6 +52,9 @@ class ISpectLogData {
   /// The main log message.
   final String? message;
 
+  /// Cached lowercase message for efficient repeated case-insensitive search.
+  late final String? lowerMessage = message?.toLowerCase();
+
   /// The severity level of the log entry.
   final LogLevel? logLevel;
 

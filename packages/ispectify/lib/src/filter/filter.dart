@@ -87,8 +87,8 @@ class SearchFilter implements Filter<ISpectLogData> {
   bool apply(ISpectLogData item) {
     if (_lowerQuery.isEmpty) return true;
 
-    final message = item.message;
-    if (message != null && message.toLowerCase().contains(_lowerQuery)) {
+    final lowerMsg = item.lowerMessage;
+    if (lowerMsg != null && lowerMsg.contains(_lowerQuery)) {
       return true;
     }
 
@@ -140,8 +140,6 @@ class SearchFilter implements Filter<ISpectLogData> {
   bool _deepSearchIterative(Object? value, String query) {
     if (value == null) return false;
 
-    if (!value.toString().toLowerCase().contains(query)) return false;
-
     // Use a set to track visited objects to prevent infinite loops
     final visited = <Object>{};
     // Pre-allocate stack with reasonable initial capacity
@@ -162,11 +160,13 @@ class SearchFilter implements Filter<ISpectLogData> {
         continue;
       }
 
-      // Handle Map structures
       if (current is Map<dynamic, dynamic>) {
-        stack
-          ..addAll(current.values)
-          ..addAll(current.keys);
+        for (final key in current.keys) {
+          if (key is String && key.toLowerCase().contains(query)) {
+            return true;
+          }
+        }
+        stack.addAll(current.values);
         continue;
       }
 
