@@ -1,11 +1,11 @@
+import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/models/log_level.dart';
-import 'package:ispectify/src/settings.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('LoggerSettings', () {
+  group('ConsoleSettings', () {
     test('copyWith preserves enable=false when not overridden', () {
-      final original = LoggerSettings(enabled: false);
+      final original = ConsoleSettings(enabled: false);
       final copy = original.copyWith(defaultTitle: 'New Title');
 
       expect(copy.enabled, isFalse);
@@ -13,21 +13,21 @@ void main() {
     });
 
     test('copyWith allows overriding enable to true', () {
-      final original = LoggerSettings(enabled: false);
+      final original = ConsoleSettings(enabled: false);
       final copy = original.copyWith(enabled: true);
 
       expect(copy.enabled, isTrue);
     });
 
     test('copyWith allows overriding enable to false', () {
-      final original = LoggerSettings();
+      final original = ConsoleSettings();
       final copy = original.copyWith(enabled: false);
 
       expect(copy.enabled, isFalse);
     });
 
     test('copyWith preserves all other fields when enable is changed', () {
-      final original = LoggerSettings(
+      final original = ConsoleSettings(
         defaultTitle: 'Original',
         level: LogLevel.warning,
         lineSymbol: '-',

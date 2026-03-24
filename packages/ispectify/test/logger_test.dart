@@ -1,6 +1,6 @@
+import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/log_level.dart';
-import 'package:ispectify/src/settings.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -13,7 +13,7 @@ void main() {
 
     test('should log messages at or above the minimum level', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(level: LogLevel.warning),
+        settings: ConsoleSettings(level: LogLevel.warning),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       )
@@ -32,7 +32,7 @@ void main() {
 
     test('should not log messages below the minimum level', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(level: LogLevel.warning),
+        settings: ConsoleSettings(level: LogLevel.warning),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       )
@@ -45,7 +45,7 @@ void main() {
 
     test('should log all messages when level is verbose', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(),
+        settings: ConsoleSettings(),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       )
@@ -61,7 +61,7 @@ void main() {
 
     test('should not log any messages when level is critical', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(level: LogLevel.critical, enabled: false),
+        settings: ConsoleSettings(level: LogLevel.critical, enabled: false),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       )
@@ -73,7 +73,7 @@ void main() {
 
     test('should not log when logging is disabled', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(enabled: false),
+        settings: ConsoleSettings(enabled: false),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       ).critical('Critical message');
@@ -83,7 +83,7 @@ void main() {
 
     test('should use default debug level when no level specified', () {
       ISpectBaseLogger(
-        settings: LoggerSettings(),
+        settings: ConsoleSettings(),
         output: (message, {logLevel, error, stackTrace, time}) =>
             loggedMessages.add(message),
       ).log('Default level message');

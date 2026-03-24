@@ -6,7 +6,7 @@ import 'package:ispectify/src/history/history.dart';
 import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
-import 'package:ispectify/src/theme/options.dart';
+import 'package:ispectify/src/options.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
 /// Coordinates the flow of `ISpectLogData` through the logger pipeline.

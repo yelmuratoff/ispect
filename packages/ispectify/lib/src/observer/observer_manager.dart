@@ -1,5 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/observer_registry.dart';
+import 'package:ispectify/src/observer/observer_registry.dart';
 
 /// Manages lifecycle and notification of `ISpectObserver`s for a logger.
 ///

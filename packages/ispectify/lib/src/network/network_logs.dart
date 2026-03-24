@@ -1,9 +1,9 @@
 import 'package:ansicolor/ansicolor.dart';
-import 'package:ispectify/src/enums/log_type.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
+import 'package:ispectify/src/models/log_type.dart';
 import 'package:ispectify/src/network/network_log_options.dart';
-import 'package:ispectify/src/truncator.dart';
+import 'package:ispectify/src/utils/json_truncator.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
 /// Key used to store the request ID in [ISpectLogData.additionalData].

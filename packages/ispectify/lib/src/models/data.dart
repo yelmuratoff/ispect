@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/utils/log_message_formatter.dart';
+import 'package:ispectify/src/logger/log_parts.dart';
 
 /// A model class representing a structured log entry.
 class ISpectLogData {

@@ -18,14 +18,14 @@ abstract interface class ILoggerFormatter {
   /// A formatted log message as a string.
   String format(
     LogDetails details,
-    LoggerSettings settings,
+    ConsoleSettings settings,
   );
 }
 
 /// A simple, readable log formatter.
 ///
 /// The `ExtendedLoggerFormatter` prefixes the first line with a dash and indents
-/// subsequent lines for clarity. If colors are enabled in `LoggerSettings`, ANSI
+/// subsequent lines for clarity. If colors are enabled in `ConsoleSettings`, ANSI
 /// styles are applied to the entire message.
 ///
 /// Example output:
@@ -41,7 +41,7 @@ class ExtendedLoggerFormatter implements ILoggerFormatter {
   @override
   String format(
     LogDetails details,
-    LoggerSettings settings,
+    ConsoleSettings settings,
   ) {
     // Extract the log message, ensuring it is a valid string.
     final message = details.message?.toString() ?? '';

@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/factory/log_factory.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/models/log_factory.dart';
 import 'package:ispectify/src/observer/observer_manager.dart';
 
 /// A customizable logging and inspection utility for mobile applications.

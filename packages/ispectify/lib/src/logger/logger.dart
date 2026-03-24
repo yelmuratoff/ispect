@@ -1,11 +1,11 @@
 import 'package:ansicolor/ansicolor.dart';
-import 'package:ispectify/src/filter/logger_filter.dart';
-import 'package:ispectify/src/formatter/formatter.dart';
+import 'package:ispectify/src/console_settings.dart';
+import 'package:ispectify/src/filter/filter.dart';
+import 'package:ispectify/src/logger/formatter.dart';
 import 'package:ispectify/src/logger/logger_io.dart'
     if (dart.library.js_interop) 'logger_web.dart';
 import 'package:ispectify/src/models/log_details.dart';
 import 'package:ispectify/src/models/log_level.dart';
-import 'package:ispectify/src/settings.dart';
 
 /// A logger class for structured and formatted logging.
 ///
@@ -24,23 +24,23 @@ typedef LoggerOutput = void Function(
 class ISpectBaseLogger {
   /// Creates an instance of `ISpectBaseLogger` with optional configurations.
   ///
-  /// - `settings`: Logger configuration settings. Defaults to `LoggerSettings()`.
+  /// - `settings`: Logger configuration settings. Defaults to `ConsoleSettings()`.
   /// - `formatter`: Formatter for log messages. Defaults to `ExtendedLoggerFormatter()`.
   /// - `filter`: Optional log filter.
   /// - `output`: Optional output function (e.g., `print`).
   ISpectBaseLogger({
-    LoggerSettings? settings,
+    ConsoleSettings? settings,
     this.formatter = const ExtendedLoggerFormatter(),
     ILoggerFilter? filter,
     LoggerOutput? output,
-  })  : settings = settings ?? LoggerSettings(),
+  })  : settings = settings ?? ConsoleSettings(),
         _filter = filter,
         _output = output ?? outputLog {
     ansiColorDisabled = false;
   }
 
   /// Logger settings such as enabled state and color mapping.
-  final LoggerSettings settings;
+  final ConsoleSettings settings;
 
   /// Formatter for structuring log messages.
   final ILoggerFormatter formatter;
@@ -104,7 +104,7 @@ class ISpectBaseLogger {
 
   /// Creates a new `ISpectBaseLogger` instance with overridden properties.
   ISpectBaseLogger copyWith({
-    LoggerSettings? settings,
+    ConsoleSettings? settings,
     ILoggerFormatter? formatter,
     ILoggerFilter? filter,
     LoggerOutput? output,

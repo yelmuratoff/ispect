@@ -1,5 +1,4 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/filter/logger_filter.dart';
 import 'package:test/test.dart';
 
 void main() {

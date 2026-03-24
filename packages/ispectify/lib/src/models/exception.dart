@@ -1,5 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/utils/log_message_formatter.dart';
+import 'package:ispectify/src/logger/log_parts.dart';
 
 class ISpectLogException extends ISpectLogData {
   ISpectLogException(
