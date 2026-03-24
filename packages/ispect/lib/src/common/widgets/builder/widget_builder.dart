@@ -95,8 +95,8 @@ class _LogsObserver implements ISpectObserver {
   void onLog(ISpectLogData data) => _onLog();
 
   @override
-  void onError(ISpectLogData err) => _onLog();
+  void onError(ISpectLogData data) => _onLog();
 
   @override
-  void onException(ISpectLogData err) => _onLog();
+  void onException(ISpectLogData data) => _onLog();
 }

@@ -24,7 +24,7 @@ class ObserverRegistry {
 
   /// Replaces all observers with a single [observer]. If [observer] is null,
   /// clears the registry.
-  void replaceWith(ISpectObserver? observer) {
+  void replace(ISpectObserver? observer) {
     _observers.clear();
     if (observer != null) {
       _observers.add(observer);

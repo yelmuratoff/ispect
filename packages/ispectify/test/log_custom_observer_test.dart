@@ -8,17 +8,17 @@ class _SpyObserver implements ISpectObserver {
   static int logCount = 0;
 
   @override
-  void onError(ISpectLogData err) {
+  void onError(ISpectLogData data) {
     errorCount++;
   }
 
   @override
-  void onException(ISpectLogData err) {
+  void onException(ISpectLogData data) {
     exceptionCount++;
   }
 
   @override
-  void onLog(ISpectLogData log) {
+  void onLog(ISpectLogData data) {
     logCount++;
   }
 }

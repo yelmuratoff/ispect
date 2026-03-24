@@ -17,10 +17,10 @@ import 'package:share_plus/share_plus.dart';
 
 class SentryISpectObserver implements ISpectObserver {
   @override
-  void onError(ISpectLogData err) => log('Sentry onError: ${err.message}');
+  void onError(ISpectLogData data) => log('Sentry onError: ${data.message}');
   @override
-  void onException(ISpectLogData err) =>
-      log('Sentry onException: ${err.message}');
+  void onException(ISpectLogData data) =>
+      log('Sentry onException: ${data.message}');
   @override
   void onLog(ISpectLogData data) => log('Sentry onLog: ${data.message}');
 }
