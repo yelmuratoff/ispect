@@ -1,6 +1,5 @@
 import 'package:ispectify/ispectify.dart';
 
-/// `GoodLog` - This class contains the basic structure of the log.
 class GoodLog extends ISpectLogData {
   GoodLog(
     String super.message, {
@@ -11,7 +10,6 @@ class GoodLog extends ISpectLogData {
         );
 }
 
-/// `AnalyticsLog` - This class contains the analytics log.
 class AnalyticsLog extends ISpectLogData {
   AnalyticsLog(
     String super.message, {
@@ -23,7 +21,6 @@ class AnalyticsLog extends ISpectLogData {
         );
 }
 
-/// `RouteLog` - This class contains the route log.
 class RouteLog extends ISpectLogData {
   RouteLog(
     String super.message, {
@@ -37,7 +34,6 @@ class RouteLog extends ISpectLogData {
   final String? transitionId;
 }
 
-/// `ProviderLog` - This class contains the provider log.
 class ProviderLog extends ISpectLogData {
   ProviderLog(
     String super.message, {
@@ -48,7 +44,6 @@ class ProviderLog extends ISpectLogData {
         );
 }
 
-/// `PrintLog` - This class contains the print log.
 class PrintLog extends ISpectLogData {
   PrintLog(
     String super.message, {

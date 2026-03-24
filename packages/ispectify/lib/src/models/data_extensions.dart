@@ -1,12 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Extension on `ISpectLogData` for additional functionalities.
-///
-/// Provides utility methods to manipulate and format log data efficiently.
+/// Utility extensions on [ISpectLogData]: copy, formatting, cURL generation.
 extension ISpectDataX on ISpectLogData {
-  /// Returns a copy of this `ISpectLogData` with optional new values.
-  ///
-  /// If no parameters are provided, the original values are retained.
   ISpectLogData copyWith({
     Object? message,
     LogLevel? logLevel,
@@ -32,12 +27,9 @@ extension ISpectDataX on ISpectLogData {
         additionalData: additionalData ?? this.additionalData,
       );
 
-  /// Creates an exact duplicate of this `ISpectLogData` instance.
   ISpectLogData copy() => copyWith();
 
-  /// Generates a formatted summary text for logging.
-  ///
-  /// Limits text length to avoid overly long logs.
+  /// Truncated summary for debugging/display.
   String generateText() {
     String truncate(String? value, int maxLength) {
       if (value == null) return '';
@@ -61,9 +53,7 @@ Error: $errorText
 StackTrace: $stackTraceText]''';
   }
 
-  /// Extracts stack trace text for logging.
-  ///
-  /// Returns `null` if no valid stack trace is available.
+  /// Stack trace text for log display. Returns `null` if unavailable.
   String? get stackTraceLogText {
     if (isError && stackTrace != null && stackTrace.toString().isNotEmpty) {
       return 'StackTrace:\n$stackTrace'.truncate();
@@ -71,9 +61,7 @@ StackTrace: $stackTraceText]''';
     return null;
   }
 
-  /// Extracts the error message for logging.
-  ///
-  /// Special handling for HTTP logs and Flutter error details.
+  /// Error/exception message with special handling for HTTP and Flutter errors.
   String? get httpLogText {
     var txt = exception?.toString();
 
@@ -86,24 +74,18 @@ StackTrace: $stackTraceText]''';
     return text.truncate();
   }
 
-  /// Checks if this log entry is related to HTTP requests.
-  bool get isHttpLog => [
-        ISpectLogType.httpRequest.key,
-        ISpectLogType.httpResponse.key,
-      ].contains(key);
+  bool get isHttpLog =>
+      key == ISpectLogType.httpRequest.key ||
+      key == ISpectLogType.httpResponse.key;
 
   bool get isRouteLog => key == ISpectLogType.route.key;
 
-  /// Generates a cURL command for HTTP logs (request, response, or error).
-  ///
-  /// Returns the cURL command as a string if the log contains HTTP request data,
-  /// otherwise returns `null`.
+  /// Generates a cURL command for HTTP logs, or `null` for non-HTTP entries.
   String? get curlCommand {
     if (key == ISpectLogType.httpRequest.key) {
       return CurlUtils.generateCurl(additionalData);
     } else if (key == ISpectLogType.httpResponse.key ||
         key == ISpectLogType.httpError.key) {
-      // For response/error logs, extract request-options from additionalData
       final requestOptions =
           additionalData?['request-options'] as Map<String, dynamic>?;
       return requestOptions != null
@@ -113,9 +95,7 @@ StackTrace: $stackTraceText]''';
     return null;
   }
 
-  /// Retrieves the type of exception or error, if applicable.
-  ///
-  /// Returns `null` for non-error logs.
+  /// Exception/error runtime type label, or `null` for non-error logs.
   String? get typeText {
     if (this is! ISpectLogError && this is! ISpectLogException) {
       return null;

@@ -1,22 +1,10 @@
-// ignore_for_file: type=lint
+// ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
 
-/// A model class representing a structured log entry.
+/// Core log entry model. All fields are immutable after construction.
 class ISpectLogData {
-  /// Creates an instance of `ISpectLogData` to store log details.
-  ///
-  /// - `message`: The main log message.
-  /// - `time`: The timestamp of the log entry. Defaults to `DateTime.now()`.
-  /// - `logLevel`: The severity level of the log.
-  /// - `exception`: Any associated exception.
-  /// - `error`: Any associated error.
-  /// - `stackTrace`: The stack trace for debugging.
-  /// - `title`: An optional title for categorizing logs.
-  /// - `pen`: ANSI color for styling logs.
-  /// - `key`: A unique identifier for this log entry.
-  /// - `additionalData`: Any extra metadata attached to the log.
   ISpectLogData(
     Object? message, {
     DateTime? time,
@@ -35,50 +23,28 @@ class ISpectLogData {
             : Map<String, dynamic>.unmodifiable(
                 Map<String, dynamic>.from(additionalData),
               ),
-        _time = time ?? DateTime.now();
+        time = time ?? DateTime.now();
 
   static int _nextId = 0;
 
-  /// Auto-generated unique identifier for this log entry.
+  /// Auto-incrementing identifier, unique per isolate.
   final int id;
 
-  /// The timestamp when the log entry was created.
-  final DateTime _time;
-
-  /// A unique identifier for the log entry.
+  final DateTime time;
   final String? key;
-
-  /// The main log message.
   final String? message;
+  final LogLevel? logLevel;
+  final String? title;
+  final AnsiPen? pen;
+  final Map<String, dynamic>? additionalData;
+  final Object? exception;
+  final Error? error;
+  final StackTrace? stackTrace;
 
   /// Cached lowercase message for efficient repeated case-insensitive search.
   late final String? lowerMessage = message?.toLowerCase();
 
-  /// The severity level of the log entry.
-  final LogLevel? logLevel;
-
-  /// An optional title for categorizing the log.
-  final String? title;
-
-  /// ANSI color styling for the log message.
-  final AnsiPen? pen;
-
-  /// Additional metadata associated with the log entry.
-  final Map<String, dynamic>? additionalData;
-
-  /// Any exception associated with the log entry.
-  final Object? exception;
-
-  /// Any error associated with the log entry.
-  final Error? error;
-
-  /// The stack trace associated with the log entry.
-  final StackTrace? stackTrace;
-
-  /// Returns the timestamp of the log.
-  DateTime get time => _time;
-
-  /// Returns the full message, including error/exception and stack trace if available.
+  /// Full message including error/exception and stack trace.
   late final String textMessage = joinLogParts([
     messageText,
     errorText,
@@ -86,26 +52,19 @@ class ISpectLogData {
     stackTraceText,
   ]);
 
-  /// Returns a formatted log header including the title or key and timestamp.
   String get header => '[${title ?? key}] | $formattedTime\n';
 
-  /// Returns the formatted stack trace if available, otherwise an empty string.
   String? get stackTraceText =>
       (stackTrace != null && stackTrace != StackTrace.empty)
           ? 'StackTrace: $stackTrace'.truncate()
           : null;
 
-  /// Returns the exception as a string if available, otherwise an empty string.
-  String? get exceptionText =>
-      exception != null ? exception.toString().truncate() : null;
+  String? get exceptionText => exception?.toString().truncate();
 
-  /// Returns the error as a string if available, otherwise an empty string.
-  String? get errorText => error != null ? error.toString().truncate() : null;
+  String? get errorText => error?.toString().truncate();
 
-  /// Returns the log message as a string, or an empty string if `null`.
   String get messageText => message.truncate() ?? '';
 
-  /// Returns the formatted timestamp of the log entry.
   late final String formattedTime = ISpectDateTimeFormatter(time).format;
 
   bool get isError =>
@@ -113,12 +72,8 @@ class ISpectLogData {
       logLevel == LogLevel.critical ||
       ISpectLogType.isErrorKey(key);
 
-  /// Notifies the observer about this log entry.
-  ///
-  /// This method uses polymorphic dispatch to call the appropriate observer method.
-  /// Subclasses can override this to customize which observer method is called.
-  ///
-  /// - `observer`: The observer to notify.
+  /// Dispatches to the appropriate [ISpectObserver] callback.
+  /// Subclasses override to route to `onException` etc.
   void notifyObserver(ISpectObserver observer) {
     if (isError) {
       observer.onError(this);
@@ -134,7 +89,7 @@ class ISpectLogData {
     if (identical(this, other)) return true;
 
     return other is ISpectLogData &&
-        other._time == _time &&
+        other.time == time &&
         other.key == key &&
         other.message == message &&
         other.logLevel == logLevel &&
@@ -147,24 +102,21 @@ class ISpectLogData {
   }
 
   @override
-  int get hashCode {
-    return Object.hash(
-      _time,
-      key,
-      message,
-      logLevel,
-      title,
-      pen,
-      _deepEquality.hash(additionalData),
-      exception,
-      error,
-      stackTrace,
-    );
-  }
+  int get hashCode => Object.hash(
+        time,
+        key,
+        message,
+        logLevel,
+        title,
+        pen,
+        _deepEquality.hash(additionalData),
+        exception,
+        error,
+        stackTrace,
+      );
 
   @override
-  String toString() {
-    return '''ISpectLogData(
+  String toString() => '''ISpectLogData(
       key: $key,
       message: ${message.truncate()},
       logLevel: $logLevel,
@@ -172,5 +124,4 @@ class ISpectLogData {
       exception: ${exception?.toString().truncate()},
       error: ${error?.toString().truncate()},
       )''';
-  }
 }

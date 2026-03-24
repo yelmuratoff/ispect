@@ -1,54 +1,9 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Enum representing various log types used in the ISpectLogger library.
+/// Log type categories, each with a unique string [key].
 ///
-/// Each log type is associated with a unique string key and can be mapped
-/// to a corresponding `LogLevel` using the provided extension.
-///
-/// - **General Log Types**:
-///   - `error`: Represents an error log.
-///   - `critical`: Represents a critical log.
-///   - `info`: Represents an informational log.
-///   - `debug`: Represents a debug log.
-///   - `verbose`: Represents a verbose log.
-///   - `warning`: Represents a warning log.
-///   - `exception`: Represents an exception log.
-///
-/// - **HTTP Log Types**:
-///   - `httpError`: Represents an HTTP error log.
-///   - `httpRequest`: Represents an HTTP request log.
-///   - `httpResponse`: Represents an HTTP response log.
-///
-/// - **Bloc Log Types**:
-///   - `blocEvent`: Represents a Bloc event log.
-///   - `blocTransition`: Represents a Bloc transition log.
-///   - `blocClose`: Represents a Bloc close log.
-///   - `blocCreate`: Represents a Bloc creation log.
-///   - `blocState`: Represents a Bloc state log.
-///
-/// - **Riverpod Log Types**:
-///   - `riverpodAdd`: Represents a Riverpod addition log.
-///   - `riverpodUpdate`: Represents a Riverpod update log.
-///   - `riverpodDispose`: Represents a Riverpod disposal log.
-///   - `riverpodFail`: Represents a Riverpod failure log.
-///
-/// - **Miscellaneous Log Types**:
-///   - `route`: Represents a route log.
-///   - `good`: Represents a positive or successful log.
-///   - `analytics`: Represents an analytics log.
-///   - `provider`: Represents a provider log.
-///   - `print`: Represents a print log.
-///
-/// Each log type can be mapped to a `LogLevel` using the `level` getter
-/// provided in the `ISpectLogTypeExt` extension. The `fromLogLevel`
-/// method allows conversion from a `LogLevel` to the corresponding
-/// `ISpectLogType`.
-///
-/// Example:
-/// ```dart
-/// final logType = ISpectLogType.fromLogLevel(LogLevel.error);
-/// print(logType.key); // Outputs: "error"
-/// ```
+/// Use [fromLogLevel] to map a [LogLevel] to its canonical type,
+/// or [fromKey] for reverse lookup by string key.
 enum ISpectLogType {
   error('error'),
   critical('critical'),
@@ -110,16 +65,8 @@ enum ISpectLogType {
       if (type.isErrorType) type.key,
   };
 
-  /// Converts a `LogLevel` to its corresponding [ISpectLogType].
-  ///
-  /// If the provided `logLevel` is `null`, the method defaults to returning
-  /// `ISpectLogType.debug`.
-  ///
-  /// Throws a `StateError` if no matching [ISpectLogType] is found for the
-  /// given `logLevel`.
-  ///
-  /// - Parameter `logLevel`: The [LogLevel` to be converted.
-  /// - Returns: The corresponding `ISpectLogType` for the given [logLevel].
+  /// Returns the canonical [ISpectLogType] for [logLevel].
+  /// Defaults to [debug] when [logLevel] is `null`.
   static ISpectLogType fromLogLevel(LogLevel? logLevel) {
     if (logLevel == null) return ISpectLogType.debug;
 
@@ -150,16 +97,6 @@ enum ISpectLogType {
 }
 
 extension ISpectLogTypeExt on ISpectLogType {
-  /// Maps the current `ISpectLogType` instance to its corresponding `LogLevel`.
-  ///
-  /// Returns:
-  /// - `LogLevel.error` for `ISpectLogType.error`.
-  /// - `LogLevel.critical` for `ISpectLogType.critical`.
-  /// - `LogLevel.info` for `ISpectLogType.info`.
-  /// - `LogLevel.debug` for `ISpectLogType.debug`.
-  /// - `LogLevel.verbose` for `ISpectLogType.verbose`.
-  /// - `LogLevel.warning` for `ISpectLogType.warning`.
-  /// - Defaults to `LogLevel.info` for any other cases.
   LogLevel get level => switch (this) {
         ISpectLogType.error => LogLevel.error,
         ISpectLogType.critical => LogLevel.critical,
@@ -175,7 +112,8 @@ extension ISpectLogTypeExt on ISpectLogType {
         _ => LogLevel.info,
       };
 
-  /// Cached default pens per log type, created once and reused.
+  static final AnsiPen _fallbackPen = AnsiPen()..gray();
+
   static final Map<ISpectLogType, AnsiPen> _defaultPens = {
     ISpectLogType.critical: AnsiPen()..red(),
     ISpectLogType.error: AnsiPen()..red(),
@@ -210,9 +148,6 @@ extension ISpectLogTypeExt on ISpectLogType {
     ISpectLogType.wsReceived: AnsiPen()..xterm(35),
   };
 
-  /// Returns the default ANSI pen (color) for this log type.
-  ///
-  /// These are the built-in colors that will be used if no custom
-  /// override is provided via `ISpectLoggerOptions`.
-  AnsiPen get defaultPen => _defaultPens[this] ?? (AnsiPen()..gray());
+  /// Built-in ANSI color for this log type.
+  AnsiPen get defaultPen => _defaultPens[this] ?? _fallbackPen;
 }

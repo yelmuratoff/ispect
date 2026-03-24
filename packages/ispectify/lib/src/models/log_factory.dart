@@ -1,16 +1,9 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Factory class for creating log entries with consistent configuration.
-///
-/// This factory centralizes log creation logic and ensures all logs are
-/// created with proper settings from ISpectLoggerOptions.
-class LogFactory {
-  const LogFactory._();
-
-  /// Creates a log entry using an explicit [ISpectLogType].
-  ///
-  /// The [level] parameter allows overriding the default level derived from
-  /// the provided [type].
+/// Creates [ISpectLogData] entries with consistent configuration
+/// from [ISpectLoggerOptions].
+abstract class LogFactory {
+  /// Creates a log entry for [type], optionally overriding the default [level].
   static ISpectLogData fromType({
     required ISpectLogType type,
     required Object? message,
