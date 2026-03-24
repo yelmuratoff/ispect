@@ -17,8 +17,7 @@ class DioErrorLog extends NetworkErrorLog {
     Map<String, String>? headers,
     super.body,
     RedactionService? redactor,
-  })  : _settings = settings,
-        _errorData = errorData,
+  })  : _errorData = errorData,
         super(
           statusMessage: statusMessage ??
               _redactExceptionMessage(
@@ -69,11 +68,7 @@ class DioErrorLog extends NetworkErrorLog {
     );
   }
 
-  final ISpectDioInterceptorSettings _settings;
   final DioErrorData _errorData;
-
-  @override
-  ISpectDioInterceptorSettings get settings => _settings;
 
   DioErrorData get errorData => _errorData;
 }

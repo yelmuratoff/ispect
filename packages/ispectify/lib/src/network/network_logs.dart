@@ -26,11 +26,10 @@ Map<String, dynamic>? _withRequestId(
 
 String _composeNetworkMessage(
   String header,
-  List<String? Function()> sections,
+  List<String?> sections,
 ) {
   final buffer = StringBuffer(header);
-  for (final build in sections) {
-    final content = build();
+  for (final content in sections) {
     if (content != null && content.isNotEmpty) {
       buffer.write('\n$content');
     }
@@ -50,258 +49,295 @@ String? _prettySection({
   return '$label: $formatted';
 }
 
-class NetworkRequestLog extends ISpectLogData {
-  NetworkRequestLog(
+/// Builds the textMessage for a [NetworkRequestLog].
+String _buildRequestText({
+  required String? method,
+  required String? message,
+  required NetworkLogPrintOptions settings,
+  required Object? body,
+  required Map<String, dynamic>? headers,
+}) =>
+    _composeNetworkMessage(
+      '[${method ?? '-'}] ${message ?? ''}',
+      [
+        _prettySection(
+          enabled: settings.printRequestData && body != null,
+          label: 'Data',
+          value: body,
+        ),
+        _prettySection(
+          enabled:
+              settings.printRequestHeaders && (headers?.isNotEmpty ?? false),
+          label: 'Headers',
+          value: headers,
+          skipEmptyMap: true,
+        ),
+      ],
+    );
+
+/// Builds the textMessage for a [NetworkResponseLog].
+String _buildResponseText({
+  required String? method,
+  required String? message,
+  required NetworkLogPrintOptions settings,
+  required int? statusCode,
+  required String? statusMessage,
+  required Object? responseBody,
+  required Map<String, dynamic>? headers,
+}) =>
+    _composeNetworkMessage(
+      '[${method ?? '-'}] ${message ?? ''}',
+      [
+        if (statusCode != null) 'Status: $statusCode',
+        if (settings.printResponseMessage && statusMessage != null)
+          'Message: $statusMessage',
+        _prettySection(
+          enabled: settings.printResponseData && responseBody != null,
+          label: 'Data',
+          value: responseBody,
+        ),
+        _prettySection(
+          enabled:
+              settings.printResponseHeaders && (headers?.isNotEmpty ?? false),
+          label: 'Headers',
+          value: headers,
+          skipEmptyMap: true,
+        ),
+      ],
+    );
+
+/// Builds the textMessage for a [NetworkErrorLog].
+String _buildErrorText({
+  required String? method,
+  required String? message,
+  required NetworkLogPrintOptions settings,
+  required int? statusCode,
+  required String? statusMessage,
+  required Map<String, dynamic>? body,
+  required Map<String, dynamic>? headers,
+}) =>
+    _composeNetworkMessage(
+      '[${method ?? '-'}] ${message ?? ''}',
+      [
+        if (statusCode != null) 'Status: $statusCode',
+        if (settings.printErrorMessage && statusMessage != null)
+          'Message: $statusMessage',
+        _prettySection(
+          enabled: settings.printErrorData && (body?.isNotEmpty ?? false),
+          label: 'Data',
+          value: body,
+          skipEmptyMap: true,
+        ),
+        _prettySection(
+          enabled:
+              settings.printErrorHeaders && (headers?.isNotEmpty ?? false),
+          label: 'Headers',
+          value: headers,
+          skipEmptyMap: true,
+        ),
+      ],
+    );
+
+/// Common base for network log entries (request, response, error).
+///
+/// Extracts shared fields and constructor logic. The common metadata fields
+/// (`method`, `url`, `path`) are auto-included — subclasses only provide
+/// their specific extra entries via [extraMetadata].
+abstract class BaseNetworkLog extends ISpectLogData {
+  BaseNetworkLog(
     super.message, {
     required this.method,
     required this.url,
     required this.path,
-    required this.settings,
+    required String defaultLogKey,
+    required AnsiPen defaultPen,
+    required String textMessage,
     this.requestId,
-    Map<String, dynamic>? headers,
-    this.body,
     String? logKey,
-    Map<String, dynamic>? metadata,
     AnsiPen? pen,
-  })  : headers = headers == null ? null : Map.unmodifiable(headers),
-        logKey = logKey ?? ISpectLogType.httpRequest.key,
+    super.logLevel,
+    super.exception,
+    super.stackTrace,
+    Map<String, dynamic>? metadata,
+    Map<String, Object?> extraMetadata = const {},
+  })  : logKey = logKey ?? defaultLogKey,
+        _textMessage = textMessage,
         super(
-          key: logKey ?? ISpectLogType.httpRequest.key,
-          title: logKey ?? ISpectLogType.httpRequest.key,
-          pen: pen ??
-              settings.requestPen ??
-              ISpectLogType.httpRequest.defaultPen,
+          key: logKey ?? defaultLogKey,
+          title: logKey ?? defaultLogKey,
+          pen: pen ?? defaultPen,
           additionalData: _withRequestId(
             metadata ??
-                _metadata(
-                  {
-                    if (method != null) 'method': method,
-                    if (url != null) 'url': url,
-                    if (path != null) 'path': path,
-                    if (headers != null) 'headers': headers,
-                    if (body != null) 'body': body,
-                  },
-                ),
+                _metadata({
+                  if (method != null) 'method': method,
+                  if (url != null) 'url': url,
+                  if (path != null) 'path': path,
+                  ...extraMetadata,
+                }),
             requestId,
           ),
         );
 
-  /// Unique ID correlating this request with its response/error.
+  /// Unique ID correlating this log with related request/response/error.
   final String? requestId;
 
   final String? method;
   final String? url;
   final String? path;
-  final Map<String, dynamic>? headers;
-  final Object? body;
-  final NetworkLogPrintOptions settings;
   final String logKey;
 
+  final String _textMessage;
+
   @override
-  String get textMessage {
-    final header = '[${method ?? '-'}] ${message ?? ''}';
-    return _composeNetworkMessage(
-      header,
-      [
-        () => _prettySection(
-              enabled: settings.printRequestData && body != null,
-              label: 'Data',
-              value: body,
-            ),
-        () => _prettySection(
-              enabled: settings.printRequestHeaders &&
-                  (headers?.isNotEmpty ?? false),
-              label: 'Headers',
-              value: headers,
-              skipEmptyMap: true,
-            ),
-      ],
-    );
-  }
+  String get textMessage => _textMessage;
 }
 
-class NetworkResponseLog extends ISpectLogData {
+class NetworkRequestLog extends BaseNetworkLog {
+  NetworkRequestLog(
+    super.message, {
+    required super.method,
+    required super.url,
+    required super.path,
+    required NetworkLogPrintOptions settings,
+    super.requestId,
+    Map<String, dynamic>? headers,
+    this.body,
+    super.logKey,
+    super.metadata,
+    super.pen,
+    String? textMessage,
+  })  : headers = headers == null ? null : Map.unmodifiable(headers),
+        super(
+          defaultLogKey: ISpectLogType.httpRequest.key,
+          defaultPen:
+              settings.requestPen ?? ISpectLogType.httpRequest.defaultPen,
+          textMessage: textMessage ??
+              _buildRequestText(
+                method: method,
+                message: message?.toString(),
+                settings: settings,
+                body: body,
+                headers: headers,
+              ),
+          extraMetadata: {
+            if (headers != null) 'headers': headers,
+            if (body != null) 'body': body,
+          },
+        );
+
+  final Map<String, dynamic>? headers;
+  final Object? body;
+}
+
+class NetworkResponseLog extends BaseNetworkLog {
   NetworkResponseLog(
     super.message, {
-    required this.method,
-    required this.url,
-    required this.path,
+    required super.method,
+    required super.url,
+    required super.path,
     required this.statusCode,
     required this.statusMessage,
-    required this.settings,
-    this.requestId,
+    required NetworkLogPrintOptions settings,
+    super.requestId,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? requestBody,
     this.responseBody,
-    String? logKey,
-    Map<String, dynamic>? metadata,
-    AnsiPen? pen,
+    super.logKey,
+    super.metadata,
+    super.pen,
+    String? textMessage,
   })  : requestHeaders =
             requestHeaders == null ? null : Map.unmodifiable(requestHeaders),
         headers = headers == null ? null : Map.unmodifiable(headers),
         requestBody =
             requestBody == null ? null : Map.unmodifiable(requestBody),
-        logKey = logKey ?? ISpectLogType.httpResponse.key,
         super(
-          key: logKey ?? ISpectLogType.httpResponse.key,
-          title: logKey ?? ISpectLogType.httpResponse.key,
-          pen: pen ??
-              settings.responsePen ??
-              ISpectLogType.httpResponse.defaultPen,
-          additionalData: _withRequestId(
-            metadata ??
-                _metadata(
-                  {
-                    if (method != null) 'method': method,
-                    if (url != null) 'url': url,
-                    if (path != null) 'path': path,
-                    if (statusCode != null) 'statusCode': statusCode,
-                    if (statusMessage != null) 'statusMessage': statusMessage,
-                    if (requestHeaders != null)
-                      'requestHeaders': requestHeaders,
-                    if (headers != null) 'headers': headers,
-                    if (requestBody != null) 'requestBody': requestBody,
-                    if (responseBody != null) 'responseBody': responseBody,
-                  },
-                ),
-            requestId,
-          ),
+          defaultLogKey: ISpectLogType.httpResponse.key,
+          defaultPen:
+              settings.responsePen ?? ISpectLogType.httpResponse.defaultPen,
+          textMessage: textMessage ??
+              _buildResponseText(
+                method: method,
+                message: message?.toString(),
+                settings: settings,
+                statusCode: statusCode,
+                statusMessage: statusMessage,
+                responseBody: responseBody,
+                headers: headers,
+              ),
+          extraMetadata: {
+            if (statusCode != null) 'statusCode': statusCode,
+            if (statusMessage != null) 'statusMessage': statusMessage,
+            if (requestHeaders != null) 'requestHeaders': requestHeaders,
+            if (headers != null) 'headers': headers,
+            if (requestBody != null) 'requestBody': requestBody,
+            if (responseBody != null) 'responseBody': responseBody,
+          },
         );
 
-  /// Unique ID correlating this response with its originating request.
-  final String? requestId;
-
-  final String? method;
-  final String? url;
-  final String? path;
   final int? statusCode;
   final String? statusMessage;
   final Map<String, dynamic>? requestHeaders;
   final Map<String, dynamic>? headers;
   final Map<String, dynamic>? requestBody;
   final Object? responseBody;
-  final NetworkLogPrintOptions settings;
-  final String logKey;
-
-  @override
-  String get textMessage {
-    final header = '[${method ?? '-'}] ${message ?? ''}';
-    return _composeNetworkMessage(
-      header,
-      [
-        () => statusCode != null ? 'Status: $statusCode' : null,
-        () => settings.printResponseMessage && statusMessage != null
-            ? 'Message: $statusMessage'
-            : null,
-        () => _prettySection(
-              enabled: settings.printResponseData && responseBody != null,
-              label: 'Data',
-              value: responseBody,
-            ),
-        () => _prettySection(
-              enabled: settings.printResponseHeaders &&
-                  (headers?.isNotEmpty ?? false),
-              label: 'Headers',
-              value: headers,
-              skipEmptyMap: true,
-            ),
-      ],
-    );
-  }
 }
 
-class NetworkErrorLog extends ISpectLogData {
+class NetworkErrorLog extends BaseNetworkLog {
   NetworkErrorLog(
     super.message, {
-    required this.method,
-    required this.url,
-    required this.path,
+    required super.method,
+    required super.url,
+    required super.path,
     required this.statusCode,
     required this.statusMessage,
-    required this.settings,
-    this.requestId,
+    required NetworkLogPrintOptions settings,
+    super.requestId,
     Map<String, dynamic>? requestHeaders,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? body,
     Object? capturedException,
     StackTrace? capturedStackTrace,
-    String? logKey,
-    Map<String, dynamic>? metadata,
-    AnsiPen? pen,
+    super.logKey,
+    super.metadata,
+    super.pen,
+    String? textMessage,
   })  : requestHeaders =
             requestHeaders == null ? null : Map.unmodifiable(requestHeaders),
         headers = headers == null ? null : Map.unmodifiable(headers),
         body = body == null ? null : Map.unmodifiable(body),
-        logKey = logKey ?? ISpectLogType.httpError.key,
         super(
-          key: logKey ?? ISpectLogType.httpError.key,
-          title: logKey ?? ISpectLogType.httpError.key,
-          pen: pen ?? settings.errorPen ?? ISpectLogType.httpError.defaultPen,
+          defaultLogKey: ISpectLogType.httpError.key,
+          defaultPen: settings.errorPen ?? ISpectLogType.httpError.defaultPen,
           logLevel: LogLevel.error,
           exception: capturedException,
           stackTrace: capturedStackTrace,
-          additionalData: _withRequestId(
-            metadata ??
-                _metadata(
-                  {
-                    if (method != null) 'method': method,
-                    if (url != null) 'url': url,
-                    if (path != null) 'path': path,
-                    if (statusCode != null) 'statusCode': statusCode,
-                    if (statusMessage != null) 'statusMessage': statusMessage,
-                    if (requestHeaders != null)
-                      'requestHeaders': requestHeaders,
-                    if (headers != null) 'headers': headers,
-                    if (body != null) 'body': body,
-                    if (capturedException != null)
-                      'exception': '$capturedException',
-                    if (capturedStackTrace != null)
-                      'stackTrace': '$capturedStackTrace',
-                  },
-                ),
-            requestId,
-          ),
+          textMessage: textMessage ??
+              _buildErrorText(
+                method: method,
+                message: message?.toString(),
+                settings: settings,
+                statusCode: statusCode,
+                statusMessage: statusMessage,
+                body: body,
+                headers: headers,
+              ),
+          extraMetadata: {
+            if (statusCode != null) 'statusCode': statusCode,
+            if (statusMessage != null) 'statusMessage': statusMessage,
+            if (requestHeaders != null) 'requestHeaders': requestHeaders,
+            if (headers != null) 'headers': headers,
+            if (body != null) 'body': body,
+            if (capturedException != null) 'exception': '$capturedException',
+            if (capturedStackTrace != null)
+              'stackTrace': '$capturedStackTrace',
+          },
         );
 
-  /// Unique ID correlating this error with its originating request.
-  final String? requestId;
-
-  final String? method;
-  final String? url;
-  final String? path;
   final int? statusCode;
   final String? statusMessage;
   final Map<String, dynamic>? requestHeaders;
   final Map<String, dynamic>? headers;
   final Map<String, dynamic>? body;
-  final NetworkLogPrintOptions settings;
-  final String logKey;
-
-  @override
-  String get textMessage {
-    final header = '[${method ?? '-'}] ${message ?? ''}';
-    return _composeNetworkMessage(
-      header,
-      [
-        () => statusCode != null ? 'Status: $statusCode' : null,
-        () => settings.printErrorMessage && statusMessage != null
-            ? 'Message: $statusMessage'
-            : null,
-        () => _prettySection(
-              enabled: settings.printErrorData && (body?.isNotEmpty ?? false),
-              label: 'Data',
-              value: body,
-              skipEmptyMap: true,
-            ),
-        () => _prettySection(
-              enabled:
-                  settings.printErrorHeaders && (headers?.isNotEmpty ?? false),
-              label: 'Headers',
-              value: headers,
-              skipEmptyMap: true,
-            ),
-      ],
-    );
-  }
 }

@@ -18,8 +18,7 @@ class HttpResponseLog extends NetworkResponseLog {
     super.requestBody,
     super.responseBody,
     RedactionService? redactor,
-  })  : _settings = settings,
-        _responseData = responseData,
+  })  : _responseData = responseData,
         super(
           settings: settings,
           requestHeaders: requestHeaders?.map(MapEntry.new),
@@ -29,11 +28,7 @@ class HttpResponseLog extends NetworkResponseLog {
           ),
         );
 
-  final ISpectHttpInterceptorSettings _settings;
   final HttpResponseData? _responseData;
-
-  @override
-  ISpectHttpInterceptorSettings get settings => _settings;
 
   HttpResponseData? get responseData => _responseData;
 }

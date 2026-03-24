@@ -10,13 +10,17 @@ final class ISpectWSInterceptor
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
     RedactionService? redactor,
-  }) {
-    initializeInterceptor(logger: logger, redactor: redactor);
+  }) : _logger = logger {
+    if (redactor != null) this.redactor = redactor;
   }
 
+  final ISpectLogger _logger;
   final ISpectWSInterceptorSettings settings;
   final void Function(WebSocketClient)? onClientReady;
   WebSocketClient? _client;
+
+  @override
+  ISpectLogger get logger => _logger;
 
   @override
   bool get enableRedaction => settings.enableRedaction;
@@ -28,7 +32,7 @@ final class ISpectWSInterceptor
 
   Object _safeRedact(Object data, bool useRedaction) {
     try {
-      final sanitized = maybeRedact(data, useRedaction: useRedaction);
+      final sanitized = redactBody(data, useRedaction: useRedaction);
       return sanitized ?? data;
     } catch (e, s) {
       logger.logData(

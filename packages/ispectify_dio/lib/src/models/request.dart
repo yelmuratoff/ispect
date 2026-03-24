@@ -14,8 +14,7 @@ class DioRequestLog extends NetworkRequestLog {
     super.headers,
     super.body,
     RedactionService? redactor,
-  })  : _settings = settings,
-        _requestData = requestData,
+  })  : _requestData = requestData,
         super(
           settings: settings,
           metadata: requestData.toJson(
@@ -23,11 +22,7 @@ class DioRequestLog extends NetworkRequestLog {
           ),
         );
 
-  final ISpectDioInterceptorSettings _settings;
   final DioRequestData _requestData;
 
   DioRequestData get requestData => _requestData;
-
-  @override
-  ISpectDioInterceptorSettings get settings => _settings;
 }

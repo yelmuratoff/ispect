@@ -18,8 +18,7 @@ class DioResponseLog extends NetworkResponseLog {
     super.requestBody,
     super.responseBody,
     RedactionService? redactor,
-  })  : _settings = settings,
-        _responseData = responseData,
+  })  : _responseData = responseData,
         super(
           settings: settings,
           metadata: responseData.toJson(
@@ -27,11 +26,7 @@ class DioResponseLog extends NetworkResponseLog {
           ),
         );
 
-  final ISpectDioInterceptorSettings _settings;
   final DioResponseData _responseData;
 
   DioResponseData get responseData => _responseData;
-
-  @override
-  ISpectDioInterceptorSettings get settings => _settings;
 }

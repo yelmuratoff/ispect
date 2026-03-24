@@ -21,6 +21,8 @@ class WSReceivedLog extends NetworkResponseLog {
           settings: settings,
           responseBody: payload,
           logKey: getKey,
+          textMessage:
+              'URL: $url\nData: ${message?.toString() ?? ''}'.truncate() ?? '',
           metadata: {
             'type': type,
             'url': url,
@@ -40,16 +42,4 @@ class WSReceivedLog extends NetworkResponseLog {
 
   Map<String, dynamic>? get metrics =>
       _metrics == null ? null : Map<String, dynamic>.from(_metrics);
-
-  @override
-  ISpectWSInterceptorSettings get settings => _settings;
-
-  @override
-  String get textMessage {
-    final buffer = StringBuffer()
-      ..writeln('URL: ${url ?? ''}')
-      ..write('Data: ${message ?? ''}');
-
-    return buffer.toString().truncate() ?? '';
-  }
 }

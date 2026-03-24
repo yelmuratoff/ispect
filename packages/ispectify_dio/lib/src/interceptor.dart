@@ -16,9 +16,14 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     this.settings = const ISpectDioInterceptorSettings(),
     this.addonId,
     RedactionService? redactor,
-  }) {
-    initializeInterceptor(logger: logger, redactor: redactor);
+  }) : _logger = logger ?? ISpectLogger() {
+    if (redactor != null) this.redactor = redactor;
   }
+
+  final ISpectLogger _logger;
+
+  @override
+  ISpectLogger get logger => _logger;
 
   /// Internal key used to store the request ID in [RequestOptions.extra].
   static const _requestIdExtraKey = '_ispect_rid';

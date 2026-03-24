@@ -11,14 +11,8 @@ class HttpRequestLog extends NetworkRequestLog {
     super.requestId,
     Map<String, String>? headers,
     super.body,
-  })  : _settings = settings,
-        super(
+  })  : super(
           settings: settings,
           headers: headers?.map(MapEntry.new),
         );
-
-  final ISpectHttpInterceptorSettings _settings;
-
-  @override
-  ISpectHttpInterceptorSettings get settings => _settings;
 }

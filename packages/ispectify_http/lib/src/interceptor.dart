@@ -14,9 +14,14 @@ class ISpectHttpInterceptor extends InterceptorContract
     ISpectLogger? logger,
     this.settings = const ISpectHttpInterceptorSettings(),
     RedactionService? redactor,
-  }) {
-    initializeInterceptor(logger: logger, redactor: redactor);
+  }) : _logger = logger ?? ISpectLogger() {
+    if (redactor != null) this.redactor = redactor;
   }
+
+  final ISpectLogger _logger;
+
+  @override
+  ISpectLogger get logger => _logger;
 
   /// `ISpectHttpInterceptor` settings and customization
   ISpectHttpInterceptorSettings settings;
