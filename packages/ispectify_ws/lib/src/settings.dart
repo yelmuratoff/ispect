@@ -1,89 +1,38 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 
-/// `ISpectWSInterceptorSettings` settings and customization
-class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
+/// `ISpectWSInterceptorSettings` settings and customization.
+///
+/// Extends [BaseNetworkInterceptorSettings] to reuse shared fields
+/// (`enabled`, `enableRedaction`, pens, print toggles) while providing
+/// WS-specific convenience aliases (`printSentData`, `sentPen`, etc.).
+class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
-    this.enabled = true,
-    this.enableRedaction = true,
-    this.printReceivedData = true,
-    this.printReceivedMessage = true,
-    this.printErrorData = true,
-    this.printErrorMessage = true,
-    this.printSentData = true,
-    this.printReceivedHeaders = false,
-    this.printSentHeaders = false,
+    super.enabled,
+    super.enableRedaction,
+    bool printReceivedData = true,
+    bool printReceivedMessage = true,
+    super.printErrorData,
+    super.printErrorMessage,
+    bool printSentData = true,
+    bool printReceivedHeaders = false,
+    bool printSentHeaders = false,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
-    AnsiPen? errorPen,
+    super.errorPen,
     this.sentFilter,
     this.receivedFilter,
     this.errorFilter,
-  })  : _sentPen = sentPen,
-        _receivedPen = receivedPen,
-        _errorPen = errorPen;
-
-  /// Print WS logger if true
-  final bool enabled;
-
-  /// Enable sensitive data redaction if true (default: true)
-  final bool enableRedaction;
-
-  /// Print response data if true
-  final bool printReceivedData;
-
-  /// Print response status message if true
-  final bool printReceivedMessage;
-
-  /// Print error data if true
-  @override
-  final bool printErrorData;
-
-  /// Print error message if true
-  @override
-  final bool printErrorMessage;
-
-  /// Print request data if true
-  final bool printSentData;
-
-  /// Print response headers if true
-  final bool printReceivedHeaders;
-
-  /// Print request headers if true
-  final bool printSentHeaders;
-
-  /// Field to set custom ws sent console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _sentPen;
-
-  /// Field to set custom ws received console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _receivedPen;
-
-  /// Field to set custom ws error console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _errorPen;
+  }) : super(
+          printRequestData: printSentData,
+          printRequestHeaders: printSentHeaders,
+          printResponseData: printReceivedData,
+          printResponseHeaders: printReceivedHeaders,
+          printResponseMessage: printReceivedMessage,
+          printErrorHeaders: false,
+          requestPen: sentPen,
+          responsePen: receivedPen,
+        );
 
   final bool Function(WSSentLog request)? sentFilter;
 
@@ -91,36 +40,26 @@ class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
 
   final bool Function(WSErrorLog response)? errorFilter;
 
-  AnsiPen? get sentPen => _sentPen;
+  /// Alias for [printRequestData] (WS terminology).
+  bool get printSentData => printRequestData;
 
-  AnsiPen? get receivedPen => _receivedPen;
+  /// Alias for [printRequestHeaders] (WS terminology).
+  bool get printSentHeaders => printRequestHeaders;
 
-  @override
-  bool get printRequestData => printSentData;
+  /// Alias for [printResponseData] (WS terminology).
+  bool get printReceivedData => printResponseData;
 
-  @override
-  bool get printRequestHeaders => printSentHeaders;
+  /// Alias for [printResponseHeaders] (WS terminology).
+  bool get printReceivedHeaders => printResponseHeaders;
 
-  @override
-  bool get printResponseData => printReceivedData;
+  /// Alias for [printResponseMessage] (WS terminology).
+  bool get printReceivedMessage => printResponseMessage;
 
-  @override
-  bool get printResponseHeaders => printReceivedHeaders;
+  /// Alias for [requestPen] (WS terminology).
+  AnsiPen? get sentPen => requestPen;
 
-  @override
-  bool get printResponseMessage => printReceivedMessage;
-
-  @override
-  bool get printErrorHeaders => false;
-
-  @override
-  AnsiPen? get errorPen => _errorPen;
-
-  @override
-  AnsiPen? get requestPen => _sentPen;
-
-  @override
-  AnsiPen? get responsePen => _receivedPen;
+  /// Alias for [responsePen] (WS terminology).
+  AnsiPen? get receivedPen => responsePen;
 
   /// Creates a copy of this settings with the given fields replaced.
   ISpectWSInterceptorSettings copyWith({
@@ -150,9 +89,9 @@ class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
         printSentData: printSentData ?? this.printSentData,
         printReceivedHeaders: printReceivedHeaders ?? this.printReceivedHeaders,
         printSentHeaders: printSentHeaders ?? this.printSentHeaders,
-        sentPen: sentPen ?? _sentPen,
-        receivedPen: receivedPen ?? _receivedPen,
-        errorPen: errorPen ?? _errorPen,
+        sentPen: sentPen ?? this.sentPen,
+        receivedPen: receivedPen ?? this.receivedPen,
+        errorPen: errorPen ?? this.errorPen,
         sentFilter: sentFilter ?? this.sentFilter,
         receivedFilter: receivedFilter ?? this.receivedFilter,
         errorFilter: errorFilter ?? this.errorFilter,

@@ -29,12 +29,9 @@ final class BlocStateLog extends BlocLifecycleLog {
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final currentPayload = settings.printStateFullData
-                ? change.currentState
-                : change.currentState.runtimeType;
-            final nextPayload = settings.printStateFullData
-                ? change.nextState
-                : change.nextState.runtimeType;
+            final currentPayload =
+                settings.formatState(change.currentState);
+            final nextPayload = settings.formatState(change.nextState);
             return '$typeName changed from $currentPayload to $nextPayload';
           },
           additionalData: settings.redactAdditionalData(<String, dynamic>{

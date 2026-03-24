@@ -31,15 +31,10 @@ final class BlocTransitionLog extends BlocLifecycleLog {
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final eventPayload = settings.printEventFullData
-                ? transition.event
-                : transition.event.runtimeType;
-            final currentPayload = settings.printStateFullData
-                ? transition.currentState
-                : transition.currentState.runtimeType;
-            final nextPayload = settings.printStateFullData
-                ? transition.nextState
-                : transition.nextState.runtimeType;
+            final eventPayload = settings.formatEvent(transition.event);
+            final currentPayload =
+                settings.formatState(transition.currentState);
+            final nextPayload = settings.formatState(transition.nextState);
             return '$typeName transitioned from $currentPayload to $nextPayload'
                 '\nEVENT: $eventPayload';
           },

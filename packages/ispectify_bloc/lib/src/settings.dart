@@ -137,6 +137,18 @@ class ISpectBlocSettings {
     );
   }
 
+  /// Formats an event payload for display based on [printEventFullData].
+  ///
+  /// Returns the full object when verbose, otherwise its runtime type.
+  Object formatEvent(Object? event) =>
+      printEventFullData ? (event ?? 'null') : (event?.runtimeType ?? 'null');
+
+  /// Formats a state payload for display based on [printStateFullData].
+  ///
+  /// Returns the full object when verbose, otherwise its runtime type.
+  Object formatState(Object? state) =>
+      printStateFullData ? (state ?? 'null') : (state?.runtimeType ?? 'null');
+
   /// Returns a copy with the provided overrides.
   ISpectBlocSettings copyWith({
     bool? enabled,

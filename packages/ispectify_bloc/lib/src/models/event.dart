@@ -28,13 +28,8 @@ final class BlocEventLog extends BlocLifecycleLog {
           bloc: bloc,
           key: logKey,
           title: logKey,
-          messageBuilder: () {
-            final payload = settings.printEventFullData
-                ? event
-                : event?.runtimeType ?? 'null';
-            return '$typeName received event'
-                '\nEVENT: $payload';
-          },
+          messageBuilder: () => '$typeName received event'
+              '\nEVENT: ${settings.formatEvent(event)}',
           additionalData: settings.redactAdditionalData(<String, dynamic>{
             if (event != null) 'event': event,
           }),

@@ -13,9 +13,7 @@ class WSErrorLog extends NetworkErrorLog with WSLogFields {
     required StackTrace stackTrace,
     required ISpectWSInterceptorSettings settings,
     Map<String, dynamic>? metrics,
-  })  : _settings = settings,
-        _metrics = metrics,
-        super(
+  }) : super(
           method: type,
           url: url,
           path: path,
@@ -37,19 +35,12 @@ class WSErrorLog extends NetworkErrorLog with WSLogFields {
             body: payload,
             metrics: metrics,
           ),
-        );
+        ) {
+    initWSLogFields(settings: settings, metrics: metrics);
+  }
 
   @override
   final String type;
-  final ISpectWSInterceptorSettings _settings;
-  final Map<String, dynamic>? _metrics;
 
   static const getKey = 'ws-error';
-
-  @override
-  ISpectWSInterceptorSettings get wsSettings => _settings;
-
-  @override
-  Map<String, dynamic>? get metrics =>
-      _metrics == null ? null : Map<String, dynamic>.from(_metrics);
 }

@@ -39,14 +39,11 @@ final class BlocDoneLog extends BlocLifecycleLog {
           key: logKey,
           title: logKey,
           messageBuilder: () {
-            final payload = settings.printEventFullData
-                ? event
-                : event?.runtimeType ?? 'null';
             final status = hasError ? 'failed' : 'completed';
             return event == null
                 ? '$typeName event handler $status'
                 : '$typeName event handler $status'
-                    '\nEVENT: $payload';
+                    '\nEVENT: ${settings.formatEvent(event)}';
           },
           exception: error is Exception ? error : null,
           error: error is Error ? error : null,

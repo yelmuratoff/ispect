@@ -11,9 +11,7 @@ class WSReceivedLog extends NetworkResponseLog with WSLogFields {
     required Object? payload,
     required ISpectWSInterceptorSettings settings,
     Map<String, dynamic>? metrics,
-  })  : _settings = settings,
-        _metrics = metrics,
-        super(
+  }) : super(
           method: type,
           url: url,
           path: path,
@@ -31,19 +29,12 @@ class WSReceivedLog extends NetworkResponseLog with WSLogFields {
             body: payload,
             metrics: metrics,
           ),
-        );
+        ) {
+    initWSLogFields(settings: settings, metrics: metrics);
+  }
 
   @override
   final String type;
-  final ISpectWSInterceptorSettings _settings;
-  final Map<String, dynamic>? _metrics;
 
   static const getKey = 'ws-received';
-
-  @override
-  ISpectWSInterceptorSettings get wsSettings => _settings;
-
-  @override
-  Map<String, dynamic>? get metrics =>
-      _metrics == null ? null : Map<String, dynamic>.from(_metrics);
 }

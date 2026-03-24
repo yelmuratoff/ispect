@@ -80,6 +80,17 @@ final class ISpectDbCore {
   static Object? redact(Object? data, List<String> keys) =>
       RedactionService.redactByKeys(data, keys);
 
+  /// Conditionally redacts [data] if [shouldRedact] is `true`, otherwise
+  /// returns [data] unchanged. Returns `null` when [data] is `null`.
+  static Object? redactIfNeeded(
+    Object? data, {
+    required bool shouldRedact,
+    required List<String> keys,
+  }) {
+    if (data == null) return null;
+    return shouldRedact ? redact(data, keys) : data;
+  }
+
   /// Redacts positional arguments in a [List] when the SQL [statement]
   /// references columns that match any of the [keys].
   ///
@@ -230,21 +241,23 @@ extension ISpectLoggerDb on ISpectLogger {
         : ISpectDbCore.truncateValue(statement, maxStmt);
     final stmt = stmtRaw is String ? stmtRaw : stmtRaw?.toString();
 
-    final aBase = args == null
+    final aRedacted = args == null
         ? null
         : (useRedact
             ? ISpectDbCore.redactPositionalArgs(args, rKeys, statement)
             : args);
     final aRaw =
-        aBase == null ? null : truncateLeaves(aBase, maxLength: maxArgs);
+        aRedacted == null ? null : truncateLeaves(aRedacted, maxLength: maxArgs);
     final a = aRaw is List ? aRaw.cast<Object?>() : null;
 
-    final naRedacted = namedArgs == null
+    final naRedacted = ISpectDbCore.redactIfNeeded(
+      namedArgs,
+      shouldRedact: useRedact,
+      keys: rKeys,
+    );
+    final naRaw = naRedacted == null
         ? null
-        : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
-    final naBase = naRedacted;
-    final naRaw =
-        naBase == null ? null : truncateLeaves(naBase, maxLength: maxArgs);
+        : truncateLeaves(naRedacted, maxLength: maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(
             naRaw.entries.map((e) => MapEntry(e.key.toString(), e.value)),
@@ -253,15 +266,20 @@ extension ISpectLoggerDb on ISpectLogger {
             ? <String, Object?>{'values': naRaw}
             : null;
 
-    final mRedacted = meta == null
-        ? null
-        : (useRedact ? ISpectDbCore.redact(meta, rKeys) : meta);
-    final m = mRedacted;
+    final m = ISpectDbCore.redactIfNeeded(
+      meta,
+      shouldRedact: useRedact,
+      keys: rKeys,
+    );
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 
     final val = projection ?? value;
-    final valRed = useRedact ? ISpectDbCore.redact(val, rKeys) : val;
+    final valRed = ISpectDbCore.redactIfNeeded(
+      val,
+      shouldRedact: useRedact,
+      keys: rKeys,
+    );
     final valTrunc = ISpectDbCore.truncateValue(valRed, maxVal);
     final valueForAdditional =
         valTrunc is String ? valTrunc : valTrunc?.toString();
@@ -458,6 +476,24 @@ extension ISpectLoggerDb on ISpectLogger {
     );
   }
 
+  void _logTxnMarker({
+    required String source,
+    required String operation,
+    required String txnId,
+    Map<String, Object?>? meta,
+    bool? success,
+    Object? error,
+  }) {
+    db(
+      source: source,
+      operation: operation,
+      meta: meta,
+      transactionId: txnId,
+      success: success,
+      error: error,
+    );
+  }
+
   Future<T> dbTransaction<T>({
     required Future<T> Function() run,
     String source = 'custom',
@@ -468,11 +504,11 @@ extension ISpectLoggerDb on ISpectLogger {
     final enableMarkers = logMarkers ?? cfg.enableTransactionMarkers;
     final txnId = ISpectDbCore.genId();
     if (enableMarkers) {
-      db(
+      _logTxnMarker(
         source: source,
         operation: 'transaction-begin',
+        txnId: txnId,
         meta: meta,
-        transactionId: txnId,
       );
     }
     var didSucceed = false;
@@ -482,11 +518,11 @@ extension ISpectLoggerDb on ISpectLogger {
       return result;
     } catch (e) {
       if (enableMarkers) {
-        db(
+        _logTxnMarker(
           source: source,
           operation: 'transaction-rollback',
+          txnId: txnId,
           meta: meta,
-          transactionId: txnId,
           success: false,
           error: e,
         );
@@ -494,11 +530,11 @@ extension ISpectLoggerDb on ISpectLogger {
       rethrow;
     } finally {
       if (enableMarkers && didSucceed) {
-        db(
+        _logTxnMarker(
           source: source,
           operation: 'transaction-commit',
+          txnId: txnId,
           meta: meta,
-          transactionId: txnId,
           success: true,
         );
       }
