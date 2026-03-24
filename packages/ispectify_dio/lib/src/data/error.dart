@@ -19,7 +19,15 @@ class DioErrorData {
     Set<String>? ignoredKeys,
   }) =>
       {
+        // --- Error summary: what went wrong ---
         'type': exception?.type,
+        'message': redactor != null
+            ? redactor.redact(
+                exception?.message,
+                ignoredValues: ignoredValues,
+                ignoredKeys: ignoredKeys,
+              )
+            : exception?.message,
         'error': redactor != null
             ? redactor.redact(
                 exception?.error?.toString(),
@@ -28,23 +36,20 @@ class DioErrorData {
               )
             : exception?.error,
         'stack-trace': exception?.stackTrace,
-        'message': redactor != null
-            ? redactor.redact(
-                exception?.message,
-                ignoredValues: ignoredValues,
-                ignoredKeys: ignoredKeys,
-              )
-            : exception?.message,
-        'request-options': redactor == null
-            ? requestData.toJson()
-            : requestData.toJson(
+
+        // --- Response (if any) ---
+        'response': redactor == null
+            ? responseData.toJson()
+            : responseData.toJson(
                 redactor: redactor,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
               ),
-        'response': redactor == null
-            ? responseData.toJson()
-            : responseData.toJson(
+
+        // --- Original request (reference) ---
+        'request-options': redactor == null
+            ? requestData.toJson()
+            : requestData.toJson(
                 redactor: redactor,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,

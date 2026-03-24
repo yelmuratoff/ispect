@@ -18,27 +18,36 @@ class DioRequestData {
     final normalizedData = _normalizeBody(requestOptions.data);
 
     final map = <String, dynamic>{
-      'path': requestOptions.path,
-      'base-url': requestOptions.baseUrl,
-      'url': requestOptions.uri.toString(),
+      // --- Identity: what & where ---
       'method': requestOptions.method,
-      'data': normalizedData,
-      'headers': normalizedHeaders,
+      'url': requestOptions.uri.toString(),
+      'base-url': requestOptions.baseUrl,
+      'path': requestOptions.path,
       'query-parameters': normalizedQuery,
-      'extra': normalizedExtra,
-      'preserve-header-case': requestOptions.preserveHeaderCase,
-      'response-type': requestOptions.responseType,
+
+      // --- Payload ---
       'content-type': requestOptions.contentType,
-      'receive-data-when-status-error':
-          requestOptions.receiveDataWhenStatusError,
-      'follow-redirects': requestOptions.followRedirects,
-      'max-redirects': requestOptions.maxRedirects,
-      'persistent-connection': requestOptions.persistentConnection,
-      'list-format': requestOptions.listFormat,
-      'cancel-token': requestOptions.cancelToken,
+      'headers': normalizedHeaders,
+      'data': normalizedData,
+
+      // --- Timing ---
+      'connect-timeout': requestOptions.connectTimeout,
       'send-timeout': requestOptions.sendTimeout,
       'receive-timeout': requestOptions.receiveTimeout,
-      'connect-timeout': requestOptions.connectTimeout,
+
+      // --- Behaviour ---
+      'follow-redirects': requestOptions.followRedirects,
+      'max-redirects': requestOptions.maxRedirects,
+      'response-type': requestOptions.responseType,
+      'receive-data-when-status-error':
+          requestOptions.receiveDataWhenStatusError,
+      'persistent-connection': requestOptions.persistentConnection,
+      'preserve-header-case': requestOptions.preserveHeaderCase,
+      'list-format': requestOptions.listFormat,
+      'cancel-token': requestOptions.cancelToken,
+
+      // --- Meta ---
+      'extra': normalizedExtra,
     };
 
     if (redactor == null) {

@@ -37,20 +37,16 @@ class HttpResponseData {
     final preDecoded = preDecodedBody;
     final multipart = multipartRequest;
     final map = <String, dynamic>{
-      'url': baseResponse.request?.url.toString(),
-      'method': baseResponse.request?.method,
+      // --- Status: first thing you check ---
       'status-code': baseResponse.statusCode,
       'status-message': baseResponse.reasonPhrase,
-      'request-data': redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
-      'is-redirect': baseResponse.isRedirect,
-      'content-length': baseResponse.contentLength,
-      'persistent-connection': baseResponse.persistentConnection,
+
+      // --- Identity ---
+      'method': baseResponse.request?.method,
+      'url': baseResponse.request?.url.toString(),
+
+      // --- Payload ---
+      'headers': baseResponse.headers,
       if (resp != null)
         'body': preDecoded != null
             ? (redactor != null
@@ -71,9 +67,26 @@ class HttpResponseData {
                 : _tryDecodeJson(resp.body)),
       if (resp != null && redactor == null)
         'body-bytes': resp.bodyBytes.length.toString(),
+      'content-length': baseResponse.contentLength,
+
+      // --- Redirects ---
+      'is-redirect': baseResponse.isRedirect,
+
+      // --- Behaviour ---
+      'persistent-connection': baseResponse.persistentConnection,
+
+      // --- Multipart (if applicable) ---
       if (multipart != null)
         'multipart-request': HttpMultipartSerializer.serialize(multipart),
-      'headers': baseResponse.headers,
+
+      // --- Original request (reference) ---
+      'request-data': redactor == null
+          ? requestData.toJson()
+          : requestData.toJson(
+              redactor: redactor,
+              ignoredValues: ignoredValues,
+              ignoredKeys: ignoredKeys,
+            ),
     };
 
     if (redactor == null) return map;

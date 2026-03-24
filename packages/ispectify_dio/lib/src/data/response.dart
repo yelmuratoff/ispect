@@ -19,19 +19,19 @@ class DioResponseData {
   }) {
     final headers = response?.headers;
     final map = <String, dynamic>{
-      'request-options': redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
-      'url': response?.realUri.toString(),
-      'method': response?.requestOptions.method,
-      'data': response?.data,
+      // --- Status: first thing you check ---
       'status-code': response?.statusCode,
       'status-message': response?.statusMessage,
-      'extra': response?.extra,
+
+      // --- Identity ---
+      'method': response?.requestOptions.method,
+      'url': response?.realUri.toString(),
+
+      // --- Payload ---
+      'headers': headers?.map,
+      'data': response?.data,
+
+      // --- Redirects ---
       'is-redirect': response?.isRedirect,
       'redirects': response?.redirects == null
           ? null
@@ -44,7 +44,18 @@ class DioResponseData {
                 },
               )
               .toList(),
-      'headers': headers?.map,
+
+      // --- Meta ---
+      'extra': response?.extra,
+
+      // --- Original request (reference) ---
+      'request-options': redactor == null
+          ? requestData.toJson()
+          : requestData.toJson(
+              redactor: redactor,
+              ignoredValues: ignoredValues,
+              ignoredKeys: ignoredKeys,
+            ),
     };
 
     if (redactor == null) {
