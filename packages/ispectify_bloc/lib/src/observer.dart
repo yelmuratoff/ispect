@@ -119,13 +119,9 @@ class ISpectBlocObserver extends BlocObserver {
 
   /// Safely logs data, preventing logger exceptions from propagating into
   /// the Bloc framework.
-  void _safeLogData(ISpectLogData data) {
-    try {
-      _logger.logData(data);
-    } catch (_) {
-      // Prevent logging failure from propagating into the Bloc framework.
-    }
-  }
+  ///
+  /// Delegates to [SafeLogExtension.safeLogData] from `ispectify`.
+  void _safeLogData(ISpectLogData data) => _logger.safeLogData(data);
 
   /// Logs a warning when a user-provided callback throws.
   void _logCallbackError(String callbackName, Object error) {

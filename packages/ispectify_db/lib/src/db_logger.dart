@@ -19,29 +19,15 @@ final class ISpectDbCore {
   /// to make configuration changes explicit and intentional.
   static set config(ISpectDbConfig value) => _config = value;
 
-  static final Random _random = _createRandom();
-
-  static Random _createRandom() {
-    try {
-      return Random.secure();
-    } catch (_) {
-      return Random();
-    }
-  }
+  static final Random _random = Random();
 
   static final RegExp _singleQuoteRe = RegExp("'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
   static final RegExp _digitRe = RegExp(r'\b\d+\b');
   static final RegExp _whitespaceRe = RegExp(r'\s+');
 
-  static bool _samplePass(double? localSample) {
-    final s = localSample ?? config.sampleRate;
-    if (s == null) return true;
-    if (s <= 0) return false;
-    if (s >= 1) return true;
-
-    return _random.nextDouble() < s;
-  }
+  static bool _samplePass(double? localSample) =>
+      samplePass(localSample ?? config.sampleRate);
 
   static String genId() {
     final now = DateTime.now().microsecondsSinceEpoch;
@@ -111,15 +97,10 @@ final class ISpectDbCore {
     return args.map((e) => e == null ? null : '***').toList();
   }
 
-  static Map<String, Object?> clean(Map<String, Object?> m) {
-    final out = <String, Object?>{};
-    m.forEach((k, v) {
-      if (v == null) return;
-      if (v is String && v.isEmpty) return;
-      out[k] = v;
-    });
-    return out;
-  }
+  /// Removes entries with `null` values or empty-string values.
+  ///
+  /// Delegates to [cleanMap] from `ispectify`.
+  static Map<String, Object?> clean(Map<String, Object?> m) => cleanMap(m);
 
   static String pickLogKey({required bool isError, required String operation}) {
     if (isError) return 'db-error';
