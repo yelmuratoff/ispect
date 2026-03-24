@@ -80,7 +80,7 @@ class HttpResponseData {
         'multipart-request': HttpMultipartSerializer.serialize(multipart),
 
       // --- Original request (reference) ---
-      'request-data': redactor == null
+      'request': redactor == null
           ? requestData.toJson()
           : requestData.toJson(
               redactor: redactor,

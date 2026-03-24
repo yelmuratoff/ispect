@@ -24,6 +24,9 @@ class HttpRequestData {
 
       // --- Payload ---
       'headers': requestOptions?.headers,
+      'encoding': (requestOptions is Request)
+          ? (requestOptions! as Request).encoding.name
+          : null,
       'data': (requestOptions is Request)
           ? (requestOptions! as Request).body
           : null,

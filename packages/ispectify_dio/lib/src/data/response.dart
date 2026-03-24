@@ -49,7 +49,7 @@ class DioResponseData {
       'extra': response?.extra,
 
       // --- Original request (reference) ---
-      'request-options': redactor == null
+      'request': redactor == null
           ? requestData.toJson()
           : requestData.toJson(
               redactor: redactor,
