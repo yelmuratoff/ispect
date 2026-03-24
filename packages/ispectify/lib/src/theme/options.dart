@@ -4,14 +4,8 @@ import 'package:ispectify/ispectify.dart';
 final AnsiPen _fallbackPen = AnsiPen()..gray();
 
 /// Helper function to get default pen for a log type key.
-AnsiPen? _getDefaultPenByKey(String key) {
-  try {
-    final logType = ISpectLogType.values.firstWhere((e) => e.key == key);
-    return logType.defaultPen;
-  } catch (_) {
-    return null;
-  }
-}
+AnsiPen? _getDefaultPenByKey(String key) =>
+    ISpectLogType.fromKey(key)?.defaultPen;
 
 /// Configuration options for ISpectLogger logging.
 ///
