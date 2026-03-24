@@ -138,9 +138,9 @@ void main() {
     });
   });
 
-  group('LoggerFilter', () {
+  group('LogLevelRangeFilter', () {
     test('default filter allows all log levels', () {
-      final filter = LoggerFilter();
+      final filter = LogLevelRangeFilter();
 
       expect(filter.shouldLog('Critical message', LogLevel.critical), true);
       expect(filter.shouldLog('Error message', LogLevel.error), true);
@@ -151,7 +151,7 @@ void main() {
     });
 
     test('custom range filters correctly', () {
-      final filter = LoggerFilter(
+      final filter = LogLevelRangeFilter(
         minLevel: LogLevel.error,
         maxLevel: LogLevel.warning,
       );
@@ -185,13 +185,13 @@ void main() {
     test('throws ArgumentError for invalid range', () {
       expect(
         () =>
-            LoggerFilter(minLevel: LogLevel.debug, maxLevel: LogLevel.critical),
+            LogLevelRangeFilter(minLevel: LogLevel.debug, maxLevel: LogLevel.critical),
         throwsA(isA<ArgumentError>()),
       );
     });
 
     test('single level filter works', () {
-      final filter = LoggerFilter(
+      final filter = LogLevelRangeFilter(
         minLevel: LogLevel.error,
         maxLevel: LogLevel.error,
       );
