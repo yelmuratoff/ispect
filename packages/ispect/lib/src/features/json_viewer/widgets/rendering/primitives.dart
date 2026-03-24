@@ -24,7 +24,7 @@ class CopyButton extends StatelessWidget {
         onTap: () {
           copyClipboard(
             context,
-            value: '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
+            value: '${node.key}: ${JsonTruncator.pretty(node.rawValue)}',
           );
         },
         child: Padding(

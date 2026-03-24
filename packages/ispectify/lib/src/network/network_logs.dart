@@ -45,7 +45,7 @@ String? _prettySection({
 }) {
   if (!enabled || value == null) return null;
   if (skipEmptyMap && value is Map && value.isEmpty) return null;
-  final formatted = JsonTruncatorService.pretty(value);
+  final formatted = JsonTruncator.pretty(value);
   return '$label: $formatted';
 }
 

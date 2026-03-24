@@ -25,7 +25,7 @@ class ISpectShareLogBottomSheet {
             icon: Icons.share_rounded,
             label: context.ispectL10n.shareLogFull,
             onPressed: () {
-              final valueToShare = JsonTruncatorService.pretty(
+              final valueToShare = JsonTruncator.pretty(
                 data,
                 maxDepth: 500,
                 maxIterableSize: 10000,
@@ -42,7 +42,7 @@ class ISpectShareLogBottomSheet {
           icon: Icons.copy_rounded,
           label: context.ispectL10n.copyToClipboardTruncated,
           onPressed: () {
-            final valueToShare = JsonTruncatorService.pretty(
+            final valueToShare = JsonTruncator.pretty(
               truncatedData,
             );
             Navigator.of(sheetContext).pop();

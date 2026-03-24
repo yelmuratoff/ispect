@@ -83,7 +83,7 @@ class RouteTransition {
     final args = arguments;
     return switch (args) {
       null => null,
-      final Map<String, dynamic> map => JsonTruncatorService.pretty(map),
+      final Map<String, dynamic> map => JsonTruncator.pretty(map),
       _ => args.toString(),
     };
   }

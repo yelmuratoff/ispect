@@ -3,7 +3,7 @@
 /// Provides various time formatting styles, including full timestamps
 /// and time with milliseconds.
 class ISpectDateTimeFormatter {
-  /// Creates an instance of `ISpectDateTimeFormatter` with the given [date].
+  /// Creates an instance of [ISpectDateTimeFormatter] with the given [date].
   const ISpectDateTimeFormatter(this.date);
 
   /// The `DateTime` instance to be formatted.
@@ -13,45 +13,47 @@ class ISpectDateTimeFormatter {
   ///
   /// Format: `HH:MM:SS | Xms`
   String get timeAndSeconds {
-    if (date == null) return '';
+    final d = date;
+    if (d == null) return '';
 
-    return '${_pad(date!.hour)}:${_pad(date!.minute)}:${_pad(date!.second)} | ${date!.millisecond}ms';
+    return '${_pad(d.hour)}:${_pad(d.minute)}:${_pad(d.second)} | ${d.millisecond}ms';
   }
 
   /// Returns the full formatted date and time.
   ///
   /// Format: `DD.MM.YYYY | HH:MM:SS | Xms`
   String get fullTime {
-    if (date == null) return '';
+    final d = date;
+    if (d == null) return '';
 
-    return '${_pad(date!.day)}.${_pad(date!.month)}.${date!.year} | $timeAndSeconds';
+    return '${_pad(d.day)}.${_pad(d.month)}.${d.year} | $timeAndSeconds';
   }
 
-  /// Returns the default formatted time representation.
+  /// Returns the default compact time representation.
   ///
-  /// Uses `timeAndSeconds` as the standard compact format.
-  String get format => date == null ? '' : timeAndSeconds;
+  /// Uses [timeAndSeconds] as the standard format.
+  String get defaultFormat => date == null ? '' : timeAndSeconds;
 
   /// Returns a localized human-readable relative time string.
   ///
-  /// Falls back to [format] for durations > 24h.
+  /// Uses [now] for computing the difference (defaults to [DateTime.now]).
+  /// Falls back to [defaultFormat] for durations > 24h.
   String relativeFormat({
     required String justNow,
     required String Function(int count) secondsAgo,
     required String Function(int count) minutesAgo,
     required String Function(int count) hoursAgo,
+    DateTime? now,
   }) {
     if (date == null) return '';
-    final diff = DateTime.now().difference(date!);
+    final diff = (now ?? DateTime.now()).difference(date!);
     if (diff.isNegative || diff.inSeconds < 5) return justNow;
     if (diff.inSeconds < 60) return secondsAgo(diff.inSeconds);
     if (diff.inMinutes < 60) return minutesAgo(diff.inMinutes);
     if (diff.inHours < 24) return hoursAgo(diff.inHours);
-    return format;
+    return defaultFormat;
   }
 
   /// Pads single-digit values with a leading zero.
-  ///
-  /// Ensures that time and date components have a consistent two-digit format.
   String _pad(int value) => value.toString().padLeft(2, '0');
 }

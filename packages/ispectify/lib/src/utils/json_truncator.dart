@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-/// Service to pretty-print JSON objects with a maximum depth limit.
-/// Deeper nested values are replaced with "...".
-class JsonTruncatorService {
+import 'package:ispectify/src/utils/string_extension.dart';
+
+/// Pretty-prints JSON objects with depth and size limits.
+///
+/// Deeper nested values are replaced with `...`.
+class JsonTruncator {
   /// Default maximum depth for JSON structure traversal.
   static const int _defaultMaxDepth = 20;
-
-  /// Default string truncation limit.
-  static const int _stringTruncateLimit = 10000;
 
   /// Default iterable size limit.
   static const int _defaultIterableSizeLimit = 500;
@@ -21,9 +21,9 @@ class JsonTruncatorService {
   /// Pretty-prints a JSON object with depth limitation.
   ///
   /// Limits the depth of nested structures to [maxDepth].
-  /// Truncates strings longer than 100 characters.
+  /// Truncates strings longer than [kDefaultStringTruncateLimit] characters.
   /// Limits iterables to first [maxIterableSize] elements.
-  /// Set [maxIterableSize] to [_unlimitedIterableSize] (-1) for unlimited iterable size.
+  /// Set [maxIterableSize] to -1 for unlimited iterable size.
   ///
   /// Returns a formatted JSON string or an error message if formatting fails.
   static String pretty(
@@ -47,39 +47,21 @@ class JsonTruncatorService {
 
   /// Recursively truncates a JSON structure to enforce maximum depth.
   ///
-  /// Handles different data types appropriately:
-  /// - Maps and iterables are traversed recursively
-  /// - Strings are truncated if too long
-  /// - Iterables are truncated to first [maxIterableSize] elements (unless set to -1)
-  /// - Primitive types are returned as-is
-  /// - Special objects (DateTime, RegExp, Duration) are converted to appropriate representations
+  /// Handles maps, iterables, strings, primitives, and common Dart types
+  /// (DateTime, RegExp, Duration). Unrecognized types are stringified.
   static Object? _truncateJson(
     Object? value,
     int currentDepth, {
     required int maxDepth,
     required int maxIterableSize,
   }) {
-    // Depth limit reached
-    if (currentDepth >= maxDepth) {
-      return _truncationMarker;
-    }
+    if (currentDepth >= maxDepth) return _truncationMarker;
+    if (value == null) return null;
 
-    // Handle null case
-    if (value == null) {
-      return null;
-    }
-
-    // Increment depth for recursive calls
     final nextDepth = currentDepth + 1;
 
-    // Process based on type
     if (value is Map) {
-      return _processTruncatedMap(
-        value,
-        nextDepth,
-        maxDepth,
-        maxIterableSize,
-      );
+      return _processTruncatedMap(value, nextDepth, maxDepth, maxIterableSize);
     }
 
     if (value is Iterable) {
@@ -91,44 +73,12 @@ class JsonTruncatorService {
       );
     }
 
-    if (value is String) {
-      return _truncateString(value);
-    }
+    if (value is String) return truncateString(value);
+    if (value is num || value is bool) return value;
+    if (value is DateTime) return value.toIso8601String();
+    if (value is RegExp) return value.pattern;
+    if (value is Duration) return value.inMilliseconds;
 
-    if (value is num || value is bool) {
-      return value;
-    }
-
-    if (value is DateTime) {
-      return value.toIso8601String();
-    }
-
-    if (value is RegExp) {
-      return value.pattern;
-    }
-
-    if (value is Duration) {
-      return value.inMilliseconds;
-    }
-
-    if (value is MapEntry) {
-      return MapEntry(
-        _truncateJson(
-          value.key,
-          nextDepth,
-          maxDepth: maxDepth,
-          maxIterableSize: maxIterableSize,
-        ),
-        _truncateJson(
-          value.value,
-          nextDepth,
-          maxDepth: maxDepth,
-          maxIterableSize: maxIterableSize,
-        ),
-      );
-    }
-
-    // Fallback: stringify unrecognized types
     return value.toString();
   }
 
@@ -151,51 +101,25 @@ class JsonTruncatorService {
         ),
       );
 
-  /// Processes an iterable by truncating all its items.
-  /// Limits the iterable to first [maxIterableSize] elements if maxIterableSize is not [_unlimitedIterableSize].
+  /// Processes an iterable by truncating its items.
+  ///
+  /// Limits to first [maxIterableSize] elements unless set to -1.
   static List<Object?> _processTruncatedIterable(
     Iterable<Object?> value,
     int nextDepth,
     int maxDepth,
     int maxIterableSize,
   ) {
-    // Truncate large iterables when maxIterableSize is not _unlimitedIterableSize (-1)
+    var items = value;
+    var exceeded = false;
+
     if (maxIterableSize != _unlimitedIterableSize) {
-      // Check if iterable exceeds limit by trying to take maxIterableSize + 1 elements
-      // This avoids expensive .length calls on non-list collections
-      final limitedItems = value.take(maxIterableSize + 1).toList();
-
-      if (limitedItems.length > maxIterableSize) {
-        // Remove the extra element and process only the first maxIterableSize elements
-        return limitedItems
-            .take(maxIterableSize)
-            .map(
-              (item) => _truncateJson(
-                item,
-                nextDepth,
-                maxDepth: maxDepth,
-                maxIterableSize: maxIterableSize,
-              ),
-            )
-            .toList()
-          ..add(_truncationMarker);
-      }
-
-      // Process the already-taken limited items if they don't exceed the limit
-      return limitedItems
-          .map(
-            (item) => _truncateJson(
-              item,
-              nextDepth,
-              maxDepth: maxDepth,
-              maxIterableSize: maxIterableSize,
-            ),
-          )
-          .toList();
+      final limited = value.take(maxIterableSize + 1).toList();
+      exceeded = limited.length > maxIterableSize;
+      items = exceeded ? limited.take(maxIterableSize) : limited;
     }
 
-    // Process full iterable without truncation
-    return value
+    final result = items
         .map(
           (item) => _truncateJson(
             item,
@@ -205,18 +129,8 @@ class JsonTruncatorService {
           ),
         )
         .toList();
-  }
 
-  /// Truncates a string if it exceeds the limit.
-  static String _truncateString(String value) {
-    if (value.length <= _stringTruncateLimit) return value;
-    // Avoid splitting a surrogate pair at the truncation boundary.
-    var end = _stringTruncateLimit;
-    if (end > 0 &&
-        value.codeUnitAt(end - 1) >= 0xD800 &&
-        value.codeUnitAt(end - 1) <= 0xDBFF) {
-      end--;
-    }
-    return '${value.substring(0, end)}$_truncationMarker';
+    if (exceeded) result.add(_truncationMarker);
+    return result;
   }
 }

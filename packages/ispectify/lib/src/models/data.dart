@@ -65,7 +65,7 @@ class ISpectLogData {
 
   String get messageText => message.truncate() ?? '';
 
-  late final String formattedTime = ISpectDateTimeFormatter(time).format;
+  late final String formattedTime = ISpectDateTimeFormatter(time).defaultFormat;
 
   bool get isError =>
       logLevel == LogLevel.error ||

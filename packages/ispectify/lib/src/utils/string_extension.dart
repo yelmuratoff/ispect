@@ -1,23 +1,30 @@
-/// An extension on nullable `String` to provide additional utility methods.
+/// Default truncation limit for strings across the package.
+const int kDefaultStringTruncateLimit = 10000;
+
+/// Truncates [value] to [maxLength], avoiding surrogate pair splits.
+///
+/// Appends `...` if the string was truncated.
+String truncateString(String value, {int maxLength = kDefaultStringTruncateLimit}) {
+  if (value.length <= maxLength) return value;
+  var end = maxLength;
+  // Avoid splitting a surrogate pair at the truncation boundary.
+  if (end > 0 &&
+      value.codeUnitAt(end - 1) >= 0xD800 &&
+      value.codeUnitAt(end - 1) <= 0xDBFF) {
+    end--;
+  }
+  return '${value.substring(0, end)}...';
+}
+
+/// An extension on nullable [String] providing truncation.
 extension ISpectStringExtension on String? {
-  /// Truncates the string to a specified maximum length.
+  /// Truncates the string to [maxLength] characters.
   ///
-  /// If the string's length exceeds `maxLength`, it returns the first
-  /// `maxLength` characters followed by an ellipsis (`...`). Otherwise, it
-  /// returns the original string.
-  String? truncate({
-    int maxLength = 10000,
-  }) {
+  /// Returns `null` if the original string is `null`.
+  /// Appends `...` if the string was truncated.
+  String? truncate({int maxLength = kDefaultStringTruncateLimit}) {
     final original = this;
     if (original == null) return null;
-    if (original.length <= maxLength) return original;
-    // Avoid splitting a surrogate pair at the truncation boundary.
-    var end = maxLength;
-    if (end > 0 &&
-        original.codeUnitAt(end - 1) >= 0xD800 &&
-        original.codeUnitAt(end - 1) <= 0xDBFF) {
-      end--;
-    }
-    return '${original.substring(0, end)}...';
+    return truncateString(original, maxLength: maxLength);
   }
 }
