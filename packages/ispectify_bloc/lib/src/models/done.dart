@@ -50,9 +50,7 @@ final class BlocDoneLog extends BlocLifecycleLog {
           },
           exception: error is Exception ? error : null,
           error: error is Error ? error : null,
-          stackTrace: stackTrace != null && stackTrace != StackTrace.empty
-              ? stackTrace
-              : null,
+          stackTrace: _normalizeStackTrace(stackTrace),
           logLevel: hasError ? LogLevel.error : LogLevel.info,
           additionalData: settings.redactAdditionalData(<String, dynamic>{
             if (event != null) 'event': event,

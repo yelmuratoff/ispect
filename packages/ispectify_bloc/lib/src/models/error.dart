@@ -34,9 +34,7 @@ final class BlocErrorLog extends BlocLifecycleLog {
           },
           exception: thrown is Exception ? thrown : null,
           error: thrown is Error ? thrown : null,
-          stackTrace: stackTrace != null && stackTrace != StackTrace.empty
-              ? stackTrace
-              : null,
+          stackTrace: _normalizeStackTrace(stackTrace),
           logLevel: LogLevel.error,
         );
 

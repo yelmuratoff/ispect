@@ -9,6 +9,11 @@ import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 
 /// Recursive tree-walker that delegates leaf redaction to [RedactionStrategy]
 /// and handles structural traversal (Maps, Lists) with depth limiting.
+///
+/// Receives an immutable [RedactionConfig] snapshot at construction time rather
+/// than a reference to the [RedactionService]. This ensures that in-flight
+/// walkers are unaffected by concurrent config mutations (e.g. calls to
+/// `ignoreValue()` or `ignoreKey()` on the service).
 class RedactionWalker {
   RedactionWalker(this.config, this.request, this.strategy)
       : _cachedContext = null;
@@ -126,7 +131,7 @@ class RedactionWalker {
       return '$prefix${_maskEdges(remainder)}';
     }
 
-    if (keyName != null && keyName.toLowerCase() == 'cookie') {
+    if (keyName != null && keyName.toLowerCase() == cookieHeaderKey) {
       return value.split(';').map((part) {
         final trimmed = part.trim();
         final separatorIndex = trimmed.indexOf('=');

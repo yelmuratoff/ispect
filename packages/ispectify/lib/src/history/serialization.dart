@@ -37,8 +37,11 @@ class ISpectLogDataJsonUtils {
   /// Throws [FormatException] if the JSON is missing required fields
   /// (`message` or `time`).
   ///
-  /// Note: AnsiPen, Exception, Error, and StackTrace are reconstructed
-  /// from string representations with some limitations.
+  /// **Lossy reconstruction:** Exception and Error are wrapped in lightweight
+  /// string wrappers ([_StringException], [_StringError]) and StackTrace is
+  /// rebuilt from its string form. Original type information, file/line data,
+  /// and causal chains are lost. Treat deserialized entries as display-only
+  /// snapshots, not as re-throwable originals.
   static ISpectLogData fromJson(Map<String, dynamic> json) {
     if (!json.containsKey('message') && !json.containsKey('time')) {
       throw const FormatException(

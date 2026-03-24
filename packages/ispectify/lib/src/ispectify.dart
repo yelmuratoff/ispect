@@ -101,7 +101,9 @@ class ISpectLogger {
 
   /// Adds an observer to be notified of log events.
   ///
-  /// Multiple observers can be registered, and all will be notified.
+  /// The observer remains registered until explicitly removed via
+  /// [removeObserver] or [clearObservers]. Prefer [observe] when you want
+  /// automatic cleanup via a disposer callback.
   ///
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
@@ -110,6 +112,10 @@ class ISpectLogger {
   }
 
   /// Registers an observer and returns a disposer to remove it later.
+  ///
+  /// Unlike [addObserver]/[removeObserver], this method returns a zero-argument
+  /// callback that removes the observer when invoked — useful for scoped
+  /// subscriptions (e.g. widget lifecycle) where manual tracking is cumbersome.
   ISpectObserverDisposer observe(ISpectObserver observer) {
     if (!_isActive) return () {};
     return _observerManager.observe(observer);

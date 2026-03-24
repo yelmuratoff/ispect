@@ -17,3 +17,10 @@ final RegExp base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
 
 /// Any whitespace character (used to sanitize before Base64 checks).
 final RegExp whitespaceRegex = RegExp(r'\s');
+
+/// HTTP(S) URLs embedded in free-form text (error messages, logs, etc.).
+final RegExp urlPattern = RegExp(r'https?://[^\s,\]}>)]+');
+
+/// Header key name requiring special cookie-aware masking (case-insensitive
+/// comparison by caller).
+const String cookieHeaderKey = 'cookie';

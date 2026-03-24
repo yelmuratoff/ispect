@@ -154,4 +154,45 @@ class RedactionService {
   void clearIgnoredKeys() {
     _config = _config.copyWithIgnoredKeys({});
   }
+
+  // ---------------------------------------------------------------------------
+  // URL redaction
+  // ---------------------------------------------------------------------------
+
+  /// Redacts query-parameter values and userInfo credentials in a URL string.
+  ///
+  /// Returns the original [url] unchanged when there is nothing to redact
+  /// (no query parameters and no userInfo) or the URL cannot be parsed.
+  String redactUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+
+    final hasParams = uri.queryParameters.isNotEmpty;
+    final hasUserInfo = uri.userInfo.isNotEmpty;
+    if (!hasParams && !hasUserInfo) return url;
+
+    final redactedParams = hasParams
+        ? uri.queryParameters.map(
+            (key, value) =>
+                MapEntry(key, redact(value, keyName: key)?.toString() ?? ''),
+          )
+        : null;
+
+    return uri
+        .replace(
+          userInfo: hasUserInfo ? ph.userInfoRedactedPlaceholder : null,
+          queryParameters: redactedParams,
+        )
+        .toString();
+  }
+
+  /// Finds HTTP(S) URLs embedded in [text] and redacts their query parameters
+  /// and userInfo credentials.
+  ///
+  /// Useful for sanitizing error messages that may contain full URLs with
+  /// sensitive query parameters or credentials.
+  String redactUrlsInText(String text) => text.replaceAllMapped(
+        urlPattern,
+        (match) => redactUrl(match.group(0)!),
+      );
 }

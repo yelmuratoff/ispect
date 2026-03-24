@@ -77,25 +77,11 @@ class HttpResponseData {
           'fields': multipart.fields,
           'files': multipart.files
               .map(
-                (file) => {
-                  'filename': redactor != null
-                      ? redactor.redact(
-                          file.filename,
-                          keyName: 'filename',
-                          ignoredValues: ignoredValues,
-                          ignoredKeys: ignoredKeys,
-                        )
-                      : file.filename,
+                (file) => <String, Object?>{
+                  'filename': file.filename,
                   'length': file.length,
                   'contentType': file.contentType.toString(),
-                  'field': redactor != null
-                      ? redactor.redact(
-                          file.field,
-                          keyName: 'field',
-                          ignoredValues: ignoredValues,
-                          ignoredKeys: ignoredKeys,
-                        )
-                      : file.field,
+                  'field': file.field,
                 },
               )
               .toList(),
@@ -108,26 +94,7 @@ class HttpResponseData {
     // Redact URL query parameters and userInfo credentials
     final url = map['url'];
     if (url is String) {
-      final uri = Uri.tryParse(url);
-      if (uri != null) {
-        final hasParams = uri.queryParameters.isNotEmpty;
-        final hasUserInfo = uri.userInfo.isNotEmpty;
-        if (hasParams || hasUserInfo) {
-          final redactedParams = hasParams
-              ? uri.queryParameters.map(
-                  (key, value) =>
-                      MapEntry(key, redactor.redact(value, keyName: key)),
-                )
-              : null;
-          map['url'] = uri
-              .replace(
-                userInfo: hasUserInfo ? '[REDACTED]' : null,
-                queryParameters: redactedParams
-                    ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
-              )
-              .toString();
-        }
-      }
+      map['url'] = redactor.redactUrl(url);
     }
 
     // Redact headers (Map<String, String>) while preserving shape

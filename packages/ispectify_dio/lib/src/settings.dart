@@ -22,7 +22,7 @@ class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
     this.errorFilter,
   });
 
-  // Print Dio logger if true
+  /// Enable Dio HTTP request/response logging when `true`.
   final bool enabled;
 
   /// Enable sensitive data redaction if true (default: true)

@@ -42,7 +42,7 @@ final class ISpectWSInterceptor
           stackTrace: s,
         ),
       );
-      return '<redaction-failed>';
+      return redactionFailedPlaceholder;
     }
   }
 
@@ -78,13 +78,25 @@ final class ISpectWSInterceptor
         logger.logData(log);
       }
     } catch (e, s) {
-      final errorLog = _createErrorLog(type, data, uri, e, s, useRedaction);
+      final errorLog =
+          _createErrorLog(type, data, uri, e, s, useRedaction);
       if (_shouldLog(errorLog)) {
         logger.logData(errorLog);
       }
     }
 
     next(data);
+  }
+
+  Map<String, dynamic>? _processMetrics(bool useRedaction) {
+    final metrics = _client?.metrics.toJson();
+    return switch (metrics) {
+      final Map<dynamic, dynamic> map => processMapData(
+          map,
+          useRedaction: useRedaction,
+        ),
+      _ => null,
+    };
   }
 
   ISpectLogData? _createLog(
@@ -96,16 +108,10 @@ final class ISpectWSInterceptor
     final metrics = _client?.metrics.toJson();
     final url = uri?.toString() ?? '';
     final path = uri?.path ?? '';
-    final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => processMapData(
-          map,
-          useRedaction: useRedaction,
-        ),
-      _ => null,
-    };
+    final metricsMap = _processMetrics(useRedaction);
 
     return switch (type) {
-      'REQUEST' => WSSentLog(
+      wsTypeRequest => WSSentLog(
           settings.printSentData ? '$safeData' : '',
           type: type,
           url: url,
@@ -119,7 +125,7 @@ final class ISpectWSInterceptor
           settings: settings,
           metrics: metricsMap,
         ),
-      'RESPONSE' => WSReceivedLog(
+      wsTypeResponse => WSReceivedLog(
           settings.printReceivedData ? '$safeData' : '',
           type: type,
           url: url,
@@ -146,14 +152,7 @@ final class ISpectWSInterceptor
     bool useRedaction,
   ) {
     final safeData = _safeRedact(data, useRedaction);
-    final metrics = _client?.metrics.toJson();
-    final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => processMapData(
-          map,
-          useRedaction: useRedaction,
-        ),
-      _ => null,
-    };
+    final metricsMap = _processMetrics(useRedaction);
 
     return WSErrorLog(
       settings.printErrorMessage
@@ -164,7 +163,7 @@ final class ISpectWSInterceptor
       path: uri?.path ?? '',
       payload: _createBodyPayload(
         safeData,
-        metrics,
+        _client?.metrics.toJson(),
         settings.printErrorData,
         useRedaction,
       ),
@@ -218,11 +217,11 @@ final class ISpectWSInterceptor
 
   @override
   void onMessage(Object data, void Function(Object data) next) {
-    _log(data: data, type: 'RESPONSE', next: next);
+    _log(data: data, type: wsTypeResponse, next: next);
   }
 
   @override
   void onSend(Object data, void Function(Object data) next) {
-    _log(data: data, type: 'REQUEST', next: next);
+    _log(data: data, type: wsTypeRequest, next: next);
   }
 }

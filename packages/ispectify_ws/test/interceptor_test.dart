@@ -94,5 +94,72 @@ void main() {
       // Even with a broken redactor, logging should still work
       expect(logger.history, isNotEmpty);
     });
+
+    test('logs received data when enabled', () {
+      interceptor.onMessage({'msg': 'hello'}, (obj) {});
+      expect(
+        logger.history.any((e) => e.key == 'ws-received'),
+        isTrue,
+      );
+    });
+
+    test('passes data through to next callback', () {
+      Object? forwarded;
+      interceptor.onSend({'k': 'v'}, (obj) => forwarded = obj);
+      expect(forwarded, isNotNull);
+    });
+
+    test('filters sent logs via sentFilter', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          sentFilter: (_) => false,
+        ),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      expect(
+        logger.history.any((e) => e.key == 'ws-sent'),
+        isFalse,
+      );
+    });
+
+    test('filters received logs via receivedFilter', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          receivedFilter: (_) => false,
+        ),
+      )..onMessage({'k': 'v'}, (obj) {});
+
+      expect(
+        logger.history.any((e) => e.key == 'ws-received'),
+        isFalse,
+      );
+    });
+
+    test('does not log when disabled', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: const ISpectWSInterceptorSettings(enabled: false),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      // Only potential warning about null client, no ws-sent log
+      expect(
+        logger.history.any((e) => e.key == 'ws-sent'),
+        isFalse,
+      );
+    });
+
+    test('logs error data when log creation throws', () {
+      // Use a throwing redactor that fails on body processing
+      // but interceptor should still produce an error log
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        redactor: _ThrowingRedactor(),
+      )..onSend({'trigger': 'error'}, (obj) {});
+
+      // Should have at least one log entry (warning or error)
+      expect(logger.history, isNotEmpty);
+    });
   });
 }

@@ -24,6 +24,8 @@ export 'src/network/network_transaction.dart';
 export 'src/network/request_id_generator.dart';
 export 'src/observer/observer.dart';
 export 'src/options.dart';
+export 'src/redaction/constants/detection_patterns.dart';
+export 'src/redaction/constants/placeholders.dart';
 export 'src/redaction/redaction_service.dart';
 export 'src/redaction/strategies/composite_redaction_strategy.dart';
 export 'src/redaction/strategies/key_based_redaction.dart';

@@ -13,10 +13,11 @@ import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectDioInterceptor({
     ISpectLogger? logger,
-    this.settings = const ISpectDioInterceptorSettings(),
+    ISpectDioInterceptorSettings settings = const ISpectDioInterceptorSettings(),
     this.addonId,
     RedactionService? redactor,
-  }) : _logger = logger ?? ISpectLogger() {
+  })  : _settings = settings,
+        _logger = logger ?? ISpectLogger() {
     if (redactor != null) this.redactor = redactor;
   }
 
@@ -30,12 +31,12 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
   final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
 
-  /// `ISpectDioInterceptor` settings and customization.
+  /// Current settings for this interceptor.
   ///
-  /// This field is publicly mutable for backward compatibility. Prefer
-  /// [configure] for partial updates. Direct assignment is **not thread-safe**
-  /// — avoid replacing this value while HTTP requests are in flight.
-  ISpectDioInterceptorSettings settings;
+  /// Use [configure] for partial updates. The settings object itself is
+  /// immutable — updates replace the entire instance.
+  ISpectDioInterceptorSettings get settings => _settings;
+  ISpectDioInterceptorSettings _settings;
 
   /// ISpectLogger addon functionality
   /// addon id for create a lot of addons
@@ -59,7 +60,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     AnsiPen? errorPen,
     RedactionService? redactor,
   }) {
-    settings = settings.copyWith(
+    _settings = _settings.copyWith(
       printRequestData: printRequestData,
       printRequestHeaders: printRequestHeaders,
       printResponseData: printResponseData,
@@ -342,16 +343,13 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   /// Redacts any URLs found in an error message string.
   ///
   /// DioException.message often embeds full URLs with sensitive query
-  /// parameters. This method finds and redacts those URLs.
+  /// parameters. This method finds and redacts those URLs via
+  /// [RedactionService.redactUrlsInText].
   String? _redactErrorMessage(
     String? message, {
     required bool useRedaction,
   }) {
     if (message == null || !useRedaction) return message;
-    // Match URLs in the message and redact each one
-    return message.replaceAllMapped(
-      RegExp(r'https?://[^\s,\]}>)]+'),
-      (match) => redactUrl(match.group(0)!, useRedaction: true),
-    );
+    return redactor.redactUrlsInText(message);
   }
 }

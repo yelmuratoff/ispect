@@ -12,6 +12,12 @@ part 'event.dart';
 part 'state.dart';
 part 'transition.dart';
 
+/// Returns [stackTrace] as-is unless it is `null` or [StackTrace.empty],
+/// in which case `null` is returned. Some frameworks pass [StackTrace.empty]
+/// instead of `null`, and logging an empty stack trace adds noise.
+StackTrace? _normalizeStackTrace(StackTrace? stackTrace) =>
+    stackTrace != null && stackTrace != StackTrace.empty ? stackTrace : null;
+
 /// Base class for all Bloc lifecycle logs emitted to ISpectLogger.
 ///
 /// Provides a shared contract for building messages lazily while keeping the

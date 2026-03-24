@@ -1,4 +1,6 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/redaction/constants/placeholders.dart'
+    as ph;
 
 /// Mixin providing common functionality for network interceptors.
 ///
@@ -52,29 +54,10 @@ mixin BaseNetworkInterceptor {
   /// Redacts query parameter values and userInfo credentials in a URL.
   ///
   /// Returns the original URL string if redaction is disabled or
-  /// the URL has nothing to redact.
+  /// the URL has nothing to redact. Delegates to [RedactionService.redactUrl].
   String redactUrl(String url, {required bool useRedaction}) {
     if (!useRedaction) return url;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return url;
-
-    final hasParams = uri.queryParameters.isNotEmpty;
-    final hasUserInfo = uri.userInfo.isNotEmpty;
-    if (!hasParams && !hasUserInfo) return url;
-
-    final redactedParams = hasParams
-        ? uri.queryParameters.map(
-            (key, value) => MapEntry(key, redactor.redact(value, keyName: key)),
-          )
-        : null;
-
-    return uri
-        .replace(
-          userInfo: hasUserInfo ? '[REDACTED]' : null,
-          queryParameters:
-              redactedParams?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
-        )
-        .toString();
+    return redactor.redactUrl(url);
   }
 
   /// Processes and redacts a map, ensuring string keys.
@@ -96,7 +79,7 @@ mixin BaseNetworkInterceptor {
       try {
         return payload.stringKeyMap(data);
       } catch (_) {
-        return <String, dynamic>{'raw': '[conversion failed]'};
+        return <String, dynamic>{'raw': ph.conversionFailedPlaceholder};
       }
     }
   }

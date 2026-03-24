@@ -12,9 +12,11 @@ class ISpectHttpInterceptor extends InterceptorContract
     with BaseNetworkInterceptor {
   ISpectHttpInterceptor({
     ISpectLogger? logger,
-    this.settings = const ISpectHttpInterceptorSettings(),
+    ISpectHttpInterceptorSettings settings =
+        const ISpectHttpInterceptorSettings(),
     RedactionService? redactor,
-  }) : _logger = logger ?? ISpectLogger() {
+  })  : _settings = settings,
+        _logger = logger ?? ISpectLogger() {
     if (redactor != null) this.redactor = redactor;
   }
 
@@ -23,8 +25,12 @@ class ISpectHttpInterceptor extends InterceptorContract
   @override
   ISpectLogger get logger => _logger;
 
-  /// `ISpectHttpInterceptor` settings and customization
-  ISpectHttpInterceptorSettings settings;
+  /// Current settings for this interceptor.
+  ///
+  /// Use [configure] for partial updates. The settings object itself is
+  /// immutable — updates replace the entire instance.
+  ISpectHttpInterceptorSettings get settings => _settings;
+  ISpectHttpInterceptorSettings _settings;
 
   final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
 
@@ -51,7 +57,7 @@ class ISpectHttpInterceptor extends InterceptorContract
     AnsiPen? errorPen,
     RedactionService? redactor,
   }) {
-    settings = settings.copyWith(
+    _settings = _settings.copyWith(
       printRequestData: printRequestData,
       printRequestHeaders: printRequestHeaders,
       printResponseData: printResponseData,

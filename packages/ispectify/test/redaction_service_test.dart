@@ -66,5 +66,53 @@ void main() {
       // ignore: deprecated_member_use_from_same_package
       expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
     });
+
+    group('redactUrl', () {
+      test('returns original URL when nothing to redact', () {
+        final service = RedactionService();
+        const url = 'https://example.com/api/users';
+        expect(service.redactUrl(url), url);
+      });
+
+      test('redacts query parameter values', () {
+        final service = RedactionService();
+        final result =
+            service.redactUrl('https://example.com/api?api_key=secret123');
+        expect(result, contains('api_key='));
+        expect(result, isNot(contains('secret123')));
+      });
+
+      test('redacts userInfo credentials', () {
+        final service = RedactionService();
+        final result =
+            service.redactUrl('https://user:pass@example.com/path');
+        expect(result, contains('REDACTED'));
+        expect(result, isNot(contains('user:pass')));
+      });
+
+      test('returns unparseable URL unchanged', () {
+        final service = RedactionService();
+        const bad = ':::not-a-url';
+        expect(service.redactUrl(bad), bad);
+      });
+    });
+
+    group('redactUrlsInText', () {
+      test('redacts URLs embedded in error messages', () {
+        final service = RedactionService();
+        final result = service.redactUrlsInText(
+          'Connection failed to https://user:pass@api.io/v1?token=abc',
+        );
+        expect(result, contains('REDACTED'));
+        expect(result, isNot(contains('user:pass')));
+        expect(result, startsWith('Connection failed to '));
+      });
+
+      test('leaves text without URLs unchanged', () {
+        final service = RedactionService();
+        const plain = 'No URLs here at all';
+        expect(service.redactUrlsInText(plain), plain);
+      });
+    });
   });
 }

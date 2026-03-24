@@ -71,7 +71,7 @@ void main() {
       interceptor.onResponse(response, ResponseInterceptorHandler());
       expect(
           logger.history.last.textMessage,
-          '[http-response] [GET] /test\n'
+          '[GET] /test\n'
           'Status: 200\n'
           'Headers: {\n'
           '  "HEADER": [\n'

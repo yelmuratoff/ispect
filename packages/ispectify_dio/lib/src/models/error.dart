@@ -41,31 +41,7 @@ class DioErrorLog extends NetworkErrorLog {
     RedactionService? redactor,
   }) {
     if (message == null || redactor == null) return message;
-    return message.replaceAllMapped(
-      RegExp(r'https?://[^\s,\]}>)]+'),
-      (match) {
-        final url = match.group(0);
-        if (url == null) return match.input;
-        final uri = Uri.tryParse(url);
-        if (uri == null) return url;
-        final hasParams = uri.queryParameters.isNotEmpty;
-        final hasUserInfo = uri.userInfo.isNotEmpty;
-        if (!hasParams && !hasUserInfo) return url;
-        final redactedParams = hasParams
-            ? uri.queryParameters.map(
-                (key, value) =>
-                    MapEntry(key, redactor.redact(value, keyName: key)),
-              )
-            : null;
-        return uri
-            .replace(
-              userInfo: hasUserInfo ? '[REDACTED]' : null,
-              queryParameters: redactedParams
-                  ?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
-            )
-            .toString();
-      },
-    );
+    return redactor.redactUrlsInText(message);
   }
 
   final DioErrorData _errorData;

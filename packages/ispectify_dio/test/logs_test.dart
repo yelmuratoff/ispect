@@ -116,7 +116,7 @@ void main() {
       final result = dioResponseLog.textMessage;
 
       expect(dioResponseLog.pen, isNotNull);
-      expect(result, contains('[http-response] [GET] Test message'));
+      expect(result, contains('[GET] Test message'));
       expect(result, contains('Status: 200'));
       expect(result, contains('Data: {\n  "key": "value"\n}'));
     });
