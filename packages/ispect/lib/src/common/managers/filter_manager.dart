@@ -37,6 +37,7 @@ class FilterManager {
   // Cannot use FilterCache here because ISpectFilter uses identity equality.
   List<ISpectLogData>? _cachedNoSearchResult;
   int _noSearchResultGeneration = -1;
+  ISpectFilter? _cachedNoSearchFilter;
 
   List<ISpectLogData> _cachedSearchMatches = const [];
   int _searchMatchesGeneration = -1;
@@ -61,7 +62,7 @@ class FilterManager {
     _filterDebounce = Timer(_debounceDuration, () {
       if (_isDisposed) return;
       _filter = _filter.copyWith(searchQuery: query);
-      _invalidateFilterCache();
+      _invalidateSearchOnly();
       _notify();
     });
   }
@@ -155,7 +156,7 @@ class FilterManager {
         _cachedNoSearchResult != null) {
       return _cachedNoSearchResult!;
     }
-    final noSearchFilter = ISpectFilter(
+    final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
       titles: _filter.titles.toList(),
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
@@ -170,7 +171,8 @@ class FilterManager {
   /// Cached by generation + query + input list identity.
   List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) {
     final query = _filter.searchQuery;
-    if (query == null || query.trim().isEmpty || logsData.isEmpty) {
+    // searchQuery is already trimmed in ISpectFilter constructor.
+    if (query == null || query.isEmpty || logsData.isEmpty) {
       return const [];
     }
     if (_searchMatchesGeneration == _outputGeneration &&
@@ -231,6 +233,19 @@ class FilterManager {
     _isDisposed = true;
   }
 
+  /// Targeted invalidation when only the search query changed.
+  /// Keeps noSearch results valid (titles/types/logTypeKeys unchanged).
+  void _invalidateSearchOnly() {
+    _outputGeneration++;
+    _cachedSearchQuery = null;
+    _searchMatchesGeneration = -1;
+    _lastSearchMatchInput = null;
+    // Bump noSearchResult generation to match so its cache stays valid.
+    if (_cachedNoSearchResult != null) {
+      _noSearchResultGeneration = _outputGeneration;
+    }
+  }
+
   void _invalidateFilterCache() {
     _outputGeneration++;
     _filterCacheValid = false;
@@ -239,6 +254,7 @@ class FilterManager {
     _cachedSearchQuery = null;
     _noSearchResultGeneration = -1;
     _cachedNoSearchResult = null;
+    _cachedNoSearchFilter = null;
     _searchMatchesGeneration = -1;
     _lastSearchMatchInput = null;
   }

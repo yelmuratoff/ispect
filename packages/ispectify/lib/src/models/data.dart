@@ -77,7 +77,7 @@ class ISpectLogData {
   DateTime get time => _time;
 
   /// Returns the full message, including error/exception and stack trace if available.
-  String get textMessage => joinLogParts([
+  late final String textMessage = joinLogParts([
         messageText,
         errorText,
         exceptionText,
@@ -104,7 +104,7 @@ class ISpectLogData {
   String get messageText => message.truncate() ?? '';
 
   /// Returns the formatted timestamp of the log entry.
-  String get formattedTime => ISpectDateTimeFormatter(time).format;
+  late final String formattedTime = ISpectDateTimeFormatter(time).format;
 
   bool get isError =>
       logLevel == LogLevel.error ||

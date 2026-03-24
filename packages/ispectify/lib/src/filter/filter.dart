@@ -87,6 +87,11 @@ class SearchFilter implements Filter<ISpectLogData> {
   bool apply(ISpectLogData item) {
     if (_lowerQuery.isEmpty) return true;
 
+    final message = item.message;
+    if (message != null && message.toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
+
     final key = item.key;
     if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
 
@@ -104,14 +109,6 @@ class SearchFilter implements Filter<ISpectLogData> {
 
     if (item.formattedTime.contains(_lowerQuery)) return true;
 
-    final message = item.message;
-    if (message != null && message.toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
-    final textMessage = item.textMessage;
-    if (textMessage.toLowerCase().contains(_lowerQuery)) return true;
-
     final exception = item.exception;
     if (exception != null &&
         exception.toString().toLowerCase().contains(_lowerQuery)) {
@@ -120,6 +117,13 @@ class SearchFilter implements Filter<ISpectLogData> {
 
     final error = item.error;
     if (error != null && error.toString().toLowerCase().contains(_lowerQuery)) {
+      return true;
+    }
+
+    final stackTrace = item.stackTrace;
+    if (stackTrace != null &&
+        stackTrace != StackTrace.empty &&
+        stackTrace.toString().toLowerCase().contains(_lowerQuery)) {
       return true;
     }
 
@@ -135,6 +139,8 @@ class SearchFilter implements Filter<ISpectLogData> {
   /// nested structures with visited tracking to avoid infinite loops.
   bool _deepSearchIterative(Object? value, String query) {
     if (value == null) return false;
+
+    if (!value.toString().toLowerCase().contains(query)) return false;
 
     // Use a set to track visited objects to prevent infinite loops
     final visited = <Object>{};
@@ -195,9 +201,14 @@ class ISpectFilter implements Filter<ISpectLogData> {
         _types = {...types},
         _logTypeKeys = {...logTypeKeys.where((key) => key.isNotEmpty)},
         _searchQuery = searchQuery?.trim(),
-        _searchFilter = (searchQuery?.trim().isNotEmpty ?? false)
-            ? SearchFilter(searchQuery!.trim())
-            : null;
+        _searchFilter = _createSearchFilter(searchQuery);
+
+  static SearchFilter? _createSearchFilter(String? searchQuery) {
+    final trimmed = searchQuery?.trim();
+    return (trimmed != null && trimmed.isNotEmpty)
+        ? SearchFilter(trimmed)
+        : null;
+  }
 
   final Set<String> _titles;
   final Set<Type> _types;
@@ -217,13 +228,13 @@ class ISpectFilter implements Filter<ISpectLogData> {
       );
 
   /// Provides read-only access to the configured titles.
-  Set<String> get titles => Set.unmodifiable(_titles);
+  late final Set<String> titles = Set.unmodifiable(_titles);
 
   /// Provides read-only access to the configured runtime types.
-  Set<Type> get types => Set.unmodifiable(_types);
+  late final Set<Type> types = Set.unmodifiable(_types);
 
   /// Provides read-only access to the configured log keys.
-  Set<String> get logTypeKeys => Set.unmodifiable(_logTypeKeys);
+  late final Set<String> logTypeKeys = Set.unmodifiable(_logTypeKeys);
 
   /// Returns the configured search query, if any.
   String? get searchQuery => _searchQuery;
