@@ -69,10 +69,7 @@ final class ISpectDbCore {
 
   static Object? truncateValue(Object? value, int maxLen) {
     if (value == null) return null;
-    if (value is String) {
-      return value.length <= maxLen ? value : '${value.substring(0, maxLen)}…';
-    }
-
+    if (value is String) return truncateString(value, maxLength: maxLen);
     return value;
   }
 
@@ -246,35 +243,21 @@ extension ISpectLoggerDb on ISpectLogger {
         : ISpectDbCore.truncateValue(statement, maxStmt);
     final stmt = stmtRaw is String ? stmtRaw : stmtRaw?.toString();
 
-    Object? truncateLeaves(Object? input, int maxLen) {
-      if (input == null) return null;
-      if (input is String) return ISpectDbCore.truncateValue(input, maxLen);
-      if (input is Iterable) {
-        return input.map((e) => truncateLeaves(e, maxLen)).toList();
-      }
-      if (input is Map) {
-        final out = <String, Object?>{};
-        input.forEach((k, v) {
-          out[k.toString()] = truncateLeaves(v, maxLen);
-        });
-        return out;
-      }
-      return input;
-    }
-
     final aBase = args == null
         ? null
         : (useRedact
             ? ISpectDbCore.redactPositionalArgs(args, rKeys, statement)
             : args);
-    final aRaw = aBase == null ? null : truncateLeaves(aBase, maxArgs);
+    final aRaw =
+        aBase == null ? null : truncateLeaves(aBase, maxLength: maxArgs);
     final a = aRaw is List ? aRaw.cast<Object?>() : null;
 
     final naRedacted = namedArgs == null
         ? null
         : (useRedact ? ISpectDbCore.redact(namedArgs, rKeys) : namedArgs);
     final naBase = naRedacted;
-    final naRaw = naBase == null ? null : truncateLeaves(naBase, maxArgs);
+    final naRaw =
+        naBase == null ? null : truncateLeaves(naBase, maxLength: maxArgs);
     final na = naRaw is Map
         ? Map<String, Object?>.fromEntries(
             naRaw.entries.map((e) => MapEntry(e.key.toString(), e.value)),

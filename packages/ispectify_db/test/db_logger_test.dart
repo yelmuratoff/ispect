@@ -43,7 +43,7 @@ void main() {
     final add = e.additionalData ?? {};
     expect(add['statement'], isA<String>());
     expect(add['statementDigest'], isA<String>());
-    expect((add['args'] as List).first.toString().contains('…'), isTrue);
+    expect((add['args'] as List).first.toString().contains('...'), isTrue);
     expect((add['namedArgs'] as Map)['password'], '***');
     expect(add['durationMs'], greaterThanOrEqualTo(10));
     expect(add['slow'], isTrue); // slow threshold is 1ms

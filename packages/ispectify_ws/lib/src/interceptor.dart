@@ -30,21 +30,8 @@ final class ISpectWSInterceptor
     onClientReady?.call(client);
   }
 
-  Object _safeRedact(Object data, bool useRedaction) {
-    try {
-      final sanitized = redactBody(data, useRedaction: useRedaction);
-      return sanitized ?? data;
-    } catch (e, s) {
-      logger.logData(
-        ISpectLogData(
-          'Redaction failed, data omitted: $e',
-          logLevel: LogLevel.warning,
-          stackTrace: s,
-        ),
-      );
-      return redactionFailedPlaceholder;
-    }
-  }
+  Object _safeRedact(Object data, bool useRedaction) =>
+      safeRedact(data, useRedaction: useRedaction);
 
   void _log({
     required Object data,

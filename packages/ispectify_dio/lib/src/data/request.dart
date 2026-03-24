@@ -12,9 +12,9 @@ class DioRequestData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    final normalizedHeaders = _stringKeyedMap(requestOptions.headers);
-    final normalizedQuery = _stringKeyedMap(requestOptions.queryParameters);
-    final normalizedExtra = _stringKeyedMap(requestOptions.extra);
+    final normalizedHeaders = NetworkPayloadSanitizer.toStringKeyMap(requestOptions.headers);
+    final normalizedQuery = NetworkPayloadSanitizer.toStringKeyMap(requestOptions.queryParameters);
+    final normalizedExtra = NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra);
     final normalizedData = _normalizeBody(requestOptions.data);
 
     final map = <String, dynamic>{
@@ -106,11 +106,6 @@ class DioRequestData {
     map['extra'] = redactedExtra;
 
     return map;
-  }
-
-  Map<String, dynamic> _stringKeyedMap(Map<dynamic, dynamic>? source) {
-    if (source == null || source.isEmpty) return <String, dynamic>{};
-    return source.map((key, value) => MapEntry(key.toString(), value));
   }
 
   Object? _normalizeBody(Object? data) {

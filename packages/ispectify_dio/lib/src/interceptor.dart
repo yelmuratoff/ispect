@@ -170,12 +170,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     required String requestId,
     required bool useRedaction,
   }) {
-    final url = redactUrl(
-      options.uri.toString(),
-      useRedaction: useRedaction,
-    );
-    final path = redactUrl(
-      options.uri.path,
+    final (:url, :path) = redactUrlAndPath(
+      options.uri,
       useRedaction: useRedaction,
     );
     return DioRequestLog(
@@ -215,12 +211,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
           )
         : null;
 
-    final url = redactUrl(
-      requestOptions.uri.toString(),
-      useRedaction: useRedaction,
-    );
-    final path = redactUrl(
-      requestOptions.uri.path,
+    final (:url, :path) = redactUrlAndPath(
+      requestOptions.uri,
       useRedaction: useRedaction,
     );
     return DioResponseLog(
@@ -278,15 +270,11 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
     final requestData = DioRequestData(requestOptions);
 
-    final url = redactUrl(
-      requestOptions.uri.toString(),
+    final (:url, :path) = redactUrlAndPath(
+      requestOptions.uri,
       useRedaction: useRedaction,
     );
-    final path = redactUrl(
-      requestOptions.uri.path,
-      useRedaction: useRedaction,
-    );
-    final statusMessage = _redactErrorMessage(
+    final statusMessage = redactErrorMessage(
       response?.statusMessage,
       useRedaction: useRedaction,
     );
@@ -317,19 +305,13 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   Map<String, dynamic>? _requestBodyPayload(
     Object? data,
     bool useRedaction,
-  ) {
-    if (data == null) return null;
-    final sanitized = _responseBodyPayload(data, useRedaction);
-    if (sanitized == null) return null;
-    final map = payload.ensureMap(sanitized);
-    return map.isEmpty ? null : map;
-  }
+  ) =>
+      bodyAsMap(data, useRedaction: useRedaction, normalizer: _normalizeFormData);
 
   Object? _responseBodyPayload(Object? data, bool useRedaction) => payload.body(
         data,
         enableRedaction: useRedaction,
-        normalizer: (value) =>
-            value is FormData ? DioFormDataSerializer.serialize(value) : value,
+        normalizer: _normalizeFormData,
       );
 
   Map<String, dynamic> _errorBodyPayload(
@@ -340,16 +322,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
         _responseBodyPayload(data, useRedaction),
       );
 
-  /// Redacts any URLs found in an error message string.
-  ///
-  /// DioException.message often embeds full URLs with sensitive query
-  /// parameters. This method finds and redacts those URLs via
-  /// [RedactionService.redactUrlsInText].
-  String? _redactErrorMessage(
-    String? message, {
-    required bool useRedaction,
-  }) {
-    if (message == null || !useRedaction) return message;
-    return redactor.redactUrlsInText(message);
-  }
+  static Object? _normalizeFormData(Object? value) =>
+      value is FormData ? DioFormDataSerializer.serialize(value) : value;
+
 }

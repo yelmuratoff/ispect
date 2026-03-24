@@ -60,6 +60,69 @@ mixin BaseNetworkInterceptor {
     return redactor.redactUrl(url);
   }
 
+  /// Redacts both URL and path from a [Uri] in one call.
+  ///
+  /// Returns a record with `url` (full URI string) and `path` (URI path only),
+  /// both redacted if [useRedaction] is `true`.
+  ({String url, String path}) redactUrlAndPath(
+    Uri uri, {
+    required bool useRedaction,
+  }) =>
+      (
+        url: redactUrl(uri.toString(), useRedaction: useRedaction),
+        path: redactUrl(uri.path, useRedaction: useRedaction),
+      );
+
+  /// Redacts URLs embedded in a message string (e.g. error messages).
+  ///
+  /// Returns the original [message] if `null` or redaction is disabled.
+  /// Delegates to [RedactionService.redactUrlsInText].
+  String? redactErrorMessage(
+    String? message, {
+    required bool useRedaction,
+  }) {
+    if (message == null || !useRedaction) return message;
+    return redactor.redactUrlsInText(message);
+  }
+
+  /// Sanitizes body data and returns it as a non-empty map, or `null`.
+  ///
+  /// Applies optional [normalizer] before redaction, then wraps the result
+  /// in a string-keyed map. Returns `null` when the data is `null` or the
+  /// resulting map is empty.
+  Map<String, dynamic>? bodyAsMap(
+    Object? data, {
+    required bool useRedaction,
+    Object? Function(Object?)? normalizer,
+  }) {
+    if (data == null) return null;
+    final sanitized = payload.body(
+      data,
+      enableRedaction: useRedaction,
+      normalizer: normalizer,
+    );
+    if (sanitized == null) return null;
+    final map = payload.ensureMap(sanitized);
+    return map.isEmpty ? null : map;
+  }
+
+  /// Applies [redactBody] with error handling: logs a warning and returns
+  /// a placeholder on failure instead of propagating the exception.
+  Object safeRedact(Object data, {required bool useRedaction}) {
+    try {
+      return redactBody(data, useRedaction: useRedaction) ?? data;
+    } catch (e, s) {
+      logger.logData(
+        ISpectLogData(
+          'Redaction failed, data omitted: $e',
+          logLevel: LogLevel.warning,
+          stackTrace: s,
+        ),
+      );
+      return ph.redactionFailedPlaceholder;
+    }
+  }
+
   /// Processes and redacts a map, ensuring string keys.
   ///
   /// Applies redaction if enabled, then converts to Map<String, dynamic>.

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:http_interceptor/http_interceptor.dart';
@@ -94,12 +93,8 @@ class ISpectHttpInterceptor extends InterceptorContract
           ? _requestBodyPayload(request, useRedaction)
           : null;
 
-      final url = redactUrl(
-        request.url.toString(),
-        useRedaction: useRedaction,
-      );
-      final path = redactUrl(
-        request.url.path,
+      final (:url, :path) = redactUrlAndPath(
+        request.url,
         useRedaction: useRedaction,
       );
       logger.logData(
@@ -163,20 +158,16 @@ class ISpectHttpInterceptor extends InterceptorContract
       );
 
       if (isErrorResponse) {
-        final errorUrl = redactUrl(
-          response.request?.url.toString() ?? '',
-          useRedaction: useRedaction,
-        );
-        final errorPath = redactUrl(
-          response.request?.url.path ?? '',
-          useRedaction: useRedaction,
-        );
+        final requestUrl = response.request?.url;
+        final errorUrl = requestUrl != null
+            ? redactUrlAndPath(requestUrl, useRedaction: useRedaction)
+            : (url: '', path: '');
         logger.logData(
           HttpErrorLog(
-            errorUrl,
+            errorUrl.url,
             method: response.request?.method,
-            url: errorUrl,
-            path: errorPath,
+            url: errorUrl.url,
+            path: errorUrl.path,
             requestId: requestId,
             statusCode: response.statusCode,
             settings: settings,
@@ -194,20 +185,16 @@ class ISpectHttpInterceptor extends InterceptorContract
           ),
         );
       } else {
-        final respUrl = redactUrl(
-          response.request?.url.toString() ?? '',
-          useRedaction: useRedaction,
-        );
-        final respPath = redactUrl(
-          response.request?.url.path ?? '',
-          useRedaction: useRedaction,
-        );
+        final responseUrl = response.request?.url;
+        final resp = responseUrl != null
+            ? redactUrlAndPath(responseUrl, useRedaction: useRedaction)
+            : (url: '', path: '');
         logger.logData(
           HttpResponseLog(
-            respUrl,
+            resp.url,
             method: response.request?.method,
-            url: respUrl,
-            path: respPath,
+            url: resp.url,
+            path: resp.path,
             requestId: requestId,
             statusCode: response.statusCode,
             statusMessage:
@@ -269,24 +256,19 @@ class ISpectHttpInterceptor extends InterceptorContract
     if (request == null) return null;
 
     if (request is MultipartRequest) {
-      final serialized = HttpMultipartSerializer.serialize(request);
-      final sanitized = payload.body(
-        serialized,
-        enableRedaction: useRedaction,
+      return bodyAsMap(
+        HttpMultipartSerializer.serialize(request),
+        useRedaction: useRedaction,
       );
-      final map = payload.ensureMap(sanitized);
-      return map.isEmpty ? null : map;
     }
 
     if (request is Request) {
       if (request.body.isEmpty) return null;
-      final sanitized = payload.body(
+      return bodyAsMap(
         request.body,
-        enableRedaction: useRedaction,
+        useRedaction: useRedaction,
         normalizer: _decodeJsonGracefully,
       );
-      final map = payload.ensureMap(sanitized);
-      return map.isEmpty ? null : map;
     }
 
     return null;
@@ -324,13 +306,6 @@ class ISpectHttpInterceptor extends InterceptorContract
     return payloadMap;
   }
 
-  Object? _decodeJsonGracefully(Object? value) {
-    if (value is! String) return value;
-    if (value.isEmpty) return null;
-    try {
-      return jsonDecode(value);
-    } catch (_) {
-      return value;
-    }
-  }
+  static Object? _decodeJsonGracefully(Object? value) =>
+      NetworkPayloadSanitizer.decodeJsonGracefully(value);
 }
