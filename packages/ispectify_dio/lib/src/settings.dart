@@ -1,111 +1,37 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpectDioInterceptor` settings and customization
-class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
+/// `ISpectDioInterceptor` settings and customization.
+class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectDioInterceptorSettings({
-    this.enabled = true,
-    this.enableRedaction = true,
-    this.printResponseData = true,
-    this.printResponseHeaders = false,
-    this.printResponseMessage = true,
-    this.printErrorData = true,
-    this.printErrorHeaders = true,
-    this.printErrorMessage = true,
-    this.printRequestData = true,
-    this.printRequestHeaders = false,
-    this.requestPen,
-    this.responsePen,
-    this.errorPen,
+    super.enabled,
+    super.enableRedaction,
+    super.printResponseData,
+    super.printResponseHeaders,
+    super.printResponseMessage,
+    super.printErrorData,
+    super.printErrorHeaders,
+    super.printErrorMessage,
+    super.printRequestData,
+    super.printRequestHeaders,
+    super.requestPen,
+    super.responsePen,
+    super.errorPen,
     this.requestFilter,
     this.responseFilter,
     this.errorFilter,
   });
 
-  /// Enable Dio HTTP request/response logging when `true`.
-  final bool enabled;
-
-  /// Enable sensitive data redaction if true (default: true)
-  final bool enableRedaction;
-
-  /// Print `response.data` if true
-  @override
-  final bool printResponseData;
-
-  /// Print `response.headers` if true
-  @override
-  final bool printResponseHeaders;
-
-  /// Print `response.statusMessage` if true
-  @override
-  final bool printResponseMessage;
-
-  /// Print `error.response.data` if true
-  @override
-  final bool printErrorData;
-
-  /// Print `error.response.headers` if true
-  @override
-  final bool printErrorHeaders;
-
-  /// Print `error.message` if true
-  @override
-  final bool printErrorMessage;
-
-  /// Print `request.data` if true
-  @override
-  final bool printRequestData;
-
-  /// Print `request.headers` if true
-  @override
-  final bool printRequestHeaders;
-
-  /// Field to set custom http request console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? requestPen;
-
-  /// Field to set custom http response console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? responsePen;
-
-  /// Field to set custom http error console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? errorPen;
-
   /// For request filtering.
-  /// You can add your custom logic to log only specific HTTP requests `RequestOptions`.
+  /// You can add your custom logic to log only specific HTTP requests.
   final bool Function(RequestOptions requestOptions)? requestFilter;
 
   /// For response filtering.
-  /// You can add your custom logic to log only specific HTTP responses `Response`.
+  /// You can add your custom logic to log only specific HTTP responses.
   final bool Function(Response<dynamic> response)? responseFilter;
 
   /// For error filtering.
-  /// You can add your custom logic to log only specific Dio error `DioException`.
+  /// You can add your custom logic to log only specific Dio errors.
   final bool Function(DioException response)? errorFilter;
 
   ISpectDioInterceptorSettings copyWith({

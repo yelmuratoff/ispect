@@ -1,111 +1,37 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpectHttpInterceptor` settings and customization
-class ISpectHttpInterceptorSettings implements NetworkLogPrintOptions {
+/// `ISpectHttpInterceptor` settings and customization.
+class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectHttpInterceptorSettings({
-    this.enabled = true,
-    this.enableRedaction = true,
-    this.printResponseData = true,
-    this.printResponseHeaders = false,
-    this.printResponseMessage = true,
-    this.printErrorData = true,
-    this.printErrorHeaders = true,
-    this.printErrorMessage = true,
-    this.printRequestData = true,
-    this.printRequestHeaders = false,
-    this.requestPen,
-    this.responsePen,
-    this.errorPen,
+    super.enabled,
+    super.enableRedaction,
+    super.printResponseData,
+    super.printResponseHeaders,
+    super.printResponseMessage,
+    super.printErrorData,
+    super.printErrorHeaders,
+    super.printErrorMessage,
+    super.printRequestData,
+    super.printRequestHeaders,
+    super.requestPen,
+    super.responsePen,
+    super.errorPen,
     this.requestFilter,
     this.responseFilter,
     this.errorFilter,
   });
 
-  // Print HTTP logger if true
-  final bool enabled;
-
-  /// Enable sensitive data redaction if true (default: true)
-  final bool enableRedaction;
-
-  /// Print response data if true
-  @override
-  final bool printResponseData;
-
-  /// Print response headers if true
-  @override
-  final bool printResponseHeaders;
-
-  /// Print response status message if true
-  @override
-  final bool printResponseMessage;
-
-  /// Print error data if true
-  @override
-  final bool printErrorData;
-
-  /// Print error headers if true
-  @override
-  final bool printErrorHeaders;
-
-  /// Print error message if true
-  @override
-  final bool printErrorMessage;
-
-  /// Print request data if true
-  @override
-  final bool printRequestData;
-
-  /// Print request headers if true
-  @override
-  final bool printRequestHeaders;
-
-  /// Field to set custom http request console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? requestPen;
-
-  /// Field to set custom http response console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? responsePen;
-
-  /// Field to set custom http error console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? errorPen;
-
   /// For request filtering.
-  /// You can add your custom logic to log only specific HTTP requests `BaseRequest`.
+  /// You can add your custom logic to log only specific HTTP requests.
   final bool Function(BaseRequest request)? requestFilter;
 
   /// For response filtering.
-  /// You can add your custom logic to log only specific HTTP responses `BaseResponse`.
+  /// You can add your custom logic to log only specific HTTP responses.
   final bool Function(BaseResponse response)? responseFilter;
 
   /// For error filtering.
-  /// You can add your custom logic to log only specific HTTP errors `BaseResponse`.
+  /// You can add your custom logic to log only specific HTTP errors.
   final bool Function(BaseResponse response)? errorFilter;
 
   ISpectHttpInterceptorSettings copyWith({

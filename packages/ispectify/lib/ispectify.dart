@@ -17,6 +17,8 @@ export 'src/models/log_type.dart';
 export 'src/models/models.dart';
 export 'src/network/base_interceptor.dart';
 export 'src/network/curl_utils.dart';
+export 'src/network/network_interceptor_settings.dart';
+export 'src/network/network_interceptor_settings_builder.dart';
 export 'src/network/network_log_options.dart';
 export 'src/network/network_logs.dart';
 export 'src/network/network_payload_sanitizer.dart';
