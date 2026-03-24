@@ -55,6 +55,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     bool? printErrorMessage,
     bool? printRequestData,
     bool? printRequestHeaders,
+    bool? enableRedaction,
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
@@ -69,6 +70,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       printErrorMessage: printErrorMessage,
       printResponseHeaders: printResponseHeaders,
       printResponseMessage: printResponseMessage,
+      enableRedaction: enableRedaction,
       requestPen: requestPen,
       responsePen: responsePen,
       errorPen: errorPen,
@@ -295,5 +297,4 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
   static Object? _normalizeFormData(Object? value) =>
       value is FormData ? DioFormDataSerializer.serialize(value) : value;
-
 }

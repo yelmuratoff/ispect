@@ -578,6 +578,7 @@ void main() {
         headers: null,
         body: null,
         settings: settings,
+        requestData: HttpRequestData(null),
       );
 
       expect(log.body, isNull);

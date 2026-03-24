@@ -110,6 +110,8 @@ class ISpectHttpInterceptor extends InterceptorContract
         headers: headers,
         settings: settings,
         body: body,
+        requestData: HttpRequestData(request),
+        redactor: useRedaction ? redactor : null,
       );
     });
     return request;
