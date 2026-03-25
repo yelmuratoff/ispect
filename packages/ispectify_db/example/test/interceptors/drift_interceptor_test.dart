@@ -5,7 +5,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/drift_interceptor.dart';
 import 'package:test/test.dart';
 
-/// No-op user that creates tables via sqlite3 [setup] callback.
+/// No-op user — tables created via sqlite3 [setup] callback.
 final class _NoOpUser extends QueryExecutorUser {
   @override
   int get schemaVersion => 1;
@@ -16,14 +16,14 @@ final class _NoOpUser extends QueryExecutorUser {
 
 void main() {
   late ISpectLogger logger;
-  late NativeDatabase rawDb;
-  late ISpectDriftExecutor traced;
+  late QueryExecutor executor;
 
   setUp(() async {
     logger = ISpectLogger();
     ISpectDbCore.config = ISpectDbConfig();
 
-    rawDb = NativeDatabase.memory(
+    // Real NativeDatabase with interceptor plugged in natively.
+    executor = NativeDatabase.memory(
       setup: (db) {
         db.execute('''
           CREATE TABLE IF NOT EXISTS t (
@@ -32,15 +32,13 @@ void main() {
           )
         ''');
       },
-    );
+    ).interceptWith(ISpectDriftInterceptor(logger: logger));
 
-    traced = ISpectDriftExecutor(delegate: rawDb, logger: logger);
-    // Mark the executor as opened.
-    await traced.ensureOpen(_NoOpUser());
+    await executor.ensureOpen(_NoOpUser());
   });
 
   tearDown(() async {
-    await rawDb.close();
+    await executor.close();
     ISpectDbCore.config = ISpectDbConfig();
   });
 
@@ -49,10 +47,10 @@ void main() {
 
   group('runSelect', () {
     test('queries real data and logs', () async {
-      await traced.runInsert('INSERT INTO t (value) VALUES (?)', ['A']);
-      await traced.runInsert('INSERT INTO t (value) VALUES (?)', ['B']);
+      await executor.runInsert('INSERT INTO t (value) VALUES (?)', ['A']);
+      await executor.runInsert('INSERT INTO t (value) VALUES (?)', ['B']);
 
-      final rows = await traced.runSelect('SELECT * FROM t', []);
+      final rows = await executor.runSelect('SELECT * FROM t', []);
 
       expect(rows.length, 2);
       expect(lastAdditional()['source'], 'drift');
@@ -63,7 +61,7 @@ void main() {
 
   group('runInsert', () {
     test('inserts and logs', () async {
-      final id = await traced.runInsert(
+      final id = await executor.runInsert(
         'INSERT INTO t (value) VALUES (?)',
         ['X'],
       );
@@ -75,8 +73,8 @@ void main() {
 
   group('runUpdate', () {
     test('updates and logs', () async {
-      await traced.runInsert('INSERT INTO t (value) VALUES (?)', ['old']);
-      final affected = await traced.runUpdate(
+      await executor.runInsert('INSERT INTO t (value) VALUES (?)', ['old']);
+      final affected = await executor.runUpdate(
         'UPDATE t SET value = ? WHERE value = ?',
         ['new', 'old'],
       );
@@ -88,8 +86,8 @@ void main() {
 
   group('runDelete', () {
     test('deletes and logs', () async {
-      await traced.runInsert('INSERT INTO t (value) VALUES (?)', ['del']);
-      final affected = await traced.runDelete(
+      await executor.runInsert('INSERT INTO t (value) VALUES (?)', ['del']);
+      final affected = await executor.runDelete(
         'DELETE FROM t WHERE value = ?',
         ['del'],
       );
@@ -101,7 +99,7 @@ void main() {
 
   group('runCustom', () {
     test('executes and logs', () async {
-      await traced.runCustom('PRAGMA journal_mode=WAL');
+      await executor.runCustom('PRAGMA journal_mode=WAL');
 
       expect(lastAdditional()['operation'], 'execute');
     });
@@ -109,7 +107,7 @@ void main() {
 
   group('runBatched', () {
     test('batches and logs', () async {
-      await traced.runBatched(
+      await executor.runBatched(
         BatchedStatements(
           ['INSERT INTO t (value) VALUES (?)'],
           [
@@ -119,7 +117,7 @@ void main() {
         ),
       );
 
-      final rows = await traced.runSelect(
+      final rows = await executor.runSelect(
         'SELECT * FROM t WHERE value LIKE ?',
         ['B%'],
       );
@@ -127,24 +125,14 @@ void main() {
     });
   });
 
-  group('beginTransaction', () {
-    test('returns a TransactionExecutor', () {
-      final txn = traced.beginTransaction();
-      expect(txn, isA<TransactionExecutor>());
-    });
-  });
-
   group('custom source', () {
     test('uses provided source', () async {
-      final customDb = NativeDatabase.memory();
-      final custom = ISpectDriftExecutor(
-        delegate: customDb,
-        logger: logger,
-        source: 'my-drift',
+      final custom = NativeDatabase.memory().interceptWith(
+        ISpectDriftInterceptor(logger: logger, source: 'my-drift'),
       );
       await custom.ensureOpen(_NoOpUser());
       await custom.runCustom('SELECT 1');
-      await customDb.close();
+      await custom.close();
 
       final log = logger.history.lastWhere(
         (e) => e.additionalData?['operation'] == 'execute',
