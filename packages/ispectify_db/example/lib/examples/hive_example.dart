@@ -12,7 +12,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/hive_interceptor.dart';
 
-void main() async {
+Future<void> hiveExample() async {
   final tempDir = Directory.systemTemp.createTempSync('hive_example_');
 
   try {
@@ -23,29 +23,31 @@ void main() async {
     final realBox = await Hive.openBox<String>('settings');
     final box = ISpectHiveBox<String>(delegate: realBox, logger: logger);
 
+    final realUsersBox = await Hive.openBox<Map<String, dynamic>>('users');
+    final usersBox = ISpectHiveBox<Map<String, dynamic>>(
+      delegate: realUsersBox,
+      logger: logger,
+    );
+
     // Write
     await box.put('theme', 'dark');
     await box.put('locale', 'en');
     await box.putAll({'fontSize': '14', 'fontFamily': 'Roboto'});
 
     // Read
-    logger
-      ..info('Theme: ${box.get('theme')}')
-      ..info('Has locale: ${box.containsKey('locale')}');
 
     // Auto-key insert
-    final autoKey = await box.add('auto-value');
-    logger
-      ..info('Auto key: $autoKey')
-      ..info('Keys: ${box.keys.toList()}')
-      ..info('Count: ${box.length}');
+    await box.add('auto-value');
+
+    // Use second box
+    await usersBox.put('alice', {'name': 'Alice', 'role': 'admin'});
+    usersBox.get('alice');
 
     // Delete
     await box.delete('fontFamily');
 
     // Clear
-    final cleared = await box.clear();
-    logger.info('Cleared $cleared entries');
+    await box.clear();
 
     await realBox.close();
   } finally {

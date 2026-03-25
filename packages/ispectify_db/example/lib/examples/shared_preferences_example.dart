@@ -19,22 +19,24 @@ Future<void> sharedPreferencesExample() async {
   final realPrefs = await SharedPreferences.getInstance();
   final prefs = ISpectSharedPreferences(delegate: realPrefs, logger: logger);
 
-  // Write
-  await prefs.setString('theme', 'dark');
-  await prefs.setBool('onboarding_done', true);
-  await prefs.setInt('launch_count', 42);
-  await prefs.setDouble('volume', 0.8);
-  await prefs.setStringList('recent_searches', ['flutter', 'dart']);
+  // Write user preferences
+  await prefs.setString('user_theme', 'dark');
+  await prefs.setBool('user_onboarding_done', true);
+
+  // Write feature flags
+  await prefs.setBool('flag_new_ui', true);
+  await prefs.setDouble('analytics_sample_rate', 0.5);
+
+  // Write app state
+  await prefs.setInt('app_launch_count', 42);
+  await prefs.setStringList('app_recent_searches', ['flutter', 'dart']);
 
   // Read
-  logger
-    ..info('Theme: ${prefs.getString('theme')}')
-    ..info('Onboarding done: ${prefs.getBool('onboarding_done')}')
-    ..info(
-      'All keys: ${prefs.getKeys()}, has theme: ${prefs.containsKey('theme')}',
-    );
+  logger.info(
+    'All keys: ${prefs.getKeys()}, has theme: ${prefs.containsKey('user_theme')}',
+  );
 
   // Remove & clear
-  await prefs.remove('recent_searches');
+  await prefs.remove('app_recent_searches');
   await prefs.clear();
 }

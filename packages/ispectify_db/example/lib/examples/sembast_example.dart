@@ -10,7 +10,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/sembast_interceptor.dart';
 import 'package:sembast/sembast_memory.dart';
 
-void main() async {
+Future<void> sembastExample() async {
   final logger = ISpectLogger();
   ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
 
@@ -18,39 +18,41 @@ void main() async {
   final rawStore = intMapStoreFactory.store('users');
   final store = ISpectSembastStore(store: rawStore, logger: logger);
 
+  final rawSettingsStore = stringMapStoreFactory.store('settings');
+  final settingsStore =
+      ISpectSembastStore(store: rawSettingsStore, logger: logger);
+
   // Put records
   await store.put(db, 1, {'name': 'Alice', 'role': 'admin'});
   await store.put(db, 2, {'name': 'Bob', 'role': 'user'});
 
   // Add with auto-key
-  final autoKey = await store.add(db, {'name': 'Charlie', 'role': 'user'});
-  logger.info('Auto key: $autoKey');
+  await store.add(db, {'name': 'Charlie', 'role': 'user'});
+
+  // Put in second store
+  await settingsStore.put(db, 'theme', {'darkMode': true});
+  await settingsStore.put(db, 'language', {'code': 'en'});
 
   // Read
-  final alice = await store.get(db, 1);
-  logger.info('Alice: $alice');
+  await store.get(db, 1);
 
   // Check existence
-  final exists = await store.exists(db, 1);
-  logger.info('Record 1 exists: $exists');
+  await store.exists(db, 1);
 
   // Update
   await store.update(db, 1, {'name': 'Alice', 'role': 'superadmin'});
 
   // Find all
-  final all = await store.find(db);
-  logger.info('Found ${all.length} records');
+  await store.find(db);
 
   // Find with filter
-  final admins = await store.find(
+  await store.find(
     db,
     finder: Finder(filter: Filter.equals('role', 'superadmin')),
   );
-  logger.info('Admins: ${admins.length}');
 
   // Count
-  final count = await store.count(db);
-  logger.info('Total: $count');
+  await store.count(db);
 
   // Transaction
   await store.transaction(db, (txn) async {
@@ -62,11 +64,10 @@ void main() async {
   await store.deleteRecord(db, 2);
 
   // Delete with finder
-  final deleted = await store.delete(
+  await store.delete(
     db,
     finder: Finder(filter: Filter.equals('role', 'user')),
   );
-  logger.info('Deleted $deleted users');
 
   // Drop store
   await store.drop(db);

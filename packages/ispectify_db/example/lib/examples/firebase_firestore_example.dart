@@ -22,6 +22,11 @@ Future<void> firestoreExample() async {
     logger: logger,
   );
 
+  final posts = ISpectFirestoreCollection(
+    delegate: firestore.collection('posts'),
+    logger: logger,
+  );
+
   // Add documents
   await users.add({'name': 'Alice', 'role': 'admin'});
   await users.add({'name': 'Bob', 'role': 'user'});
@@ -30,20 +35,20 @@ Future<void> firestoreExample() async {
   await users.doc('charlie').set({'name': 'Charlie', 'role': 'user'});
 
   // Set with merge
-  await users
-      .doc('charlie')
-      .set({'age': 30}, SetOptions(merge: true));
+  await users.doc('charlie').set({'age': 30}, SetOptions(merge: true));
 
   // Get a document
-  final snap = await users.doc('charlie').get();
-  logger.info('Charlie exists: ${snap.exists}');
+  await users.doc('charlie').get();
 
   // Update a document
   await users.doc('charlie').update({'role': 'admin'});
 
   // Query the collection
-  final allUsers = await users.get();
-  logger.info('Total users: ${allUsers.size}');
+  await users.get();
+
+  // Work with another collection
+  await posts.add({'title': 'Hello World', 'authorId': 'charlie'});
+  await posts.get();
 
   // Delete a document
   await users.doc('charlie').delete();

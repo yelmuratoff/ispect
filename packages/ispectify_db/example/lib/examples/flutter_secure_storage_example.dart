@@ -18,28 +18,31 @@ Future<void> secureStorageExample() async {
     logger: logger,
   );
 
-  // Store sensitive data
-  await storage.write(key: 'access_token', value: 'eyJhbGciOiJIUzI1NiJ9...');
+  // Store auth tokens
   await storage.write(
-    key: 'refresh_token',
+    key: 'auth_access_token',
+    value: 'eyJhbGciOiJIUzI1NiJ9...',
+  );
+  await storage.write(
+    key: 'auth_refresh_token',
     value: 'dGhpcyBpcyBhIHNlY3JldA==',
   );
-  await storage.write(key: 'pin', value: '1234');
+
+  // Store user credentials
+  await storage.write(key: 'user_pin', value: '1234');
+  await storage.write(key: 'user_biometric_key', value: 'f8f9e1...');
 
   // Read back — value appears as *** in logs
-  final token = await storage.read(key: 'access_token');
-  logger.info('Token exists: ${token != null}');
+  await storage.read(key: 'auth_access_token');
 
   // Check existence
-  final hasPin = await storage.containsKey(key: 'pin');
-  logger.info('Has PIN: $hasPin');
+  await storage.containsKey(key: 'user_pin');
 
   // List all keys (values hidden)
-  final all = await storage.readAll();
-  logger.info('Stored ${all.length} secrets');
+  await storage.readAll();
 
   // Delete
-  await storage.delete(key: 'pin');
+  await storage.delete(key: 'user_pin');
 
   // Wipe all
   await storage.deleteAll();

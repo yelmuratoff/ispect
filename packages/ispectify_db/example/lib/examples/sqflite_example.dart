@@ -10,7 +10,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/sqflite_interceptor.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-void main() async {
+Future<void> sqfliteExample() async {
   sqfliteFfiInit();
 
   final logger = ISpectLogger();
@@ -28,7 +28,16 @@ void main() async {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       email TEXT
-    )
+    );
+  ''');
+
+  await db.execute('''
+    CREATE TABLE posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      user_id INTEGER,
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    );
   ''');
 
   // Insert with raw SQL
@@ -36,31 +45,32 @@ void main() async {
     'INSERT INTO users (name, email) VALUES (?, ?)',
     ['Alice', 'alice@example.com'],
   );
-  logger.info('Inserted Alice with id: $id1');
 
   // Insert with convenience method
-  final id2 = await db.insert('users', {
+  await db.insert('users', {
     'name': 'Bob',
     'email': 'bob@example.com',
   });
-  logger.info('Inserted Bob with id: $id2');
 
   // Query
-  final users = await db.rawQuery('SELECT * FROM users WHERE name LIKE ?', ['%']);
-  logger.info('Found ${users.length} users');
+  await db.rawQuery('SELECT * FROM users WHERE name LIKE ?', ['%']);
 
   // Convenience query
-  final aliceRows = await db.query('users', where: 'name = ?', whereArgs: ['Alice']);
-  logger.info('Alice: ${aliceRows.first}');
+  await db.query('users', where: 'name = ?', whereArgs: ['Alice']);
 
   // Update
-  final affected = await db.update(
+  await db.update(
     'users',
     {'email': 'alice@new.com'},
     where: 'id = ?',
     whereArgs: [id1],
   );
-  logger.info('Updated $affected rows');
+
+  // Insert into second table
+  await db.insert('posts', {
+    'title': 'My first post',
+    'user_id': id1,
+  });
 
   // Transaction
   await db.transaction((txn) async {
@@ -72,8 +82,7 @@ void main() async {
   });
 
   // Final count
-  final count = await db.rawQuery('SELECT COUNT(*) as cnt FROM users');
-  logger.info('Final user count: ${count.first['cnt']}');
+  await db.rawQuery('SELECT COUNT(*) as cnt FROM users');
 
   await db.close();
 }

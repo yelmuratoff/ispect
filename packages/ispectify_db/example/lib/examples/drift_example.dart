@@ -23,7 +23,7 @@ final class _StandaloneUser extends QueryExecutorUser {
   ) async {}
 }
 
-void main() async {
+Future<void> driftExample() async {
   final logger = ISpectLogger();
   ISpectDbCore.config = ISpectDbConfig(
     slowQueryThreshold: const Duration(milliseconds: 100),
@@ -35,9 +35,12 @@ void main() async {
       db.execute('''
         CREATE TABLE IF NOT EXISTS todos (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
           done INTEGER NOT NULL DEFAULT 0
-        )
+        );
+        CREATE TABLE IF NOT EXISTS categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL
+        );
       ''');
     },
   ).interceptWith(ISpectDriftInterceptor(logger: logger));
@@ -49,33 +52,35 @@ void main() async {
     'INSERT INTO todos (title) VALUES (?)',
     ['Buy groceries'],
   );
-  logger.info('Inserted todo id: $id1');
 
   await executor.runInsert(
     'INSERT INTO todos (title) VALUES (?)',
     ['Write tests'],
   );
 
+  // Insert into second table
+  await executor.runInsert(
+    'INSERT INTO categories (name) VALUES (?)',
+    ['Work'],
+  );
+
   // Select
-  final todos = await executor.runSelect(
+  await executor.runSelect(
     'SELECT * FROM todos WHERE done = ?',
     [0],
   );
-  logger.info('Found ${todos.length} pending todos');
 
   // Update
-  final affected = await executor.runUpdate(
+  await executor.runUpdate(
     'UPDATE todos SET done = 1 WHERE id = ?',
     [id1],
   );
-  logger.info('Completed $affected todos');
 
   // Delete
-  final deleted = await executor.runDelete(
+  await executor.runDelete(
     'DELETE FROM todos WHERE done = 1',
     [],
   );
-  logger.info('Deleted $deleted completed todos');
 
   // Batch
   await executor.runBatched(
@@ -88,7 +93,6 @@ void main() async {
       ],
     ),
   );
-  logger.info('Batch inserted 3 todos');
 
   // Custom
   await executor.runCustom('PRAGMA journal_mode=WAL');

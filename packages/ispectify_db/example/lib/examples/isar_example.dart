@@ -12,6 +12,7 @@ import 'package:isar_community/isar.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/isar_interceptor.dart';
+import 'package:ispectify_db_example/models/isar_post.dart';
 import 'package:ispectify_db_example/models/isar_user.dart';
 
 Future<void> isarExample() async {
@@ -23,11 +24,19 @@ Future<void> isarExample() async {
   final tempDir = Directory.systemTemp.createTempSync('isar_example_');
 
   try {
-    final isar = await Isar.open([IsarUserSchema], directory: tempDir.path);
+    final isar = await Isar.open(
+      [IsarUserSchema, IsarPostSchema],
+      directory: tempDir.path,
+    );
     final users = ISpectIsarCollection<IsarUser>(
       delegate: isar.isarUsers,
       logger: logger,
       collectionName: 'users',
+    );
+    final posts = ISpectIsarCollection<IsarPost>(
+      delegate: isar.isarPosts,
+      logger: logger,
+      collectionName: 'posts',
     );
 
     // Insert
@@ -37,6 +46,11 @@ Future<void> isarExample() async {
         IsarUser()
           ..name = 'Bob'
           ..email = 'bob@example.com',
+      );
+      await posts.put(
+        IsarPost()
+          ..title = 'Hello World'
+          ..content = 'First post',
       );
     });
 
@@ -49,16 +63,13 @@ Future<void> isarExample() async {
     });
 
     // Read
-    final alice = await users.get(1);
-    logger.info('Alice: ${alice?.name}');
+    await users.get(1);
 
     // Read multiple
-    final batch = await users.getAll([1, 2, 999]);
-    logger.info('Found ${batch.where((e) => e != null).length} of 3');
+    await users.getAll([1, 2, 999]);
 
     // Count
-    final total = await users.count();
-    logger.info('Total users: $total');
+    await users.count();
 
     // Delete
     await isar.writeTxn(() async {

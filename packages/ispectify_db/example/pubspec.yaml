@@ -42,3 +42,5 @@ dev_dependencies:
   test: ^1.25.14
   build_runner: ^2.4.0
   isar_community_generator: ^3.3.0
+  drift_dev: ^2.29.0
+  flutter_lints: ^5.0.0

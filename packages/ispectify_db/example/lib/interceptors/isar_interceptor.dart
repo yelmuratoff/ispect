@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
 /// Ready-to-copy interceptor for **isar_community** (Isar Community Edition).
 ///
 /// Provides traced wrappers around [IsarCollection] operations.
