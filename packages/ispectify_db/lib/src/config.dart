@@ -1,5 +1,9 @@
 import 'package:ispectify/ispectify.dart' show defaultSensitiveKeys;
 
+/// Global configuration for database logging.
+///
+/// Controls redaction, truncation limits, sampling, slow-query detection,
+/// and transaction marker behavior. Assign via [ISpectDbCore.config].
 class ISpectDbConfig {
   ISpectDbConfig({
     this.sampleRate,

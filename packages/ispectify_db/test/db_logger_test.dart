@@ -95,6 +95,32 @@ void main() {
       expect((add['namedArgs'] as Map)['password'], 'secret123');
     });
 
+    test('preserves positional args when statement has no sensitive columns', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM orders WHERE total > ?',
+        args: [100, 'visible'],
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final args = add['args'] as List;
+      expect(args, containsAll([100, 'visible']));
+    });
+
+    test('redacts positional args when statement mentions sensitive column', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM users WHERE password = ?',
+        args: ['super-secret'],
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final args = add['args'] as List;
+      expect(args.first, '***');
+    });
+
     test('logs value and projection correctly', () {
       logger.db(
         source: 'kv',
@@ -629,12 +655,136 @@ void main() {
       expect(mb, contains('Size: 2.0 MB'));
     });
 
+    test('formats zero bytes', () {
+      final msg = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'write',
+        sizeBytes: 0,
+      );
+      expect(msg, contains('Size: 0 B'));
+    });
+
+    test('shows table only when target is null', () {
+      final msg = ISpectDbCore.buildMessage(
+        source: 'sqflite',
+        operation: 'query',
+        table: 'users',
+      );
+      expect(msg, contains('[sqflite] query users'));
+      expect(msg, isNot(contains('→')));
+    });
+
+    test('shows target only when table is null', () {
+      final msg = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'read',
+        target: '/data/config.json',
+      );
+      expect(msg, contains('[file] read /data/config.json'));
+      expect(msg, isNot(contains('→')));
+    });
+
+    test('shows table → target when both present', () {
+      final msg = ISpectDbCore.buildMessage(
+        source: 'sqflite',
+        operation: 'query',
+        table: 'users',
+        target: 'idx_email',
+      );
+      expect(msg, contains('users → idx_email'));
+    });
+
     test('minimal message with only required fields', () {
       final msg = ISpectDbCore.buildMessage(
         source: 'kv',
         operation: 'get',
       );
       expect(msg, equals('[kv] get'));
+    });
+  });
+
+  group('redactPositionalArgs (direct)', () {
+    test('returns args unchanged when statement has no sensitive columns', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [1, 'visible', true],
+        ['password', 'token'],
+        'SELECT * FROM orders WHERE total > ?',
+      );
+      expect(args, [1, 'visible', true]);
+    });
+
+    test('redacts all args when statement mentions a sensitive column', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        ['secret', 42],
+        ['password', 'token'],
+        'INSERT INTO users (name, password) VALUES (?, ?)',
+      );
+      expect(args, ['***', '***']);
+    });
+
+    test('redacts all args when statement is null (precaution)', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        ['a', 'b'],
+        ['password'],
+        null,
+      );
+      expect(args, ['***', '***']);
+    });
+
+    test('returns empty list as-is', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [],
+        ['password'],
+        'SELECT 1',
+      );
+      expect(args, isEmpty);
+    });
+
+    test('preserves null elements in redacted list', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [null, 'secret'],
+        ['password'],
+        null,
+      );
+      expect(args, [null, '***']);
+    });
+  });
+
+  group('truncateValue', () {
+    test('returns null for null input', () {
+      expect(ISpectDbCore.truncateValue(null, 10), isNull);
+    });
+
+    test('truncates long strings', () {
+      final result = ISpectDbCore.truncateValue('a' * 100, 10);
+      expect(result, isA<String>());
+      expect((result! as String).length, lessThanOrEqualTo(15));
+    });
+
+    test('returns non-string values unchanged', () {
+      expect(ISpectDbCore.truncateValue(42, 5), 42);
+      expect(ISpectDbCore.truncateValue(true, 5), true);
+      expect(
+        ISpectDbCore.truncateValue(['a', 'b'], 5),
+        ['a', 'b'],
+      );
+    });
+  });
+
+  group('clean', () {
+    test('removes null and empty-string values', () {
+      final result = ISpectDbCore.clean({
+        'keep': 'value',
+        'removeNull': null,
+        'removeEmpty': '',
+        'keepZero': 0,
+        'keepFalse': false,
+      });
+      expect(result, containsPair('keep', 'value'));
+      expect(result, containsPair('keepZero', 0));
+      expect(result, containsPair('keepFalse', false));
+      expect(result.containsKey('removeNull'), isFalse);
+      expect(result.containsKey('removeEmpty'), isFalse);
     });
   });
 }

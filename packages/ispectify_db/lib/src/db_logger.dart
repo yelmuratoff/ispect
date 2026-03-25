@@ -5,9 +5,15 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
+/// Internal utilities for DB logging: ID generation, SQL fingerprinting,
+/// value redaction/truncation, and message formatting.
+///
+/// Not intended for direct use — prefer the [ISpectLoggerDb] extension methods
+/// ([db], [dbTrace], [dbStart]/[dbEnd], [dbTransaction]).
 final class ISpectDbCore {
   const ISpectDbCore._();
 
+  /// Current configuration applied to all DB log calls.
   static ISpectDbConfig config = ISpectDbConfig();
 
   static final Random _random = Random();
@@ -20,6 +26,7 @@ final class ISpectDbCore {
   static bool _samplePass(double? localSample) =>
       samplePass(localSample ?? config.sampleRate);
 
+  /// Generates a 16-character hex trace ID from timestamp + random bits.
   static String genId() {
     final now = DateTime.now().microsecondsSinceEpoch;
     final r = _random.nextInt(0x7fffffff);
@@ -28,6 +35,10 @@ final class ISpectDbCore {
         r.toRadixString(16).padLeft(8, '0');
   }
 
+  /// Normalizes a SQL [statement] by replacing literals and digits with `?`,
+  /// then appends a DJB2 hash for grouping structurally identical queries.
+  ///
+  /// Returns `null` when [statement] is `null` or empty.
   static String? sqlDigest(String? statement) {
     if (statement == null || statement.isEmpty) return null;
     var s = statement.toLowerCase();
@@ -44,6 +55,8 @@ final class ISpectDbCore {
     return '${s.substring(0, s.length > 80 ? 80 : s.length)}|$hex';
   }
 
+  /// Truncates [value] to [maxLen] characters if it is a [String].
+  /// Non-string values are returned as-is.
   static Object? truncateValue(Object? value, int maxLen) {
     if (value == null) return null;
     if (value is String) return truncateString(value, maxLength: maxLen);
@@ -93,6 +106,8 @@ final class ISpectDbCore {
   /// Delegates to [cleanMap] from `ispectify`.
   static Map<String, Object?> clean(Map<String, Object?> m) => cleanMap(m);
 
+  /// Returns the log key based on [operation] type: `db-error`, `db-query`,
+  /// or `db-result`.
   static String pickLogKey({required bool isError, required String operation}) {
     if (isError) return 'db-error';
     final op = operation.toLowerCase();
@@ -102,6 +117,7 @@ final class ISpectDbCore {
     return 'db-result';
   }
 
+  /// Builds a human-readable log message from the provided fields.
   static String buildMessage({
     required String source,
     required String operation,
@@ -154,6 +170,11 @@ final class ISpectDbCore {
   }
 }
 
+/// Opaque handle returned by [ISpectLoggerDb.dbStart] that captures
+/// the operation context and a running [Stopwatch].
+///
+/// Pass to [ISpectLoggerDb.dbEnd] to finalize the log entry with
+/// measured duration and result data.
 class ISpectDbToken {
   ISpectDbToken({
     required this.id,
@@ -188,7 +209,25 @@ class ISpectDbToken {
   final String? transactionId;
 }
 
+/// Database logging extension on [ISpectLogger].
+///
+/// Provides four APIs for different use-cases:
+/// - [db] — fire-and-forget single log entry.
+/// - [dbTrace] — wraps an async operation, auto-measures duration.
+/// - [dbStart]/[dbEnd] — manual span for cases where an async wrapper is
+///   impractical (e.g. stream-based or callback-driven code).
+/// - [dbTransaction] — groups nested calls under one transaction ID via [Zone].
 extension ISpectLoggerDb on ISpectLogger {
+  /// Logs a single database operation.
+  ///
+  /// Only [source] and [operation] are required. All other parameters are
+  /// optional and adapt to different storage types:
+  /// - **SQL**: [statement], [args], [namedArgs], [table], [affected], [items]
+  /// - **Key-Value / Secure**: [key], [value]
+  /// - **File / Blob**: [target] (path), [sizeBytes]
+  /// - **Cache**: [key], [value], [cacheHit], [sizeBytes]
+  ///
+  /// Per-call [sample], [redact], and [redactKeys] override the global config.
   void db({
     required String source,
     required String operation,
@@ -340,6 +379,13 @@ extension ISpectLoggerDb on ISpectLogger {
     logData(data);
   }
 
+  /// Wraps [run] with automatic timing, error capture, and logging.
+  ///
+  /// Returns the result of [run]. If [run] throws, the error is logged and
+  /// re-thrown. Duration is measured with a monotonic [Stopwatch].
+  ///
+  /// When [sampleRate] (global or per-call) rejects, [run] still executes
+  /// but no log entry is produced.
   Future<T> dbTrace<T>({
     required String source,
     required String operation,
@@ -421,6 +467,11 @@ extension ISpectLoggerDb on ISpectLogger {
     }
   }
 
+  /// Starts a manual span. Returns an [ISpectDbToken] that should be passed
+  /// to [dbEnd] when the operation completes.
+  ///
+  /// Prefer [dbTrace] for simple async operations. Use [dbStart]/[dbEnd]
+  /// when the operation lifetime cannot be expressed as a single `Future`.
   ISpectDbToken dbStart({
     String? source,
     String? operation,
@@ -448,6 +499,8 @@ extension ISpectLoggerDb on ISpectLogger {
         transactionId: transactionId ?? ISpectDbTxn.currentTransactionId(),
       );
 
+  /// Finalizes a span started by [dbStart], logging the result with
+  /// measured duration. Stops the internal [Stopwatch] on the [token].
   void dbEnd(
     ISpectDbToken token, {
     Object? value,
@@ -501,6 +554,12 @@ extension ISpectLoggerDb on ISpectLogger {
     );
   }
 
+  /// Runs [run] inside a transaction zone that propagates a shared
+  /// transaction ID to all nested [db]/[dbTrace] calls.
+  ///
+  /// Optionally emits `transaction-begin`, `transaction-commit`, and
+  /// `transaction-rollback` marker logs (controlled by [logMarkers] or
+  /// [ISpectDbConfig.enableTransactionMarkers]).
   Future<T> dbTransaction<T>({
     required Future<T> Function() run,
     String source = 'custom',
