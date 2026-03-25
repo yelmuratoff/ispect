@@ -1,7 +1,7 @@
 /// Ready-to-copy interceptor for **cloud_firestore** (Firebase Firestore).
 ///
-/// Provides traced wrappers around [CollectionReference] and
-/// [DocumentReference] operations.
+/// Implements the full [CollectionReference] and [DocumentReference]
+/// interfaces — drop-in replacements.
 ///
 /// ## Setup
 /// ```dart
@@ -20,14 +20,21 @@
 /// ```
 library;
 
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 
 /// Wraps a Firestore [CollectionReference] with `ispectify_db` logging.
 ///
-/// Document-level operations are wrapped via [ISpectFirestoreDocument].
-final class ISpectFirestoreCollection<T extends Object?> {
+/// Implements [CollectionReference], allowing it to be used as a drop-in
+/// replacement. Query-building methods ([where], [orderBy], …) delegate
+/// directly — only terminal operations ([get], [add]) are traced.
+///
+/// [doc] returns a traced [ISpectFirestoreDocument].
+final class ISpectFirestoreCollection<T extends Object?>
+    implements CollectionReference<T> {
   const ISpectFirestoreCollection({
     required CollectionReference<T> delegate,
     required ISpectLogger logger,
@@ -46,17 +53,25 @@ final class ISpectFirestoreCollection<T extends Object?> {
   /// The underlying [CollectionReference].
   CollectionReference<T> get delegate => _collection;
 
-  /// Collection path.
+  // --- CollectionReference own members --------------------------------------
+
+  @override
+  String get id => _collection.id;
+
+  @override
+  DocumentReference<Map<String, dynamic>>? get parent => _collection.parent;
+
+  @override
   String get path => _collection.path;
 
-  /// Returns a traced [ISpectFirestoreDocument] for the given [docPath].
-  ISpectFirestoreDocument<T> doc([String? docPath]) => ISpectFirestoreDocument(
-        delegate: _collection.doc(docPath),
+  @override
+  ISpectFirestoreDocument<T> doc([String? path]) => ISpectFirestoreDocument(
+        delegate: _collection.doc(path),
         logger: _logger,
         source: _source,
       );
 
-  /// Adds a document and logs the generated ID.
+  @override
   Future<DocumentReference<T>> add(T data) => _logger.dbTrace(
         source: _source,
         operation: 'add',
@@ -65,7 +80,23 @@ final class ISpectFirestoreCollection<T extends Object?> {
         projectResult: (ref) => {'docId': ref.id},
       );
 
-  /// Queries all documents in the collection.
+  @override
+  CollectionReference<R> withConverter<R extends Object?>({
+    required FromFirestore<R> fromFirestore,
+    required ToFirestore<R> toFirestore,
+  }) =>
+      ISpectFirestoreCollection(
+        delegate: _collection.withConverter(
+          fromFirestore: fromFirestore,
+          toFirestore: toFirestore,
+        ),
+        logger: _logger,
+        source: _source,
+      );
+
+  // --- Traced Query terminal operations ------------------------------------
+
+  @override
   Future<QuerySnapshot<T>> get([GetOptions? options]) => _logger.dbTrace(
         source: _source,
         operation: 'query',
@@ -73,10 +104,172 @@ final class ISpectFirestoreCollection<T extends Object?> {
         run: () => _collection.get(options),
         projectResult: (snap) => {'docs': snap.size},
       );
+
+  // --- Passthrough Query builders ------------------------------------------
+
+  @override
+  FirebaseFirestore get firestore => _collection.firestore;
+
+  @override
+  Map<String, dynamic> get parameters => _collection.parameters;
+
+  @override
+  Stream<QuerySnapshot<T>> snapshots({
+    bool includeMetadataChanges = false,
+    ListenSource source = ListenSource.defaultSource,
+  }) =>
+      _collection.snapshots(
+        includeMetadataChanges: includeMetadataChanges,
+        source: source,
+      );
+
+  @override
+  Query<T> where(
+    Object field, {
+    Object? isEqualTo,
+    Object? isNotEqualTo,
+    Object? isLessThan,
+    Object? isLessThanOrEqualTo,
+    Object? isGreaterThan,
+    Object? isGreaterThanOrEqualTo,
+    Object? arrayContains,
+    Iterable<Object?>? arrayContainsAny,
+    Iterable<Object?>? whereIn,
+    Iterable<Object?>? whereNotIn,
+    bool? isNull,
+  }) =>
+      _collection.where(
+        field,
+        isEqualTo: isEqualTo,
+        isNotEqualTo: isNotEqualTo,
+        isLessThan: isLessThan,
+        isLessThanOrEqualTo: isLessThanOrEqualTo,
+        isGreaterThan: isGreaterThan,
+        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+        arrayContains: arrayContains,
+        arrayContainsAny: arrayContainsAny,
+        whereIn: whereIn,
+        whereNotIn: whereNotIn,
+        isNull: isNull,
+      );
+
+  @override
+  Query<T> orderBy(Object field, {bool descending = false}) =>
+      _collection.orderBy(field, descending: descending);
+
+  @override
+  Query<T> limit(int limit) => _collection.limit(limit);
+
+  @override
+  Query<T> limitToLast(int limit) => _collection.limitToLast(limit);
+
+  @override
+  Query<T> startAtDocument(DocumentSnapshot documentSnapshot) =>
+      _collection.startAtDocument(documentSnapshot);
+
+  @override
+  Query<T> startAt(Iterable<Object?> values) => _collection.startAt(values);
+
+  @override
+  Query<T> startAfterDocument(DocumentSnapshot documentSnapshot) =>
+      _collection.startAfterDocument(documentSnapshot);
+
+  @override
+  Query<T> startAfter(Iterable<Object?> values) =>
+      _collection.startAfter(values);
+
+  @override
+  Query<T> endAtDocument(DocumentSnapshot documentSnapshot) =>
+      _collection.endAtDocument(documentSnapshot);
+
+  @override
+  Query<T> endAt(Iterable<Object?> values) => _collection.endAt(values);
+
+  @override
+  Query<T> endBeforeDocument(DocumentSnapshot documentSnapshot) =>
+      _collection.endBeforeDocument(documentSnapshot);
+
+  @override
+  Query<T> endBefore(Iterable<Object?> values) =>
+      _collection.endBefore(values);
+
+  @override
+  AggregateQuery count() => _collection.count();
+
+  @override
+  AggregateQuery aggregate(
+    AggregateField aggregateField1, [
+    AggregateField? aggregateField2,
+    AggregateField? aggregateField3,
+    AggregateField? aggregateField4,
+    AggregateField? aggregateField5,
+    AggregateField? aggregateField6,
+    AggregateField? aggregateField7,
+    AggregateField? aggregateField8,
+    AggregateField? aggregateField9,
+    AggregateField? aggregateField10,
+    AggregateField? aggregateField11,
+    AggregateField? aggregateField12,
+    AggregateField? aggregateField13,
+    AggregateField? aggregateField14,
+    AggregateField? aggregateField15,
+    AggregateField? aggregateField16,
+    AggregateField? aggregateField17,
+    AggregateField? aggregateField18,
+    AggregateField? aggregateField19,
+    AggregateField? aggregateField20,
+    AggregateField? aggregateField21,
+    AggregateField? aggregateField22,
+    AggregateField? aggregateField23,
+    AggregateField? aggregateField24,
+    AggregateField? aggregateField25,
+    AggregateField? aggregateField26,
+    AggregateField? aggregateField27,
+    AggregateField? aggregateField28,
+    AggregateField? aggregateField29,
+    AggregateField? aggregateField30,
+  ]) =>
+      _collection.aggregate(
+        aggregateField1,
+        aggregateField2,
+        aggregateField3,
+        aggregateField4,
+        aggregateField5,
+        aggregateField6,
+        aggregateField7,
+        aggregateField8,
+        aggregateField9,
+        aggregateField10,
+        aggregateField11,
+        aggregateField12,
+        aggregateField13,
+        aggregateField14,
+        aggregateField15,
+        aggregateField16,
+        aggregateField17,
+        aggregateField18,
+        aggregateField19,
+        aggregateField20,
+        aggregateField21,
+        aggregateField22,
+        aggregateField23,
+        aggregateField24,
+        aggregateField25,
+        aggregateField26,
+        aggregateField27,
+        aggregateField28,
+        aggregateField29,
+        aggregateField30,
+      );
 }
 
 /// Wraps a Firestore [DocumentReference] with `ispectify_db` logging.
-final class ISpectFirestoreDocument<T extends Object?> {
+///
+/// Implements [DocumentReference], allowing it to be used as a drop-in
+/// replacement. CRUD operations ([get], [set], [update], [delete]) are traced.
+/// Streams and subcollections delegate directly.
+final class ISpectFirestoreDocument<T extends Object?>
+    implements DocumentReference<T> {
   const ISpectFirestoreDocument({
     required DocumentReference<T> delegate,
     required ISpectLogger logger,
@@ -95,13 +288,9 @@ final class ISpectFirestoreDocument<T extends Object?> {
   /// The underlying [DocumentReference].
   DocumentReference<T> get delegate => _doc;
 
-  /// Document ID.
-  String get id => _doc.id;
+  // --- Traced CRUD ---------------------------------------------------------
 
-  /// Document path.
-  String get path => _doc.path;
-
-  /// Gets the document snapshot.
+  @override
   Future<DocumentSnapshot<T>> get([GetOptions? options]) => _logger.dbTrace(
         source: _source,
         operation: 'get',
@@ -111,7 +300,7 @@ final class ISpectFirestoreDocument<T extends Object?> {
         projectResult: (snap) => {'exists': snap.exists},
       );
 
-  /// Sets the document data.
+  @override
   Future<void> set(T data, [SetOptions? options]) => _logger.dbTrace(
         source: _source,
         operation: 'set',
@@ -121,7 +310,7 @@ final class ISpectFirestoreDocument<T extends Object?> {
         run: () => _doc.set(data, options),
       );
 
-  /// Updates specific fields.
+  @override
   Future<void> update(Map<Object, Object?> data) => _logger.dbTrace(
         source: _source,
         operation: 'update',
@@ -130,12 +319,54 @@ final class ISpectFirestoreDocument<T extends Object?> {
         run: () => _doc.update(data),
       );
 
-  /// Deletes the document.
+  @override
   Future<void> delete() => _logger.dbTrace(
         source: _source,
         operation: 'delete',
         table: _doc.path,
         key: _doc.id,
         run: _doc.delete,
+      );
+
+  // --- Passthrough ---------------------------------------------------------
+
+  @override
+  FirebaseFirestore get firestore => _doc.firestore;
+
+  @override
+  String get id => _doc.id;
+
+  @override
+  CollectionReference<T> get parent => _doc.parent;
+
+  @override
+  String get path => _doc.path;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) =>
+      _doc.collection(collectionPath);
+
+  @override
+  Stream<DocumentSnapshot<T>> snapshots({
+    bool includeMetadataChanges = false,
+    ListenSource source = ListenSource.defaultSource,
+  }) =>
+      _doc.snapshots(
+        includeMetadataChanges: includeMetadataChanges,
+        source: source,
+      );
+
+  @override
+  DocumentReference<R> withConverter<R>({
+    required FromFirestore<R> fromFirestore,
+    required ToFirestore<R> toFirestore,
+  }) =>
+      ISpectFirestoreDocument(
+        delegate: _doc.withConverter(
+          fromFirestore: fromFirestore,
+          toFirestore: toFirestore,
+        ),
+        logger: _logger,
+        source: _source,
       );
 }
