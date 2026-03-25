@@ -252,6 +252,92 @@ extension ISpectLoggerDb on ISpectLogger {
     }
   }
 
+  /// Wraps [run] with automatic timing, error capture, and logging for synchronous operations.
+  ///
+  /// Returns the result of [run]. If [run] throws, the error is logged and
+  /// re-thrown. Duration is measured with a monotonic [Stopwatch].
+  T dbTraceSync<T>({
+    required String source,
+    required String operation,
+    required T Function() run,
+    String? statement,
+    String? target,
+    String? table,
+    String? key,
+    List<Object?>? args,
+    Map<String, Object?>? namedArgs,
+    Map<String, Object?>? meta,
+    Object? Function(T value)? projectResult,
+    double? sample,
+    bool? redact,
+    List<String>? redactKeys,
+    int? maxValueLength,
+    int? maxArgsLength,
+    int? maxStatementLength,
+    int? itemsCountFromLength,
+    int? affectedOverride,
+    int? sizeBytes,
+    bool? cacheHit,
+    String? transactionId,
+  }) {
+    if (!ISpectDbCore.shouldLog(sample)) {
+      return run();
+    }
+    final sw = Stopwatch()..start();
+    late T result;
+    Object? err;
+    StackTrace? st;
+    try {
+      return result = run();
+    } catch (e, s) {
+      err = e;
+      st = s;
+      rethrow;
+    } finally {
+      sw.stop();
+      try {
+        final success = err == null;
+        final items = success
+            ? (itemsCountFromLength ?? (result is List ? result.length : null))
+            : null;
+        final projection =
+            success && projectResult != null ? projectResult(result) : null;
+        db(
+          source: source,
+          operation: operation,
+          statement: statement,
+          target: target,
+          table: table,
+          key: key,
+          args: args,
+          namedArgs: namedArgs,
+          success: success,
+          error: err,
+          affected: affectedOverride,
+          items: items,
+          duration: sw.elapsed,
+          meta: meta,
+          projection: projection,
+          sample: sample,
+          redact: redact,
+          redactKeys: redactKeys,
+          maxValueLength: maxValueLength,
+          maxArgsLength: maxArgsLength,
+          maxStatementLength: maxStatementLength,
+          sizeBytes: sizeBytes,
+          cacheHit: cacheHit,
+          transactionId: transactionId,
+          errorStackTrace: st,
+        );
+      } catch (loggingError) {
+        assert(() {
+          error('ISpectDbTrace: logging failed — $loggingError');
+          return true;
+        }());
+      }
+    }
+  }
+
   /// Starts a manual span. Returns an [ISpectDbToken] that should be passed
   /// to [dbEnd] when the operation completes.
   ///

@@ -60,7 +60,7 @@ final class ISpectFirestoreCollection<T extends Object?> {
   /// Adds a document and logs the generated ID.
   Future<DocumentReference<T>> add(T data) => _logger.dbTrace(
         source: _source,
-        operation: 'insert',
+        operation: 'add',
         table: _collection.path,
         run: () => _collection.add(data),
         projectResult: (ref) => {'docId': ref.id},
@@ -115,7 +115,7 @@ final class ISpectFirestoreDocument<T extends Object?> {
   /// Sets the document data.
   Future<void> set(T data, [SetOptions? options]) => _logger.dbTrace(
         source: _source,
-        operation: 'write',
+        operation: 'set',
         table: _doc.path,
         key: _doc.id,
         meta: (options?.merge ?? false) ? {'merge': true} : null,
