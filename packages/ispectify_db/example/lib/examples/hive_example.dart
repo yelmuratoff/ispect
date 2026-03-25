@@ -23,8 +23,8 @@ Future<void> hiveExample() async {
     final realBox = await Hive.openBox<String>('settings');
     final box = ISpectHiveBox<String>(delegate: realBox, logger: logger);
 
-    final realUsersBox = await Hive.openBox<Map<String, dynamic>>('users');
-    final usersBox = ISpectHiveBox<Map<String, dynamic>>(
+    final realUsersBox = await Hive.openBox<Map>('users');
+    final usersBox = ISpectHiveBox<Map>(
       delegate: realUsersBox,
       logger: logger,
     );
