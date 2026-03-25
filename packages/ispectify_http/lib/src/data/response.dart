@@ -38,17 +38,17 @@ class HttpResponseData {
     final multipart = multipartRequest;
     final map = <String, dynamic>{
       // --- Status: first thing you check ---
-      'status-code': baseResponse.statusCode,
-      'status-message': baseResponse.reasonPhrase,
+      NetworkJsonKeys.statusCode: baseResponse.statusCode,
+      NetworkJsonKeys.statusMessage: baseResponse.reasonPhrase,
 
       // --- Identity ---
-      'method': baseResponse.request?.method,
-      'url': baseResponse.request?.url.toString(),
+      NetworkJsonKeys.method: baseResponse.request?.method,
+      NetworkJsonKeys.url: baseResponse.request?.url.toString(),
 
       // --- Payload ---
-      'headers': baseResponse.headers,
+      NetworkJsonKeys.headers: baseResponse.headers,
       if (resp != null)
-        'body': preDecoded != null
+        NetworkJsonKeys.body: preDecoded != null
             ? (redactor != null
                 ? _redactPreDecoded(
                     preDecoded,
@@ -66,21 +66,23 @@ class HttpResponseData {
                   )
                 : _tryDecodeJson(resp.body)),
       if (resp != null && redactor == null)
-        'body-bytes': resp.bodyBytes.length.toString(),
-      'content-length': baseResponse.contentLength,
+        NetworkJsonKeys.bodyBytes: resp.bodyBytes.length.toString(),
+      NetworkJsonKeys.contentLength: baseResponse.contentLength,
 
       // --- Redirects ---
-      'is-redirect': baseResponse.isRedirect,
+      NetworkJsonKeys.isRedirect: baseResponse.isRedirect,
 
       // --- Behaviour ---
-      'persistent-connection': baseResponse.persistentConnection,
+      NetworkJsonKeys.persistentConnection:
+          baseResponse.persistentConnection,
 
       // --- Multipart (if applicable) ---
       if (multipart != null)
-        'multipart-request': HttpMultipartSerializer.serialize(multipart),
+        NetworkJsonKeys.multipartRequest:
+            HttpMultipartSerializer.serialize(multipart),
 
       // --- Original request (reference) ---
-      'request': redactor == null
+      NetworkJsonKeys.request: redactor == null
           ? requestData.toJson()
           : requestData.toJson(
               redactor: redactor,
@@ -91,58 +93,23 @@ class HttpResponseData {
 
     if (redactor == null) return map;
 
-    // Redact URL query parameters and userInfo credentials
-    final url = map['url'];
-    if (url is String) {
-      map['url'] = redactor.redactUrl(url);
+    NetworkMapRedactor.redactUrl(map, redactor);
+    final redactedHeaders = NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    if (redactedHeaders != null) {
+      map[NetworkJsonKeys.headers] =
+          redactedHeaders.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
-
-    // Redact headers (Map<String, String>) while preserving shape
-
-    map['headers'] = redactor
-        .redactHeaders(
-          baseResponse.headers,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        )
-        .map((k, v) => MapEntry(k, v?.toString() ?? ''));
-
-    // Redact multipart request fields/files and mask filenames
-    final multipartData = map['multipart-request'];
-    if (multipart != null && multipartData is Map) {
-      final mp = Map<String, dynamic>.from(multipartData);
-
-      // Fields
-      final fields = mp['fields'];
-      if (fields is Map) {
-        final red = redactor.redact(
-          fields,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        );
-        if (red is Map) {
-          mp['fields'] = red.map((k, v) => MapEntry(k.toString(), v));
-        }
-      }
-
-      // Files
-      final files = mp['files'];
-      if (files is List) {
-        final red = redactor.redact(
-          files,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        );
-        if (red is List) {
-          mp['files'] = red
-              .whereType<Map<dynamic, dynamic>>()
-              .map(Map<String, Object?>.from)
-              .toList();
-        }
-      }
-
-      map['multipart-request'] = mp;
-    }
+    NetworkMapRedactor.redactMultipart(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
 
     return map;
   }

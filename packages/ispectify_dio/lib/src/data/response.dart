@@ -20,36 +20,36 @@ class DioResponseData {
     final headers = response?.headers;
     final map = <String, dynamic>{
       // --- Status: first thing you check ---
-      'status-code': response?.statusCode,
-      'status-message': response?.statusMessage,
+      NetworkJsonKeys.statusCode: response?.statusCode,
+      NetworkJsonKeys.statusMessage: response?.statusMessage,
 
       // --- Identity ---
-      'method': response?.requestOptions.method,
-      'url': response?.realUri.toString(),
+      NetworkJsonKeys.method: response?.requestOptions.method,
+      NetworkJsonKeys.url: response?.realUri.toString(),
 
       // --- Payload ---
-      'headers': headers?.map,
-      'data': response?.data,
+      NetworkJsonKeys.headers: headers?.map,
+      NetworkJsonKeys.data: response?.data,
 
       // --- Redirects ---
-      'is-redirect': response?.isRedirect,
-      'redirects': response?.redirects == null
+      NetworkJsonKeys.isRedirect: response?.isRedirect,
+      NetworkJsonKeys.redirects: response?.redirects == null
           ? null
           : response!.redirects
               .map(
                 (e) => {
-                  'location': e.location,
-                  'status-code': e.statusCode,
-                  'method': e.method,
+                  NetworkJsonKeys.location: e.location,
+                  NetworkJsonKeys.statusCode: e.statusCode,
+                  NetworkJsonKeys.method: e.method,
                 },
               )
               .toList(),
 
       // --- Meta ---
-      'extra': response?.extra,
+      NetworkJsonKeys.extra: response?.extra,
 
       // --- Original request (reference) ---
-      'request': redactor == null
+      NetworkJsonKeys.request: redactor == null
           ? requestData.toJson()
           : requestData.toJson(
               redactor: redactor,
@@ -58,63 +58,29 @@ class DioResponseData {
             ),
     };
 
-    if (redactor == null) {
-      return map;
-    }
+    if (redactor == null) return map;
 
-    // Redact URL query parameters and userInfo credentials
-    final url = map['url'];
-    if (url is String) {
-      map['url'] = redactor.redactUrl(url);
-    }
-
-    map['data'] = redactor.redact(
-      map['data'],
+    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactData(
+      map,
+      redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
-
-    final rawHdrs = map['headers'];
-    if (rawHdrs is Map) {
-      final hdrs = Map<String, dynamic>.from(rawHdrs);
-      map['headers'] = redactor.redactHeaders(
-        hdrs,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
-
-    // Extra may contain sensitive data depending on adapters
-    final rawExtra = map['extra'];
-    final extra = rawExtra is Map ? Map<String, dynamic>.from(rawExtra) : null;
-    if (extra != null) {
-      map['extra'] = redactor.redact(
-        extra,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
-
-    // Redact redirect URLs which may contain sensitive query parameters
-    final redirects = map['redirects'];
-    if (redirects is List) {
-      map['redirects'] = redirects.map((redirect) {
-        if (redirect is Map<String, dynamic>) {
-          final location = redirect['location'];
-          if (location != null) {
-            return {
-              ...redirect,
-              'location': redactor.redact(
-                location.toString(),
-                ignoredValues: ignoredValues,
-                ignoredKeys: ignoredKeys,
-              ),
-            };
-          }
-        }
-        return redirect;
-      }).toList();
-    }
+    NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactMapField(
+      map,
+      redactor,
+      key: NetworkJsonKeys.extra,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactRedirects(map, redactor);
 
     return map;
   }

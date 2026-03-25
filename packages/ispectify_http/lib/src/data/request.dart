@@ -19,53 +19,48 @@ class HttpRequestData {
   }) {
     final map = <String, dynamic>{
       // --- Identity: what & where ---
-      'method': requestOptions?.method,
-      'url': requestOptions?.url.toString(),
+      NetworkJsonKeys.method: requestOptions?.method,
+      NetworkJsonKeys.url: requestOptions?.url.toString(),
 
       // --- Payload ---
-      'headers': requestOptions?.headers,
-      'encoding': (requestOptions is Request)
+      NetworkJsonKeys.headers: requestOptions?.headers,
+      NetworkJsonKeys.encoding: (requestOptions is Request)
           ? (requestOptions! as Request).encoding.name
           : null,
-      'data': (requestOptions is Request)
+      NetworkJsonKeys.data: (requestOptions is Request)
           ? (requestOptions! as Request).body
           : null,
-      'content-length': requestOptions?.contentLength,
+      NetworkJsonKeys.contentLength: requestOptions?.contentLength,
 
       // --- Behaviour ---
-      'follow-redirects': requestOptions?.followRedirects,
-      'max-redirects': requestOptions?.maxRedirects,
-      'persistent-connection': requestOptions?.persistentConnection,
+      NetworkJsonKeys.followRedirects: requestOptions?.followRedirects,
+      NetworkJsonKeys.maxRedirects: requestOptions?.maxRedirects,
+      NetworkJsonKeys.persistentConnection:
+          requestOptions?.persistentConnection,
 
       // --- State ---
-      'finalized': requestOptions?.finalized,
+      NetworkJsonKeys.finalized: requestOptions?.finalized,
     };
 
     if (redactor == null) return map;
 
-    // Redact URL query parameters and userInfo credentials
-    final url = map['url'];
-    if (url is String) {
-      map['url'] = redactor.redactUrl(url);
+    NetworkMapRedactor.redactUrl(map, redactor);
+    final redactedHeaders = NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    if (redactedHeaders != null) {
+      map[NetworkJsonKeys.headers] =
+          redactedHeaders.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
-
-    final hdrs = requestOptions?.headers;
-    if (hdrs != null) {
-      final red = redactor.redactHeaders(
-        hdrs,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      map['headers'] = red.map((k, v) => MapEntry(k, v?.toString() ?? ''));
-    }
-
-    if (map['data'] != null) {
-      map['data'] = redactor.redact(
-        map['data'],
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
+    NetworkMapRedactor.redactData(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
 
     return map;
   }

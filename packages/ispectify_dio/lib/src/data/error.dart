@@ -20,25 +20,25 @@ class DioErrorData {
   }) =>
       {
         // --- Error summary: what went wrong ---
-        'type': exception?.type,
-        'message': redactor != null
+        NetworkJsonKeys.type: exception?.type,
+        NetworkJsonKeys.message: redactor != null
             ? redactor.redact(
                 exception?.message,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
               )
             : exception?.message,
-        'error': redactor != null
+        NetworkJsonKeys.error: redactor != null
             ? redactor.redact(
                 exception?.error?.toString(),
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
               )
             : exception?.error,
-        'stack-trace': exception?.stackTrace,
+        NetworkJsonKeys.stackTrace: exception?.stackTrace,
 
         // --- Response (if any) ---
-        'response': redactor == null
+        NetworkJsonKeys.response: redactor == null
             ? responseData.toJson()
             : responseData.toJson(
                 redactor: redactor,
@@ -47,7 +47,7 @@ class DioErrorData {
               ),
 
         // --- Original request (reference) ---
-        'request': redactor == null
+        NetworkJsonKeys.request: redactor == null
             ? requestData.toJson()
             : requestData.toJson(
                 redactor: redactor,
