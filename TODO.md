@@ -1,5 +1,14 @@
 # TODO
 
+ispectify_db:
+
+- [ ] Add objectbox interceptor
+- [ ] Add realm interceptor
+- [ ] Add mongo_dart interceptor
+- [ ] Add postgres interceptor
+- [ ] Add flutter_cache_manager interceptor
+- [ ] Add supabase db interceptor
+
 ### Testing
 
 - [ ] Increase test coverage from current ~11% to >80%
