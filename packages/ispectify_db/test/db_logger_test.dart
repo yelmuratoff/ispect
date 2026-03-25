@@ -122,6 +122,51 @@ void main() {
       }
     });
 
+    test('logs sizeBytes for file operations', () {
+      logger.db(
+        source: 'file',
+        operation: 'write',
+        target: '/data/cache/image.png',
+        sizeBytes: 2048,
+        success: true,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['sizeBytes'], 2048);
+    });
+
+    test('logs cacheHit for cache operations', () {
+      logger.db(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:123',
+        cacheHit: true,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['cacheHit'], isTrue);
+    });
+
+    test('logs cache miss', () {
+      logger.db(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:999',
+        cacheHit: false,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['cacheHit'], isFalse);
+    });
+
+    test('omits sizeBytes and cacheHit when null', () {
+      logger.db(source: 'kv', operation: 'get', key: 'k');
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add.containsKey('sizeBytes'), isFalse);
+      expect(add.containsKey('cacheHit'), isFalse);
+    });
+
     test('does not mark as slow when duration is under threshold', () {
       logger.db(
         source: 'sqflite',
@@ -280,6 +325,21 @@ void main() {
       expect(add['durationMs'], isA<int>());
       expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
     });
+
+    test('passes sizeBytes and cacheHit through', () async {
+      await logger.dbTrace(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:1',
+        sizeBytes: 512,
+        cacheHit: true,
+        run: () async => 'cached-value',
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['sizeBytes'], 512);
+      expect(add['cacheHit'], isTrue);
+    });
   });
 
   group('dbStart / dbEnd', () {
@@ -353,6 +413,20 @@ void main() {
       final add = logger.history.last.additionalData ?? {};
       final durationMs = add['durationMs'] as int;
       expect(durationMs, greaterThanOrEqualTo(5));
+    });
+
+    test('passes sizeBytes and cacheHit through dbEnd', () {
+      final token = logger.dbStart(source: 'file', operation: 'read');
+      logger.dbEnd(
+        token,
+        success: true,
+        sizeBytes: 4096,
+        cacheHit: false,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['sizeBytes'], 4096);
+      expect(add['cacheHit'], isFalse);
     });
   });
 
@@ -505,6 +579,8 @@ void main() {
         key: 'id',
         items: 5,
         affected: 3,
+        sizeBytes: 2048,
+        cacheHit: true,
         duration: const Duration(milliseconds: 42),
         success: true,
         value: 'data',
@@ -514,9 +590,43 @@ void main() {
       expect(msg, contains('Key: id'));
       expect(msg, contains('Items: 5'));
       expect(msg, contains('Affected: 3'));
+      expect(msg, contains('Size: 2.0 KB'));
+      expect(msg, contains('Cache: HIT'));
       expect(msg, contains('Duration: 42ms'));
       expect(msg, contains('Success: true'));
       expect(msg, contains('Value: data'));
+    });
+
+    test('formats cache miss', () {
+      final msg = ISpectDbCore.buildMessage(
+        source: 'cache',
+        operation: 'get',
+        cacheHit: false,
+      );
+      expect(msg, contains('Cache: MISS'));
+    });
+
+    test('formats bytes correctly', () {
+      final small = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'write',
+        sizeBytes: 500,
+      );
+      expect(small, contains('Size: 500 B'));
+
+      final kb = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'write',
+        sizeBytes: 1536,
+      );
+      expect(kb, contains('Size: 1.5 KB'));
+
+      final mb = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'write',
+        sizeBytes: 2 * 1024 * 1024,
+      );
+      expect(mb, contains('Size: 2.0 MB'));
     });
 
     test('minimal message with only required fields', () {

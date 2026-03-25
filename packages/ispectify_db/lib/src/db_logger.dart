@@ -110,6 +110,8 @@ final class ISpectDbCore {
     String? key,
     int? items,
     int? affected,
+    int? sizeBytes,
+    bool? cacheHit,
     Duration? duration,
     bool? success,
     Object? value,
@@ -129,6 +131,8 @@ final class ISpectDbCore {
     if (value != null) details.add('Value: $value');
     if (items != null) details.add('Items: $items');
     if (affected != null) details.add('Affected: $affected');
+    if (sizeBytes != null) details.add('Size: ${_formatBytes(sizeBytes)}');
+    if (cacheHit != null) details.add('Cache: ${cacheHit ? 'HIT' : 'MISS'}');
     if (duration != null) {
       details.add('Duration: ${duration.inMilliseconds}ms');
     }
@@ -139,6 +143,14 @@ final class ISpectDbCore {
     }
 
     return buffer.toString();
+  }
+
+  static String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    }
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
 
@@ -191,6 +203,8 @@ extension ISpectLoggerDb on ISpectLogger {
     Object? error,
     int? affected,
     int? items,
+    int? sizeBytes,
+    bool? cacheHit,
     Duration? duration,
     Map<String, Object?>? meta,
     Object? projection,
@@ -278,6 +292,8 @@ extension ISpectLoggerDb on ISpectLogger {
       key: key,
       items: items,
       affected: affected,
+      sizeBytes: sizeBytes,
+      cacheHit: cacheHit,
       duration: duration,
       success: success,
       value: truncatedValue,
@@ -302,6 +318,8 @@ extension ISpectLoggerDb on ISpectLogger {
       'success': success,
       'affected': affected,
       'items': items,
+      'sizeBytes': sizeBytes,
+      'cacheHit': cacheHit,
       'value': valueForAdditional,
       'meta': processedMeta,
       'transactionId': txnId,
@@ -342,6 +360,8 @@ extension ISpectLoggerDb on ISpectLogger {
     int? maxStatementLength,
     int? itemsCountFromLength,
     int? affectedOverride,
+    int? sizeBytes,
+    bool? cacheHit,
     String? transactionId,
   }) async {
     if (!ISpectDbCore._samplePass(sample)) {
@@ -390,6 +410,8 @@ extension ISpectLoggerDb on ISpectLogger {
           maxValueLength: maxValueLength,
           maxArgsLength: maxArgsLength,
           maxStatementLength: maxStatementLength,
+          sizeBytes: sizeBytes,
+          cacheHit: cacheHit,
           transactionId: transactionId,
           errorStackTrace: st,
         );
@@ -433,6 +455,8 @@ extension ISpectLoggerDb on ISpectLogger {
     Object? error,
     int? affected,
     int? items,
+    int? sizeBytes,
+    bool? cacheHit,
     Map<String, Object?>? meta,
   }) {
     token._stopwatch.stop();
@@ -451,6 +475,8 @@ extension ISpectLoggerDb on ISpectLogger {
       error: error,
       affected: affected,
       items: items,
+      sizeBytes: sizeBytes,
+      cacheHit: cacheHit,
       duration: duration,
       meta: {...?token.meta, ...?meta},
       transactionId: token.transactionId,
