@@ -116,8 +116,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       );
 
   /// Delete a record by key.
-  Future<K?> deleteRecord(sembast.DatabaseClient db, K key) =>
-      _logger.dbTrace(
+  Future<K?> deleteRecord(sembast.DatabaseClient db, K key) => _logger.dbTrace(
         source: _source,
         operation: 'delete',
         table: _store.name,

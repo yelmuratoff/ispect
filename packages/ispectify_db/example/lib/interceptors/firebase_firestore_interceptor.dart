@@ -50,8 +50,7 @@ final class ISpectFirestoreCollection<T extends Object?> {
   String get path => _collection.path;
 
   /// Returns a traced [ISpectFirestoreDocument] for the given [docPath].
-  ISpectFirestoreDocument<T> doc([String? docPath]) =>
-      ISpectFirestoreDocument(
+  ISpectFirestoreDocument<T> doc([String? docPath]) => ISpectFirestoreDocument(
         delegate: _collection.doc(docPath),
         logger: _logger,
         source: _source,

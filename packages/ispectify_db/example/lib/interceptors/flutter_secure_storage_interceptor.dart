@@ -75,8 +75,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
       _storage.getListeners;
 
   @override
-  Future<bool?> isCupertinoProtectedDataAvailable() =>
-      _logger.dbTrace(
+  Future<bool?> isCupertinoProtectedDataAvailable() => _logger.dbTrace(
         source: _source,
         operation: 'isCupertinoProtectedDataAvailable',
         run: _storage.isCupertinoProtectedDataAvailable,
