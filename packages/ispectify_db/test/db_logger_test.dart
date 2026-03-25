@@ -374,6 +374,24 @@ void main() {
       expect(logger.history, isNotEmpty);
     });
 
+    test('captures synchronous exception in run callback', () async {
+      try {
+        await logger.dbTrace<int>(
+          source: 'db',
+          operation: 'query',
+          run: () => throw StateError('sync-boom'),
+        );
+        fail('should throw');
+      } catch (_) {
+        // expected
+      }
+
+      final entry = logger.history.last;
+      expect(entry.key, 'db-error');
+      final add = entry.additionalData ?? {};
+      expect(add['error'], contains('sync-boom'));
+    });
+
     test('passes sizeBytes and cacheHit through', () async {
       await logger.dbTrace(
         source: 'cache',
@@ -423,8 +441,8 @@ void main() {
       logger.dbEnd(token);
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['source'], 'custom');
-      expect(add['operation'], 'custom');
+      expect(add['source'], dbDefaultSource);
+      expect(add['operation'], dbDefaultOperation);
     });
 
     test('merges token meta with dbEnd meta', () {
@@ -649,6 +667,19 @@ void main() {
       expect(copied.maxValueLength, 200);
       expect(copied.attachStackOnError, isTrue);
     });
+
+    test('copyWith resets nullable fields to null', () {
+      final original = ISpectDbConfig(
+        sampleRate: 0.5,
+        slowQueryThreshold: const Duration(seconds: 1),
+      );
+      final reset = original.copyWith(
+        sampleRate: null,
+        slowQueryThreshold: null,
+      );
+      expect(reset.sampleRate, isNull);
+      expect(reset.slowQueryThreshold, isNull);
+    });
   });
 
   group('ISpectDbTxn', () {
@@ -666,6 +697,15 @@ void main() {
   });
 
   group('ISpectDbToken', () {
+    test('toString includes source and operation', () {
+      final token = logger.dbStart(source: 'sqflite', operation: 'query');
+      final str = token.toString();
+      expect(str, contains('ISpectDbToken('));
+      expect(str, contains('source: sqflite'));
+      expect(str, contains('operation: query'));
+      expect(str, contains('elapsed:'));
+    });
+
     test('stopTiming is idempotent — elapsed stays stable', () async {
       final token = logger.dbStart(source: 'db', operation: 'read');
       await Future<void>.delayed(const Duration(milliseconds: 5));

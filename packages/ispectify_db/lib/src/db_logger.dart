@@ -300,7 +300,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final duration = token.elapsed;
     db(
       source: token.source ?? dbDefaultSource,
-      operation: token.operation ?? dbDefaultSource,
+      operation: token.operation ?? dbDefaultOperation,
       statement: token.statement,
       target: token.target,
       table: token.table,
@@ -344,12 +344,6 @@ extension ISpectLoggerDb on ISpectLogger {
   }
 
   /// Normalizes redacted named args into a typed [Map] after truncation.
-  ///
-  /// The [Iterable] branch is a defensive fallback: with the current
-  /// [RedactionService.redactByKeys] and [truncateLeaves], a `Map` input
-  /// always produces a `Map` output. However, if either implementation
-  /// changes to flatten or unwrap the structure, this branch prevents a
-  /// silent data loss by wrapping the values under a fallback key.
   static Map<String, Object?>? _processNamedArgs(
     Object? redacted, {
     required int maxLen,
@@ -360,9 +354,6 @@ extension ISpectLoggerDb on ISpectLogger {
       return Map<String, Object?>.fromEntries(
         truncated.entries.map((e) => MapEntry(e.key.toString(), e.value)),
       );
-    }
-    if (truncated is Iterable) {
-      return <String, Object?>{DbMessageLabels.namedArgsFallbackKey: truncated};
     }
     return null;
   }

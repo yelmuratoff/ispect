@@ -36,4 +36,10 @@ class ISpectDbToken {
   final Map<String, Object?>? namedArgs;
   final Map<String, Object?>? meta;
   final String? transactionId;
+
+  @override
+  String toString() => 'ISpectDbToken('
+      'source: $source, '
+      'operation: $operation, '
+      'elapsed: ${_stopwatch.elapsed})';
 }

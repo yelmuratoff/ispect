@@ -41,8 +41,11 @@ const dbReadOperations = <String>{
   'fetch', 'find', 'list', 'lookup', 'scan', 'count', // NoSQL / search
 };
 
-/// Default source/operation fallback for [dbStart]/[dbEnd].
+/// Default source fallback for [dbStart]/[dbEnd].
 const dbDefaultSource = 'custom';
+
+/// Default operation fallback for [dbStart]/[dbEnd].
+const dbDefaultOperation = 'custom';
 
 
 /// Transaction marker operation names.
@@ -65,6 +68,4 @@ abstract final class DbMessageLabels {
   static const cacheHit = 'Cache: HIT';
   static const cacheMiss = 'Cache: MISS';
 
-  /// Fallback key when named args are truncated to an [Iterable].
-  static const namedArgsFallbackKey = 'values';
 }

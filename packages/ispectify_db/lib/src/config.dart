@@ -1,5 +1,12 @@
 import 'package:ispectify/ispectify.dart' show defaultSensitiveKeys;
 
+/// Sentinel value indicating a [copyWith] parameter was not provided.
+const _absent = _Absent();
+
+class _Absent {
+  const _Absent();
+}
+
 /// Global configuration for database logging.
 ///
 /// Controls redaction, truncation limits, sampling, slow-query detection,
@@ -43,8 +50,13 @@ class ISpectDbConfig {
       'enableTransactionMarkers: $enableTransactionMarkers, '
       'slowQueryThreshold: $slowQueryThreshold)';
 
+  /// Creates a copy with the given fields replaced.
+  ///
+  /// Nullable fields ([sampleRate], [slowQueryThreshold]) can be explicitly
+  /// reset to `null` by passing `null`. Omitting them preserves the current
+  /// value.
   ISpectDbConfig copyWith({
-    double? sampleRate,
+    Object? sampleRate = _absent,
     bool? redact,
     List<String>? redactKeys,
     int? maxValueLength,
@@ -52,10 +64,12 @@ class ISpectDbConfig {
     int? maxStatementLength,
     bool? attachStackOnError,
     bool? enableTransactionMarkers,
-    Duration? slowQueryThreshold,
+    Object? slowQueryThreshold = _absent,
   }) =>
       ISpectDbConfig(
-        sampleRate: sampleRate ?? this.sampleRate,
+        sampleRate: sampleRate == _absent
+            ? this.sampleRate
+            : sampleRate as double?,
         redact: redact ?? this.redact,
         redactKeys: redactKeys ?? this.redactKeys,
         maxValueLength: maxValueLength ?? this.maxValueLength,
@@ -64,6 +78,8 @@ class ISpectDbConfig {
         attachStackOnError: attachStackOnError ?? this.attachStackOnError,
         enableTransactionMarkers:
             enableTransactionMarkers ?? this.enableTransactionMarkers,
-        slowQueryThreshold: slowQueryThreshold ?? this.slowQueryThreshold,
+        slowQueryThreshold: slowQueryThreshold == _absent
+            ? this.slowQueryThreshold
+            : slowQueryThreshold as Duration?,
       );
 }
