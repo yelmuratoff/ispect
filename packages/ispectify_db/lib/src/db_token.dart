@@ -3,7 +3,7 @@
 ///
 /// Pass to [ISpectLoggerDb.dbEnd] to finalize the log entry with
 /// measured duration and result data.
-class ISpectDbToken {
+final class ISpectDbToken {
   ISpectDbToken({
     required Stopwatch stopwatch,
     this.source,

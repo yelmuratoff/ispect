@@ -598,6 +598,33 @@ void main() {
       expect(deleteLog.additionalData?['transactionId'], outerTxnId);
     });
 
+    test('succeeds without markers and emits no transaction logs', () async {
+      final result = await logger.dbTransaction(
+        source: 'sqflite',
+        logMarkers: false,
+        run: () async {
+          logger.db(source: 'sqflite', operation: 'insert');
+          return 42;
+        },
+      );
+
+      expect(result, 42);
+
+      final txLogs = logger.history.where(
+        (e) =>
+            (e.additionalData?['operation'] as String?)
+                ?.startsWith('transaction-') ??
+            false,
+      );
+      expect(txLogs, isEmpty);
+
+      // The inner db call still got a transactionId.
+      final insertLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'insert',
+      );
+      expect(insertLog.additionalData?['transactionId'], isNotNull);
+    });
+
     test('propagates transactionId to nested db calls via Zone', () async {
       String? capturedTxnId;
       await logger.dbTransaction(

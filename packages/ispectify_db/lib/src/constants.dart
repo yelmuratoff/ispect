@@ -67,5 +67,4 @@ abstract final class DbMessageLabels {
   static const successPrefix = 'Success: ';
   static const cacheHit = 'Cache: HIT';
   static const cacheMiss = 'Cache: MISS';
-
 }

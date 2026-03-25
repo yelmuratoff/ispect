@@ -1,6 +1,8 @@
 import 'dart:async';
 
 final class ISpectDbTxn {
+  const ISpectDbTxn._();
+
   static const _txnZoneKey = #ispectDbTxnId;
 
   static String? currentTransactionId() => Zone.current[_txnZoneKey] as String?;
