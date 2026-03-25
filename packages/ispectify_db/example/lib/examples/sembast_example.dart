@@ -15,32 +15,30 @@ Future<void> sembastExample() async {
   ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
 
   final db = await newDatabaseFactoryMemory().openDatabase('example.db');
-  final rawStore = intMapStoreFactory.store('users');
-  final store = ISpectSembastStore(store: rawStore, logger: logger);
 
-  final rawSettingsStore = stringMapStoreFactory.store('settings');
-  final settingsStore =
-      ISpectSembastStore(store: rawSettingsStore, logger: logger);
+  // Convenience extension: .traced(logger)
+  final store = intMapStoreFactory.store('users').traced(logger);
+  final settingsStore = stringMapStoreFactory.store('settings').traced(logger);
 
-  // Put records
-  await store.put(db, 1, {'name': 'Alice', 'role': 'admin'});
-  await store.put(db, 2, {'name': 'Bob', 'role': 'user'});
+  // Record-level operations via store.record(key)
+  await store.record(1).put(db, {'name': 'Alice', 'role': 'admin'});
+  await store.record(2).put(db, {'name': 'Bob', 'role': 'user'});
 
-  // Add with auto-key
+  // Add with auto-key (store-level)
   await store.add(db, {'name': 'Charlie', 'role': 'user'});
 
   // Put in second store
-  await settingsStore.put(db, 'theme', {'darkMode': true});
-  await settingsStore.put(db, 'language', {'code': 'en'});
+  await settingsStore.record('theme').put(db, {'darkMode': true});
+  await settingsStore.record('language').put(db, {'code': 'en'});
 
-  // Read
-  await store.get(db, 1);
+  // Record read
+  await store.record(1).get(db);
 
   // Check existence
-  await store.exists(db, 1);
+  await store.record(1).exists(db);
 
-  // Update
-  await store.update(db, 1, {'name': 'Alice', 'role': 'superadmin'});
+  // Record update
+  await store.record(1).update(db, {'name': 'Alice', 'role': 'superadmin'});
 
   // Find all
   await store.find(db);
@@ -56,14 +54,14 @@ Future<void> sembastExample() async {
 
   // Transaction
   await store.transaction(db, (txn) async {
-    await store.put(txn, 10, {'name': 'Diana', 'role': 'user'});
-    await store.put(txn, 11, {'name': 'Eve', 'role': 'user'});
+    await store.record(10).put(txn, {'name': 'Diana', 'role': 'user'});
+    await store.record(11).put(txn, {'name': 'Eve', 'role': 'user'});
   });
 
   // Delete record
-  await store.deleteRecord(db, 2);
+  await store.record(2).delete(db);
 
-  // Delete with finder
+  // Delete with finder (store-level)
   await store.delete(
     db,
     finder: Finder(filter: Filter.equals('role', 'user')),

@@ -14,10 +14,7 @@ void main() {
     logger = ISpectLogger();
     ISpectDbCore.config = ISpectDbConfig();
     db = await newDatabaseFactoryMemory().openDatabase('test.db');
-    traced = ISpectSembastStore(
-      store: intMapStoreFactory.store('users'),
-      logger: logger,
-    );
+    traced = intMapStoreFactory.store('users').traced(logger);
   });
 
   tearDown(() async {
@@ -28,12 +25,11 @@ void main() {
   Map<String, Object?> lastAdditional() =>
       logger.history.last.additionalData ?? {};
 
-  group('put', () {
+  group('record put', () {
     test('stores value and logs write', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
+      await traced.record(1).put(db, {'name': 'Alice'});
 
-      final value = await traced.get(db, 1);
+      final value = await traced.record(1).get(db);
       expect(value, containsPair('name', 'Alice'));
 
       // Check the put log (second to last, get is last).
@@ -46,11 +42,10 @@ void main() {
     });
   });
 
-  group('get', () {
+  group('record get', () {
     test('reads value and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      final value = await traced.get(db, 1);
+      await traced.record(1).put(db, {'name': 'Alice'});
+      final value = await traced.record(1).get(db);
 
       expect(value, isNotNull);
       expect(lastAdditional()['operation'], 'get');
@@ -59,29 +54,27 @@ void main() {
     });
 
     test('returns null for missing key', () async {
-      final value = await traced.get(db, 999);
+      final value = await traced.record(999).get(db);
       expect(value, isNull);
     });
   });
 
-  group('exists', () {
+  group('record exists', () {
     test('checks existence and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      final exists = await traced.exists(db, 1);
+      await traced.record(1).put(db, {'name': 'Alice'});
+      final exists = await traced.record(1).exists(db);
 
       expect(exists, isTrue);
       expect(lastAdditional()['operation'], 'lookup');
     });
   });
 
-  group('update', () {
+  group('record update', () {
     test('updates record and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      await traced.update(db, 1, {'name': 'Alice Updated'});
+      await traced.record(1).put(db, {'name': 'Alice'});
+      await traced.record(1).update(db, {'name': 'Alice Updated'});
 
-      final value = await traced.get(db, 1);
+      final value = await traced.record(1).get(db);
       expect(value, containsPair('name', 'Alice Updated'));
 
       final updateLog = logger.history.firstWhere(
@@ -91,7 +84,7 @@ void main() {
     });
   });
 
-  group('add', () {
+  group('store add', () {
     test('auto-key insert and logs', () async {
       final key = await traced.add(db, {'name': 'Charlie'});
 
@@ -107,23 +100,20 @@ void main() {
     });
   });
 
-  group('deleteRecord', () {
+  group('record delete', () {
     test('removes record and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      final deleted = await traced.deleteRecord(db, 1);
+      await traced.record(1).put(db, {'name': 'Alice'});
+      final deleted = await traced.record(1).delete(db);
 
       expect(deleted, 1);
-      expect(await traced.get(db, 1), isNull);
+      expect(await traced.record(1).get(db), isNull);
     });
   });
 
-  group('find', () {
+  group('store find', () {
     test('finds records and logs count', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice', 'role': 'admin'});
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 2, {'name': 'Bob', 'role': 'user'});
+      await traced.record(1).put(db, {'name': 'Alice', 'role': 'admin'});
+      await traced.record(2).put(db, {'name': 'Bob', 'role': 'user'});
 
       final all = await traced.find(db);
       expect(all.length, 2);
@@ -135,12 +125,10 @@ void main() {
     });
   });
 
-  group('count', () {
+  group('store count', () {
     test('counts records and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 2, {'name': 'Bob'});
+      await traced.record(1).put(db, {'name': 'Alice'});
+      await traced.record(2).put(db, {'name': 'Bob'});
 
       final count = await traced.count(db);
       expect(count, 2);
@@ -150,20 +138,17 @@ void main() {
 
   group('store delete', () {
     test('deletes matching records and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 2, {'name': 'Bob'});
+      await traced.record(1).put(db, {'name': 'Alice'});
+      await traced.record(2).put(db, {'name': 'Bob'});
 
       final deleted = await traced.delete(db);
       expect(deleted, 2);
     });
   });
 
-  group('drop', () {
+  group('store drop', () {
     test('drops store and logs', () async {
-      // ignore: avoid_dynamic_calls
-      await traced.put(db, 1, {'name': 'Alice'});
+      await traced.record(1).put(db, {'name': 'Alice'});
       await traced.drop(db);
 
       final count = await traced.count(db);
@@ -181,7 +166,7 @@ void main() {
       ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
 
       await traced.transaction(db, (txn) async {
-        await traced.put(txn, 10, {'name': 'TxnUser'});
+        await traced.record(10).put(txn, {'name': 'TxnUser'});
       });
 
       final putLog = logger.history.lastWhere(
@@ -191,16 +176,37 @@ void main() {
     });
   });
 
-  group('custom source', () {
-    test('uses provided source', () async {
-      final custom = ISpectSembastStore(
-        store: intMapStoreFactory.store('test'),
-        logger: logger,
-        source: 'sembast-web',
-      );
+  group('convenience extension', () {
+    test('.traced() creates store with correct source', () async {
+      final custom = intMapStoreFactory
+          .store('test')
+          .traced(logger, source: 'sembast-web');
       await custom.count(db);
 
       expect(lastAdditional()['source'], 'sembast-web');
+    });
+  });
+
+  group('implements StoreRef', () {
+    test('can be used where StoreRef is expected', () {
+      // Compile-time check: ISpectSembastStore IS a StoreRef.
+      final StoreRef<int, Map<String, Object?>> storeRef = traced;
+      expect(storeRef.name, 'users');
+    });
+
+    test('equality is name-based', () {
+      final other = intMapStoreFactory.store('users');
+      expect(traced == other, isTrue);
+      expect(traced.hashCode, other.hashCode);
+    });
+  });
+
+  group('implements RecordRef', () {
+    test('record() returns ISpectSembastRecord', () {
+      final record = traced.record(1);
+      expect(record, isA<ISpectSembastRecord>());
+      expect(record.key, 1);
+      expect(record.store.name, 'users');
     });
   });
 }
