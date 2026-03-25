@@ -117,16 +117,16 @@ void main() {
     final body = log.body! as Map<String, dynamic>;
 
     // Check fields
-    expect(body['fields'], isA<Map<String, Object?>>());
-    final fields = body['fields'] as Map<String, Object?>;
+    expect(body[NetworkJsonKeys.fields], isA<Map<String, Object?>>());
+    final fields = body[NetworkJsonKeys.fields] as Map<String, Object?>;
     expect(fields['username'], 'john_doe');
     expect(fields['email'], 'john@example.com');
 
     // Check files
-    expect(body['files'], isA<List<Map<String, Object?>>>());
-    final files = body['files'] as List<Map<String, Object?>>;
+    expect(body[NetworkJsonKeys.files], isA<List<Map<String, Object?>>>());
+    final files = body[NetworkJsonKeys.files] as List<Map<String, Object?>>;
     expect(files.length, 1);
-    expect(files[0]['filename'], 'avatar.jpg');
-    expect(files[0]['key'], 'avatar');
+    expect(files[0][NetworkJsonKeys.filename], 'avatar.jpg');
+    expect(files[0][NetworkJsonKeys.fieldName], 'avatar');
   });
 }

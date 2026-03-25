@@ -101,6 +101,16 @@ abstract final class NetworkJsonKeys {
   static const String files = 'files';
 
   // ---------------------------------------------------------------------------
+  // File metadata (inside multipart `files` entries)
+  // ---------------------------------------------------------------------------
+
+  /// The form field name the file was attached to.
+  static const String fieldName = 'field';
+  static const String filename = 'filename';
+  static const String contentTypeValue = 'content-type';
+  static const String length = 'length';
+
+  // ---------------------------------------------------------------------------
   // Error
   // ---------------------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 import 'package:http_interceptor/http_interceptor.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Serializes an HTTP [MultipartRequest] into a map that can be logged and
 /// redacted consistently.
@@ -10,17 +11,17 @@ class HttpMultipartSerializer {
     final files = request.files
         .map(
           (file) => <String, Object?>{
-            'field': file.field,
-            'filename': file.filename,
-            'contentType': file.contentType.toString(),
-            'length': file.length,
+            NetworkJsonKeys.fieldName: file.field,
+            NetworkJsonKeys.filename: file.filename,
+            NetworkJsonKeys.contentTypeValue: file.contentType.toString(),
+            NetworkJsonKeys.length: file.length,
           },
         )
         .toList();
 
     return {
-      'fields': fields,
-      'files': files,
+      NetworkJsonKeys.fields: fields,
+      NetworkJsonKeys.files: files,
     };
   }
 }

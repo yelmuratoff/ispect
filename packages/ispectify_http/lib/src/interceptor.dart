@@ -288,15 +288,13 @@ class ISpectHttpInterceptor extends InterceptorContract
     final payloadMap = <String, dynamic>{};
     final responseMap = payload.ensureMap(responseBody);
     if (responseMap.isNotEmpty) {
-      payloadMap['response'] = responseMap;
+      payloadMap[NetworkJsonKeys.response] = responseMap;
     }
 
     if (requestBody != null && requestBody.isNotEmpty) {
-      payloadMap['request'] = requestBody;
+      payloadMap[NetworkJsonKeys.request] = requestBody;
     }
 
     return payloadMap;
   }
-
-
 }

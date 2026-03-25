@@ -27,7 +27,7 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectLogger get logger => _logger;
 
   /// Internal key used to store the request ID in [RequestOptions.extra].
-  static const _requestIdExtraKey = '_ispect_rid';
+  static const _requestIdExtraKey = NetworkJsonKeys.ispectRequestId;
 
   final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
 
