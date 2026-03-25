@@ -5,7 +5,6 @@
 /// measured duration and result data.
 class ISpectDbToken {
   ISpectDbToken({
-    required this.id,
     required Stopwatch stopwatch,
     this.source,
     this.operation,
@@ -21,13 +20,12 @@ class ISpectDbToken {
 
   final Stopwatch _stopwatch;
 
-  /// Stops the internal stopwatch. Called by `dbEnd`.
+  /// Stops the internal stopwatch. Idempotent — safe to call multiple times.
   void stopTiming() => _stopwatch.stop();
 
   /// Elapsed duration since [dbStart] was called.
   Duration get elapsed => _stopwatch.elapsed;
 
-  final String id;
   final String? source;
   final String? operation;
   final String? statement;

@@ -270,7 +270,6 @@ extension ISpectLoggerDb on ISpectLogger {
     String? transactionId,
   }) =>
       ISpectDbToken(
-        id: ISpectDbCore.genId(),
         stopwatch: Stopwatch()..start(),
         source: source,
         operation: operation,
@@ -345,6 +344,12 @@ extension ISpectLoggerDb on ISpectLogger {
   }
 
   /// Normalizes redacted named args into a typed [Map] after truncation.
+  ///
+  /// The [Iterable] branch is a defensive fallback: with the current
+  /// [RedactionService.redactByKeys] and [truncateLeaves], a `Map` input
+  /// always produces a `Map` output. However, if either implementation
+  /// changes to flatten or unwrap the structure, this branch prevents a
+  /// silent data loss by wrapping the values under a fallback key.
   static Map<String, Object?>? _processNamedArgs(
     Object? redacted, {
     required int maxLen,
@@ -382,6 +387,12 @@ extension ISpectLoggerDb on ISpectLogger {
 
   /// Runs [run] inside a transaction zone that propagates a shared
   /// transaction ID to all nested [db]/[dbTrace] calls.
+  ///
+  /// **Nested transactions**: calling [dbTransaction] inside another
+  /// [dbTransaction] replaces the zone-propagated ID for the inner scope.
+  /// Inner [db]/[dbTrace] calls will use the inner transaction ID;
+  /// outer calls retain the outer ID. This is a flat model — there is
+  /// no parent-child linking between transaction IDs.
   ///
   /// Optionally emits `transaction-begin`, `transaction-commit`, and
   /// `transaction-rollback` marker logs (controlled by [logMarkers] or

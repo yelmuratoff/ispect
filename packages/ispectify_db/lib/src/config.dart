@@ -31,6 +31,18 @@ class ISpectDbConfig {
   final bool enableTransactionMarkers;
   final Duration? slowQueryThreshold;
 
+  @override
+  String toString() => 'ISpectDbConfig('
+      'sampleRate: $sampleRate, '
+      'redact: $redact, '
+      'redactKeys: $redactKeys, '
+      'maxValueLength: $maxValueLength, '
+      'maxArgsLength: $maxArgsLength, '
+      'maxStatementLength: $maxStatementLength, '
+      'attachStackOnError: $attachStackOnError, '
+      'enableTransactionMarkers: $enableTransactionMarkers, '
+      'slowQueryThreshold: $slowQueryThreshold)';
+
   ISpectDbConfig copyWith({
     double? sampleRate,
     bool? redact,

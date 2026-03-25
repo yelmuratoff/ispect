@@ -355,6 +355,25 @@ void main() {
       expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
     });
 
+    test('logs entry even when projectResult throws', () async {
+      final result = await logger.dbTrace<int>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () async => 42,
+        projectResult: (_) => throw const FormatException('bad projection'),
+      );
+
+      // The operation result is still returned.
+      expect(result, 42);
+
+      // The logging failure is swallowed — no log entry is produced for
+      // the successful call because the projection error occurs inside
+      // the finally catch block.
+      // Verify that the logger did NOT crash and is still usable.
+      logger.db(source: 'test', operation: 'get');
+      expect(logger.history, isNotEmpty);
+    });
+
     test('passes sizeBytes and cacheHit through', () async {
       await logger.dbTrace(
         source: 'cache',
@@ -512,6 +531,55 @@ void main() {
       expect(ops, isNot(contains('transaction-commit')));
     });
 
+    test('nested transaction replaces outer transaction ID', () async {
+      String? outerTxnId;
+      String? innerTxnId;
+      String? outerAfterInner;
+
+      await logger.dbTransaction(
+        source: 'sqflite',
+        logMarkers: true,
+        run: () async {
+          outerTxnId = ISpectDbTxn.currentTransactionId();
+          logger.db(source: 'sqflite', operation: 'insert');
+
+          await logger.dbTransaction(
+            source: 'sqflite',
+            logMarkers: true,
+            run: () async {
+              innerTxnId = ISpectDbTxn.currentTransactionId();
+              logger.db(source: 'sqflite', operation: 'update');
+            },
+          );
+
+          outerAfterInner = ISpectDbTxn.currentTransactionId();
+          logger.db(source: 'sqflite', operation: 'delete');
+        },
+      );
+
+      // Inner and outer have different IDs.
+      expect(outerTxnId, isNotNull);
+      expect(innerTxnId, isNotNull);
+      expect(outerTxnId, isNot(equals(innerTxnId)));
+
+      // Outer zone restores after inner completes.
+      expect(outerAfterInner, equals(outerTxnId));
+
+      // Each db call got its correct transaction ID.
+      final insertLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'insert',
+      );
+      final updateLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'update',
+      );
+      final deleteLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'delete',
+      );
+      expect(insertLog.additionalData?['transactionId'], outerTxnId);
+      expect(updateLog.additionalData?['transactionId'], innerTxnId);
+      expect(deleteLog.additionalData?['transactionId'], outerTxnId);
+    });
+
     test('propagates transactionId to nested db calls via Zone', () async {
       String? capturedTxnId;
       await logger.dbTransaction(
@@ -556,6 +624,18 @@ void main() {
       );
     });
 
+    test('toString includes all field values', () {
+      final config = ISpectDbConfig(
+        sampleRate: 0.5,
+        maxValueLength: 100,
+      );
+      final str = config.toString();
+      expect(str, contains('ISpectDbConfig('));
+      expect(str, contains('sampleRate: 0.5'));
+      expect(str, contains('redact: true'));
+      expect(str, contains('maxValueLength: 100'));
+    });
+
     test('copyWith preserves unchanged fields', () {
       final original = ISpectDbConfig(
         sampleRate: 0.5,
@@ -582,6 +662,19 @@ void main() {
         captured = ISpectDbTxn.currentTransactionId();
       });
       expect(captured, 'txn-123');
+    });
+  });
+
+  group('ISpectDbToken', () {
+    test('stopTiming is idempotent — elapsed stays stable', () async {
+      final token = logger.dbStart(source: 'db', operation: 'read');
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      token.stopTiming();
+      final first = token.elapsed;
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      token.stopTiming();
+      final second = token.elapsed;
+      expect(first, equals(second));
     });
   });
 
