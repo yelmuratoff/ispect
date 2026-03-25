@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_getters_setters
-
 import 'dart:async';
 import 'dart:math';
 
@@ -10,14 +8,7 @@ import 'package:ispectify_db/src/transaction.dart';
 final class ISpectDbCore {
   const ISpectDbCore._();
 
-  static ISpectDbConfig _config = ISpectDbConfig();
-
-  /// Current configuration. Use [configure] to update.
-  static ISpectDbConfig get config => _config;
-
-  /// Updates the configuration. Prefer using [configure] over direct assignment
-  /// to make configuration changes explicit and intentional.
-  static set config(ISpectDbConfig value) => _config = value;
+  static ISpectDbConfig config = ISpectDbConfig();
 
   static final Random _random = Random();
 
@@ -154,7 +145,7 @@ final class ISpectDbCore {
 class ISpectDbToken {
   ISpectDbToken({
     required this.id,
-    required this.startedAt,
+    required Stopwatch stopwatch,
     this.source,
     this.operation,
     this.statement,
@@ -165,10 +156,14 @@ class ISpectDbToken {
     this.namedArgs,
     this.meta,
     this.transactionId,
-  });
+  }) : _stopwatch = stopwatch;
+
+  final Stopwatch _stopwatch;
+
+  /// Elapsed duration since [dbStart] was called.
+  Duration get elapsed => _stopwatch.elapsed;
 
   final String id;
-  final DateTime startedAt;
   final String? source;
   final String? operation;
   final String? statement;
@@ -211,59 +206,63 @@ extension ISpectLoggerDb on ISpectLogger {
     if (!ISpectDbCore._samplePass(sample)) return;
 
     final cfg = ISpectDbCore.config;
-    final useRedact = redact ?? cfg.redact;
-    final rKeys = redactKeys ?? cfg.redactKeys;
-    final maxVal = maxValueLength ?? cfg.maxValueLength;
-    final maxStmt = maxStatementLength ?? cfg.maxStatementLength;
-    final maxArgs = maxArgsLength ?? cfg.maxArgsLength;
+    final shouldRedact = redact ?? cfg.redact;
+    final sensitiveKeys = redactKeys ?? cfg.redactKeys;
+    final maxValueLen = maxValueLength ?? cfg.maxValueLength;
+    final maxStmtLen = maxStatementLength ?? cfg.maxStatementLength;
+    final maxArgsLen = maxArgsLength ?? cfg.maxArgsLength;
 
-    final stmtRaw = statement == null
+    final truncatedStmtRaw = statement == null
         ? null
-        : ISpectDbCore.truncateValue(statement, maxStmt);
-    final stmt = stmtRaw is String ? stmtRaw : stmtRaw?.toString();
+        : ISpectDbCore.truncateValue(statement, maxStmtLen);
+    final truncatedStmt =
+        truncatedStmtRaw is String ? truncatedStmtRaw : truncatedStmtRaw?.toString();
 
-    final aRedacted = args == null
+    final redactedArgs = args == null
         ? null
-        : (useRedact
-            ? ISpectDbCore.redactPositionalArgs(args, rKeys, statement)
+        : (shouldRedact
+            ? ISpectDbCore.redactPositionalArgs(args, sensitiveKeys, statement)
             : args);
-    final aRaw =
-        aRedacted == null ? null : truncateLeaves(aRedacted, maxLength: maxArgs);
-    final a = aRaw is List ? aRaw.cast<Object?>() : null;
-
-    final naRedacted = ISpectDbCore.redactIfNeeded(
-      namedArgs,
-      shouldRedact: useRedact,
-      keys: rKeys,
-    );
-    final naRaw = naRedacted == null
+    final truncatedArgsRaw = redactedArgs == null
         ? null
-        : truncateLeaves(naRedacted, maxLength: maxArgs);
-    final na = naRaw is Map
+        : truncateLeaves(redactedArgs, maxLength: maxArgsLen);
+    final processedArgs =
+        truncatedArgsRaw is List ? truncatedArgsRaw.cast<Object?>() : null;
+
+    final redactedNamedArgs = ISpectDbCore.redactIfNeeded(
+      namedArgs,
+      shouldRedact: shouldRedact,
+      keys: sensitiveKeys,
+    );
+    final truncatedNamedArgsRaw = redactedNamedArgs == null
+        ? null
+        : truncateLeaves(redactedNamedArgs, maxLength: maxArgsLen);
+    final processedNamedArgs = truncatedNamedArgsRaw is Map
         ? Map<String, Object?>.fromEntries(
-            naRaw.entries.map((e) => MapEntry(e.key.toString(), e.value)),
+            truncatedNamedArgsRaw.entries
+                .map((e) => MapEntry(e.key.toString(), e.value)),
           )
-        : naRaw is Iterable
-            ? <String, Object?>{'values': naRaw}
+        : truncatedNamedArgsRaw is Iterable
+            ? <String, Object?>{'values': truncatedNamedArgsRaw}
             : null;
 
-    final m = ISpectDbCore.redactIfNeeded(
+    final processedMeta = ISpectDbCore.redactIfNeeded(
       meta,
-      shouldRedact: useRedact,
-      keys: rKeys,
+      shouldRedact: shouldRedact,
+      keys: sensitiveKeys,
     );
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 
-    final val = projection ?? value;
-    final valRed = ISpectDbCore.redactIfNeeded(
-      val,
-      shouldRedact: useRedact,
-      keys: rKeys,
+    final rawValue = projection ?? value;
+    final redactedValue = ISpectDbCore.redactIfNeeded(
+      rawValue,
+      shouldRedact: shouldRedact,
+      keys: sensitiveKeys,
     );
-    final valTrunc = ISpectDbCore.truncateValue(valRed, maxVal);
+    final truncatedValue = ISpectDbCore.truncateValue(redactedValue, maxValueLen);
     final valueForAdditional =
-        valTrunc is String ? valTrunc : valTrunc?.toString();
+        truncatedValue is String ? truncatedValue : truncatedValue?.toString();
 
     final digest = ISpectDbCore.sqlDigest(statement);
 
@@ -281,7 +280,7 @@ extension ISpectLoggerDb on ISpectLogger {
       affected: affected,
       duration: duration,
       success: success,
-      value: valTrunc,
+      value: truncatedValue,
     );
 
     final threshold = ISpectDbCore.config.slowQueryThreshold;
@@ -291,20 +290,20 @@ extension ISpectLoggerDb on ISpectLogger {
     final additional = ISpectDbCore.clean({
       'source': source,
       'operation': operation,
-      'statement': useRedact ? digest : stmt,
+      'statement': shouldRedact ? digest : truncatedStmt,
       'statementDigest': digest,
       'target': target,
       'table': table,
       'key': key,
-      'args': a,
-      'namedArgs': na,
+      'args': processedArgs,
+      'namedArgs': processedNamedArgs,
       'durationMs': duration?.inMilliseconds,
       'slow': isSlow ? true : null,
       'success': success,
       'affected': affected,
       'items': items,
       'value': valueForAdditional,
-      'meta': m,
+      'meta': processedMeta,
       'transactionId': txnId,
       'error': error?.toString(),
     });
@@ -414,7 +413,7 @@ extension ISpectLoggerDb on ISpectLogger {
   }) =>
       ISpectDbToken(
         id: ISpectDbCore.genId(),
-        startedAt: DateTime.now(),
+        stopwatch: Stopwatch()..start(),
         source: source,
         operation: operation,
         statement: statement,
@@ -436,7 +435,8 @@ extension ISpectLoggerDb on ISpectLogger {
     int? items,
     Map<String, Object?>? meta,
   }) {
-    final duration = DateTime.now().difference(token.startedAt);
+    token._stopwatch.stop();
+    final duration = token.elapsed;
     db(
       source: token.source ?? 'custom',
       operation: token.operation ?? 'custom',

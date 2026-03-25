@@ -11,7 +11,7 @@ class ISpectDbConfig {
     this.attachStackOnError = false,
     this.enableTransactionMarkers = false,
     this.slowQueryThreshold,
-  })  : redactKeys = redactKeys ?? defaultSensitiveKeys.toList(),
+  })  : redactKeys = List.unmodifiable(redactKeys ?? defaultSensitiveKeys),
         assert(
           sampleRate == null || (sampleRate >= 0 && sampleRate <= 1),
           'sampleRate must be between 0.0 and 1.0 (inclusive)',
