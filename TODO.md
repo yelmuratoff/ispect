@@ -2,7 +2,8 @@
 
 ispectify_db:
 
-- [ ] Add objectbox interceptor
+- [x] Add objectbox interceptor
+- [ ] Firebase realtime db
 - [ ] Add realm interceptor
 - [ ] Add mongo_dart interceptor
 - [ ] Add postgres interceptor

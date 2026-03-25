@@ -7,6 +7,7 @@ import 'package:ispectify_db_example/examples/hive_example.dart';
 import 'package:ispectify_db_example/examples/isar_example.dart';
 import 'package:ispectify_db_example/examples/sembast_example.dart';
 import 'package:ispectify_db_example/examples/shared_preferences_example.dart';
+import 'package:ispectify_db_example/examples/objectbox_example.dart';
 import 'package:ispectify_db_example/examples/sqflite_example.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,6 +49,7 @@ class _ExamplesPageState extends State<ExamplesPage> {
     'Isar': isarExample,
     'Sembast': sembastExample,
     'Shared Preferences': sharedPreferencesExample,
+    'ObjectBox': objectboxExample,
     'Sqflite': sqfliteExample,
   };
 
