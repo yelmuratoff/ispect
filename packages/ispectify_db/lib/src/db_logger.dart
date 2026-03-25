@@ -1,213 +1,11 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
+import 'package:ispectify_db/src/constants.dart';
+import 'package:ispectify_db/src/db_core.dart';
+import 'package:ispectify_db/src/db_token.dart';
 import 'package:ispectify_db/src/transaction.dart';
-
-/// Internal utilities for DB logging: ID generation, SQL fingerprinting,
-/// value redaction/truncation, and message formatting.
-///
-/// Not intended for direct use — prefer the [ISpectLoggerDb] extension methods
-/// ([db], [dbTrace], [dbStart]/[dbEnd], [dbTransaction]).
-final class ISpectDbCore {
-  const ISpectDbCore._();
-
-  /// Current configuration applied to all DB log calls.
-  static ISpectDbConfig config = ISpectDbConfig();
-
-  static final Random _random = Random();
-
-  static final RegExp _singleQuoteRe = RegExp("'[^']*'");
-  static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');
-  static final RegExp _digitRe = RegExp(r'\b\d+\b');
-  static final RegExp _whitespaceRe = RegExp(r'\s+');
-
-  static bool _samplePass(double? localSample) =>
-      samplePass(localSample ?? config.sampleRate);
-
-  /// Generates a 16-character hex trace ID from timestamp + random bits.
-  static String genId() {
-    final now = DateTime.now().microsecondsSinceEpoch;
-    final r = _random.nextInt(0x7fffffff);
-
-    return (now & 0xffffffff).toRadixString(16).padLeft(8, '0') +
-        r.toRadixString(16).padLeft(8, '0');
-  }
-
-  /// Normalizes a SQL [statement] by replacing literals and digits with `?`,
-  /// then appends a DJB2 hash for grouping structurally identical queries.
-  ///
-  /// Returns `null` when [statement] is `null` or empty.
-  static String? sqlDigest(String? statement) {
-    if (statement == null || statement.isEmpty) return null;
-    var s = statement.toLowerCase();
-    s = s.replaceAll(_singleQuoteRe, '?');
-    s = s.replaceAll(_doubleQuoteRe, '?');
-    s = s.replaceAll(_digitRe, '?');
-    s = s.replaceAll(_whitespaceRe, ' ').trim();
-
-    var hash = 5381;
-    for (var i = 0; i < s.length; i++) {
-      hash = (((hash << 5) + hash) ^ s.codeUnitAt(i)) & 0xffffffff;
-    }
-    final hex = (hash & 0x7fffffff).toRadixString(16);
-    return '${s.substring(0, s.length > 80 ? 80 : s.length)}|$hex';
-  }
-
-  /// Truncates [value] to [maxLen] characters if it is a [String].
-  /// Non-string values are returned as-is.
-  static Object? truncateValue(Object? value, int maxLen) {
-    if (value == null) return null;
-    if (value is String) return truncateString(value, maxLength: maxLen);
-    return value;
-  }
-
-  /// Redacts values in [data] whose keys match any of the provided [keys].
-  ///
-  /// Delegates to [RedactionService.redactByKeys] — the shared implementation
-  /// in the `ispectify` package.
-  static Object? redact(Object? data, List<String> keys) =>
-      RedactionService.redactByKeys(data, keys);
-
-  /// Conditionally redacts [data] if [shouldRedact] is `true`, otherwise
-  /// returns [data] unchanged. Returns `null` when [data] is `null`.
-  static Object? redactIfNeeded(
-    Object? data, {
-    required bool shouldRedact,
-    required List<String> keys,
-  }) {
-    if (data == null) return null;
-    return shouldRedact ? redact(data, keys) : data;
-  }
-
-  /// Redacts positional arguments in a [List] when the SQL [statement]
-  /// references columns that match any of the [keys].
-  ///
-  /// Because positional parameters (`?`) cannot be reliably mapped to specific
-  /// column names in all SQL dialects, this method redacts **all** list values
-  /// when the statement mentions at least one sensitive column name.
-  /// If [statement] is `null`, all values are redacted as a precaution.
-  static List<Object?> redactPositionalArgs(
-    List<Object?> args,
-    List<String> keys,
-    String? statement,
-  ) {
-    if (args.isEmpty) return args;
-    final stmtLower = statement?.toLowerCase();
-    final sensitive = stmtLower == null ||
-        keys.any((k) => stmtLower.contains(k.toLowerCase()));
-    if (!sensitive) return args;
-    return args.map((e) => e == null ? null : '***').toList();
-  }
-
-  /// Removes entries with `null` values or empty-string values.
-  ///
-  /// Delegates to [cleanMap] from `ispectify`.
-  static Map<String, Object?> clean(Map<String, Object?> m) => cleanMap(m);
-
-  /// Returns the log key based on [operation] type: `db-error`, `db-query`,
-  /// or `db-result`.
-  static String pickLogKey({required bool isError, required String operation}) {
-    if (isError) return 'db-error';
-    final op = operation.toLowerCase();
-    if (op == 'query' || op == 'select' || op == 'read' || op == 'get') {
-      return 'db-query';
-    }
-    return 'db-result';
-  }
-
-  /// Builds a human-readable log message from the provided fields.
-  static String buildMessage({
-    required String source,
-    required String operation,
-    String? table,
-    String? target,
-    String? key,
-    int? items,
-    int? affected,
-    int? sizeBytes,
-    bool? cacheHit,
-    Duration? duration,
-    bool? success,
-    Object? value,
-  }) {
-    final buffer = StringBuffer('[$source] $operation');
-
-    if (table != null && target != null) {
-      buffer.write(' $table → $target');
-    } else if (table != null) {
-      buffer.write(' $table');
-    } else if (target != null) {
-      buffer.write(' $target');
-    }
-
-    final details = <String>[];
-    if (key != null) details.add('Key: $key');
-    if (value != null) details.add('Value: $value');
-    if (items != null) details.add('Items: $items');
-    if (affected != null) details.add('Affected: $affected');
-    if (sizeBytes != null) details.add('Size: ${_formatBytes(sizeBytes)}');
-    if (cacheHit != null) details.add('Cache: ${cacheHit ? 'HIT' : 'MISS'}');
-    if (duration != null) {
-      details.add('Duration: ${duration.inMilliseconds}ms');
-    }
-    if (success != null) details.add('Success: $success');
-
-    if (details.isNotEmpty) {
-      buffer.write('\n${details.join('\n')}');
-    }
-
-    return buffer.toString();
-  }
-
-  static String _formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    }
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  }
-}
-
-/// Opaque handle returned by [ISpectLoggerDb.dbStart] that captures
-/// the operation context and a running [Stopwatch].
-///
-/// Pass to [ISpectLoggerDb.dbEnd] to finalize the log entry with
-/// measured duration and result data.
-class ISpectDbToken {
-  ISpectDbToken({
-    required this.id,
-    required Stopwatch stopwatch,
-    this.source,
-    this.operation,
-    this.statement,
-    this.target,
-    this.table,
-    this.key,
-    this.args,
-    this.namedArgs,
-    this.meta,
-    this.transactionId,
-  }) : _stopwatch = stopwatch;
-
-  final Stopwatch _stopwatch;
-
-  /// Elapsed duration since [dbStart] was called.
-  Duration get elapsed => _stopwatch.elapsed;
-
-  final String id;
-  final String? source;
-  final String? operation;
-  final String? statement;
-  final String? target;
-  final String? table;
-  final String? key;
-  final List<Object?>? args;
-  final Map<String, Object?>? namedArgs;
-  final Map<String, Object?>? meta;
-  final String? transactionId;
-}
 
 /// Database logging extension on [ISpectLogger].
 ///
@@ -256,64 +54,45 @@ extension ISpectLoggerDb on ISpectLogger {
     String? transactionId,
     StackTrace? errorStackTrace,
   }) {
-    if (!ISpectDbCore._samplePass(sample)) return;
+    if (!ISpectDbCore.shouldLog(sample)) return;
 
     final cfg = ISpectDbCore.config;
     final shouldRedact = redact ?? cfg.redact;
     final sensitiveKeys = redactKeys ?? cfg.redactKeys;
-    final maxValueLen = maxValueLength ?? cfg.maxValueLength;
-    final maxStmtLen = maxStatementLength ?? cfg.maxStatementLength;
     final maxArgsLen = maxArgsLength ?? cfg.maxArgsLength;
 
-    final truncatedStmtRaw = statement == null
-        ? null
-        : ISpectDbCore.truncateValue(statement, maxStmtLen);
-    final truncatedStmt =
-        truncatedStmtRaw is String ? truncatedStmtRaw : truncatedStmtRaw?.toString();
+    // Local closure — eliminates repeated shouldRedact + sensitiveKeys args.
+    Object? redactData(Object? data) => ISpectDbCore.redactIfNeeded(
+          data,
+          shouldRedact: shouldRedact,
+          keys: sensitiveKeys,
+        );
 
-    final redactedArgs = args == null
-        ? null
-        : (shouldRedact
-            ? ISpectDbCore.redactPositionalArgs(args, sensitiveKeys, statement)
-            : args);
-    final truncatedArgsRaw = redactedArgs == null
-        ? null
-        : truncateLeaves(redactedArgs, maxLength: maxArgsLen);
-    final processedArgs =
-        truncatedArgsRaw is List ? truncatedArgsRaw.cast<Object?>() : null;
-
-    final redactedNamedArgs = ISpectDbCore.redactIfNeeded(
-      namedArgs,
-      shouldRedact: shouldRedact,
-      keys: sensitiveKeys,
-    );
-    final truncatedNamedArgsRaw = redactedNamedArgs == null
-        ? null
-        : truncateLeaves(redactedNamedArgs, maxLength: maxArgsLen);
-    final processedNamedArgs = truncatedNamedArgsRaw is Map
-        ? Map<String, Object?>.fromEntries(
-            truncatedNamedArgsRaw.entries
-                .map((e) => MapEntry(e.key.toString(), e.value)),
-          )
-        : truncatedNamedArgsRaw is Iterable
-            ? <String, Object?>{'values': truncatedNamedArgsRaw}
-            : null;
-
-    final processedMeta = ISpectDbCore.redactIfNeeded(
-      meta,
-      shouldRedact: shouldRedact,
-      keys: sensitiveKeys,
+    final truncatedStmt = _truncateToString(
+      statement,
+      maxStatementLength ?? cfg.maxStatementLength,
     );
 
+    final processedArgs = _processPositionalArgs(
+      args,
+      shouldRedact: shouldRedact,
+      sensitiveKeys: sensitiveKeys,
+      statement: statement,
+      maxLen: maxArgsLen,
+    );
+
+    final processedNamedArgs = _processNamedArgs(
+      redactData(namedArgs),
+      maxLen: maxArgsLen,
+    );
+
+    final processedMeta = redactData(meta);
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 
-    final rawValue = projection ?? value;
-    final redactedValue = ISpectDbCore.redactIfNeeded(
-      rawValue,
-      shouldRedact: shouldRedact,
-      keys: sensitiveKeys,
+    final truncatedValue = ISpectDbCore.truncateValue(
+      redactData(projection ?? value),
+      maxValueLength ?? cfg.maxValueLength,
     );
-    final truncatedValue = ISpectDbCore.truncateValue(redactedValue, maxValueLen);
     final valueForAdditional =
         truncatedValue is String ? truncatedValue : truncatedValue?.toString();
 
@@ -338,31 +117,31 @@ extension ISpectLoggerDb on ISpectLogger {
       value: truncatedValue,
     );
 
-    final threshold = ISpectDbCore.config.slowQueryThreshold;
+    final threshold = cfg.slowQueryThreshold;
     final isSlow =
         duration != null && threshold != null && duration > threshold;
 
     final additional = ISpectDbCore.clean({
-      'source': source,
-      'operation': operation,
-      'statement': shouldRedact ? digest : truncatedStmt,
-      'statementDigest': digest,
-      'target': target,
-      'table': table,
-      'key': key,
-      'args': processedArgs,
-      'namedArgs': processedNamedArgs,
-      'durationMs': duration?.inMilliseconds,
-      'slow': isSlow ? true : null,
-      'success': success,
-      'affected': affected,
-      'items': items,
-      'sizeBytes': sizeBytes,
-      'cacheHit': cacheHit,
-      'value': valueForAdditional,
-      'meta': processedMeta,
-      'transactionId': txnId,
-      'error': error?.toString(),
+      DbLogKeys.source: source,
+      DbLogKeys.operation: operation,
+      DbLogKeys.statement: shouldRedact ? digest : truncatedStmt,
+      DbLogKeys.statementDigest: digest,
+      DbLogKeys.target: target,
+      DbLogKeys.table: table,
+      DbLogKeys.key: key,
+      DbLogKeys.args: processedArgs,
+      DbLogKeys.namedArgs: processedNamedArgs,
+      DbLogKeys.durationMs: duration?.inMilliseconds,
+      DbLogKeys.slow: isSlow ? true : null,
+      DbLogKeys.success: success,
+      DbLogKeys.affected: affected,
+      DbLogKeys.items: items,
+      DbLogKeys.sizeBytes: sizeBytes,
+      DbLogKeys.cacheHit: cacheHit,
+      DbLogKeys.value: valueForAdditional,
+      DbLogKeys.meta: processedMeta,
+      DbLogKeys.transactionId: txnId,
+      DbLogKeys.error: error?.toString(),
     });
 
     final data = ISpectLogData(
@@ -371,7 +150,7 @@ extension ISpectLoggerDb on ISpectLogger {
       title: keyName,
       logLevel: isError ? LogLevel.error : LogLevel.info,
       additionalData: additional,
-      stackTrace: isError && ISpectDbCore.config.attachStackOnError
+      stackTrace: isError && cfg.attachStackOnError
           ? (errorStackTrace ?? StackTrace.current)
           : null,
     );
@@ -410,7 +189,7 @@ extension ISpectLoggerDb on ISpectLogger {
     bool? cacheHit,
     String? transactionId,
   }) async {
-    if (!ISpectDbCore._samplePass(sample)) {
+    if (!ISpectDbCore.shouldLog(sample)) {
       return run();
     }
     final sw = Stopwatch()..start();
@@ -461,8 +240,14 @@ extension ISpectLoggerDb on ISpectLogger {
           transactionId: transactionId,
           errorStackTrace: st,
         );
-      } catch (_) {
+      } catch (loggingError) {
         // Prevent logging failure from masking the original error.
+        // In debug mode, surface the issue for self-diagnosis.
+        assert(() {
+          // ignore: avoid_print
+          print('ISpectDbTrace: logging failed — $loggingError');
+          return true;
+        }());
       }
     }
   }
@@ -512,11 +297,11 @@ extension ISpectLoggerDb on ISpectLogger {
     bool? cacheHit,
     Map<String, Object?>? meta,
   }) {
-    token._stopwatch.stop();
+    token.stopTiming();
     final duration = token.elapsed;
     db(
-      source: token.source ?? 'custom',
-      operation: token.operation ?? 'custom',
+      source: token.source ?? dbDefaultSource,
+      operation: token.operation ?? dbDefaultSource,
       statement: token.statement,
       target: token.target,
       table: token.table,
@@ -534,6 +319,47 @@ extension ISpectLoggerDb on ISpectLogger {
       meta: {...?token.meta, ...?meta},
       transactionId: token.transactionId,
     );
+  }
+
+  /// Truncates and converts to [String?] in one step.
+  static String? _truncateToString(String? value, int maxLen) {
+    if (value == null) return null;
+    final truncated = ISpectDbCore.truncateValue(value, maxLen);
+    return truncated is String ? truncated : truncated?.toString();
+  }
+
+  /// Redacts and truncates positional [args].
+  static List<Object?>? _processPositionalArgs(
+    List<Object?>? args, {
+    required bool shouldRedact,
+    required List<String> sensitiveKeys,
+    required String? statement,
+    required int maxLen,
+  }) {
+    if (args == null) return null;
+    final redacted = shouldRedact
+        ? ISpectDbCore.redactPositionalArgs(args, sensitiveKeys, statement)
+        : args;
+    final truncated = truncateLeaves(redacted, maxLength: maxLen);
+    return truncated is List ? truncated.cast<Object?>() : null;
+  }
+
+  /// Normalizes redacted named args into a typed [Map] after truncation.
+  static Map<String, Object?>? _processNamedArgs(
+    Object? redacted, {
+    required int maxLen,
+  }) {
+    if (redacted == null) return null;
+    final truncated = truncateLeaves(redacted, maxLength: maxLen);
+    if (truncated is Map) {
+      return Map<String, Object?>.fromEntries(
+        truncated.entries.map((e) => MapEntry(e.key.toString(), e.value)),
+      );
+    }
+    if (truncated is Iterable) {
+      return <String, Object?>{DbMessageLabels.namedArgsFallbackKey: truncated};
+    }
+    return null;
   }
 
   void _logTxnMarker({
@@ -562,7 +388,7 @@ extension ISpectLoggerDb on ISpectLogger {
   /// [ISpectDbConfig.enableTransactionMarkers]).
   Future<T> dbTransaction<T>({
     required Future<T> Function() run,
-    String source = 'custom',
+    String source = dbDefaultSource,
     Map<String, Object?>? meta,
     bool? logMarkers,
   }) async {
@@ -572,7 +398,7 @@ extension ISpectLoggerDb on ISpectLogger {
     if (enableMarkers) {
       _logTxnMarker(
         source: source,
-        operation: 'transaction-begin',
+        operation: DbTxnOps.begin,
         txnId: txnId,
         meta: meta,
       );
@@ -586,7 +412,7 @@ extension ISpectLoggerDb on ISpectLogger {
       if (enableMarkers) {
         _logTxnMarker(
           source: source,
-          operation: 'transaction-rollback',
+          operation: DbTxnOps.rollback,
           txnId: txnId,
           meta: meta,
           success: false,
@@ -598,7 +424,7 @@ extension ISpectLoggerDb on ISpectLogger {
       if (enableMarkers && didSucceed) {
         _logTxnMarker(
           source: source,
-          operation: 'transaction-commit',
+          operation: DbTxnOps.commit,
           txnId: txnId,
           meta: meta,
           success: true,

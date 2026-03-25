@@ -213,7 +213,7 @@ class RedactionService {
     Object? data,
     List<String> keys, {
     int maxDepth = 50,
-    String placeholder = '***',
+    String placeholder = redactedMask,
   }) {
     if (data == null || keys.isEmpty || maxDepth <= 0) return data;
     if (data is Map) {

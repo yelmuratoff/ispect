@@ -1,4 +1,5 @@
 import 'package:ispectify/src/history/file_log/session_cleanup_strategy.dart';
+import 'package:ispectify/src/utils/common_utils.dart';
 
 /// Snapshot of session metrics and configuration.
 class SessionStatistics {
@@ -34,25 +35,15 @@ class SessionStatistics {
     return '''
 Session Statistics:
 - Total Days: $totalDays
-- Total Size: ${_formatBytes(totalSize)}
+- Total Size: ${formatBytes(totalSize)}
 - Total Entries: $totalEntries
 - Date Range: $oldestStr to $newestStr
 - Max Session Days: $maxSessionDays
 - Auto-save: ${enableAutoSave ? 'Enabled (${autoSaveInterval.inSeconds}s)' : 'Disabled'}
-- Max File Size: ${_formatBytes(maxFileSize)}
+- Max File Size: ${formatBytes(maxFileSize)}
 - Cleanup Strategy: ${cleanupStrategy.name}
 ''';
   }
 
-  String _formatBytes(int bytes) {
-    if (bytes == 0) return '0 B';
 
-    const suffixes = ['B', 'KB', 'MB', 'GB'];
-    var i = (bytes.bitLength - 1) ~/ 10;
-    if (i < 0) i = 0;
-    if (i >= suffixes.length) i = suffixes.length - 1;
-    final value = bytes / (1 << (i * 10));
-
-    return '${value.toStringAsFixed(1)} ${suffixes[i]}';
-  }
 }

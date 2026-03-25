@@ -1,6 +1,9 @@
 /// Default placeholder text substituted for redacted values.
 const String defaultPlaceholder = '[REDACTED]';
 
+/// Short mask used for key-based redaction (e.g. passwords, tokens).
+const String redactedMask = '***';
+
 /// URI-safe placeholder for redacted userInfo (username:password) in URLs.
 ///
 /// Avoids brackets and special characters that would cause [Uri.replace] to

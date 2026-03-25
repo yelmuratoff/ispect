@@ -48,6 +48,33 @@ Random _createRandom() {
   }
 }
 
+/// Formats a byte count as a human-readable string (B, KB, MB, GB).
+String formatBytes(int bytes) {
+  const kb = 1024;
+  const mb = 1024 * 1024;
+  const gb = 1024 * 1024 * 1024;
+  if (bytes < kb) return '$bytes B';
+  if (bytes < mb) return '${(bytes / kb).toStringAsFixed(1)} KB';
+  if (bytes < gb) return '${(bytes / mb).toStringAsFixed(1)} MB';
+  return '${(bytes / gb).toStringAsFixed(1)} GB';
+}
+
+/// Generates a 16-character hex trace ID from the current timestamp
+/// and a random component.
+///
+/// Not cryptographically secure — suitable for log correlation only.
+String generateTraceId() {
+  const timestampMask = 0xffffffff;
+  const randomBound = 0x7fffffff;
+  const hexPadLen = 8;
+
+  final now = DateTime.now().microsecondsSinceEpoch;
+  final r = _random.nextInt(randomBound);
+
+  return (now & timestampMask).toRadixString(16).padLeft(hexPadLen, '0') +
+      r.toRadixString(16).padLeft(hexPadLen, '0');
+}
+
 /// Extension on [ISpectLogger] providing safe logging helpers.
 extension SafeLogExtension on ISpectLogger {
   /// Logs [data] inside a try-catch, preventing logger exceptions from

@@ -135,9 +135,12 @@ void main() {
     });
 
     test('pickLogKey returns db-query for read operations', () {
-      for (final op in ['query', 'select', 'read', 'get']) {
+      for (final op in [
+        'query', 'select', 'read', 'get', // SQL / KV
+        'fetch', 'find', 'list', 'lookup', 'scan', 'count', // NoSQL / search
+      ]) {
         logger.db(source: 'test', operation: op, success: true);
-        expect(logger.history.last.key, 'db-query');
+        expect(logger.history.last.key, 'db-query', reason: 'op=$op');
       }
     });
 
@@ -653,6 +656,13 @@ void main() {
         sizeBytes: 2 * 1024 * 1024,
       );
       expect(mb, contains('Size: 2.0 MB'));
+
+      final gb = ISpectDbCore.buildMessage(
+        source: 'file',
+        operation: 'write',
+        sizeBytes: 3 * 1024 * 1024 * 1024,
+      );
+      expect(gb, contains('Size: 3.0 GB'));
     });
 
     test('formats zero bytes', () {
