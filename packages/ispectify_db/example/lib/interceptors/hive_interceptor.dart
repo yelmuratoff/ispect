@@ -37,6 +37,9 @@ final class ISpectHiveBox<E> implements Box<E> {
   /// Default source identifier.
   static const defaultSource = 'hive';
 
+  /// The underlying [Box] instance.
+  Box<E> get delegate => _box;
+
   // --- Traced reads -------------------------------------------------------
 
   @override

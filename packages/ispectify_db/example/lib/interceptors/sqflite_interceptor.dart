@@ -35,6 +35,9 @@ final class ISpectSqfliteDatabase implements Database {
   /// Default source identifier.
   static const defaultSource = 'sqflite';
 
+  /// The underlying [Database] instance.
+  Database get delegate => _db;
+
   // --- Traced raw methods -------------------------------------------------
 
   @override
@@ -204,7 +207,10 @@ final class ISpectSqfliteDatabase implements Database {
   Future<T> readTransaction<T>(
     Future<T> Function(Transaction txn) action,
   ) =>
-      _db.readTransaction(action);
+      _logger.dbTransaction(
+        source: _source,
+        run: () => _db.readTransaction(action),
+      );
 
   // --- Passthrough --------------------------------------------------------
 

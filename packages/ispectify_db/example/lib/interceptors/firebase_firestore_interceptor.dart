@@ -337,14 +337,22 @@ final class ISpectFirestoreDocument<T extends Object?>
   String get id => _doc.id;
 
   @override
-  CollectionReference<T> get parent => _doc.parent;
+  CollectionReference<T> get parent => ISpectFirestoreCollection(
+        delegate: _doc.parent,
+        logger: _logger,
+        source: _source,
+      );
 
   @override
   String get path => _doc.path;
 
   @override
   CollectionReference<Map<String, dynamic>> collection(String collectionPath) =>
-      _doc.collection(collectionPath);
+      ISpectFirestoreCollection(
+        delegate: _doc.collection(collectionPath),
+        logger: _logger,
+        source: _source,
+      );
 
   @override
   Stream<DocumentSnapshot<T>> snapshots({
