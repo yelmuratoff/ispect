@@ -251,6 +251,20 @@ void main() {
     });
   });
 
+  // --- Drop-in --------------------------------------------------------------
+
+  group('drop-in', () {
+    test('assignable to Realm', () {
+      // ignore: omit_local_variable_types
+      final Realm r = traced;
+      expect(r, isA<Realm>());
+    });
+
+    test('equality with delegate', () {
+      expect(traced == realm, isTrue);
+    });
+  });
+
   // --- Passthrough ----------------------------------------------------------
 
   group('passthrough', () {
