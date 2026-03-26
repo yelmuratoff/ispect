@@ -10,6 +10,11 @@ environment:
 dependency_overrides:
   ispectify:
     path: ../../ispectify
+  # realm_generator pins build/source_gen to old versions that conflict with
+  # isar_community_generator and objectbox_generator. Overriding lets pub
+  # pick a single compatible version for all generators.
+  build: any
+  source_gen: any
 
 dependencies:
   flutter:
@@ -36,6 +41,7 @@ dependencies:
   isar_community_flutter_libs: ^3.3.0
   objectbox: ^4.0.3
   objectbox_flutter_libs: any
+  realm: ^20.2.0
 
 dev_dependencies:
   flutter_test:
