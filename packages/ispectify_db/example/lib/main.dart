@@ -3,6 +3,7 @@ import 'package:ispectify_db_example/examples/drift_codegen_example.dart';
 import 'package:ispectify_db_example/examples/drift_example.dart';
 import 'package:ispectify_db_example/examples/firebase_firestore_example.dart';
 import 'package:ispectify_db_example/examples/flutter_secure_storage_example.dart';
+import 'package:ispectify_db_example/examples/get_storage_example.dart';
 import 'package:ispectify_db_example/examples/hive_example.dart';
 import 'package:ispectify_db_example/examples/isar_example.dart';
 import 'package:ispectify_db_example/examples/sembast_example.dart';
@@ -46,6 +47,7 @@ class _ExamplesPageState extends State<ExamplesPage> {
     'Drift (Codegen)': driftCodegenExample,
     'Firebase Firestore (Fake)': firestoreExample,
     'Flutter Secure Storage': secureStorageExample,
+    'GetStorage': getStorageExample,
     'Hive': hiveExample,
     'Isar': isarExample,
     'Sembast': sembastExample,

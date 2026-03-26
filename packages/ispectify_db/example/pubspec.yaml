@@ -33,6 +33,8 @@ dependencies:
   sqflite_common_ffi: ^2.3.4
 
   # Flutter DB packages
+  get: ^4.7.3
+  get_storage: ^2.1.1
   shared_preferences: ^2.5.0
   flutter_secure_storage: ^10.0.0
   cloud_firestore: ^5.5.0

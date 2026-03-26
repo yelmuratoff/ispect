@@ -1,5 +1,10 @@
 # TODO
 
+network:
+
+- [ ] Firebase realtime db
+- [ ] Add supabase db interceptor
+
 ispectify_db:
 
 - [x] Add objectbox interceptor
@@ -7,10 +12,7 @@ ispectify_db:
 
 #### High priority (popular Flutter storage)
 
-- [ ] Add supabase db interceptor
-- [ ] Firebase realtime db
-- [ ] Add Floor interceptor
-- [ ] Add GetStorage interceptor
+- [x] Add GetStorage interceptor
 - [ ] Add flutter_cache_manager interceptor
 
 #### Medium priority (server-side / growing ecosystems)
