@@ -47,18 +47,40 @@ The library exposes an interface or class that can be implemented.
 - `ISpectSecureStorage implements FlutterSecureStorage`
 - `ISpectFirestoreCollection<T> implements CollectionReference<T>`
 - `ISpectSembastStore<K, V> implements StoreRef<K, V>`
+- `ISpectObjectBox<T> implements Box<T>`
+- `ISpectRealm implements Realm`
+- `ISpectGetStorage implements GetStorage`
 
 ### 3. Wrapper (fallback)
 
-The library's types cannot be implemented (sealed internals, required platform bridges, factory-only construction).
+The library's types cannot be implemented due to Dart 3 class modifiers (`sealed`, `final`, `base`) or internal runtime casts that break on non-original subtypes.
 
-**Use when:** `implements` is not feasible — e.g., internal casts would break, or the type system prevents it.
+**Use when:** `implements` fails at compile time OR causes runtime crashes due to internal type checks.
 
 **Pattern:** wrapper class with explicit traced methods + `delegate` getter for escape hatch.
 
 **Rules:**
 - Always expose `delegate` getter so users can drop down to the raw API when needed
 - Method names should mirror the library's API as closely as possible
+
+### ⚠️ Verification Rule — ALWAYS TRY DROP-IN FIRST
+
+Before choosing wrapper over drop-in, you MUST verify by reading the actual class declaration:
+
+```bash
+# Check for Dart 3 modifiers that actually prevent `implements`:
+grep -E "\b(sealed|final|base)\s+class\b" <source_file>
+```
+
+**These DO prevent `implements`:** `sealed class`, `final class`, `base class`
+
+**These DO NOT prevent `implements`:**
+- Factory constructors (e.g., `GetStorage`, `SharedPreferences`)
+- Concrete classes without modifiers (e.g., `Box<E>`, `IsarCollection<T>`)
+- Singleton patterns
+- Classes with `late` or mutable public fields (just delegate them)
+
+**Never trust sub-agent conclusions** about whether `implements` is feasible — always verify the source yourself.
 
 ## Structure
 
@@ -82,6 +104,8 @@ dependencies:
   ispectify_db: ...
   <target_library>: ^x.y.z   # ← add here
 ```
+
+If the interceptor imports types from a **transitive dependency** (e.g., `GetQueue` from `get` package, needed by `get_storage`), add it as a direct dependency too — the analyzer enforces `depend_on_referenced_packages`.
 
 ## File Conventions
 
@@ -182,7 +206,7 @@ _logger.dbTrace(
 ```
 
 **`table`** — pass when the backend has named stores/collections/boxes/tables:
-- Hive: `_box.name`, Isar: `_name`, Sqflite: `table`, Firestore: `_collection.path`, Sembast: `store.name`
+- Hive: `_box.name`, Isar: `_name`, Sqflite: `table`, Firestore: `_collection.path`, Sembast: `store.name`, GetStorage: `_containerName`, ObjectBox: `_boxName`, Realm: `'$T'` (type name)
 - SharedPreferences / SecureStorage: omit (single global store)
 
 **`key`** — pass for single-record operations, omit for bulk/filtered:
@@ -195,6 +219,8 @@ _logger.dbTrace(
 - `{'entries': entries.length}` — batch size
 - `{'merge': true}` — Firestore/Sembast merge mode
 - `{'count': values.length}` — number of items in bulk operations
+- `{'memoryOnly': true}` — GetStorage writeInMemory (no disk flush)
+- `{'ifNull': true}` — GetStorage writeIfNull (conditional write)
 
 ### Generics
 
@@ -294,8 +320,9 @@ cacheHit: result != null  // for sync reads via db()
 - Query builders: where, orderBy, limit, filter — tracing these is noise
 - Streams/watchers: snapshots, watch, onSnapshot — continuous, not point-in-time
 - Lifecycle: open, close, compact, flush — admin, not data operations
-- Schema/metadata: schema, name, path, isOpen, keys, values
+- Schema/metadata: schema, name, path, isOpen
 - Configuration: options getters, platform-specific settings
+- `keys`/`values` property getters on in-memory cache (Hive `box.keys`, `box.values`) — but if it's an explicit method call that enumerates stored data (GetStorage `getKeys()`, `getValues()`), **trace it** as `list` operation
 
 ### Navigation Must Preserve Tracing
 
@@ -411,6 +438,7 @@ The example must be runnable and demonstrate all traced operations:
 ```dart
 Future<void> <backend>Example() async {
   final logger = ISpectLogger();
+  ISpectDbCore.config = ISpectDbConfig();
   // Setup: open DB, create interceptor
   // Writes: insert, update, upsert
   // Reads: get, find, count, exists
@@ -442,6 +470,7 @@ Use `logger.history` to assert on logged entries.
 Before marking complete:
 
 **Architecture:**
+- [ ] Read actual class declaration — verified no `sealed`/`final`/`base` modifiers before choosing pattern
 - [ ] Pattern chosen correctly (native hook > drop-in > wrapper)
 - [ ] Multi-class interceptor if backend has parent→child navigation
 - [ ] Generic type parameters match delegate's constraints
