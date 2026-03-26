@@ -12,6 +12,48 @@ Create a ready-to-copy interceptor for a database or storage backend in `package
 - User asks to add a DB interceptor for a new storage backend
 - User says "/new-db-interceptor"
 
+## Research — MANDATORY First Step
+
+Before writing any code, read the **actual source** of the target library's main class. Use sub-agents only for fact-gathering (method signatures, field list, import paths). Never trust their architectural conclusions.
+
+### What to check (in this order):
+
+1. **Class declaration** — find the main class in `~/.pub-cache/hosted/pub.dev/<package>/lib/`:
+   ```bash
+   grep -E "\b(sealed|final|base|abstract)?\s*class\s+<ClassName>" <source_file>
+   ```
+   Record: modifiers, `extends`/`implements`/`with`, generic parameters.
+
+2. **Native hooks** — search for interceptor/observer/middleware classes:
+   ```bash
+   grep -rE "class\s+\w*(Interceptor|Observer|Middleware|Hook|Listener)" <package_dir>/lib/
+   ```
+   If found → Native Hook pattern.
+
+3. **Public API** — read the class fully. Record:
+   - All public methods with **exact signatures** (return types, generic params, named/positional args)
+   - Public fields and their mutability (`final` vs non-final, `late`)
+   - Factory vs generative constructors
+   - Platform dependencies (`path_provider`, `dart:io`, method channels)
+
+4. **Observation API** — check for `listen`, `watch`, `Stream`, `addListener`, `onChanged` etc. These are passthrough, not traced.
+
+5. **Container/namespace concept** — does it have named stores, boxes, collections, containers? This determines whether to pass `table` parameter.
+
+6. **Test setup** — check how the library handles testing:
+   - Does it need platform channel mocks? (e.g., `path_provider` → mock `plugins.flutter.io/path_provider`)
+   - Does it have mock/fake constructors? (e.g., `SharedPreferences.setMockInitialValues`)
+   - Does it need temp directory for file I/O?
+   - Does it need `TestWidgetsFlutterBinding.ensureInitialized()`?
+
+### Research output
+
+After research, you should know:
+- Which pattern to use (native hook / drop-in / wrapper) — **verified by reading the class declaration yourself**
+- Complete list of methods to trace vs passthrough
+- Whether `const` constructor is possible (not possible if delegate has setters you must implement)
+- What test setup the library requires
+
 ## Decision Tree: Choose the Right Pattern
 
 Evaluate the target library's API **in this order** — use the first match:
@@ -174,7 +216,7 @@ final class ISpect<Backend>(...) {
 ```
 
 - `final class` — no subclassing
-- `const` constructor when possible
+- `const` constructor when possible — **NOT possible** when the implemented interface has setters (e.g., GetStorage `queue`, `initStorage`) or non-final public fields you must implement
 - Private fields: `_delegate`, `_logger`, `_source`
 - Public `delegate` getter (except native hooks)
 
@@ -450,6 +492,23 @@ Future<void> <backend>Example() async {
 ```
 
 ## Test File
+
+### Test Setup — Platform Dependencies
+
+Many storage libraries depend on platform channels or file I/O that don't work in `flutter test` without mocks. Common patterns:
+
+| Library needs | Test setup |
+|---------------|------------|
+| `path_provider` | Mock method channel: `TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), ...)` |
+| `SharedPreferences` | `SharedPreferences.setMockInitialValues({})` |
+| File I/O | Create temp dir: `Directory.systemTemp.createTemp(...)`, clean up in `tearDown` |
+| Flutter binding | `TestWidgetsFlutterBinding.ensureInitialized()` in `setUpAll` |
+| Singleton caches | Use unique container/instance names per test to avoid cross-test pollution (e.g., `'test_${tempDir.hashCode}'`) |
+| Background flushes | Add small delay in `tearDown` before clearing mocks: `await Future.delayed(Duration(milliseconds: 50))` |
+
+**Important:** Some libraries call platform APIs even when a custom path is provided (e.g., GetStorage always calls `getApplicationDocumentsDirectory()` internally). Always mock platform channels regardless of constructor arguments.
+
+### Test Scenarios
 
 Cover these scenarios:
 
