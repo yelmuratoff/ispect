@@ -167,6 +167,12 @@ import 'package:sembast/sembast.dart' as sembast;        // prefix to avoid clas
 import 'package:cloud_firestore/cloud_firestore.dart';   // no prefix if no clashes
 ```
 
+If the implemented interface uses Flutter/Dart SDK types in method signatures (`VoidCallback`, `ValueSetter`, `Uint8List`, etc.), import them explicitly:
+
+```dart
+import 'package:flutter/foundation.dart' show VoidCallback, ValueSetter;  // GetStorage listen/listenKey
+```
+
 ### Doc Comments
 
 Every interceptor file follows this structure:
