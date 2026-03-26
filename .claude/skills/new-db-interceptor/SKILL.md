@@ -319,6 +319,7 @@ cacheHit: result != null  // for sync reads via db()
 **Passthrough (delegate directly):**
 - Query builders: where, orderBy, limit, filter — tracing these is noise
 - Streams/watchers: snapshots, watch, onSnapshot — continuous, not point-in-time
+- Callback listeners: listen, listenKey, addListener — user-facing observation hooks
 - Lifecycle: open, close, compact, flush — admin, not data operations
 - Schema/metadata: schema, name, path, isOpen
 - Configuration: options getters, platform-specific settings
@@ -506,7 +507,7 @@ Before marking complete:
 - [ ] `library;` directive, doc comments with Setup example
 - [ ] `ignore_for_file` directives where needed (`subtype_of_sealed_class`, `invalid_use_of_visible_for_testing_member`)
 - [ ] Imports: `ispectify` + `ispectify_db` + target library
-- [ ] Target library added to example `pubspec.yaml`
+- [ ] Target library added to example `pubspec.yaml` (+ transitive deps if imported directly)
 
 **Deliverables:**
 - [ ] Interceptor file: `lib/interceptors/<backend>_interceptor.dart`
