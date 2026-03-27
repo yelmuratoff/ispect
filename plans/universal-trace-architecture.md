@@ -224,8 +224,15 @@ class ISpectTraceConfig {
     this.slowThreshold,
   });
 
-  final double? sampleRate;         // % success операций для логирования
-  final double errorSampleRate;     // % error операций (default: все)
+  /// Sampling rate for successful operations.
+  /// - `null` (default) → log ALL successful operations (no sampling)
+  /// - `1.0` → log all (same as null)
+  /// - `0.5` → log ~50%
+  /// - `0.0` → log none (suppress all success logs)
+  final double? sampleRate;
+
+  /// Sampling rate for error operations (default: 1.0 = log all errors).
+  final double errorSampleRate;
   final bool redact;
   final List<String> redactKeys;
   final int maxValueLength;
@@ -341,6 +348,9 @@ extension ISpectTrace on ISpectLogger {
         ? RedactionService.redactByKeys(meta, cfg.redactKeys)
         : meta;
 
+    // Auto-inject transaction ID from zone (set by traceTransaction)
+    final zoneTxnId = Zone.current[#ispectTxnId] as String?;
+
     final additionalData = <String, Object?>{
       TraceKeys.category: category.id,
       TraceKeys.source: source,
@@ -353,6 +363,7 @@ extension ISpectTrace on ISpectLogger {
         TraceKeys.slow: duration > cfg.slowThreshold!,
       TraceKeys.success: !isError,
       if (error != null) TraceKeys.error: '$error',
+      if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
       if (safeMeta != null) TraceKeys.meta: safeMeta,
     };
 
@@ -418,7 +429,6 @@ extension ISpectTrace on ISpectLogger {
 
   // ── Sync wrapper ────────────────────────────────────
   T traceSync<T>({
-    // same params as traceAsync but sync (no extra)
     required ISpectTraceCategory category,
     required String source,
     required String operation,
@@ -430,7 +440,37 @@ extension ISpectTrace on ISpectLogger {
     double? sample,
     ISpectTraceConfig? config,
     String? logKey,
-  }) { /* same pattern, synchronous — пробрасывает logKey в trace() */ }
+  }) {
+    if (!options.enabled) return run();  // zero overhead
+
+    final sw = Stopwatch()..start();
+    try {
+      final result = run();
+      sw.stop();
+
+      Object? projected;
+      if (projectResult != null) {
+        try { projected = projectResult(result); } catch (_) {}
+      }
+
+      trace(
+        category: category, source: source, operation: operation,
+        target: target, key: key, value: projected,
+        success: true, duration: sw.elapsed,
+        meta: meta, config: config, sample: sample, logKey: logKey,
+      );
+      return result;
+    } catch (e, st) {
+      sw.stop();
+      trace(
+        category: category, source: source, operation: operation,
+        target: target, key: key, error: e, errorStackTrace: st,
+        success: false, duration: sw.elapsed,
+        meta: meta, config: config, sample: sample, logKey: logKey,
+      );
+      rethrow;
+    }
+  }
 
   // ── Manual span (request → response) ────────────────
   ISpectTraceToken traceStart({
@@ -520,7 +560,7 @@ extension ISpectTrace on ISpectLogger {
     ));
   }
 
-  // ── Transaction (zone-based ID) ─────────────────────
+  // ── Transaction (zone-based ID, auto-injected into all inner trace() calls) ──
   Future<T> traceTransaction<T>({
     required ISpectTraceCategory category,
     required String source,
@@ -669,6 +709,7 @@ extension ISpectLoggerAuth on ISpectLogger {
     Object? error,
     Duration? duration,
     Map<String, Object?>? meta,
+    ISpectTraceConfig? config,
   }) => trace(
     category: authCategory,
     source: source,
@@ -678,6 +719,7 @@ extension ISpectLoggerAuth on ISpectLogger {
     error: error,
     duration: duration,
     meta: {if (provider != null) 'provider': provider, ...?meta},
+    config: config,
   );
 }
 ```
@@ -723,6 +765,7 @@ extension ISpectLoggerPush on ISpectLogger {
     String? messageId,
     Map<String, Object?>? data,
     Map<String, Object?>? meta,
+    ISpectTraceConfig? config,
   }) => trace(
     category: pushCategory,
     source: source, operation: operation,
@@ -733,6 +776,7 @@ extension ISpectLoggerPush on ISpectLogger {
       if (data != null) 'data': data,
       ...?meta,
     },
+    config: config,
   );
 }
 ```
@@ -745,10 +789,12 @@ extension ISpectLoggerAnalytics on ISpectLogger {
     required String source,     // 'firebase', 'mixpanel', 'amplitude'
     required String event,
     Map<String, Object?>? parameters,
+    ISpectTraceConfig? config,
   }) => trace(
     category: analyticsCategory,
     source: source, operation: event,
     meta: parameters, success: true,
+    config: config,
   );
 }
 ```
@@ -791,6 +837,7 @@ extension ISpectLoggerSSE on ISpectLogger {
     String? eventType,
     String? eventId,
     Map<String, Object?>? data,
+    ISpectTraceConfig? config,
   }) => trace(
     category: sseCategory,
     source: source, operation: operation,
@@ -800,6 +847,7 @@ extension ISpectLoggerSSE on ISpectLogger {
       if (data != null) 'data': data,
     },
     success: operation != 'error',
+    config: config,
   );
 }
 ```
@@ -861,15 +909,17 @@ extension ISpectLoggerGraphQL on ISpectLogger {
 
 ### C1. `ISpectLogData` — расширение для экспорта
 
-Существующий `ISpectLogData.toJson()` уже есть. Добавляем конвертацию в другие форматы:
+> **`toJson()` уже существует** как extension в `history/serialization.dart` (`ISpectLogDataSerialization`).
+> Новые методы `toText()` и `toMarkdown()` добавляются в **тот же** extension, чтобы избежать
+> конфликта двух extensions с одинаковыми сигнатурами и держать всю сериализацию в одном месте.
 
 ```dart
-/// Расширяем ISpectLogData (в ispectify core):
+/// Расширяем существующий extension в history/serialization.dart:
 
-extension ISpectLogDataExport on ISpectLogData {
+extension ISpectLogDataSerialization on ISpectLogData {
 
-  /// JSON — уже есть (toJson()). Используется для файлового экспорта и web viewer.
-  Map<String, dynamic> toJson({bool truncated = false});
+  /// JSON — УЖЕ СУЩЕСТВУЕТ (не трогаем):
+  // Map<String, dynamic> toJson({bool truncated = false}) => { ... };
 
   /// Plain text — для шаринга, копирования, чтения человеком
   String toText() {
@@ -892,7 +942,7 @@ extension ISpectLogDataExport on ISpectLogData {
   /// Markdown — для вставки в issue tracker, документацию
   String toMarkdown() {
     final buffer = StringBuffer()
-      ..writeln('### ${_logLevelEmoji(logLevel)} `$key` — $message')
+      ..writeln('### ${_logLevelIndicator(logLevel)} `$key` — $message')
       ..writeln()
       ..writeln('| Field | Value |')
       ..writeln('|-------|-------|')
@@ -930,49 +980,56 @@ extension ISpectLogDataExport on ISpectLogData {
     return buffer.toString();
   }
 
-  String _logLevelEmoji(LogLevel? level) => switch (level) {
-    LogLevel.error || LogLevel.critical => 'X',
-    LogLevel.warning => '!',
-    LogLevel.info => 'i',
-    LogLevel.debug => 'D',
-    _ => '-',
+  /// Indicator for markdown headings (not emoji — ASCII markers for readability).
+  String _logLevelIndicator(LogLevel? level) => switch (level) {
+    LogLevel.error || LogLevel.critical => '[ERROR]',
+    LogLevel.warning => '[WARN]',
+    LogLevel.info => '[INFO]',
+    LogLevel.debug => '[DEBUG]',
+    _ => '[-]',
   };
 }
 ```
 
 ### C2. Batch export — список логов
 
-> **NB:** Extensions ниже — convenience для малых наборов (< 1000 логов).
+> **NB:** Utility class вместо extension на `List<ISpectLogData>` — extension был бы доступен
+> на ЛЮБОМ `List<ISpectLogData>`, что приводит к случайным вызовам на больших наборах.
+> Явный вызов `LogExporter.toText(logs)` безопаснее.
 > Для bulk export в UI — использовать существующий `LogsJsonService` с chunked processing,
 > расширив его поддержкой text/markdown форматов (yield каждые 50 items).
 
 ```dart
-extension ISpectLogListExport on List<ISpectLogData> {
+/// log_exporter.dart — utility для batch export малых наборов (< 1000 логов).
+/// Для bulk — LogsJsonService с chunked processing.
+
+abstract final class LogExporter {
 
   /// Export as JSON Lines (одна строка = один лог)
-  String toJsonLines() => map((log) => jsonEncode(log.toJson())).join('\n');
+  static String toJsonLines(List<ISpectLogData> logs) =>
+      logs.map((log) => jsonEncode(log.toJson())).join('\n');
 
   /// Export as plain text
-  String toTextReport() {
+  static String toText(List<ISpectLogData> logs) {
     final buffer = StringBuffer()
       ..writeln('=== ISpect Log Report ===')
       ..writeln('Generated: ${DateTime.now().toIso8601String()}')
-      ..writeln('Total entries: $length')
+      ..writeln('Total entries: ${logs.length}')
       ..writeln('---');
-    for (final log in this) {
+    for (final log in logs) {
       buffer.writeln(log.toText());
     }
     return buffer.toString();
   }
 
   /// Export as Markdown
-  String toMarkdownReport() {
+  static String toMarkdown(List<ISpectLogData> logs) {
     final buffer = StringBuffer()
       ..writeln('# ISpect Log Report')
       ..writeln()
-      ..writeln('> Generated: ${DateTime.now().toIso8601String()} | Entries: $length')
+      ..writeln('> Generated: ${DateTime.now().toIso8601String()} | Entries: ${logs.length}')
       ..writeln();
-    for (final log in this) {
+    for (final log in logs) {
       buffer
         ..writeln(log.toMarkdown())
         ..writeln('---');
@@ -1447,7 +1504,7 @@ class SourceFilter implements Filter<ISpectLogData> {
 // - Export all logs → выбор формата (JSON Lines / Text / Markdown)
 // - Share log file
 //
-// Использует ISpectLogDataExport extensions из Part C.
+// Использует ISpectLogDataSerialization extensions (toText, toMarkdown) и LogExporter из Part C.
 ```
 
 ---
@@ -1494,6 +1551,75 @@ test('Firestore add is traced', () async {
   expect(log!.additionalData![TraceKeys.operation], 'add');
   expect(log.additionalData![TraceKeys.success], true);
 });
+
+test('NetworkTransaction works with pure ISpectLogData (no typed subclasses)', () {
+  // Verifies clean break: after removing NetworkRequestLog/NetworkResponseLog,
+  // NetworkTransaction must still resolve statusCode/method/url via additionalData.
+  final request = ISpectLogData(
+    '[dio] GET → /api/users',
+    key: ISpectLogType.httpRequest.key,
+    additionalData: {
+      'requestId': 'abc123',
+      TraceKeys.category: TraceCategoryIds.network,
+      TraceKeys.operation: 'GET',
+      TraceKeys.target: '/api/users',
+    },
+  );
+
+  final response = ISpectLogData(
+    '[dio] GET → /api/users 200 50ms',
+    key: ISpectLogType.httpResponse.key,
+    additionalData: {
+      'requestId': 'abc123',
+      'statusCode': 200,
+      TraceKeys.category: TraceCategoryIds.network,
+      TraceKeys.operation: 'GET',
+      TraceKeys.target: '/api/users',
+      TraceKeys.durationMs: 50,
+    },
+  );
+
+  final txn = NetworkTransaction(request: request, response: response);
+  expect(txn.statusCode, 200);
+  expect(txn.method, 'GET');
+  expect(txn.url, '/api/users');
+  expect(txn.isSuccess, true);
+});
+
+test('traceTransaction auto-injects txnId into inner traces', () async {
+  final logger = FakeISpectLogger();
+
+  await logger.traceTransaction(
+    category: dbCategory,
+    source: 'drift',
+    logMarkers: true,
+    run: () async {
+      // Inner trace — should auto-get txnId from zone
+      logger.trace(
+        category: dbCategory,
+        source: 'drift',
+        operation: 'insert',
+        target: 'users',
+        success: true,
+      );
+    },
+  );
+
+  final innerLog = logger.traces.firstWhere(
+    (l) => l.additionalData?[TraceKeys.operation] == 'insert',
+  );
+  // Zone-injected txnId should be present
+  expect(innerLog.additionalData?[TraceKeys.transactionId], isNotNull);
+
+  // And it should match the markers
+  final beginLog = logger.traces.firstWhere(
+    (l) => l.additionalData?[TraceKeys.operation] == 'transaction-begin',
+  );
+  expect(
+    innerLog.additionalData?[TraceKeys.transactionId],
+    beginLog.additionalData?[TraceKeys.meta]?[TraceKeys.transactionId],
+  );
+});
 ```
 
 ---
@@ -1528,7 +1654,11 @@ packages/
         category_filter.dart          # CategoryFilter, SourceFilter
       models/
         log_type.dart                 # ISpectLogType + category field + new values
-        data.dart                     # ISpectLogData + toText(), toMarkdown() extensions
+        data.dart                     # ISpectLogData (unchanged)
+      history/
+        serialization.dart            # + toText(), toMarkdown() (added to existing extension)
+      export/
+        log_exporter.dart             # LogExporter — batch export utility (static methods)
       testing/
         fake_logger.dart              # FakeISpectLogger for tests
 
@@ -1777,7 +1907,7 @@ extension ISpectTrace on ISpectLogger {
 
 1. Core trace primitive (trace_category, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_stream_transformer)
 2. ISpectLogType + category field + new enum values
-3. ISpectLogData export extensions (toText, toMarkdown, batch export)
+3. ISpectLogData serialization extensions (toText, toMarkdown in existing ISpectLogDataSerialization) + LogExporter utility class
 4. Domain extensions (auth, storage, push, analytics, payment, sse, grpc, graphql)
 5. CategoryFilter, SourceFilter
 6. FakeISpectLogger testing utility
@@ -1818,12 +1948,13 @@ extension ISpectTrace on ISpectLogger {
 - `packages/ispectify/lib/src/trace/trace_message.dart`
 - `packages/ispectify/lib/src/trace/trace_stream_transformer.dart`
 - `packages/ispectify/lib/src/trace/extensions/*.dart` (8 files)
+- `packages/ispectify/lib/src/export/log_exporter.dart`
 - `packages/ispectify/lib/src/filter/category_filter.dart`
 - `packages/ispectify/lib/src/testing/fake_logger.dart`
 
 ### Modified
 - `packages/ispectify/lib/src/models/log_type.dart` — category field + new values
-- `packages/ispectify/lib/src/models/data.dart` — toText(), toMarkdown() extensions
+- `packages/ispectify/lib/src/history/serialization.dart` — + toText(), toMarkdown() in existing ISpectLogDataSerialization extension
 - `packages/ispectify/lib/ispectify.dart` — barrel exports
 - `packages/ispectify_db/lib/src/db_logger.dart` — delegate to core trace
 - `packages/ispectify_db/lib/src/config.dart` — extends ISpectTraceConfig
@@ -1862,12 +1993,19 @@ extension ISpectTrace on ISpectLogger {
 12. **WS отделён от network** — WebSocket получил свою категорию `ws` (был `network`). `networkCategory.pickLogKey()` возвращал `http-*` ключи для WS — баг. Теперь `wsCategory` с `sent`/`received`/`error` ключами. Добавлен `ISpectLogType.wsError`.
 13. **`queryKey`/`readOperations` → `secondaryKey`/`secondaryOperations`** — generic naming, подходит для всех протоколов (HTTP: request/response, WS: sent/received, DB: query/result).
 14. **`logKey` override в `trace()`** — HTTP interceptors emit ДВА лога (request + response) с разными ключами. `pickLogKey()` возвращает один ключ — недостаточно. Добавлен `logKey` parameter: `trace(..., logKey: ISpectLogType.httpRequest.key)`. `traceStart/traceEnd` остаётся для gRPC/GraphQL (один лог).
-15. **Null-safety в `toMarkdown()`** — `logLevel` на `ISpectLogData` is `LogLevel?`. `logLevel.name` → NPE. Исправлено: `logLevel?.name ?? 'unknown'` и `_logLevelEmoji(LogLevel? level)`.
+15. **Null-safety в `toMarkdown()`** — `logLevel` на `ISpectLogData` is `LogLevel?`. `logLevel.name` → NPE. Исправлено: `logLevel?.name ?? 'unknown'` и `_logLevelIndicator(LogLevel? level)`.
 16. **SSOT в `ISpectLogDataX`** — `isNetwork`, `isDb`, `isAuth` использовали hardcoded строки. Исправлено: `TraceCategoryIds.network` и т.д.
 17. **WS/BLoC typed subclasses** — в Part D4 и Part N добавлены `WSSentLog`, `WSReceivedLog`, `WSErrorLog`, `WSLogFields` и все BLoC subclasses (`BlocLifecycleLog` sealed + 7 subclasses) для удаления.
 18. **WS icons** — Part E2 не содержал иконки для `ws-sent`, `ws-received`, `ws-error`. Добавлены.
 19. **Private extension methods** — Part I.1 утверждал что Dart не поддерживает private methods в extensions. Dart 3.1+ поддерживает. Исправлен текст: helpers как top-level потому что shared между файлами, не потому что Dart не позволяет.
 20. **`logKey` в traceAsync/traceSync** — добавлен параметр `logKey` (пробрасывается в `trace()`). `traceEnd` — не нуждается (one-log протоколы используют `pickLogKey`).
+21. **`toJson()` конфликт extensions** — Plan C1 объявлял `toJson()` в новом `ISpectLogDataExport` extension, но `toJson()` уже существует в `ISpectLogDataSerialization` (history/serialization.dart). Два extensions с одинаковой сигнатурой = конфликт при импорте. Исправлено: `toText()` и `toMarkdown()` добавляются в существующий `ISpectLogDataSerialization` extension.
+22. **`_logLevelEmoji` → `_logLevelIndicator`** — метод возвращал ASCII строки ('X', '!', 'i', 'D'), а не эмодзи. Переименован и значения заменены на `[ERROR]`, `[WARN]`, `[INFO]`, `[DEBUG]`, `[-]` для читаемости в markdown.
+23. **Zone txnId не читался в `trace()`** — `traceTransaction()` ставил `zoneValues: {#ispectTxnId: txnId}`, но `trace()` не читал его. Все inner trace вызовы внутри транзакции теряли корреляцию. Исправлено: `trace()` теперь читает `Zone.current[#ispectTxnId]` и auto-inject в `additionalData[TraceKeys.transactionId]`.
+24. **`traceSync` body отсутствовал** — был заглушкой `/* same pattern, synchronous */`. Добавлена полная реализация с `Stopwatch`, `projectResult` try/catch, `rethrow`.
+25. **Fire-and-forget extensions не пробрасывали `config`** — `auth()`, `push()`, `sse()`, `analyticsEvent()` вызывали `trace()` без `config` parameter. Async варианты (через `traceAsync`) пробрасывали. Исправлено: добавлен `ISpectTraceConfig? config` во все fire-and-forget domain extensions.
+26. **Batch export: extension на `List<T>` → utility class** — `ISpectLogListExport` extension на `List<ISpectLogData>` был доступен на ЛЮБОМ списке, рискуя случайным вызовом на 50K+ записях. Заменён на `abstract final class LogExporter` со static методами: `LogExporter.toText(logs)`, `LogExporter.toJsonLines(logs)`, `LogExporter.toMarkdown(logs)`.
+27. **Part P verification table расширена** — добавлены проверки: `toJson()` (extension, не метод), `samplePass()`, `generateTraceId()`, `BaseNetworkInterceptor` (mixin), `defaultSensitiveKeys`, `Filter<T>`, `formattedTime`. Все с точными файлами и статусами.
 
 ---
 
@@ -1878,15 +2016,22 @@ extension ISpectTrace on ISpectLogger {
 | API call в плане | Существует | Файл | Статус |
 |---|---|---|---|
 | `ISpectLogData(message, key:, logLevel:, additionalData:, ...)` | Да | models/data.dart | OK — positional message, unmodifiable additionalData |
+| `ISpectLogData.toJson()` | Да | history/serialization.dart | OK — **extension** `ISpectLogDataSerialization`, не метод на классе. `toText()`/`toMarkdown()` добавляются в тот же extension |
 | `cleanMap(additionalData)` | Да | utils/common_utils.dart | OK — убирает null и пустые строки |
-| `RedactionService.redactByKeys(meta, keys)` | Да | redaction/redaction_service.dart | OK — static, case-insensitive |
-| `ISpectLogType.fromKey(key)` | Да | models/log_type.dart | OK — static lookup, nullable |
+| `RedactionService.redactByKeys(meta, keys)` | Да | redaction/redaction_service.dart | OK — static, case-insensitive, recursive |
+| `ISpectLogType.fromKey(key)` | Да | models/log_type.dart | OK — static lookup via `_byKey` map, nullable |
 | `LogLevel.error`, `LogLevel.info` | Да | models/log_level.dart | OK |
 | `ISpectLogger.logData(data)` | Да | ispectify.dart | OK — public, can override |
-| `options.enabled` | Да | ispectify.dart + options.dart | OK — public getter → public field |
-| `ISpectDbCore.truncateValue(value, maxLen)` | Да | db_core.dart:66 | OK |
-| `ISpectDbCore.sqlDigest(statement)` | Да | db_core.dart:46 | OK |
-| `ISpectDbCore.redactPositionalArgs(args, keys, stmt)` | Да | db_core.dart:97 | OK |
+| `options.enabled` | Да | ispectify.dart + options.dart | OK — `ISpectLoggerOptions get options` → `options.enabled` |
+| `samplePass(rate)` | Да | utils/common_utils.dart | OK — null/>=1 → true, <=0 → false, else random |
+| `generateTraceId()` | Да | utils/common_utils.dart | OK — 16-char hex from timestamp+random |
+| `ISpectDbCore.truncateValue(value, maxLen)` | Да | db_core.dart:66 | OK — static |
+| `ISpectDbCore.sqlDigest(statement)` | Да | db_core.dart:46 | OK — static |
+| `ISpectDbCore.redactPositionalArgs(args, keys, stmt)` | Да | db_core.dart:97 | OK — static |
+| `BaseNetworkInterceptor` | Да | network/base_interceptor.dart | OK — **mixin** с `redactHeaders()`, `redactBody()`, `redactUrl()`, `NetworkPayloadSanitizer` |
+| `defaultSensitiveKeys` | Да | redaction/constants/key_defaults.dart | OK — `Set<String>` с 118 записями |
+| `Filter<T>` interface | Да | filter/filter.dart | OK — abstract class с `bool apply(T item)` |
+| `ISpectLogData.formattedTime` | Да | models/data.dart:68 | OK — late final getter |
 
 ### UI clean break — все компоненты проверены:
 
