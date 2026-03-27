@@ -218,7 +218,7 @@ class ISpectTraceConfig {
     this.sampleRate,
     this.errorSampleRate = 1.0,    // errors всегда логируются (default 100%)
     this.redact = true,
-    this.redactKeys = defaultSensitiveKeys,
+    this.redactKeys = defaultSensitiveKeys,  // Set<String> — matches type
     this.maxValueLength = 500,
     this.attachStackOnError = false,
     this.slowThreshold,
@@ -234,7 +234,7 @@ class ISpectTraceConfig {
   /// Sampling rate for error operations (default: 1.0 = log all errors).
   final double errorSampleRate;
   final bool redact;
-  final List<String> redactKeys;
+  final Set<String> redactKeys;       // Set — matches defaultSensitiveKeys type
   final int maxValueLength;
   final bool attachStackOnError;
   final Duration? slowThreshold;
@@ -344,8 +344,9 @@ extension ISpectTrace on ISpectLogger {
     );
 
     // Auto-redaction meta по config.redactKeys
+    // NB: redactByKeys принимает List<String>, redactKeys — Set<String>
     final safeMeta = cfg.redact
-        ? RedactionService.redactByKeys(meta, cfg.redactKeys)
+        ? RedactionService.redactByKeys(meta, cfg.redactKeys.toList())
         : meta;
 
     // Auto-inject transaction ID from zone (set by traceTransaction)
@@ -1206,14 +1207,46 @@ void onEvent(Bloc bloc, Object? event) {
 **Что оставить:**
 - `ISpectLogData` — единственный log entity
 - `BaseNetworkInterceptor` mixin — redaction logic
-- `NetworkTransaction` — корреляция request/response через `additionalData['request-id']`
+- `NetworkTransaction` — корреляция request/response через `additionalData['requestId']` (meta)
+  - **ВАЖНО: fallback getters нужно обновить** — текущие читают `additionalData['method']`, `['url']`, `['statusCode']` на top-level. После рефакторинга:
+    - `method` → `additionalData[TraceKeys.operation]` (top-level 'operation')
+    - `url` → `additionalData[TraceKeys.target]` (top-level 'target')
+    - `statusCode` → `(additionalData[TraceKeys.meta] as Map?)?['statusCode']` (nested в meta)
+    - `requestId` → `(additionalData[TraceKeys.meta] as Map?)?['requestId']` (nested в meta)
+  - **Обновлённый NetworkTransaction:**
+  ```dart
+  int? get statusCode {
+    // meta содержит domain-specific данные (statusCode, headers, body)
+    final respMeta = response?.additionalData?[TraceKeys.meta] as Map<String, dynamic>?;
+    final errMeta = error?.additionalData?[TraceKeys.meta] as Map<String, dynamic>?;
+    return respMeta?['statusCode'] as int? ?? errMeta?['statusCode'] as int?;
+  }
+
+  String? get method =>
+      request.additionalData?[TraceKeys.operation] as String?;
+
+  String? get url =>
+      request.additionalData?[TraceKeys.target] as String?;
+  ```
 - Convenience extensions для доступа к trace данным:
 
 ```dart
 extension ISpectLogDataX on ISpectLogData {
+  // ── Structured trace field access ──────────────────
   String? get traceCategory => additionalData?[TraceKeys.category] as String?;
   String? get traceSource => additionalData?[TraceKeys.source] as String?;
   String? get traceOperation => additionalData?[TraceKeys.operation] as String?;
+  String? get traceTarget => additionalData?[TraceKeys.target] as String?;
+  Map<String, dynamic>? get traceMeta => additionalData?[TraceKeys.meta] as Map<String, dynamic>?;
+  int? get traceDurationMs => additionalData?[TraceKeys.durationMs] as int?;
+  bool? get traceSuccess => additionalData?[TraceKeys.success] as bool?;
+  String? get traceTransactionId => additionalData?[TraceKeys.transactionId] as String?;
+
+  // ── Domain-specific convenience (from nested meta) ──
+  int? get httpStatusCode => traceMeta?['statusCode'] as int?;
+  String? get requestId => traceMeta?['requestId'] as String?;
+
+  // ── Category checks ────────────────────────────────
   bool get isNetwork => traceCategory == TraceCategoryIds.network;
   bool get isDb => traceCategory == TraceCategoryIds.db;
   bool get isAuth => traceCategory == TraceCategoryIds.auth;
@@ -1554,32 +1587,46 @@ test('Firestore add is traced', () async {
 
 test('NetworkTransaction works with pure ISpectLogData (no typed subclasses)', () {
   // Verifies clean break: after removing NetworkRequestLog/NetworkResponseLog,
-  // NetworkTransaction must still resolve statusCode/method/url via additionalData.
+  // NetworkTransaction resolves statusCode/method/url via new trace additionalData layout.
+  // method → TraceKeys.operation (top-level)
+  // url → TraceKeys.target (top-level)
+  // statusCode → TraceKeys.meta['statusCode'] (nested)
+  // requestId → TraceKeys.meta['requestId'] (nested)
   final request = ISpectLogData(
     '[dio] GET → /api/users',
     key: ISpectLogType.httpRequest.key,
     additionalData: {
-      'requestId': 'abc123',
       TraceKeys.category: TraceCategoryIds.network,
+      TraceKeys.source: 'dio',
       TraceKeys.operation: 'GET',
       TraceKeys.target: '/api/users',
+      TraceKeys.success: true,
+      TraceKeys.meta: {
+        'requestId': 'abc123',
+        'headers': {'Content-Type': 'application/json'},
+      },
     },
   );
 
   final response = ISpectLogData(
-    '[dio] GET → /api/users 200 50ms',
+    '[dio] GET → /api/users 50ms',
     key: ISpectLogType.httpResponse.key,
     additionalData: {
-      'requestId': 'abc123',
-      'statusCode': 200,
       TraceKeys.category: TraceCategoryIds.network,
+      TraceKeys.source: 'dio',
       TraceKeys.operation: 'GET',
       TraceKeys.target: '/api/users',
       TraceKeys.durationMs: 50,
+      TraceKeys.success: true,
+      TraceKeys.meta: {
+        'requestId': 'abc123',
+        'statusCode': 200,
+        'body': {'users': []},
+      },
     },
   );
 
-  final txn = NetworkTransaction(request: request, response: response);
+  final txn = NetworkTransaction(requestId: 'abc123', request: request, response: response);
   expect(txn.statusCode, 200);
   expect(txn.method, 'GET');
   expect(txn.url, '/api/users');
@@ -1963,6 +2010,10 @@ extension ISpectTrace on ISpectLogger {
 - `packages/ispectify_dio/lib/src/interceptor.dart` — two trace() + logKey
 - `packages/ispectify_http/lib/src/interceptor.dart` — two trace() + logKey
 - `packages/ispectify_ws/lib/src/interceptor.dart` — trace()
+- `packages/ispectify/lib/src/network/network_transaction.dart` — update fallback getters (method→operation, url→target, statusCode→meta.statusCode)
+- `packages/ispect/lib/src/common/services/network_transaction_service.dart` — update requestId extraction from meta, remove type checks
+- `packages/ispect/lib/src/features/ispect/presentation/widgets/log_card/log_card.dart` — statusCode extraction: `additionalData?['statusCode']` → `data.httpStatusCode` (convenience getter from ISpectLogDataX)
+- `packages/ispect/lib/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart` — same: `data.httpStatusCode`
 - `packages/ispect/lib/src/core/res/constants/ispect_constants.dart` — new icons/colors
 - `packages/ispect/lib/src/core/res/ispect_theme.dart` — + categoryLabels
 - `packages/ispect/lib/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart` — dynamic grouping
@@ -2006,6 +2057,9 @@ extension ISpectTrace on ISpectLogger {
 25. **Fire-and-forget extensions не пробрасывали `config`** — `auth()`, `push()`, `sse()`, `analyticsEvent()` вызывали `trace()` без `config` parameter. Async варианты (через `traceAsync`) пробрасывали. Исправлено: добавлен `ISpectTraceConfig? config` во все fire-and-forget domain extensions.
 26. **Batch export: extension на `List<T>` → utility class** — `ISpectLogListExport` extension на `List<ISpectLogData>` был доступен на ЛЮБОМ списке, рискуя случайным вызовом на 50K+ записях. Заменён на `abstract final class LogExporter` со static методами: `LogExporter.toText(logs)`, `LogExporter.toJsonLines(logs)`, `LogExporter.toMarkdown(logs)`.
 27. **Part P verification table расширена** — добавлены проверки: `toJson()` (extension, не метод), `samplePass()`, `generateTraceId()`, `BaseNetworkInterceptor` (mixin), `defaultSensitiveKeys`, `Filter<T>`, `formattedTime`. Все с точными файлами и статусами.
+28. **`redactKeys` тип `List<String>` → `Set<String>`** — `defaultSensitiveKeys` это `const Set<String>`. Нельзя использовать Set как default для List в const конструкторе. Тип `redactKeys` изменён на `Set<String>`. В `trace()` вызов `RedactionService.redactByKeys(meta, cfg.redactKeys.toList())` — `.toList()` для совместимости с API.
+29. **NetworkTransaction fallback keys не совпадали с trace layout** — Текущие fallback getters читают `additionalData['method']`, `['url']`, `['statusCode']` на top-level. Но trace pipeline кладёт: `operation` (не `method`) на top-level, `target` (не `url`) на top-level, `statusCode` вложен в `meta` (не top-level). Без исправления NetworkTransaction сломается после рефакторинга. Обновлены: `method` → `TraceKeys.operation`, `url` → `TraceKeys.target`, `statusCode` → `meta['statusCode']`. Также обновлен `network_transaction_service.dart` для `requestId` из `meta`. Добавлены в Part N Modified files. Тест в Part G обновлён с новым layout.
+30. **`ISpectTraceConfig` не `final class`** — намеренно: `ISpectDbConfig extends ISpectTraceConfig` (Part D1). LSP соблюдён. Задокументировано.
 
 ---
 
@@ -2038,9 +2092,9 @@ extension ISpectTrace on ISpectLogger {
 | Компонент | Зависит от typed subclasses? | Fallback через additionalData? | Статус |
 |---|---|---|---|
 | LogCard | Нет (кроме `is RouteLog`) | Да | SAFE |
-| CollapsedBody | Нет | Да — `additionalData?['statusCode']` | SAFE |
+| CollapsedBody | Нет — получает statusCode через параметр | Да, но вызывающий код (LogCard, DesktopLogRow) читает `additionalData?['statusCode']` на top-level → **ОБНОВИТЬ** на `(additionalData?[TraceKeys.meta] as Map?)?['statusCode']` | NEEDS UPDATE |
 | NetworkTransactionCard | Нет напрямую — через NetworkTransaction | Да — fallback в getters | SAFE |
-| NetworkTransaction | Да — type checks, НО с fallback | Да — lines 51-66 | SAFE |
+| NetworkTransaction | Да — type checks, НО с fallback | **ОБНОВИТЬ**: fallback keys не совпадают с trace layout (method→operation, url→target, statusCode→meta.statusCode). Getters нужно переписать | NEEDS UPDATE |
 | LogDetailView | Нет — key-based correlation | N/A | SAFE |
 | ShareLogBottomSheet | Нет — работает с Map | N/A | SAFE |
 | ShareAllLogsSheet | Нет — `.toJson()` | N/A | SAFE |
@@ -2053,8 +2107,8 @@ extension ISpectTrace on ISpectLogger {
 ### Важные детали:
 - `curlCommand` — extension getter на `ISpectLogData` (data_extensions.dart:84), работает через `key` + `additionalData`. НЕ зависит от typed subclasses.
 - `message` — поле `String?` на `ISpectLogData` (data.dart:35). Доступно всегда.
-- `NetworkTransaction.statusCode/method/url` — имеют typed check + additionalData fallback. После удаления subclasses будут использовать только fallback. Работает.
-- `network_transaction_service.dart` — hybrid checks: `log is NetworkRequestLog || log.key == ISpectLogType.httpRequest.key`. После удаления subclasses — всегда fallback на key. Работает.
+- `NetworkTransaction.statusCode/method/url` — **ОБНОВИТЬ fallback getters:** текущие читают `['method']`, `['url']`, `['statusCode']` на top-level. Trace pipeline кладёт `operation`/`target` на top-level, а `statusCode` в nested `meta`. Новые getters: `method` → `TraceKeys.operation`, `url` → `TraceKeys.target`, `statusCode` → `meta['statusCode']`.
+- `network_transaction_service.dart` — hybrid checks: `log is NetworkRequestLog || log.key == ISpectLogType.httpRequest.key`. После удаления subclasses — всегда fallback на key. Работает. `requestId` extraction: обновить на `(log.additionalData?[TraceKeys.meta] as Map?)?['requestId']`.
 
 ### Безопасность — подтверждено:
 - Redaction в 3 слоя без дублирования (domain → trace pipeline → export truncation)
