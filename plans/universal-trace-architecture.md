@@ -1,5 +1,74 @@
 # Universal Trace Architecture for ispectify — Final Plan
 
+## ⚠️ Контекст для чтения этого плана
+
+**Это план рефакторинга v5.0 с breaking changes.** Код в этом плане — это **целевое состояние**, а НЕ текущий код.
+
+### Что НОВОЕ (создаётся с нуля):
+- `ISpectTraceCategory`, `TraceCategoryIds`, `TraceKeys` — новые классы
+- `ISpectTraceConfig` — новый base config (заменяет standalone конфиги)
+- `ISpectTraceToken` — новый token для manual spans
+- `trace()`, `traceAsync()`, `traceSync()`, `traceStart/End()`, `traceStream()`, `traceTransaction()` — extension methods на `ISpectLogger` (НЕ существуют в текущем коде)
+- Domain extensions: `authTrace()`, `storageTrace()`, `push()`, `sse()`, `grpcTrace()`, `graphqlTrace()`, `paymentTrace()`, `analyticsEvent()` — все новые
+- `TraceStreamTransformer` — новый
+- `CategoryFilter`, `SourceFilter` — новые
+- `FakeISpectLogger` — новый testing utility
+- `LogExporter` — новый batch export utility
+- Новые `ISpectLogType` enum values: `wsError`, `authSuccess`, `authError`, `storageResult`, `storageQuery`, `storageError`, `pushReceived`, `pushSent`, `pushError`, `paymentSuccess`, `paymentError`, `stateChange`, `stateError`, `sseReceived`, `sseError`, `grpcRequest`, `grpcResponse`, `grpcError`, `graphqlRequest`, `graphqlResponse`, `graphqlError`
+- `ISpectLogType.category` field — новый
+- `ISpectTheme.categoryLabels`, `ISpectTheme.logCategories` — новые поля
+- `ISpectLogDataX` convenience extension — новый
+- `toText()`, `toMarkdown()` на `ISpectLogDataSerialization` — новые методы в существующем extension
+- Новые l10n строки: `categoryNetwork`, `categoryWebSocket`, `categoryDb`, etc.
+
+### Что СУЩЕСТВУЕТ и ИСПОЛЬЗУЕТСЯ (из текущего кода):
+- `ISpectLogger` — класс, `class ISpectLogger` (не final, extendable), `options.enabled`, `logData()`
+- `ISpectLogData` — единственный log entity, конструктор с positional `Object? message` + named params
+- `ISpectLogType` enum — существующие values (`httpRequest`, `httpResponse`, `httpError`, `dbQuery`, `dbResult`, `dbError`, `wsSent`, `wsReceived`, `blocEvent`, etc.) + `fromKey()` static method
+- `RedactionService.redactByKeys()` — static, `(Object? data, List<String> keys)`
+- `defaultSensitiveKeys` — `const Set<String>` (118 entries)
+- `cleanMap()` — `Map<String, Object?> → Map<String, Object?>`
+- `samplePass()` — `bool samplePass(double? rate)`
+- `generateTraceId()` — `String`, 16-char hex
+- `BaseNetworkInterceptor` mixin — redaction logic
+- `NetworkTransaction` — корреляция request/response
+- `ISpectLogDataSerialization` extension — `toJson()` method
+- `Filter<T>` abstract class — `bool apply(T item)`
+- `LogLevel` enum — `critical`, `error`, `warning`, `info`, `debug`, `verbose`
+- `ISpectBlocObserver` — `_shouldLog({required bool toggle, required Object? candidate})`
+- `ISpectDbConfig` — standalone класс (НЕ наследует ничего)
+- `ISpectDbCore` — static utilities (`truncateValue`, `sqlDigest`, `redactPositionalArgs`)
+
+### Что УДАЛЯЕТСЯ (clean break v5.0):
+- Typed log subclasses: `NetworkRequestLog`, `NetworkResponseLog`, `NetworkErrorLog`, `BaseNetworkLog`
+- Dio models: `DioRequestLog`, `DioResponseLog`, `DioErrorLog`
+- HTTP models: `HttpRequestLog`, `HttpResponseLog`, `HttpErrorLog`
+- WS models: `WSSentLog`, `WSReceivedLog`, `WSErrorLog`, `WSLogFields`
+- BLoC models: `BlocLifecycleLog` (sealed) + 7 subclasses
+- `kRequestIdKey` constant (заменяется на `'requestId'` в meta)
+
+### Что РЕФАКТОРИТСЯ (существующий код изменяется):
+- `ISpectLogType` — добавляется `category` field, новые enum values
+- `ISpectDbConfig` — теперь `extends ISpectTraceConfig` (`slowQueryThreshold` → `slowThreshold`)
+- `ISpectBlocObserver` — вместо typed subclasses → `logger.trace()`
+- Dio/HTTP/WS interceptors — вместо typed subclasses → `logger.trace()` с `logKey`
+- `NetworkTransaction` — fallback getters обновляются (`method`→`operation`, `url`→`target`, `statusCode`→`meta.statusCode`)
+- `NetworkTransactionService` — requestId extraction из `meta['requestId']`
+- `ISpectLogDataSerialization` — добавляются `toText()`, `toMarkdown()`
+- `ISpectTheme` — добавляются `categoryLabels`, `logCategories`
+- `log_type_filter_section.dart` — hardcoded prefix matching → dynamic `_resolveCategory`
+- `LogCard`/`DesktopLogRow` — `additionalData?['statusCode']` → `data.httpStatusCode`
+- `ISpectConstants` — новые icons/colors для новых log types
+
+### Ключевые именования (breaking changes):
+- `kRequestIdKey = 'request-id'` (kebab) → `'requestId'` (camelCase, nested в meta)
+- `ISpectDbConfig.slowQueryThreshold` → `ISpectTraceConfig.slowThreshold`
+- `additionalData['method']` → `additionalData['operation']` (TraceKeys.operation)
+- `additionalData['url']` → `additionalData['target']` (TraceKeys.target)
+- `additionalData['statusCode']` (top-level) → `additionalData['meta']['statusCode']` (nested)
+
+---
+
 ## Цель
 
 Единый trace-фундамент для логирования **любых** операций в мобильном приложении. Всё проходит через один pipeline. Всё видно в ISpect UI. Всё фильтруется без хардкода. Логи легко экспортируются как JSON/txt/md. JSON viewer — единственный detail view (простой, универсальный, минимум поддержки).
@@ -58,7 +127,7 @@ final class ISpectTraceCategory {
 }
 ```
 
-> **Почему нет `messageBuilder`:** Message formatting — в trace pipeline через единый `buildTraceMessage()` (top-level function в `trace_helpers.dart`). Не нужен per-category — message это одна строка в списке, а детали всегда в JSON viewer.
+> **Почему нет `messageBuilder`:** Message formatting — в trace pipeline через единый `buildTraceMessage()` (top-level function в `trace_message.dart`). Не нужен per-category — message это одна строка в списке, а детали всегда в JSON viewer.
 
 ### A2. SSOT: Category ID и Log Key константы
 
@@ -111,100 +180,105 @@ abstract final class TraceCategoryIds {
 ```dart
 /// trace_categories.dart
 /// Все category ID и log key ссылаются на ISpectLogType.key через константы.
+///
+/// NB: `final` а не `const` — в Dart `.key` property access на enum value
+/// НЕ является compile-time constant expression. `final` top-level variable
+/// инициализируется lazily при первом обращении (guaranteed single init).
 
-const networkCategory = ISpectTraceCategory(
+final networkCategory = ISpectTraceCategory(
   id: TraceCategoryIds.network,
   successKey: ISpectLogType.httpResponse.key,
   errorKey: ISpectLogType.httpError.key,
   secondaryKey: ISpectLogType.httpRequest.key,
-  secondaryOperations: {'GET', 'HEAD', 'OPTIONS'},
+  secondaryOperations: const {'GET', 'HEAD', 'OPTIONS'},
 );
 
-const dbCategory = ISpectTraceCategory(
+final dbCategory = ISpectTraceCategory(
   id: TraceCategoryIds.db,
   successKey: ISpectLogType.dbResult.key,
   errorKey: ISpectLogType.dbError.key,
   secondaryKey: ISpectLogType.dbQuery.key,
-  secondaryOperations: {'query', 'get', 'select', 'find', 'count', 'list'},
+  secondaryOperations: const {'query', 'get', 'select', 'find', 'count', 'list'},
 );
 
-const authCategory = ISpectTraceCategory(
+final authCategory = ISpectTraceCategory(
   id: TraceCategoryIds.auth,
   successKey: ISpectLogType.authSuccess.key,
   errorKey: ISpectLogType.authError.key,
 );
 
-const wsCategory = ISpectTraceCategory(
+final wsCategory = ISpectTraceCategory(
   id: TraceCategoryIds.ws,
   successKey: ISpectLogType.wsReceived.key,  // receive → default success
   errorKey: ISpectLogType.wsError.key,       // error
   secondaryKey: ISpectLogType.wsSent.key,    // send → secondary
-  secondaryOperations: {'send'},
+  secondaryOperations: const {'send'},
 );
 
-const sseCategory = ISpectTraceCategory(
+final sseCategory = ISpectTraceCategory(
   id: TraceCategoryIds.sse,
   successKey: ISpectLogType.sseReceived.key,
   errorKey: ISpectLogType.sseError.key,
 );
 
-const storageCategory = ISpectTraceCategory(
+final storageCategory = ISpectTraceCategory(
   id: TraceCategoryIds.storage,
   successKey: ISpectLogType.storageResult.key,
   errorKey: ISpectLogType.storageError.key,
   secondaryKey: ISpectLogType.storageQuery.key,
-  secondaryOperations: {'download', 'list', 'getUrl', 'getMetadata'},
+  secondaryOperations: const {'download', 'list', 'getUrl', 'getMetadata'},
 );
 
-const stateCategory = ISpectTraceCategory(
+final stateCategory = ISpectTraceCategory(
   id: TraceCategoryIds.state,
   successKey: ISpectLogType.stateChange.key,
   errorKey: ISpectLogType.stateError.key,
 );
 
-const pushCategory = ISpectTraceCategory(
+final pushCategory = ISpectTraceCategory(
   id: TraceCategoryIds.push,
   successKey: ISpectLogType.pushReceived.key,
   errorKey: ISpectLogType.pushError.key,
 );
 
-const analyticsCategory = ISpectTraceCategory(
+final analyticsCategory = ISpectTraceCategory(
   id: TraceCategoryIds.analytics,
   successKey: ISpectLogType.analytics.key,
   errorKey: ISpectLogType.analytics.key,
 );
 
-const paymentCategory = ISpectTraceCategory(
+final paymentCategory = ISpectTraceCategory(
   id: TraceCategoryIds.payment,
   successKey: ISpectLogType.paymentSuccess.key,
   errorKey: ISpectLogType.paymentError.key,
 );
 
-const navigationCategory = ISpectTraceCategory(
+final navigationCategory = ISpectTraceCategory(
   id: TraceCategoryIds.navigation,
   successKey: ISpectLogType.route.key,
   errorKey: ISpectLogType.route.key,
 );
 
-const grpcCategory = ISpectTraceCategory(
+final grpcCategory = ISpectTraceCategory(
   id: TraceCategoryIds.grpc,
   successKey: ISpectLogType.grpcResponse.key,
   errorKey: ISpectLogType.grpcError.key,
   secondaryKey: ISpectLogType.grpcRequest.key,
-  secondaryOperations: {'unary', 'serverStreaming'},
+  secondaryOperations: const {'unary', 'serverStreaming'},
 );
 
-const graphqlCategory = ISpectTraceCategory(
+final graphqlCategory = ISpectTraceCategory(
   id: TraceCategoryIds.graphql,
   successKey: ISpectLogType.graphqlResponse.key,
   errorKey: ISpectLogType.graphqlError.key,
   secondaryKey: ISpectLogType.graphqlRequest.key,
-  secondaryOperations: {'query', 'subscription'},
+  secondaryOperations: const {'query', 'subscription'},
 );
 ```
 
 > **SSOT:** Category ID → `TraceCategoryIds`. Log key → `ISpectLogType.*.key`. Одно место правды.
-> **Новые категории:** `const myCategory = ISpectTraceCategory(id: 'xxx', ...)`. Пользователь использует свои строки — нет ограничений.
+> **`final` not `const`:** В Dart, `EnumValue.field` не является compile-time constant expression. `final` top-level variable — lazy initialized, single init, immutable after.
+> **Новые категории:** `final myCategory = ISpectTraceCategory(id: 'xxx', ...)`. Пользователь использует свои строки — нет ограничений.
 > Редко используемые (background, performance) — не определяем заранее, пользователь создаёт сам когда нужно.
 
 ### A3. `ISpectTraceConfig`
@@ -255,8 +329,10 @@ class ISpectTraceConfig {
 ```dart
 /// trace_token.dart
 
+/// Constructor is NOT private: trace_extension.dart needs access from a different file.
+/// Class is `final` — cannot be subclassed, so public constructor is safe.
 final class ISpectTraceToken {
-  ISpectTraceToken._({
+  ISpectTraceToken({
     required Stopwatch stopwatch,
     required this.category,
     required this.source,
@@ -265,6 +341,7 @@ final class ISpectTraceToken {
     this.key,
     this.meta,
     this.config,
+    this.correlationId,
   }) : _stopwatch = stopwatch;
 
   final Stopwatch _stopwatch;
@@ -275,6 +352,7 @@ final class ISpectTraceToken {
   final String? key;
   final Map<String, Object?>? meta;
   final ISpectTraceConfig? config;
+  final String? correlationId;
 
   void stopTiming() => _stopwatch.stop();
   Duration get elapsed => _stopwatch.elapsed;
@@ -299,6 +377,7 @@ abstract final class TraceKeys {
   static const error = 'error';
   static const meta = 'meta';
   static const transactionId = 'transactionId';
+  static const correlationId = 'correlationId';  // links related traces (request↔response, stream events)
 }
 ```
 
@@ -325,6 +404,7 @@ extension ISpectTrace on ISpectLogger {
     double? sample,
     ISpectTraceConfig? config,
     String? logKey,  // ← overrides category.pickLogKey() if provided
+    String? correlationId,  // ← links related traces (e.g. gRPC request↔response, stream events)
   }) {
     if (!options.enabled) return;  // ← zero overhead в production
 
@@ -336,7 +416,7 @@ extension ISpectTrace on ISpectLogger {
     final resolvedLogKey = logKey ?? category.pickLogKey(isError: isError, operation: operation);
 
     // Единый формат: [source] operation → target (duration)
-    // NB: buildTraceMessage — top-level function из trace_helpers.dart
+    // NB: buildTraceMessage — top-level function из trace_message.dart
     final message = buildTraceMessage(
       source: source, operation: operation,
       target: target, key: key, duration: duration,
@@ -350,7 +430,9 @@ extension ISpectTrace on ISpectLogger {
         : meta;
 
     // Auto-inject transaction ID from zone (set by traceTransaction)
-    final zoneTxnId = Zone.current[#ispectTxnId] as String?;
+    // Defensive cast: avoids CastException if zone value is non-String
+    final rawTxnId = Zone.current[#ispectTxnId];
+    final zoneTxnId = rawTxnId is String ? rawTxnId : null;
 
     final additionalData = <String, Object?>{
       TraceKeys.category: category.id,
@@ -365,6 +447,7 @@ extension ISpectTrace on ISpectLogger {
       TraceKeys.success: !isError,
       if (error != null) TraceKeys.error: '$error',
       if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
+      if (correlationId != null) TraceKeys.correlationId: correlationId,
       if (safeMeta != null) TraceKeys.meta: safeMeta,
     };
 
@@ -393,6 +476,7 @@ extension ISpectTrace on ISpectLogger {
     double? sample,
     ISpectTraceConfig? config,
     String? logKey,
+    String? correlationId,
   }) async {
     if (!options.enabled) return run();  // zero overhead
 
@@ -414,6 +498,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, value: projected,
         success: true, duration: sw.elapsed,
         meta: meta, config: cfg, sample: sample, logKey: logKey,
+        correlationId: correlationId,
       );
       return result;
     } catch (e, st) {
@@ -423,6 +508,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, error: e, errorStackTrace: st,
         success: false, duration: sw.elapsed,
         meta: meta, config: cfg, sample: sample, logKey: logKey,
+        correlationId: correlationId,
       );
       rethrow;
     }
@@ -441,6 +527,7 @@ extension ISpectTrace on ISpectLogger {
     double? sample,
     ISpectTraceConfig? config,
     String? logKey,
+    String? correlationId,
   }) {
     if (!options.enabled) return run();  // zero overhead
 
@@ -459,6 +546,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, value: projected,
         success: true, duration: sw.elapsed,
         meta: meta, config: config, sample: sample, logKey: logKey,
+        correlationId: correlationId,
       );
       return result;
     } catch (e, st) {
@@ -468,6 +556,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, error: e, errorStackTrace: st,
         success: false, duration: sw.elapsed,
         meta: meta, config: config, sample: sample, logKey: logKey,
+        correlationId: correlationId,
       );
       rethrow;
     }
@@ -482,10 +571,12 @@ extension ISpectTrace on ISpectLogger {
     String? key,
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
-  }) => ISpectTraceToken._(
+    String? correlationId,
+  }) => ISpectTraceToken(
     stopwatch: Stopwatch()..start(),
     category: category, source: source, operation: operation,
     target: target, key: key, meta: meta, config: config,
+    correlationId: correlationId,
   );
 
   void traceEnd(
@@ -510,6 +601,7 @@ extension ISpectTrace on ISpectLogger {
       duration: token.elapsed,
       meta: {...?token.meta, ...?meta},
       config: token.config,
+      correlationId: token.correlationId,
     );
   }
 
@@ -525,15 +617,19 @@ extension ISpectTrace on ISpectLogger {
     Object? Function(T value)? projectEvent,
     double? sample,
     ISpectTraceConfig? config,
+    String? correlationId,
   }) {
     if (!options.enabled) return stream;  // zero overhead
+
+    // Auto-generate correlationId if not provided — links all stream events
+    final corrId = correlationId ?? generateTraceId();
 
     // Pure Dart StreamTransformer (см. A7 ниже)
     return stream.transform(TraceStreamTransformer<T>(
       onListen: () => trace(
         category: category, source: source,
         operation: '$operation.subscribe', target: target,
-        success: true, config: config,
+        success: true, config: config, correlationId: corrId,
       ),
       onData: (data) {
         Object? projected;
@@ -544,24 +640,27 @@ extension ISpectTrace on ISpectLogger {
           category: category, source: source,
           operation: '$operation.event', target: target,
           value: projected, success: true,
-          sample: sample, config: config,
+          sample: sample, config: config, correlationId: corrId,
         );
       },
       onError: (e, st) => trace(
         category: category, source: source,
         operation: '$operation.error', target: target,
         error: e, errorStackTrace: st, success: false,
-        config: config,
+        config: config, correlationId: corrId,
       ),
       onCancel: () => trace(
         category: category, source: source,
         operation: '$operation.unsubscribe', target: target,
-        success: true, config: config,
+        success: true, config: config, correlationId: corrId,
       ),
     ));
   }
 
   // ── Transaction (zone-based ID, auto-injected into all inner trace() calls) ──
+  // NB: Zone values do NOT cross isolate boundaries. If you spawn isolates
+  // inside a transaction, inner traces in the isolate won't have txnId.
+  // Use explicit correlationId parameter for cross-isolate correlation.
   Future<T> traceTransaction<T>({
     required ISpectTraceCategory category,
     required String source,
@@ -571,25 +670,24 @@ extension ISpectTrace on ISpectLogger {
     final txnId = generateTraceId();
     return runZoned(
       () async {
+        // NB: txnId NOT passed in meta — auto-injected by trace() from zone.
+        // No redundancy: additionalData['transactionId'] appears once (top-level).
         if (logMarkers) {
           trace(category: category, source: source,
-            operation: 'transaction-begin', success: true,
-            meta: {TraceKeys.transactionId: txnId});
+            operation: 'transaction-begin', success: true);
         }
         try {
           final result = await run();
           if (logMarkers) {
             trace(category: category, source: source,
-              operation: 'transaction-commit', success: true,
-              meta: {TraceKeys.transactionId: txnId});
+              operation: 'transaction-commit', success: true);
           }
           return result;
         } catch (e, st) {
           if (logMarkers) {
             trace(category: category, source: source,
               operation: 'transaction-rollback', error: e,
-              errorStackTrace: st, success: false,
-              meta: {TraceKeys.transactionId: txnId});
+              errorStackTrace: st, success: false);
           }
           rethrow;
         }
@@ -691,6 +789,8 @@ extension ISpectLoggerAuth on ISpectLogger {
     String? provider,           // 'google', 'apple', 'email', 'phone'
     Map<String, Object?>? meta,
     Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
   }) => traceAsync(
     category: authCategory,
     source: source,
@@ -699,6 +799,8 @@ extension ISpectLoggerAuth on ISpectLogger {
     meta: {if (provider != null) 'provider': provider, ...?meta},
     run: run,
     projectResult: projectResult,
+    config: config,
+    correlationId: correlationId,
   );
 
   void auth({
@@ -739,10 +841,14 @@ extension ISpectLoggerStorage on ISpectLogger {
     String? contentType,
     Map<String, Object?>? meta,
     Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
   }) => traceAsync(
     category: storageCategory,
     source: source, operation: operation,
     target: path,
+    config: config,
+    correlationId: correlationId,
     meta: {
       if (bucket != null) 'bucket': bucket,
       if (sizeBytes != null) 'sizeBytes': sizeBytes,
@@ -813,6 +919,8 @@ extension ISpectLoggerPayment on ISpectLogger {
     String? currency,
     Map<String, Object?>? meta,
     Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
   }) => traceAsync(
     category: paymentCategory,
     source: source, operation: operation,
@@ -823,6 +931,7 @@ extension ISpectLoggerPayment on ISpectLogger {
       ...?meta,
     },
     run: run, projectResult: projectResult,
+    config: config, correlationId: correlationId,
   );
 }
 ```
@@ -865,6 +974,8 @@ extension ISpectLoggerGrpc on ISpectLogger {
     String? method,
     Map<String, Object?>? metadata,
     Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
   }) => traceAsync(
     category: grpcCategory,
     source: source, operation: operation,
@@ -875,6 +986,7 @@ extension ISpectLoggerGrpc on ISpectLogger {
       if (metadata != null) 'metadata': metadata,
     },
     run: run, projectResult: projectResult,
+    config: config, correlationId: correlationId,
   );
 }
 ```
@@ -891,6 +1003,8 @@ extension ISpectLoggerGraphQL on ISpectLogger {
     String? document,
     Map<String, Object?>? variables,
     Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
   }) => traceAsync(
     category: graphqlCategory,
     source: source, operation: operation,
@@ -900,6 +1014,7 @@ extension ISpectLoggerGraphQL on ISpectLogger {
       if (variables != null) 'variables': variables,
     },
     run: run, projectResult: projectResult,
+    config: config, correlationId: correlationId,
   );
 }
 ```
@@ -1068,6 +1183,8 @@ abstract final class LogExporter {
 
 ```dart
 // ISpectDbConfig extends ISpectTraceConfig
+// NB: текущий ISpectDbConfig.slowQueryThreshold → super.slowThreshold (unified naming).
+// Breaking change для пользователей DB config — задокументировать в migration guide.
 class ISpectDbConfig extends ISpectTraceConfig {
   const ISpectDbConfig({
     super.sampleRate,
@@ -1076,7 +1193,7 @@ class ISpectDbConfig extends ISpectTraceConfig {
     super.redactKeys,
     super.maxValueLength,
     super.attachStackOnError,
-    super.slowThreshold,
+    super.slowThreshold,       // was: slowQueryThreshold
     this.maxStatementLength = 2000,
     this.maxArgsLength = 500,
     this.enableTransactionMarkers = false,
@@ -1112,7 +1229,8 @@ void onRequest(RequestOptions options, ...) {
     source: 'dio',
     operation: options.method,
     target: redactUrl(options.uri.toString()),
-    logKey: ISpectLogType.httpRequest.key,  // ← explicit override
+    logKey: ISpectLogType.httpRequest.key,
+    correlationId: requestId,  // ← links request↔response logs
     meta: {
       'requestId': requestId,
       if (settings.printRequestHeaders) 'headers': redactHeaders(options.headers),
@@ -1131,7 +1249,8 @@ void onResponse(Response response, ...) {
     source: 'dio',
     operation: response.requestOptions.method,
     target: redactUrl(response.requestOptions.uri.toString()),
-    logKey: ISpectLogType.httpResponse.key,  // ← explicit override
+    logKey: ISpectLogType.httpResponse.key,
+    correlationId: requestId,  // ← same ID as request → correlated
     success: true,
     duration: sw?.elapsed,
     meta: {
@@ -1169,9 +1288,9 @@ void onError(DioException err, ...) {
 // BLoC settings остаётся standalone, но observer использует trace():
 
 @override
-void onEvent(Bloc bloc, Object? event) {
+void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
   super.onEvent(bloc, event);
-  if (!_shouldLog(bloc) || !settings.printEvents) return;
+  if (!_shouldLog(toggle: settings.printEvents, candidate: bloc)) return;
 
   logger.trace(
     category: stateCategory,
@@ -1207,7 +1326,8 @@ void onEvent(Bloc bloc, Object? event) {
 **Что оставить:**
 - `ISpectLogData` — единственный log entity
 - `BaseNetworkInterceptor` mixin — redaction logic
-- `NetworkTransaction` — корреляция request/response через `additionalData['requestId']` (meta)
+- `NetworkTransaction` — корреляция request/response через `meta['requestId']`
+  - **NB: ключ меняется:** текущий `kRequestIdKey = 'request-id'` (kebab-case, в удаляемом `network_logs.dart`) → `'requestId'` (camelCase, в meta). `kRequestIdKey` удаляется вместе с `network_logs.dart`.
   - **ВАЖНО: fallback getters нужно обновить** — текущие читают `additionalData['method']`, `['url']`, `['statusCode']` на top-level. После рефакторинга:
     - `method` → `additionalData[TraceKeys.operation]` (top-level 'operation')
     - `url` → `additionalData[TraceKeys.target]` (top-level 'target')
@@ -1241,6 +1361,7 @@ extension ISpectLogDataX on ISpectLogData {
   int? get traceDurationMs => additionalData?[TraceKeys.durationMs] as int?;
   bool? get traceSuccess => additionalData?[TraceKeys.success] as bool?;
   String? get traceTransactionId => additionalData?[TraceKeys.transactionId] as String?;
+  String? get traceCorrelationId => additionalData?[TraceKeys.correlationId] as String?;
 
   // ── Domain-specific convenience (from nested meta) ──
   int? get httpStatusCode => traceMeta?['statusCode'] as int?;
@@ -1261,6 +1382,16 @@ extension ISpectLogDataX on ISpectLogData {
 > **BREAKING CHANGE:** Добавление новых enum values ломает exhaustive switch.
 > Задокументировать в CHANGELOG. В migration guide рекомендовать `_` default case.
 > Добавить `category` field и новые values в ОДНОМ PR.
+>
+> **Best practice для пользователей:** Всегда используйте `_` wildcard в switch на `ISpectLogType`.
+> Для группировки используйте `logType.category` (не switch по каждому value):
+> ```dart
+> // DON'T: fragile, breaks on new values
+> switch (logType) { case ISpectLogType.httpRequest: ... }
+>
+> // DO: stable, handles future values
+> if (logType.category == TraceCategoryIds.network) { ... }
+> ```
 
 ### E1. Добавить `category` field
 
@@ -1424,6 +1555,8 @@ String _resolveCategory(String key, ISpectTheme theme) {
   if (logType != null) return logType.category;
 
   // 3. Prefix heuristic (backward compat for custom keys like 'http-custom')
+  // Keys with built-in prefix (e.g. 'db-custom') auto-group into that category.
+  // To override: use theme.logCategories (priority 1) for explicit mapping.
   final dash = key.indexOf('-');
   if (dash > 0) {
     final prefix = key.substring(0, dash);
@@ -1658,13 +1791,14 @@ test('traceTransaction auto-injects txnId into inner traces', () async {
   // Zone-injected txnId should be present
   expect(innerLog.additionalData?[TraceKeys.transactionId], isNotNull);
 
-  // And it should match the markers
+  // Markers also get txnId from zone auto-inject (same zone)
   final beginLog = logger.traces.firstWhere(
     (l) => l.additionalData?[TraceKeys.operation] == 'transaction-begin',
   );
+  // Both inner trace and markers should have the SAME txnId (from zone)
   expect(
     innerLog.additionalData?[TraceKeys.transactionId],
-    beginLog.additionalData?[TraceKeys.meta]?[TraceKeys.transactionId],
+    beginLog.additionalData?[TraceKeys.transactionId],
   );
 });
 ```
@@ -1750,7 +1884,7 @@ packages/
 ### Для мейнтейнера ISpect:
 
 1. Category ID в `TraceCategoryIds` (если built-in)
-2. `const myCategory = ISpectTraceCategory(id: TraceCategoryIds.my, ...)` в `trace_categories.dart`
+2. `final myCategory = ISpectTraceCategory(id: TraceCategoryIds.my, ...)` в `trace_categories.dart`
 3. Extension method в `trace/extensions/my_extension.dart`
 4. `ISpectLogType` enum values с `category: TraceCategoryIds.my`
 5. Icons/colors в `ISpectConstants`
@@ -1762,7 +1896,7 @@ packages/
 
 ```dart
 // 1. Определить категорию:
-const myCategory = ISpectTraceCategory(
+final myCategory = ISpectTraceCategory(
   id: 'my-service',
   successKey: 'my-success',
   errorKey: 'my-error',
@@ -1782,7 +1916,22 @@ ISpect(theme: ISpectTheme(
   logIcons: {'my-success': Icons.check, 'my-error': Icons.close},
   categoryLabels: {'my-service': 'My Service'},
 ))
+
+// 4. (Optional) Корреляция связанных операций:
+final corrId = generateTraceId();
+logger.trace(category: myCategory, source: 'my-sdk',
+  operation: 'request', correlationId: corrId);
+// ... later ...
+logger.trace(category: myCategory, source: 'my-sdk',
+  operation: 'response', correlationId: corrId);
+// UI может группировать по correlationId
 ```
+
+> **Meta guidelines:**
+> - `meta` — open `Map<String, Object?>`, без жёсткой schema. JSON viewer покажет всё.
+> - Используйте descriptive keys: `'statusCode'`, `'bucket'`, `'provider'` — не `'sc'`, `'b'`, `'p'`.
+> - Избегайте конфликтов с TraceKeys: не используйте `'category'`, `'source'`, `'operation'` как meta keys.
+> - Для cross-isolate корреляции передавайте `correlationId` явно (zone values не пересекают isolate boundaries).
 
 ---
 
@@ -1846,10 +1995,10 @@ Map<String, Object?> _preprocessDb({...}) {
 Dart 3.1+ поддерживает private members в extensions. Однако trace helpers используются из НЕСКОЛЬКИХ extension-файлов, поэтому реализуются как shared top-level functions:
 
 ```dart
-// packages/ispectify/lib/src/trace/trace_helpers.dart
-// Top-level private functions (library-private, видны только внутри src/trace/)
+// packages/ispectify/lib/src/trace/trace_message.dart
+String buildTraceMessage({...}) { ... }
 
-String buildTraceMessage({...}) { ... }  // из trace_message.dart
+// packages/ispectify/lib/src/trace/trace_helpers.dart
 Object? truncateValue(Object? value, int maxLen) { ... }
 void safeLogData(ISpectLogger logger, ISpectLogData Function() builder) { ... }
 ```
@@ -1888,12 +2037,12 @@ extension ISpectTrace on ISpectLogger {
 | **LSP** | ISpectDbConfig extends ISpectTraceConfig — подставляется везде |
 | **ISP** | Domain extensions — отдельные, tree-shakeable. Пользователь видит только нужные |
 | **DIP** | Interceptors зависят от ISpectLogger + ISpectTraceCategory (абстракции). RedactionService.redactByKeys — static utility (pure function, не нарушает DIP) |
-| **SSOT** | Category IDs → `TraceCategoryIds`. Log keys → `ISpectLogType.*.key`. Config → один `ISpectTraceConfig`. Message format → один `buildTraceMessage()` |
+| **SSOT** | Category IDs → `TraceCategoryIds`. Log keys → `ISpectLogType.*.key`. Config → один `ISpectTraceConfig`. Message format → один `buildTraceMessage()`. Correlation → `correlationId` + `transactionId` (zone) |
 | **Strategy** | pickLogKey() — стратегия выбора log key |
 | **Template Method** | traceAsync — template: check enabled → start timer → run → project → log |
 | **Decorator** | BaaS wrappers: implement SDK interface, delegate, trace terminal ops |
 | **Observer** | BLoC/Riverpod observers |
-| **DRY** | Один trace() pipeline. Domain extensions ~20 строк, не copy-paste. Нет дублирования строковых литералов — все через const |
+| **DRY** | Один trace() pipeline. Domain extensions ~20 строк, не copy-paste. Нет дублирования строковых литералов — category IDs через `TraceCategoryIds`, log keys через `ISpectLogType.*.key`, field names через `TraceKeys` |
 | **KISS** | JSON viewer для всех. Один message format для всех. Минимум абстракций |
 | **YAGNI** | Нет BaseStateObserverSettings. Нет detailRenderers. Нет operationFilters. Нет messageBuilder |
 
@@ -1952,7 +2101,7 @@ extension ISpectTrace on ISpectLogger {
 
 ## Part L: Implementation Order
 
-1. Core trace primitive (trace_category, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_stream_transformer)
+1. Core trace primitive (trace_category, trace_category_ids, trace_categories, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_helpers, trace_stream_transformer)
 2. ISpectLogType + category field + new enum values
 3. ISpectLogData serialization extensions (toText, toMarkdown in existing ISpectLogDataSerialization) + LogExporter utility class
 4. Domain extensions (auth, storage, push, analytics, payment, sse, grpc, graphql)
@@ -1963,7 +2112,7 @@ extension ISpectTrace on ISpectLogger {
 9. Рефакторинг ispectify_dio → two trace() + logKey override
 10. Рефакторинг ispectify_http → two trace() + logKey override
 11. Рефакторинг ispectify_ws → trace()
-12. UI: dynamic filter grouping, new icons/colors, categoryLabels
+12. UI: dynamic filter grouping, new icons/colors, categoryLabels, new l10n strings (categoryNetwork, categoryWebSocket, categoryAuth, etc.)
 13. UI: export/share sheet
 14. Тесты на всё
 15. Backward compat: ISpectLogDataX convenience extensions
@@ -1979,6 +2128,13 @@ extension ISpectTrace on ISpectLogger {
 5. UI: dynamic grouping работает, новые иконки отображаются
 6. `./bash/check_version_sync.sh` + `./bash/check_dependencies.sh`
 7. Example: Firebase Auth decorator → authTrace → лог в UI → фильтр по auth → JSON detail
+8. Audit ALL exhaustive switch на `ISpectLogType` в кодовой базе — добавить `_` default case перед добавлением новых enum values
+9. Обновить example apps — удалить ссылки на typed subclasses (`NetworkRequestLog`, `BlocEventLog`, etc.)
+10. Проверить `web_logs_viewer/` — если парсит JSON из ISpect, обновить для нового `additionalData` layout
+11. Обновить `version.config` → `5.0.0`, синхронизировать через `./bash/update_versions.sh`
+12. Написать CHANGELOG.md с migration guide для breaking changes
+13. Добавить l10n строки (`categoryNetwork`, `categoryWebSocket`, etc.) в `.arb` файлы и регенерировать
+14. Обновить barrel exports `packages/ispectify/lib/ispectify.dart` — добавить все новые файлы из trace/, filter/, export/, testing/
 
 ---
 
@@ -1993,6 +2149,7 @@ extension ISpectTrace on ISpectLogger {
 - `packages/ispectify/lib/src/trace/trace_keys.dart`
 - `packages/ispectify/lib/src/trace/trace_extension.dart`
 - `packages/ispectify/lib/src/trace/trace_message.dart`
+- `packages/ispectify/lib/src/trace/trace_helpers.dart` — truncateValue(), safeLogData()
 - `packages/ispectify/lib/src/trace/trace_stream_transformer.dart`
 - `packages/ispectify/lib/src/trace/extensions/*.dart` (8 files)
 - `packages/ispectify/lib/src/export/log_exporter.dart`
@@ -2014,6 +2171,7 @@ extension ISpectTrace on ISpectLogger {
 - `packages/ispect/lib/src/common/services/network_transaction_service.dart` — update requestId extraction from meta, remove type checks
 - `packages/ispect/lib/src/features/ispect/presentation/widgets/log_card/log_card.dart` — statusCode extraction: `additionalData?['statusCode']` → `data.httpStatusCode` (convenience getter from ISpectLogDataX)
 - `packages/ispect/lib/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart` — same: `data.httpStatusCode`
+- `packages/ispect/lib/src/common/services/logs_json_service.dart` — extend with text/markdown export methods (chunked processing)
 - `packages/ispect/lib/src/core/res/constants/ispect_constants.dart` — new icons/colors
 - `packages/ispect/lib/src/core/res/ispect_theme.dart` — + categoryLabels
 - `packages/ispect/lib/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart` — dynamic grouping
@@ -2032,7 +2190,7 @@ extension ISpectTrace on ISpectLogger {
 
 1. **`enabled` → `options.enabled`** — ISpectLogger не имеет публичного `enabled`, доступ через `options.enabled`
 2. **Убран `extra` из trace() API** — только `meta` для всех domain данных. Нет конфликтов ключей, нет путаницы
-3. **Private helpers → top-level functions** — `buildTraceMessage()`, `truncateValue()`, `safeLogData()` в `trace_helpers.dart`
+3. **Private helpers → top-level functions** — `buildTraceMessage()` в `trace_message.dart`, `truncateValue()` и `safeLogData()` в `trace_helpers.dart`
 4. **Batch export: chunking note** — extensions для < 1000 логов, `LogsJsonService` для bulk
 5. **Enum breaking change** — задокументировать в CHANGELOG, рекомендовать `_` default case
 6. **Clean break v5.0** — удалить typed subclasses сразу, UI работает через additionalData fallback
@@ -2060,6 +2218,21 @@ extension ISpectTrace on ISpectLogger {
 28. **`redactKeys` тип `List<String>` → `Set<String>`** — `defaultSensitiveKeys` это `const Set<String>`. Нельзя использовать Set как default для List в const конструкторе. Тип `redactKeys` изменён на `Set<String>`. В `trace()` вызов `RedactionService.redactByKeys(meta, cfg.redactKeys.toList())` — `.toList()` для совместимости с API.
 29. **NetworkTransaction fallback keys не совпадали с trace layout** — Текущие fallback getters читают `additionalData['method']`, `['url']`, `['statusCode']` на top-level. Но trace pipeline кладёт: `operation` (не `method`) на top-level, `target` (не `url`) на top-level, `statusCode` вложен в `meta` (не top-level). Без исправления NetworkTransaction сломается после рефакторинга. Обновлены: `method` → `TraceKeys.operation`, `url` → `TraceKeys.target`, `statusCode` → `meta['statusCode']`. Также обновлен `network_transaction_service.dart` для `requestId` из `meta`. Добавлены в Part N Modified files. Тест в Part G обновлён с новым layout.
 30. **`ISpectTraceConfig` не `final class`** — намеренно: `ISpectDbConfig extends ISpectTraceConfig` (Part D1). LSP соблюдён. Задокументировано.
+31. **`ISpectTraceToken._()` приватный конструктор** — `trace_token.dart` и `trace_extension.dart` — разные файлы (нет `part`/`part of` в ispectify). Приватный конструктор `._()` недоступен из другого файла. Конструктор сделан публичным: `ISpectTraceToken({...})`. Класс `final` — не может быть subclassed, публичный конструктор безопасен.
+32. **`requestId` key: `'request-id'` → `'requestId'`** — текущий код использует `kRequestIdKey = 'request-id'` (kebab-case) в `network_logs.dart`. Этот файл удаляется в clean break. План использует `'requestId'` (camelCase) в meta Dio interceptor'а. `NetworkTransactionService._extractRequestId()` обновляется на `ISpectLogDataX.requestId` (читает из `traceMeta?['requestId']`).
+33. **Новые l10n строки** — `_categoryLabel()` в Part F1 ссылается на `l10n.categoryNetwork`, `l10n.categoryWebSocket`, `l10n.categoryAuth`, `l10n.categoryStorage`, `l10n.categoryPush`, `l10n.categoryAnalytics`, `l10n.categoryPayment`, `l10n.categoryNavigation`, `l10n.categorySse`, `l10n.categoryGrpc`, `l10n.categoryGraphql`, `l10n.categoryDb`, `l10n.categoryState`. Нужно добавить в `ISpectGeneratedLocalization` и все locale-файлы.
+34. **`_shouldLog()` signature в BLoC D3** — план показывал `_shouldLog(bloc)` (single argument), но реальная сигнатура `_shouldLog({required bool toggle, required Object? candidate})`. Исправлено на `_shouldLog(toggle: settings.printEvents, candidate: bloc)`. Тип `Bloc` → `Bloc<dynamic, dynamic>`.
+35. **`slowQueryThreshold` → `slowThreshold`** — текущий `ISpectDbConfig.slowQueryThreshold` переименовывается в `super.slowThreshold` при наследовании от `ISpectTraceConfig`. Breaking change — задокументировать в migration guide. Unified naming для всех категорий (не только DB).
+36. **`const` → `final` для predefined categories** — В Dart `EnumValue.field` (напр. `ISpectLogType.httpResponse.key`) НЕ является compile-time constant expression. `const networkCategory = ISpectTraceCategory(successKey: ISpectLogType.httpResponse.key)` не компилируется. Исправлено: все 13 predefined categories и пользовательские примеры используют `final` вместо `const`. `final` top-level переменные — lazy init, single init, immutable.
+37. **Zone cast safety** — `Zone.current[#ispectTxnId] as String?` бросает `CastException` если zone value не String. Заменено на defensive: `final raw = Zone.current[#ispectTxnId]; final txnId = raw is String ? raw : null;`.
+38. **Transaction marker txnId redundancy** — Маркеры (begin/commit/rollback) передавали `meta: {TraceKeys.transactionId: txnId}`, но `trace()` уже auto-inject txnId из zone в top-level `additionalData['transactionId']`. Результат: txnId в двух местах. Исправлено: убран из meta маркеров, zone auto-inject достаточен.
+39. **`correlationId` — универсальная корреляция для всех протоколов** — Добавлен `correlationId` параметр во все trace методы (trace, traceAsync, traceSync, traceStart/End, traceStream). `TraceKeys.correlationId` и `ISpectLogDataX.traceCorrelationId` getter. HTTP: requestId передаётся как correlationId (request↔response linked). Streams: auto-generated correlationId связывает subscribe/event/unsubscribe/error. gRPC/GraphQL: пользователь может передать для cross-call correlation. Isolate-safe: не зависит от Zone, передаётся явно.
+40. **Prefix heuristic documentation** — `_resolveCategory` heuristic задокументирован: keys с built-in prefix (e.g. `db-custom`) auto-group в соответствующую категорию. Override через `theme.logCategories` (приоритет 1).
+41. **Zone isolate boundary warning** — Документировано что zone values (transactionId) не пересекают isolate boundaries. Для cross-isolate correlation использовать explicit `correlationId`.
+42. **ISpectLogType enum best practice** — Рекомендация: использовать `logType.category == TraceCategoryIds.network` вместо exhaustive switch. Стабильнее при добавлении новых values.
+43. **Meta guidelines** — Документированы: descriptive keys, избегать конфликтов с TraceKeys, cross-isolate correlation.
+44. **Async domain extensions: `config` + `correlationId`** — `authTrace`, `storageTrace`, `paymentTrace`, `grpcTrace`, `graphqlTrace` не принимали `config` и `correlationId`. Fire-and-forget варианты (`auth()`, `push()`, `sse()`, `analyticsEvent()`) имели `config`, но async — нет. Исправлено: добавлены `ISpectTraceConfig? config` и `String? correlationId` во все 5 async domain extensions, проброшены в `traceAsync()`.
+45. **`logs_json_service.dart` в Part N Modified** — Plan C2 описывает расширение `LogsJsonService` поддержкой text/markdown форматов, но файл не был в Part N Modified. Добавлен.
 
 ---
 
