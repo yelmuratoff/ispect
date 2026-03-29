@@ -1581,7 +1581,8 @@ abstract final class LogExporter {
   }
 
   /// CSV escape + formula injection protection.
-  /// Prefixes cells starting with `=`, `+`, `-`, `@` with a tab character
+  /// Prefixes cells starting with dangerous characters with a tab character.
+  /// **Security (XLS Injection):** cells starting with `=`, `+`, `-`, `@` are prefixed
   /// to prevent formula injection in Excel/Google Sheets/LibreOffice.
   static String _csvEscape(String value) {
     var result = value;
@@ -1589,6 +1590,7 @@ abstract final class LogExporter {
     if (result.isNotEmpty && '=+-@'.contains(result[0])) {
       result = '\t$result';
     }
+    // Handle quotes and commas
     if (result.contains(',') || result.contains('"') || result.contains('\n') || result.contains('\t')) {
       return '"${result.replaceAll('"', '""')}"';
     }
@@ -2638,20 +2640,14 @@ class ISpectTheme {
 // Никакого per-category рендеринга. Простота > красота.
 //
 // ── Correlation banner (generic) ──
-// Если лог имеет correlationId → показать banner: "N related logs" + кнопка "Show All"
-// → "Show All" фильтрует список по correlationId (показывает все связанные логи)
-// Если лог имеет transactionId → показать banner: "Part of transaction" + кнопка "Show All"
-// → "Show All" фильтрует по transactionId
-// HTTP: backward compat — NetworkTransaction по-прежнему коррелирует req↔resp через requestId,
-//   banner показывает "View Request"/"View Response" как раньше.
-// **Приоритет баннеров:** Для HTTP логов показывается ТОЛЬКО HTTP-specific banner
-//   ("View Request"/"View Response"), НЕ generic "N related logs".
-//   Это потому что HTTP correlation через NetworkTransaction более информативна
-//   (показывает duration, status code pair). Generic banner — fallback для типов
-//   которые не имеют specialized UI (WS, gRPC, DB transaction, etc.).
-// **Логика:** if (isHttpLog && correlatedLog != null) → HTTP banner
-//            else if (correlationId != null) → generic correlation banner
-//            else if (transactionId != null) → transaction banner
+// Если лог имеет correlationId → показать banner: "View related traces" + чип с количеством
+// → При нажатии: вызывается `context.iSpect.filterByCorrelationId(id)`
+//
+// ── Correlation Priority (Heuristic) ──
+// Если это сетевой лог (httpRequest/Response/Error) → показываем ПРИОРУТЕТНЫЙ HTTP-баннер
+// (с длительностью, статус-кодом и кнопкой "View Request/Response").
+// Если это ЛЮБОЙ другой лог (WS, DB, BLoC, Push) → показываем GENERIC баннер корреляции.
+// Это позволяет не перегружать интерфейс, но сохранять связь событий.
 //
 // ── Severity visual hierarchy ──
 // Error/critical логи должны визуально выделяться в списке:
@@ -2663,8 +2659,8 @@ class ISpectTheme {
 //
 // ── Slow trace indicator ──
 // Если additionalData['slow'] == true → показать warning badge/chip на log card:
-// "Slow: {durationMs}ms" с оранжевым цветом.
-// Помогает быстро находить медленные запросы без открытия JSON detail.
+// "Slow: {durationMs}ms" с оранжевым цветом (только для DB/Network/Storage).
+// Помогает быстро находить медленные операции без открытия JSON detail.
 //
 // ── Implementation: _findCorrelation() обобщение ──
 // Текущий: `if (!activeLog.isHttpLog) return null;` (HTTP-only)
@@ -3312,7 +3308,7 @@ extension ISpectTrace on ISpectLogger {
 | Export/Share: OOM protection | `LogExporter` — `maxLogs` safety cap (default: 5000). Для bulk — `LogsJsonService` с chunked/stream processing. |
 | Production builds | `if (!options.enabled) return;` — zero overhead. Никакие данные не обрабатываются когда ISpect отключён. |
 | Custom redaction keys | Пользователь расширяет: `ISpectTraceConfig(redactKeys: {...defaultSensitiveKeys, 'ssn', 'credit_card'})` |
-| defaultSensitiveKeys gaps | Рекомендация: добавить `email`, `otp`, `device_token`, `fcm_token`, `apns_token`, `session_id`, `username` в `defaultSensitiveKeys` (102 → ~109 entries). |
+| defaultSensitiveKeys gaps | **FIXED:** Added `email`, `otp`, `device_token`, `fcm_token`, `apns_token`, `session_id`, `username`, `phone_number`, `cvv`, `card_number` to `defaultSensitiveKeys` (102 → ~115 entries). |
 | Zone txnId isolation | `_txnZoneKey` — file-private Object (не public Symbol). Нельзя спуфить из внешнего кода. Zone values НЕ пересекают isolate boundaries — документировано. |
 | Rate limiting | **УЖЕ РЕАЛИЗОВАНО:** `ISpectLoggerOptions.maxHistoryItems` (default: 10000) с FIFO-ротацией в `DefaultISpectLoggerHistory._addEntry()`. Предотвращает OOM при высокочастотных WS/SSE/stream событиях. Проверить naming consistency с планом (`maxHistorySize` vs `maxHistoryItems`). |
 | ISpectTraceToken lifetime | `final class`, lightweight (Stopwatch). Если `traceEnd()` не вызван — leak minimal (~bytes). Документировать как best practice: всегда вызывать `traceEnd()`. |
