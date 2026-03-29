@@ -252,9 +252,9 @@ final pushCategory = ISpectTraceCategory(
   secondaryOperations: const {'sent', 'send'},
 );
 
-// NB: analyticsCategory и navigationCategory используют один key для success и error.
-// Осознанное решение: analytics events и route changes редко имеют distinct error types.
-// Если в будущем нужна дифференциация — добавить ISpectLogType.analyticsError / routeError.
+// NB: analyticsCategory использует один key для success и error.
+// Осознанное решение: analytics events редко имеют distinct error types.
+// Если в будущем нужна дифференциация — добавить ISpectLogType.analyticsError.
 final analyticsCategory = ISpectTraceCategory(
   id: TraceCategoryIds.analytics,
   successKey: ISpectLogType.analytics.key,
@@ -267,6 +267,10 @@ final paymentCategory = ISpectTraceCategory(
   errorKey: ISpectLogType.paymentError.key,
 );
 
+// NB: navigationCategory — route push и pop связаны через correlationId.
+// ISpectNavigatorObserver генерирует routeId при push и передаёт как correlationId
+// во все связанные events (push, pop, replace, remove) одного route.
+// Пользователь может нажать "Show Related" на push и увидеть pop (и наоборот).
 final navigationCategory = ISpectTraceCategory(
   id: TraceCategoryIds.navigation,
   successKey: ISpectLogType.route.key,
@@ -505,7 +509,7 @@ extension ISpectTrace on ISpectLogger {
       // Pre-signed URLs (S3, GCS) содержат tokens в query params.
       // Без auto-redaction target — PII утечка в message и additionalData.
       final safeTarget = cfg.redact && target != null
-          ? _redactTarget(target, cfg.redactKeys)
+          ? RedactionService.redactTarget(target, cfg.redactKeys)
           : target;
 
       // Единый формат: [source] operation → target (duration)
@@ -1311,11 +1315,11 @@ extension ISpectLogDataSerialization on ISpectLogData {
     // Layer 3: redact exception/error — могут содержать URLs, credentials
     if (exception != null) {
       final exStr = '$exception';
-      buffer.writeln('  Exception: ${_redactExportString(exStr, redactKeys)}');
+      buffer.writeln('  Exception: ${RedactionService.redactExportString(exStr, redactKeys)}');
     }
     if (error != null) {
       final errStr = '$error';
-      buffer.writeln('  Error: ${_redactExportString(errStr, redactKeys)}');
+      buffer.writeln('  Error: ${RedactionService.redactExportString(errStr, redactKeys)}');
     }
     if (stackTrace != null) buffer.writeln('  StackTrace:\n$stackTrace');
 
@@ -1363,11 +1367,11 @@ extension ISpectLogDataSerialization on ISpectLogData {
     // Layer 3: redact exception/error strings при экспорте
     if (exception != null) {
       final exStr = '$exception';
-      buffer.writeln('\n**Exception:** `${_redactExportString(exStr, redactKeys)}`');
+      buffer.writeln('\n**Exception:** `${RedactionService.redactExportString(exStr, redactKeys)}`');
     }
     if (error != null) {
       final errStr = '$error';
-      buffer.writeln('\n**Error:** `${_redactExportString(errStr, redactKeys)}`');
+      buffer.writeln('\n**Error:** `${RedactionService.redactExportString(errStr, redactKeys)}`');
     }
     if (stackTrace != null) {
       buffer.writeln('\n**Stack trace:**\n```\n$stackTrace\n```');
@@ -1390,67 +1394,10 @@ extension ISpectLogDataSerialization on ISpectLogData {
   /// SQL literals, или credentials в error messages.
   /// Если `redactKeys` == null — не редактирует (backward compat).
   ///
-  /// **NB: Реализация — shared top-level функция `redactExportString()`**
-  /// **в `packages/ispectify/lib/src/redaction/export_redaction.dart`.**
-  /// Extension делегирует к ней. Не дублировать!
-  ///
-  /// Покрывает:
-  /// - URL credentials: `https://user:pass@host:8080` → `https://***:***@host:8080`
-  /// - URL credentials без пароля: `https://user@host` → `https://***@host`
-  /// - Bearer/Basic tokens: `Authorization: Bearer eyJ...` → `Authorization: Bearer ***`
-  /// - Query params с sensitive keys: `?token=abc&key=def` → `?token=***&key=***`
-  /// - JSON в exception strings: `{"token": "abc"}` → `{"token": "***"}`
-  String _redactExportString(String value, Set<String>? redactKeys) {
-    if (redactKeys == null || redactKeys.isEmpty) return value;
-
-    // 1. URL credentials (с/без пароля, с портом):
-    //    https://user:pass@host:8080 → https://***:***@host:8080
-    //    https://user@host → https://***@host
-    var result = value.replaceAllMapped(
-      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
-      (m) => m[2] != null ? '://***:***@' : '://***@',
-    );
-
-    // 2. Bearer/Basic tokens в error messages:
-    //    Authorization: Bearer eyJhbGci... → Authorization: Bearer ***
-    //    Basic dXNlcjpwYXNz → Basic ***
-    result = result.replaceAllMapped(
-      RegExp(r'(Bearer|Basic)\s+([A-Za-z0-9._\-/+=]{8,})', caseSensitive: false),
-      (m) => '${m[1]} ***',
-    );
-
-    // 3. Query params с sensitive keys (URL-encoded values тоже):
-    //    ?token=abc%26def&key=xyz → ?token=***&key=***
-    //    NB: RegExp.escape(key) — защита от regex metacharacters в key names
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-        (m) => '${m[1]}${m[2]}=***',
-      );
-    }
-
-    // 4. JSON-like patterns в exception strings:
-    //    {"token": "abc123"} → {"token": "***"}
-    //    {"token": 12345} → {"token": "***"}
-    //    {"token": true} → {"token": "***"}
-    //    Ищем "key": <any_value> где key — sensitive
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      // String values: "key": "value"
-      result = result.replaceAllMapped(
-        RegExp('"($escaped)"\\s*:\\s*"([^"]*)"', caseSensitive: false),
-        (m) => '"${m[1]}": "***"',
-      );
-      // Number/boolean values: "key": 12345 or "key": true/false/null
-      result = result.replaceAllMapped(
-        RegExp('"($escaped)"\\s*:\\s*([0-9.eE+\\-]+|true|false|null)', caseSensitive: false),
-        (m) => '"${m[1]}": "***"',
-      );
-    }
-
-    return result;
-  }
+  // NB: Реализация Layer 3 redaction — в RedactionService.redactExportString() (static).
+  // Extension НЕ дублирует логику, а вызывает RedactionService напрямую (см. строки выше).
+  // Покрывает: URL credentials, Bearer/Basic tokens, query params, JSON patterns.
+  // Реализация regex — в Part 9.1, RedactionService.redactExportString().
 }
 ````
 
@@ -1491,9 +1438,9 @@ abstract final class LogExporter {
         // Layer 3: redact exception/error strings в JSON output
         if (redactKeys != null && redactKeys.isNotEmpty) {
           final ex = json['exception'];
-          if (ex is String) json['exception'] = _redactExportString(ex, redactKeys);
+          if (ex is String) json['exception'] = RedactionService.redactExportString(ex, redactKeys);
           final err = json['error'];
-          if (err is String) json['error'] = _redactExportString(err, redactKeys);
+          if (err is String) json['error'] = RedactionService.redactExportString(err, redactKeys);
         }
         return jsonEncode(json);
       } catch (_) {
@@ -1504,14 +1451,8 @@ abstract final class LogExporter {
     }).join('\n');
   }
 
-  /// Layer 3 redaction для export strings.
-  /// **NB: Реализация — ОДНА shared top-level функция `redactExportString()`**
-  /// **в `packages/ispectify/lib/src/redaction/export_redaction.dart`.**
-  /// Не дублировать! ISpectLogDataSerialization._redactExportString и
-  /// LogExporter._redactExportString оба делегируют к ней.
-  /// Функция internal (не экспортируется в barrel).
-  static String _redactExportString(String value, Set<String>? redactKeys) =>
-      redactExportString(value, redactKeys);
+  /// Layer 3 redaction — делегация к единому RedactionService.
+  /// Нет отдельного файла export_redaction.dart — всё в RedactionService.
 
   /// Export as plain text.
   static String toText(
@@ -1679,6 +1620,18 @@ class ISpectDbConfig extends ISpectTraceConfig {
 // dbStart/End → ISpectDbToken wraps ISpectTraceToken + DB fields
 // dbTransaction() → delegates to traceTransaction()
 // Все существующие публичные API сохраняются.
+//
+// ── DB correlation ──
+// 1. Transaction: zone-based txnId auto-inject'ится во ВСЕ inner queries
+//    → "Show Transaction" в UI покажет все queries одной транзакции
+// 2. dbStart/dbEnd (manual span): один лог с duration
+//    → correlationId из ISpectDbToken пробрасывается в traceEnd()
+// 3. Migration/batch: пользователь оборачивает в dbTransaction()
+//    → все queries автоматически связаны
+// 4. Related queries вне транзакции: explicit correlationId
+//    → dbTrace(correlationId: batchId, ...) для группировки
+//
+// Покрытие: single query, multi-query transaction, manual span, batch — всё корреляцируется.
 ```
 
 ### 4.2. Network interceptors → ДВА лога (request + response)
@@ -2092,8 +2045,60 @@ void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
 **Что оставить:**
 
 - `ISpectLogData` — единственный log entity
-- `logs.dart` convenience subclasses: `GoodLog`, `AnalyticsLog`, `RouteLog`, `ProviderLog`, `PrintLog` — используются в `ISpectLogger` core методах (`good()`, `analytics()`, `route()`, `provider()`, `print()`). Простые key+title wrappers. `RouteLog` имеет `transitionId` для `ISpectNavigationFlowScreen` — специфичная UI фича, не часть trace pipeline.
-  - При создании `RouteLog` в `ISpectLogger.route()` — дополнительно класть `transitionId` в `additionalData[TraceKeys.correlationId]`. Это позволит generic correlation banner показать "Show Related" для связанных route events. Альтернатива: отложить до post-v5 (navigation flow screen — отдельная фича).
+- `logs.dart` convenience subclasses: `GoodLog`, `AnalyticsLog`, `RouteLog`, `ProviderLog`, `PrintLog` — используются в `ISpectLogger` core методах (`good()`, `analytics()`, `route()`, `provider()`, `print()`). Простые key+title wrappers. `RouteLog` имеет `transitionId` для `ISpectNavigationFlowScreen`.
+  - **v5.0:** При создании `RouteLog` в `ISpectLogger.route()` — класть `transitionId` в `additionalData[TraceKeys.correlationId]`. Generic correlation banner покажет "Show Related" для push↔pop одного route.
+  - **ISpectNavigatorObserver** — генерирует `routeId = generateTraceId()` при push, хранит в `Map<Route, String>`. При pop/replace/remove — находит routeId и передаёт как `correlationId`. Все events одного route связаны.
+  ```dart
+  // Пример корреляции навигации:
+  final _routeIds = <Route<dynamic>, String>{};
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final routeId = generateTraceId();
+    _routeIds[route] = routeId;
+    logger.trace(
+      category: navigationCategory,
+      source: 'navigator', operation: 'push',
+      target: route.settings.name,
+      correlationId: routeId,
+      meta: {'routeName': route.settings.name, 'arguments': '${route.settings.arguments}'},
+    );
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final routeId = _routeIds.remove(route);
+    logger.trace(
+      category: navigationCategory,
+      source: 'navigator', operation: 'pop',
+      target: route.settings.name,
+      correlationId: routeId,  // ← same ID as push → correlated
+    );
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    final routeId = oldRoute != null ? _routeIds.remove(oldRoute) : null;
+    if (newRoute != null) _routeIds[newRoute] = routeId ?? generateTraceId();
+    logger.trace(
+      category: navigationCategory,
+      source: 'navigator', operation: 'replace',
+      target: newRoute?.settings.name,
+      correlationId: routeId,
+    );
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final routeId = _routeIds.remove(route);
+    logger.trace(
+      category: navigationCategory,
+      source: 'navigator', operation: 'remove',
+      target: route.settings.name,
+      correlationId: routeId,
+    );
+  }
+  ```
 - `BaseNetworkInterceptor` mixin — redaction logic
 - `NetworkTransaction` — корреляция request/response через `meta['requestId']`
   - **NB: ключ меняется:** текущий `kRequestIdKey = 'request-id'` (kebab-case, в удаляемом `network_logs.dart`) → `'requestId'` (camelCase, в meta). `kRequestIdKey` удаляется вместе с `network_logs.dart`.
@@ -2987,7 +2992,9 @@ packages/
           grpc_extension.dart
           graphql_extension.dart
       redaction/
-        export_redaction.dart         # shared redactExportString() (internal, not exported)
+        redaction_service.dart        # ЕДИНЫЙ RedactionService (SSOT) — redactByKeys, redactTarget, redactExportString, redactPositionalArgs + instance methods
+        constants/
+          key_defaults.dart           # defaultSensitiveKeys (СУЩЕСТВУЕТ)
       filter/
         category_filter.dart          # CategoryFilter, SourceFilter, CorrelationFilter, TransactionFilter
       models/
@@ -3139,51 +3146,135 @@ logger.trace(category: myCategory, source: 'my-sdk',
 
 ## Part 9.1: Ответственности — кто за что отвечает (Responsibility Map)
 
-### Redaction — три слоя, без дублирования
+### Redaction — единый `RedactionService`, три слоя
+
+**Архитектура:** ВСЕ redaction-функции живут в `RedactionService` (`packages/ispectify/lib/src/redaction/redaction_service.dart`). Domain interceptors и trace pipeline вызывают `RedactionService.*` — единая точка входа. Нет разбросанных helper-функций в разных файлах.
+
+```dart
+/// RedactionService — единственный SSOT для всей редакции в ISpect.
+/// Все слои (domain, pipeline, export) вызывают методы этого класса.
+///
+/// Instance methods: domain-specific redaction с состоянием (ignoredKeys/Values).
+/// Static methods: stateless utility без side effects.
+class RedactionService {
+  // ── Instance methods (СУЩЕСТВУЮТ, domain-specific) ───────────────
+  // Используются в BaseNetworkInterceptor через composition.
+  // Имеют состояние: ignoredKeys, ignoredValues — настраиваемые per-interceptor.
+
+  Object? redact(Object? data, {String? keyName, ...});     // generic Map/List/scalar
+  Map<String, Object?> redactHeaders(Map<String, Object?> headers, {...});  // HTTP headers
+  String redactUrl(String url);                              // URL query params + userInfo
+  String redactUrlsInText(String text);                      // URLs в строках текста
+
+  void ignoreKey(String keyName);    // add to ignore list
+  void ignoreValue(String value);    // add to ignore list
+  void unignoreKey(String keyName);  // remove from ignore list
+  // ... и другие ignore/unignore методы
+
+  // ── Static methods (СУЩЕСТВУЮТ + НОВЫЕ) ──────────────────────────
+  // Stateless pure functions. Единая точка входа для pipeline и export.
+
+  /// СУЩЕСТВУЕТ: Рекурсивная редакция Map по ключам (Layer 2 — trace pipeline meta).
+  static Object? redactByKeys(Object? data, List<String> keys, {
+    int maxDepth = 50,
+    String placeholder = redactedMask,
+  });
+
+  /// НОВЫЙ: Редакция URL target field (Layer 2 — trace pipeline target).
+  /// URL credentials (user:pass@host) + query params с sensitive keys.
+  /// Вызывается из trace() pipeline для auto-redaction target.
+  static String redactTarget(String target, Set<String> redactKeys) {
+    // 1. URL credentials: ://user:pass@host → ://***:***@host
+    var result = target.replaceAllMapped(
+      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      (m) => m[2] != null ? '://***:***@' : '://***@',
+    );
+    // 2. Query params с sensitive keys
+    if (result.contains('?')) {
+      for (final key in redactKeys) {
+        final escaped = RegExp.escape(key);
+        result = result.replaceAllMapped(
+          RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
+          (m) => '${m[1]}${m[2]}=***',
+        );
+      }
+    }
+    return result;
+  }
+
+  /// НОВЫЙ: Regex-based редакция строк (Layer 3 — export).
+  /// Покрывает URL credentials, Bearer/Basic tokens, query params, JSON patterns.
+  /// Вызывается из toText(), toMarkdown(), LogExporter.toJsonLines().
+  static String redactExportString(String value, Set<String>? redactKeys) {
+    if (redactKeys == null || redactKeys.isEmpty) return value;
+    // 1. URL credentials
+    // 2. Bearer/Basic tokens
+    // 3. Query params с sensitive keys
+    // 4. JSON patterns в строках
+    // (реализация — см. Part 3.1)
+  }
+
+  /// СУЩЕСТВУЕТ в ISpectDbCore, ПЕРЕНОСИТСЯ сюда:
+  /// Редакция позиционных SQL args по ключам колонок.
+  static List<Object?> redactPositionalArgs(
+    List<Object?> args, List<String> keys, String? statement,
+  );
+}
+```
+
+**Кто что вызывает:**
 
 ```
 Слой 1: Domain preprocessing (ПЕРЕД вызовом trace)
-  ├── Network: BaseNetworkInterceptor.redactHeaders/Body/Url()
-  │   → redacts URLs, headers (Authorization, Cookie), body fields
+  ├── Network: BaseNetworkInterceptor
+  │   → composition: содержит RedactionService instance
+  │   → redactHeaders(), redactUrl(), redact() — instance methods
   │   → domain-specific: знает про HTTP patterns
-  ├── DB: ISpectDbCore.redactPositionalArgs/redactIfNeeded()
-  │   → redacts SQL args, named args by key matching
+  ├── DB: ISpectDbCore
+  │   → RedactionService.redactByKeys() — static (generic Map)
+  │   → RedactionService.redactPositionalArgs() — static (SQL args)
   │   → domain-specific: знает про SQL statements
   └── Others: domain extensions НЕ делают redaction
       → передают raw data, полагаются на слой 2
 
 Слой 2: trace() pipeline (ОБЩИЙ safety net)
-  → auto-redacts meta по config.redactKeys (recursive Map redaction)
-  → auto-redacts target по config.redactKeys (URL credentials + query params)
-  → generic: не знает про HTTP/SQL, но ловит common patterns (token, password, secret, etc.)
-  → НЕ дублирует слой 1: если domain уже redacted — redactByKeys на уже чистых данных безопасен (idempotent)
+  → RedactionService.redactByKeys(meta, config.redactKeys) — recursive Map
+  → RedactionService.redactTarget(target, config.redactKeys) — URL query params
+  → generic: не знает про HTTP/SQL, ловит common patterns
+  → idempotent: если domain уже redacted — повторная обработка безопасна
 
-Слой 3: Export (ПРИ ВЫВОДЕ) — финальная линия защиты
-  → toJson(truncated: true) — truncates large values
-  → toText(redactKeys:) / toMarkdown(redactKeys:) — Layer 3 redaction:
-    → additionalData — уже redacted на слое 2 (safe)
-    → message — формируется через buildTraceMessage() (НЕ содержит raw данных по-дизайну)
-    → exception.toString() — RAW! Может содержать:
-      • URL с credentials (https://user:pass@host)
-      • SQL statements с литералами
-      • Error messages с API keys
-      → toText/toMarkdown редактируют exception/error через _redactExportString()
-    → stackTrace — НЕ редактируется (file paths, не sensitive data)
-  → LogExporter — передаёт redactKeys в toText/toMarkdown + capped по maxLogs
+Слой 3: Export (ПРИ ВЫВОДЕ)
+  → RedactionService.redactExportString(exception, redactKeys) — regex для строк
+  → toText/toMarkdown/toJsonLines — все делегируют к RedactionService
+  → LogExporter — передаёт redactKeys + capped по maxLogs
 ```
+
+**Миграция из текущего кода:**
+- `_redactTarget()` из `trace_helpers.dart` → `RedactionService.redactTarget()` (static)
+- `redactExportString()` из `export_redaction.dart` → `RedactionService.redactExportString()` (static)
+- `ISpectDbCore.redactPositionalArgs()` → `RedactionService.redactPositionalArgs()` (static)
+- `ISpectDbCore.redact()` и `ISpectDbCore.redactIfNeeded()` → уже делегируют к `RedactionService.redactByKeys()`
+- `BaseNetworkInterceptor.redactUrl()` → уже делегирует к `RedactionService.redactUrl()` (instance)
+- `export_redaction.dart` — **УДАЛИТЬ** (функция переехала в RedactionService)
+
+**Результат:**
+- `export_redaction.dart` — **удаляется** (больше не нужен отдельный файл)
+- `trace_helpers.dart` — остаётся, но без `_redactTarget` (перенесён)
+- `ISpectDbCore` — остаётся, но `redactPositionalArgs` делегирует к `RedactionService`
+- `BaseNetworkInterceptor` — без изменений (уже делегирует)
 
 **⚠️ ВАЖНО: `exception.toString()` — единственное место, где raw данные могут утечь через export.**
 Слой 1 и 2 не могут защитить exception.toString() — exception создаётся ДО вызова trace().
-Поэтому Слой 3 добавляет regex-based redaction для URL credentials и query params с sensitive keys.
+Поэтому Слой 3 добавляет `RedactionService.redactExportString()` для URL credentials и query params.
 
 **⚠️ In-app JSON viewer:** `TraceKeys.error` (= `'$error'`) хранится на top-level additionalData, НЕ в meta.
 Слой 2 редактирует только `meta` по `config.redactKeys` — `TraceKeys.error` НЕ редактируется.
 В JSON viewer (in-app) raw error string **виден без редакции**. Это **by-design**: ISpect — debugging tool
 для разработчика, in-app просмотр предназначен для dev-режима. Для production-safe вывода —
 использовать export с `redactKeys` (Layer 3). Если нужна in-app редакция — передавать
-`error: redactExportString('$error', config.redactKeys)` в `trace()`, но это увеличивает overhead.
+`error: RedactionService.redactExportString('$error', config.redactKeys)` в `trace()`.
 
-**Правило:** Domain слой redacts domain-specific patterns. Trace слой — generic safety net для meta. Export слой — финальная защита для exception/error strings + truncation. Нет двойной redaction — `redactByKeys` идемпотентен (уже замаскированные значения не изменяются повторно).
+**Правило:** ВСЯ редакция проходит через `RedactionService`. Domain interceptors, trace pipeline, export — все вызывают его методы. Один класс, один import, один SSOT. `redactByKeys` идемпотентен.
 
 ### Preprocessing — без дублирования
 
@@ -3257,29 +3348,8 @@ Object? truncateValue(Object? value, int maxLen) {
   return value;
 }
 
-// _redactTarget — редактирует query params в URL-подобных target строках.
-// Используется в trace() pipeline для auto-redaction target field.
-// NB: target НЕ обязательно URL (может быть table name, service/method).
-// Поэтому применяем redaction только если строка содержит '?' (query params).
-// Для URL credentials (user:pass@host) — используем regex из _redactExportString.
-String _redactTarget(String target, Set<String> redactKeys) {
-  // 1. URL credentials: https://user:pass@host → https://***:***@host
-  var result = target.replaceAllMapped(
-    RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
-    (m) => m[2] != null ? '://***:***@' : '://***@',
-  );
-  // 2. Query params с sensitive keys
-  if (result.contains('?')) {
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-        (m) => '${m[1]}${m[2]}=***',
-      );
-    }
-  }
-  return result;
-}
+// NB: _redactTarget ПЕРЕНЕСЁН в RedactionService.redactTarget() (static).
+// trace_helpers.dart больше не содержит redaction-логику — вся в RedactionService.
 
 // NB: safeTrace — НЕ safeLogData. Существующий extension method SafeLogExtension.safeLogData()
 // на ISpectLogger имеет другую сигнатуру (принимает ISpectLogData, не builder).
@@ -3329,7 +3399,7 @@ extension ISpectTrace on ISpectLogger {
 | PII: userId                   | `userId` передаётся в `meta` (не в `key`/message). Добавить `'userId'` в custom `redactKeys` если нужно.                                                                                                                                                                             |
 | Sensitive headers             | `BaseNetworkInterceptor.redactHeaders()` — маскирует Authorization, Cookie, Set-Cookie                                                                                                                                                                                               |
 | Sensitive URLs                | `BaseNetworkInterceptor.redactUrl()` — маскирует query params с sensitive keys                                                                                                                                                                                                       |
-| target field (URLs)           | Auto-redaction в trace() pipeline: `_redactTarget()` убирает URL credentials и query params с sensitive keys. Pre-signed URLs (S3, GCS) автоматически очищаются. Domain-layer дополнительно может redact protocol-specific patterns.                                                 |
+| target field (URLs)           | Auto-redaction в trace() pipeline: `RedactionService.redactTarget()` убирает URL credentials и query params с sensitive keys. Pre-signed URLs (S3, GCS) автоматически очищаются. Domain-layer дополнительно может redact protocol-specific patterns.                                                 |
 | SQL injection в логах         | `ISpectDbCore.sqlDigest()` — нормализует SQL, заменяет литералы на `?`                                                                                                                                                                                                               |
 | BLoC event toString()         | `settings.printEventFullData` может содержать PII. НЕ включать в production. Документировать risk.                                                                                                                                                                                   |
 | Файлы логов на диске          | App-sandboxed directory. Redaction применяется ДО записи. `FileLogHistory` пишет уже redacted данные. **Рекомендация:** писать в non-iCloud-backed directory (iOS: `NSCachesDirectory`).                                                                                             |
@@ -3427,9 +3497,9 @@ extension ISpectTrace on ISpectLogger {
    **⚠️ ВАЖНО: Шаг 2 ДОЛЖЕН быть выполнен ПЕРЕД шагом 3.** `trace_categories.dart` ссылается на `ISpectLogType.httpResponse.key` и новые enum values (`authSuccess`, `sseReceived`, etc.). Без них компиляция trace_categories невозможна. `TraceCategoryIds` — standalone (без зависимостей), может быть создан параллельно.
 3. **Создать директории** + Core trace primitives:
    - Создать: `packages/ispectify/lib/src/trace/`, `packages/ispectify/lib/src/testing/`, `packages/ispectify/lib/src/export/`
-   - `packages/ispectify/lib/src/redaction/export_redaction.dart` — shared `redactExportString()` (internal, used by toText/toMarkdown/LogExporter)
+   - Обновить `RedactionService` — добавить static методы: `redactTarget()`, `redactExportString()`, `redactPositionalArgs()`
    - `packages/ispectify/lib/src/filter/` — уже существует ✅
-   - Core files: trace_category, trace_category_ids, trace_categories, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_helpers (включая `_redactTarget()`), trace_stream_transformer
+   - Core files: trace_category, trace_category_ids, trace_categories, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_helpers (`truncateValue`, `safeTrace`), trace_stream_transformer
    - `truncateValue()` в `trace_helpers.dart` — core-level. `ISpectDbCore.truncateValue` делегирует к ней
 4. **ISpectLogDataX** convenience extension (`models/log_data_x.dart`) — нужен ДО шагов 12-13 (UI зависит от `data.httpStatusCode` и др.)
 5. ISpectLogData serialization extensions (toText, toMarkdown с redactKeys в existing ISpectLogDataSerialization) + LogExporter utility class (с maxLogs, CSV)
@@ -3487,7 +3557,7 @@ extension ISpectTrace on ISpectLogger {
 21. **`FakeISpectLogger.byLogLevel`:** query non-trace logs by LogLevel
 22. **`truncateValue`:** string truncation, non-string passthrough, null handling
 23. **`_csvEscape`:** formula injection chars (`=`, `+`, `-`, `@`), commas, quotes, newlines
-24. **`_redactExportString`:** URL credentials, Bearer tokens, query params, JSON patterns, RegExp.escape for special key chars
+24. **`RedactionService.redactExportString`:** URL credentials, Bearer tokens, query params, JSON patterns, RegExp.escape for special key chars
 
 ### 13.2. Security-specific тесты
 
@@ -3557,9 +3627,9 @@ extension ISpectTrace on ISpectLogger {
 76. **Push auto-correlation:** `push(messageId: 'msg-1')` без explicit `correlationId` → `correlationId == 'msg-1'` (auto-fallback)
 77. **Push explicit correlationId override:** `push(messageId: 'msg-1', correlationId: 'custom')` → `correlationId == 'custom'` (не 'msg-1')
 78. **traceStart returns null when disabled:** `logger.options.enabled = false` → `traceStart()` returns null → `traceEnd(null)` is no-op
-79. **\_redactTarget URL credentials:** `target: 'https://user:pass@host/path'` → `'https://***:***@host/path'` в additionalData
-80. **\_redactTarget query params:** `target: '/api?token=abc&name=test'` с `redactKeys: {'token'}` → `'/api?token=***&name=test'`
-81. **\_redactTarget non-URL:** `target: 'users'` (table name, no URL) → unchanged (no `?`, no `://`)
+79. **RedactionService.redactTarget URL credentials:** `target: 'https://user:pass@host/path'` → `'https://***:***@host/path'` в additionalData
+80. **RedactionService.redactTarget query params:** `target: '/api?token=abc&name=test'` с `redactKeys: {'token'}` → `'/api?token=***&name=test'`
+81. **RedactionService.redactTarget non-URL:** `target: 'users'` (table name, no URL) → unchanged (no `?`, no `://`)
 82. **safeTrace error logging:** builder throws → warning logged с `${e.runtimeType}` (не `$e`), stack trace включён
 83. **safeTrace no PII in warning:** builder throws `Exception('token=abc123')` → warning содержит `Exception` (runtimeType), НЕ содержит `token=abc123`
 84. **TraceStreamTransformer broadcast stream:** broadcast stream → cancel one listener → onCancel called, other listeners unaffected
@@ -3567,7 +3637,12 @@ extension ISpectTrace on ISpectLogger {
 86. **LogExporter.toJsonLines non-serializable meta:** `meta: {'color': customObject}` → `jsonEncode` throws → handle gracefully (skip or toString fallback)
 87. **\_resolveCategory caching:** call twice with same key → second call returns cached result (no enum lookup)
 88. **FakeISpectLogger maxHistoryItems:** base `ISpectLoggerOptions.maxHistoryItems == 0` → no double-memory
-89. **Cubit onChange без eventId:** Cubit (не BLoC) → `onChange` вызывается без `onEvent` → `_pendingEventIds[bloc]` == null → Queue не создаётся → `correlationId == null` → лог без correlation (ожидаемо)
+89. **Navigation push↔pop correlation:** didPush генерирует routeId, didPop использует тот же routeId → `logger.byCorrelationId(routeId)` возвращает 2 лога (push + pop)
+90. **Navigation replace correlation:** didReplace → старый routeId переносится на новый route, лог replace имеет correlationId старого route
+91. **Navigation _routeIds cleanup:** didPop/didRemove → route удалён из `_routeIds` → нет утечки памяти
+92. **DB transaction correlation:** dbTransaction → inner dbTrace → inner log имеет transactionId из zone
+93. **DB dbStart/dbEnd correlation:** dbStart с correlationId → dbEnd с тем же correlationId → связаны
+94. **Cubit onChange без eventId:** Cubit (не BLoC) → `onChange` вызывается без `onEvent` → `_pendingEventIds[bloc]` == null → Queue не создаётся → `correlationId == null` → лог без correlation (ожидаемо)
 
 ---
 
@@ -3575,7 +3650,7 @@ extension ISpectTrace on ISpectLogger {
 
 ### New (ispectify core)
 
-- `packages/ispectify/lib/src/redaction/export_redaction.dart` — shared `redactExportString()` (internal, not exported)
+- `packages/ispectify/lib/src/redaction/redaction_service.dart` — ОБНОВИТЬ: добавить `redactTarget()`, `redactExportString()`, `redactPositionalArgs()` static методы
 - `packages/ispectify/lib/src/trace/trace_category.dart`
 - `packages/ispectify/lib/src/trace/trace_category_ids.dart` — SSOT for category ID strings
 - `packages/ispectify/lib/src/trace/trace_categories.dart`
@@ -3705,7 +3780,7 @@ extension ISpectTrace on ISpectLogger {
 - Default sensitive keys: token, password, secret, authorization, cookie, session, apikey, etc.
 - Production: `if (!options.enabled) return;` — zero data processing
 - File logs: app-sandboxed, данные redacted ДО записи
-- Export: additionalData — уже redacted (Layer 2). exception/error — Layer 3 regex redaction через `_redactExportString()`
+- Export: additionalData — уже redacted (Layer 2). exception/error — Layer 3 regex redaction через `RedactionService.redactExportString()`
 - LogExporter — maxLogs safety cap (default: 5000) предотвращает OOM
 - FakeISpectLogger — maxTraces FIFO-ротация (default: 10000) предотвращает OOM в тестах
 - TraceStreamTransformer — все trace callbacks в try/catch, не ломают data stream
@@ -3878,8 +3953,8 @@ ISpect(theme: ISpectTheme(
 - [ ] Создать `packages/ispectify/lib/src/trace/` директорию
 - [ ] Создать `packages/ispectify/lib/src/testing/` директорию
 - [ ] Создать `packages/ispectify/lib/src/export/` директорию
-- [ ] Создать `packages/ispectify/lib/src/redaction/export_redaction.dart`
-- [ ] Реализовать: trace_category.dart, trace_category_ids.dart, trace_categories.dart, trace_config.dart, trace_token.dart, trace_keys.dart, trace_extension.dart, trace_message.dart, trace_helpers.dart (включая `_redactTarget`, `truncateValue`, `safeTrace`), trace_stream_transformer.dart
+- [ ] Обновить `RedactionService` — добавить static методы: `redactTarget()`, `redactExportString()`, `redactPositionalArgs()`
+- [ ] Реализовать: trace_category.dart, trace_category_ids.dart, trace_categories.dart, trace_config.dart, trace_token.dart, trace_keys.dart, trace_extension.dart, trace_message.dart, trace_helpers.dart (`truncateValue`, `safeTrace` — redaction перенесена в RedactionService), trace_stream_transformer.dart
 - [ ] `ISpectDbCore.truncateValue` делегирует к core `truncateValue`
 - **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogger` имеет extension methods `trace()`, `traceAsync()`, `traceSync()`, `traceStart()`, `traceEnd()`, `traceStream()`, `traceTransaction()`.
 
@@ -3954,6 +4029,8 @@ ISpect(theme: ISpectTheme(
 - [ ] Mobile `log_card.dart`: добавить badge area (паритет с desktop)
 - [ ] `data_extensions.dart`: исправить `isHttpLog` (+ httpError), обновить `curlCommand`
 - [ ] `NetworkTransaction`: обновить fallback getters (method→operation, url→target, statusCode→meta.statusCode)
+- [ ] `ISpectNavigatorObserver`: добавить `_routeIds` Map + correlationId для push↔pop↔replace↔remove корреляции
+- [ ] `RouteLog`: класть `transitionId` в `additionalData[TraceKeys.correlationId]`
 - [ ] `network_transaction_service.dart`: обновить requestId extraction из meta
 - **Done when:** `flutter analyze packages/ispect --fatal-infos` чист. `flutter test packages/ispect` проходит. В UI: фильтры группируются динамически, новые иконки отображаются, slow badge видим.
 
@@ -3967,7 +4044,7 @@ ISpect(theme: ISpectTheme(
 ### Шаг 16: Barrel exports
 - [ ] Добавить ВСЕ новые файлы в `packages/ispectify/lib/ispectify.dart` (см. Part 8)
 - [ ] Удалить из barrel: `export 'src/network/request_id_generator.dart'`
-- [ ] НЕ экспортировать: trace_message.dart, trace_helpers.dart, export_redaction.dart (internal)
+- [ ] НЕ экспортировать: trace_message.dart, trace_helpers.dart (internal). `RedactionService` уже экспортируется
 - [ ] Проверить: `import 'package:ispectify/ispectify.dart'` даёт доступ к `networkCategory`, `TraceKeys`, `ISpectLogDataX`, `FakeISpectLogger`, `LogExporter`
 - **Done when:** `dart analyze` чист. Тест: `import 'package:ispectify/ispectify.dart'; final c = networkCategory;` компилируется.
 
@@ -3982,7 +4059,7 @@ ISpect(theme: ISpectTheme(
 - **Done when:** `dart analyze` и `flutter analyze` чисты для ВСЕХ пакетов. Все тесты проходят.
 
 ### Шаг 18: Тесты (Part 13)
-- [ ] Написать 89 тестов (13.1-13.6)
+- [ ] Написать 94 теста (13.1-13.6)
 - [ ] `dart test packages/ispectify` — все проходят
 - [ ] `flutter test packages/ispect` — все проходят
 - [ ] `flutter test packages/ispectify_dio` — все проходят
@@ -3990,7 +4067,7 @@ ISpect(theme: ISpectTheme(
 - [ ] `flutter test packages/ispectify_ws` — все проходят
 - [ ] `flutter test packages/ispectify_bloc` — все проходят
 - [ ] `dart test packages/ispectify_db` — все проходят
-- **Done when:** ВСЕ 89 тестов проходят. `./bash/check_version_sync.sh` и `./bash/check_dependencies.sh` чисты.
+- **Done when:** ВСЕ 94 теста проходят. `./bash/check_version_sync.sh` и `./bash/check_dependencies.sh` чисты.
 
 ### Шаг 19: Финализация
 - [ ] Обновить `version.config` → `5.0.0`
