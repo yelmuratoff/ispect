@@ -360,15 +360,18 @@ class ISpectTraceConfig {
 
 /// Constructor is NOT private: trace_extension.dart needs access from a different file.
 /// Class is `final` — cannot be subclassed, so public constructor is safe.
+/// NB: `traceStart()` returns `ISpectTraceToken?` (nullable) — null when logger disabled.
 /// **Intentional:** `logKey` is NOT stored in the token. traceStart/traceEnd is designed
 /// for single-log protocols where `pickLogKey()` is sufficient. For two-log protocols
 /// (HTTP request/response) use `trace()` directly with explicit `logKey` override.
 ///
 /// **Lifetime:** ВСЕГДА вызывайте `traceEnd()` после `traceStart()`.
 /// Если `traceEnd()` не вызван — Stopwatch продолжает работать до GC (bytes-level leak).
+/// `traceStart()` возвращает `null` если logger disabled → `traceEnd(null)` — no-op.
 /// Best practice:
 /// ```dart
 /// final token = logger.traceStart(...);
+/// // token может быть null если logger disabled — traceEnd(null) безопасен
 /// try {
 ///   final result = await doWork();
 ///   logger.traceEnd(token, value: result, success: true);
@@ -491,10 +494,18 @@ extension ISpectTrace on ISpectLogger {
     // safeTrace() поймает и предотвратит propagation. Ни один trace не может
     // сломать приложение.
     safeTrace(this, () {
+      // Auto-redaction target (URLs с pre-signed tokens, query params с credentials)
+      // NB: target попадает в buildTraceMessage() output → виден в UI списке.
+      // Pre-signed URLs (S3, GCS) содержат tokens в query params.
+      // Без auto-redaction target — PII утечка в message и additionalData.
+      final safeTarget = cfg.redact && target != null
+          ? _redactTarget(target, cfg.redactKeys)
+          : target;
+
       // Единый формат: [source] operation → target (duration)
       final message = buildTraceMessage(
         source: source, operation: operation,
-        target: target, key: key, duration: duration,
+        target: safeTarget, key: key, duration: duration,
         success: !isError,
       );
 
@@ -515,7 +526,7 @@ extension ISpectTrace on ISpectLogger {
         TraceKeys.category: category.id,
         TraceKeys.source: source,
         TraceKeys.operation: operation,
-        if (target != null) TraceKeys.target: target,
+        if (safeTarget != null) TraceKeys.target: safeTarget,
         if (key != null) TraceKeys.key: key,
         if (value != null) TraceKeys.value: truncateValue(value, cfg.maxValueLength),
         if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
@@ -640,7 +651,13 @@ extension ISpectTrace on ISpectLogger {
   }
 
   // ── Manual span (request → response) ────────────────
-  ISpectTraceToken traceStart({
+  /// Returns `null` if logger is disabled — caller MUST check:
+  /// ```dart
+  /// final token = logger.traceStart(...);
+  /// if (token == null) { /* just do the work without tracing */ }
+  /// ```
+  /// Alternatively, use traceAsync/traceSync which handle this automatically.
+  ISpectTraceToken? traceStart({
     required ISpectTraceCategory category,
     required String source,
     required String operation,
@@ -649,21 +666,26 @@ extension ISpectTrace on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) => ISpectTraceToken(
-    stopwatch: Stopwatch()..start(),
-    category: category, source: source, operation: operation,
-    target: target, key: key, meta: meta, config: config,
-    correlationId: correlationId,
-  );
+  }) {
+    if (!options.enabled) return null;  // ← zero overhead when disabled
+    return ISpectTraceToken(
+      stopwatch: Stopwatch()..start(),
+      category: category, source: source, operation: operation,
+      target: target, key: key, meta: meta, config: config,
+      correlationId: correlationId,
+    );
+  }
 
+  /// `token` is nullable — if `traceStart()` returned null (logger disabled), this is a no-op.
   void traceEnd(
-    ISpectTraceToken token, {
+    ISpectTraceToken? token, {
     Object? value,
     bool? success,
     Object? error,
     StackTrace? errorStackTrace,
     Map<String, Object?>? meta,
   }) {
+    if (token == null) return;  // ← logger was disabled at traceStart
     token.stopTiming();
     trace(
       category: token.category,
@@ -750,6 +772,11 @@ extension ISpectTrace on ISpectLogger {
       () async {
         // NB: txnId NOT passed in meta — auto-injected by trace() from zone.
         // No redundancy: additionalData['transactionId'] appears once (top-level).
+        //
+        // logMarkers=false НЕ влияет на transactionId injection.
+        // false = не логировать transaction-begin/commit/rollback маркеры.
+        // transactionId всё равно auto-inject'ится во ВСЕ inner trace() вызовы через zone.
+        // Маркеры — опциональная визуальная помощь для отделения начала/конца транзакции в UI.
         if (logMarkers) {
           trace(category: category, source: source,
             operation: 'transaction-begin', success: true);
@@ -1038,17 +1065,21 @@ extension ISpectLoggerPush on ISpectLogger {
         ...?meta,
       },
       config: config,
-      correlationId: correlationId,
+      // Auto-correlation: если correlationId не задан, используем messageId.
+      // Это позволяет связать lifecycle одной нотификации (received → opened → dismissed)
+      // без необходимости вручную передавать correlationId.
+      correlationId: correlationId ?? messageId,
     );
   }
 }
 ```
 
-> **NB: Push auto-correlation.** Для связи lifecycle событий одной нотификации
-> (received → opened → dismissed), caller должен передавать `messageId` как `correlationId`:
-> `logger.push(source: 'fcm', operation: 'received', messageId: id, correlationId: id);`
-> `logger.push(source: 'fcm', operation: 'opened', messageId: id, correlationId: id);`
-> Все события одного push-уведомления будут связаны через generic correlation banner.
+> **NB: Push auto-correlation.** `push()` автоматически использует `messageId` как `correlationId`
+> если `correlationId` не задан явно. Это устраняет дублирование и предотвращает ошибки:
+> `logger.push(source: 'fcm', operation: 'received', messageId: id);`
+> `logger.push(source: 'fcm', operation: 'opened', messageId: id);`
+> Все события одного push-уведомления автоматически связаны через generic correlation banner.
+> Если нужен другой correlationId — передать явно (override auto-fallback).
 
 ### B4. Analytics
 
@@ -1448,15 +1479,21 @@ abstract final class LogExporter {
   }) {
     final capped = _cap(logs, maxLogs);
     return capped.map((log) {
-      final json = log.toJson();
-      // Layer 3: redact exception/error strings в JSON output
-      if (redactKeys != null && redactKeys.isNotEmpty) {
-        final ex = json['exception'];
-        if (ex is String) json['exception'] = _redactExportString(ex, redactKeys);
-        final err = json['error'];
-        if (err is String) json['error'] = _redactExportString(err, redactKeys);
+      try {
+        final json = log.toJson();
+        // Layer 3: redact exception/error strings в JSON output
+        if (redactKeys != null && redactKeys.isNotEmpty) {
+          final ex = json['exception'];
+          if (ex is String) json['exception'] = _redactExportString(ex, redactKeys);
+          final err = json['error'];
+          if (err is String) json['error'] = _redactExportString(err, redactKeys);
+        }
+        return jsonEncode(json);
+      } catch (_) {
+        // Guard: non-serializable types в additionalData (Color, custom objects).
+        // Fallback: minimal JSON с message и key.
+        return jsonEncode({'message': '${log.message}', 'key': log.key, 'time': log.formattedTime});
       }
-      return jsonEncode(json);
     }).join('\n');
   }
 
@@ -1732,6 +1769,7 @@ Future<R> interceptUnary<Q, R>(ClientMethod<Q, R> method, Q request, ...) async 
     target: '${method.serviceName}/${method.name}',
     meta: {'request': '$request'},  // ← consider domain redaction!
   );
+  // NB: token может быть null если logger disabled. traceEnd(null) — no-op.
 
   try {
     final response = await call.response;
@@ -1849,18 +1887,24 @@ void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
   );
 
   // Сохраняем eventId для передачи в onTransition/onChange
-  _pendingEventIds[bloc] = eventId;
+  // NB: Queue вместо single String — для корректной корреляции при concurrent events.
+  // Если BLoC получает event A, затем event B ДО завершения onTransition event A,
+  // single value перезаписался бы, и transition A получил бы eventId от B.
+  // Queue гарантирует FIFO: transition/onChange забирают eventId в порядке добавления.
+  (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
 }
 
-// Хранение pending eventId для корреляции event → transition → state
-final Expando<String> _pendingEventIds = Expando<String>('bloc_event_id');
+// Хранение pending eventIds для корреляции event → transition → state.
+// Queue<String> вместо String — поддержка concurrent events (BLoC с concurrent transformer).
+// Expando — автоматическая очистка при GC блока (нет утечек памяти).
+final Expando<Queue<String>> _pendingEventIds = Expando<Queue<String>>('bloc_event_ids');
 
 @override
 void onTransition(Bloc<dynamic, dynamic> bloc, Transition<dynamic, dynamic> transition) {
   super.onTransition(bloc, transition);
   if (!_shouldLog(toggle: settings.printTransitions, candidate: bloc)) return;
 
-  final eventId = _pendingEventIds[bloc]; // ← получаем correlationId от event
+  final eventId = _pendingEventIds[bloc]?.firstOrNull; // ← FIFO: первый в очереди
 
   logger.trace(
     category: stateCategory,
@@ -1884,9 +1928,11 @@ void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
   super.onChange(bloc, change);
   if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) return;
 
-  final eventId = _pendingEventIds[bloc];
-  // Очищаем после state change (последний в цепочке event → transition → state)
-  _pendingEventIds[bloc] = null;
+  final queue = _pendingEventIds[bloc];
+  final eventId = queue?.firstOrNull;
+  // Очищаем текущий eventId (последний в цепочке event → transition → state)
+  // removeFirst() вместо = null — сохраняет eventIds от других concurrent events.
+  if (queue != null && queue.isNotEmpty) queue.removeFirst();
 
   logger.trace(
     category: stateCategory,
@@ -1952,7 +1998,7 @@ void onDone(
       (settings.printErrors && error != null);
   if (!shouldLog) return;
 
-  final eventId = _pendingEventIds[bloc];  // ← correlate with event chain
+  final eventId = _pendingEventIds[bloc]?.firstOrNull;  // ← correlate with event chain
 
   logger.trace(
     category: stateCategory,
@@ -1995,11 +2041,14 @@ void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
 > **NB:** Все user callbacks (`onBlocEvent`, `onBlocTransition`, `onBlocChange`, `onBlocError`, `onBlocCreate`, `onBlocClose`) и все filter callbacks (`eventFilter`, `transitionFilter`, `changeFilter`) СОХРАНЯЮТСЯ. Они часть public API. `_logCallbackError()` и `_safeLogData()` → trace pipeline через safeTrace().
 
 **BLoC event → transition → state correlation:**
-- `onEvent()` генерирует `eventId = generateTraceId()` и сохраняет в `Expando<String>`
-- `onTransition()` и `onChange()` получают `eventId` из `Expando` и передают как `correlationId`
-- `onChange()` очищает `Expando` (последний в цепочке)
+- `onEvent()` генерирует `eventId = generateTraceId()` и добавляет в `Expando<Queue<String>>`
+- `onTransition()` и `onChange()` получают `eventId` из очереди (FIFO) и передают как `correlationId`
+- `onChange()` удаляет текущий eventId из очереди (`removeFirst()`)
+- **Concurrent events:** Queue гарантирует корректную корреляцию при `add(eventA); add(eventB);` подряд.
+  Без Queue: `onEvent(A)` → `onEvent(B)` перезаписывает eventId → `onTransition(A)` получает eventId от B (баг).
+  С Queue: eventId A и B в очереди → transition A забирает первый, transition B — второй (корректно).
 - Пользователь может нажать "Show Related" на любом из трёх логов и увидеть всю цепочку
-- `Expando` используется вместо `Map<BlocBase, String>` — автоматически очищается GC при уничтожении BLoC
+- `Expando` используется вместо `Map<BlocBase, Queue>` — автоматически очищается GC при уничтожении BLoC
 - **Cubit:** У Cubit нет events, поэтому `onChange()` без `eventId` — ok, correlationId = null
 
 > **Почему нет BaseStateObserverSettings:** BLoC имеет event/transition/change/create/close/done. Riverpod имеет add/update/dispose. MobX имеет reaction/spy. Разные lifecycle — общий base class будет или слишком general (бесполезный) или слишком restrictive. Каждый observer остаётся standalone.
@@ -2453,19 +2502,26 @@ Map<String, List<LogDescription>> _groupLogTypes(BuildContext context, List<LogD
   return groups;
 }
 
+/// Кеш для _resolveCategory — предотвращает повторный lookup для одинаковых ключей.
+/// При 10K+ unique log keys четырехуровневый lookup может быть заметен в UI.
+/// Кеш инвалидируется при смене theme (новый widget rebuild).
+final _categoryCache = <String, String>{};
+
 /// Определяет категорию log key. Четыре источника (приоритет):
 /// 1. ISpectTheme.logCategories — кастомные mappings от пользователя
 /// 2. ISpectLogType enum — built-in log types
 /// 3. Prefix heuristic — backward compat для кастомных keys
 /// 4. 'general' — fallback
 String _resolveCategory(String key, ISpectTheme theme) {
+  final cached = _categoryCache[key];
+  if (cached != null) return cached;
   // 1. User-defined: кастомные log keys → category
   final custom = theme.logCategories?[key];
-  if (custom != null) return custom;
+  if (custom != null) return _categoryCache[key] = custom;
 
   // 2. Built-in: ISpectLogType enum
   final logType = ISpectLogType.fromKey(key);
-  if (logType != null) return logType.category;
+  if (logType != null) return _categoryCache[key] = logType.category;
 
   // 3. Prefix heuristic (backward compat for custom keys like 'http-custom')
   // Keys with built-in prefix (e.g. 'db-custom') auto-group into that category.
@@ -2473,11 +2529,11 @@ String _resolveCategory(String key, ISpectTheme theme) {
   final dash = key.indexOf('-');
   if (dash > 0) {
     final prefix = key.substring(0, dash);
-    if (TraceCategoryIds.builtIn.contains(prefix)) return prefix;  // ← SSOT
+    if (TraceCategoryIds.builtIn.contains(prefix)) return _categoryCache[key] = prefix;
   }
 
   // 4. Fallback
-  return TraceCategoryIds.general;  // ← SSOT
+  return _categoryCache[key] = TraceCategoryIds.general;
 }
 
 String _categoryLabel(BuildContext context, String category) {
@@ -2588,7 +2644,22 @@ class ISpectTheme {
 // → "Show All" фильтрует по transactionId
 // HTTP: backward compat — NetworkTransaction по-прежнему коррелирует req↔resp через requestId,
 //   banner показывает "View Request"/"View Response" как раньше.
-// Для других типов (WS stream, gRPC streaming, DB transaction) — generic banner.
+// **Приоритет баннеров:** Для HTTP логов показывается ТОЛЬКО HTTP-specific banner
+//   ("View Request"/"View Response"), НЕ generic "N related logs".
+//   Это потому что HTTP correlation через NetworkTransaction более информативна
+//   (показывает duration, status code pair). Generic banner — fallback для типов
+//   которые не имеют specialized UI (WS, gRPC, DB transaction, etc.).
+// **Логика:** if (isHttpLog && correlatedLog != null) → HTTP banner
+//            else if (correlationId != null) → generic correlation banner
+//            else if (transactionId != null) → transaction banner
+//
+// ── Severity visual hierarchy ──
+// Error/critical логи должны визуально выделяться в списке:
+// - Красная полоска слева (4px) для error/critical уровней
+// - Оранжевая полоска для warning
+// - Без полоски для info/debug/verbose
+// Quick-filter "Errors only" в AppBar — показать только error/critical/exception логи.
+// Это помогает быстро находить проблемы в потоке из тысяч логов.
 //
 // ── Slow trace indicator ──
 // Если additionalData['slow'] == true → показать warning badge/chip на log card:
@@ -2690,13 +2761,20 @@ class TransactionFilter implements Filter<ISpectLogData> {
 class FakeISpectLogger extends ISpectLogger {
   FakeISpectLogger({
     this.maxTraces = 10000,
-  }) : super(options: ISpectLoggerOptions(useConsoleLogs: false));
+  }) : super(options: ISpectLoggerOptions(
+    useConsoleLogs: false,
+    maxHistoryItems: 0,  // ← отключаем base history (double-memory prevention)
+  ));
 
   final int maxTraces;
   final _queue = Queue<ISpectLogData>();
 
   /// Read-only snapshot as List (для тестов, where(), firstWhere(), etc.)
+  /// NB: Создает копию. Для внутренних queries используем _traces (no-copy).
   List<ISpectLogData> get traces => _queue.toList();
+
+  /// Internal iterable — без копирования, для query-методов.
+  Iterable<ISpectLogData> get _traces => _queue;
 
   @override
   void logData(ISpectLogData data) {
@@ -2709,34 +2787,37 @@ class FakeISpectLogger extends ISpectLogger {
 
   // ── Query by structured trace fields ─────────────────
 
+  // NB: Все query-методы используют _traces (no-copy Iterable) вместо traces (List copy).
+  // Это O(n) filter без O(n) copy — значительно быстрее при maxTraces=10000.
+
   List<ISpectLogData> byCategory(String category) =>
-      traces.where((t) => t.additionalData?[TraceKeys.category] == category).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.category] == category).toList();
 
   List<ISpectLogData> bySource(String source) =>
-      traces.where((t) => t.additionalData?[TraceKeys.source] == source).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.source] == source).toList();
 
   List<ISpectLogData> byOperation(String operation) =>
-      traces.where((t) => t.additionalData?[TraceKeys.operation] == operation).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.operation] == operation).toList();
 
   List<ISpectLogData> byCorrelationId(String correlationId) =>
-      traces.where((t) => t.additionalData?[TraceKeys.correlationId] == correlationId).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.correlationId] == correlationId).toList();
 
   List<ISpectLogData> byTransactionId(String transactionId) =>
-      traces.where((t) => t.additionalData?[TraceKeys.transactionId] == transactionId).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.transactionId] == transactionId).toList();
 
   List<ISpectLogData> byLogKey(String logKey) =>
-      traces.where((t) => t.key == logKey).toList();
+      _traces.where((t) => t.key == logKey).toList();
 
   List<ISpectLogData> errors() =>
-      traces.where((t) => t.additionalData?[TraceKeys.success] == false).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.success] == false).toList();
 
   List<ISpectLogData> slow() =>
-      traces.where((t) => t.additionalData?[TraceKeys.slow] == true).toList();
+      _traces.where((t) => t.additionalData?[TraceKeys.slow] == true).toList();
 
   /// Query by LogLevel — для non-trace логов (logger.error(), logger.info(), etc.)
   /// которые не имеют TraceKeys.success field.
   List<ISpectLogData> byLogLevel(LogLevel level) =>
-      traces.where((t) => t.logLevel == level).toList();
+      _traces.where((t) => t.logLevel == level).toList();
 
   // ── Convenience last-accessors ────────────────────────
 
@@ -2880,10 +2961,13 @@ packages/
           sse_extension.dart
           grpc_extension.dart
           graphql_extension.dart
+      redaction/
+        export_redaction.dart         # shared redactExportString() (internal, not exported)
       filter/
         category_filter.dart          # CategoryFilter, SourceFilter, CorrelationFilter, TransactionFilter
       models/
         log_type.dart                 # ISpectLogType + category field + new values
+        log_data_x.dart              # ISpectLogDataX convenience extension (NEW)
         data.dart                     # ISpectLogData (unchanged)
       history/
         serialization.dart            # + toText(), toMarkdown() (added to existing extension)
@@ -3042,7 +3126,8 @@ logger.trace(category: myCategory, source: 'my-sdk',
       → передают raw data, полагаются на слой 2
 
 Слой 2: trace() pipeline (ОБЩИЙ safety net)
-  → auto-redacts meta по config.redactKeys
+  → auto-redacts meta по config.redactKeys (recursive Map redaction)
+  → auto-redacts target по config.redactKeys (URL credentials + query params)
   → generic: не знает про HTTP/SQL, но ловит common patterns (token, password, secret, etc.)
   → НЕ дублирует слой 1: если domain уже redacted — redactByKeys на уже чистых данных безопасен (idempotent)
 
@@ -3131,12 +3216,42 @@ String buildTraceMessage({...}) { ... }
 //   );
 // Полный response НЕ должен попадать в meta — это приведёт к OOM
 // при высокочастотном логировании.
+/// ⚠️ ОГРАНИЧЕНИЕ: обрезает ТОЛЬКО String. Map и List возвращаются as-is.
+/// Для large payloads (1MB+ response, file content) — использовать `projectResult`
+/// в traceAsync/traceSync. Для fire-and-forget `trace(value:)` — ответственность
+/// на вызывающем коде не передавать huge Maps/Lists.
+/// Unicode: substring по code units (UTF-16). Emoji могут быть разрезаны.
+/// Для diagnostic logging это приемлемо.
 Object? truncateValue(Object? value, int maxLen) {
   if (value == null) return null;
   if (value is String && value.length > maxLen) {
     return '${value.substring(0, maxLen)}… [truncated]';
   }
   return value;
+}
+
+// _redactTarget — редактирует query params в URL-подобных target строках.
+// Используется в trace() pipeline для auto-redaction target field.
+// NB: target НЕ обязательно URL (может быть table name, service/method).
+// Поэтому применяем redaction только если строка содержит '?' (query params).
+// Для URL credentials (user:pass@host) — используем regex из _redactExportString.
+String _redactTarget(String target, Set<String> redactKeys) {
+  // 1. URL credentials: https://user:pass@host → https://***:***@host
+  var result = target.replaceAllMapped(
+    RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+    (m) => m[2] != null ? '://***:***@' : '://***@',
+  );
+  // 2. Query params с sensitive keys
+  if (result.contains('?')) {
+    for (final key in redactKeys) {
+      final escaped = RegExp.escape(key);
+      result = result.replaceAllMapped(
+        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
+        (m) => '${m[1]}${m[2]}=***',
+      );
+    }
+  }
+  return result;
 }
 
 // NB: safeTrace — НЕ safeLogData. Существующий extension method SafeLogExtension.safeLogData()
@@ -3151,11 +3266,13 @@ void safeTrace(ISpectLogger logger, ISpectLogData Function() builder) {
   try {
     final data = builder();
     logger.logData(data);
-  } catch (e) {
+  } catch (e, st) {
     // Попытка залогировать ошибку trace pipeline через warning.
+    // NB: НЕ используем '$e' — exception.toString() может содержать sensitive данные.
+    // Логируем только тип ошибки. Stack trace — для debugging pipeline, не содержит PII.
     // Если даже это бросает — молчим (не ломаем приложение).
     try {
-      logger.warning('Trace builder threw: $e');
+      logger.warning('Trace builder threw: ${e.runtimeType}\n$st');
     } catch (_) {}
   }
 }
@@ -3184,7 +3301,7 @@ extension ISpectTrace on ISpectLogger {
 | PII: userId | `userId` передаётся в `meta` (не в `key`/message). Добавить `'userId'` в custom `redactKeys` если нужно. |
 | Sensitive headers | `BaseNetworkInterceptor.redactHeaders()` — маскирует Authorization, Cookie, Set-Cookie |
 | Sensitive URLs | `BaseNetworkInterceptor.redactUrl()` — маскирует query params с sensitive keys |
-| target field (URLs) | Pre-signed URLs (S3, GCS) могут содержать tokens. Domain-layer (storage interceptor) должен redact target ДО передачи в trace(). Документировать как requirement для storage/SSE extensions. |
+| target field (URLs) | Auto-redaction в trace() pipeline: `_redactTarget()` убирает URL credentials и query params с sensitive keys. Pre-signed URLs (S3, GCS) автоматически очищаются. Domain-layer дополнительно может redact protocol-specific patterns. |
 | SQL injection в логах | `ISpectDbCore.sqlDigest()` — нормализует SQL, заменяет литералы на `?` |
 | BLoC event toString() | `settings.printEventFullData` может содержать PII. НЕ включать в production. Документировать risk. |
 | Файлы логов на диске | App-sandboxed directory. Redaction применяется ДО записи. `FileLogHistory` пишет уже redacted данные. **Рекомендация:** писать в non-iCloud-backed directory (iOS: `NSCachesDirectory`). |
@@ -3277,13 +3394,15 @@ extension ISpectTrace on ISpectLogger {
 ## Part L: Implementation Order
 
 1. **maxHistorySize** — **УЖЕ РЕАЛИЗОВАНО** как `ISpectLoggerOptions.maxHistoryItems` (default: 10000) с FIFO-ротацией в `DefaultISpectLoggerHistory._addEntry()`. Проверить naming consistency: если план использует `maxHistorySize` — решить, переименовывать ли на `maxHistorySize` для единообразия с `FakeISpectLogger.maxTraces`, или оставить `maxHistoryItems`. Не нужна реализация с нуля.
-1.5. **defaultSensitiveKeys update** — **⚠️ SECURITY-CRITICAL:** без этого шага `email`, `otp`, `device_token`, `fcm_token` в URL query params **утекают** через `RedactionService.redactUrl()` в Dio/HTTP interceptors. Добавить в `key_defaults.dart`: `'email'`, `'e-mail'`, `'email_address'`, `'otp'`, `'one_time_password'`, `'device_token'`, `'fcm_token'`, `'apns_token'`, `'push_token'`, `'session_id'`, `'session_token'`, `'username'`, `'user_name'`, `'bearer_token'`. Добавить regex pattern: `r'(?:e[-_]?mail|otp|device[-_]?token|push[-_]?token|session[-_]?(?:id|token))'`.
-2. **Создать директории** + Core trace primitive:
+1.5. **defaultSensitiveKeys update** — **⚠️ SECURITY-CRITICAL:** без этого шага `email`, `otp`, `device_token`, `fcm_token` в URL query params **утекают** через `RedactionService.redactUrl()` в Dio/HTTP interceptors. Добавить в `key_defaults.dart`: `'email'`, `'e-mail'`, `'email_address'`, `'otp'`, `'one_time_password'`, `'device_token'`, `'fcm_token'`, `'apns_token'`, `'push_token'`, `'session_id'`, `'session_token'`, `'username'`, `'user_name'`, `'bearer_token'`, `'csrf'`, `'x-csrf-token'`, `'csrf_token'`, `'mfa_code'`, `'totp'`, `'verification_code'`, `'pin_code'`, `'login'`. Добавить regex pattern: `r'(?:e[-_]?mail|otp|device[-_]?token|push[-_]?token|session[-_]?(?:id|token)|csrf[-_]?token|mfa[-_]?code)'`.
+2. **ISpectLogType update FIRST** — enum + category field + new enum values + `isErrorType` + `level` + `_defaultPens`.
+   **⚠️ ВАЖНО: Шаг 2 ДОЛЖЕН быть выполнен ПЕРЕД шагом 3.** `trace_categories.dart` ссылается на `ISpectLogType.httpResponse.key` и новые enum values (`authSuccess`, `sseReceived`, etc.). Без них компиляция trace_categories невозможна. `TraceCategoryIds` — standalone (без зависимостей), может быть создан параллельно.
+3. **Создать директории** + Core trace primitives:
    - Создать: `packages/ispectify/lib/src/trace/`, `packages/ispectify/lib/src/testing/`, `packages/ispectify/lib/src/export/`
+   - `packages/ispectify/lib/src/redaction/export_redaction.dart` — shared `redactExportString()` (internal, used by toText/toMarkdown/LogExporter)
    - `packages/ispectify/lib/src/filter/` — уже существует ✅
-   - Core files: trace_category, trace_category_ids, trace_categories, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_helpers, trace_stream_transformer
+   - Core files: trace_category, trace_category_ids, trace_categories, trace_config, trace_token, trace_keys, trace_extension, trace_message, trace_helpers (включая `_redactTarget()`), trace_stream_transformer
    - `truncateValue()` в `trace_helpers.dart` — core-level. `ISpectDbCore.truncateValue` делегирует к ней
-3. **ISpectLogType update** — enum + category field + new enum values + `isErrorType` (добавить blocError + 9 новых error types, см. E1b) + `level` (новые error types → LogLevel.error) + `_defaultPens` (21 новых mappings, см. E1b)
 4. **ISpectLogDataX** convenience extension (`models/log_data_x.dart`) — нужен ДО шагов 12-13 (UI зависит от `data.httpStatusCode` и др.)
 5. ISpectLogData serialization extensions (toText, toMarkdown с redactKeys в existing ISpectLogDataSerialization) + LogExporter utility class (с maxLogs, CSV)
 6. Domain extensions (auth, storage, push, analytics, payment, sse, grpc, graphql)
@@ -3294,7 +3413,7 @@ extension ISpectTrace on ISpectLogger {
 11. Рефакторинг ispectify_dio → two trace() + logKey override
 12. Рефакторинг ispectify_http → two trace() + logKey override
 13. **Рефакторинг ispectify_ws** → trace() + миграция pattern matching на key-based + обновление ISpectWSInterceptorSettings filter types (breaking change: `WSSentLog` → `ISpectLogData`)
-14. **UI update** — dynamic filter grouping, new icons/colors, categoryLabels + logCategories в ISpectTheme, **удалить group* l10n strings → добавить category* strings** (**Маппинг: `groupHttp`→`categoryNetwork`, `groupBloc`→`categoryState`, `groupRiverpod`→`categoryState`, `groupWebSocket`→`categoryWebSocket`, `groupDatabase`→`categoryDb`, `groupNavigation`→`categoryNavigation`, `groupGeneral`→fallback capitalize), regenerate localizations, generic correlation banner (correlationId/transactionId), slow trace badge on log cards. **NB: mobile log_card.dart** — добавить badge area (сейчас нет, desktop имеет statusCode badge). Нужно: slow query badge (оранжевый, "Slow: {ms}ms"), error type badge, statusCode badge (паритет с desktop_log_row.dart). Обновить `data_extensions.dart`: исправить `isHttpLog` (добавить `|| key == ISpectLogType.httpError.key`), обновить `curlCommand` (from `additionalData?['request-options']` → собирать cURL из trace fields: `TraceKeys.operation`, `TraceKeys.target`, `traceMeta?['headers']`, `traceMeta?['body']`; также добавить backward compat fallback: `traceMeta?['requestOptions']` для imported v4 logs). При имплементации generic correlation banner — рассмотреть index `Map<String, List<int>>` по correlationId для O(1) lookup (текущий `_findCorrelation()` O(n) при 10K+ логах)
+14. **UI update** — dynamic filter grouping (с `_categoryCache`), new icons/colors, categoryLabels + logCategories в ISpectTheme (**⚠️ обязательно обновить copyWith(), ==, hashCode, toMap(), fromMap()**), severity visual hierarchy (цветовая полоска слева + quick-filter "Errors only"), **удалить group* l10n strings → добавить category* strings** (**Маппинг: `groupHttp`→`categoryNetwork`, `groupBloc`→`categoryState`, `groupRiverpod`→`categoryState`, `groupWebSocket`→`categoryWebSocket`, `groupDatabase`→`categoryDb`, `groupNavigation`→`categoryNavigation`, `groupGeneral`→fallback capitalize), regenerate localizations, generic correlation banner (correlationId/transactionId), slow trace badge on log cards. **NB: mobile log_card.dart** — добавить badge area (сейчас нет, desktop имеет statusCode badge). Нужно: slow query badge (оранжевый, "Slow: {ms}ms"), error type badge, statusCode badge (паритет с desktop_log_row.dart). Обновить `data_extensions.dart`: исправить `isHttpLog` (добавить `|| key == ISpectLogType.httpError.key`), обновить `curlCommand` (from `additionalData?['request-options']` → собирать cURL из trace fields: `TraceKeys.operation`, `TraceKeys.target`, `traceMeta?['headers']`, `traceMeta?['body']`; также добавить backward compat fallback: `traceMeta?['requestOptions']` для imported v4 logs). При имплементации generic correlation banner — рассмотреть index `Map<String, List<int>>` по correlationId для O(1) lookup (текущий `_findCorrelation()` O(n) при 10K+ логах)
 15. UI: export/share sheet (JSON Lines, Text, Markdown, CSV + redactKeys + maxLogs cap)
 16. Barrel exports: добавить ВСЕ новые файлы в `ispectify.dart` (см. Part H), включая `log_data_x.dart`. **Удалить** из barrel: `export 'src/network/request_id_generator.dart'` (заменён на `generateTraceId()`). `network_json_keys.dart` **оставить** — используется в DioRequestData/ResponseData для domain payload.
 17. **Тесты**: standard (M1/M1b) + security (M2) + edge cases (M3) + **конкретная миграция тестов:**
@@ -3404,6 +3523,24 @@ extension ISpectTrace on ISpectLogger {
 73. **curlCommand v4 backward compat:** log с `additionalData: {'request-options': {'method': 'GET', ...}}` → `curlCommand` returns valid cURL string (fallback path)
 74. **RouteLog correlation:** `RouteLog` с `transitionId: 'abc'` → `additionalData[TraceKeys.correlationId]` == `'abc'`
 
+### M6. Тесты из ревью (добавлены по результатам аудита)
+
+75. **BLoC concurrent events correlation:** `bloc.add(eventA); bloc.add(eventB);` → `onTransition(A)` получает eventId от A, `onTransition(B)` получает eventId от B (Queue-based FIFO, не перезапись)
+76. **Push auto-correlation:** `push(messageId: 'msg-1')` без explicit `correlationId` → `correlationId == 'msg-1'` (auto-fallback)
+77. **Push explicit correlationId override:** `push(messageId: 'msg-1', correlationId: 'custom')` → `correlationId == 'custom'` (не 'msg-1')
+78. **traceStart returns null when disabled:** `logger.options.enabled = false` → `traceStart()` returns null → `traceEnd(null)` is no-op
+79. **_redactTarget URL credentials:** `target: 'https://user:pass@host/path'` → `'https://***:***@host/path'` в additionalData
+80. **_redactTarget query params:** `target: '/api?token=abc&name=test'` с `redactKeys: {'token'}` → `'/api?token=***&name=test'`
+81. **_redactTarget non-URL:** `target: 'users'` (table name, no URL) → unchanged (no `?`, no `://`)
+82. **safeTrace error logging:** builder throws → warning logged с `${e.runtimeType}` (не `$e`), stack trace включён
+83. **safeTrace no PII in warning:** builder throws `Exception('token=abc123')` → warning содержит `Exception` (runtimeType), НЕ содержит `token=abc123`
+84. **TraceStreamTransformer broadcast stream:** broadcast stream → cancel one listener → onCancel called, other listeners unaffected
+85. **TraceStreamTransformer pause/resume:** pause → resume → continue receiving events correctly
+86. **LogExporter.toJsonLines non-serializable meta:** `meta: {'color': customObject}` → `jsonEncode` throws → handle gracefully (skip or toString fallback)
+87. **_resolveCategory caching:** call twice with same key → second call returns cached result (no enum lookup)
+88. **FakeISpectLogger maxHistoryItems:** base `ISpectLoggerOptions.maxHistoryItems == 0` → no double-memory
+89. **Cubit onChange без eventId:** Cubit (не BLoC) → `onChange` вызывается без `onEvent` → `_pendingEventIds[bloc]` == null → Queue не создаётся → `correlationId == null` → лог без correlation (ожидаемо)
+
 ---
 
 ## Part N: Critical Files
@@ -3449,6 +3586,7 @@ extension ISpectTrace on ISpectLogger {
 - `packages/ispect/lib/src/core/res/constants/ispect_constants.dart` — new icons/colors
 - `packages/ispect/lib/src/core/res/ispect_theme.dart` — + categoryLabels, + logCategories, + updated copyWith/==/ hashCode/toMap/fromMap
 - `packages/ispect/lib/src/features/ispect/presentation/widgets/settings/log_type_filter_section.dart` — dynamic grouping via _resolveCategory
+- `packages/ispectify/lib/src/filter/search_filter.dart` — SearchFilter уже ищет рекурсивно по `additionalData` (включая вложенные Map/List). v5 trace structure (TraceKeys в top-level, meta nested) поддерживается автоматически — SearchFilter НЕ нужно менять. Но проверить при имплементации что поиск по `'statusCode'` находит значение в `meta.statusCode` (nested), а не только top-level.
 
 ### Modified (web_logs_viewer)
 - `web_logs_viewer/` — Парсит JSON из ISpect. При обновлении `additionalData` layout нужно проверить:
@@ -3467,7 +3605,6 @@ extension ISpectTrace on ISpectLogger {
 
 ### Modified (network utilities — НЕ удаляются, но обновляются)
 - `packages/ispectify/lib/src/network/network_json_keys.dart` — `NetworkJsonKeys` остаётся. Используется в `DioRequestData.toJson()`, `DioResponseData.toJson()`, `network_map_redactor.dart` для структурирования network meta. НЕ конфликтует с `TraceKeys` (разные уровни: `TraceKeys` = trace envelope, `NetworkJsonKeys` = domain payload внутри `meta`). Убедиться при имплементации, что ключи не дублируются.
-- `packages/ispectify/lib/src/network/request_id_generator.dart` — **УДАЛИТЬ**. Заменяется на `generateTraceId()` из `common_utils.dart`. Текущий формат `net-{sessionHex}-{counter}` → `generateTraceId()` (16-char hex). `NetworkTransactionService` коррелирует по equality — формат не важен. Убрать из barrel `ispectify.dart`.
 
 ### НЕ удаляется — data helper classes
 - `packages/ispectify_dio/lib/src/data/request.dart` — DioRequestData (data class with toJson())
