@@ -357,6 +357,8 @@ class ISpectTraceConfig {
   /// NB: Subclasses (e.g. ISpectDbConfig) MUST override copyWith()
   /// to preserve their additional fields. Without override, copyWith()
   /// returns ISpectTraceConfig and loses DB-specific fields.
+  /// `@mustBeOverridden` (package:meta) gives analyzer warning if subclass forgets.
+  @mustBeOverridden
   ISpectTraceConfig copyWith({...});
 }
 ```
@@ -488,6 +490,7 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? logKey,  // ← overrides category.pickLogKey() if provided
     String? correlationId,  // ← links related traces (e.g. gRPC request↔response, stream events)
+    LogLevel? logLevel,  // ← overrides default (error→LogLevel.error, success→LogLevel.info)
   }) {
     if (!options.enabled) return;  // ← zero overhead в production
 
@@ -552,7 +555,9 @@ extension ISpectTrace on ISpectLogger {
       return ISpectLogData(
         message,
         key: resolvedLogKey,
-        logLevel: isError ? LogLevel.error : LogLevel.info,
+        // logLevel override allows custom severity (e.g., LogLevel.warning for deprecation traces).
+        // Default: error→LogLevel.error, success→LogLevel.info (covers 99% of cases).
+        logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
         additionalData: additionalData,
         exception: error is Exception ? error : null,
         error: error is Error ? error : null,
@@ -574,6 +579,7 @@ extension ISpectTrace on ISpectLogger {
     double? sample,
     ISpectTraceConfig? config,
     String? logKey,
+    LogLevel? logLevel,
     String? correlationId,
   }) async {
     if (!options.enabled) return run();  // zero overhead
@@ -596,7 +602,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, value: projected,
         success: true, duration: sw.elapsed,
         meta: meta, config: cfg, sample: sample, logKey: logKey,
-        correlationId: correlationId,
+        correlationId: correlationId, logLevel: logLevel,
       );
       return result;
     } catch (e, st) {
@@ -606,7 +612,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, error: e, errorStackTrace: st,
         success: false, duration: sw.elapsed,
         meta: meta, config: cfg, sample: sample, logKey: logKey,
-        correlationId: correlationId,
+        correlationId: correlationId, logLevel: logLevel,
       );
       rethrow;
     }
@@ -626,6 +632,7 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? logKey,
     String? correlationId,
+    LogLevel? logLevel,
   }) {
     if (!options.enabled) return run();  // zero overhead
 
@@ -644,7 +651,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, value: projected,
         success: true, duration: sw.elapsed,
         meta: meta, config: config, sample: sample, logKey: logKey,
-        correlationId: correlationId,
+        correlationId: correlationId, logLevel: logLevel,
       );
       return result;
     } catch (e, st) {
@@ -654,7 +661,7 @@ extension ISpectTrace on ISpectLogger {
         target: target, key: key, error: e, errorStackTrace: st,
         success: false, duration: sw.elapsed,
         meta: meta, config: config, sample: sample, logKey: logKey,
-        correlationId: correlationId,
+        correlationId: correlationId, logLevel: logLevel,
       );
       rethrow;
     }
@@ -708,6 +715,9 @@ extension ISpectTrace on ISpectLogger {
       error: error,
       errorStackTrace: errorStackTrace,
       duration: token.elapsed,
+      // NB: End-time meta overrides start-time meta on key collision (last-write-wins).
+      // Intentional: traceEnd may update fields set at traceStart
+      // (e.g., updating 'request' with actual data not available at start).
       meta: {...?token.meta, ...?meta},
       config: token.config,
       correlationId: token.correlationId,
@@ -1494,18 +1504,27 @@ abstract final class LogExporter {
 
   /// Export as CSV (для анализа в Excel/Google Sheets).
   /// **Security:** Все колонки проходят через `_csvEscape` (formula injection protection).
+  /// **Security:** `message` колонка может содержать PII из non-trace логов
+  /// (например, `logger.info('User email: user@mail.com')`). `redactKeys` применяет
+  /// Layer 3 redaction через `RedactionService.redactExportString()` к `message`.
   /// **NB:** CSV — overview формат. `exception`, `error`, `stackTrace` и nested `meta`
   /// НЕ включены в колонки (слишком длинные для табличного формата).
   /// Для полных деталей используйте JSON Lines (`toJsonLines()`) или Text (`toText()`).
   static String toCsv(
     List<ISpectLogData> logs, {
     int? maxLogs = defaultMaxLogs,
+    Set<String>? redactKeys,
   }) {
     final capped = _cap(logs, maxLogs);
     final buffer = StringBuffer()
       ..writeln('time,level,key,category,source,operation,target,durationMs,success,message');
     for (final log in capped) {
       final ad = log.additionalData;
+      // Layer 3: redact message column (non-trace logs may contain PII in message)
+      final rawMessage = log.message?.toString() ?? '';
+      final safeMessage = redactKeys != null
+          ? RedactionService.redactExportString(rawMessage, redactKeys)
+          : rawMessage;
       buffer.writeln([
         _csvEscape(log.formattedTime),
         _csvEscape(log.logLevel?.name ?? ''),
@@ -1516,7 +1535,7 @@ abstract final class LogExporter {
         _csvEscape(ad?[TraceKeys.target]?.toString() ?? ''),
         _csvEscape(ad?[TraceKeys.durationMs]?.toString() ?? ''),
         _csvEscape(ad?[TraceKeys.success]?.toString() ?? ''),
-        _csvEscape(log.message?.toString() ?? ''),
+        _csvEscape(safeMessage),
       ].join(','));
     }
     return buffer.toString();
@@ -1900,11 +1919,13 @@ void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
   super.onChange(bloc, change);
   if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) return;
 
-  final queue = _pendingEventIds[bloc];
-  final eventId = queue?.firstOrNull;
-  // Очищаем текущий eventId (последний в цепочке event → transition → state)
-  // removeFirst() вместо = null — сохраняет eventIds от других concurrent events.
-  if (queue != null && queue.isNotEmpty) queue.removeFirst();
+  final eventId = _pendingEventIds[bloc]?.firstOrNull;
+  // NB: НЕ делаем removeFirst() здесь. Pop происходит в onDone() — единственной
+  // финальной точке lifecycle event'а. onChange вызывается ДО onDone, поэтому
+  // eventId ещё нужен для корреляции в onDone.
+  // Если pop был бы здесь, то onDone потерял бы correlationId.
+  // Flow: onEvent → onTransition → onChange → onDone (pop).
+  // Error flow: onEvent → onError → onDone (pop). onChange НЕ вызывается.
 
   logger.trace(
     category: stateCategory,
@@ -1970,7 +1991,14 @@ void onDone(
       (settings.printErrors && error != null);
   if (!shouldLog) return;
 
-  final eventId = _pendingEventIds[bloc]?.firstOrNull;  // ← correlate with event chain
+  // onDone — ЕДИНСТВЕННАЯ финальная точка lifecycle event'а.
+  // Pop eventId здесь, а не в onChange:
+  // - Happy flow: onEvent → onTransition → onChange → onDone (pop)
+  // - Error flow: onEvent → onError → onDone (pop). onChange НЕ вызывается.
+  // Если бы pop был в onChange, error flow оставлял бы stale eventId в очереди.
+  final queue = _pendingEventIds[bloc];
+  final eventId = queue?.firstOrNull;
+  if (queue != null && queue.isNotEmpty) queue.removeFirst();
 
   logger.trace(
     category: stateCategory,
@@ -2012,17 +2040,22 @@ void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
 
 > **NB:** Все user callbacks (`onBlocEvent`, `onBlocTransition`, `onBlocChange`, `onBlocError`, `onBlocCreate`, `onBlocClose`) и все filter callbacks (`eventFilter`, `transitionFilter`, `changeFilter`) СОХРАНЯЮТСЯ. Они часть public API. `_logCallbackError()` и `_safeLogData()` → trace pipeline через safeTrace().
 
-**BLoC event → transition → state correlation:**
+**BLoC event → transition → state → done correlation:**
 
 - `onEvent()` генерирует `eventId = generateTraceId()` и добавляет в `Expando<Queue<String>>`
-- `onTransition()` и `onChange()` получают `eventId` из очереди (FIFO) и передают как `correlationId`
-- `onChange()` удаляет текущий eventId из очереди (`removeFirst()`)
+- `onTransition()` и `onChange()` получают `eventId` из очереди (FIFO) и передают как `correlationId` (без pop)
+- `onDone()` получает `eventId` из очереди и делает `removeFirst()` — это **единственная точка pop'а**
+- **Почему pop в onDone, а не в onChange:**
+  - Happy flow: `onEvent → onTransition → onChange → onDone (pop)` — все 4 лога получают один eventId
+  - Error flow: `onEvent → onError → onDone (pop)` — onChange НЕ вызывается
+  - Если бы pop был в onChange, то при error flow eventId остался бы в очереди (stale),
+    и следующий event получил бы чужой correlationId
 - **Concurrent events:** Queue гарантирует корректную корреляцию при `add(eventA); add(eventB);` подряд.
   Без Queue: `onEvent(A)` → `onEvent(B)` перезаписывает eventId → `onTransition(A)` получает eventId от B (баг).
-  С Queue: eventId A и B в очереди → transition A забирает первый, transition B — второй (корректно).
-- Пользователь может нажать "Show Related" на любом из трёх логов и увидеть всю цепочку
+  С Queue: eventId A и B в очереди → onDone(A) забирает первый, onDone(B) — второй (корректно).
+- Пользователь может нажать "Show Related" на любом логе и увидеть всю цепочку (event, transition, state, done)
 - `Expando` используется вместо `Map<BlocBase, Queue>` — автоматически очищается GC при уничтожении BLoC
-- **Cubit:** У Cubit нет events, поэтому `onChange()` без `eventId` — ok, correlationId = null
+- **Cubit:** У Cubit нет events, поэтому `onChange()` без `eventId` — ok, correlationId = null. `onDone` не вызывается для Cubit
 
 > **Почему нет BaseStateObserverSettings:** BLoC имеет event/transition/change/create/close/done. Riverpod имеет add/update/dispose. MobX имеет reaction/spy. Разные lifecycle — общий base class будет или слишком general (бесполезный) или слишком restrictive. Каждый observer остаётся standalone.
 
@@ -2537,8 +2570,19 @@ Map<String, List<LogDescription>> _groupLogTypes(BuildContext context, List<LogD
 
 /// Кеш для _resolveCategory — предотвращает повторный lookup для одинаковых ключей.
 /// При 10K+ unique log keys четырехуровневый lookup может быть заметен в UI.
-/// Кеш инвалидируется при смене theme (новый widget rebuild).
-final _categoryCache = <String, String>{};
+///
+/// **⚠️ ВАЖНО:** Кеш привязан к identity конкретного ISpectTheme.
+/// Если пользователь меняет `logCategories` (через hot reload, settings, или theme switch),
+/// кеш автоматически инвалидируется при несовпадении theme identity.
+/// Реализация: в State виджета фильтров, НЕ как file-level variable.
+///
+/// ```dart
+/// // В State виджета LogTypeFilterSection:
+/// Map<String, String> _categoryCache = {};
+/// ISpectTheme? _lastTheme;
+/// ```
+Map<String, String> _categoryCache = {};
+ISpectTheme? _lastTheme;
 
 /// Определяет категорию log key. Четыре источника (приоритет):
 /// 1. ISpectTheme.logCategories — кастомные mappings от пользователя
@@ -2546,6 +2590,11 @@ final _categoryCache = <String, String>{};
 /// 3. Prefix heuristic — backward compat для кастомных keys
 /// 4. 'general' — fallback
 String _resolveCategory(String key, ISpectTheme theme) {
+  // Invalidate cache on theme change (logCategories could differ)
+  if (!identical(theme, _lastTheme)) {
+    _categoryCache = {};
+    _lastTheme = theme;
+  }
   final cached = _categoryCache[key];
   if (cached != null) return cached;
   // 1. User-defined: кастомные log keys → category
@@ -3204,14 +3253,63 @@ class RedactionService {
 
   /// НОВЫЙ: Regex-based редакция строк (Layer 3 — export).
   /// Покрывает URL credentials, Bearer/Basic tokens, query params, JSON patterns.
-  /// Вызывается из toText(), toMarkdown(), LogExporter.toJsonLines().
+  /// Вызывается из toText(), toMarkdown(), LogExporter.toJsonLines(), LogExporter.toCsv().
+  ///
+  /// **Порядок regex:** от самых специфичных к общим, чтобы не было double-replacement.
+  /// Каждый regex идемпотентен (повторный вызов на уже redacted строке безопасен).
+  /// `RegExp.escape(key)` используется для ключей с спецсимволами (e.g., 'x-csrf-token').
+  ///
+  /// **Ограничения:**
+  /// - Regex НЕ покрывает custom binary encodings или non-URL formats
+  /// - JSON pattern ловит только `"key": "value"`, не `"key": 123` (numbers не redact'ятся)
+  /// - Designed for common patterns; domain-specific redaction — на Layer 1 (interceptor)
   static String redactExportString(String value, Set<String>? redactKeys) {
     if (redactKeys == null || redactKeys.isEmpty) return value;
-    // 1. URL credentials
-    // 2. Bearer/Basic tokens
-    // 3. Query params с sensitive keys
-    // 4. JSON patterns в строках
-    // (реализация — см. Part 3.1)
+    var result = value;
+
+    // 1. URL credentials: ://user:pass@host → ://***:***@host
+    // Covers: https://admin:secret@api.example.com, ftp://user@host
+    // Idempotent: ://***:***@ does not re-match (*** doesn't contain @-invalid chars before @)
+    result = result.replaceAllMapped(
+      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      (m) => m[2] != null ? '://***:***@' : '://***@',
+    );
+
+    // 2. Bearer/Basic tokens: "Authorization: Bearer eyJhbG..." → "Authorization: Bearer ***"
+    // Covers: Bearer, Basic, Token prefixes (case-insensitive)
+    // Token pattern: alphanumeric + common token chars (+/=._~-)
+    // Idempotent: "Bearer ***" re-matches but *** → *** (same result)
+    result = result.replaceAllMapped(
+      RegExp(r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+', caseSensitive: false),
+      (m) => '${m[1]} ***',
+    );
+
+    // 3. Query params with sensitive keys: ?token=abc&name=test → ?token=***&name=test
+    // RegExp.escape(key) handles keys like 'x-csrf-token' (contains '-')
+    // Case-insensitive matching for keys
+    // Idempotent: token=*** re-matches but *** → *** (same result)
+    for (final key in redactKeys) {
+      final escaped = RegExp.escape(key);
+      result = result.replaceAllMapped(
+        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
+        (m) => '${m[1]}${m[2]}=***',
+      );
+    }
+
+    // 4. JSON patterns in strings: "password": "secret123" → "password": "***"
+    // Catches exception.toString() output containing JSON fragments
+    // Only redacts string values ("key": "value"), not numbers ("key": 123)
+    // RegExp.escape(key) for safe matching
+    // Idempotent: "password": "***" re-matches but *** → *** (same result)
+    for (final key in redactKeys) {
+      final escaped = RegExp.escape(key);
+      result = result.replaceAllMapped(
+        RegExp('"($escaped)"\\s*:\\s*"[^"]*"', caseSensitive: false),
+        (m) => '"${m[1]}": "***"',
+      );
+    }
+
+    return result;
   }
 
   /// СУЩЕСТВУЕТ в ISpectDbCore, ПЕРЕНОСИТСЯ сюда:
@@ -3569,6 +3667,8 @@ extension ISpectTrace on ISpectLogger {
 30. **toJsonLines redaction:** `LogExporter.toJsonLines(logs, redactKeys: {'token'})` — exception с `?token=abc` → `?token=***`
 31. **CSV formula injection:** source='=CMD(...)' → escaped с tab prefix, обёрнут в кавычки
 32. **CSV all columns escaped:** все 10 колонок проходят через `_csvEscape`
+32b. **CSV message redaction:** `LogExporter.toCsv(logs, redactKeys: {'token'})` — message содержащий `?token=abc` → `?token=***` в CSV output
+32c. **CSV redaction backward compat:** `LogExporter.toCsv(logs)` без redactKeys → message не редактируется
 33. **LogExporter cap:** `LogExporter.toText(logsOf100K)` — берёт последние 5000, header показывает `(capped from 100000)`
 34. **LogExporter no-cap:** `LogExporter.toText(logs, maxLogs: null)` — без лимита (осторожно!)
 35. **FakeISpectLogger maxTraces:** при 15000 логов с maxTraces=10000 — `traces.length == 10000`, первые 5000 удалены (FIFO)
@@ -3623,7 +3723,8 @@ extension ISpectTrace on ISpectLogger {
 
 ### 13.6. Тесты из ревью (добавлены по результатам аудита)
 
-75. **BLoC concurrent events correlation:** `bloc.add(eventA); bloc.add(eventB);` → `onTransition(A)` получает eventId от A, `onTransition(B)` получает eventId от B (Queue-based FIFO, не перезапись)
+75. **BLoC concurrent events correlation:** `bloc.add(eventA); bloc.add(eventB);` → `onTransition(A)` получает eventId от A, `onTransition(B)` получает eventId от B (Queue-based FIFO, не перезапись). Pop происходит в `onDone`, не в `onChange`
+75b. **BLoC error flow — eventId pop in onDone:** `bloc.add(eventA)` → onEvent (push idA) → onError → onDone (pop idA). Далее `bloc.add(eventB)` → onEvent (push idB) → onTransition получает idB (НЕ stale idA). Queue корректно очищена
 76. **Push auto-correlation:** `push(messageId: 'msg-1')` без explicit `correlationId` → `correlationId == 'msg-1'` (auto-fallback)
 77. **Push explicit correlationId override:** `push(messageId: 'msg-1', correlationId: 'custom')` → `correlationId == 'custom'` (не 'msg-1')
 78. **traceStart returns null when disabled:** `logger.options.enabled = false` → `traceStart()` returns null → `traceEnd(null)` is no-op
@@ -3635,7 +3736,8 @@ extension ISpectTrace on ISpectLogger {
 84. **TraceStreamTransformer broadcast stream:** broadcast stream → cancel one listener → onCancel called, other listeners unaffected
 85. **TraceStreamTransformer pause/resume:** pause → resume → continue receiving events correctly
 86. **LogExporter.toJsonLines non-serializable meta:** `meta: {'color': customObject}` → `jsonEncode` throws → handle gracefully (skip or toString fallback)
-87. **\_resolveCategory caching:** call twice with same key → second call returns cached result (no enum lookup)
+87. **\_resolveCategory caching:** call twice with same key and same theme → second call returns cached result (no enum lookup)
+87b. **\_resolveCategory cache invalidation:** call with themeA → call with themeB (different logCategories) → cache invalidated, new lookup performed
 88. **FakeISpectLogger maxHistoryItems:** base `ISpectLoggerOptions.maxHistoryItems == 0` → no double-memory
 89. **Navigation push↔pop correlation:** didPush генерирует routeId, didPop использует тот же routeId → `logger.byCorrelationId(routeId)` возвращает 2 лога (push + pop)
 90. **Navigation replace correlation:** didReplace → старый routeId переносится на новый route, лог replace имеет correlationId старого route
@@ -4019,7 +4121,7 @@ ISpect(theme: ISpectTheme(
 - **Done when:** `dart analyze packages/ispectify_ws --fatal-infos` чист. `flutter test packages/ispectify_ws` проходит.
 
 ### Шаг 14: UI update (Part 6)
-- [ ] Dynamic filter grouping: `_resolveCategory()` с `_categoryCache`, `_categoryLabel()`
+- [ ] Dynamic filter grouping: `_resolveCategory()` с `_categoryCache` (theme-aware invalidation через `_lastTheme`), `_categoryLabel()`
 - [ ] Новые icons/colors в `ISpectConstants` для 21 новых log types
 - [ ] `ISpectTheme`: добавить `categoryLabels`, `logCategories`, обновить `copyWith()`, `==`, `hashCode`, `toMap()`, `fromMap()`
 - [ ] Удалить `group*` l10n строки, добавить `category*` строки в `.arb` файлы, регенерировать
