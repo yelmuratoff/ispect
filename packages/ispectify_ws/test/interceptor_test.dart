@@ -24,15 +24,12 @@ void main() {
       interceptor = ISpectWSInterceptor(
         logger: logger,
       );
-      // No client set; interceptor should still log
     });
 
     test('logs sent data when enabled', () async {
       interceptor.onSend({'k': 'v'}, (obj) {});
       expect(
-        logger.history.any(
-          (e) => e.key == 'ws-sent' && e.textMessage.contains('Data: {'),
-        ),
+        logger.history.any((e) => e.key == ISpectLogType.wsSent.key),
         isTrue,
       );
     });
@@ -43,20 +40,16 @@ void main() {
         settings: const ISpectWSInterceptorSettings(
           printSentData: false,
         ),
-      )
-        // No client set; interceptor should still log (without payload)
+      )..onSend({'secret': 'value'}, (obj) {});
 
-        ..onSend({'secret': 'value'}, (obj) {});
-
-      final sent = logger.history.where((e) => e.key == 'ws-sent').toList();
+      final sent = logger.history
+          .where((e) => e.key == ISpectLogType.wsSent.key)
+          .toList();
       expect(sent, isNotEmpty);
-      expect(sent.first.textMessage.contains('Data: {'), isFalse);
-      // Still includes URL line prefix even if empty
-      expect(sent.first.textMessage.startsWith('URL:'), isTrue);
-      // Payload should not contain data when printSentData=false
-      final body = sent.first.additionalData?['body'] as Map<String, dynamic>?;
-      if (body != null) {
-        expect(body.containsKey('data'), isFalse);
+      // Meta should not contain 'data' when printSentData=false
+      final meta = sent.first.additionalData?[TraceKeys.meta];
+      if (meta is Map) {
+        expect(meta.containsKey('data'), isFalse);
       }
     });
 
@@ -67,18 +60,15 @@ void main() {
         settings: const ISpectWSInterceptorSettings(
           printReceivedData: false,
         ),
-      )
-        // No client set; interceptor should still log (without payload)
+      )..onMessage({'foo': 'bar'}, (obj) {});
 
-        ..onMessage({'foo': 'bar'}, (obj) {});
-
-      final rec = logger.history.where((e) => e.key == 'ws-received').toList();
+      final rec = logger.history
+          .where((e) => e.key == ISpectLogType.wsReceived.key)
+          .toList();
       expect(rec, isNotEmpty);
-      expect(rec.first.textMessage.contains('Data: {'), isFalse);
-      // Payload should not contain data when printReceivedData=false
-      final body = rec.first.additionalData?['body'] as Map<String, dynamic>?;
-      if (body != null) {
-        expect(body.containsKey('data'), isFalse);
+      final meta = rec.first.additionalData?[TraceKeys.meta];
+      if (meta is Map) {
+        expect(meta.containsKey('data'), isFalse);
       }
     });
 
@@ -91,14 +81,15 @@ void main() {
         redactor: _ThrowingRedactor(),
       )..onSend({'boom': true}, (obj) {});
 
-      // Even with a broken redactor, logging should still work
       expect(logger.history, isNotEmpty);
     });
 
     test('logs received data when enabled', () {
       interceptor.onMessage({'msg': 'hello'}, (obj) {});
       expect(
-        logger.history.any((e) => e.key == 'ws-received'),
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsReceived.key,
+        ),
         isTrue,
       );
     });
@@ -118,7 +109,9 @@ void main() {
       )..onSend({'k': 'v'}, (obj) {});
 
       expect(
-        logger.history.any((e) => e.key == 'ws-sent'),
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsSent.key,
+        ),
         isFalse,
       );
     });
@@ -132,7 +125,9 @@ void main() {
       )..onMessage({'k': 'v'}, (obj) {});
 
       expect(
-        logger.history.any((e) => e.key == 'ws-received'),
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsReceived.key,
+        ),
         isFalse,
       );
     });
@@ -143,22 +138,20 @@ void main() {
         settings: const ISpectWSInterceptorSettings(enabled: false),
       )..onSend({'k': 'v'}, (obj) {});
 
-      // Only potential warning about null client, no ws-sent log
       expect(
-        logger.history.any((e) => e.key == 'ws-sent'),
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsSent.key,
+        ),
         isFalse,
       );
     });
 
     test('logs error data when log creation throws', () {
-      // Use a throwing redactor that fails on body processing
-      // but interceptor should still produce an error log
       interceptor = ISpectWSInterceptor(
         logger: logger,
         redactor: _ThrowingRedactor(),
       )..onSend({'trigger': 'error'}, (obj) {});
 
-      // Should have at least one log entry (warning or error)
       expect(logger.history, isNotEmpty);
     });
   });

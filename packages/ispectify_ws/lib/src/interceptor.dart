@@ -1,7 +1,9 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ispectify_ws/src/constants.dart';
+import 'package:ispectify_ws/src/settings.dart';
 import 'package:ws/ws.dart';
 
+/// WebSocket interceptor that logs events via the trace API.
 final class ISpectWSInterceptor
     with BaseNetworkInterceptor
     implements WSInterceptor {
@@ -19,14 +21,20 @@ final class ISpectWSInterceptor
   final void Function(WebSocketClient)? onClientReady;
   WebSocketClient? _client;
 
+  /// Auto-generated connection ID for correlating all events of one WS session.
+  String? _connectionId;
+
   @override
   ISpectLogger get logger => _logger;
 
   @override
   bool get enableRedaction => settings.enableRedaction;
 
+  static const _noRedactConfig = ISpectTraceConfig(redact: false);
+
   void setClient(WebSocketClient client) {
     _client = client;
+    _connectionId = generateTraceId();
     onClientReady?.call(client);
   }
 
@@ -57,19 +65,55 @@ final class ISpectWSInterceptor
     final useRedaction = settings.enableRedaction;
     final redactedUrl = redactUrl(rawUrl, useRedaction: useRedaction);
     final uri = Uri.tryParse(redactedUrl);
+    final url = uri?.toString() ?? '';
+    final path = uri?.path ?? '';
 
     try {
       final safeData = _safeRedact(data, useRedaction);
-      final log = _createLog(type, safeData, uri, useRedaction);
-      if (log != null && _shouldLog(log)) {
-        logger.logData(log);
+      final operation = type == wsTypeRequest ? 'send' : 'receive';
+
+      // Check filters before logging
+      if (!_shouldLog(type)) {
+        next(data);
+        return;
       }
+
+      final metricsMap = _processMetrics(useRedaction);
+      final includeData = type == wsTypeRequest
+          ? settings.printSentData
+          : settings.printReceivedData;
+
+      _logger.trace(
+        category: wsCategory,
+        source: 'ws',
+        operation: operation,
+        target: url,
+        success: true,
+        correlationId: _connectionId,
+        config: useRedaction ? null : _noRedactConfig,
+        meta: {
+          if (includeData) 'data': safeData,
+          if (metricsMap != null) 'metrics': metricsMap,
+          'url': url,
+          'path': path,
+        },
+      );
     } catch (e, s) {
-      final errorLog =
-          _createErrorLog(type, data, uri, e, s, useRedaction);
-      if (_shouldLog(errorLog)) {
-        logger.logData(errorLog);
-      }
+      _logger.trace(
+        category: wsCategory,
+        source: 'ws',
+        operation: type == wsTypeRequest ? 'send' : 'receive',
+        target: url,
+        success: false,
+        error: e,
+        errorStackTrace: s,
+        correlationId: _connectionId,
+        config: useRedaction ? null : _noRedactConfig,
+        meta: {
+          'url': url,
+          'path': path,
+        },
+      );
     }
 
     next(data);
@@ -86,119 +130,9 @@ final class ISpectWSInterceptor
     };
   }
 
-  ISpectLogData? _createLog(
-    String type,
-    Object safeData,
-    Uri? uri,
-    bool useRedaction,
-  ) {
-    final metrics = _client?.metrics.toJson();
-    final url = uri?.toString() ?? '';
-    final path = uri?.path ?? '';
-    final metricsMap = _processMetrics(useRedaction);
-
-    return switch (type) {
-      wsTypeRequest => WSSentLog(
-          settings.printSentData ? '$safeData' : '',
-          type: type,
-          url: url,
-          path: path,
-          payload: _createBodyPayload(
-            safeData,
-            metrics,
-            settings.printSentData,
-            useRedaction,
-          ),
-          settings: settings,
-          metrics: metricsMap,
-        ),
-      wsTypeResponse => WSReceivedLog(
-          settings.printReceivedData ? '$safeData' : '',
-          type: type,
-          url: url,
-          path: path,
-          payload: _createBodyPayload(
-            safeData,
-            metrics,
-            settings.printReceivedData,
-            useRedaction,
-          ),
-          settings: settings,
-          metrics: metricsMap,
-        ),
-      _ => null,
-    };
-  }
-
-  WSErrorLog _createErrorLog(
-    String type,
-    Object data,
-    Uri? uri,
-    Object e,
-    StackTrace s,
-    bool useRedaction,
-  ) {
-    final safeData = _safeRedact(data, useRedaction);
-    final metricsMap = _processMetrics(useRedaction);
-
-    return WSErrorLog(
-      settings.printErrorMessage
-          ? 'Failed to log $type: $e'
-          : 'Failed to log $type',
-      type: type,
-      url: uri?.toString() ?? '',
-      path: uri?.path ?? '',
-      payload: _createBodyPayload(
-        safeData,
-        _client?.metrics.toJson(),
-        settings.printErrorData,
-        useRedaction,
-      ),
-      exception: e,
-      stackTrace: s,
-      settings: settings,
-      metrics: metricsMap,
-    );
-  }
-
-  Map<String, dynamic> _createBodyPayload(
-    Object data,
-    Object? metrics,
-    bool includeData,
-    bool useRedaction,
-  ) {
-    final basePayload = <String, dynamic>{'metrics': metrics};
-    if (includeData) {
-      basePayload['data'] = data;
-    }
-
-    try {
-      final sanitized = payload.body(
-        basePayload,
-        enableRedaction: useRedaction,
-        normalizer: (value) => value,
-      );
-
-      final map = payload.ensureMap(sanitized)
-        ..removeWhere((_, value) => value == null);
-      return map;
-    } catch (e, s) {
-      // If redaction fails, log the error and omit sensitive data
-      logger.logData(
-        ISpectLogData(
-          'Payload redaction failed, sensitive data omitted: $e',
-          logLevel: LogLevel.warning,
-          stackTrace: s,
-        ),
-      );
-      return <String, dynamic>{'metrics': basePayload['metrics']};
-    }
-  }
-
-  bool _shouldLog(ISpectLogData log) => switch (log) {
-        WSSentLog() => settings.sentFilter?.call(log) ?? true,
-        WSReceivedLog() => settings.receivedFilter?.call(log) ?? true,
-        WSErrorLog() => settings.errorFilter?.call(log) ?? true,
+  bool _shouldLog(String type) => switch (type) {
+        wsTypeRequest => settings.sentFilter?.call(null) ?? true,
+        wsTypeResponse => settings.receivedFilter?.call(null) ?? true,
         _ => true,
       };
 

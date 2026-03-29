@@ -59,15 +59,13 @@ class ISpectViewController extends ChangeNotifier {
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   bool _groupHttpLogs;
+  bool _errorsOnly = false;
   ISpectLogData? _activeData;
 
-  // --- Desktop: detail panel data (separate from selection highlight) ---
+  final searchController = TextEditingController();
+
   ISpectLogData? _detailData;
-
-  // --- Desktop: relative time toggle ---
   bool _useRelativeTime = false;
-
-  // --- Search mode: highlight vs filter ---
   SearchMode _searchMode = SearchMode.highlight;
   List<int> _searchMatchIds = const [];
   Set<int> _searchMatchIdSet = const {};
@@ -202,6 +200,14 @@ class ISpectViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // --- Errors only quick-filter ---
+  bool get errorsOnly => _errorsOnly;
+
+  void toggleErrorsOnly() {
+    _errorsOnly = !_errorsOnly;
+    notifyListeners();
+  }
+
   void toggleLogOrder() {
     _isLogOrderReversed = !_isLogOrderReversed;
     notifyListeners();
@@ -210,6 +216,11 @@ class ISpectViewController extends ChangeNotifier {
   // Debounced search to reduce churn while typing
   void updateFilterSearchQuery(String query) =>
       _filterManager.updateFilterSearchQuery(query);
+
+  void searchByCorrelationId(String id) {
+    searchController.text = id;
+    updateFilterSearchQuery(id);
+  }
 
   void addFilterType(Type type) => _filterManager.addFilterType(type);
 
@@ -232,8 +243,27 @@ class ISpectViewController extends ChangeNotifier {
 
   void update() => notifyListeners();
 
-  List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) =>
-      _filterManager.applyCurrentFilters(logsData);
+  List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) {
+    var result = _filterManager.applyCurrentFilters(logsData);
+    if (_errorsOnly) result = _applyErrorsOnly(result);
+    return result;
+  }
+
+  List<ISpectLogData> applyFiltersWithoutSearch(
+    List<ISpectLogData> logsData,
+  ) {
+    var result = _filterManager.applyFiltersWithoutSearch(logsData);
+    if (_errorsOnly) result = _applyErrorsOnly(result);
+    return result;
+  }
+
+  static List<ISpectLogData> _applyErrorsOnly(List<ISpectLogData> logs) => logs
+      .where(
+        (log) =>
+            ISpectLogType.isErrorKey(log.key) ||
+            log.additionalData?[TraceKeys.success] == false,
+      )
+      .toList();
 
   void onDataChanged() => _filterManager.onDataChanged();
 
@@ -334,6 +364,11 @@ class ISpectViewController extends ChangeNotifier {
     _searchMatchIdSet = const {};
     _focusedMatchIndex = -1;
     _lastUpdateMatchesInput = null;
+    // Clear title filters when switching to highlight mode
+    // so all logs are visible again (titles are for filter mode only)
+    if (mode == SearchMode.highlight) {
+      _filterManager.clearTitleFilters();
+    }
     notifyListeners();
   }
 
@@ -383,12 +418,6 @@ class ISpectViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Applies title/type filters only (no search query filtering).
-  List<ISpectLogData> applyFiltersWithoutSearch(
-    List<ISpectLogData> logsData,
-  ) =>
-      _filterManager.applyFiltersWithoutSearch(logsData);
-
   /// Finds log entries matching the current search query.
   List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) =>
       _filterManager.findSearchMatches(logsData);
@@ -421,7 +450,9 @@ class ISpectViewController extends ChangeNotifier {
       _importService.validateLogsJsonContent(jsonContent);
 
   @override
+  @override
   void dispose() {
+    searchController.dispose();
     _filterManager.dispose();
     super.dispose();
   }

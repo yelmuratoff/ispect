@@ -1,6 +1,8 @@
+import 'dart:convert';
+
 import 'package:ispectify/ispectify.dart';
 
-/// Extension for ISpectLogData to add JSON serialization support.
+/// Extension for ISpectLogData to add serialization support.
 extension ISpectLogDataSerialization on ISpectLogData {
   /// Converts the log data into a JSON representation.
   ///
@@ -27,6 +29,119 @@ extension ISpectLogDataSerialization on ISpectLogData {
               ? stackTrace.toString().truncate()
               : stackTrace.toString(),
         if (additionalData != null) 'additional-data': additionalData,
+      };
+
+  /// Plain text — for sharing, copying, human reading.
+  ///
+  /// [redactKeys] enables Layer 3 redaction for exception/error strings.
+  String toText({Set<String>? redactKeys}) {
+    final buffer = StringBuffer()..writeln('[$formattedTime] [$key] $message');
+
+    if (additionalData != null && additionalData!.isNotEmpty) {
+      for (final entry in additionalData!.entries) {
+        // Skip TraceKeys.error — raw error string may contain PII.
+        // Error info printed below in dedicated section with Layer 3 redaction.
+        if (entry.key == TraceKeys.error) continue;
+
+        final value = entry.value;
+        if (value is Map || value is List) {
+          try {
+            final json = const JsonEncoder.withIndent('  ').convert(value);
+            buffer.writeln('  ${entry.key}: $json');
+          } catch (_) {
+            buffer.writeln('  ${entry.key}: $value');
+          }
+        } else {
+          buffer.writeln('  ${entry.key}: $value');
+        }
+      }
+    }
+
+    if (exception != null) {
+      final exStr = '$exception';
+      buffer.writeln(
+        '  Exception: ${RedactionService.redactExportString(exStr, redactKeys)}',
+      );
+    }
+    if (error != null) {
+      final errStr = '$error';
+      buffer.writeln(
+        '  Error: ${RedactionService.redactExportString(errStr, redactKeys)}',
+      );
+    }
+    if (stackTrace != null) buffer.writeln('  StackTrace:\n$stackTrace');
+
+    return buffer.toString();
+  }
+
+  /// Markdown — for issue trackers, documentation.
+  ///
+  /// [redactKeys] enables Layer 3 redaction for exception/error strings.
+  String toMarkdown({Set<String>? redactKeys}) {
+    final buffer = StringBuffer()
+      ..writeln(
+        '### ${_logLevelIndicator(logLevel)} `$key` — $message',
+      )
+      ..writeln()
+      ..writeln('| Field | Value |')
+      ..writeln('|-------|-------|')
+      ..writeln('| Time | `$formattedTime` |')
+      ..writeln('| Level | `${logLevel?.name ?? 'unknown'}` |');
+
+    if (additionalData != null) {
+      final category = additionalData![TraceKeys.category];
+      final source = additionalData![TraceKeys.source];
+      final operation = additionalData![TraceKeys.operation];
+      final duration = additionalData![TraceKeys.durationMs];
+
+      if (category != null) buffer.writeln('| Category | `$category` |');
+      if (source != null) buffer.writeln('| Source | `$source` |');
+      if (operation != null) buffer.writeln('| Operation | `$operation` |');
+      if (duration != null) buffer.writeln('| Duration | `${duration}ms` |');
+    }
+
+    if (additionalData != null && additionalData!.isNotEmpty) {
+      final safeData = Map<String, dynamic>.of(additionalData!)
+        ..remove(TraceKeys.error);
+      if (safeData.isNotEmpty) {
+        buffer
+          ..writeln()
+          ..writeln('**Details:**')
+          ..writeln('```json');
+        try {
+          buffer.writeln(const JsonEncoder.withIndent('  ').convert(safeData));
+        } catch (_) {
+          buffer.writeln(safeData.toString());
+        }
+        buffer.writeln('```');
+      }
+    }
+
+    if (exception != null) {
+      final exStr = '$exception';
+      buffer.writeln(
+        '\n**Exception:** `${RedactionService.redactExportString(exStr, redactKeys)}`',
+      );
+    }
+    if (error != null) {
+      final errStr = '$error';
+      buffer.writeln(
+        '\n**Error:** `${RedactionService.redactExportString(errStr, redactKeys)}`',
+      );
+    }
+    if (stackTrace != null) {
+      buffer.writeln('\n**Stack trace:**\n```\n$stackTrace\n```');
+    }
+
+    return buffer.toString();
+  }
+
+  String _logLevelIndicator(LogLevel? level) => switch (level) {
+        LogLevel.error || LogLevel.critical => '[ERROR]',
+        LogLevel.warning => '[WARN]',
+        LogLevel.info => '[INFO]',
+        LogLevel.debug => '[DEBUG]',
+        _ => '[-]',
       };
 }
 

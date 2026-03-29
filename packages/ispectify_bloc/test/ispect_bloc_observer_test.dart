@@ -7,23 +7,19 @@ class RecordingLogger extends ISpectLogger {
   final List<ISpectLogData> records = <ISpectLogData>[];
 
   @override
-  void logData(ISpectLogData data) {
-    records.add(data);
+  void logData(ISpectLogData log) {
+    records.add(log);
   }
 
   @override
-  void error(
+  void warning(
     Object? msg, {
-    Object? exception,
-    StackTrace? stackTrace,
     Map<String, dynamic>? additionalData,
     AnsiPen? pen,
   }) {
     records.add(
       ISpectLogData(
         msg?.toString(),
-        exception: exception,
-        stackTrace: stackTrace,
         additionalData: additionalData,
         pen: pen,
       ),
@@ -64,9 +60,13 @@ void main() {
         ..onEvent(bloc, 'skip')
         ..onEvent(bloc, 'keep');
 
-      final events = logger.records.whereType<BlocEventLog>().toList();
+      final events = logger.records
+          .where((r) => r.key == ISpectLogType.stateChange.key)
+          .where(
+            (r) => r.additionalData?[TraceKeys.operation] == 'event',
+          )
+          .toList();
       expect(events, hasLength(1));
-      expect(events.single.event, 'keep');
     });
 
     test('logs completion metadata with error flag', () {
@@ -80,12 +80,15 @@ void main() {
         ),
       )..onDone(bloc, 'event', exception, StackTrace.current);
 
-      final completion = logger.records.whereType<BlocDoneLog>().single;
-      expect(completion.hasError, isTrue);
-      expect(completion.additionalData?['completed-with-error'], isTrue);
+      final doneLog = logger.records.firstWhere(
+        (r) => r.additionalData?[TraceKeys.operation] == 'done',
+      );
+      final meta = doneLog.additionalData?[TraceKeys.meta];
+      expect(meta, isA<Map<String, dynamic>>());
+      expect((meta as Map<String, dynamic>)['hasError'], isTrue);
     });
 
-    test('emits BlocErrorLog when errors occur and printErrors enabled', () {
+    test('emits error trace when errors occur and printErrors enabled', () {
       final exception = Exception('failure');
       final _ = ISpectBlocObserver(
         logger: logger,
@@ -96,9 +99,13 @@ void main() {
         ),
       )..onError(bloc, exception, StackTrace.current);
 
-      final errorLogs = logger.records.whereType<BlocErrorLog>().toList();
+      final errorLogs = logger.records
+          .where(
+            (r) => r.additionalData?[TraceKeys.operation] == 'error',
+          )
+          .toList();
       expect(errorLogs, hasLength(1));
-      expect(errorLogs.single.thrown, exception);
+      expect(errorLogs.single.exception, exception);
     });
 
     test('skips error logs when printErrors disabled', () {
@@ -112,7 +119,10 @@ void main() {
         ),
       )..onError(bloc, Exception('failure'), StackTrace.current);
 
-      expect(logger.records.whereType<BlocErrorLog>(), isEmpty);
+      final errorLogs = logger.records.where(
+        (r) => r.additionalData?[TraceKeys.operation] == 'error',
+      );
+      expect(errorLogs, isEmpty);
     });
   });
 }

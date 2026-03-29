@@ -25,15 +25,15 @@ class ISpectShareAllLogsBottomSheet {
       actionsBuilder: (sheetContext) => [
         if (shareCallback != null) ...[
           ISpectSheetActionButton(
-            icon: Icons.share_rounded,
+            icon: Icons.data_object_rounded,
             label: '${context.ispectL10n.shareLogsFile} (JSON)',
             onPressed: () {
               controller.shareLogsAsFile(ISpect.logger.history);
             },
           ),
           ISpectSheetActionButton(
-            icon: Icons.share_rounded,
-            label: '${context.ispectL10n.shareLogsFile} (txt)',
+            icon: Icons.text_snippet_outlined,
+            label: '${context.ispectL10n.shareLogsFile} (Text)',
             onPressed: () {
               controller.shareLogsAsFile(
                 ISpect.logger.history,
@@ -41,38 +41,53 @@ class ISpectShareAllLogsBottomSheet {
               );
             },
           ),
+          ISpectSheetActionButton(
+            icon: Icons.article_outlined,
+            label: '${context.ispectL10n.shareLogsFile} (Markdown)',
+            onPressed: () {
+              final logs = ISpect.logger.history;
+              final content = LogExporter.toMarkdown(logs);
+              controller.shareLogsAsFile(
+                logs,
+                fileType: 'md',
+              );
+              // Fallback: copy markdown if share not available
+              if (content.isNotEmpty) {
+                Navigator.of(sheetContext).pop();
+              }
+            },
+          ),
+          ISpectSheetActionButton(
+            icon: Icons.table_chart_outlined,
+            label: '${context.ispectL10n.shareLogsFile} (CSV)',
+            onPressed: () {
+              controller.shareLogsAsFile(
+                ISpect.logger.history,
+                fileType: 'csv',
+              );
+            },
+          ),
           if (isFiltered && filteredCount != null) ...[
+            const Divider(height: 1),
             ISpectSheetActionButton(
               icon: Icons.filter_list_rounded,
-              label:
-                  '${context.ispectL10n.shareLogsFile} — $filteredCount filtered (JSON)',
+              label: '$filteredCount filtered (JSON)',
               onPressed: () {
                 controller.shareLogsAsFile(ISpect.logger.history);
               },
             ),
-            ISpectSheetActionButton(
-              icon: Icons.filter_list_rounded,
-              label:
-                  '${context.ispectL10n.shareLogsFile} — $filteredCount filtered (txt)',
-              onPressed: () {
-                controller.shareLogsAsFile(
-                  ISpect.logger.history,
-                  fileType: 'txt',
-                );
-              },
-            ),
           ],
         ],
+        const Divider(height: 1),
         ISpectSheetActionButton(
           icon: Icons.copy_rounded,
           label: context.ispectL10n.copyAllLogs,
           onPressed: () {
             final logs = ISpect.logger.history;
-            final logsText = logs
-                .map(
-                  (log) => log.toJson(truncated: true).toString(),
-                )
-                .join('\n');
+            final logsText = LogExporter.toText(
+              logs,
+              redactKeys: defaultSensitiveKeys,
+            );
             Navigator.of(sheetContext).pop();
             copyClipboard(
               context,

@@ -129,8 +129,7 @@ String _buildErrorText({
           skipEmptyMap: true,
         ),
         _prettySection(
-          enabled:
-              settings.printErrorHeaders && (headers?.isNotEmpty ?? false),
+          enabled: settings.printErrorHeaders && (headers?.isNotEmpty ?? false),
           label: 'Headers',
           value: headers,
           skipEmptyMap: true,
@@ -330,8 +329,7 @@ class NetworkErrorLog extends BaseNetworkLog {
             if (headers != null) 'headers': headers,
             if (body != null) 'body': body,
             if (capturedException != null) 'exception': '$capturedException',
-            if (capturedStackTrace != null)
-              'stackTrace': '$capturedStackTrace',
+            if (capturedStackTrace != null) 'stackTrace': '$capturedStackTrace',
           },
         );
 

@@ -1,6 +1,7 @@
+import 'dart:collection';
+
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/models/_models.dart';
 import 'package:ispectify_bloc/src/settings.dart';
 
 typedef BlocEventCallback = void Function(
@@ -28,11 +29,7 @@ typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
-/// `BLoC` logger on `ISpectLogger` base
-///
-/// `logger` field is the current `ISpectLogger` instance.
-/// Provide your instance if your application uses `ISpectLogger` as the default logger
-/// Common ISpectLogger instance will be used by default
+/// BLoC observer that logs lifecycle events via the unified trace API.
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
@@ -59,6 +56,11 @@ class ISpectBlocObserver extends BlocObserver {
   final ISpectBlocSettings settings;
   final List<Pattern> filters;
   final BlocFilterPredicate? filterPredicate;
+
+  /// Event correlation: stores pending eventIds per bloc instance.
+  /// Queue (FIFO) handles concurrent events correctly.
+  /// Expando is GC-safe — cleaned when Bloc is destroyed.
+  static final _pendingEventIds = Expando<Queue<String>>('bloc_event_ids');
 
   bool _isFiltered(Object? candidate) {
     if (filterPredicate?.call(candidate) ?? false) {
@@ -94,44 +96,36 @@ class ISpectBlocObserver extends BlocObserver {
     return !_isFiltered(candidate);
   }
 
-  void _logUnhandledError(
-    BlocBase<dynamic> bloc,
-    Object error,
-    StackTrace stackTrace,
-  ) {
-    try {
-      onBlocError?.call(bloc, error, stackTrace);
-    } catch (callbackError) {
-      _logCallbackError('onBlocError', callbackError);
-    }
-    try {
-      _logger.logData(
-        BlocErrorLog(
-          bloc: bloc,
-          thrown: error,
-          stackTrace: stackTrace,
-        ),
-      );
-    } catch (_) {
-      // Prevent logging failure from propagating.
-    }
-  }
-
-  /// Safely logs data, preventing logger exceptions from propagating into
-  /// the Bloc framework.
-  ///
-  /// Delegates to [SafeLogExtension.safeLogData] from `ispectify`.
-  void _safeLogData(ISpectLogData data) => _logger.safeLogData(data);
-
-  /// Logs a warning when a user-provided callback throws.
   void _logCallbackError(String callbackName, Object error) {
     try {
       _logger.warning(
         'ISpectBlocObserver: $callbackName callback threw: $error',
       );
-    } catch (_) {
-      // Last resort — nothing we can do if the logger itself fails.
-    }
+    } catch (_) {}
+  }
+
+  void _trace({
+    required String operation,
+    required String blocType,
+    bool? success,
+    Object? error,
+    StackTrace? errorStackTrace,
+    Map<String, Object?>? meta,
+    String? correlationId,
+  }) {
+    _logger.trace(
+      category: stateCategory,
+      source: 'bloc',
+      operation: operation,
+      target: blocType,
+      success: success ?? (error == null),
+      error: error,
+      errorStackTrace: errorStackTrace,
+      meta: settings.isRedactionActive
+          ? settings.redactAdditionalData(meta ?? {})
+          : meta,
+      correlationId: correlationId,
+    );
   }
 
   @override
@@ -149,12 +143,21 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocEvent', callbackError);
     }
-    _safeLogData(
-      BlocEventLog(
-        bloc: bloc,
-        event: event,
-        settings: settings,
-      ),
+
+    final eventId = generateTraceId();
+    (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
+
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'event',
+      blocType: blocType,
+      success: true,
+      correlationId: eventId,
+      meta: {
+        'blocType': blocType,
+        'eventType': event.runtimeType.toString(),
+        if (settings.printEventFullData && event != null) 'event': event,
+      },
     );
   }
 
@@ -176,12 +179,21 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocTransition', callbackError);
     }
-    _safeLogData(
-      BlocTransitionLog(
-        bloc: bloc,
-        transition: transition,
-        settings: settings,
-      ),
+
+    final eventId = _pendingEventIds[bloc]?.firstOrNull;
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'transition',
+      blocType: blocType,
+      success: true,
+      correlationId: eventId,
+      meta: {
+        'blocType': blocType,
+        'eventType': transition.event.runtimeType.toString(),
+        'currentState': settings.formatState(transition.currentState),
+        'nextState': settings.formatState(transition.nextState),
+        if (settings.printEventFullData) 'event': transition.event,
+      },
     );
   }
 
@@ -200,12 +212,20 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocChange', callbackError);
     }
-    _safeLogData(
-      BlocStateLog(
-        bloc: bloc,
-        change: change,
-        settings: settings,
-      ),
+
+    // Peek eventId (no pop — pop happens only in onDone)
+    final eventId = _pendingEventIds[bloc]?.firstOrNull;
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'state',
+      blocType: blocType,
+      success: true,
+      correlationId: eventId,
+      meta: {
+        'blocType': blocType,
+        'currentState': settings.formatState(change.currentState),
+        'nextState': settings.formatState(change.nextState),
+      },
     );
   }
 
@@ -215,7 +235,20 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printErrors, candidate: error)) {
       return;
     }
-    _logUnhandledError(bloc, error, stackTrace);
+    try {
+      onBlocError?.call(bloc, error, stackTrace);
+    } catch (callbackError) {
+      _logCallbackError('onBlocError', callbackError);
+    }
+
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'error',
+      blocType: blocType,
+      error: error,
+      errorStackTrace: stackTrace,
+      meta: {'blocType': blocType},
+    );
   }
 
   @override
@@ -229,7 +262,14 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocCreate', callbackError);
     }
-    _safeLogData(BlocCreateLog(bloc: bloc));
+
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'create',
+      blocType: blocType,
+      success: true,
+      meta: {'blocType': blocType},
+    );
   }
 
   @override
@@ -243,7 +283,14 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocClose', callbackError);
     }
-    _safeLogData(BlocCloseLog(bloc: bloc));
+
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'close',
+      blocType: blocType,
+      success: true,
+      meta: {'blocType': blocType},
+    );
   }
 
   @override
@@ -254,24 +301,33 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace? stackTrace,
   ]) {
     super.onDone(bloc, event, error, stackTrace);
+
+    // Pop eventId BEFORE any early returns to prevent memory leaks.
+    final queue = _pendingEventIds[bloc];
+    final eventId = queue?.firstOrNull;
+    if (queue != null && queue.isNotEmpty) queue.removeFirst();
+
     final isEnabled = settings.enabled && !_isFiltered(bloc);
-    if (!isEnabled) {
-      return;
-    }
+    if (!isEnabled) return;
+
     final shouldLogCompletion = (settings.printCompletions && error == null) ||
         (settings.printErrors && error != null);
-    if (!shouldLogCompletion) {
-      return;
-    }
-    _safeLogData(
-      BlocDoneLog(
-        bloc: bloc,
-        settings: settings,
-        event: event,
-        hasError: error != null,
-        error: error,
-        stackTrace: stackTrace,
-      ),
+    if (!shouldLogCompletion) return;
+
+    final blocType = bloc.runtimeType.toString();
+    _trace(
+      operation: 'done',
+      blocType: blocType,
+      success: error == null,
+      error: error,
+      errorStackTrace: stackTrace,
+      correlationId: eventId,
+      meta: {
+        'blocType': blocType,
+        if (event != null) 'eventType': event.runtimeType.toString(),
+        if (settings.printEventFullData && event != null) 'event': event,
+        'hasError': error != null,
+      },
     );
   }
 }

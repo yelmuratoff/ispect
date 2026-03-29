@@ -46,8 +46,7 @@ class ISpectFilter implements Filter<ISpectLogData> {
   /// The configured search query, if any.
   String? get searchQuery => _searchQuery;
 
-  late final bool _isEmpty =
-      _titles.isEmpty &&
+  late final bool _isEmpty = _titles.isEmpty &&
       _types.isEmpty &&
       _logTypeKeys.isEmpty &&
       _searchFilter == null;
@@ -56,7 +55,9 @@ class ISpectFilter implements Filter<ISpectLogData> {
   bool apply(ISpectLogData item) {
     if (_isEmpty) return true;
 
-    if (_titles.contains(item.title)) return true;
+    if (_titles.contains(item.key) || _titles.contains(item.title)) {
+      return true;
+    }
     if (_logTypeKeys.contains(item.key)) return true;
     if (_types.contains(item.runtimeType)) return true;
     if (_searchFilter != null && _searchFilter.apply(item)) return true;

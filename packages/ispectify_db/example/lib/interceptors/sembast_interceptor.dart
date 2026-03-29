@@ -62,8 +62,7 @@ extension ISpectSembastStoreExtension<K extends sembast.RecordKeyBase?,
 /// [record] returns a traced [ISpectSembastRecord] with covariant return
 /// type, so record-level calls are also traced.
 final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
-        V extends sembast.RecordValueBase?>
-    implements sembast.StoreRef<K, V> {
+    V extends sembast.RecordValueBase?> implements sembast.StoreRef<K, V> {
   const ISpectSembastStore({
     required sembast.StoreRef<K, V> store,
     required ISpectLogger logger,
@@ -99,9 +98,9 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
   sembast.RecordsRef<K, V> records(Iterable<K> keys) => _store.records(keys);
 
   @override
-  sembast.StoreRef<RK, RV>
-      cast<RK extends sembast.RecordKeyBase?, RV extends sembast.RecordValueBase?>() =>
-          _store.cast<RK, RV>();
+  sembast.StoreRef<RK, RV> cast<RK extends sembast.RecordKeyBase?,
+          RV extends sembast.RecordValueBase?>() =>
+      _store.cast<RK, RV>();
 
   // --- Traced store reads ---------------------------------------------------
 
@@ -233,8 +232,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       _store.onCount(db, filter: filter);
 
   /// Generate a new key.
-  Future<K> generateKey(sembast.DatabaseClient db) =>
-      _store.generateKey(db);
+  Future<K> generateKey(sembast.DatabaseClient db) => _store.generateKey(db);
 
   /// Generate a new int key.
   Future<int> generateIntKey(sembast.DatabaseClient db) =>
@@ -330,8 +328,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
 /// replacement. Instance methods shadow Sembast's extension methods so that
 /// CRUD operations are traced.
 final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
-        V extends sembast.RecordValueBase?>
-    implements sembast.RecordRef<K, V> {
+    V extends sembast.RecordValueBase?> implements sembast.RecordRef<K, V> {
   const ISpectSembastRecord({
     required sembast.RecordRef<K, V> delegate,
     required ISpectLogger logger,
@@ -356,9 +353,9 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
   K get key => _record.key;
 
   @override
-  sembast.RecordRef<RK, RV>
-      cast<RK extends sembast.RecordKeyBase?, RV extends sembast.RecordValueBase?>() =>
-          _record.cast<RK, RV>();
+  sembast.RecordRef<RK, RV> cast<RK extends sembast.RecordKeyBase?,
+          RV extends sembast.RecordValueBase?>() =>
+      _record.cast<RK, RV>();
 
   // --- Traced reads ---------------------------------------------------------
 
@@ -418,7 +415,8 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         table: store.name,
         key: key.toString(),
         meta: (merge ?? false) ? {'merge': true} : null,
-        run: () => _record.put(db, value, merge: merge, ifNotExists: ifNotExists),
+        run: () =>
+            _record.put(db, value, merge: merge, ifNotExists: ifNotExists),
       );
 
   /// Update the record. Returns null if not found.

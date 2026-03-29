@@ -154,8 +154,7 @@ void main() {
       final count = await traced.count(db);
       expect(count, 0);
       expect(
-        logger.history
-            .any((e) => e.additionalData?['operation'] == 'clear'),
+        logger.history.any((e) => e.additionalData?['operation'] == 'clear'),
         isTrue,
       );
     });

@@ -44,10 +44,8 @@ class DioRequestData {
       NetworkJsonKeys.responseType: requestOptions.responseType,
       NetworkJsonKeys.receiveDataWhenStatusError:
           requestOptions.receiveDataWhenStatusError,
-      NetworkJsonKeys.persistentConnection:
-          requestOptions.persistentConnection,
-      NetworkJsonKeys.preserveHeaderCase:
-          requestOptions.preserveHeaderCase,
+      NetworkJsonKeys.persistentConnection: requestOptions.persistentConnection,
+      NetworkJsonKeys.preserveHeaderCase: requestOptions.preserveHeaderCase,
       NetworkJsonKeys.listFormat: requestOptions.listFormat,
       NetworkJsonKeys.cancelToken: requestOptions.cancelToken,
 

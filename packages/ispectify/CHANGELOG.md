@@ -1,5 +1,80 @@
 # Changelog
 
+## 5.0.0-dev01
+
+### Breaking Changes
+
+- **Universal Trace Architecture:** All logging now goes through a unified `trace()` pipeline with structured `additionalData` (category, source, operation, target, meta, correlationId, transactionId).
+- **Typed log subclasses removed:** `NetworkRequestLog`, `NetworkResponseLog`, `NetworkErrorLog`, `DioRequestLog`, `DioResponseLog`, `DioErrorLog`, `HttpRequestLog`, `HttpResponseLog`, `HttpErrorLog`, `WSSentLog`, `WSReceivedLog`, `WSErrorLog`, `BlocLifecycleLog` and all its subclasses are deleted. Use `ISpectLogData` with `ISpectLogDataX` convenience getters instead.
+- **`ISpectLogType` enum:** 21 new values added (`wsError`, `authSuccess`, `authError`, `storageResult`, `storageQuery`, `storageError`, `pushReceived`, `pushSent`, `pushError`, `paymentSuccess`, `paymentError`, `stateChange`, `stateError`, `sseReceived`, `sseError`, `grpcRequest`, `grpcResponse`, `grpcError`, `graphqlRequest`, `graphqlResponse`, `graphqlError`). New `category` field on each value.
+- **`ISpectDbConfig`:** Now extends `ISpectTraceConfig`. `slowQueryThreshold` renamed to `slowThreshold`. `redactKeys` type changed from `List<String>` to `Set<String>`.
+- **`ISpectWSInterceptorSettings`:** Filter function signatures changed from typed log subclasses (`WSSentLog`) to `ISpectLogData?`.
+- **`network_logs.dart`:** No longer exported from barrel. `kRequestIdKey` removed from public API.
+
+### New Features
+
+- **Trace API:** `trace()`, `traceAsync()`, `traceSync()`, `traceStart()`/`traceEnd()`, `traceStream()`, `traceTransaction()` — extension methods on `ISpectLogger`.
+- **Domain extensions:** `authTrace()`, `storageTrace()`, `push()`, `analyticsEvent()`, `paymentTrace()`, `sse()`, `grpcTrace()`, `graphqlTrace()`.
+- **`ISpectLogDataX`:** Convenience getters for structured trace data (`traceCategory`, `traceSource`, `httpStatusCode`, `isNetwork`, `isDb`, etc.).
+- **`FakeISpectLogger`:** Test double with Queue-based FIFO and query methods (`byCategory`, `bySource`, `errors`, `slow`, etc.).
+- **`LogExporter`:** Batch export as JSON Lines, Text, Markdown, CSV with formula injection protection and Layer 3 redaction.
+- **`ISpectTraceConfig`:** Base config with sampling, redaction, slow threshold.
+- **`ISpectTraceCategory`:** Defines category with `pickLogKey()` for automatic log key selection.
+- **`TraceKeys`:** Constants for structured `additionalData` keys.
+- **Predefined categories:** `networkCategory`, `dbCategory`, `authCategory`, `wsCategory`, `sseCategory`, `storageCategory`, `stateCategory`, `pushCategory`, `analyticsCategory`, `paymentCategory`, `navigationCategory`, `grpcCategory`, `graphqlCategory`.
+- **Filters:** `CategoryFilter`, `SourceFilter`, `CorrelationFilter`, `TransactionFilter`.
+- **`RedactionService`:** New static methods `redactTarget()` and `redactExportString()` for Layer 2/3 redaction.
+- **`defaultSensitiveKeys`:** 22 new keys added (email, otp, csrf, device tokens, session tokens, etc.).
+- **Event correlation in BLoC:** `ISpectBlocObserver` uses `Expando<Queue<String>>` for FIFO event correlation across `onEvent` → `onTransition` → `onChange` → `onDone`.
+- **Network timing:** Dio and HTTP interceptors now track request duration via `Stopwatch`.
+- **Dynamic UI filter grouping:** Log type filters grouped by `ISpectLogType.category` instead of hardcoded prefix matching.
+- **21 new icons and colors** for new log types in `ISpectConstants`.
+
+### Migration Guide
+
+```dart
+// BEFORE (v4.x): Pattern matching on typed subclasses
+if (log is NetworkRequestLog) {
+  print(log.method);
+  print(log.url);
+  print(log.statusCode);
+}
+
+// AFTER (v5.0): Use ISpectLogDataX convenience getters
+import 'package:ispectify/ispectify.dart';
+if (log.isNetwork) {
+  print(log.traceOperation);  // HTTP method
+  print(log.traceTarget);     // URL
+  print(log.httpStatusCode);  // from traceMeta
+}
+
+// BEFORE: ISpectDbConfig
+ISpectDbConfig(slowQueryThreshold: Duration(milliseconds: 100), redactKeys: ['password'])
+
+// AFTER: ISpectDbConfig (extends ISpectTraceConfig)
+ISpectDbConfig(slowThreshold: Duration(milliseconds: 100), redactKeys: {'password'})
+
+// BEFORE: BlocLifecycleLog subclasses
+if (log is BlocEventLog) { print(log.event); }
+
+// AFTER: Use trace additionalData
+if (log.key == ISpectLogType.blocEvent.key) {
+  print(log.additionalData?['meta']?['eventType']);
+}
+
+// NEW: Trace API for custom operations
+logger.traceAsync(
+  category: authCategory,
+  source: 'firebase',
+  operation: 'signIn',
+  run: () => auth.signIn(email, password),
+);
+
+// NEW: Domain extensions
+logger.push(source: 'fcm', operation: 'received', messageId: id);
+logger.analyticsEvent(source: 'firebase', event: 'purchase');
+```
+
 ## 4.8.0-dev12
 
 ### Code Quality

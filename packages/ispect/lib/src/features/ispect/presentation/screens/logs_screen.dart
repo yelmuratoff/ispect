@@ -145,6 +145,9 @@ class _LogsScreenState extends State<LogsScreen> {
                       }
                     }
                   : null,
+              onShowRelated: (id) {
+                _logsViewController.searchByCorrelationId(id);
+              },
             );
 
             if (isDesktop) {
@@ -186,14 +189,14 @@ class _LogsScreenState extends State<LogsScreen> {
   ) {
     if (!activeLog.isHttpLog) return null;
 
-    final requestId = activeLog.additionalData?[kRequestIdKey] as String?;
+    final requestId = activeLog.additionalData?['request-id'] as String?;
     if (requestId == null) return null;
 
     final isRequest = activeLog.key == ISpectLogType.httpRequest.key;
 
     for (final log in allLogs) {
       if (identical(log, activeLog)) continue;
-      final logRid = log.additionalData?[kRequestIdKey] as String?;
+      final logRid = log.additionalData?['request-id'] as String?;
       if (logRid != requestId) continue;
 
       // If viewing request, find its response/error.

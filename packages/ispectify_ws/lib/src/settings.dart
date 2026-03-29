@@ -1,11 +1,13 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_ws/ispectify_ws.dart';
 
-/// `ISpectWSInterceptorSettings` settings and customization.
+/// WebSocket interceptor settings.
 ///
 /// Extends [BaseNetworkInterceptorSettings] to reuse shared fields
 /// (`enabled`, `enableRedaction`, pens, print toggles) while providing
 /// WS-specific convenience aliases (`printSentData`, `sentPen`, etc.).
+///
+/// **v5.0 breaking change:** Filter function signatures changed from
+/// typed log subclasses to nullable `ISpectLogData?`.
 class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
     super.enabled,
@@ -34,34 +36,23 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
           responsePen: receivedPen,
         );
 
-  final bool Function(WSSentLog request)? sentFilter;
+  /// Filter for sent messages. Return `false` to suppress logging.
+  final bool Function(ISpectLogData? data)? sentFilter;
 
-  final bool Function(WSReceivedLog response)? receivedFilter;
+  /// Filter for received messages. Return `false` to suppress logging.
+  final bool Function(ISpectLogData? data)? receivedFilter;
 
-  final bool Function(WSErrorLog response)? errorFilter;
+  /// Filter for error events. Return `false` to suppress logging.
+  final bool Function(ISpectLogData? data)? errorFilter;
 
-  /// Alias for [printRequestData] (WS terminology).
   bool get printSentData => printRequestData;
-
-  /// Alias for [printRequestHeaders] (WS terminology).
   bool get printSentHeaders => printRequestHeaders;
-
-  /// Alias for [printResponseData] (WS terminology).
   bool get printReceivedData => printResponseData;
-
-  /// Alias for [printResponseHeaders] (WS terminology).
   bool get printReceivedHeaders => printResponseHeaders;
-
-  /// Alias for [printResponseMessage] (WS terminology).
   bool get printReceivedMessage => printResponseMessage;
-
-  /// Alias for [requestPen] (WS terminology).
   AnsiPen? get sentPen => requestPen;
-
-  /// Alias for [responsePen] (WS terminology).
   AnsiPen? get receivedPen => responsePen;
 
-  /// Creates a copy of this settings with the given fields replaced.
   ISpectWSInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
@@ -75,9 +66,9 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     AnsiPen? errorPen,
-    bool Function(WSSentLog request)? sentFilter,
-    bool Function(WSReceivedLog response)? receivedFilter,
-    bool Function(WSErrorLog response)? errorFilter,
+    bool Function(ISpectLogData? data)? sentFilter,
+    bool Function(ISpectLogData? data)? receivedFilter,
+    bool Function(ISpectLogData? data)? errorFilter,
   }) =>
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,

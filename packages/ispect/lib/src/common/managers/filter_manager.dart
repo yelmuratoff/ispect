@@ -114,6 +114,11 @@ class FilterManager {
     _updateFilter(titles: <String>[], types: <Type>[], searchQuery: '');
   }
 
+  void clearTitleFilters() {
+    if (_getCurrentTitles().isEmpty) return;
+    _updateFilter(titles: <String>[]);
+  }
+
   /// Exclude a specific title: add all other titles except this one.
   void excludeTitle(String title, List<String> allTitles) {
     final filtered = allTitles.where((t) => t != title).toList(growable: false);
@@ -212,7 +217,7 @@ class FilterManager {
     final uniqueTitlesSet = <String>{};
 
     for (final data in logsData) {
-      final title = data.title;
+      final title = data.key ?? data.title;
       if (title == null) continue;
       allTitles.add(title);
       uniqueTitlesSet.add(title);

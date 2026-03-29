@@ -1,10 +1,9 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
-import 'package:ispectify_http/src/models/_models.dart';
 import 'package:ispectify_http/src/settings.dart';
-import 'package:ispectify_http/src/utils/multipart_serializer.dart';
 
+/// HTTP client interceptor that logs requests/responses via the trace API.
 class ISpectHttpInterceptor extends InterceptorContract
     with BaseNetworkInterceptor {
   ISpectHttpInterceptor({
@@ -22,23 +21,17 @@ class ISpectHttpInterceptor extends InterceptorContract
   @override
   ISpectLogger get logger => _logger;
 
-  /// Current settings for this interceptor.
-  ///
-  /// Use [configure] for partial updates. The settings object itself is
-  /// immutable — updates replace the entire instance.
   ISpectHttpInterceptorSettings get settings => _settings;
   ISpectHttpInterceptorSettings _settings;
 
-  final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
-
-  /// Tracks request IDs using [Expando] — auto-cleaned by GC when the
-  /// [BaseRequest] is collected, avoiding memory leaks and hashCode collisions.
   final Expando<String> _requestIds = Expando<String>('ispect_rid');
+  final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
 
   @override
   bool get enableRedaction => settings.enableRedaction;
 
-  /// Method to update `settings` of [ISpectHttpInterceptor]
+  static const _noRedactConfig = ISpectTraceConfig(redact: false);
+
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,
@@ -83,37 +76,32 @@ class ISpectHttpInterceptor extends InterceptorContract
       return request;
     }
 
-    final requestId = _requestIdGenerator.next();
+    final requestId = generateTraceId();
     _requestIds[request] = requestId;
+    _stopwatches[request] = Stopwatch()..start();
 
-    safeLog(() {
-      final useRedaction = settings.enableRedaction;
+    final useRedaction = settings.enableRedaction;
+    final (:url, path: _) = redactUrlAndPath(
+      request.url,
+      useRedaction: useRedaction,
+    );
 
-      final headers = settings.printRequestHeaders
-          ? _stringHeaders(request.headers, useRedaction)
-          : null;
-
-      final body = settings.printRequestData
-          ? _requestBodyPayload(request, useRedaction)
-          : null;
-
-      final (:url, :path) = redactUrlAndPath(
-        request.url,
-        useRedaction: useRedaction,
-      );
-      return HttpRequestLog(
-        url,
-        method: request.method,
-        url: url,
-        path: path,
-        requestId: requestId,
-        headers: headers,
-        settings: settings,
-        body: body,
-        requestData: HttpRequestData(request),
-        redactor: useRedaction ? redactor : null,
-      );
-    });
+    _logger.trace(
+      category: networkCategory,
+      source: 'http',
+      operation: request.method,
+      target: url,
+      logKey: ISpectLogType.httpRequest.key,
+      correlationId: requestId,
+      success: true,
+      config: useRedaction ? null : _noRedactConfig,
+      meta: {
+        'requestId': requestId,
+        'requestData': HttpRequestData(request).toJson(
+          redactor: useRedaction ? redactor : null,
+        ),
+      },
+    );
     return request;
   }
 
@@ -141,129 +129,53 @@ class ISpectHttpInterceptor extends InterceptorContract
       return response;
     }
 
-    final requestId =
-        response.request != null ? _requestIds[response.request!] : null;
+    final request = response.request;
+    final requestId = request != null ? _requestIds[request] : null;
+    final sw = request != null ? _stopwatches[request] : null;
+    sw?.stop();
 
-    safeLog(() {
-      final useRedaction = settings.enableRedaction;
+    final useRedaction = settings.enableRedaction;
+    final requestUrl = request?.url;
+    final (:url, path: _) = requestUrl != null
+        ? redactUrlAndPath(requestUrl, useRedaction: useRedaction)
+        : (url: '', path: '');
 
-      final responseBody = _responseBodyPayload(
+    final responseData = HttpResponseData(
+      baseResponse: response,
+      requestData: HttpRequestData(request),
+      response: response is Response ? response : null,
+      multipartRequest: request is MultipartRequest ? request : null,
+      preDecodedBody: _responseBodyPayload(
         response,
         useRedaction,
         include: isErrorResponse
             ? settings.printErrorData
             : settings.printResponseData,
-      );
+      ),
+    );
 
-      final requestBody = settings.printRequestData
-          ? _requestBodyPayload(response.request, useRedaction)
-          : null;
-
-      final responseData = HttpResponseData(
-        baseResponse: response,
-        requestData: HttpRequestData(response.request),
-        response: response is Response ? response : null,
-        multipartRequest: response.request is MultipartRequest
-            ? response.request! as MultipartRequest
-            : null,
-        preDecodedBody: responseBody,
-      );
-
-      if (isErrorResponse) {
-        final requestUrl = response.request?.url;
-        final errorUrl = requestUrl != null
-            ? redactUrlAndPath(requestUrl, useRedaction: useRedaction)
-            : (url: '', path: '');
-        return HttpErrorLog(
-          errorUrl.url,
-          method: response.request?.method,
-          url: errorUrl.url,
-          path: errorUrl.path,
-          requestId: requestId,
-          statusCode: response.statusCode,
-          settings: settings,
-          statusMessage:
-              settings.printErrorMessage ? response.reasonPhrase : null,
-          requestHeaders: settings.printRequestHeaders
-              ? _stringHeaders(response.request?.headers, useRedaction)
-              : null,
-          headers: settings.printErrorHeaders
-              ? _stringHeaders(response.headers, useRedaction)
-              : null,
-          body: _errorBodyPayload(responseBody, requestBody),
-          responseData: responseData,
+    _logger.trace(
+      category: networkCategory,
+      source: 'http',
+      operation: request?.method ?? 'UNKNOWN',
+      target: url,
+      logKey: isErrorResponse
+          ? ISpectLogType.httpError.key
+          : ISpectLogType.httpResponse.key,
+      correlationId: requestId,
+      success: !isErrorResponse,
+      duration: sw?.elapsed,
+      config: useRedaction ? null : _noRedactConfig,
+      meta: {
+        if (requestId != null) 'requestId': requestId,
+        'statusCode': response.statusCode,
+        'responseData': responseData.toJson(
           redactor: useRedaction ? redactor : null,
-        );
-      } else {
-        final responseUrl = response.request?.url;
-        final resp = responseUrl != null
-            ? redactUrlAndPath(responseUrl, useRedaction: useRedaction)
-            : (url: '', path: '');
-        return HttpResponseLog(
-          resp.url,
-          method: response.request?.method,
-          url: resp.url,
-          path: resp.path,
-          requestId: requestId,
-          statusCode: response.statusCode,
-          statusMessage:
-              settings.printResponseMessage ? response.reasonPhrase : null,
-          requestHeaders: settings.printRequestHeaders
-              ? _stringHeaders(response.request?.headers, useRedaction)
-              : null,
-          headers: settings.printResponseHeaders
-              ? _stringHeaders(response.headers, useRedaction)
-              : null,
-          requestBody: requestBody,
-          responseBody: responseBody,
-          settings: settings,
-          responseData: responseData,
-          redactor: useRedaction ? redactor : null,
-        );
-      }
-    });
+        ),
+      },
+    );
 
     return response;
-  }
-
-  Map<String, String>? _stringHeaders(
-    Map<String, String>? headers,
-    bool useRedaction,
-  ) {
-    if (headers == null || headers.isEmpty) return null;
-    final objectHeaders =
-        headers.map((key, value) => MapEntry(key, value as Object?));
-    final sanitized = payload.headersOrNull(
-      objectHeaders,
-      enableRedaction: useRedaction,
-    );
-    return sanitized
-        ?.map((key, value) => MapEntry(key, value?.toString() ?? ''));
-  }
-
-  Map<String, dynamic>? _requestBodyPayload(
-    BaseRequest? request,
-    bool useRedaction,
-  ) {
-    if (request == null) return null;
-
-    if (request is MultipartRequest) {
-      return bodyAsMap(
-        HttpMultipartSerializer.serialize(request),
-        useRedaction: useRedaction,
-      );
-    }
-
-    if (request is Request) {
-      if (request.body.isEmpty) return null;
-      return bodyAsMap(
-        request.body,
-        useRedaction: useRedaction,
-        normalizer: NetworkPayloadSanitizer.decodeJsonGracefully,
-      );
-    }
-
-    return null;
   }
 
   Object? _responseBodyPayload(
@@ -279,22 +191,5 @@ class ISpectHttpInterceptor extends InterceptorContract
       enableRedaction: useRedaction,
       normalizer: NetworkPayloadSanitizer.decodeJsonGracefully,
     );
-  }
-
-  Map<String, dynamic> _errorBodyPayload(
-    Object? responseBody,
-    Map<String, dynamic>? requestBody,
-  ) {
-    final payloadMap = <String, dynamic>{};
-    final responseMap = payload.ensureMap(responseBody);
-    if (responseMap.isNotEmpty) {
-      payloadMap[NetworkJsonKeys.response] = responseMap;
-    }
-
-    if (requestBody != null && requestBody.isNotEmpty) {
-      payloadMap[NetworkJsonKeys.request] = requestBody;
-    }
-
-    return payloadMap;
   }
 }

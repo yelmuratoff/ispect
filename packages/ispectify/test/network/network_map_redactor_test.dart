@@ -60,8 +60,7 @@ void main() {
 
         NetworkMapRedactor.redactHeaders(map, redactor);
 
-        final headers =
-            map[NetworkJsonKeys.headers] as Map<String, dynamic>;
+        final headers = map[NetworkJsonKeys.headers] as Map<String, dynamic>;
         expect(headers['authorization'], isNot('Bearer secret-token-123'));
         expect(headers['content-type'], 'application/json');
       });

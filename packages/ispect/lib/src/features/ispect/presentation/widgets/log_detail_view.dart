@@ -14,6 +14,7 @@ class LogDetailView extends StatelessWidget {
     this.correlatedLog,
     this.correlationDuration,
     this.onNavigateToCorrelated,
+    this.onShowRelated,
     super.key,
   });
 
@@ -29,9 +30,20 @@ class LogDetailView extends StatelessWidget {
   /// Callback to navigate to the correlated log.
   final VoidCallback? onNavigateToCorrelated;
 
+  /// Callback to filter logs by correlationId or transactionId.
+  /// Receives the ID string to filter by.
+  final void Function(String id)? onShowRelated;
+
   @override
   Widget build(BuildContext context) {
     final json = activeData.toJson();
+    final corrId =
+        activeData.additionalData?[TraceKeys.correlationId] as String?;
+    final txnId =
+        activeData.additionalData?[TraceKeys.transactionId] as String?;
+    final hasTraceCorrelation = (corrId != null || txnId != null) &&
+        !(correlatedLog != null && onNavigateToCorrelated != null);
+
     return Column(
       children: [
         if (correlatedLog != null && onNavigateToCorrelated != null)
@@ -40,6 +52,12 @@ class LogDetailView extends StatelessWidget {
             correlatedLog: correlatedLog!,
             duration: correlationDuration,
             onNavigate: onNavigateToCorrelated!,
+          ),
+        if (hasTraceCorrelation)
+          _TraceCorrelationBanner(
+            correlationId: corrId,
+            transactionId: txnId,
+            onShowRelated: onShowRelated,
           ),
         Expanded(
           child: RepaintBoundary(
@@ -54,6 +72,138 @@ class LogDetailView extends StatelessWidget {
       ],
     );
   }
+}
+
+class _TraceCorrelationBanner extends StatelessWidget {
+  const _TraceCorrelationBanner({
+    this.correlationId,
+    this.transactionId,
+    this.onShowRelated,
+  });
+
+  final String? correlationId;
+  final String? transactionId;
+  final void Function(String id)? onShowRelated;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = context.appTheme.colorScheme.tertiary;
+    final chips = <Widget>[];
+
+    if (correlationId != null) {
+      chips.add(
+        _IdChip(
+          label: 'Corr',
+          value: correlationId!,
+          color: color,
+          onTap: onShowRelated != null
+              ? () => onShowRelated!(correlationId!)
+              : null,
+        ),
+      );
+    }
+    if (transactionId != null) {
+      chips.add(
+        _IdChip(
+          label: 'Txn',
+          value: transactionId!,
+          color: color,
+          onTap: onShowRelated != null
+              ? () => onShowRelated!(transactionId!)
+              : null,
+        ),
+      );
+    }
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        border: Border(
+          bottom: BorderSide(
+            color: color.withValues(alpha: 0.15),
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: [
+            Icon(
+              Icons.link_rounded,
+              size: 14,
+              color: color.withValues(alpha: 0.7),
+            ),
+            const Gap(6),
+            Expanded(
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: chips,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IdChip extends StatelessWidget {
+  const _IdChip({
+    required this.label,
+    required this.value,
+    required this.color,
+    this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: MouseRegion(
+          cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.all(Radius.circular(6)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$label: ${_truncateId(value)}',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  if (onTap != null) ...[
+                    const Gap(4),
+                    Icon(
+                      Icons.filter_list_rounded,
+                      size: 11,
+                      color: color,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+  static String _truncateId(String id) =>
+      id.length > 12 ? '${id.substring(0, 12)}...' : id;
 }
 
 class _CorrelationBanner extends StatelessWidget {

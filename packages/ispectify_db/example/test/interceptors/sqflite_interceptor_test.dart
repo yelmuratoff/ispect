@@ -100,7 +100,8 @@ void main() {
         'INSERT INTO users (name) VALUES (?)',
         ['Alice'],
       );
-      final rows = await traced.query('users', where: 'name = ?', whereArgs: ['Alice']);
+      final rows =
+          await traced.query('users', where: 'name = ?', whereArgs: ['Alice']);
 
       expect(rows.length, 1);
       expect(lastAdditional()['table'], 'users');
@@ -162,7 +163,8 @@ void main() {
       });
 
       // Verify the user was actually inserted.
-      final rows = await realDb.rawQuery('SELECT * FROM users WHERE name = ?', ['TxnUser']);
+      final rows = await realDb
+          .rawQuery('SELECT * FROM users WHERE name = ?', ['TxnUser']);
       expect(rows.length, 1);
     });
   });

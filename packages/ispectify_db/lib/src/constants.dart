@@ -47,7 +47,6 @@ const dbDefaultSource = 'custom';
 /// Default operation fallback for [dbStart]/[dbEnd].
 const dbDefaultOperation = 'custom';
 
-
 /// Transaction marker operation names.
 abstract final class DbTxnOps {
   static const begin = 'transaction-begin';

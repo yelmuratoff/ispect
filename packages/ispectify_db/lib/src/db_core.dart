@@ -11,7 +11,7 @@ final class ISpectDbCore {
   const ISpectDbCore._();
 
   /// Current configuration applied to all DB log calls.
-  static ISpectDbConfig config = ISpectDbConfig();
+  static ISpectDbConfig config = const ISpectDbConfig();
 
   static final RegExp _singleQuoteRe = RegExp("'[^']*'");
   static final RegExp _doubleQuoteRe = RegExp(r'\"[^\"]*\"');

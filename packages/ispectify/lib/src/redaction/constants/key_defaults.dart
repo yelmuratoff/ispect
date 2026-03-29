@@ -21,6 +21,42 @@ const Set<String> defaultSensitiveKeys = <String>{
   'private_key',
   'set-cookie',
   'cookie',
+  'bearer_token',
+  'session_id',
+  'session_token',
+  'session-id',
+  'session-token',
+  'csrf',
+  'csrf_token',
+  'csrf-token',
+  'x-csrf-token',
+  'mfa_code',
+  'mfa-code',
+  'totp',
+  'otp',
+  'one_time_password',
+  'verification_code',
+  'verification-code',
+  'pin_code',
+  'pin-code',
+
+  // User Identity (context-dependent)
+  'email',
+  'e-mail',
+  'email_address',
+  'username',
+  'user_name',
+  'login',
+
+  // Device & Push Tokens
+  'device_token',
+  'device-token',
+  'fcm_token',
+  'fcm-token',
+  'apns_token',
+  'apns-token',
+  'push_token',
+  'push-token',
 
   // Personal Identification Numbers
   'ssn',
@@ -157,6 +193,12 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
   ),
   RegExp(r'(?:^|[_\-])iban(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])swift(?:$|[_\-])', caseSensitive: false),
+
+  // MFA / OTP / session / device token patterns
+  RegExp(
+    r'(?:^|[_\-])(?:e[-_]?mail|otp|device[-_]?token|push[-_]?token|session[-_]?(?:id|token)|csrf[-_]?token|mfa[-_]?code)',
+    caseSensitive: false,
+  ),
 
   // Cryptocurrency patterns
   RegExp(r'(?:^|[_\-])wallet(?:$|[_\-])', caseSensitive: false),

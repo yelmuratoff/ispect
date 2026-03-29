@@ -124,7 +124,7 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: ISpectLocalizations.delegates(),
       navigatorObservers:
-          ISpectNavigatorObserver.observers(additional: [_observer]),
+          ISpectNavigatorObserver.observers(observer: _observer),
       themeMode: _themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -810,7 +810,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       redact: true,
       attachStackOnError: true,
       enableTransactionMarkers: true,
-      slowQueryThreshold: Duration(milliseconds: 250),
+      slowThreshold: Duration(milliseconds: 250),
     );
   }
 

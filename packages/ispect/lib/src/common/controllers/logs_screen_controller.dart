@@ -380,6 +380,7 @@ class LogsScreenController {
       _relativeTimeTimer?.cancel();
       _relativeTimeTimer = null;
     }
+    _onStateChanged();
   }
 
   void _onSearchFocusChanged() {

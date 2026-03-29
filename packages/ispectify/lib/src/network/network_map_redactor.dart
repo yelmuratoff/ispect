@@ -134,9 +134,8 @@ abstract final class NetworkMapRedactor {
     if (rawBaseUrl is String) {
       final baseUri = Uri.tryParse(rawBaseUrl);
       if (baseUri != null && baseUri.userInfo.isNotEmpty) {
-        map[NetworkJsonKeys.baseUrl] = baseUri
-            .replace(userInfo: userInfoRedactedPlaceholder)
-            .toString();
+        map[NetworkJsonKeys.baseUrl] =
+            baseUri.replace(userInfo: userInfoRedactedPlaceholder).toString();
       }
     }
   }

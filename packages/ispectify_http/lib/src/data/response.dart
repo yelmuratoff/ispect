@@ -73,8 +73,7 @@ class HttpResponseData {
       NetworkJsonKeys.isRedirect: baseResponse.isRedirect,
 
       // --- Behaviour ---
-      NetworkJsonKeys.persistentConnection:
-          baseResponse.persistentConnection,
+      NetworkJsonKeys.persistentConnection: baseResponse.persistentConnection,
 
       // --- Multipart (if applicable) ---
       if (multipart != null)

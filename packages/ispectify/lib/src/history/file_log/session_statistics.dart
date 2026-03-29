@@ -44,6 +44,4 @@ Session Statistics:
 - Cleanup Strategy: ${cleanupStrategy.name}
 ''';
   }
-
-
 }

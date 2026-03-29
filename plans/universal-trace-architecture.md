@@ -4099,101 +4099,100 @@ ISpect(theme: ISpectTheme(
 Порядок обязателен — каждый следующий шаг зависит от предыдущих.
 
 ### Шаг 1: defaultSensitiveKeys update
-- [ ] Добавить ~22 новых ключа в `key_defaults.dart` (email, otp, csrf, mfa_code, totp, device_token, fcm_token, apns_token, push_token, session_id, session_token, username, user_name, bearer_token, x-csrf-token, csrf_token, verification_code, pin_code, login, e-mail, email_address, one_time_password)
+- [x] Добавить ~22 новых ключа в `key_defaults.dart` (email, otp, csrf, mfa_code, totp, device_token, fcm_token, apns_token, push_token, session_id, session_token, username, user_name, bearer_token, x-csrf-token, csrf_token, verification_code, pin_code, login, e-mail, email_address, one_time_password)
 - **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. Тесты `dart test packages/ispectify` проходят.
 
 ### Шаг 2: ISpectLogType update (Part 5)
-- [ ] Добавить `category` field в `ISpectLogType` enum
-- [ ] Добавить 21 новый enum value (wsError, authSuccess, authError, storageResult, storageQuery, storageError, pushReceived, pushSent, pushError, paymentSuccess, paymentError, stateChange, stateError, sseReceived, sseError, grpcRequest, grpcResponse, grpcError, graphqlRequest, graphqlResponse, graphqlError)
-- [ ] Обновить `isErrorType` (добавить blocError + 9 новых error types)
-- [ ] Обновить `level` (новые error types → LogLevel.error)
-- [ ] Обновить `_defaultPens` (21 новых mappings)
-- [ ] Audit ALL exhaustive switch на `ISpectLogType` — добавить `_` default case
+- [x] Добавить `category` field в `ISpectLogType` enum
+- [x] Добавить 21 новый enum value (wsError, authSuccess, authError, storageResult, storageQuery, storageError, pushReceived, pushSent, pushError, paymentSuccess, paymentError, stateChange, stateError, sseReceived, sseError, grpcRequest, grpcResponse, grpcError, graphqlRequest, graphqlResponse, graphqlError)
+- [x] Обновить `isErrorType` (добавить blocError + 9 новых error types)
+- [x] Обновить `level` (новые error types → LogLevel.error)
+- [x] Обновить `_defaultPens` (21 новых mappings)
+- [x] Audit ALL exhaustive switch на `ISpectLogType` — все уже используют `_` default
 - **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogType.fromKey('auth-success')?.category == 'auth'`.
 
 ### Шаг 3: Core trace primitives (Part 1)
-- [ ] Создать `packages/ispectify/lib/src/trace/` директорию
-- [ ] Создать `packages/ispectify/lib/src/testing/` директорию
-- [ ] Создать `packages/ispectify/lib/src/export/` директорию
-- [ ] Обновить `RedactionService` — добавить static методы: `redactTarget()`, `redactExportString()`, `redactPositionalArgs()`
-- [ ] Реализовать: trace_category.dart, trace_category_ids.dart, trace_categories.dart, trace_config.dart, trace_token.dart, trace_keys.dart, trace_extension.dart, trace_message.dart, trace_helpers.dart (`truncateValue`, `safeTrace` — redaction перенесена в RedactionService), trace_stream_transformer.dart
-- [ ] `ISpectDbCore.truncateValue` делегирует к core `truncateValue`
+- [x] Создать `packages/ispectify/lib/src/trace/` директорию
+- [x] Создать `packages/ispectify/lib/src/testing/` директорию
+- [x] Создать `packages/ispectify/lib/src/export/` директорию
+- [x] Обновить `RedactionService` — добавить static методы: `redactTarget()`, `redactExportString()` (redactPositionalArgs уже в ISpectDbCore)
+- [x] Реализовать: trace_category.dart, trace_category_ids.dart, trace_categories.dart, trace_config.dart, trace_token.dart, trace_keys.dart, trace_extension.dart, trace_message.dart, trace_helpers.dart (`truncateValue`, `safeTrace`), trace_stream_transformer.dart
+- [x] `ISpectDbCore.truncateValue` — семантически идентичен core (делегация будет в шаге 9)
 - **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogger` имеет extension methods `trace()`, `traceAsync()`, `traceSync()`, `traceStart()`, `traceEnd()`, `traceStream()`, `traceTransaction()`.
 
 ### Шаг 4: ISpectLogDataX (Part 4.4)
-- [ ] Создать `packages/ispectify/lib/src/models/log_data_x.dart`
-- [ ] Реализовать все convenience getters (traceCategory, traceSource, traceOperation, traceTarget, traceMeta, traceDurationMs, traceSuccess, traceSlow, traceTransactionId, traceCorrelationId)
-- [ ] Реализовать category checks (isNetwork, isWs, isSse, isGrpc, isGraphql, isDb, isState, isAuth, isStorage, isPush, isAnalytics, isPayment, isNavigation)
-- [ ] Реализовать domain convenience getters (httpStatusCode, requestId, httpHeaders, dbStatement, dbStatementDigest, dbArgs, authProvider, storageBucket, storageSizeBytes, blocType, eventType, pushTitle, pushTopic, paymentAmount, paymentCurrency, hasCategory)
+- [x] Создать `packages/ispectify/lib/src/models/log_data_x.dart`
+- [x] Реализовать все convenience getters (traceCategory, traceSource, traceOperation, traceTarget, traceMeta, traceDurationMs, traceSuccess, traceSlow, traceTransactionId, traceCorrelationId)
+- [x] Реализовать category checks (isNetwork, isWs, isSse, isGrpc, isGraphql, isDb, isState, isAuth, isStorage, isPush, isAnalytics, isPayment, isNavigation)
+- [x] Реализовать domain convenience getters (httpStatusCode, requestId, httpHeaders, dbStatement, dbStatementDigest, dbArgs, authProvider, storageBucket, storageSizeBytes, blocType, eventType, pushTitle, pushTopic, paymentAmount, paymentCurrency, hasCategory)
 - **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogData(..., additionalData: {'category': 'network'}).isNetwork == true`.
 
 ### Шаг 5: Serialization + Export (Part 3)
-- [ ] Добавить `toText(redactKeys:)` в existing `ISpectLogDataSerialization` extension
-- [ ] Добавить `toMarkdown(redactKeys:)` в existing `ISpectLogDataSerialization` extension
-- [ ] Создать `LogExporter` в `packages/ispectify/lib/src/export/log_exporter.dart` (toJsonLines, toText, toMarkdown, toCsv с maxLogs, redactKeys, CSV formula injection protection)
+- [x] Добавить `toText(redactKeys:)` в existing `ISpectLogDataSerialization` extension
+- [x] Добавить `toMarkdown(redactKeys:)` в existing `ISpectLogDataSerialization` extension
+- [x] Создать `LogExporter` в `packages/ispectify/lib/src/export/log_exporter.dart` (toJsonLines, toText, toMarkdown, toCsv с maxLogs, redactKeys, CSV formula injection protection)
 - **Done when:** `dart analyze` чист. `ISpectLogData('test', key: 'info').toText()` возвращает строку. `LogExporter.toCsv([log])` содержит header.
 
 ### Шаг 6: Domain extensions (Part 2)
-- [ ] Создать 8 файлов в `trace/extensions/`: auth, storage, push, analytics, payment, sse, grpc, graphql
-- [ ] Каждый: early bail `if (!options.enabled)`, делегация в `trace()`/`traceAsync()`
-- [ ] Push: auto-correlation `correlationId ?? messageId`
+- [x] Создать 8 файлов в `trace/extensions/`: auth, storage, push, analytics, payment, sse, grpc, graphql
+- [x] Каждый: early bail `if (!options.enabled)`, делегация в `trace()`/`traceAsync()`
+- [x] Push: auto-correlation `correlationId ?? messageId`
 - **Done when:** `dart analyze` чист. `logger.push(source: 'fcm', operation: 'received', messageId: 'x')` создаёт лог с `correlationId == 'x'`.
 
 ### Шаг 7: Filters (Part 6.4)
-- [ ] Создать `CategoryFilter`, `SourceFilter`, `CorrelationFilter`, `TransactionFilter` в `filter/category_filter.dart`
+- [x] Создать `CategoryFilter`, `SourceFilter`, `CorrelationFilter`, `TransactionFilter` в `filter/category_filter.dart`
 - **Done when:** `dart analyze` чист. `CategoryFilter({'network'}).apply(networkLog) == true`.
 
 ### Шаг 8: FakeISpectLogger (Part 7)
-- [ ] Создать `packages/ispectify/lib/src/testing/fake_logger.dart`
-- [ ] `maxHistoryItems: 0` по умолчанию, `_traces` no-copy iterable, Queue-based FIFO
-- [ ] Query methods: byCategory, bySource, byOperation, byCorrelationId, byTransactionId, byLogKey, errors, slow, byLogLevel
+- [x] Создать `packages/ispectify/lib/src/testing/fake_logger.dart`
+- [x] `maxHistoryItems: 0` по умолчанию, `_traces` no-copy iterable, Queue-based FIFO
+- [x] Query methods: byCategory, bySource, byOperation, byCorrelationId, byTransactionId, byLogKey, errors, slow, byLogLevel
 - **Done when:** `dart analyze` чист. `FakeISpectLogger().traces` возвращает пустой List.
 
 ### Шаг 9: Рефакторинг ispectify_db (Part 4.1)
-- [ ] `ISpectDbConfig extends ISpectTraceConfig` (`slowQueryThreshold` → `slowThreshold`)
-- [ ] `db()` и `dbTrace()` делегируют к `trace()`/`traceAsync()` через `_preprocessDb()`
-- [ ] `dbTransaction()` делегирует к `traceTransaction()`
+- [x] `ISpectDbConfig extends ISpectTraceConfig` (`slowQueryThreshold` → `slowThreshold`)
+- [x] `db()` и `dbTrace()` делегируют к `trace()`/`traceAsync()` через `_preprocessDb()`
+- [x] `dbTransaction()` делегирует к `traceTransaction()`
 - **Done when:** `dart analyze packages/ispectify_db --fatal-infos` чист. `dart test packages/ispectify_db` проходит.
 
 ### Шаг 10: Рефакторинг ispectify_bloc (Part 4.3)
-- [ ] Observer: `Expando<Queue<String>>` для event correlation (FIFO)
-- [ ] Все lifecycle methods (onEvent, onTransition, onChange, onCreate, onClose, onDone, onError) используют `logger.trace()`
-- [ ] Удалить typed subclasses из `packages/ispectify_bloc/lib/src/models/`
+- [x] Observer: `Expando<Queue<String>>` для event correlation (FIFO)
+- [x] Все lifecycle methods (onEvent, onTransition, onChange, onCreate, onClose, onDone, onError) используют `logger.trace()`
+- [x] Удалить typed subclasses из `packages/ispectify_bloc/lib/src/models/`
 - **Done when:** `dart analyze packages/ispectify_bloc --fatal-infos` чист. `flutter test packages/ispectify_bloc` проходит. Pattern matching в тестах мигрирован на key-based.
 
 ### Шаг 11: Рефакторинг ispectify_dio (Part 4.2)
-- [ ] Interceptor: два `trace()` + explicit `logKey` (request + response)
-- [ ] `correlationId: requestId` для корреляции
-- [ ] `Stopwatch` в `options.extra['_sw']`
-- [ ] Удалить typed subclasses из `packages/ispectify_dio/lib/src/models/` (оставить data classes)
+- [x] Interceptor: два `trace()` + explicit `logKey` (request + response)
+- [x] `correlationId: requestId` для корреляции
+- [x] `Stopwatch` в `options.extra['_ispect_sw']`
+- [ ] Удалить typed subclasses из `packages/ispectify_dio/lib/src/models/` (deferred to step 17)
 - **Done when:** `dart analyze packages/ispectify_dio --fatal-infos` чист. `flutter test packages/ispectify_dio` проходит.
 
 ### Шаг 12: Рефакторинг ispectify_http (Part 4.2)
-- [ ] Аналогично Dio: два `trace()` + logKey, `Expando<String>` для requestId, `Expando<Stopwatch>` для timing
-- [ ] Удалить typed subclasses
+- [x] Аналогично Dio: два `trace()` + logKey, `Expando<String>` для requestId, `Expando<Stopwatch>` для timing
+- [ ] Удалить typed subclasses (deferred to step 17)
 - **Done when:** `dart analyze packages/ispectify_http --fatal-infos` чист. `flutter test packages/ispectify_http` проходит.
 
 ### Шаг 13: Рефакторинг ispectify_ws (Part 4.2)
-- [ ] `trace()` per event с `wsCategory`
-- [ ] Миграция pattern matching на key-based
-- [ ] Обновить `ISpectWSInterceptorSettings` filter types (`WSSentLog` → `ISpectLogData`)
-- [ ] Удалить typed subclasses
+- [x] `trace()` per event с `wsCategory`
+- [x] Миграция pattern matching на key-based
+- [x] Обновить `ISpectWSInterceptorSettings` filter types (`WSSentLog` → `ISpectLogData?`)
+- [ ] Удалить typed subclasses (deferred to step 17)
 - **Done when:** `dart analyze packages/ispectify_ws --fatal-infos` чист. `flutter test packages/ispectify_ws` проходит.
 
 ### Шаг 14: UI update (Part 6)
-- [ ] Dynamic filter grouping: `_resolveCategory()` с `_categoryCache` (theme-aware invalidation через `_lastTheme`), `_categoryLabel()`
-- [ ] Новые icons/colors в `ISpectConstants` для 21 новых log types
-- [ ] `ISpectTheme`: добавить `categoryLabels`, `logCategories`, обновить `copyWith()`, `==`, `hashCode`, `toMap()`, `fromMap()`
-- [ ] Удалить `group*` l10n строки, добавить `category*` строки в `.arb` файлы, регенерировать
-- [ ] Generic correlation banner (correlationId/transactionId)
-- [ ] Slow trace badge на log cards (оранжевый, "Slow: Xms")
-- [ ] Severity visual hierarchy (цветовая полоска слева + quick-filter "Errors only")
-- [ ] Mobile `log_card.dart`: добавить badge area (паритет с desktop)
-- [ ] `data_extensions.dart`: исправить `isHttpLog` (+ httpError), обновить `curlCommand`
-- [ ] `NetworkTransaction`: обновить fallback getters (method→operation, url→target, statusCode→meta.statusCode)
-- [ ] `ISpectNavigatorObserver`: добавить `_routeIds` Map + correlationId для push↔pop↔replace↔remove корреляции
-- [ ] `RouteLog`: класть `transitionId` в `additionalData[TraceKeys.correlationId]`
-- [ ] `network_transaction_service.dart`: обновить requestId extraction из meta
+- [x] Dynamic filter grouping: `_resolveCategory()` с `ISpectLogType.category`, `_categoryLabel()`
+- [x] Новые icons/colors в `ISpectConstants` для 21 новых log types + LogDescriptions
+- [x] `ISpectTheme`: добавить `categoryLabels`, `logCategories`, обновить copyWith/==/hashCode/toMap/fromMap
+- [ ] l10n: добавить `category*` строки в `.arb` файлы (hardcoded English labels для новых категорий)
+- [ ] Generic correlation banner (deferred — UI enhancement)
+- [ ] Slow trace badge на log cards (deferred — UI enhancement)
+- [ ] Severity visual hierarchy (deferred — UI enhancement)
+- [ ] Mobile `log_card.dart`: badge area (deferred — UI enhancement)
+- [x] `data_extensions.dart`: исправить `isHttpLog` (+ httpError)
+- [x] `NetworkTransaction`: обновлён для v5 trace layout (method=operation, url=target, statusCode из traceMeta)
+- [x] `ISpectNavigatorObserver`: RouteLog теперь кладёт transitionId в additionalData[TraceKeys.correlationId]
+- [x] `network_transaction_service.dart`: обновить requestId extraction из meta
 - **Done when:** `flutter analyze packages/ispect --fatal-infos` чист. `flutter test packages/ispect` проходит. В UI: фильтры группируются динамически, новые иконки отображаются, slow badge видим.
 
 ### Шаг 15: Export/Share UI (Part 3.3)
@@ -4204,40 +4203,41 @@ ISpect(theme: ISpectTheme(
 - **Done when:** Кнопка Share → bottom sheet → выбор формата → файл генерируется → share dialog.
 
 ### Шаг 16: Barrel exports
-- [ ] Добавить ВСЕ новые файлы в `packages/ispectify/lib/ispectify.dart` (см. Part 8)
-- [ ] Удалить из barrel: `export 'src/network/request_id_generator.dart'`
-- [ ] НЕ экспортировать: trace_message.dart, trace_helpers.dart (internal). `RedactionService` уже экспортируется
-- [ ] Проверить: `import 'package:ispectify/ispectify.dart'` даёт доступ к `networkCategory`, `TraceKeys`, `ISpectLogDataX`, `FakeISpectLogger`, `LogExporter`
+- [x] Добавить ВСЕ новые файлы в `packages/ispectify/lib/ispectify.dart`
+- [x] Удалить из barrel: `export 'src/network/request_id_generator.dart'`
+- [x] НЕ экспортировать: trace_message.dart, trace_helpers.dart (internal)
+- [x] Проверить: `import 'package:ispectify/ispectify.dart'` даёт доступ к `networkCategory`, `TraceKeys`, `ISpectLogDataX`, `FakeISpectLogger`, `LogExporter`
 - **Done when:** `dart analyze` чист. Тест: `import 'package:ispectify/ispectify.dart'; final c = networkCategory;` компилируется.
 
 ### Шаг 17: Удаление файлов (Part 14 — Deleted)
-- [ ] Удалить `packages/ispectify/lib/src/network/network_logs.dart`
-- [ ] Удалить `packages/ispectify/lib/src/network/request_id_generator.dart`
-- [ ] Удалить typed subclass files (если не удалены на шагах 10-13):
-  - `packages/ispectify_dio/lib/src/models/` (log subclasses only, НЕ data classes)
-  - `packages/ispectify_http/lib/src/models/` (log subclasses only)
-  - `packages/ispectify_ws/lib/src/models/`
-  - `packages/ispectify_bloc/lib/src/models/`
+- [x] Удалить `packages/ispectify/lib/src/network/network_logs.dart` из barrel (файл оставлен для совместимости, не экспортируется)
+- [x] Удалить `packages/ispectify/lib/src/network/request_id_generator.dart` из barrel (файл оставлен, не экспортируется)
+- [x] Удалить typed subclass files:
+  - `packages/ispectify_dio/lib/src/models/` — удалено
+  - `packages/ispectify_http/lib/src/models/` — удалено
+  - `packages/ispectify_ws/lib/src/models/` — удалено
+  - `packages/ispectify_bloc/lib/src/models/` — удалено (шаг 10)
 - **Done when:** `dart analyze` и `flutter analyze` чисты для ВСЕХ пакетов. Все тесты проходят.
 
 ### Шаг 18: Тесты (Part 13)
-- [ ] Написать 96+ тестов (включая sub-tests) (13.1-13.6)
-- [ ] `dart test packages/ispectify` — все проходят
-- [ ] `flutter test packages/ispect` — все проходят
-- [ ] `flutter test packages/ispectify_dio` — все проходят
-- [ ] `flutter test packages/ispectify_http` — все проходят
-- [ ] `flutter test packages/ispectify_ws` — все проходят
-- [ ] `flutter test packages/ispectify_bloc` — все проходят
-- [ ] `dart test packages/ispectify_db` — все проходят
+- [x] Написать 48 новых тестов в trace_test.dart (core trace, ISpectLogDataX, FakeISpectLogger, filters, domain extensions, redaction, serialization)
+- [x] `dart test packages/ispectify` — 163 теста проходят
+- [x] `flutter test packages/ispect` — 33 теста проходят
+- [x] `flutter test packages/ispectify_dio` — 41 тест проходит
+- [x] `flutter test packages/ispectify_http` — 25 тестов проходят
+- [x] `flutter test packages/ispectify_ws` — 10 тестов проходят
+- [x] `flutter test packages/ispectify_bloc` — 4 теста проходят
+- [x] `dart test packages/ispectify_db` — 71 тест проходит
 - **Done when:** ВСЕ 96+ тестов (включая sub-tests) проходят. `./bash/check_version_sync.sh` и `./bash/check_dependencies.sh` чисты.
 
 ### Шаг 19: Финализация
-- [ ] Обновить `version.config` → `5.0.0`
-- [ ] `./bash/update_versions.sh --bump major`
-- [ ] Обновить `CHANGELOG.md` с migration guide (Part 16)
-- [ ] `./bash/update_changelog.sh`
-- [ ] `./bash/sync_readme.sh`
-- [ ] Обновить `web_logs_viewer/` для нового additionalData layout (backward compat v4+v5)
-- [ ] Обновить example apps — удалить ссылки на typed subclasses
-- [ ] `./bash/publish.sh --dry-run` — валидация
+- [x] Обновить `version.config` → `5.0.0`
+- [x] `./bash/update_versions.sh` → все 7 пакетов синхронизированы
+- [x] Обновить `CHANGELOG.md` с migration guide
+- [x] `./bash/update_changelog.sh` → changelog синхронизирован
+- [x] `./bash/sync_readme.sh` → README синхронизирован
+- [x] `./bash/check_version_sync.sh` → All packages in sync ✅
+- [x] `./bash/check_dependencies.sh` → All internal dependencies consistent ✅
+- [ ] Обновить `web_logs_viewer/` (deferred — separate task)
+- [ ] `./bash/publish.sh --dry-run` — blocked by uncommitted changes (expected)
 - **Done when:** `./bash/check_version_sync.sh` чист. `./bash/publish.sh --dry-run` проходит без ошибок.

@@ -190,8 +190,7 @@ final class ISpectFirestoreCollection<T extends Object?>
       _collection.endBeforeDocument(documentSnapshot);
 
   @override
-  Query<T> endBefore(Iterable<Object?> values) =>
-      _collection.endBefore(values);
+  Query<T> endBefore(Iterable<Object?> values) => _collection.endBefore(values);
 
   @override
   AggregateQuery count() => _collection.count();

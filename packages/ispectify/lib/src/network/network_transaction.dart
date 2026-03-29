@@ -1,5 +1,5 @@
 import 'package:ispectify/src/models/data.dart';
-import 'package:ispectify/src/network/network_logs.dart';
+import 'package:ispectify/src/trace/trace_keys.dart';
 
 /// Groups a correlated HTTP request with its response or error.
 ///
@@ -27,6 +27,13 @@ class NetworkTransaction {
 
   /// Duration from request to response/error, or `null` if still pending.
   Duration? get duration {
+    // v5: check trace durationMs first
+    final respDurationMs =
+        _metaInt(response, 'durationMs') ?? _metaInt(error, 'durationMs');
+    if (respDurationMs != null) {
+      return Duration(milliseconds: respDurationMs);
+    }
+    // Fallback: time difference
     final end = response?.time ?? error?.time;
     if (end == null) return null;
     return end.difference(request.time);
@@ -43,26 +50,30 @@ class NetworkTransaction {
 
   /// HTTP status code from response or error, if available.
   int? get statusCode {
-    final resp = response;
-    if (resp is NetworkResponseLog) return resp.statusCode;
-    final err = error;
-    if (err is NetworkErrorLog) return err.statusCode;
-    // Fallback for imported logs (deserialized as plain ISpectLogData).
+    // v5: trace meta
+    final code =
+        _traceMeta(response)?['statusCode'] ?? _traceMeta(error)?['statusCode'];
+    if (code is int) return code;
+    // v4 fallback: flat additionalData
     return response?.additionalData?['statusCode'] as int? ??
         error?.additionalData?['statusCode'] as int?;
   }
 
   /// HTTP method from the request.
   String? get method {
-    final req = request;
-    if (req is NetworkRequestLog) return req.method;
+    // v5: trace operation field
+    final op = request.additionalData?[TraceKeys.operation];
+    if (op is String) return op;
+    // v4 fallback
     return request.additionalData?['method'] as String?;
   }
 
   /// Request URL.
   String? get url {
-    final req = request;
-    if (req is NetworkRequestLog) return req.url;
+    // v5: trace target field
+    final target = request.additionalData?[TraceKeys.target];
+    if (target is String) return target;
+    // v4 fallback
     return request.additionalData?['url'] as String?;
   }
 
@@ -77,4 +88,16 @@ class NetworkTransaction {
         response: response ?? this.response,
         error: error ?? this.error,
       );
+
+  /// Extract trace meta map from a log entry.
+  static Map<String, dynamic>? _traceMeta(ISpectLogData? log) {
+    final meta = log?.additionalData?[TraceKeys.meta];
+    return meta is Map<String, dynamic> ? meta : null;
+  }
+
+  /// Extract int from trace envelope.
+  static int? _metaInt(ISpectLogData? log, String key) {
+    final v = log?.additionalData?[key];
+    return v is int ? v : null;
+  }
 }

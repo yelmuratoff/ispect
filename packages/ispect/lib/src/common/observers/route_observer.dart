@@ -84,6 +84,9 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final int maxTransitions;
   final List<RouteTransition> _transitions = [];
 
+  /// Maps Route → stable correlationId so push/pop/replace/remove share one ID.
+  final Expando<String> _routeCorrelationIds = Expando<String>('route_corr_id');
+
   List<RouteTransition> get transitions => List.unmodifiable(_transitions);
 
   void addTransition(RouteTransition transition) {
@@ -169,6 +172,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (!kISpectEnabled) return;
     if (!_shouldLog(route, previousRoute)) return;
 
+    final correlationId = _resolveCorrelationId(type, route, previousRoute);
+
     final timestamp = DateTime.now();
     final transition = _createRouteTransition(
       type: type,
@@ -180,7 +185,28 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     addTransition(transition);
 
     final logMessage = _buildLogMessage(type, route, previousRoute);
-    ISpect.logger.route(logMessage, transitionId: transition.id);
+    ISpect.logger.route(logMessage, transitionId: correlationId);
+  }
+
+  String? _resolveCorrelationId(
+    TransitionType type,
+    Route<dynamic>? route,
+    Route<dynamic>? previousRoute,
+  ) {
+    if (type == TransitionType.push && route != null) {
+      final id = _generateTransitionId(DateTime.now(), route);
+      _routeCorrelationIds[route] = id;
+      return id;
+    }
+    // Pop/remove/replace: check both routes (args are swapped in didPop)
+    if (route != null) {
+      final id = _routeCorrelationIds[route];
+      if (id != null) return id;
+    }
+    if (previousRoute != null) {
+      return _routeCorrelationIds[previousRoute];
+    }
+    return null;
   }
 
   String _generateTransitionId(DateTime timestamp, Route<dynamic>? route) {

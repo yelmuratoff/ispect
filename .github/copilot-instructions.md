@@ -6,7 +6,7 @@
 
 - **Architecture**: Monorepo with 7 independent pub packages (`ispect`, `ispectify`, `ispectify_dio`, `ispectify_http`, `ispectify_ws`, `ispectify_db`, `ispectify_bloc`)
 - **Package Manager**: Single-source version management via `version.config`
-- **Production Safety**: Flag-gated initialization (`--dart-define=ENABLE_ISPECT=true`) ensures zero footprint in release builds
+- **Production Safety**: Flag-gated initialization (`--dart-define=ISPECT_ENABLED=true`) ensures zero footprint in release builds
 - **Core Pattern**: Observer/interceptor pattern for passive instrumentation across HTTP, DB, WebSocket, and state management layers
 
 ## Critical Monorepo Concepts
@@ -264,7 +264,7 @@ linter:
 All ISpect initialization is gated behind a flag:
 
 ```dart
-const bool kEnableISpect = bool.fromEnvironment('ENABLE_ISPECT', defaultValue: false);
+const bool kEnableISpect = bool.fromEnvironment('ISPECT_ENABLED', defaultValue: false);
 
 void main() {
   if (kEnableISpect) {
@@ -279,7 +279,7 @@ void main() {
 **Build commands**:
 ```bash
 # Development
-flutter run --dart-define=ENABLE_ISPECT=true
+flutter run --dart-define=ISPECT_ENABLED=true
 
 # Production (flag omitted = tree-shaken)
 flutter build apk
@@ -330,7 +330,7 @@ Validates before commit:
 2. **Don't edit package READMEs directly** → Edit root `README.md` then sync with `./bash/sync_readme.sh`
 3. **Don't remove `dependency_overrides`** → Required for local monorepo development
 4. **Don't use raw `dart test`** → Use workspace tasks or navigate to package directory
-5. **Don't commit ISpect-enabled builds** → Always gate behind `--dart-define=ENABLE_ISPECT`
+5. **Don't commit ISpect-enabled builds** → Always gate behind `--dart-define=ISPECT_ENABLED`
 6. **Don't use placeholders in edits** → Deliver complete, runnable files
 
 ## Quick Reference Commands

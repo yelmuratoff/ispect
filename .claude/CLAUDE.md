@@ -111,7 +111,7 @@ Strict mode enabled (`strict-casts`, `strict-inference`, `strict-raw-types`). Ke
 ISpect is flag-gated and tree-shaken out of release builds:
 
 ```bash
-flutter run --dart-define=ENABLE_ISPECT=true   # Development
+flutter run --dart-define=ISPECT_ENABLED=true   # Development
 flutter build apk                               # Production (flag omitted = zero footprint)
 ```
 

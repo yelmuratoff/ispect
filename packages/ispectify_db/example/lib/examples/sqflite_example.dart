@@ -15,7 +15,7 @@ Future<void> sqfliteExample() async {
 
   final logger = ISpectLogger();
   ISpectDbCore.config = ISpectDbConfig(
-    slowQueryThreshold: const Duration(milliseconds: 100),
+    slowThreshold: const Duration(milliseconds: 100),
     enableTransactionMarkers: true,
   );
 

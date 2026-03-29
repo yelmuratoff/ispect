@@ -32,8 +32,7 @@ class CurlUtils {
 
     final body = data['data'];
     if (body != null) {
-      final bodyString =
-          body is String ? body : JsonTruncator.pretty(body);
+      final bodyString = body is String ? body : JsonTruncator.pretty(body);
       buffer.write(' -d ${_shellEscape(bodyString)}');
     }
 

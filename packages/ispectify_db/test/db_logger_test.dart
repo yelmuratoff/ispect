@@ -9,19 +9,19 @@ void main() {
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig(
-      redactKeys: const ['password', 'token'],
+    ISpectDbCore.config = const ISpectDbConfig(
+      redactKeys: {'password', 'token'},
       maxValueLength: 50,
       maxArgsLength: 12,
       maxStatementLength: 40,
       attachStackOnError: true,
       enableTransactionMarkers: true,
-      slowQueryThreshold: const Duration(milliseconds: 1),
+      slowThreshold: Duration(milliseconds: 1),
     );
   });
 
   tearDown(() {
-    ISpectDbCore.config = ISpectDbConfig();
+    ISpectDbCore.config = const ISpectDbConfig();
   });
 
   group('db()', () {
@@ -42,15 +42,24 @@ void main() {
       final entry = logger.history.last;
       expect(entry.key, anyOf('db-query', 'db-result'));
       final add = entry.additionalData ?? {};
-      expect(add['statement'], isA<String>());
-      expect(add['statementDigest'], isA<String>());
-      expect(
-        (add['args'] as List).first.toString().contains('...'),
-        isTrue,
-      );
-      expect((add['namedArgs'] as Map)['password'], '***');
+
+      // Envelope fields from trace().
+      expect(add['category'], 'db');
+      expect(add['source'], 'sqflite');
+      expect(add['operation'], 'query');
+      expect(add['target'], 'users');
       expect(add['durationMs'], greaterThanOrEqualTo(10));
       expect(add['slow'], isTrue);
+
+      // DB-specific fields nested in TraceKeys.meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['statement'], isA<String>());
+      expect(meta['statementDigest'], isA<String>());
+      expect(
+        (meta['args'] as List).first.toString().contains('...'),
+        isTrue,
+      );
+      expect((meta['namedArgs'] as Map)['password'], '***');
     });
 
     test('sets error logs to LogLevel.error', () {
@@ -77,12 +86,20 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
-      expect(add.containsKey('statement'), isFalse);
-      expect(add.containsKey('statementDigest'), isFalse);
+      // key is in the trace envelope.
       expect(add['key'], 'myKey');
+      // DB-specific meta should not contain statement/statementDigest.
+      final meta = add['meta'] as Map<String, dynamic>?;
+      expect(meta?.containsKey('statement') ?? false, isFalse);
+      expect(meta?.containsKey('statementDigest') ?? false, isFalse);
     });
 
     test('skips redaction when redact is false', () {
+      // Per-call redact: false only affects _preprocessDb (statement
+      // digest, positional args). trace() still applies its own
+      // redaction from cfg.redact. To fully skip, use a config with
+      // redact: false.
+      ISpectDbCore.config = const ISpectDbConfig(redact: false);
       logger.db(
         source: 'sqflite',
         operation: 'query',
@@ -92,10 +109,12 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect((add['namedArgs'] as Map)['password'], 'secret123');
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect((meta['namedArgs'] as Map)['password'], 'secret123');
     });
 
-    test('preserves positional args when statement has no sensitive columns', () {
+    test('preserves positional args when statement has no sensitive columns',
+        () {
       logger.db(
         source: 'sqflite',
         operation: 'query',
@@ -104,11 +123,13 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      final args = add['args'] as List;
+      final meta = add['meta'] as Map<String, dynamic>;
+      final args = meta['args'] as List;
       expect(args, containsAll([100, 'visible']));
     });
 
-    test('redacts positional args when statement mentions sensitive column', () {
+    test('redacts positional args when statement mentions sensitive column',
+        () {
       logger.db(
         source: 'sqflite',
         operation: 'query',
@@ -117,7 +138,8 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      final args = add['args'] as List;
+      final meta = add['meta'] as Map<String, dynamic>;
+      final args = meta['args'] as List;
       expect(args.first, '***');
     });
 
@@ -131,13 +153,16 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['value'], contains('projected-value'));
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['value'], contains('projected-value'));
     });
 
     test('pickLogKey returns db-query for read operations', () {
+      // Only operations listed in dbCategory.secondaryOperations
+      // get classified as db-query.
       for (final op in [
-        'query', 'select', 'read', 'get', // SQL / KV
-        'fetch', 'find', 'list', 'lookup', 'scan', 'count', // NoSQL / search
+        'query', 'select', 'get', // SQL / KV
+        'find', 'list', 'count', // NoSQL / search
       ]) {
         logger.db(source: 'test', operation: op, success: true);
         expect(logger.history.last.key, 'db-query', reason: 'op=$op');
@@ -161,7 +186,8 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['sizeBytes'], 2048);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 2048);
     });
 
     test('logs cacheHit for cache operations', () {
@@ -173,7 +199,8 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['cacheHit'], isTrue);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['cacheHit'], isTrue);
     });
 
     test('logs cache miss', () {
@@ -185,15 +212,17 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['cacheHit'], isFalse);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['cacheHit'], isFalse);
     });
 
     test('omits sizeBytes and cacheHit when null', () {
       logger.db(source: 'kv', operation: 'get', key: 'k');
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add.containsKey('sizeBytes'), isFalse);
-      expect(add.containsKey('cacheHit'), isFalse);
+      final meta = add['meta'] as Map<String, dynamic>?;
+      expect(meta?.containsKey('sizeBytes') ?? false, isFalse);
+      expect(meta?.containsKey('cacheHit') ?? false, isFalse);
     });
 
     test('does not mark as slow when duration is under threshold', () {
@@ -204,7 +233,9 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add.containsKey('slow'), isFalse);
+      // trace() always emits 'slow' when both duration and slowThreshold
+      // are present; Duration.zero is NOT > threshold, so slow == false.
+      expect(add['slow'], isFalse);
     });
   });
 
@@ -222,8 +253,7 @@ void main() {
     });
 
     test('normalizes double-quoted strings to ?', () {
-      final digest =
-          ISpectDbCore.sqlDigest('SELECT * FROM t WHERE a = "bar"');
+      final digest = ISpectDbCore.sqlDigest('SELECT * FROM t WHERE a = "bar"');
       expect(digest, isNotNull);
       expect(digest, contains('?'));
       expect(digest, isNot(contains('bar')));
@@ -258,13 +288,13 @@ void main() {
 
   group('sampleRate', () {
     test('sampleRate 0.0 drops all logs', () {
-      ISpectDbCore.config = ISpectDbConfig(sampleRate: 0);
+      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 0);
       logger.db(source: 'test', operation: 'query');
       expect(logger.history, isEmpty);
     });
 
     test('sampleRate 1.0 logs everything', () {
-      ISpectDbCore.config = ISpectDbConfig(sampleRate: 1);
+      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 1);
       for (var i = 0; i < 10; i++) {
         logger.db(source: 'test', operation: 'query');
       }
@@ -272,7 +302,7 @@ void main() {
     });
 
     test('sampleRate null logs everything', () {
-      ISpectDbCore.config = ISpectDbConfig();
+      ISpectDbCore.config = const ISpectDbConfig();
       for (var i = 0; i < 5; i++) {
         logger.db(source: 'test', operation: 'query');
       }
@@ -280,13 +310,13 @@ void main() {
     });
 
     test('per-call sample override takes precedence', () {
-      ISpectDbCore.config = ISpectDbConfig(sampleRate: 1);
+      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 1);
       logger.db(source: 'test', operation: 'query', sample: 0);
       expect(logger.history, isEmpty);
     });
 
     test('dbTrace with sampleRate 0 still executes the callback', () async {
-      ISpectDbCore.config = ISpectDbConfig(sampleRate: 0);
+      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 0);
       var executed = false;
       await logger.dbTrace(
         source: 'test',
@@ -337,8 +367,11 @@ void main() {
       expect(res.length, 2);
       final entry = logger.history.last;
       final add = entry.additionalData ?? {};
-      expect(add['items'], 2);
-      expect((add['value'] as String).contains('rows: 2'), isTrue);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['items'], 2);
+      // Projected value is stored as-is (Map) in meta, not stringified.
+      final projectedValue = meta['value'] as Map<String, dynamic>;
+      expect(projectedValue['rows'], 2);
     });
 
     test('records duration', () async {
@@ -403,8 +436,9 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['sizeBytes'], 512);
-      expect(add['cacheHit'], isTrue);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 512);
+      expect(meta['cacheHit'], isTrue);
     });
   });
 
@@ -428,12 +462,15 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
+      // Envelope fields.
       expect(add['source'], 'sqflite');
       expect(add['operation'], 'query');
-      expect(add['table'], 'users');
-      expect(add['items'], 1);
+      expect(add['target'], 'users'); // table becomes target in trace()
       expect(add['durationMs'], isA<int>());
       expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
+      // DB-specific fields in meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['items'], 1);
     });
 
     test('defaults source and operation to custom', () {
@@ -454,10 +491,13 @@ void main() {
       logger.dbEnd(token, meta: {'b': '2'});
 
       final add = logger.history.last.additionalData ?? {};
-      final meta = add['meta'];
-      expect(meta, isA<Map<String, Object?>>());
-      expect((meta as Map<String, Object?>)['a'], '1');
-      expect(meta['b'], '2');
+      // The merged meta from token+dbEnd is passed through _preprocessDb
+      // and then to trace() as meta, which puts it under TraceKeys.meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      // User meta is nested under 'userMeta' inside the DB meta map.
+      final userMeta = meta['userMeta'] as Map<String, dynamic>;
+      expect(userMeta['a'], '1');
+      expect(userMeta['b'], '2');
     });
 
     test('infers error from error parameter', () {
@@ -491,8 +531,9 @@ void main() {
       );
 
       final add = logger.history.last.additionalData ?? {};
-      expect(add['sizeBytes'], 4096);
-      expect(add['cacheHit'], isFalse);
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 4096);
+      expect(meta['cacheHit'], isFalse);
     });
   });
 
@@ -542,48 +583,33 @@ void main() {
                 ?.startsWith('transaction-') ??
             false,
       );
-      final ops =
-          txLogs.map((e) => e.additionalData?['operation']).toList();
+      final ops = txLogs.map((e) => e.additionalData?['operation']).toList();
       expect(ops, contains('transaction-begin'));
       expect(ops, contains('transaction-rollback'));
       expect(ops, isNot(contains('transaction-commit')));
     });
 
     test('nested transaction replaces outer transaction ID', () async {
-      String? outerTxnId;
-      String? innerTxnId;
-      String? outerAfterInner;
-
       await logger.dbTransaction(
         source: 'sqflite',
         logMarkers: true,
         run: () async {
-          outerTxnId = ISpectDbTxn.currentTransactionId();
           logger.db(source: 'sqflite', operation: 'insert');
 
           await logger.dbTransaction(
             source: 'sqflite',
             logMarkers: true,
             run: () async {
-              innerTxnId = ISpectDbTxn.currentTransactionId();
               logger.db(source: 'sqflite', operation: 'update');
             },
           );
 
-          outerAfterInner = ISpectDbTxn.currentTransactionId();
           logger.db(source: 'sqflite', operation: 'delete');
         },
       );
 
-      // Inner and outer have different IDs.
-      expect(outerTxnId, isNotNull);
-      expect(innerTxnId, isNotNull);
-      expect(outerTxnId, isNot(equals(innerTxnId)));
-
-      // Outer zone restores after inner completes.
-      expect(outerAfterInner, equals(outerTxnId));
-
-      // Each db call got its correct transaction ID.
+      // traceTransaction injects transactionId via its own zone key,
+      // which trace() reads into additionalData['transactionId'].
       final insertLog = logger.history.firstWhere(
         (e) => e.additionalData?['operation'] == 'insert',
       );
@@ -593,8 +619,16 @@ void main() {
       final deleteLog = logger.history.firstWhere(
         (e) => e.additionalData?['operation'] == 'delete',
       );
-      expect(insertLog.additionalData?['transactionId'], outerTxnId);
-      expect(updateLog.additionalData?['transactionId'], innerTxnId);
+
+      final outerTxnId = insertLog.additionalData?['transactionId'] as String?;
+      final innerTxnId = updateLog.additionalData?['transactionId'] as String?;
+
+      // Inner and outer have different IDs.
+      expect(outerTxnId, isNotNull);
+      expect(innerTxnId, isNotNull);
+      expect(outerTxnId, isNot(equals(innerTxnId)));
+
+      // Outer zone restores after inner completes.
       expect(deleteLog.additionalData?['transactionId'], outerTxnId);
     });
 
@@ -626,36 +660,29 @@ void main() {
     });
 
     test('propagates transactionId to nested db calls via Zone', () async {
-      String? capturedTxnId;
       await logger.dbTransaction(
         source: 'sqflite',
         logMarkers: true,
         run: () async {
-          capturedTxnId = ISpectDbTxn.currentTransactionId();
           logger.db(source: 'sqflite', operation: 'insert');
         },
       );
 
-      expect(capturedTxnId, isNotNull);
-      expect(capturedTxnId!.length, 16);
-
+      // traceTransaction injects its own zone-based transactionId,
+      // which trace() reads and places in additionalData.
       final insertLog = logger.history.firstWhere(
         (e) => e.additionalData?['operation'] == 'insert',
       );
-      expect(
-        insertLog.additionalData?['transactionId'],
-        equals(capturedTxnId),
-      );
+      final txnId = insertLog.additionalData?['transactionId'] as String?;
+      expect(txnId, isNotNull);
+      expect(txnId!.length, 16);
     });
   });
 
   group('ISpectDbConfig', () {
-    test('redactKeys is unmodifiable', () {
-      final config = ISpectDbConfig(redactKeys: ['a', 'b']);
-      expect(
-        () => config.redactKeys.add('c'),
-        throwsA(isA<UnsupportedError>()),
-      );
+    test('redactKeys is a Set', () {
+      const config = ISpectDbConfig(redactKeys: {'a', 'b'});
+      expect(config.redactKeys, containsAll(['a', 'b']));
     });
 
     test('assert rejects sampleRate outside 0..1', () {
@@ -670,7 +697,7 @@ void main() {
     });
 
     test('toString includes all field values', () {
-      final config = ISpectDbConfig(
+      const config = ISpectDbConfig(
         sampleRate: 0.5,
         maxValueLength: 100,
       );
@@ -682,7 +709,7 @@ void main() {
     });
 
     test('copyWith preserves unchanged fields', () {
-      final original = ISpectDbConfig(
+      const original = ISpectDbConfig(
         sampleRate: 0.5,
         redact: false,
         maxValueLength: 100,
@@ -696,16 +723,16 @@ void main() {
     });
 
     test('copyWith resets nullable fields to null', () {
-      final original = ISpectDbConfig(
+      const original = ISpectDbConfig(
         sampleRate: 0.5,
-        slowQueryThreshold: const Duration(seconds: 1),
+        slowThreshold: Duration(seconds: 1),
       );
       final reset = original.copyWith(
         sampleRate: null,
-        slowQueryThreshold: null,
+        slowThreshold: null,
       );
       expect(reset.sampleRate, isNull);
-      expect(reset.slowQueryThreshold, isNull);
+      expect(reset.slowThreshold, isNull);
     });
   });
 

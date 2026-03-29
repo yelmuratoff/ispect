@@ -111,6 +111,8 @@ class ISpectTheme {
     this.logColors = const {},
     this.logIcons = const {},
     this.logDescriptions = const {},
+    this.categoryLabels = const {},
+    this.logCategories = const {},
     this.panelTheme,
   });
 
@@ -141,6 +143,14 @@ class ISpectTheme {
   /// A map of descriptions associated with different log types.
   final Map<String, String> logDescriptions;
 
+  /// Custom labels for trace categories (e.g. `{'network': 'HTTP'}` overrides
+  /// the default "HTTP" label in filter grouping).
+  final Map<String, String> categoryLabels;
+
+  /// Maps custom log keys to category IDs (e.g. `{'my-log': 'network'}`).
+  /// Used by dynamic filter grouping to resolve category for custom log types.
+  final Map<String, String> logCategories;
+
   /// Theme settings for draggable panels within ISpect.
   final DraggablePanelTheme? panelTheme;
 
@@ -170,6 +180,8 @@ class ISpectTheme {
     Map<String, Color>? logColors,
     Map<String, IconData>? logIcons,
     Map<String, String>? logDescriptions,
+    Map<String, String>? categoryLabels,
+    Map<String, String>? logCategories,
     DraggablePanelTheme? panelTheme,
   }) {
     return ISpectTheme(
@@ -182,6 +194,8 @@ class ISpectTheme {
       logColors: logColors ?? this.logColors,
       logIcons: logIcons ?? this.logIcons,
       logDescriptions: logDescriptions ?? this.logDescriptions,
+      categoryLabels: categoryLabels ?? this.categoryLabels,
+      logCategories: logCategories ?? this.logCategories,
       panelTheme: panelTheme ?? this.panelTheme,
     );
   }
@@ -256,6 +270,8 @@ class ISpectTheme {
       'log_colors': logColors,
       'log_icons': logIcons,
       'log_descriptions': logDescriptions,
+      'category_labels': categoryLabels,
+      'log_categories': logCategories,
     };
   }
 
@@ -283,6 +299,8 @@ class ISpectTheme {
       logColors: $logColors,
       logIcons: $logIcons,
       logDescriptions: $logDescriptions,
+      categoryLabels: $categoryLabels,
+      logCategories: $logCategories,
       panelTheme: $panelTheme,
       )''';
   }
@@ -302,6 +320,8 @@ class ISpectTheme {
         mapEquals(other.logColors, logColors) &&
         mapEquals(other.logIcons, logIcons) &&
         mapEquals(other.logDescriptions, logDescriptions) &&
+        mapEquals(other.categoryLabels, categoryLabels) &&
+        mapEquals(other.logCategories, logCategories) &&
         other.panelTheme == panelTheme;
   }
 
@@ -318,6 +338,8 @@ class ISpectTheme {
       equality.hash(logColors),
       equality.hash(logIcons),
       equality.hash(logDescriptions),
+      equality.hash(categoryLabels),
+      equality.hash(logCategories),
       panelTheme,
     );
   }
@@ -350,6 +372,12 @@ class ISpectTheme {
               (k, v) => MapEntry(k, IconData((v as num?)?.toInt() ?? 0))) ??
           const <String, IconData>{},
       logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
+              ?.map((k, v) => MapEntry(k, v.toString())) ??
+          const <String, String>{},
+      categoryLabels: cast<Map<String, dynamic>?>('category_labels')
+              ?.map((k, v) => MapEntry(k, v.toString())) ??
+          const <String, String>{},
+      logCategories: cast<Map<String, dynamic>?>('log_categories')
               ?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
     );

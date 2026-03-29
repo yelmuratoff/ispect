@@ -112,8 +112,7 @@ final class ISpectRealm implements Realm {
   }
 
   @override
-  void addAll<T extends RealmObject>(Iterable<T> items,
-      {bool update = false}) {
+  void addAll<T extends RealmObject>(Iterable<T> items, {bool update = false}) {
     _realm.addAll<T>(items, update: update);
     _logger.db(
       source: _source,
@@ -206,8 +205,7 @@ final class ISpectRealm implements Realm {
   DynamicRealm get dynamic => _realm.dynamic;
 
   @override
-  void disableAutoRefreshForTesting() =>
-      _realm.disableAutoRefreshForTesting();
+  void disableAutoRefreshForTesting() => _realm.disableAutoRefreshForTesting();
 
   @override
   bool refresh() => _realm.refresh();

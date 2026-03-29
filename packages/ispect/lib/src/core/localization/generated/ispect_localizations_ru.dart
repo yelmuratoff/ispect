@@ -760,6 +760,93 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get groupGeneral => 'Общие';
 
   @override
+  String get categoryAuth => 'Авторизация';
+
+  @override
+  String get categoryStorage => 'Хранилище';
+
+  @override
+  String get categoryPush => 'Пуш-уведомления';
+
+  @override
+  String get categoryPayment => 'Платежи';
+
+  @override
+  String get categoryAnalytics => 'Аналитика';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'Ошибка WebSocket соединения';
+
+  @override
+  String get authSuccessLogDesc => 'Авторизация успешна';
+
+  @override
+  String get authErrorLogDesc => 'Ошибка авторизации';
+
+  @override
+  String get storageResultLogDesc => 'Операция хранилища завершена';
+
+  @override
+  String get storageQueryLogDesc => 'Запрос к хранилищу выполнен';
+
+  @override
+  String get storageErrorLogDesc => 'Ошибка операции хранилища';
+
+  @override
+  String get pushReceivedLogDesc => 'Пуш-уведомление получено';
+
+  @override
+  String get pushSentLogDesc => 'Пуш-уведомление отправлено';
+
+  @override
+  String get pushErrorLogDesc => 'Ошибка пуш-уведомления';
+
+  @override
+  String get paymentSuccessLogDesc => 'Платёж завершён';
+
+  @override
+  String get paymentErrorLogDesc => 'Ошибка платежа';
+
+  @override
+  String get stateChangeLogDesc => 'Состояние изменилось';
+
+  @override
+  String get stateErrorLogDesc => 'Ошибка управления состоянием';
+
+  @override
+  String get sseReceivedLogDesc => 'SSE событие получено';
+
+  @override
+  String get sseErrorLogDesc => 'Ошибка SSE соединения';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC запрос отправлен';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC ответ получен';
+
+  @override
+  String get grpcErrorLogDesc => 'Ошибка gRPC вызова';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL запрос отправлен';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL ответ получен';
+
+  @override
+  String get graphqlErrorLogDesc => 'Ошибка GraphQL операции';
+
+  @override
   String get transitionPush => 'Push';
 
   @override

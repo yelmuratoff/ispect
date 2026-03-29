@@ -1,19 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/src/data/_data.dart';
-import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:ispectify_dio/src/settings.dart';
-import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 
-/// `Dio` http client logger on [ISpectLogger] base
-///
-/// `logger` field is current [ISpectLogger] instance.
-/// Provide your instance if your application used `ISpectLogger` as default logger
-/// Common ISpectLogger instance will be used by default
+/// Dio HTTP client interceptor that logs requests/responses via the trace API.
 class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   ISpectDioInterceptor({
     ISpectLogger? logger,
-    ISpectDioInterceptorSettings settings = const ISpectDioInterceptorSettings(),
+    ISpectDioInterceptorSettings settings =
+        const ISpectDioInterceptorSettings(),
     this.addonId,
     RedactionService? redactor,
   })  : _settings = settings,
@@ -26,26 +21,21 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
   @override
   ISpectLogger get logger => _logger;
 
-  /// Internal key used to store the request ID in [RequestOptions.extra].
   static const _requestIdExtraKey = NetworkJsonKeys.ispectRequestId;
+  static const _stopwatchExtraKey = '_ispect_sw';
 
-  final RequestIdGenerator _requestIdGenerator = RequestIdGenerator();
-
-  /// Current settings for this interceptor.
-  ///
-  /// Use [configure] for partial updates. The settings object itself is
-  /// immutable — updates replace the entire instance.
   ISpectDioInterceptorSettings get settings => _settings;
   ISpectDioInterceptorSettings _settings;
 
-  /// ISpectLogger addon functionality
-  /// addon id for create a lot of addons
   final String? addonId;
 
   @override
   bool get enableRedaction => settings.enableRedaction;
 
-  /// Method to update `settings` of [ISpectDioInterceptor]
+  /// Trace config that respects interceptor's redaction setting.
+  /// When enableRedaction is false, Layer 2 (trace pipeline) won't redact meta.
+  static const _noRedactConfig = ISpectTraceConfig(redact: false);
+
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,
@@ -84,19 +74,39 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     RequestInterceptorHandler handler,
   ) {
     super.onRequest(options, handler);
-    if (!shouldProcess(enabled: settings.enabled, filter: settings.requestFilter, value: options)) {
+    if (!shouldProcess(
+      enabled: settings.enabled,
+      filter: settings.requestFilter,
+      value: options,
+    )) {
       return;
     }
 
-    final requestId = _requestIdGenerator.next();
+    final requestId = generateTraceId();
     options.extra[_requestIdExtraKey] = requestId;
+    options.extra[_stopwatchExtraKey] = Stopwatch()..start();
 
-    safeLog(
-      () => _buildRequestLog(
-        options: options,
-        requestId: requestId,
-        useRedaction: settings.enableRedaction,
-      ),
+    final useRedaction = settings.enableRedaction;
+    final (:url, path: _) = redactUrlAndPath(
+      options.uri,
+      useRedaction: useRedaction,
+    );
+
+    _logger.trace(
+      category: networkCategory,
+      source: 'dio',
+      operation: options.method,
+      target: url,
+      logKey: ISpectLogType.httpRequest.key,
+      correlationId: requestId,
+      success: true,
+      config: useRedaction ? null : _noRedactConfig,
+      meta: {
+        'requestId': requestId,
+        'requestData': DioRequestData(options).toJson(
+          redactor: useRedaction ? redactor : null,
+        ),
+      },
     );
   }
 
@@ -106,195 +116,94 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
-    if (!shouldProcess(enabled: settings.enabled, filter: settings.responseFilter, value: response)) {
+    if (!shouldProcess(
+      enabled: settings.enabled,
+      filter: settings.responseFilter,
+      value: response,
+    )) {
       return;
     }
 
-    final requestId =
-        response.requestOptions.extra[_requestIdExtraKey] as String?;
+    final requestOptions = response.requestOptions;
+    final requestId = requestOptions.extra[_requestIdExtraKey] as String?;
+    final sw = requestOptions.extra[_stopwatchExtraKey] as Stopwatch?;
+    sw?.stop();
 
-    safeLog(
-      () => _buildResponseLog(
-        response: response,
-        requestId: requestId,
-        useRedaction: settings.enableRedaction,
-      ),
+    final useRedaction = settings.enableRedaction;
+    final (:url, path: _) = redactUrlAndPath(
+      requestOptions.uri,
+      useRedaction: useRedaction,
+    );
+    final requestData = DioRequestData(requestOptions);
+
+    _logger.trace(
+      category: networkCategory,
+      source: 'dio',
+      operation: requestOptions.method,
+      target: url,
+      logKey: ISpectLogType.httpResponse.key,
+      correlationId: requestId,
+      success: true,
+      duration: sw?.elapsed,
+      config: useRedaction ? null : _noRedactConfig,
+      meta: {
+        if (requestId != null) 'requestId': requestId,
+        'statusCode': response.statusCode,
+        'responseData': DioResponseData(
+          response: response,
+          requestData: requestData,
+        ).toJson(redactor: useRedaction ? redactor : null),
+      },
     );
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
-    if (!shouldProcess(enabled: settings.enabled, filter: settings.errorFilter, value: err)) return;
+    if (!shouldProcess(
+      enabled: settings.enabled,
+      filter: settings.errorFilter,
+      value: err,
+    )) {
+      return;
+    }
 
-    final requestId = err.requestOptions.extra[_requestIdExtraKey] as String?;
+    final requestOptions = err.requestOptions;
+    final requestId = requestOptions.extra[_requestIdExtraKey] as String?;
+    final sw = requestOptions.extra[_stopwatchExtraKey] as Stopwatch?;
+    sw?.stop();
 
-    safeLog(
-      () => _buildErrorLog(
-        error: err,
-        requestId: requestId,
-        useRedaction: settings.enableRedaction,
-      ),
-    );
-  }
-
-  DioRequestLog _buildRequestLog({
-    required RequestOptions options,
-    required String requestId,
-    required bool useRedaction,
-  }) {
-    final (:url, :path) = redactUrlAndPath(
-      options.uri,
-      useRedaction: useRedaction,
-    );
-    return DioRequestLog(
-      url,
-      method: options.method,
-      url: url,
-      path: path,
-      requestId: requestId,
-      headers: payload.headersMap(
-        options.headers,
-        enableRedaction: useRedaction,
-      ),
-      body: _requestBodyPayload(options.data, useRedaction),
-      settings: settings,
-      requestData: DioRequestData(options),
-      redactor: useRedaction ? redactor : null,
-    );
-  }
-
-  DioResponseLog _buildResponseLog({
-    required Response<dynamic> response,
-    required bool useRedaction,
-    String? requestId,
-  }) {
-    final requestOptions = response.requestOptions;
-    final requestHeaders = settings.printRequestHeaders
-        ? payload.headersOrNull(
-            requestOptions.headers,
-            enableRedaction: useRedaction,
-          )
-        : null;
-
-    final responseHeaders = settings.printResponseHeaders
-        ? payload.headersOrNull(
-            response.headers.map,
-            enableRedaction: useRedaction,
-          )
-        : null;
-
-    final (:url, :path) = redactUrlAndPath(
+    final useRedaction = settings.enableRedaction;
+    final (:url, path: _) = redactUrlAndPath(
       requestOptions.uri,
       useRedaction: useRedaction,
     );
-    return DioResponseLog(
-      url,
-      settings: settings,
-      method: requestOptions.method,
-      url: url,
-      path: path,
-      requestId: requestId,
-      statusCode: response.statusCode,
-      statusMessage: response.statusMessage,
-      requestHeaders: requestHeaders,
-      headers: responseHeaders,
-      requestBody: settings.printRequestData
-          ? _requestBodyPayload(requestOptions.data, useRedaction)
-          : null,
-      responseBody: settings.printResponseData
-          ? _responseBodyPayload(response.data, useRedaction)
-          : null,
-      responseData: DioResponseData(
-        response: response,
-        requestData: DioRequestData(requestOptions),
-      ),
-      redactor: useRedaction ? redactor : null,
-    );
-  }
-
-  DioErrorLog _buildErrorLog({
-    required DioException error,
-    required bool useRedaction,
-    String? requestId,
-  }) {
-    final requestOptions = error.requestOptions;
-    final response = error.response;
-    final requestHeaders = payload
-        .headersOrNull(
-          requestOptions.headers,
-          enableRedaction: useRedaction,
-        )
-        ?.map((key, value) => MapEntry(key, value?.toString()));
-
-    final responseHeaders = response == null
-        ? null
-        : payload
-            .headersOrNull(
-              response.headers.map,
-              enableRedaction: useRedaction,
-            )
-            ?.map(
-              (key, value) => MapEntry(
-                key,
-                value == null ? '' : value.toString(),
-              ),
-            );
-
     final requestData = DioRequestData(requestOptions);
 
-    final (:url, :path) = redactUrlAndPath(
-      requestOptions.uri,
-      useRedaction: useRedaction,
-    );
-    final statusMessage = redactErrorMessage(
-      response?.statusMessage,
-      useRedaction: useRedaction,
-    );
-    return DioErrorLog(
-      url,
-      method: requestOptions.method,
-      url: url,
-      path: path,
-      requestId: requestId,
-      statusCode: response?.statusCode,
-      statusMessage: statusMessage,
-      requestHeaders: requestHeaders,
-      headers: responseHeaders,
-      body: _errorBodyPayload(response?.data, useRedaction),
-      settings: settings,
-      errorData: DioErrorData(
-        exception: error,
-        requestData: requestData,
-        responseData: DioResponseData(
-          response: response,
+    _logger.trace(
+      category: networkCategory,
+      source: 'dio',
+      operation: requestOptions.method,
+      target: url,
+      logKey: ISpectLogType.httpError.key,
+      correlationId: requestId,
+      success: false,
+      error: err,
+      errorStackTrace: err.stackTrace,
+      duration: sw?.elapsed,
+      config: useRedaction ? null : _noRedactConfig,
+      meta: {
+        if (requestId != null) 'requestId': requestId,
+        'statusCode': err.response?.statusCode,
+        'errorData': DioErrorData(
+          exception: err,
           requestData: requestData,
-        ),
-      ),
-      redactor: useRedaction ? redactor : null,
+          responseData: DioResponseData(
+            response: err.response,
+            requestData: requestData,
+          ),
+        ).toJson(redactor: useRedaction ? redactor : null),
+      },
     );
   }
-
-  Map<String, dynamic>? _requestBodyPayload(
-    Object? data,
-    bool useRedaction,
-  ) =>
-      bodyAsMap(data, useRedaction: useRedaction, normalizer: _normalizeFormData);
-
-  Object? _responseBodyPayload(Object? data, bool useRedaction) => payload.body(
-        data,
-        enableRedaction: useRedaction,
-        normalizer: _normalizeFormData,
-      );
-
-  Map<String, dynamic> _errorBodyPayload(
-    Object? data,
-    bool useRedaction,
-  ) =>
-      payload.ensureMap(
-        _responseBodyPayload(data, useRedaction),
-      );
-
-  static Object? _normalizeFormData(Object? value) =>
-      value is FormData ? DioFormDataSerializer.serialize(value) : value;
 }

@@ -26,7 +26,7 @@ final class _StandaloneUser extends QueryExecutorUser {
 Future<void> driftExample() async {
   final logger = ISpectLogger();
   ISpectDbCore.config = ISpectDbConfig(
-    slowQueryThreshold: const Duration(milliseconds: 100),
+    slowThreshold: const Duration(milliseconds: 100),
   );
 
   // Plug the interceptor into any drift executor — one line.

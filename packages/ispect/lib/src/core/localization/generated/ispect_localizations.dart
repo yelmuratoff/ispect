@@ -1475,6 +1475,180 @@ abstract class ISpectGeneratedLocalization {
   /// **'General'**
   String get groupGeneral;
 
+  /// No description provided for @categoryAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Auth'**
+  String get categoryAuth;
+
+  /// No description provided for @categoryStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get categoryStorage;
+
+  /// No description provided for @categoryPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get categoryPush;
+
+  /// No description provided for @categoryPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get categoryPayment;
+
+  /// No description provided for @categoryAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get categoryAnalytics;
+
+  /// No description provided for @categorySse.
+  ///
+  /// In en, this message translates to:
+  /// **'SSE'**
+  String get categorySse;
+
+  /// No description provided for @categoryGrpc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC'**
+  String get categoryGrpc;
+
+  /// No description provided for @categoryGraphql.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL'**
+  String get categoryGraphql;
+
+  /// No description provided for @wsErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket connection error'**
+  String get wsErrorLogDesc;
+
+  /// No description provided for @authSuccessLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication successful'**
+  String get authSuccessLogDesc;
+
+  /// No description provided for @authErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get authErrorLogDesc;
+
+  /// No description provided for @storageResultLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage operation completed'**
+  String get storageResultLogDesc;
+
+  /// No description provided for @storageQueryLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage query executed'**
+  String get storageQueryLogDesc;
+
+  /// No description provided for @storageErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage operation failed'**
+  String get storageErrorLogDesc;
+
+  /// No description provided for @pushReceivedLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification received'**
+  String get pushReceivedLogDesc;
+
+  /// No description provided for @pushSentLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification sent'**
+  String get pushSentLogDesc;
+
+  /// No description provided for @pushErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification error'**
+  String get pushErrorLogDesc;
+
+  /// No description provided for @paymentSuccessLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment completed'**
+  String get paymentSuccessLogDesc;
+
+  /// No description provided for @paymentErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get paymentErrorLogDesc;
+
+  /// No description provided for @stateChangeLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'State changed'**
+  String get stateChangeLogDesc;
+
+  /// No description provided for @stateErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'State management error'**
+  String get stateErrorLogDesc;
+
+  /// No description provided for @sseReceivedLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Server-Sent Event received'**
+  String get sseReceivedLogDesc;
+
+  /// No description provided for @sseErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'SSE connection error'**
+  String get sseErrorLogDesc;
+
+  /// No description provided for @grpcRequestLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC request sent'**
+  String get grpcRequestLogDesc;
+
+  /// No description provided for @grpcResponseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC response received'**
+  String get grpcResponseLogDesc;
+
+  /// No description provided for @grpcErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC call failed'**
+  String get grpcErrorLogDesc;
+
+  /// No description provided for @graphqlRequestLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL query sent'**
+  String get graphqlRequestLogDesc;
+
+  /// No description provided for @graphqlResponseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL response received'**
+  String get graphqlResponseLogDesc;
+
+  /// No description provided for @graphqlErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL operation failed'**
+  String get graphqlErrorLogDesc;
+
   /// No description provided for @transitionPush.
   ///
   /// In en, this message translates to:

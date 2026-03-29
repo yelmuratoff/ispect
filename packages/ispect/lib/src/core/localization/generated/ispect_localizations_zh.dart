@@ -739,6 +739,93 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get groupGeneral => '通用';
 
   @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
   String get transitionPush => '推入';
 
   @override

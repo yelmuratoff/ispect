@@ -76,7 +76,8 @@ StackTrace: $stackTraceText]''';
 
   bool get isHttpLog =>
       key == ISpectLogType.httpRequest.key ||
-      key == ISpectLogType.httpResponse.key;
+      key == ISpectLogType.httpResponse.key ||
+      key == ISpectLogType.httpError.key;
 
   bool get isRouteLog => key == ISpectLogType.route.key;
 

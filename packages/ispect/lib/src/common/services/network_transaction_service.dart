@@ -1,34 +1,83 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Result of grouping logs into network transactions.
 class GroupedLogEntries {
   const GroupedLogEntries({
     required this.entries,
     required this.transactions,
   });
 
-  /// Mixed list of [ISpectLogData] (non-HTTP logs) and
-  /// [NetworkTransaction] (grouped HTTP logs), in chronological order.
   final List<Object> entries;
-
-  /// All transactions indexed by [NetworkTransaction.requestId].
   final Map<String, NetworkTransaction> transactions;
 }
 
-/// Builds [NetworkTransaction] groups from a flat list of logs.
-///
-/// Uses generation-based caching to avoid recomputing on every frame.
-/// Only logs with a non-null `requestId` (via [kRequestIdKey] in
-/// [ISpectLogData.additionalData]) participate in grouping.
+/// Controls which logs participate in transaction grouping.
+class TransactionMatcher {
+  const TransactionMatcher({
+    required this.categories,
+    this.errorLogTypes = const {},
+    this.requestLogTypes = const {},
+  });
+
+  final Set<String> categories;
+  final Set<String> errorLogTypes;
+  final Set<String> requestLogTypes;
+
+  String? extractCorrelationId(ISpectLogData log) {
+    if (!_belongsToCategory(log)) return null;
+
+    final meta = log.additionalData?[TraceKeys.meta];
+    if (meta is Map<String, dynamic>) {
+      final id = meta['requestId'];
+      if (id is String) return id;
+    }
+    final corrId = log.additionalData?[TraceKeys.correlationId];
+    if (corrId is String) return corrId;
+    final legacyId = log.additionalData?['request-id'];
+    if (legacyId is String) return legacyId;
+    return null;
+  }
+
+  LogRole roleOf(ISpectLogData log) {
+    final key = log.key;
+    if (key != null && errorLogTypes.contains(key)) return LogRole.error;
+    if (key != null && requestLogTypes.contains(key)) return LogRole.request;
+    if (log.additionalData?[TraceKeys.success] == false) {
+      return LogRole.error;
+    }
+    return LogRole.response;
+  }
+
+  bool _belongsToCategory(ISpectLogData log) {
+    final cat = log.additionalData?[TraceKeys.category];
+    if (cat is String && categories.contains(cat)) return true;
+    final key = log.key;
+    if (key == null) return false;
+    for (final c in categories) {
+      if (key.startsWith('$c-') || key.startsWith('http-')) return true;
+    }
+    return false;
+  }
+}
+
+enum LogRole { request, response, error }
+
+const httpTransactionMatcher = TransactionMatcher(
+  categories: {TraceCategoryIds.network},
+  errorLogTypes: {'http-error'},
+  requestLogTypes: {'http-request'},
+);
+
 class NetworkTransactionService {
+  NetworkTransactionService({
+    this.matcher = httpTransactionMatcher,
+  });
+
+  final TransactionMatcher matcher;
+
   Map<String, NetworkTransaction>? _cachedTransactions;
   List<Object>? _cachedEntries;
   int _generation = -1;
 
-  /// Returns grouped entries for the given [logs] list.
-  ///
-  /// The result is cached per [generation] — pass the data generation
-  /// counter from the filter manager to invalidate on new logs.
   GroupedLogEntries getGroupedEntries(
     List<ISpectLogData> logs,
     int generation,
@@ -49,89 +98,68 @@ class NetworkTransactionService {
     return result;
   }
 
-  /// Invalidates the cache, forcing a rebuild on next access.
   void invalidate() {
     _cachedTransactions = null;
     _cachedEntries = null;
     _generation = -1;
   }
 
-  /// Single O(n) pass to build transactions and the grouped list.
   GroupedLogEntries _buildGroupedEntries(List<ISpectLogData> logs) {
     final transactions = <String, NetworkTransaction>{};
-    // Track which logs have been grouped (by their index in the original list).
     final groupedLogIndices = <int>{};
-    // Map requestId → index of the request log for insertion ordering.
-    final requestIndices = <String, int>{};
 
-    // First pass: build transactions
     for (var i = 0; i < logs.length; i++) {
       final log = logs[i];
-      final requestId = _extractRequestId(log);
-      if (requestId == null) continue;
+      final corrId = matcher.extractCorrelationId(log);
+      if (corrId == null) continue;
 
-      final isRequest =
-          log is NetworkRequestLog || log.key == ISpectLogType.httpRequest.key;
-      final isError =
-          log is NetworkErrorLog || log.key == ISpectLogType.httpError.key;
-
-      if (isRequest) {
-        transactions[requestId] = NetworkTransaction(
-          requestId: requestId,
-          request: log,
-          response: transactions[requestId]?.response,
-          error: transactions[requestId]?.error,
-        );
-        requestIndices[requestId] = i;
-        groupedLogIndices.add(i);
-      } else if (isError) {
-        final existing = transactions[requestId];
-        if (existing != null) {
-          transactions[requestId] = existing.copyWith(error: log);
-        } else {
-          // Error without a request — create a standalone transaction.
-          transactions[requestId] = NetworkTransaction(
-            requestId: requestId,
+      switch (matcher.roleOf(log)) {
+        case LogRole.request:
+          transactions[corrId] = NetworkTransaction(
+            requestId: corrId,
             request: log,
-            error: log,
+            response: transactions[corrId]?.response,
+            error: transactions[corrId]?.error,
           );
-          requestIndices[requestId] = i;
-        }
-        groupedLogIndices.add(i);
-      } else {
-        // Response
-        final existing = transactions[requestId];
-        if (existing != null) {
-          transactions[requestId] = existing.copyWith(response: log);
-        } else {
-          // Response without a request — create a standalone transaction.
-          transactions[requestId] = NetworkTransaction(
-            requestId: requestId,
-            request: log,
-            response: log,
-          );
-          requestIndices[requestId] = i;
-        }
-        groupedLogIndices.add(i);
+        case LogRole.error:
+          final existing = transactions[corrId];
+          if (existing != null) {
+            transactions[corrId] = existing.copyWith(error: log);
+          } else {
+            transactions[corrId] = NetworkTransaction(
+              requestId: corrId,
+              request: log,
+              error: log,
+            );
+          }
+        case LogRole.response:
+          final existing = transactions[corrId];
+          if (existing != null) {
+            transactions[corrId] = existing.copyWith(response: log);
+          } else {
+            transactions[corrId] = NetworkTransaction(
+              requestId: corrId,
+              request: log,
+              response: log,
+            );
+          }
       }
+      groupedLogIndices.add(i);
     }
 
-    // Second pass: build the mixed entries list.
-    // Replace grouped logs with their transaction at the request's position.
     final insertedTransactions = <String>{};
     final entries = <Object>[];
 
     for (var i = 0; i < logs.length; i++) {
       if (groupedLogIndices.contains(i)) {
-        final requestId = _extractRequestId(logs[i]);
-        if (requestId != null && !insertedTransactions.contains(requestId)) {
-          final tx = transactions[requestId];
+        final corrId = matcher.extractCorrelationId(logs[i]);
+        if (corrId != null && !insertedTransactions.contains(corrId)) {
+          final tx = transactions[corrId];
           if (tx != null) {
             entries.add(tx);
-            insertedTransactions.add(requestId);
+            insertedTransactions.add(corrId);
           }
         }
-        // Skip — already represented by the transaction.
       } else {
         entries.add(logs[i]);
       }
@@ -141,16 +169,5 @@ class NetworkTransactionService {
       entries: entries,
       transactions: transactions,
     );
-  }
-
-  /// Extracts request ID from a log entry.
-  ///
-  /// Checks the typed field first (for live logs), then falls back
-  /// to [additionalData] (for imported/deserialized logs).
-  String? _extractRequestId(ISpectLogData log) {
-    if (log is NetworkRequestLog) return log.requestId;
-    if (log is NetworkResponseLog) return log.requestId;
-    if (log is NetworkErrorLog) return log.requestId;
-    return log.additionalData?[kRequestIdKey] as String?;
   }
 }

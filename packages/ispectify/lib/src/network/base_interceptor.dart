@@ -1,6 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/redaction/constants/placeholders.dart'
-    as ph;
+import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 
 /// Mixin providing common functionality for network interceptors.
 ///

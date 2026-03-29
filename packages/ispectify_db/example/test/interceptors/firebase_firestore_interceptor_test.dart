@@ -37,12 +37,8 @@ void main() {
 
   group('collection.get', () {
     test('queries all docs and logs count', () async {
-      await fakeFirestore
-          .collection('users')
-          .add({'name': 'Alice'});
-      await fakeFirestore
-          .collection('users')
-          .add({'name': 'Bob'});
+      await fakeFirestore.collection('users').add({'name': 'Alice'});
+      await fakeFirestore.collection('users').add({'name': 'Bob'});
 
       final snap = await traced.get();
 
@@ -90,10 +86,7 @@ void main() {
     test('creates document and logs', () async {
       await traced.doc('bob').set({'name': 'Bob'});
 
-      final snap = await fakeFirestore
-          .collection('users')
-          .doc('bob')
-          .get();
+      final snap = await fakeFirestore.collection('users').doc('bob').get();
       expect(snap.data(), containsPair('name', 'Bob'));
 
       expect(lastAdditional()['operation'], 'write');
@@ -110,10 +103,7 @@ void main() {
 
       await traced.doc('alice').update({'role': 'admin'});
 
-      final snap = await fakeFirestore
-          .collection('users')
-          .doc('alice')
-          .get();
+      final snap = await fakeFirestore.collection('users').doc('alice').get();
       expect(snap.data(), containsPair('role', 'admin'));
 
       expect(lastAdditional()['operation'], 'update');
@@ -129,10 +119,7 @@ void main() {
 
       await traced.doc('alice').delete();
 
-      final snap = await fakeFirestore
-          .collection('users')
-          .doc('alice')
-          .get();
+      final snap = await fakeFirestore.collection('users').doc('alice').get();
       expect(snap.exists, isFalse);
 
       expect(lastAdditional()['operation'], 'delete');

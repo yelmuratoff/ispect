@@ -1,6 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/redaction/constants/placeholders.dart'
-    as ph;
+import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_walker.dart';
@@ -46,10 +45,9 @@ class RedactionService {
           ignoredKeyNamesLower: {
             ...?(ignoredKeys?.map((e) => e.toLowerCase())),
           },
-          fullyMaskedKeyNamesLower:
-              (fullyMaskedKeys ?? defaultFullyMaskedKeys)
-                  .map((e) => e.toLowerCase())
-                  .toSet(),
+          fullyMaskedKeyNamesLower: (fullyMaskedKeys ?? defaultFullyMaskedKeys)
+              .map((e) => e.toLowerCase())
+              .toSet(),
         ) {
     if (_config.maxDepth <= 0) {
       throw ArgumentError(
@@ -195,6 +193,80 @@ class RedactionService {
         urlPattern,
         (match) => redactUrl(match.group(0)!),
       );
+
+  // ---------------------------------------------------------------------------
+  // Target redaction (static — Layer 2, trace pipeline)
+  // ---------------------------------------------------------------------------
+
+  /// Redacts URL credentials and query params with sensitive keys in a target
+  /// string. Used by [trace()] pipeline for auto-redaction of target field.
+  static String redactTarget(String target, Set<String> redactKeys) {
+    // 1. URL credentials: ://user:pass@host → ://***:***@host
+    var result = target.replaceAllMapped(
+      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      (m) => m[2] != null ? '://***:***@' : '://***@',
+    );
+    // 2. Query params with sensitive keys
+    if (result.contains('?')) {
+      for (final key in redactKeys) {
+        final escaped = RegExp.escape(key);
+        result = result.replaceAllMapped(
+          RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
+          (m) => '${m[1]}${m[2]}=***',
+        );
+      }
+    }
+    return result;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Export string redaction (static — Layer 3, export)
+  // ---------------------------------------------------------------------------
+
+  /// Regex-based redaction for export strings. Covers URL credentials,
+  /// Bearer/Basic tokens, query params, and JSON patterns.
+  ///
+  /// Used by toText(), toMarkdown(), LogExporter for exception.toString()
+  /// and error strings that may contain sensitive data.
+  static String redactExportString(String value, Set<String>? redactKeys) {
+    if (redactKeys == null || redactKeys.isEmpty) return value;
+    var result = value;
+
+    // 1. URL credentials
+    result = result.replaceAllMapped(
+      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      (m) => m[2] != null ? '://***:***@' : '://***@',
+    );
+
+    // 2. Bearer/Basic tokens
+    result = result.replaceAllMapped(
+      RegExp(
+        r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+',
+        caseSensitive: false,
+      ),
+      (m) => '${m[1]} ***',
+    );
+
+    // 3. Query params with sensitive keys
+    for (final key in redactKeys) {
+      final escaped = RegExp.escape(key);
+      result = result.replaceAllMapped(
+        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
+        (m) => '${m[1]}${m[2]}=***',
+      );
+    }
+
+    // 4. JSON patterns: "password": "secret123" → "password": "***"
+    for (final key in redactKeys) {
+      final escaped = RegExp.escape(key);
+      result = result.replaceAllMapped(
+        RegExp('"($escaped)"\\s*:\\s*"[^"]*"', caseSensitive: false),
+        (m) => '"${m[1]}": "***"',
+      );
+    }
+
+    return result;
+  }
 
   // ---------------------------------------------------------------------------
   // Lightweight key-based redaction (static)

@@ -76,8 +76,7 @@ void main() {
         realm.add(RealmTask(ObjectId(), 'Pending'));
       });
 
-      final results =
-          traced.query<RealmTask>('isComplete == \$0', [true]);
+      final results = traced.query<RealmTask>('isComplete == \$0', [true]);
 
       expect(results.length, 1);
       expect(results.first.title, 'Done');
@@ -119,8 +118,7 @@ void main() {
       final writeLogs = logger.history
           .where((e) => e.additionalData?['operation'] == 'write')
           .toList();
-      expect(writeLogs.last.additionalData?['meta'],
-          containsPair('count', 2));
+      expect(writeLogs.last.additionalData?['meta'], containsPair('count', 2));
     });
   });
 
@@ -163,8 +161,7 @@ void main() {
       final deleteLogs = logger.history
           .where((e) => e.additionalData?['operation'] == 'delete')
           .toList();
-      expect(deleteLogs.last.additionalData?['meta'],
-          containsPair('count', 2));
+      expect(deleteLogs.last.additionalData?['meta'], containsPair('count', 2));
     });
   });
 

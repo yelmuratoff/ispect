@@ -57,14 +57,29 @@ class ISpectAppBar extends StatefulWidget {
 }
 
 class _ISpectAppBarState extends State<ISpectAppBar> {
-  final _searchController = TextEditingController();
+  TextEditingController get _searchController =>
+      widget.controller.searchController;
   final _hasSearchText = ValueNotifier(false);
 
   @override
+  void initState() {
+    super.initState();
+    _hasSearchText.value = _searchController.text.isNotEmpty;
+    _searchController.addListener(_syncSearchText);
+  }
+
+  @override
   void dispose() {
-    _searchController.dispose();
+    _searchController.removeListener(_syncSearchText);
     _hasSearchText.dispose();
     super.dispose();
+  }
+
+  void _syncSearchText() {
+    final hasText = _searchController.text.isNotEmpty;
+    if (_hasSearchText.value != hasText) {
+      _hasSearchText.value = hasText;
+    }
   }
 
   bool get _hasActiveFilters =>
@@ -90,6 +105,18 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               context.ispectTheme.background?.resolve(context) ??
               context.appTheme.scaffoldBackgroundColor,
           actions: [
+            IconButton(
+              onPressed: widget.controller.toggleErrorsOnly,
+              tooltip:
+                  widget.controller.errorsOnly ? 'Show All' : 'Errors Only',
+              icon: Icon(
+                Icons.error_outline_rounded,
+                size: 22,
+                color: widget.controller.errorsOnly
+                    ? const Color(0xFFF44336)
+                    : null,
+              ),
+            ),
             IconButton(
               onPressed: widget.controller.toggleLogOrder,
               tooltip: context.ispectL10n.reverseLogs,
@@ -227,12 +254,14 @@ class _AppBarTitle extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              title ?? '',
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.5,
+            Flexible(
+              child: Text(
+                title ?? '',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ],

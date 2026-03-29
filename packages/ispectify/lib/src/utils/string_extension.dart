@@ -4,7 +4,8 @@ const int kDefaultStringTruncateLimit = 10000;
 /// Truncates [value] to [maxLength], avoiding surrogate pair splits.
 ///
 /// Appends `...` if the string was truncated.
-String truncateString(String value, {int maxLength = kDefaultStringTruncateLimit}) {
+String truncateString(String value,
+    {int maxLength = kDefaultStringTruncateLimit}) {
   if (value.length <= maxLength) return value;
   var end = maxLength;
   // Avoid splitting a surrogate pair at the truncation boundary.

@@ -15,6 +15,7 @@ class CollapsedBody extends StatelessWidget {
     required this.expanded,
     required this.isHTTP,
     this.statusCode,
+    this.slowDurationMs,
     super.key,
   });
 
@@ -32,6 +33,7 @@ class CollapsedBody extends StatelessWidget {
   final bool expanded;
   final bool isHTTP;
   final int? statusCode;
+  final int? slowDurationMs;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -86,6 +88,10 @@ class CollapsedBody extends StatelessWidget {
           if (statusCode != null) ...[
             const Gap(4),
             _StatusCodeBadge(statusCode: statusCode!),
+          ],
+          if (slowDurationMs != null) ...[
+            const Gap(4),
+            _MobileSlowBadge(durationMs: slowDurationMs!),
           ],
           const Gap(4),
           _ActionButtons(
@@ -297,4 +303,35 @@ class _StatusCodeBadge extends StatelessWidget {
         < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
         _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
       };
+}
+
+class _MobileSlowBadge extends StatelessWidget {
+  const _MobileSlowBadge({required this.durationMs});
+
+  final int durationMs;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = durationMs < 1000
+        ? '${durationMs}ms'
+        : '${(durationMs / 1000).toStringAsFixed(1)}s';
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0x1FFF9800),
+        borderRadius: BorderRadius.all(Radius.circular(4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        child: Text(
+          'Slow: $text',
+          style: const TextStyle(
+            color: Color(0xFFE65100),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+        ),
+      ),
+    );
+  }
 }

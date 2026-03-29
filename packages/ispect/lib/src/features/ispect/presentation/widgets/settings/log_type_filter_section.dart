@@ -3,6 +3,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// A widget that displays a grid of log type chips
 /// to enable/disable specific log types for filtering.
@@ -90,29 +91,63 @@ class LogTypeFilterSection extends StatelessWidget {
     BuildContext context,
     List<LogDescription> descriptions,
   ) {
-    final l10n = context.ispectL10n;
+    final theme = context.ispectTheme;
     final groups = <String, List<LogDescription>>{};
     for (final desc in descriptions) {
-      final key = desc.key;
-      String group;
-      if (key.startsWith('http-')) {
-        group = l10n.groupHttp;
-      } else if (key.startsWith('bloc-')) {
-        group = l10n.groupBloc;
-      } else if (key.startsWith('riverpod-')) {
-        group = l10n.groupRiverpod;
-      } else if (key.startsWith('ws-')) {
-        group = l10n.groupWebSocket;
-      } else if (key.startsWith('db-')) {
-        group = l10n.groupDatabase;
-      } else if (key == 'route') {
-        group = l10n.groupNavigation;
-      } else {
-        group = l10n.groupGeneral;
-      }
-      (groups[group] ??= []).add(desc);
+      final categoryId = _resolveCategory(desc.key, theme.logCategories);
+      final label = _categoryLabel(context, categoryId, theme.categoryLabels);
+      (groups[label] ??= []).add(desc);
     }
     return groups;
+  }
+
+  /// Resolves category ID from log key.
+  /// Priority: theme.logCategories > ISpectLogType.category > prefix heuristic.
+  static String _resolveCategory(
+    String key,
+    Map<String, String> logCategories,
+  ) {
+    // Theme override
+    final themeCategory = logCategories[key];
+    if (themeCategory != null) return themeCategory;
+    // Enum lookup
+    final logType = ISpectLogType.fromKey(key);
+    if (logType != null) return logType.category;
+    // Prefix heuristic for custom keys
+    for (final id in TraceCategoryIds.builtIn) {
+      if (key.startsWith('$id-')) return id;
+    }
+    return TraceCategoryIds.general;
+  }
+
+  /// Human-readable label for category ID.
+  /// Theme's categoryLabels override defaults.
+  static String _categoryLabel(
+    BuildContext context,
+    String categoryId,
+    Map<String, String> categoryLabels,
+  ) {
+    // Theme override
+    final themeLabel = categoryLabels[categoryId];
+    if (themeLabel != null) return themeLabel;
+    // Built-in labels
+    final l10n = context.ispectL10n;
+    return switch (categoryId) {
+      TraceCategoryIds.network => l10n.groupHttp,
+      TraceCategoryIds.state => l10n.groupBloc,
+      TraceCategoryIds.ws => l10n.groupWebSocket,
+      TraceCategoryIds.db => l10n.groupDatabase,
+      TraceCategoryIds.navigation => l10n.groupNavigation,
+      TraceCategoryIds.auth => l10n.categoryAuth,
+      TraceCategoryIds.storage => l10n.categoryStorage,
+      TraceCategoryIds.push => l10n.categoryPush,
+      TraceCategoryIds.payment => l10n.categoryPayment,
+      TraceCategoryIds.analytics => l10n.categoryAnalytics,
+      TraceCategoryIds.sse => l10n.categorySse,
+      TraceCategoryIds.grpc => l10n.categoryGrpc,
+      TraceCategoryIds.graphql => l10n.categoryGraphql,
+      _ => l10n.groupGeneral,
+    };
   }
 }
 

@@ -106,8 +106,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       );
 
   @override
-  Future<List<T?>> getManyAsync(List<int> ids,
-          {bool growableResult = false}) =>
+  Future<List<T?>> getManyAsync(List<int> ids, {bool growableResult = false}) =>
       _logger.dbTrace(
         source: _source,
         operation: 'getManyAsync',
@@ -198,8 +197,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       );
 
   @override
-  int putQueued(T object, {PutMode mode = PutMode.put}) =>
-      _logger.dbTraceSync(
+  int putQueued(T object, {PutMode mode = PutMode.put}) => _logger.dbTraceSync(
         source: _source,
         operation: 'putQueued',
         table: _boxName,

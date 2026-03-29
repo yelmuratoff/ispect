@@ -29,6 +29,14 @@ class RouteLog extends ISpectLogData {
   }) : super(
           key: ISpectLogType.route.key,
           title: title ?? ISpectLogType.route.key,
+          additionalData: transitionId != null
+              ? <String, dynamic>{
+                  TraceKeys.correlationId: transitionId,
+                  TraceKeys.category: TraceCategoryIds.navigation,
+                }
+              : <String, dynamic>{
+                  TraceKeys.category: TraceCategoryIds.navigation,
+                },
         );
 
   final String? transitionId;

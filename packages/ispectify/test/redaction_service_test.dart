@@ -84,8 +84,7 @@ void main() {
 
       test('redacts userInfo credentials', () {
         final service = RedactionService();
-        final result =
-            service.redactUrl('https://user:pass@example.com/path');
+        final result = service.redactUrl('https://user:pass@example.com/path');
         expect(result, contains('REDACTED'));
         expect(result, isNot(contains('user:pass')));
       });
