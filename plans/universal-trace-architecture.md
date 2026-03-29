@@ -88,9 +88,9 @@
 
 ---
 
-## Part A: Core Trace Foundation (`packages/ispectify/lib/src/trace/`)
+## Part 1: Core Trace Foundation (`packages/ispectify/lib/src/trace/`)
 
-### A1. `ISpectTraceCategory`
+### 1.1. `ISpectTraceCategory`
 
 Определяет категорию. Каждый домен создаёт `const` экземпляр. `pickLogKey()` — единственный метод, тесно связан с данными категории (не нарушает `const`).
 
@@ -138,7 +138,7 @@ final class ISpectTraceCategory {
 
 > **Почему нет `messageBuilder`:** Message formatting — в trace pipeline через единый `buildTraceMessage()` (top-level function в `trace_message.dart`). Не нужен per-category — message это одна строка в списке, а детали всегда в JSON viewer.
 
-### A2. SSOT: Category ID и Log Key константы
+### 1.2. SSOT: Category ID и Log Key константы
 
 > **SSOT проблема:** Category ID строки (`'network'`, `'db'`, `'auth'`, ...) и log key строки (`'http-request'`, `'db-query'`, ...)
 > используются в 4 местах: `ISpectTraceCategory`, `ISpectLogType`, `_resolveCategory`, `_categoryLabel`.
@@ -184,7 +184,7 @@ abstract final class TraceCategoryIds {
 }
 ```
 
-### A2b. Предопределённые категории
+### 1.2b. Предопределённые категории
 
 ```dart
 /// trace_categories.dart
@@ -302,7 +302,7 @@ final graphqlCategory = ISpectTraceCategory(
 > **Новые категории:** `final myCategory = ISpectTraceCategory(id: 'xxx', ...)`. Пользователь использует свои строки — нет ограничений.
 > Редко используемые (background, performance) — не определяем заранее, пользователь создаёт сам когда нужно.
 
-### A3. `ISpectTraceConfig`
+### 1.3. `ISpectTraceConfig`
 
 ```dart
 /// trace_config.dart
@@ -359,7 +359,7 @@ class ISpectTraceConfig {
 
 > **Почему нет `operationFilters`:** YAGNI. `sampleRate` + `errorSampleRate` покрывает 99% кейсов. Если нужен per-operation контроль — пользователь задаёт `sample` параметр при вызове `trace()`.
 
-### A4. `ISpectTraceToken`
+### 1.4. `ISpectTraceToken`
 
 ````dart
 /// trace_token.dart
@@ -414,7 +414,7 @@ final class ISpectTraceToken {
 }
 ````
 
-### A5. `TraceKeys`
+### 1.5. `TraceKeys`
 
 ````dart
 /// trace_keys.dart
@@ -456,7 +456,7 @@ abstract final class TraceKeys {
 }
 ````
 
-### A6. `ISpectTrace` extension на `ISpectLogger`
+### 1.6. `ISpectTrace` extension на `ISpectLogger`
 
 ````dart
 /// trace_extension.dart
@@ -729,7 +729,7 @@ extension ISpectTrace on ISpectLogger {
     // Auto-generate correlationId if not provided — links all stream events
     final corrId = correlationId ?? generateTraceId();
 
-    // Pure Dart StreamTransformer (см. A7 ниже)
+    // Pure Dart StreamTransformer (см. 1.7 ниже)
     return stream.transform(TraceStreamTransformer<T>(
       onListen: () => trace(
         category: category, source: source,
@@ -809,7 +809,7 @@ extension ISpectTrace on ISpectLogger {
 }
 ````
 
-### A7. `TraceStreamTransformer` — pure Dart, без rxdart
+### 1.7. `TraceStreamTransformer` — pure Dart, без rxdart
 
 ```dart
 /// trace_stream_transformer.dart
@@ -896,7 +896,7 @@ class TraceStreamTransformer<T> extends StreamTransformerBase<T, T> {
 > - Все trace callbacks обёрнуты в try/catch — исключение в логировании НИКОГДА не ломает data stream
 > - `sub.cancel()` возвращает Future → controller ждёт cleanup upstream
 
-### A8. Default message formatter
+### 1.8. Default message formatter
 
 ```dart
 /// trace_message.dart
@@ -928,7 +928,7 @@ String buildTraceMessage({
 
 ---
 
-## Part B: Domain Extensions (в `ispectify` core)
+## Part 2: Domain Extensions (в `ispectify` core)
 
 Pure Dart, zero deps, tree-shakeable. Каждый ~15-25 строк. Задают category + именованные параметры.
 
@@ -936,7 +936,7 @@ Pure Dart, zero deps, tree-shakeable. Каждый ~15-25 строк. Задаю
 > построением meta Map. Это гарантирует zero overhead в production (disabled ISpect).
 > Async extensions возвращают `run()` напрямую, fire-and-forget просто return.
 
-### B1. Auth
+### 2.1. Auth
 
 ```dart
 extension ISpectLoggerAuth on ISpectLogger {
@@ -1007,9 +1007,9 @@ extension ISpectLoggerAuth on ISpectLogger {
 ```
 
 > **Pattern для ВСЕХ domain extensions:** async → `if (!options.enabled) return run();`,
-> fire-and-forget → `if (!options.enabled) return;`. Применить в B2-B8 аналогично.
+> fire-and-forget → `if (!options.enabled) return;`. Применить в 2.2-2.8 аналогично.
 
-### B2. Storage
+### 2.2. Storage
 
 ```dart
 extension ISpectLoggerStorage on ISpectLogger {
@@ -1045,7 +1045,7 @@ extension ISpectLoggerStorage on ISpectLogger {
 }
 ```
 
-### B3. Push
+### 2.3. Push
 
 ```dart
 extension ISpectLoggerPush on ISpectLogger {
@@ -1088,7 +1088,7 @@ extension ISpectLoggerPush on ISpectLogger {
 > Все события одного push-уведомления автоматически связаны через generic correlation banner.
 > Если нужен другой correlationId — передать явно (override auto-fallback).
 
-### B4. Analytics
+### 2.4. Analytics
 
 ```dart
 extension ISpectLoggerAnalytics on ISpectLogger {
@@ -1111,7 +1111,7 @@ extension ISpectLoggerAnalytics on ISpectLogger {
 }
 ```
 
-### B5. Payment
+### 2.5. Payment
 
 ```dart
 extension ISpectLoggerPayment on ISpectLogger {
@@ -1144,7 +1144,7 @@ extension ISpectLoggerPayment on ISpectLogger {
 }
 ```
 
-### B6. SSE
+### 2.6. SSE
 
 ```dart
 extension ISpectLoggerSSE on ISpectLogger {
@@ -1181,10 +1181,10 @@ extension ISpectLoggerSSE on ISpectLogger {
 
 > **NB: SSE auto-correlation pattern.** SSE interceptor (в `ispectify_sse` пакете) должен генерировать
 > `connectionId = generateTraceId()` при `connected` и передавать его как `correlationId` во все
-> последующие `sse()` вызовы (event, disconnected, error). Аналогично WS (Part D2).
+> последующие `sse()` вызовы (event, disconnected, error). Аналогично WS (Part 4.2).
 > Если пользователь вызывает `sse()` напрямую — ответственность на нём.
 
-### B7. gRPC
+### 2.7. gRPC
 
 > **NB:** `grpcTrace()` — для unary и server-streaming calls (Future-based).
 > Для client-streaming и bidi-streaming используйте `traceStream()` напрямую
@@ -1222,7 +1222,7 @@ extension ISpectLoggerGrpc on ISpectLogger {
 }
 ```
 
-### B8. GraphQL
+### 2.8. GraphQL
 
 ```dart
 extension ISpectLoggerGraphQL on ISpectLogger {
@@ -1255,9 +1255,9 @@ extension ISpectLoggerGraphQL on ISpectLogger {
 
 ---
 
-## Part C: Log Entity — конвертация и экспорт
+## Part 3: Log Entity — конвертация и экспорт
 
-### C1. `ISpectLogData` — расширение для экспорта
+### 3.1. `ISpectLogData` — расширение для экспорта
 
 > **`toJson()` уже существует** как extension в `history/serialization.dart` (`ISpectLogDataSerialization`).
 > Новые методы `toText()` и `toMarkdown()` добавляются в **тот же** extension, чтобы избежать
@@ -1454,7 +1454,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
 }
 ````
 
-### C2. Batch export — список логов
+### 3.2. Batch export — список логов
 
 > **NB:** Utility class вместо extension на `List<ISpectLogData>` — extension был бы доступен
 > на ЛЮБОМ `List<ISpectLogData>`, что приводит к случайным вызовам на больших наборах.
@@ -1606,7 +1606,7 @@ abstract final class LogExporter {
 }
 ```
 
-### C3. Share/Export в UI
+### 3.3. Share/Export в UI
 
 ```dart
 /// В ispect Flutter UI:
@@ -1648,9 +1648,9 @@ abstract final class LogExporter {
 
 ---
 
-## Part D: Рефакторинг существующих пакетов
+## Part 4: Рефакторинг существующих пакетов
 
-### D1. `ispectify_db` → delegates to core trace
+### 4.1. `ispectify_db` → delegates to core trace
 
 ```dart
 // ISpectDbConfig extends ISpectTraceConfig
@@ -1681,7 +1681,7 @@ class ISpectDbConfig extends ISpectTraceConfig {
 // Все существующие публичные API сохраняются.
 ```
 
-### D2. Network interceptors → ДВА лога (request + response)
+### 4.2. Network interceptors → ДВА лога (request + response)
 
 > **Почему НЕ traceStart/traceEnd:** HTTP нуждается в двух отдельных логах:
 >
@@ -1875,7 +1875,7 @@ ISpectWSInterceptorSettingsBuilder errorFilter(bool Function(ISpectLogData log)?
     _set((s) => s.copyWith(errorFilter: filter));
 ```
 
-### D3. `ispectify_bloc` → uses trace()
+### 4.3. `ispectify_bloc` → uses trace()
 
 ```dart
 // ISpectBlocSettings — НЕ наследует BaseStateObserverSettings.
@@ -2073,7 +2073,7 @@ void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
 
 > **Почему нет BaseStateObserverSettings:** BLoC имеет event/transition/change/create/close/done. Riverpod имеет add/update/dispose. MobX имеет reaction/spy. Разные lifecycle — общий base class будет или слишком general (бесполезный) или слишком restrictive. Каждый observer остаётся standalone.
 
-### D4. Backward compatibility — clean break (v5.0)
+### 4.4. Backward compatibility — clean break (v5.0)
 
 **Удалить typed subclasses сразу:**
 
@@ -2292,7 +2292,7 @@ extension ISpectLogDataX on ISpectLogData {
 
 ---
 
-## Part E: `ISpectLogType` расширение
+## Part 5: `ISpectLogType` расширение
 
 > **BREAKING CHANGE:** Добавление новых enum values ломает exhaustive switch.
 > Задокументировать в CHANGELOG. В migration guide рекомендовать `_` default case.
@@ -2309,7 +2309,7 @@ extension ISpectLogDataX on ISpectLogData {
 > if (logType.category == TraceCategoryIds.network) { ... }
 > ```
 
-### E1. Добавить `category` field
+### 5.1. Добавить `category` field
 
 ```dart
 /// Category ID — всегда через TraceCategoryIds (SSOT).
@@ -2403,7 +2403,7 @@ enum ISpectLogType {
 }
 ```
 
-### E1b. Обновление `isErrorType`, `level`, `_defaultPens`
+### 5.1b. Обновление `isErrorType`, `level`, `_defaultPens`
 
 ```dart
 // isErrorType — добавить ВСЕ error types (включая текущий баг: blocError отсутствует):
@@ -2469,7 +2469,7 @@ ISpectLogType.graphqlRequest: AnsiPen()..xterm(141),
 ISpectLogType.graphqlResponse: AnsiPen()..xterm(35),
 ```
 
-### E2. Icons и Colors для новых типов
+### 5.2. Icons и Colors для новых типов
 
 ```dart
 // В ISpectConstants.typeIcons:
@@ -2502,9 +2502,9 @@ ISpectLogType.graphqlResponse: AnsiPen()..xterm(35),
 
 ---
 
-## Part F: UI без хардкода (`ispect` package)
+## Part 6: UI без хардкода (`ispect` package)
 
-### F1. Динамическая группировка фильтров
+### 6.1. Динамическая группировка фильтров
 
 **Вместо:**
 
@@ -2590,7 +2590,7 @@ String _categoryLabel(BuildContext context, String category) {
 }
 ```
 
-### F2. `ISpectTheme` — расширение
+### 6.2. `ISpectTheme` — расширение
 
 ```dart
 class ISpectTheme {
@@ -2660,7 +2660,7 @@ class ISpectTheme {
 
 > **Почему нет `detailRenderers`:** JSON viewer — единственный detail view. Универсальный, не требует поддержки per-category renderers. KISS.
 
-### F3. Detail view — JSON viewer + generic correlation
+### 6.3. Detail view — JSON viewer + generic correlation
 
 ```dart
 // LogDetailView — JSON viewer для всех типов.
@@ -2697,7 +2697,7 @@ class ISpectTheme {
 //         HTTP fallback → NetworkTransaction correlation (backward compat)
 ```
 
-### F4. Новые фильтры
+### 6.4. Новые фильтры
 
 ```dart
 // CategoryFilter и SourceFilter — в ispectify core
@@ -2749,7 +2749,7 @@ class TransactionFilter implements Filter<ISpectLogData> {
 }
 ```
 
-### F5. Share / Export в UI
+### 6.5. Share / Export в UI
 
 ```dart
 // Добавить в AppBar или detail view:
@@ -2758,12 +2758,12 @@ class TransactionFilter implements Filter<ISpectLogData> {
 // - Export all logs → выбор формата (JSON Lines / Text / Markdown)
 // - Share log file
 //
-// Использует ISpectLogDataSerialization extensions (toText, toMarkdown) и LogExporter из Part C.
+// Использует ISpectLogDataSerialization extensions (toText, toMarkdown) и LogExporter из Part 3.
 ```
 
 ---
 
-## Part G: Testing Utilities
+## Part 7: Testing Utilities
 
 ```dart
 /// packages/ispectify/lib/src/testing/fake_logger.dart
@@ -2960,7 +2960,7 @@ test('traceTransaction auto-injects txnId into inner traces', () async {
 
 ---
 
-## Part H: Package Structure
+## Part 8: Package Structure
 
 ```
 packages/
@@ -3063,7 +3063,7 @@ packages/
 
 ---
 
-## Part I: Как добавить новый сервис (чеклист)
+## Part 9: Как добавить новый сервис (чеклист)
 
 ### Для мейнтейнера ISpect:
 
@@ -3137,7 +3137,7 @@ logger.trace(category: myCategory, source: 'my-sdk',
 
 ---
 
-## Part I.1: Ответственности — кто за что отвечает (Responsibility Map)
+## Part 9.1: Ответственности — кто за что отвечает (Responsibility Map)
 
 ### Redaction — три слоя, без дублирования
 
@@ -3348,7 +3348,7 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part J: SOLID / Design Patterns
+## Part 10: SOLID / Design Patterns
 
 | Принцип             | Как соблюдается                                                                                                                                                                                                      |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -3368,7 +3368,7 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part K: Полная таблица покрытия
+## Part 11: Полная таблица покрытия
 
 | Сервис                 | Паттерн                        | Категория       | Пакет                |
 | ---------------------- | ------------------------------ | --------------- | -------------------- |
@@ -3419,7 +3419,7 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part L: Implementation Order
+## Part 12: Implementation Order
 
 1. **maxHistorySize** — **УЖЕ РЕАЛИЗОВАНО** как `ISpectLoggerOptions.maxHistoryItems` (default: 10000) с FIFO-ротацией в `DefaultISpectLoggerHistory._addEntry()`. Проверить naming consistency: если план использует `maxHistorySize` — решить, переименовывать ли на `maxHistorySize` для единообразия с `FakeISpectLogger.maxTraces`, или оставить `maxHistoryItems`. Не нужна реализация с нуля.
    1.5. **defaultSensitiveKeys update** — **⚠️ SECURITY-CRITICAL:** без этого шага `email`, `otp`, `device_token`, `fcm_token` в URL query params **утекают** через `RedactionService.redactUrl()` в Dio/HTTP interceptors. Добавить в `key_defaults.dart`: `'email'`, `'e-mail'`, `'email_address'`, `'otp'`, `'one_time_password'`, `'device_token'`, `'fcm_token'`, `'apns_token'`, `'push_token'`, `'session_id'`, `'session_token'`, `'username'`, `'user_name'`, `'bearer_token'`, `'csrf'`, `'x-csrf-token'`, `'csrf_token'`, `'mfa_code'`, `'totp'`, `'verification_code'`, `'pin_code'`, `'login'`. Добавить regex pattern: `r'(?:e[-_]?mail|otp|device[-_]?token|push[-_]?token|session[-_]?(?:id|token)|csrf[-_]?token|mfa[-_]?code)'`.
@@ -3443,20 +3443,20 @@ extension ISpectTrace on ISpectLogger {
 13. **Рефакторинг ispectify_ws** → trace() + миграция pattern matching на key-based + обновление ISpectWSInterceptorSettings filter types (breaking change: `WSSentLog` → `ISpectLogData`)
 14. **UI update** — dynamic filter grouping (с `_categoryCache`), new icons/colors, categoryLabels + logCategories в ISpectTheme (**⚠️ обязательно обновить copyWith(), ==, hashCode, toMap(), fromMap()**), severity visual hierarchy (цветовая полоска слева + quick-filter "Errors only"), **удалить group* l10n strings → добавить category* strings** (**Маппинг: `groupHttp`→`categoryNetwork`, `groupBloc`→`categoryState`, `groupRiverpod`→`categoryState`, `groupWebSocket`→`categoryWebSocket`, `groupDatabase`→`categoryDb`, `groupNavigation`→`categoryNavigation`, `groupGeneral`→fallback capitalize), regenerate localizations, generic correlation banner (correlationId/transactionId), slow trace badge on log cards. **NB: mobile log_card.dart\*\* — добавить badge area (сейчас нет, desktop имеет statusCode badge). Нужно: slow query badge (оранжевый, "Slow: {ms}ms"), error type badge, statusCode badge (паритет с desktop_log_row.dart). Обновить `data_extensions.dart`: исправить `isHttpLog` (добавить `|| key == ISpectLogType.httpError.key`), обновить `curlCommand` (from `additionalData?['request-options']` → собирать cURL из trace fields: `TraceKeys.operation`, `TraceKeys.target`, `traceMeta?['headers']`, `traceMeta?['body']`; также добавить backward compat fallback: `traceMeta?['requestOptions']` для imported v4 logs). При имплементации generic correlation banner — рассмотреть index `Map<String, List<int>>` по correlationId для O(1) lookup (текущий `_findCorrelation()` O(n) при 10K+ логах)
 15. UI: export/share sheet (JSON Lines, Text, Markdown, CSV + redactKeys + maxLogs cap)
-16. Barrel exports: добавить ВСЕ новые файлы в `ispectify.dart` (см. Part H), включая `log_data_x.dart`. **Удалить** из barrel: `export 'src/network/request_id_generator.dart'` (заменён на `generateTraceId()`). `network_json_keys.dart` **оставить** — используется в DioRequestData/ResponseData для domain payload.
-17. **Тесты**: standard (M1/M1b) + security (M2) + edge cases (M3) + **конкретная миграция тестов:**
+16. Barrel exports: добавить ВСЕ новые файлы в `ispectify.dart` (см. Part 8), включая `log_data_x.dart`. **Удалить** из barrel: `export 'src/network/request_id_generator.dart'` (заменён на `generateTraceId()`). `network_json_keys.dart` **оставить** — используется в DioRequestData/ResponseData для domain payload.
+17. **Тесты**: standard (13.1/13.1b) + security (13.2) + edge cases (13.3) + **конкретная миграция тестов:**
     - `ispectify_bloc/test/ispect_bloc_observer_test.dart:67,83,100,115`: `whereType<BlocEventLog>()` → `.where((e) => e.key == ISpectLogType.blocEvent.key)`
     - `ispectify_dio/test/formdata_fields_test.dart:107`: `is DioRequestLog` → `e.key == ISpectLogType.httpRequest.key`
     - `ispectify_dio/test/logs_test.dart`: конструкторы → `ISpectLogData(message, key: ISpectLogType.httpRequest.key, additionalData: {...})`
     - `ispectify/test/network_logs_test.dart`: конструкторы → `ISpectLogData` с additionalData
     - `ispectify_ws/test/interceptor_test.dart:112-130`: `sentFilter: (WSSentLog _) => false` → `sentFilter: (ISpectLogData _) => false`
-18. Migration guide: CHANGELOG.md + Part P содержимое
+18. Migration guide: CHANGELOG.md + Part 16 содержимое
 
 ---
 
-## Part M: Verification
+## Part 13: Verification
 
-### M1. Стандартные проверки
+### 13.1. Стандартные проверки
 
 1. `dart test` / `flutter test` — все пакеты
 2. `dart analyze --fatal-infos` / `flutter analyze --fatal-infos` — все пакеты
@@ -3474,10 +3474,10 @@ extension ISpectTrace on ISpectLogger {
     - Category labels: `categoryNetwork`, `categoryWebSocket`, `categoryDb`, `categoryState`, `categoryAuth`, `categoryStorage`, `categoryPush`, `categoryAnalytics`, `categoryPayment`, `categoryNavigation`, `categorySse`, `categoryGrpc`, `categoryGraphql`
     - Log type descriptions для ВСЕХ новых enum values: `authSuccess`, `authError`, `storageResult`, `storageQuery`, `storageError`, `pushReceived`, `pushSent`, `pushError`, `paymentSuccess`, `paymentError`, `stateChange`, `stateError`, `sseReceived`, `sseError`, `grpcRequest`, `grpcResponse`, `grpcError`, `graphqlRequest`, `graphqlResponse`, `graphqlError`, `wsError`
     - Export UI strings: format picker labels, progress text, confirmation text
-14. Обновить barrel exports `packages/ispectify/lib/ispectify.dart` — добавить ВСЕ новые файлы (см. Part H barrel comment)
+14. Обновить barrel exports `packages/ispectify/lib/ispectify.dart` — добавить ВСЕ новые файлы (см. Part 8 barrel comment)
 15. Проверить что predefined categories (`networkCategory`, `dbCategory`, etc.) доступны через `import 'package:ispectify/ispectify.dart'`
 
-### M1b. Unit tests для core primitives (обязательные)
+### 13.1b. Unit tests для core primitives (обязательные)
 
 16. **`ISpectTraceCategory.pickLogKey`:** 3 ветки — error, secondary match, default success
 17. **`ISpectTraceConfig.shouldLog`:** null sampleRate → always log; errorSampleRate override; localSample override
@@ -3489,7 +3489,7 @@ extension ISpectTrace on ISpectLogger {
 23. **`_csvEscape`:** formula injection chars (`=`, `+`, `-`, `@`), commas, quotes, newlines
 24. **`_redactExportString`:** URL credentials, Bearer tokens, query params, JSON patterns, RegExp.escape for special key chars
 
-### M2. Security-specific тесты
+### 13.2. Security-specific тесты
 
 25. **Export redaction:** `toText(redactKeys: defaultSensitiveKeys)` — exception с URL credentials (`https://user:pass@host`) редактируется → `https://***:***@host`
 26. **Export redaction:** `toText(redactKeys: {'token'})` — exception с `?token=abc123` → `?token=***`
@@ -3506,7 +3506,7 @@ extension ISpectTrace on ISpectLogger {
 37. **userId not in message:** `authTrace(userId: 'user@email.com')` → message string НЕ содержит email
 38. **Zone key private:** `Zone.current[#ispectTxnId]` returns null (public Symbol), only `_txnZoneKey` works
 
-### M3. Тесты на edge cases (обязательные)
+### 13.3. Тесты на edge cases (обязательные)
 
 39. **correlationId propagation:** HTTP request + response с одним correlationId → `logger.byCorrelationId('req-123')` возвращает 2 лога
 40. **traceStream lifecycle:** subscribe → 3 events → error → unsubscribe → все 5 логов с одним correlationId
@@ -3520,7 +3520,7 @@ extension ISpectTrace on ISpectLogger {
 48. **CSV export:** специальные символы (запятые, кавычки, newlines) в message → правильно экранированы
 49. **toText nested meta:** `meta: {'headers': {'Authorization': '***'}}` → readable indented output (не raw Dart toString)
 
-### M4. Regression тесты для fixes 110-117
+### 13.4. Regression тесты для fixes 110-117
 
 50. **safeTrace catches buildTraceMessage errors:** передать объект с broken `toString()` как `target` → нет exception, trace silently dropped
 51. **ISpectLogDataX defensive getters:** `additionalData` содержит `{TraceKeys.meta: "not a map", TraceKeys.durationMs: "not int"}` → все getters возвращают `null`, не бросают TypeError
@@ -3528,7 +3528,7 @@ extension ISpectTrace on ISpectLogger {
 53. **TraceStreamTransformer controller.isClosed:** subscribe → cancel в первом onData → второй event не бросает StateError
 54. **Convenience getters на v4 logs:** `ISpectLogData` без TraceKeys в additionalData → все ISpectLogDataX getters возвращают null
 
-### M5. Coverage gap тесты
+### 13.5. Coverage gap тесты
 
 55. **traceSync happy path:** sync operation → result returned → log created с duration, success=true
 56. **traceSync error:** sync operation throws → rethrow → log created с error, success=false, duration
@@ -3551,7 +3551,7 @@ extension ISpectTrace on ISpectLogger {
 73. **curlCommand v4 backward compat:** log с `additionalData: {'request-options': {'method': 'GET', ...}}` → `curlCommand` returns valid cURL string (fallback path)
 74. **RouteLog correlation:** `RouteLog` с `transitionId: 'abc'` → `additionalData[TraceKeys.correlationId]` == `'abc'`
 
-### M6. Тесты из ревью (добавлены по результатам аудита)
+### 13.6. Тесты из ревью (добавлены по результатам аудита)
 
 75. **BLoC concurrent events correlation:** `bloc.add(eventA); bloc.add(eventB);` → `onTransition(A)` получает eventId от A, `onTransition(B)` получает eventId от B (Queue-based FIFO, не перезапись)
 76. **Push auto-correlation:** `push(messageId: 'msg-1')` без explicit `correlationId` → `correlationId == 'msg-1'` (auto-fallback)
@@ -3571,7 +3571,7 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part N: Critical Files
+## Part 14: Critical Files
 
 ### New (ispectify core)
 
@@ -3650,7 +3650,7 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part O: Верификация API и UI совместимости
+## Part 15: Верификация API и UI совместимости
 
 ### API compatibility — все вызовы из плана верифицированы:
 
@@ -3720,9 +3720,9 @@ extension ISpectTrace on ISpectLogger {
 
 ---
 
-## Part P: Migration Guide v4.x → v5.0
+## Part 16: Migration Guide v4.x → v5.0
 
-### P1. Удалённые typed subclasses — замена на ISpectLogDataX
+### 16.1. Удалённые typed subclasses — замена на ISpectLogDataX
 
 ```dart
 // ❌ БЫЛО (v4.x) — typed subclass checks:
@@ -3747,7 +3747,7 @@ if (log.traceCategory == TraceCategoryIds.state) {
 }
 ```
 
-### P2. Key/field renames
+### 16.2. Key/field renames
 
 | v4.x                                | v5.0                              | Где                              |
 | ----------------------------------- | --------------------------------- | -------------------------------- |
@@ -3757,7 +3757,7 @@ if (log.traceCategory == TraceCategoryIds.state) {
 | `additionalData['statusCode']`      | `meta['statusCode']`              | nested в `TraceKeys.meta`        |
 | `ISpectDbConfig.slowQueryThreshold` | `ISpectTraceConfig.slowThreshold` | config parameter                 |
 
-### P3. Interceptor API — без изменений для пользователей
+### 16.3. Interceptor API — без изменений для пользователей
 
 Пользователи НЕ меняют свой код для Dio/HTTP/WS/BLoC interceptors:
 
@@ -3767,7 +3767,7 @@ dio.interceptors.add(ISpectDioInterceptor(logger: logger));
 // Внутренне interceptor теперь вызывает trace() вместо создания typed subclasses.
 ```
 
-### P4. ISpectLogType exhaustive switch
+### 16.4. ISpectLogType exhaustive switch
 
 ```dart
 // ❌ БЫЛО — ломается при новых enum values:
@@ -3787,7 +3787,7 @@ switch (logType) {
 }
 ```
 
-### P5. Export API — новые параметры
+### 16.5. Export API — новые параметры
 
 ```dart
 // v4.x:
@@ -3804,7 +3804,7 @@ LogExporter.toText(logs);                        // NEW — batch export
 LogExporter.toCsv(logs);                         // NEW — CSV export
 ```
 
-### P6. ISpectTheme — новые поля (optional)
+### 16.6. ISpectTheme — новые поля (optional)
 
 ```dart
 // v4.x:
@@ -3820,7 +3820,7 @@ ISpect(theme: ISpectTheme(
 ))
 ```
 
-### P7. Дополнительные breaking changes (не забыть!)
+### 16.7. Дополнительные breaking changes (не забыть!)
 
 | Что изменилось                                 | Ошибка компиляции                                                                                                     | Миграция                                                                                                                                                                                                                                                                                                                                 |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -3835,7 +3835,7 @@ ISpect(theme: ISpectTheme(
 | `data_extensions.dart` `curlCommand`           | Runtime: cURL returns null                                                                                            | `additionalData?['request-options']` → `traceMeta?['requestOptions']` (v5 Dio interceptor кладёт в meta). Backward compat для imported v4 logs: fallback to `additionalData?['request-options']`                                                                                                                                         |
 | `authTrace(userId:)` теперь в meta             | `userId` больше не в `key` field / message string                                                                     | Если искали userId в `log.key` → теперь в `log.traceMeta?['userId']`                                                                                                                                                                                                                                                                     |
 
-### P8. Минимальная миграция (happy path)
+### 16.8. Минимальная миграция (happy path)
 
 Если пользователь НЕ использовал typed subclasses напрямую:
 
@@ -3855,3 +3855,150 @@ ISpect(theme: ISpectTheme(
 7. Обновить **тестовый код** — типизированные subclasses удалены и оттуда тоже
 
 ---
+
+## Part 17: Implementation Checklist
+
+Единый чеклист для имплементации. Каждый шаг имеет критерий "done".
+Порядок обязателен — каждый следующий шаг зависит от предыдущих.
+
+### Шаг 1: defaultSensitiveKeys update
+- [ ] Добавить ~22 новых ключа в `key_defaults.dart` (email, otp, csrf, mfa_code, totp, device_token, fcm_token, apns_token, push_token, session_id, session_token, username, user_name, bearer_token, x-csrf-token, csrf_token, verification_code, pin_code, login, e-mail, email_address, one_time_password)
+- **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. Тесты `dart test packages/ispectify` проходят.
+
+### Шаг 2: ISpectLogType update (Part 5)
+- [ ] Добавить `category` field в `ISpectLogType` enum
+- [ ] Добавить 21 новый enum value (wsError, authSuccess, authError, storageResult, storageQuery, storageError, pushReceived, pushSent, pushError, paymentSuccess, paymentError, stateChange, stateError, sseReceived, sseError, grpcRequest, grpcResponse, grpcError, graphqlRequest, graphqlResponse, graphqlError)
+- [ ] Обновить `isErrorType` (добавить blocError + 9 новых error types)
+- [ ] Обновить `level` (новые error types → LogLevel.error)
+- [ ] Обновить `_defaultPens` (21 новых mappings)
+- [ ] Audit ALL exhaustive switch на `ISpectLogType` — добавить `_` default case
+- **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogType.fromKey('auth-success')?.category == 'auth'`.
+
+### Шаг 3: Core trace primitives (Part 1)
+- [ ] Создать `packages/ispectify/lib/src/trace/` директорию
+- [ ] Создать `packages/ispectify/lib/src/testing/` директорию
+- [ ] Создать `packages/ispectify/lib/src/export/` директорию
+- [ ] Создать `packages/ispectify/lib/src/redaction/export_redaction.dart`
+- [ ] Реализовать: trace_category.dart, trace_category_ids.dart, trace_categories.dart, trace_config.dart, trace_token.dart, trace_keys.dart, trace_extension.dart, trace_message.dart, trace_helpers.dart (включая `_redactTarget`, `truncateValue`, `safeTrace`), trace_stream_transformer.dart
+- [ ] `ISpectDbCore.truncateValue` делегирует к core `truncateValue`
+- **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogger` имеет extension methods `trace()`, `traceAsync()`, `traceSync()`, `traceStart()`, `traceEnd()`, `traceStream()`, `traceTransaction()`.
+
+### Шаг 4: ISpectLogDataX (Part 4.4)
+- [ ] Создать `packages/ispectify/lib/src/models/log_data_x.dart`
+- [ ] Реализовать все convenience getters (traceCategory, traceSource, traceOperation, traceTarget, traceMeta, traceDurationMs, traceSuccess, traceSlow, traceTransactionId, traceCorrelationId)
+- [ ] Реализовать category checks (isNetwork, isWs, isSse, isGrpc, isGraphql, isDb, isState, isAuth, isStorage, isPush, isAnalytics, isPayment, isNavigation)
+- [ ] Реализовать domain convenience getters (httpStatusCode, requestId, httpHeaders, dbStatement, dbStatementDigest, dbArgs, authProvider, storageBucket, storageSizeBytes, blocType, eventType, pushTitle, pushTopic, paymentAmount, paymentCurrency, hasCategory)
+- **Done when:** `dart analyze packages/ispectify --fatal-infos` чист. `ISpectLogData(..., additionalData: {'category': 'network'}).isNetwork == true`.
+
+### Шаг 5: Serialization + Export (Part 3)
+- [ ] Добавить `toText(redactKeys:)` в existing `ISpectLogDataSerialization` extension
+- [ ] Добавить `toMarkdown(redactKeys:)` в existing `ISpectLogDataSerialization` extension
+- [ ] Создать `LogExporter` в `packages/ispectify/lib/src/export/log_exporter.dart` (toJsonLines, toText, toMarkdown, toCsv с maxLogs, redactKeys, CSV formula injection protection)
+- **Done when:** `dart analyze` чист. `ISpectLogData('test', key: 'info').toText()` возвращает строку. `LogExporter.toCsv([log])` содержит header.
+
+### Шаг 6: Domain extensions (Part 2)
+- [ ] Создать 8 файлов в `trace/extensions/`: auth, storage, push, analytics, payment, sse, grpc, graphql
+- [ ] Каждый: early bail `if (!options.enabled)`, делегация в `trace()`/`traceAsync()`
+- [ ] Push: auto-correlation `correlationId ?? messageId`
+- **Done when:** `dart analyze` чист. `logger.push(source: 'fcm', operation: 'received', messageId: 'x')` создаёт лог с `correlationId == 'x'`.
+
+### Шаг 7: Filters (Part 6.4)
+- [ ] Создать `CategoryFilter`, `SourceFilter`, `CorrelationFilter`, `TransactionFilter` в `filter/category_filter.dart`
+- **Done when:** `dart analyze` чист. `CategoryFilter({'network'}).apply(networkLog) == true`.
+
+### Шаг 8: FakeISpectLogger (Part 7)
+- [ ] Создать `packages/ispectify/lib/src/testing/fake_logger.dart`
+- [ ] `maxHistoryItems: 0` по умолчанию, `_traces` no-copy iterable, Queue-based FIFO
+- [ ] Query methods: byCategory, bySource, byOperation, byCorrelationId, byTransactionId, byLogKey, errors, slow, byLogLevel
+- **Done when:** `dart analyze` чист. `FakeISpectLogger().traces` возвращает пустой List.
+
+### Шаг 9: Рефакторинг ispectify_db (Part 4.1)
+- [ ] `ISpectDbConfig extends ISpectTraceConfig` (`slowQueryThreshold` → `slowThreshold`)
+- [ ] `db()` и `dbTrace()` делегируют к `trace()`/`traceAsync()` через `_preprocessDb()`
+- [ ] `dbTransaction()` делегирует к `traceTransaction()`
+- **Done when:** `dart analyze packages/ispectify_db --fatal-infos` чист. `dart test packages/ispectify_db` проходит.
+
+### Шаг 10: Рефакторинг ispectify_bloc (Part 4.3)
+- [ ] Observer: `Expando<Queue<String>>` для event correlation (FIFO)
+- [ ] Все lifecycle methods (onEvent, onTransition, onChange, onCreate, onClose, onDone, onError) используют `logger.trace()`
+- [ ] Удалить typed subclasses из `packages/ispectify_bloc/lib/src/models/`
+- **Done when:** `dart analyze packages/ispectify_bloc --fatal-infos` чист. `flutter test packages/ispectify_bloc` проходит. Pattern matching в тестах мигрирован на key-based.
+
+### Шаг 11: Рефакторинг ispectify_dio (Part 4.2)
+- [ ] Interceptor: два `trace()` + explicit `logKey` (request + response)
+- [ ] `correlationId: requestId` для корреляции
+- [ ] `Stopwatch` в `options.extra['_sw']`
+- [ ] Удалить typed subclasses из `packages/ispectify_dio/lib/src/models/` (оставить data classes)
+- **Done when:** `dart analyze packages/ispectify_dio --fatal-infos` чист. `flutter test packages/ispectify_dio` проходит.
+
+### Шаг 12: Рефакторинг ispectify_http (Part 4.2)
+- [ ] Аналогично Dio: два `trace()` + logKey, `Expando<String>` для requestId, `Expando<Stopwatch>` для timing
+- [ ] Удалить typed subclasses
+- **Done when:** `dart analyze packages/ispectify_http --fatal-infos` чист. `flutter test packages/ispectify_http` проходит.
+
+### Шаг 13: Рефакторинг ispectify_ws (Part 4.2)
+- [ ] `trace()` per event с `wsCategory`
+- [ ] Миграция pattern matching на key-based
+- [ ] Обновить `ISpectWSInterceptorSettings` filter types (`WSSentLog` → `ISpectLogData`)
+- [ ] Удалить typed subclasses
+- **Done when:** `dart analyze packages/ispectify_ws --fatal-infos` чист. `flutter test packages/ispectify_ws` проходит.
+
+### Шаг 14: UI update (Part 6)
+- [ ] Dynamic filter grouping: `_resolveCategory()` с `_categoryCache`, `_categoryLabel()`
+- [ ] Новые icons/colors в `ISpectConstants` для 21 новых log types
+- [ ] `ISpectTheme`: добавить `categoryLabels`, `logCategories`, обновить `copyWith()`, `==`, `hashCode`, `toMap()`, `fromMap()`
+- [ ] Удалить `group*` l10n строки, добавить `category*` строки в `.arb` файлы, регенерировать
+- [ ] Generic correlation banner (correlationId/transactionId)
+- [ ] Slow trace badge на log cards (оранжевый, "Slow: Xms")
+- [ ] Severity visual hierarchy (цветовая полоска слева + quick-filter "Errors only")
+- [ ] Mobile `log_card.dart`: добавить badge area (паритет с desktop)
+- [ ] `data_extensions.dart`: исправить `isHttpLog` (+ httpError), обновить `curlCommand`
+- [ ] `NetworkTransaction`: обновить fallback getters (method→operation, url→target, statusCode→meta.statusCode)
+- [ ] `network_transaction_service.dart`: обновить requestId extraction из meta
+- **Done when:** `flutter analyze packages/ispect --fatal-infos` чист. `flutter test packages/ispect` проходит. В UI: фильтры группируются динамически, новые иконки отображаются, slow badge видим.
+
+### Шаг 15: Export/Share UI (Part 3.3)
+- [ ] Создать `log_export_sheet.dart` — bottom sheet с выбором формата (JSON Lines, Text, Markdown, CSV)
+- [ ] Redaction toggle ("Include sensitive data" — default OFF)
+- [ ] Обновить `LogsJsonService` для text/markdown/csv форматов
+- [ ] Progress indicator для bulk export
+- **Done when:** Кнопка Share → bottom sheet → выбор формата → файл генерируется → share dialog.
+
+### Шаг 16: Barrel exports
+- [ ] Добавить ВСЕ новые файлы в `packages/ispectify/lib/ispectify.dart` (см. Part 8)
+- [ ] Удалить из barrel: `export 'src/network/request_id_generator.dart'`
+- [ ] НЕ экспортировать: trace_message.dart, trace_helpers.dart, export_redaction.dart (internal)
+- [ ] Проверить: `import 'package:ispectify/ispectify.dart'` даёт доступ к `networkCategory`, `TraceKeys`, `ISpectLogDataX`, `FakeISpectLogger`, `LogExporter`
+- **Done when:** `dart analyze` чист. Тест: `import 'package:ispectify/ispectify.dart'; final c = networkCategory;` компилируется.
+
+### Шаг 17: Удаление файлов (Part 14 — Deleted)
+- [ ] Удалить `packages/ispectify/lib/src/network/network_logs.dart`
+- [ ] Удалить `packages/ispectify/lib/src/network/request_id_generator.dart`
+- [ ] Удалить typed subclass files (если не удалены на шагах 10-13):
+  - `packages/ispectify_dio/lib/src/models/` (log subclasses only, НЕ data classes)
+  - `packages/ispectify_http/lib/src/models/` (log subclasses only)
+  - `packages/ispectify_ws/lib/src/models/`
+  - `packages/ispectify_bloc/lib/src/models/`
+- **Done when:** `dart analyze` и `flutter analyze` чисты для ВСЕХ пакетов. Все тесты проходят.
+
+### Шаг 18: Тесты (Part 13)
+- [ ] Написать 89 тестов (13.1-13.6)
+- [ ] `dart test packages/ispectify` — все проходят
+- [ ] `flutter test packages/ispect` — все проходят
+- [ ] `flutter test packages/ispectify_dio` — все проходят
+- [ ] `flutter test packages/ispectify_http` — все проходят
+- [ ] `flutter test packages/ispectify_ws` — все проходят
+- [ ] `flutter test packages/ispectify_bloc` — все проходят
+- [ ] `dart test packages/ispectify_db` — все проходят
+- **Done when:** ВСЕ 89 тестов проходят. `./bash/check_version_sync.sh` и `./bash/check_dependencies.sh` чисты.
+
+### Шаг 19: Финализация
+- [ ] Обновить `version.config` → `5.0.0`
+- [ ] `./bash/update_versions.sh --bump major`
+- [ ] Обновить `CHANGELOG.md` с migration guide (Part 16)
+- [ ] `./bash/update_changelog.sh`
+- [ ] `./bash/sync_readme.sh`
+- [ ] Обновить `web_logs_viewer/` для нового additionalData layout (backward compat v4+v5)
+- [ ] Обновить example apps — удалить ссылки на typed subclasses
+- [ ] `./bash/publish.sh --dry-run` — валидация
+- **Done when:** `./bash/check_version_sync.sh` чист. `./bash/publish.sh --dry-run` проходит без ошибок.
