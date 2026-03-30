@@ -1,0 +1,14 @@
+# Realm database files
+example/default.realm*
+example/default.realm.management/
+
+# Platform-specific directories in example
+example/macos/
+example/linux/
+example/windows/
+example/ios/
+example/android/
+example/web/
+
+# Generated/binary files
+example/lib/objectbox-model.json
