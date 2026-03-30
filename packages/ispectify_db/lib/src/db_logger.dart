@@ -4,6 +4,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
 import 'package:ispectify_db/src/constants.dart';
 import 'package:ispectify_db/src/db_core.dart';
+import 'package:ispectify_db/src/db_preprocess_input.dart';
 import 'package:ispectify_db/src/db_token.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
@@ -46,24 +47,26 @@ extension ISpectLoggerDb on ISpectLogger {
 
     final cfg = ISpectDbCore.config;
     final dbMeta = _preprocessDb(
-      cfg: cfg,
-      statement: statement,
-      args: args,
-      namedArgs: namedArgs,
-      table: table,
-      key: key,
-      value: projection ?? value,
-      affected: affected,
-      items: items,
-      sizeBytes: sizeBytes,
-      cacheHit: cacheHit,
-      meta: meta,
-      redact: redact,
-      redactKeys: redactKeys,
-      maxValueLength: maxValueLength,
-      maxArgsLength: maxArgsLength,
-      maxStatementLength: maxStatementLength,
-      error: error,
+      DbPreprocessInput(
+        cfg: cfg,
+        statement: statement,
+        args: args,
+        namedArgs: namedArgs,
+        table: table,
+        key: key,
+        value: projection ?? value,
+        affected: affected,
+        items: items,
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        meta: meta,
+        redact: redact,
+        redactKeys: redactKeys,
+        maxValueLength: maxValueLength,
+        maxArgsLength: maxArgsLength,
+        maxStatementLength: maxStatementLength,
+        error: error,
+      ),
     );
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
@@ -132,61 +135,34 @@ extension ISpectLoggerDb on ISpectLogger {
       rethrow;
     } finally {
       sw.stop();
-      try {
-        final success = err == null;
-        final items = success
+      _logTraceResult(
+        cfg: cfg,
+        txnId: txnId,
+        source: source,
+        operation: operation,
+        target: table ?? target,
+        key: key,
+        statement: statement,
+        args: args,
+        namedArgs: namedArgs,
+        meta: meta,
+        redact: redact,
+        redactKeys: redactKeys,
+        maxValueLength: maxValueLength,
+        maxArgsLength: maxArgsLength,
+        maxStatementLength: maxStatementLength,
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        sample: sample,
+        elapsed: sw.elapsed,
+        err: err,
+        st: st,
+        items: err == null
             ? (itemsCountFromLength ?? (result is List ? result.length : null))
-            : null;
-        Object? projected;
-        if (success && projectResult != null) {
-          try {
-            projected = projectResult(result);
-          } catch (_) {}
-        }
-
-        final dbMeta = _preprocessDb(
-          cfg: cfg,
-          statement: statement,
-          args: args,
-          namedArgs: namedArgs,
-          table: table,
-          key: key,
-          value: projected,
-          affected: affectedOverride,
-          items: items,
-          sizeBytes: sizeBytes,
-          cacheHit: cacheHit,
-          meta: meta,
-          redact: redact,
-          redactKeys: redactKeys,
-          maxValueLength: maxValueLength,
-          maxArgsLength: maxArgsLength,
-          maxStatementLength: maxStatementLength,
-          error: err,
-        );
-
-        trace(
-          category: dbCategory,
-          source: source,
-          operation: operation,
-          target: table ?? target,
-          key: key,
-          success: success,
-          error: err,
-          errorStackTrace: st,
-          duration: sw.elapsed,
-          sample: sample,
-          config: cfg,
-          meta: dbMeta,
-          correlationId: txnId,
-        );
-      } catch (loggingError) {
-        assert(() {
-          // ignore: avoid_print
-          print('ISpectDbTrace: logging failed — $loggingError');
-          return true;
-        }());
-      }
+            : null,
+        affectedOverride: affectedOverride,
+        projected: _safeProject(err == null, projectResult, () => result),
+      );
     }
   }
 
@@ -233,24 +209,74 @@ extension ISpectLoggerDb on ISpectLogger {
       rethrow;
     } finally {
       sw.stop();
-      try {
-        final success = err == null;
-        final items = success
+      _logTraceResult(
+        cfg: cfg,
+        txnId: txnId,
+        source: source,
+        operation: operation,
+        target: table ?? target,
+        key: key,
+        statement: statement,
+        args: args,
+        namedArgs: namedArgs,
+        meta: meta,
+        redact: redact,
+        redactKeys: redactKeys,
+        maxValueLength: maxValueLength,
+        maxArgsLength: maxArgsLength,
+        maxStatementLength: maxStatementLength,
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        sample: sample,
+        elapsed: sw.elapsed,
+        err: err,
+        st: st,
+        items: err == null
             ? (itemsCountFromLength ?? (result is List ? result.length : null))
-            : null;
-        Object? projected;
-        if (success && projectResult != null) {
-          try {
-            projected = projectResult(result);
-          } catch (_) {}
-        }
+            : null,
+        affectedOverride: affectedOverride,
+        projected: _safeProject(err == null, projectResult, () => result),
+      );
+    }
+  }
 
-        final dbMeta = _preprocessDb(
+  /// Shared finally-block logic for [dbTrace] and [dbTraceSync].
+  void _logTraceResult({
+    required ISpectDbConfig cfg,
+    required String? txnId,
+    required String source,
+    required String operation,
+    required String? target,
+    required String? key,
+    required String? statement,
+    required List<Object?>? args,
+    required Map<String, Object?>? namedArgs,
+    required Map<String, Object?>? meta,
+    required bool? redact,
+    required List<String>? redactKeys,
+    required int? maxValueLength,
+    required int? maxArgsLength,
+    required int? maxStatementLength,
+    required int? sizeBytes,
+    required bool? cacheHit,
+    required double? sample,
+    required Duration elapsed,
+    required Object? err,
+    required StackTrace? st,
+    required int? items,
+    required int? affectedOverride,
+    required Object? projected,
+  }) {
+    try {
+      final success = err == null;
+
+      final dbMeta = _preprocessDb(
+        DbPreprocessInput(
           cfg: cfg,
           statement: statement,
           args: args,
           namedArgs: namedArgs,
-          table: table,
+          table: target,
           key: key,
           value: projected,
           affected: affectedOverride,
@@ -264,29 +290,44 @@ extension ISpectLoggerDb on ISpectLogger {
           maxArgsLength: maxArgsLength,
           maxStatementLength: maxStatementLength,
           error: err,
-        );
+        ),
+      );
 
-        trace(
-          category: dbCategory,
-          source: source,
-          operation: operation,
-          target: table ?? target,
-          key: key,
-          success: success,
-          error: err,
-          errorStackTrace: st,
-          duration: sw.elapsed,
-          sample: sample,
-          config: cfg,
-          meta: dbMeta,
-          correlationId: txnId,
-        );
-      } catch (loggingError) {
-        assert(() {
-          error('ISpectDbTrace: logging failed — $loggingError');
-          return true;
-        }());
-      }
+      trace(
+        category: dbCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        key: key,
+        success: success,
+        error: err,
+        errorStackTrace: st,
+        duration: elapsed,
+        sample: sample,
+        config: cfg,
+        meta: dbMeta,
+        correlationId: txnId,
+      );
+    } catch (loggingError) {
+      assert(() {
+        // ignore: avoid_print
+        print('ISpectDbTrace: logging failed — $loggingError');
+        return true;
+      }());
+    }
+  }
+
+  /// Safely project a result value, returning null on failure.
+  static Object? _safeProject<T>(
+    bool success,
+    Object? Function(T value)? projectResult,
+    T Function() getResult,
+  ) {
+    if (!success || projectResult == null) return null;
+    try {
+      return projectResult(getResult());
+    } catch (_) {
+      return null;
     }
   }
 
@@ -370,29 +411,10 @@ extension ISpectLoggerDb on ISpectLogger {
   }
 
   /// Preprocesses DB-specific fields into a meta map for trace().
-  static Map<String, Object?> _preprocessDb({
-    required ISpectDbConfig cfg,
-    String? statement,
-    List<Object?>? args,
-    Map<String, Object?>? namedArgs,
-    String? table,
-    String? key,
-    Object? value,
-    int? affected,
-    int? items,
-    int? sizeBytes,
-    bool? cacheHit,
-    Map<String, Object?>? meta,
-    bool? redact,
-    List<String>? redactKeys,
-    int? maxValueLength,
-    int? maxArgsLength,
-    int? maxStatementLength,
-    Object? error,
-  }) {
-    final shouldRedact = redact ?? cfg.redact;
-    final sensitiveKeys = redactKeys ?? cfg.redactKeys.toList();
-    final maxArgsLen = maxArgsLength ?? cfg.maxArgsLength;
+  static Map<String, Object?> _preprocessDb(DbPreprocessInput input) {
+    final shouldRedact = input.shouldRedact;
+    final sensitiveKeys = input.sensitiveKeys;
+    final maxArgsLen = input.resolvedMaxArgsLength;
 
     Object? redactData(Object? data) => ISpectDbCore.redactIfNeeded(
           data,
@@ -401,45 +423,45 @@ extension ISpectLoggerDb on ISpectLogger {
         );
 
     final truncatedStmt = _truncateToString(
-      statement,
-      maxStatementLength ?? cfg.maxStatementLength,
+      input.statement,
+      input.resolvedMaxStatementLength,
     );
 
     final processedArgs = _processPositionalArgs(
-      args,
+      input.args,
       shouldRedact: shouldRedact,
       sensitiveKeys: sensitiveKeys,
-      statement: statement,
+      statement: input.statement,
       maxLen: maxArgsLen,
     );
 
     final processedNamedArgs = _processNamedArgs(
-      redactData(namedArgs),
+      redactData(input.namedArgs),
       maxLen: maxArgsLen,
     );
 
-    final processedMeta = redactData(meta);
-    final digest = ISpectDbCore.sqlDigest(statement);
+    final processedMeta = redactData(input.meta);
+    final digest = ISpectDbCore.sqlDigest(input.statement);
 
     final truncatedValue = ISpectDbCore.truncateValue(
-      redactData(value),
-      maxValueLength ?? cfg.maxValueLength,
+      redactData(input.value),
+      input.resolvedMaxValueLength,
     );
 
     return ISpectDbCore.clean(<String, Object?>{
       'statement': shouldRedact ? digest : truncatedStmt,
       'statementDigest': digest,
-      if (table != null) 'table': table,
-      if (key != null) 'key': key,
+      if (input.table != null) 'table': input.table,
+      if (input.key != null) 'key': input.key,
       'args': processedArgs,
       'namedArgs': processedNamedArgs,
-      if (affected != null) 'affected': affected,
-      if (items != null) 'items': items,
-      if (sizeBytes != null) 'sizeBytes': sizeBytes,
-      if (cacheHit != null) 'cacheHit': cacheHit,
+      if (input.affected != null) 'affected': input.affected,
+      if (input.items != null) 'items': input.items,
+      if (input.sizeBytes != null) 'sizeBytes': input.sizeBytes,
+      if (input.cacheHit != null) 'cacheHit': input.cacheHit,
       if (truncatedValue != null) 'value': truncatedValue,
       if (processedMeta != null) 'userMeta': processedMeta,
-      if (error != null) 'dbError': '$error',
+      if (input.error != null) 'dbError': '${input.error}',
     });
   }
 
@@ -452,7 +474,7 @@ extension ISpectLoggerDb on ISpectLogger {
   static List<Object?>? _processPositionalArgs(
     List<Object?>? args, {
     required bool shouldRedact,
-    required List<String> sensitiveKeys,
+    required Iterable<String> sensitiveKeys,
     required String? statement,
     required int maxLen,
   }) {

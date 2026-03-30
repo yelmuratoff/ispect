@@ -45,16 +45,11 @@ class ISpectShareAllLogsBottomSheet {
             icon: Icons.article_outlined,
             label: '${context.ispectL10n.shareLogsFile} (Markdown)',
             onPressed: () {
-              final logs = ISpect.logger.history;
-              final content = LogExporter.toMarkdown(logs);
               controller.shareLogsAsFile(
-                logs,
+                ISpect.logger.history,
                 fileType: 'md',
               );
-              // Fallback: copy markdown if share not available
-              if (content.isNotEmpty) {
-                Navigator.of(sheetContext).pop();
-              }
+              Navigator.of(sheetContext).pop();
             },
           ),
           ISpectSheetActionButton(

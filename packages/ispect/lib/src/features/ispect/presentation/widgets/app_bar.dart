@@ -113,7 +113,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 Icons.error_outline_rounded,
                 size: 22,
                 color: widget.controller.errorsOnly
-                    ? const Color(0xFFF44336)
+                    ? Theme.of(context).colorScheme.error
                     : null,
               ),
             ),

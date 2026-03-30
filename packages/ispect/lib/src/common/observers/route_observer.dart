@@ -194,7 +194,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? previousRoute,
   ) {
     if (type == TransitionType.push && route != null) {
-      final id = _generateTransitionId(DateTime.now(), route);
+      final id = generateTraceId();
       _routeCorrelationIds[route] = id;
       return id;
     }

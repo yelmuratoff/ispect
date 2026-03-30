@@ -185,7 +185,9 @@ void main() {
     test('throws ArgumentError for invalid range', () {
       expect(
         () => LogLevelRangeFilter(
-            minLevel: LogLevel.debug, maxLevel: LogLevel.critical),
+          minLevel: LogLevel.debug,
+          maxLevel: LogLevel.critical,
+        ),
         throwsA(isA<ArgumentError>()),
       );
     });

@@ -73,7 +73,7 @@ final class ISpectDbCore {
   ///
   /// Delegates to [RedactionService.redactByKeys] — the shared implementation
   /// in the `ispectify` package.
-  static Object? redact(Object? data, List<String> keys) =>
+  static Object? redact(Object? data, Iterable<String> keys) =>
       RedactionService.redactByKeys(data, keys);
 
   /// Conditionally redacts [data] if [shouldRedact] is `true`, otherwise
@@ -81,7 +81,7 @@ final class ISpectDbCore {
   static Object? redactIfNeeded(
     Object? data, {
     required bool shouldRedact,
-    required List<String> keys,
+    required Iterable<String> keys,
   }) {
     if (data == null) return null;
     return shouldRedact ? redact(data, keys) : data;
@@ -96,7 +96,7 @@ final class ISpectDbCore {
   /// If [statement] is `null`, all values are redacted as a precaution.
   static List<Object?> redactPositionalArgs(
     List<Object?> args,
-    List<String> keys,
+    Iterable<String> keys,
     String? statement,
   ) {
     if (args.isEmpty) return args;

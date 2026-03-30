@@ -7,7 +7,8 @@ import 'package:ispectify/ispectify.dart';
 /// WS-specific convenience aliases (`printSentData`, `sentPen`, etc.).
 ///
 /// **v5.0 breaking change:** Filter function signatures changed from
-/// typed log subclasses to nullable `ISpectLogData?`.
+/// typed log subclasses to `ISpectLogData`. Filters now receive the
+/// actual log data instead of `null`.
 class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
     super.enabled,
@@ -37,13 +38,13 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         );
 
   /// Filter for sent messages. Return `false` to suppress logging.
-  final bool Function(ISpectLogData? data)? sentFilter;
+  final bool Function(ISpectLogData data)? sentFilter;
 
   /// Filter for received messages. Return `false` to suppress logging.
-  final bool Function(ISpectLogData? data)? receivedFilter;
+  final bool Function(ISpectLogData data)? receivedFilter;
 
   /// Filter for error events. Return `false` to suppress logging.
-  final bool Function(ISpectLogData? data)? errorFilter;
+  final bool Function(ISpectLogData data)? errorFilter;
 
   bool get printSentData => printRequestData;
   bool get printSentHeaders => printRequestHeaders;
@@ -66,9 +67,9 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     AnsiPen? errorPen,
-    bool Function(ISpectLogData? data)? sentFilter,
-    bool Function(ISpectLogData? data)? receivedFilter,
-    bool Function(ISpectLogData? data)? errorFilter,
+    bool Function(ISpectLogData data)? sentFilter,
+    bool Function(ISpectLogData data)? receivedFilter,
+    bool Function(ISpectLogData data)? errorFilter,
   }) =>
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,

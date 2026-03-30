@@ -71,17 +71,43 @@ final class ISpectWSInterceptor
     try {
       final safeData = _safeRedact(data, useRedaction);
       final operation = type == wsTypeRequest ? 'send' : 'receive';
-
-      // Check filters before logging
-      if (!_shouldLog(type)) {
-        next(data);
-        return;
-      }
+      const isError = false;
+      final logKey = wsCategory.pickLogKey(
+        isError: isError,
+        operation: operation,
+      );
 
       final metricsMap = _processMetrics(useRedaction);
       final includeData = type == wsTypeRequest
           ? settings.printSentData
           : settings.printReceivedData;
+
+      final meta = <String, Object?>{
+        if (includeData) 'data': safeData,
+        if (metricsMap != null) 'metrics': metricsMap,
+        'url': url,
+        'path': path,
+      };
+
+      // Build preview log data for filter check
+      final previewLog = ISpectLogData(
+        '$operation $url',
+        key: logKey,
+        additionalData: {
+          TraceKeys.category: wsCategory.id,
+          TraceKeys.source: 'ws',
+          TraceKeys.operation: operation,
+          TraceKeys.target: url,
+          TraceKeys.success: true,
+          if (_connectionId != null) TraceKeys.correlationId: _connectionId,
+          TraceKeys.meta: meta,
+        },
+      );
+
+      if (!_shouldLog(previewLog)) {
+        next(data);
+        return;
+      }
 
       _logger.trace(
         category: wsCategory,
@@ -91,12 +117,7 @@ final class ISpectWSInterceptor
         success: true,
         correlationId: _connectionId,
         config: useRedaction ? null : _noRedactConfig,
-        meta: {
-          if (includeData) 'data': safeData,
-          if (metricsMap != null) 'metrics': metricsMap,
-          'url': url,
-          'path': path,
-        },
+        meta: meta,
       );
     } catch (e, s) {
       _logger.trace(
@@ -130,11 +151,19 @@ final class ISpectWSInterceptor
     };
   }
 
-  bool _shouldLog(String type) => switch (type) {
-        wsTypeRequest => settings.sentFilter?.call(null) ?? true,
-        wsTypeResponse => settings.receivedFilter?.call(null) ?? true,
-        _ => true,
-      };
+  bool _shouldLog(ISpectLogData log) {
+    final logKey = log.key;
+    if (logKey == ISpectLogType.wsSent.key) {
+      return settings.sentFilter?.call(log) ?? true;
+    }
+    if (logKey == ISpectLogType.wsReceived.key) {
+      return settings.receivedFilter?.call(log) ?? true;
+    }
+    if (logKey == ISpectLogType.wsError.key) {
+      return settings.errorFilter?.call(log) ?? true;
+    }
+    return true;
+  }
 
   @override
   void onMessage(Object data, void Function(Object data) next) {

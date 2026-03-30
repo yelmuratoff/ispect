@@ -16,11 +16,16 @@ class TransactionMatcher {
     required this.categories,
     this.errorLogTypes = const {},
     this.requestLogTypes = const {},
+    this.legacyKeyPrefixes = const {},
   });
 
   final Set<String> categories;
   final Set<String> errorLogTypes;
   final Set<String> requestLogTypes;
+
+  /// Key prefixes used by v4 logs that don't carry a [TraceKeys.category].
+  /// For example, HTTP logs use the `'http-'` prefix.
+  final Set<String> legacyKeyPrefixes;
 
   String? extractCorrelationId(ISpectLogData log) {
     if (!_belongsToCategory(log)) return null;
@@ -53,7 +58,10 @@ class TransactionMatcher {
     final key = log.key;
     if (key == null) return false;
     for (final c in categories) {
-      if (key.startsWith('$c-') || key.startsWith('http-')) return true;
+      if (key.startsWith('$c-')) return true;
+    }
+    for (final prefix in legacyKeyPrefixes) {
+      if (key.startsWith(prefix)) return true;
     }
     return false;
   }
@@ -65,6 +73,7 @@ const httpTransactionMatcher = TransactionMatcher(
   categories: {TraceCategoryIds.network},
   errorLogTypes: {'http-error'},
   requestLogTypes: {'http-request'},
+  legacyKeyPrefixes: {'http-'},
 );
 
 class NetworkTransactionService {
@@ -107,11 +116,14 @@ class NetworkTransactionService {
   GroupedLogEntries _buildGroupedEntries(List<ISpectLogData> logs) {
     final transactions = <String, NetworkTransaction>{};
     final groupedLogIndices = <int>{};
+    final corrIdByIndex = <int, String>{};
 
     for (var i = 0; i < logs.length; i++) {
       final log = logs[i];
       final corrId = matcher.extractCorrelationId(log);
       if (corrId == null) continue;
+
+      corrIdByIndex[i] = corrId;
 
       switch (matcher.roleOf(log)) {
         case LogRole.request:
@@ -152,7 +164,7 @@ class NetworkTransactionService {
 
     for (var i = 0; i < logs.length; i++) {
       if (groupedLogIndices.contains(i)) {
-        final corrId = matcher.extractCorrelationId(logs[i]);
+        final corrId = corrIdByIndex[i];
         if (corrId != null && !insertedTransactions.contains(corrId)) {
           final tx = transactions[corrId];
           if (tx != null) {

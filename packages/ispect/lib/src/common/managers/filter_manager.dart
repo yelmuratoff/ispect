@@ -57,8 +57,14 @@ class FilterManager {
     _notify();
   }
 
-  void updateFilterSearchQuery(String query) {
+  void updateFilterSearchQuery(String query, {bool immediate = false}) {
     _filterDebounce?.cancel();
+    if (immediate) {
+      _filter = _filter.copyWith(searchQuery: query);
+      _invalidateSearchOnly();
+      _notify();
+      return;
+    }
     _filterDebounce = Timer(_debounceDuration, () {
       if (_isDisposed) return;
       _filter = _filter.copyWith(searchQuery: query);

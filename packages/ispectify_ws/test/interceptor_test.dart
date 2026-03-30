@@ -104,7 +104,7 @@ void main() {
       interceptor = ISpectWSInterceptor(
         logger: logger,
         settings: ISpectWSInterceptorSettings(
-          sentFilter: (_) => false,
+          sentFilter: (log) => false,
         ),
       )..onSend({'k': 'v'}, (obj) {});
 
@@ -116,11 +116,52 @@ void main() {
       );
     });
 
+    test('sentFilter receives actual ISpectLogData, not null', () {
+      ISpectLogData? receivedData;
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          sentFilter: (log) {
+            receivedData = log;
+            return true;
+          },
+        ),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      expect(receivedData, isNotNull);
+      expect(receivedData!.key, ISpectLogType.wsSent.key);
+      expect(receivedData!.additionalData, isNotNull);
+      expect(
+        receivedData!.additionalData![TraceKeys.operation],
+        'send',
+      );
+    });
+
+    test('receivedFilter receives actual ISpectLogData, not null', () {
+      ISpectLogData? receivedData;
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          receivedFilter: (log) {
+            receivedData = log;
+            return true;
+          },
+        ),
+      )..onMessage({'msg': 'hello'}, (obj) {});
+
+      expect(receivedData, isNotNull);
+      expect(receivedData!.key, ISpectLogType.wsReceived.key);
+      expect(
+        receivedData!.additionalData![TraceKeys.operation],
+        'receive',
+      );
+    });
+
     test('filters received logs via receivedFilter', () {
       interceptor = ISpectWSInterceptor(
         logger: logger,
         settings: ISpectWSInterceptorSettings(
-          receivedFilter: (_) => false,
+          receivedFilter: (log) => false,
         ),
       )..onMessage({'k': 'v'}, (obj) {});
 

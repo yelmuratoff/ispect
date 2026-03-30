@@ -291,6 +291,9 @@ class ISpectBlocObserver extends BlocObserver {
       success: true,
       meta: {'blocType': blocType},
     );
+
+    // Clear any pending event IDs for this bloc to prevent memory leaks.
+    _pendingEventIds[bloc] = null;
   }
 
   @override

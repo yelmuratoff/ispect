@@ -62,7 +62,7 @@ extension ISpectTrace on ISpectLogger {
       );
 
       final safeMeta = cfg.redact
-          ? RedactionService.redactByKeys(meta, cfg.redactKeys.toList())
+          ? RedactionService.redactByKeys(meta, cfg.redactKeys)
           : meta;
 
       final rawTxnId = Zone.current[_txnZoneKey];

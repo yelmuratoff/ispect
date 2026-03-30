@@ -6,6 +6,7 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
 
@@ -516,7 +517,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                     ],
                     if ((widget.data.traceSlow ?? false) &&
                         widget.data.traceDurationMs != null) ...[
-                      _SlowBadge(durationMs: widget.data.traceDurationMs!),
+                      SlowBadge(durationMs: widget.data.traceDurationMs!),
                       const Gap(8),
                     ],
                     Expanded(
@@ -681,39 +682,6 @@ class _DesktopStatusCodeBadge extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w700,
             fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SlowBadge extends StatelessWidget {
-  const _SlowBadge({required this.durationMs});
-
-  final int durationMs;
-
-  @override
-  Widget build(BuildContext context) {
-    const bgColor = Color(0xFFFF9800);
-    const textColor = Color(0xFFE65100);
-    final text = durationMs < 1000
-        ? 'Slow: ${durationMs}ms'
-        : 'Slow: ${(durationMs / 1000).toStringAsFixed(1)}s';
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.12),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: textColor,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
       ),

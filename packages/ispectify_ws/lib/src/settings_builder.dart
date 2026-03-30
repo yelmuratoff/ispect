@@ -20,26 +20,26 @@ class ISpectWSInterceptorSettingsBuilder
   factory ISpectWSInterceptorSettingsBuilder.disabled() =>
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
-  bool Function(ISpectLogData? data)? _sentFilter;
-  bool Function(ISpectLogData? data)? _receivedFilter;
-  bool Function(ISpectLogData? data)? _errorFilter;
+  bool Function(ISpectLogData data)? _sentFilter;
+  bool Function(ISpectLogData data)? _receivedFilter;
+  bool Function(ISpectLogData data)? _errorFilter;
 
   ISpectWSInterceptorSettingsBuilder withSentFilter(
-    bool Function(ISpectLogData? data) filter,
+    bool Function(ISpectLogData data) filter,
   ) {
     _sentFilter = filter;
     return this;
   }
 
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
-    bool Function(ISpectLogData? data) filter,
+    bool Function(ISpectLogData data) filter,
   ) {
     _receivedFilter = filter;
     return this;
   }
 
   ISpectWSInterceptorSettingsBuilder withErrorFilter(
-    bool Function(ISpectLogData? data) filter,
+    bool Function(ISpectLogData data) filter,
   ) {
     _errorFilter = filter;
     return this;

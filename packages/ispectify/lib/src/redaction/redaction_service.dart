@@ -195,6 +195,13 @@ class RedactionService {
       );
 
   // ---------------------------------------------------------------------------
+  // Shared patterns
+  // ---------------------------------------------------------------------------
+
+  static final _urlCredentialPattern =
+      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@');
+
+  // ---------------------------------------------------------------------------
   // Target redaction (static — Layer 2, trace pipeline)
   // ---------------------------------------------------------------------------
 
@@ -203,7 +210,7 @@ class RedactionService {
   static String redactTarget(String target, Set<String> redactKeys) {
     // 1. URL credentials: ://user:pass@host → ://***:***@host
     var result = target.replaceAllMapped(
-      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      _urlCredentialPattern,
       (m) => m[2] != null ? '://***:***@' : '://***@',
     );
     // 2. Query params with sensitive keys
@@ -234,7 +241,7 @@ class RedactionService {
 
     // 1. URL credentials
     result = result.replaceAllMapped(
-      RegExp(r'://([^:/@\s]+)(?::([^/@\s]*))?@'),
+      _urlCredentialPattern,
       (m) => m[2] != null ? '://***:***@' : '://***@',
     );
 
@@ -283,7 +290,7 @@ class RedactionService {
   /// or when [keys] is empty.
   static Object? redactByKeys(
     Object? data,
-    List<String> keys, {
+    Iterable<String> keys, {
     int maxDepth = 50,
     String placeholder = redactedMask,
   }) {

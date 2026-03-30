@@ -189,14 +189,17 @@ class _LogsScreenState extends State<LogsScreen> {
   ) {
     if (!activeLog.isHttpLog) return null;
 
-    final requestId = activeLog.additionalData?['request-id'] as String?;
+    // v5: traceMeta['requestId'], v4 fallback: additionalData['request-id']
+    final requestId = activeLog.requestId ??
+        activeLog.additionalData?['request-id'] as String?;
     if (requestId == null) return null;
 
     final isRequest = activeLog.key == ISpectLogType.httpRequest.key;
 
     for (final log in allLogs) {
       if (identical(log, activeLog)) continue;
-      final logRid = log.additionalData?['request-id'] as String?;
+      final logRid =
+          log.requestId ?? log.additionalData?['request-id'] as String?;
       if (logRid != requestId) continue;
 
       // If viewing request, find its response/error.
