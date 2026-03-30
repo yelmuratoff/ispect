@@ -14,7 +14,7 @@ class ISpectNavigationFlowScreen extends StatefulWidget {
   });
 
   final ISpectNavigatorObserver observer;
-  final RouteLog? log;
+  final ISpectLogData? log;
 
   void push(BuildContext context) {
     Navigator.of(context).push(
@@ -24,7 +24,7 @@ class ISpectNavigationFlowScreen extends StatefulWidget {
           name: 'ISpect Navigation Flow Screen',
           arguments: log != null
               ? {
-                  'id': log?.transitionId,
+                  'id': log?.traceCorrelationId,
                 }
               : null,
         ),
@@ -91,21 +91,21 @@ class _ISpectNavigationFlowScreenState
             : context.screenSizeWhen<Widget>(
                 phone: () => _NavigationFlowList(
                   items: _items,
-                  selectedTransitionId: widget.log?.transitionId,
+                  selectedTransitionId: widget.log?.traceCorrelationId,
                   log: widget.log,
                 ),
                 tablet: () => _NavigationFlowGrid(
                   items: _items,
                   maxItemWidth: 200,
                   aspectRatio: 1.5,
-                  selectedTransitionId: widget.log?.transitionId,
+                  selectedTransitionId: widget.log?.traceCorrelationId,
                   log: widget.log,
                 ),
                 desktop: () => _NavigationFlowGrid(
                   items: _items,
                   maxItemWidth: 220,
                   aspectRatio: 1.8,
-                  selectedTransitionId: widget.log?.transitionId,
+                  selectedTransitionId: widget.log?.traceCorrelationId,
                   log: widget.log,
                 ),
               ),
@@ -121,7 +121,7 @@ class _NavigationFlowList extends StatelessWidget {
 
   final List<RouteTransition> items;
   final String? selectedTransitionId;
-  final RouteLog? log;
+  final ISpectLogData? log;
 
   @override
   Widget build(BuildContext context) => ListView.builder(
@@ -154,7 +154,7 @@ class _NavigationFlowGrid extends StatelessWidget {
   final double maxItemWidth;
   final double aspectRatio;
   final String? selectedTransitionId;
-  final RouteLog? log;
+  final ISpectLogData? log;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(

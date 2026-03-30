@@ -592,14 +592,14 @@ class _DesktopRowActions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (data is RouteLog && observer != null)
+          if (data.isRouteLog && observer != null)
             _DesktopActionIcon(
               icon: Icons.compare_arrows_rounded,
               color: color,
               tooltip: context.ispectL10n.navigationFlow,
               onPressed: () => ISpectNavigationFlowScreen(
                 observer: observer!,
-                log: data as RouteLog,
+                log: data,
               ).push(context),
             ),
           _DesktopActionIcon(

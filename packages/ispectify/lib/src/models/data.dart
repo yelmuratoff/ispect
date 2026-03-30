@@ -2,7 +2,6 @@
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
-// TraceKeys is available via ispectify.dart barrel export.
 
 /// Core log entry model. All fields are immutable after construction.
 class ISpectLogData {
@@ -53,7 +52,8 @@ class ISpectLogData {
     stackTraceText,
   ]);
 
-  String get header => '[${title ?? key}] | $formattedTime\n';
+  // ignore: deprecated_member_use_from_same_package
+  String get header => '[${key ?? title}] | $formattedTime\n';
 
   String? get stackTraceText =>
       (stackTrace != null && stackTrace != StackTrace.empty)

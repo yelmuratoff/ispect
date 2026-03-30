@@ -190,10 +190,10 @@ class _LogCardHeader extends StatelessWidget {
                   title: data.key,
                   dateTime: data.formattedTime,
                   onShareTap: onShareTap,
-                  onRouteTap: data is RouteLog && observer != null
+                  onRouteTap: data.isRouteLog && observer != null
                       ? () => ISpectNavigationFlowScreen(
                             observer: observer!,
-                            log: data as RouteLog,
+                            log: data,
                           ).push(context)
                       : null,
                   onExpandTap: () => JsonScreen(

@@ -20,7 +20,7 @@ class NavigationTransitionCard extends StatelessWidget {
   });
 
   final List<RouteTransition> items;
-  final RouteLog? log;
+  final ISpectLogData? log;
   final RouteTransition transition;
   final int index;
   final int totalItems;

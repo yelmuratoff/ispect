@@ -14,7 +14,7 @@ class ISpectNavigationFlowActionsSheet {
     required this.items,
   });
 
-  final RouteLog? log;
+  final ISpectLogData? log;
   final RouteTransition? transition;
   final List<RouteTransition> items;
 
