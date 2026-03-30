@@ -55,6 +55,30 @@ class LogExportService {
     );
   }
 
+  Future<String> saveFilteredLogsToDevice(
+    List<ISpectLogData> allLogs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
+    String fileNamePrefix = 'ispect_logs_',
+    String fileType = 'json',
+    Set<String>? redactKeys,
+  }) async {
+    if (filteredLogs.isEmpty) {
+      ISpect.logger.info('No logs match the active filters. Skipping export.');
+      return '';
+    }
+
+    return _logsJsonService.saveFilteredLogsToDevice(
+      allLogs,
+      filteredLogs,
+      filter,
+      fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
+      fileType: fileType,
+      enableRedaction: redactKeys != null,
+      redactKeys: redactKeys,
+    );
+  }
+
   ISpectShareCallback _ensureShareCallback() {
     final shareCallback = _onShare;
     if (shareCallback == null) {

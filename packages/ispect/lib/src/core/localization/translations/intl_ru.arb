@@ -296,5 +296,7 @@
    "searchMode": "Режим поиска",
    "logTypes": "Типы логов",
    "includeSensitiveData": "Включить конфиденциальные данные",
-   "correlationIdCopied": "ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи."
+   "correlationIdCopied": "ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи.",
+   "downloadLogsFile": "Скачать файл логов",
+   "logsFileSaved": "Файл сохранён: {path}"
 }

@@ -291,22 +291,13 @@ class _LogsScreenState extends State<LogsScreen> {
         description: context.ispectL10n.clearHistoryDesc,
       );
 
-  ISpectActionItem _buildShareLogsAction(BuildContext context) {
-    final allLogs = ISpect.logger.history;
-    final filteredLogs = _logsViewController.applyCurrentFilters(allLogs);
-    final isFiltered = filteredLogs.length != allLogs.length;
-
-    return ISpectActionItem(
-      onTap: (_) => ISpectShareAllLogsBottomSheet(
-        controller: _logsViewController,
-        filteredCount: filteredLogs.length,
-        isFiltered: isFiltered,
-      ).show(context),
-      title: context.ispectL10n.shareLogsFile,
-      icon: Icons.ios_share_outlined,
-      description: context.ispectL10n.shareLogsFileDesc,
-    );
-  }
+  ISpectActionItem _buildShareLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        onTap: (_) => const ISpectShareAllLogsBottomSheet().show(context),
+        title: context.ispectL10n.shareLogsFile,
+        icon: Icons.ios_share_outlined,
+        description: context.ispectL10n.shareLogsFileDesc,
+      );
 
   ISpectActionItem _buildNavigationFlowAction() {
     final observer = widget.options.observer;

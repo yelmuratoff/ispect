@@ -112,6 +112,16 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   @override
+  Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  }) async {
+    final file = await createFile(logs, fileName: fileName, fileType: fileType);
+    return file.path;
+  }
+
+  @override
   Future<void> downloadFile(
     Object file, {
     String? fileName,

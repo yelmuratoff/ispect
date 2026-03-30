@@ -270,22 +270,87 @@ class LogsJsonService {
       return;
     }
 
+    final content = _formatFilteredContent(
+      logs: logs,
+      filteredLogs: filteredLogs,
+      filter: filter,
+      fileType: fileType,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+      redactKeys: redactKeys,
+    );
+
+    await LogsFileFactory.downloadFile(
+      content,
+      fileName: fileName,
+      fileType: fileType,
+      onShare: onShare,
+    );
+  }
+
+  /// Saves filtered logs to device without requiring a share callback.
+  ///
+  /// Returns the file path (native) or filename (web).
+  Future<String> saveFilteredLogsToDevice(
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
+    String fileName = 'ispect_filtered_logs',
+    String fileType = 'json',
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
+  }) async {
+    if (filteredLogs.isEmpty) {
+      ISpect.logger.info('No filtered logs to export. Skipping file creation.');
+      return '';
+    }
+
+    final content = _formatFilteredContent(
+      logs: logs,
+      filteredLogs: filteredLogs,
+      filter: filter,
+      fileType: fileType,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+      redactKeys: redactKeys,
+    );
+
+    return LogsFileFactory.saveToDevice(
+      content,
+      fileName: fileName,
+      fileType: fileType,
+    );
+  }
+
+  String _formatFilteredContent({
+    required List<ISpectLogData> logs,
+    required List<ISpectLogData> filteredLogs,
+    required ISpectFilter filter,
+    required String fileType,
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
+  }) {
     final effectiveRedactKeys =
         redactKeys ?? (enableRedaction ? defaultSensitiveKeys : null);
 
-    final String content;
     switch (fileType) {
       case 'txt':
-        content =
-            LogExporter.toText(filteredLogs, redactKeys: effectiveRedactKeys);
+        return LogExporter.toText(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
       case 'md':
-        content = LogExporter.toMarkdown(
+        return LogExporter.toMarkdown(
           filteredLogs,
           redactKeys: effectiveRedactKeys,
         );
       case 'csv':
-        content =
-            LogExporter.toCsv(filteredLogs, redactKeys: effectiveRedactKeys);
+        return LogExporter.toCsv(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
       default:
         final exportData = _createFilteredExportData(
           logs,
@@ -299,15 +364,8 @@ class LogsJsonService {
           }
         }
         const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-        content = encoder.convert(exportData);
+        return encoder.convert(exportData);
     }
-
-    await LogsFileFactory.downloadFile(
-      content,
-      fileName: fileName,
-      fileType: fileType,
-      onShare: onShare,
-    );
   }
 
   /// Creates export data structure for filtered logs

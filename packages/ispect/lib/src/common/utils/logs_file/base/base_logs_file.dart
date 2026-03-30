@@ -72,6 +72,19 @@ abstract class BaseLogsFile {
     );
   }
 
+  /// Saves logs to device storage without requiring a share callback.
+  ///
+  /// **Platform-specific behavior:**
+  /// - **Web**: Triggers browser download
+  /// - **Native**: Saves to the app's logs directory
+  ///
+  /// **Returns:** File path (native) or filename (web).
+  Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  });
+
   /// Checks if the platform supports native file operations.
   bool get supportsNativeFiles;
 }

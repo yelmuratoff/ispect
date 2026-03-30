@@ -977,4 +977,12 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   @override
   String get correlationIdCopied =>
       'ID copied. Paste it into the search bar to filter related logs.';
+
+  @override
+  String get downloadLogsFile => 'Download log file';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'File saved: $path';
+  }
 }

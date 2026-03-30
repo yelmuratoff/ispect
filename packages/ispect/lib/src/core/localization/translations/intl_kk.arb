@@ -296,5 +296,7 @@
    "searchMode": "Іздеу режимі",
    "logTypes": "Лог түрлері",
    "includeSensitiveData": "Құпия деректерді қосу",
-   "correlationIdCopied": "ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз."
+   "correlationIdCopied": "ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз.",
+   "downloadLogsFile": "Лог файлын жүктеу",
+   "logsFileSaved": "Файл сақталды: {path}"
 }

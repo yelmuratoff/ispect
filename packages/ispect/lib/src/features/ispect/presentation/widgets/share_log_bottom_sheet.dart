@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
-import 'package:ispect/src/common/widgets/share_sheet.dart';
+import 'package:ispect/src/common/models/export_format.dart';
+import 'package:ispect/src/common/widgets/export_sheet.dart';
+import 'package:ispectify/ispectify.dart';
 
 class ISpectShareLogBottomSheet {
   const ISpectShareLogBottomSheet({
@@ -16,43 +16,70 @@ class ISpectShareLogBottomSheet {
 
   Future<void> show(BuildContext context) {
     final shareCallback = context.iSpect.options.onShare;
+    final controller = ExportController(
+      availableFormats: ExportFormat.values,
+      showRedaction: true,
+      onShare: shareCallback,
+    );
 
-    return ISpectShareSheet.show(
+    return ISpectExportSheet.show(
       context,
-      actionsBuilder: (sheetContext) => [
-        if (shareCallback != null)
-          ISpectSheetActionButton(
-            icon: Icons.share_rounded,
-            label: context.ispectL10n.shareLogFull,
-            onPressed: () {
-              final valueToShare = JsonTruncator.pretty(
-                data,
-                maxDepth: 500,
-                maxIterableSize: 10000,
-              );
-              Navigator.of(sheetContext).pop();
-              LogsFileFactory.downloadFile(
-                valueToShare,
-                fileName: 'ispect_log',
-                onShare: shareCallback,
-              );
-            },
+      controller: controller,
+      contentBuilder: (format, {required action, redactKeys}) {
+        final source = action == ExportAction.copy ? truncatedData : data;
+        final maxDepth = action == ExportAction.copy ? 10 : 500;
+        final maxIterableSize = action == ExportAction.copy ? 100 : 10000;
+
+        var effectiveData = source;
+        if (redactKeys != null) {
+          final redactionService = RedactionService(sensitiveKeys: redactKeys);
+          final redacted = redactionService.redact(source);
+          if (redacted is Map<String, dynamic>) {
+            effectiveData = redacted;
+          }
+        }
+
+        return Future.value(
+          _formatSingleLog(
+            effectiveData,
+            format: format,
+            maxDepth: maxDepth,
+            maxIterableSize: maxIterableSize,
           ),
-        ISpectSheetActionButton(
-          icon: Icons.copy_rounded,
-          label: context.ispectL10n.copyToClipboardTruncated,
-          onPressed: () {
-            final valueToShare = JsonTruncator.pretty(
-              truncatedData,
-            );
-            Navigator.of(sheetContext).pop();
-            copyClipboard(
-              context,
-              value: valueToShare,
-            );
-          },
-        ),
-      ],
+        );
+      },
     );
   }
+
+  static String _formatSingleLog(
+    Map<String, dynamic> logData, {
+    required ExportFormat format,
+    int maxDepth = 500,
+    int maxIterableSize = 10000,
+  }) {
+    final prettyJson = JsonTruncator.pretty(
+      logData,
+      maxDepth: maxDepth,
+      maxIterableSize: maxIterableSize,
+    );
+
+    switch (format) {
+      case ExportFormat.json:
+        return prettyJson;
+      case ExportFormat.text:
+        return prettyJson;
+      case ExportFormat.markdown:
+        return '# Log Entry\n\n```json\n$prettyJson\n```\n';
+      case ExportFormat.csv:
+        final flat = logData.entries
+            .map(
+              (e) => '"${_escapeCsv(e.key)}","${_escapeCsv('${e.value}')}"',
+            )
+            .join('\n');
+        return 'Key,Value\n$flat';
+    }
+  }
+
+  static String _escapeCsv(String value) =>
+      value.replaceAll('"', '""').replaceAll('\n', ' ');
 }

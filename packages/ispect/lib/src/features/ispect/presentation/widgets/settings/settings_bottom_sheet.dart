@@ -33,10 +33,10 @@ class ISpectSettingsBottomSheet {
 
   Future<void> show(BuildContext context) => showISpectSheet(
         context,
+        fitContent: false,
         initialChildSize: 0.8,
         minChildSize: 0.3,
         maxChildSize: 0.9,
-        dialogHeightFactor: 0.7,
         dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
         topOnlyRadius: true,
         routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),

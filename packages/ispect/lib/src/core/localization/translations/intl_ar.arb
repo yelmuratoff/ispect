@@ -296,5 +296,7 @@
    "searchMode": "وضع البحث",
    "logTypes": "أنواع السجلات",
    "includeSensitiveData": "تضمين البيانات الحساسة",
-   "correlationIdCopied": "تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة."
+   "correlationIdCopied": "تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة.",
+   "downloadLogsFile": "تحميل ملف السجلات",
+   "logsFileSaved": "تم حفظ الملف: {path}"
 }

@@ -956,4 +956,12 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get correlationIdCopied => 'ID가 복사되었습니다. 검색에 붙여넣어 관련 로그를 필터링하세요.';
+
+  @override
+  String get downloadLogsFile => '로그 파일 다운로드';
+
+  @override
+  String logsFileSaved(String path) {
+    return '파일 저장됨: $path';
+  }
 }

@@ -296,5 +296,7 @@
    "searchMode": "खोज मोड",
    "logTypes": "लॉग प्रकार",
    "includeSensitiveData": "संवेदनशील डेटा शामिल करें",
-   "correlationIdCopied": "ID कॉपी किया गया। संबंधित लॉग फ़िल्टर करने के लिए इसे खोज में पेस्ट करें।"
+   "correlationIdCopied": "ID कॉपी किया गया। संबंधित लॉग फ़िल्टर करने के लिए इसे खोज में पेस्ट करें।",
+   "downloadLogsFile": "लॉग फ़ाइल डाउनलोड करें",
+   "logsFileSaved": "फ़ाइल सहेजी गई: {path}"
 }

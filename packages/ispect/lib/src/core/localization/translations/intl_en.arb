@@ -317,5 +317,14 @@
    "searchMode": "Search mode",
    "logTypes": "Log types",
    "includeSensitiveData": "Include sensitive data",
-   "correlationIdCopied": "ID copied. Paste it into the search bar to filter related logs."
+   "correlationIdCopied": "ID copied. Paste it into the search bar to filter related logs.",
+   "downloadLogsFile": "Download log file",
+   "logsFileSaved": "File saved: {path}",
+   "@logsFileSaved": {
+      "placeholders": {
+         "path": {
+            "type": "String"
+         }
+      }
+   }
 }

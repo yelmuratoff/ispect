@@ -31,30 +31,28 @@ class ISpectShareSheet extends StatelessWidget {
   }) =>
       showISpectSheet(
         context,
-        initialChildSize: 0.35,
         topOnlyRadius: true,
-        builder: (sheetContext, _) => SafeArea(
-          child: ISpectShareSheet(
-            icon: icon,
-            actions: actionsBuilder(sheetContext),
-          ),
+        builder: (sheetContext, _) => ISpectShareSheet(
+          icon: icon,
+          actions: actionsBuilder(sheetContext),
         ),
       );
 
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const ISpectDragHandle(),
-          const Gap(8),
-          ISpectBottomSheetHeader(
-            title: context.ispectL10n.share,
-            icon: icon,
-          ),
-          const Gap(16),
-          Flexible(
-            child: Padding(
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ISpectDragHandle(),
+            const Gap(8),
+            ISpectBottomSheetHeader(
+              title: context.ispectL10n.share,
+              icon: icon,
+            ),
+            const Gap(16),
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
                 spacing: 8,
@@ -62,7 +60,7 @@ class ISpectShareSheet extends StatelessWidget {
                 children: actions,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
 }

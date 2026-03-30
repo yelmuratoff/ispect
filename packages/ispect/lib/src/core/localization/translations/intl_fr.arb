@@ -296,5 +296,7 @@
    "searchMode": "Mode de recherche",
    "logTypes": "Types de journaux",
    "includeSensitiveData": "Inclure les données sensibles",
-   "correlationIdCopied": "ID copié. Collez-le dans la recherche pour filtrer les logs associés."
+   "correlationIdCopied": "ID copié. Collez-le dans la recherche pour filtrer les logs associés.",
+   "downloadLogsFile": "Télécharger le fichier de logs",
+   "logsFileSaved": "Fichier enregistré : {path}"
 }

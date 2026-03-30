@@ -980,4 +980,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   @override
   String get correlationIdCopied =>
       'ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз.';
+
+  @override
+  String get downloadLogsFile => 'Лог файлын жүктеу';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'Файл сақталды: $path';
+  }
 }

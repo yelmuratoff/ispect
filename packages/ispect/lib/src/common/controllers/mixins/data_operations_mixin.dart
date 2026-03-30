@@ -50,6 +50,21 @@ mixin DataOperationsMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  Future<String> downloadLogsToDevice(
+    List<ISpectLogData> logs, {
+    String fileType = 'json',
+    Set<String>? redactKeys,
+  }) async {
+    final filteredLogs = applyCurrentFilters(logs);
+    return exportService.saveFilteredLogsToDevice(
+      logs,
+      filteredLogs,
+      filter,
+      fileType: fileType,
+      redactKeys: redactKeys,
+    );
+  }
+
   Future<void> shareLogsAsFile(
     List<ISpectLogData> logs, {
     String fileType = 'json',

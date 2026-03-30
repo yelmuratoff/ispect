@@ -965,4 +965,12 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   @override
   String get correlationIdCopied =>
       'تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة.';
+
+  @override
+  String get downloadLogsFile => 'تحميل ملف السجلات';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'تم حفظ الملف: $path';
+  }
 }

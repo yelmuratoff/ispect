@@ -982,4 +982,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   @override
   String get correlationIdCopied =>
       'ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи.';
+
+  @override
+  String get downloadLogsFile => 'Скачать файл логов';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'Файл сохранён: $path';
+  }
 }

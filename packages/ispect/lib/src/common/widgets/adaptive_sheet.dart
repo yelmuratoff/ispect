@@ -5,55 +5,68 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 
 /// Shows a responsive sheet: bottom sheet on phone, dialog on larger screens.
 ///
-/// On phone, wraps content in [DraggableScrollableSheet] with a decorated
-/// background (rounded corners). On tablet/desktop, wraps content in
-/// [AlertDialog].
+/// By default the sheet sizes itself to fit its content. Set [fitContent] to
+/// `false` to use a draggable sheet with explicit size fractions instead.
 Future<T?> showISpectSheet<T>(
   BuildContext context, {
   required Widget Function(
     BuildContext context,
     ScrollController? scrollController,
   ) builder,
+  bool fitContent = true,
   double initialChildSize = 0.4,
   double minChildSize = 0.2,
   double maxChildSize = 0.5,
-  double dialogHeightFactor = 0.2,
   double dialogWidth = 500,
   bool topOnlyRadius = false,
   RouteSettings? routeSettings,
   bool useRootNavigator = true,
 }) async =>
     context.screenSizeMaybeWhen(
-      phone: () => showModalBottomSheet<T>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        routeSettings: routeSettings,
-        builder: (_) => DraggableScrollableSheet(
-          initialChildSize: initialChildSize,
-          minChildSize: minChildSize,
-          maxChildSize: maxChildSize,
-          expand: false,
-          builder: (context, scrollController) {
-            final iSpect = ISpect.read(context);
-            final bgColor = iSpect.theme.background?.resolve(context) ??
-                context.appTheme.scaffoldBackgroundColor;
+      phone: () {
+        final iSpect = ISpect.read(context);
+        final bgColor = iSpect.theme.background?.resolve(context) ??
+            context.appTheme.scaffoldBackgroundColor;
+        final borderRadius = topOnlyRadius
+            ? const BorderRadius.vertical(top: Radius.circular(16))
+            : const BorderRadius.all(Radius.circular(16));
 
-            return ScrollConfiguration(
+        if (fitContent) {
+          return showModalBottomSheet<T>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: bgColor,
+            shape: RoundedRectangleBorder(borderRadius: borderRadius),
+            routeSettings: routeSettings,
+            builder: (_) => SafeArea(
+              child: builder(context, null),
+            ),
+          );
+        }
+
+        return showModalBottomSheet<T>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          routeSettings: routeSettings,
+          builder: (_) => DraggableScrollableSheet(
+            initialChildSize: initialChildSize,
+            minChildSize: minChildSize,
+            maxChildSize: maxChildSize,
+            expand: false,
+            builder: (context, scrollController) => ScrollConfiguration(
               behavior: const _ClampingScrollBehavior(),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: topOnlyRadius
-                      ? const BorderRadius.vertical(top: Radius.circular(16))
-                      : const BorderRadius.all(Radius.circular(16)),
+                  borderRadius: borderRadius,
                 ),
                 child: builder(context, scrollController),
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
       orElse: () {
         final iSpect = ISpect.read(context);
         final bgColor = iSpect.theme.background?.resolve(context);

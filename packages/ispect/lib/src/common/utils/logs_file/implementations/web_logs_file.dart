@@ -133,6 +133,18 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   @override
+  Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  }) async {
+    final blob = await createFile(logs, fileName: fileName, fileType: fileType);
+    final savedName = _fileNames[blob] ?? '$fileName.$fileType';
+    await downloadFile(blob, fileType: fileType);
+    return savedName;
+  }
+
+  @override
   Future<void> downloadFile(
     Object file, {
     String? fileName,

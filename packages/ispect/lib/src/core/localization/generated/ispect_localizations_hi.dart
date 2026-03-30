@@ -983,4 +983,12 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   @override
   String get correlationIdCopied =>
       'ID कॉपी किया गया। संबंधित लॉग फ़िल्टर करने के लिए इसे खोज में पेस्ट करें।';
+
+  @override
+  String get downloadLogsFile => 'लॉग फ़ाइल डाउनलोड करें';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'फ़ाइल सहेजी गई: $path';
+  }
 }

@@ -67,6 +67,26 @@ class LogsFileFactory {
   /// // Works on all platforms
   /// await LogsFileFactory.downloadFile('My logs content', fileName: 'my_logs');
   /// ```
+  /// Saves logs to device without requiring a share callback.
+  ///
+  /// **Platform-specific behavior:**
+  /// - **Web**: Triggers browser download
+  /// - **Native**: Saves to the app's logs directory
+  ///
+  /// **Returns:** File path (native) or filename (web).
+  static Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  }) async {
+    final handler = create();
+    return handler.saveToDevice(
+      logs,
+      fileName: fileName,
+      fileType: fileType,
+    );
+  }
+
   static Future<void> downloadFile(
     String logs, {
     String fileName = 'ispect_all_logs',

@@ -1900,6 +1900,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'ID copied. Paste it into the search bar to filter related logs.'**
   String get correlationIdCopied;
+
+  /// No description provided for @downloadLogsFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Download log file'**
+  String get downloadLogsFile;
+
+  /// No description provided for @logsFileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved: {path}'**
+  String logsFileSaved(String path);
 }
 
 class _ISpectGeneratedLocalizationDelegate

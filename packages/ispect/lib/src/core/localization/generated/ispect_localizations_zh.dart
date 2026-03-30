@@ -956,4 +956,12 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get correlationIdCopied => 'ID已复制。粘贴到搜索栏中以筛选相关日志。';
+
+  @override
+  String get downloadLogsFile => '下载日志文件';
+
+  @override
+  String logsFileSaved(String path) {
+    return '文件已保存: $path';
+  }
 }

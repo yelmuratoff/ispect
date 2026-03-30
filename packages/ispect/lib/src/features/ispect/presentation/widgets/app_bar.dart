@@ -199,10 +199,10 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
   void _showFilterSheet(BuildContext context) {
     showISpectSheet<void>(
       context,
+      fitContent: false,
       initialChildSize: 0.5,
       minChildSize: 0.3,
       maxChildSize: 0.8,
-      dialogHeightFactor: 0.5,
       topOnlyRadius: true,
       routeSettings: const RouteSettings(name: 'ISpect Filter Sheet'),
       builder: (context, scrollController) => _FilterSheetContent(
