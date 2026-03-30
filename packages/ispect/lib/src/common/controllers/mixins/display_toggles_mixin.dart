@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 /// Manages display toggle states: expand/collapse, order, grouping,
-/// errors-only filter, and timestamp format.
+/// and timestamp format.
 mixin DisplayTogglesMixin on ChangeNotifier {
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   bool _groupHttpLogs = true;
-  bool _errorsOnly = false;
   bool _useRelativeTime = false;
 
   /// Sets the initial value for [groupHttpLogs].
@@ -36,13 +35,6 @@ mixin DisplayTogglesMixin on ChangeNotifier {
 
   void toggleGroupHttpLogs() {
     _groupHttpLogs = !_groupHttpLogs;
-    notifyListeners();
-  }
-
-  bool get errorsOnly => _errorsOnly;
-
-  void toggleErrorsOnly() {
-    _errorsOnly = !_errorsOnly;
     notifyListeners();
   }
 

@@ -106,18 +106,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               context.appTheme.scaffoldBackgroundColor,
           actions: [
             IconButton(
-              onPressed: widget.controller.toggleErrorsOnly,
-              tooltip:
-                  widget.controller.errorsOnly ? 'Show All' : 'Errors Only',
-              icon: Icon(
-                Icons.error_outline_rounded,
-                size: 22,
-                color: widget.controller.errorsOnly
-                    ? Theme.of(context).colorScheme.error
-                    : null,
-              ),
-            ),
-            IconButton(
               onPressed: widget.controller.toggleLogOrder,
               tooltip: context.ispectL10n.reverseLogs,
               icon: Icon(
