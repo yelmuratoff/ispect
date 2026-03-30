@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// A controller for managing the state of the inspector.
 ///
 /// This class extends `ChangeNotifier` to allow UI updates when the state changes.
-final class InspectorController extends ChangeNotifier {
+final class LogPageController extends ChangeNotifier {
   bool _inLoggerPage = false;
 
   /// Indicates whether the logger page is currently active.

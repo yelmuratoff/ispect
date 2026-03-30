@@ -43,10 +43,7 @@ dependencies:
   web: ^1.1.1
 
   # UI
-  inspector:
-    ^3.1.0
-    # git:
-    #   url: https://github.com/yelmuratoff/inspector.git
+  inspector: ^4.0.0
   draggable_panel: ^2.0.2
   super_sliver_list: ^0.4.1
 
