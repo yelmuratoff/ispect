@@ -348,6 +348,12 @@ class _HomePageState extends State<_HomePage> {
           _NetworkDbSection(),
           const SizedBox(height: 20),
 
+          // Domain traces
+          _SectionHeader(title: 'Domain Traces'),
+          const SizedBox(height: 8),
+          _DomainTracesSection(),
+          const SizedBox(height: 20),
+
           // Stress test
           _SectionHeader(title: 'Stress Test'),
           const SizedBox(height: 8),
@@ -1324,6 +1330,609 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
         ];
       },
       projectResult: (rows) => {'rows': rows.length},
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Domain traces section
+// ---------------------------------------------------------------------------
+
+class _DomainTracesSection extends StatefulWidget {
+  @override
+  State<_DomainTracesSection> createState() => _DomainTracesSectionState();
+}
+
+class _DomainTracesSectionState extends State<_DomainTracesSection> {
+  bool _isLoading = false;
+
+  Widget _chip(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18, color: color),
+      label: Text(label),
+      onPressed: () {
+        setState(() => _isLoading = true);
+        onTap();
+        Future<void>.delayed(const Duration(seconds: 1), () {
+          if (mounted) setState(() => _isLoading = false);
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_isLoading) const LinearProgressIndicator(),
+            if (_isLoading) const SizedBox(height: 12),
+
+            // Auth
+            Text('Auth', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Sign in', Icons.login, Colors.green, _authSignIn),
+                _chip('Sign up', Icons.person_add, Colors.blue, _authSignUp),
+                _chip('Token refresh', Icons.refresh, Colors.orange,
+                    _authRefresh),
+                _chip('Sign out', Icons.logout, Colors.red, _authSignOut),
+                _chip('Sign in (fail)', Icons.error, Colors.red.shade800,
+                    _authFail),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Storage
+            Text('Storage', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Upload file', Icons.cloud_upload, Colors.blue,
+                    _storageUpload),
+                _chip('Download file', Icons.cloud_download, Colors.green,
+                    _storageDownload),
+                _chip('Delete file', Icons.delete_forever, Colors.red,
+                    _storageDelete),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Push
+            Text(
+              'Push Notifications',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip(
+                    'Received', Icons.notifications, Colors.blue, _pushReceive),
+                _chip('Opened', Icons.touch_app, Colors.green, _pushOpened),
+                _chip('Subscribe', Icons.subscriptions, Colors.purple,
+                    _pushSubscribe),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Analytics
+            Text('Analytics', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Screen view', Icons.visibility, Colors.blue,
+                    _analyticsScreen),
+                _chip('Button tap', Icons.touch_app, Colors.green,
+                    _analyticsButton),
+                _chip('Purchase', Icons.shopping_cart, Colors.orange,
+                    _analyticsPurchase),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Payment
+            Text('Payment', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip(
+                    'Purchase', Icons.payment, Colors.green, _paymentPurchase),
+                _chip('Refund', Icons.money_off, Colors.red, _paymentRefund),
+                _chip('Subscription', Icons.card_membership, Colors.purple,
+                    _paymentSubscription),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // gRPC
+            Text('gRPC', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Unary call', Icons.call_made, Colors.blue, _grpcUnary),
+                _chip('Server stream', Icons.stream, Colors.teal,
+                    _grpcServerStream),
+                _chip('Error call', Icons.error, Colors.red, _grpcError),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // GraphQL
+            Text('GraphQL', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Query', Icons.search, Colors.blue, _graphqlQuery),
+                _chip('Mutation', Icons.edit, Colors.orange, _graphqlMutation),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // SSE
+            Text('SSE (Server-Sent Events)',
+                style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Connect', Icons.link, Colors.blue, _sseConnect),
+                _chip('Events', Icons.bolt, Colors.green, _sseEvents),
+                _chip('Error', Icons.error, Colors.red, _sseError),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────
+
+  Future<void> _authSignIn() async {
+    await ISpect.logger.authTrace<Map<String, Object?>>(
+      source: 'firebase_auth',
+      operation: 'sign-in',
+      provider: 'email',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        return {'uid': 'usr_abc123', 'email': 'user@example.com'};
+      },
+      projectResult: (user) => {'uid': user['uid']},
+    );
+  }
+
+  Future<void> _authSignUp() async {
+    await ISpect.logger.authTrace<Map<String, Object?>>(
+      source: 'firebase_auth',
+      operation: 'sign-up',
+      provider: 'email',
+      meta: {'plan': 'premium'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return {'uid': 'usr_new456', 'email': 'new@example.com'};
+      },
+      projectResult: (user) => {'uid': user['uid']},
+    );
+  }
+
+  Future<void> _authRefresh() async {
+    await ISpect.logger.authTrace<String>(
+      source: 'firebase_auth',
+      operation: 'token-refresh',
+      userId: 'usr_abc123',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        return 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
+      },
+    );
+  }
+
+  void _authSignOut() {
+    ISpect.logger.auth(
+      source: 'firebase_auth',
+      operation: 'sign-out',
+      userId: 'usr_abc123',
+      success: true,
+    );
+  }
+
+  Future<void> _authFail() async {
+    try {
+      await ISpect.logger.authTrace<void>(
+        source: 'firebase_auth',
+        operation: 'sign-in',
+        provider: 'google',
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 150));
+          throw Exception('auth/network-request-failed');
+        },
+      );
+    } catch (_) {}
+  }
+
+  // ── Storage ──────────────────────────────────────────────────────────
+
+  Future<void> _storageUpload() async {
+    await ISpect.logger.storageTrace<String>(
+      source: 'firebase_storage',
+      operation: 'upload',
+      bucket: 'gs://my-app.appspot.com',
+      path: '/avatars/usr_abc123/photo.jpg',
+      sizeBytes: 245760,
+      contentType: 'image/jpeg',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        return 'https://storage.googleapis.com/my-app/avatars/photo.jpg';
+      },
+      projectResult: (url) => {'downloadUrl': url},
+    );
+  }
+
+  Future<void> _storageDownload() async {
+    await ISpect.logger.storageTrace<List<int>>(
+      source: 'firebase_storage',
+      operation: 'download',
+      bucket: 'gs://my-app.appspot.com',
+      path: '/documents/report_2024.pdf',
+      contentType: 'application/pdf',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+        return List.generate(1024, (i) => i % 256);
+      },
+      projectResult: (bytes) => {'sizeBytes': bytes.length},
+    );
+  }
+
+  Future<void> _storageDelete() async {
+    await ISpect.logger.storageTrace<void>(
+      source: 'firebase_storage',
+      operation: 'delete',
+      bucket: 'gs://my-app.appspot.com',
+      path: '/temp/cache_old.bin',
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      },
+    );
+  }
+
+  // ── Push ──────────────────────────────────────────────────────────────
+
+  void _pushReceive() {
+    ISpect.logger.push(
+      source: 'fcm',
+      operation: 'received',
+      title: 'New message from Alice',
+      topic: 'chat',
+      messageId: 'msg_push_001',
+      data: {
+        'chatId': 'chat_42',
+        'senderId': 'usr_alice',
+        'body': 'Hey, check out this feature!',
+      },
+    );
+  }
+
+  void _pushOpened() {
+    ISpect.logger.push(
+      source: 'fcm',
+      operation: 'opened',
+      title: 'New message from Alice',
+      messageId: 'msg_push_001',
+      data: {'chatId': 'chat_42', 'action': 'open_chat'},
+    );
+  }
+
+  void _pushSubscribe() {
+    ISpect.logger.push(
+      source: 'fcm',
+      operation: 'subscribe',
+      topic: 'promotions',
+      meta: {
+        'previousTopics': ['news', 'updates']
+      },
+    );
+  }
+
+  // ── Analytics ─────────────────────────────────────────────────────────
+
+  void _analyticsScreen() {
+    ISpect.logger.analyticsEvent(
+      source: 'firebase_analytics',
+      event: 'screen_view',
+      parameters: {
+        'screen_name': 'ProductDetail',
+        'screen_class': 'ProductDetailScreen',
+        'product_id': 'prod_789',
+      },
+    );
+  }
+
+  void _analyticsButton() {
+    ISpect.logger.analyticsEvent(
+      source: 'firebase_analytics',
+      event: 'button_click',
+      parameters: {
+        'button_id': 'add_to_cart',
+        'screen': 'ProductDetail',
+        'product_id': 'prod_789',
+        'product_price': 29.99,
+      },
+    );
+  }
+
+  void _analyticsPurchase() {
+    ISpect.logger.analyticsEvent(
+      source: 'firebase_analytics',
+      event: 'purchase',
+      parameters: {
+        'transaction_id': 'txn_abc123',
+        'value': 79.99,
+        'currency': 'USD',
+        'items': [
+          {'item_id': 'prod_789', 'item_name': 'Pro Widget', 'quantity': 1},
+          {'item_id': 'prod_456', 'item_name': 'Extra Pack', 'quantity': 2},
+        ],
+      },
+    );
+  }
+
+  // ── Payment ───────────────────────────────────────────────────────────
+
+  Future<void> _paymentPurchase() async {
+    await ISpect.logger.paymentTrace<Map<String, Object?>>(
+      source: 'stripe',
+      operation: 'charge',
+      productId: 'prod_premium_monthly',
+      amount: 9.99,
+      currency: 'USD',
+      meta: {'customerId': 'cus_abc123', 'paymentMethod': 'pm_card_visa'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 350));
+        return {
+          'chargeId': 'ch_1234567890',
+          'status': 'succeeded',
+          'receiptUrl': 'https://pay.stripe.com/receipts/...',
+        };
+      },
+      projectResult: (r) => {'chargeId': r['chargeId'], 'status': r['status']},
+    );
+  }
+
+  Future<void> _paymentRefund() async {
+    await ISpect.logger.paymentTrace<Map<String, Object?>>(
+      source: 'stripe',
+      operation: 'refund',
+      amount: 9.99,
+      currency: 'USD',
+      meta: {'chargeId': 'ch_1234567890', 'reason': 'requested_by_customer'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return {'refundId': 're_0987654321', 'status': 'succeeded'};
+      },
+      projectResult: (r) => {'refundId': r['refundId']},
+    );
+  }
+
+  Future<void> _paymentSubscription() async {
+    await ISpect.logger.paymentTrace<Map<String, Object?>>(
+      source: 'revenue_cat',
+      operation: 'purchase',
+      productId: 'rc_pro_annual',
+      amount: 79.99,
+      currency: 'USD',
+      meta: {
+        'offering': 'default',
+        'package': 'annual',
+        'store': 'app_store',
+      },
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        return {
+          'transactionId': 'txn_rc_999',
+          'entitlements': ['pro'],
+          'expiresAt': '2027-03-30T00:00:00Z',
+        };
+      },
+      projectResult: (r) => {
+        'transactionId': r['transactionId'],
+        'entitlements': r['entitlements'],
+      },
+    );
+  }
+
+  // ── gRPC ──────────────────────────────────────────────────────────────
+
+  Future<void> _grpcUnary() async {
+    await ISpect.logger.grpcTrace<Map<String, Object?>>(
+      source: 'grpc',
+      operation: 'unary',
+      service: 'UserService',
+      method: 'GetProfile',
+      grpcMetadata: {
+        'authorization': 'Bearer eyJ...',
+        'x-request-id': 'req_grpc_001',
+      },
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 45));
+        return {
+          'userId': 'usr_abc123',
+          'displayName': 'John Doe',
+          'avatarUrl': 'https://example.com/avatar.jpg',
+        };
+      },
+      projectResult: (profile) => {'userId': profile['userId']},
+    );
+  }
+
+  Future<void> _grpcServerStream() async {
+    await ISpect.logger.grpcTrace<List<String>>(
+      source: 'grpc',
+      operation: 'server-stream',
+      service: 'ChatService',
+      method: 'StreamMessages',
+      grpcMetadata: {'x-chat-id': 'chat_42'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return ['msg_1', 'msg_2', 'msg_3', 'msg_4', 'msg_5'];
+      },
+      projectResult: (msgs) => {'messageCount': msgs.length},
+    );
+  }
+
+  Future<void> _grpcError() async {
+    try {
+      await ISpect.logger.grpcTrace<void>(
+        source: 'grpc',
+        operation: 'unary',
+        service: 'OrderService',
+        method: 'PlaceOrder',
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          throw Exception('UNAVAILABLE: service temporarily unavailable');
+        },
+      );
+    } catch (_) {}
+  }
+
+  // ── GraphQL ───────────────────────────────────────────────────────────
+
+  Future<void> _graphqlQuery() async {
+    await ISpect.logger.graphqlTrace<Map<String, Object?>>(
+      source: 'graphql_flutter',
+      operation: 'query',
+      operationName: 'GetProducts',
+      document: '''
+query GetProducts(\$limit: Int!, \$category: String) {
+  products(limit: \$limit, category: \$category) {
+    id
+    title
+    price
+    thumbnail
+    rating
+  }
+}''',
+      variables: {'limit': 10, 'category': 'smartphones'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        return {
+          'data': {
+            'products': [
+              {'id': 1, 'title': 'iPhone 15', 'price': 999, 'rating': 4.5},
+              {'id': 2, 'title': 'Galaxy S24', 'price': 899, 'rating': 4.3},
+            ],
+          },
+        };
+      },
+      projectResult: (r) {
+        final products = (r['data'] as Map?)?['products'] as List? ?? [];
+        return {'productCount': products.length};
+      },
+    );
+  }
+
+  Future<void> _graphqlMutation() async {
+    await ISpect.logger.graphqlTrace<Map<String, Object?>>(
+      source: 'graphql_flutter',
+      operation: 'mutation',
+      operationName: 'AddToCart',
+      document: '''
+mutation AddToCart(\$productId: ID!, \$quantity: Int!) {
+  addToCart(productId: \$productId, quantity: \$quantity) {
+    cartId
+    totalItems
+    totalPrice
+  }
+}''',
+      variables: {'productId': 'prod_789', 'quantity': 2},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 90));
+        return {
+          'data': {
+            'addToCart': {
+              'cartId': 'cart_001',
+              'totalItems': 3,
+              'totalPrice': 149.97,
+            },
+          },
+        };
+      },
+      projectResult: (r) {
+        final cart = (r['data'] as Map?)?['addToCart'] as Map? ?? {};
+        return {'cartId': cart['cartId'], 'totalItems': cart['totalItems']};
+      },
+    );
+  }
+
+  // ── SSE ───────────────────────────────────────────────────────────────
+
+  void _sseConnect() {
+    final connectionId = generateTraceId();
+    ISpect.logger.sse(
+      source: 'sse_client',
+      operation: 'connect',
+      url: 'https://api.example.com/events/stream',
+      correlationId: connectionId,
+    );
+    ISpect.logger.info('SSE connection ID: $connectionId');
+  }
+
+  void _sseEvents() {
+    final connectionId = generateTraceId();
+    // Simulate a sequence of SSE events
+    ISpect.logger.sse(
+      source: 'sse_client',
+      operation: 'connect',
+      url: 'https://api.example.com/notifications',
+      correlationId: connectionId,
+    );
+    for (final event in [
+      ('message', 'evt_001', {'text': 'New order #42'}),
+      ('status', 'evt_002', {'status': 'processing', 'orderId': 42}),
+      ('message', 'evt_003', {'text': 'Order #42 shipped'}),
+    ]) {
+      ISpect.logger.sse(
+        source: 'sse_client',
+        operation: 'event',
+        url: 'https://api.example.com/notifications',
+        eventType: event.$1,
+        eventId: event.$2,
+        data: event.$3,
+        correlationId: connectionId,
+      );
+    }
+  }
+
+  void _sseError() {
+    ISpect.logger.sse(
+      source: 'sse_client',
+      operation: 'error',
+      url: 'https://api.example.com/events/stream',
+      error: Exception('SSE connection lost: timeout after 30s'),
+      errorStackTrace: StackTrace.current,
     );
   }
 }
