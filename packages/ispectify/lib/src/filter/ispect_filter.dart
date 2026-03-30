@@ -54,14 +54,9 @@ class ISpectFilter implements Filter<ISpectLogData> {
   @override
   bool apply(ISpectLogData item) {
     if (_isEmpty) return true;
-
-    if (_titles.contains(item.key) || _titles.contains(item.title)) {
-      return true;
+    for (final filter in filters) {
+      if (filter.apply(item)) return true;
     }
-    if (_logTypeKeys.contains(item.key)) return true;
-    if (_types.contains(item.runtimeType)) return true;
-    if (_searchFilter != null && _searchFilter.apply(item)) return true;
-
     return false;
   }
 

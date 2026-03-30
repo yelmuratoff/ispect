@@ -295,31 +295,38 @@ class RedactionService {
     String placeholder = redactedMask,
   }) {
     if (data == null || keys.isEmpty || maxDepth <= 0) return data;
+
+    final lowerKeys =
+        keys is Set<String> ? keys : keys.map((k) => k.toLowerCase()).toSet();
+    return _redactByKeysImpl(data, lowerKeys, maxDepth, placeholder);
+  }
+
+  static Object? _redactByKeysImpl(
+    Object? data,
+    Set<String> lowerKeys,
+    int maxDepth,
+    String placeholder,
+  ) {
+    if (data == null || maxDepth <= 0) return data;
     if (data is Map) {
       final out = <String, Object?>{};
       data.forEach((k, v) {
         final keyStr = k.toString();
-        final keyLower = keyStr.toLowerCase();
-        final hit = keys.any((rk) => rk.toLowerCase() == keyLower);
+        final hit = lowerKeys.contains(keyStr.toLowerCase());
         out[keyStr] = hit
             ? placeholder
-            : redactByKeys(
-                v,
-                keys,
-                maxDepth: maxDepth - 1,
-                placeholder: placeholder,
-              );
+            : _redactByKeysImpl(v, lowerKeys, maxDepth - 1, placeholder);
       });
       return out;
     }
     if (data is Iterable) {
       return data
           .map(
-            (e) => redactByKeys(
+            (e) => _redactByKeysImpl(
               e as Object?,
-              keys,
-              maxDepth: maxDepth - 1,
-              placeholder: placeholder,
+              lowerKeys,
+              maxDepth - 1,
+              placeholder,
             ),
           )
           .toList();

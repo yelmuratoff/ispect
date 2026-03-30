@@ -69,7 +69,6 @@ final class ISpectWSInterceptor
     final path = uri?.path ?? '';
 
     try {
-      final safeData = _safeRedact(data, useRedaction);
       final operation = type == wsTypeRequest ? 'send' : 'receive';
       const isError = false;
       final logKey = wsCategory.pickLogKey(
@@ -77,19 +76,7 @@ final class ISpectWSInterceptor
         operation: operation,
       );
 
-      final metricsMap = _processMetrics(useRedaction);
-      final includeData = type == wsTypeRequest
-          ? settings.printSentData
-          : settings.printReceivedData;
-
-      final meta = <String, Object?>{
-        if (includeData) 'data': safeData,
-        if (metricsMap != null) 'metrics': metricsMap,
-        'url': url,
-        'path': path,
-      };
-
-      // Build preview log data for filter check
+      // Lightweight preview for filter check — no expensive redaction/metrics.
       final previewLog = ISpectLogData(
         '$operation $url',
         key: logKey,
@@ -100,7 +87,6 @@ final class ISpectWSInterceptor
           TraceKeys.target: url,
           TraceKeys.success: true,
           if (_connectionId != null) TraceKeys.correlationId: _connectionId,
-          TraceKeys.meta: meta,
         },
       );
 
@@ -108,6 +94,13 @@ final class ISpectWSInterceptor
         next(data);
         return;
       }
+
+      // Expensive operations only after filter passes.
+      final safeData = _safeRedact(data, useRedaction);
+      final metricsMap = _processMetrics(useRedaction);
+      final includeData = type == wsTypeRequest
+          ? settings.printSentData
+          : settings.printReceivedData;
 
       _logger.trace(
         category: wsCategory,
@@ -117,7 +110,12 @@ final class ISpectWSInterceptor
         success: true,
         correlationId: _connectionId,
         config: useRedaction ? null : _noRedactConfig,
-        meta: meta,
+        meta: {
+          if (includeData) 'data': safeData,
+          if (metricsMap != null) 'metrics': metricsMap,
+          'url': url,
+          'path': path,
+        },
       );
     } catch (e, s) {
       _logger.trace(

@@ -65,9 +65,7 @@ class FakeISpectLogger extends ISpectLogger {
   List<ISpectLogData> byLogKey(String logKey) =>
       _traces.where((t) => t.key == logKey).toList();
 
-  List<ISpectLogData> errors() => _traces
-      .where((t) => t.additionalData?[TraceKeys.success] == false)
-      .toList();
+  List<ISpectLogData> errors() => _traces.where((t) => t.isError).toList();
 
   List<ISpectLogData> slow() =>
       _traces.where((t) => t.additionalData?[TraceKeys.slow] == true).toList();

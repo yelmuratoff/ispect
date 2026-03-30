@@ -115,28 +115,42 @@ class ISpectViewController extends ChangeNotifier
 
   void clearAllFilters() => _filterManager.clearAllFilters();
 
+  // Errors-only cache to avoid re-filtering on every rebuild.
+  List<ISpectLogData>? _errorsOnlyCache;
+  int _errorsOnlyCacheGen = -1;
+  bool _errorsOnlyCacheWithSearch = false;
+
   @override
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) {
-    var result = _filterManager.applyCurrentFilters(logsData);
-    if (errorsOnly) result = _applyErrorsOnly(result);
-    return result;
+    final result = _filterManager.applyCurrentFilters(logsData);
+    if (!errorsOnly) return result;
+    return _getCachedErrorsOnly(result, withSearch: true);
   }
 
   List<ISpectLogData> applyFiltersWithoutSearch(
     List<ISpectLogData> logsData,
   ) {
-    var result = _filterManager.applyFiltersWithoutSearch(logsData);
-    if (errorsOnly) result = _applyErrorsOnly(result);
-    return result;
+    final result = _filterManager.applyFiltersWithoutSearch(logsData);
+    if (!errorsOnly) return result;
+    return _getCachedErrorsOnly(result, withSearch: false);
   }
 
-  static List<ISpectLogData> _applyErrorsOnly(List<ISpectLogData> logs) => logs
-      .where(
-        (log) =>
-            ISpectLogType.isErrorKey(log.key) ||
-            log.additionalData?[TraceKeys.success] == false,
-      )
-      .toList();
+  List<ISpectLogData> _getCachedErrorsOnly(
+    List<ISpectLogData> source, {
+    required bool withSearch,
+  }) {
+    final gen = outputGeneration;
+    if (_errorsOnlyCacheGen == gen &&
+        _errorsOnlyCacheWithSearch == withSearch &&
+        _errorsOnlyCache != null) {
+      return _errorsOnlyCache!;
+    }
+    _errorsOnlyCache =
+        source.where((log) => log.isError).toList(growable: false);
+    _errorsOnlyCacheGen = gen;
+    _errorsOnlyCacheWithSearch = withSearch;
+    return _errorsOnlyCache!;
+  }
 
   void onDataChanged() => _filterManager.onDataChanged();
 

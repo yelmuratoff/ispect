@@ -2,6 +2,7 @@
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
+// TraceKeys is available via ispectify.dart barrel export.
 
 /// Core log entry model. All fields are immutable after construction.
 class ISpectLogData {
@@ -70,7 +71,8 @@ class ISpectLogData {
   bool get isError =>
       logLevel == LogLevel.error ||
       logLevel == LogLevel.critical ||
-      ISpectLogType.isErrorKey(key);
+      ISpectLogType.isErrorKey(key) ||
+      additionalData?[TraceKeys.success] == false;
 
   /// Dispatches to the appropriate [ISpectObserver] callback.
   /// Subclasses override to route to `onException` etc.
