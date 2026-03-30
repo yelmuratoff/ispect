@@ -6,7 +6,6 @@ class ISpectLogException extends ISpectLogData {
     Exception exception, {
     String? message,
     super.stackTrace,
-    super.title,
   }) : super(
           message,
           exception: exception,

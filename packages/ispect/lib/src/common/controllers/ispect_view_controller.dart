@@ -103,15 +103,16 @@ class ISpectViewController extends ChangeNotifier
 
   void removeFilterType(Type type) => _filterManager.removeFilterType(type);
 
-  void addFilterTitle(String title) => _filterManager.addFilterTitle(title);
+  void addLogTypeKeyFilter(String key) =>
+      _filterManager.addLogTypeKeyFilter(key);
 
-  void removeFilterTitle(String title) =>
-      _filterManager.removeFilterTitle(title);
+  void removeLogTypeKeyFilter(String key) =>
+      _filterManager.removeLogTypeKeyFilter(key);
 
-  void setOnlyTitle(String title) => _filterManager.setOnlyTitle(title);
+  void setOnlyLogTypeKey(String key) => _filterManager.setOnlyLogTypeKey(key);
 
-  void excludeTitle(String title, List<String> allTitles) =>
-      _filterManager.excludeTitle(title, allTitles);
+  void excludeLogTypeKey(String key, List<String> allKeys) =>
+      _filterManager.excludeLogTypeKey(key, allKeys);
 
   void clearAllFilters() => _filterManager.clearAllFilters();
 
@@ -156,11 +157,11 @@ class ISpectViewController extends ChangeNotifier
 
   int get outputGeneration => _filterManager.outputGeneration;
 
-  TitlesResult getTitles(List<ISpectLogData> logsData) =>
-      _filterManager.getTitles(logsData);
+  LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) =>
+      _filterManager.getLogTypeKeys(logsData);
 
-  void handleTitleFilterToggle(String title, {required bool isSelected}) =>
-      _filterManager.handleTitleFilterToggle(title, isSelected: isSelected);
+  void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
+      _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
 
   // --- Lifecycle ---
 

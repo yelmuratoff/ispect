@@ -719,7 +719,6 @@ class InspectorState extends State<Inspector> {
       builder: (_) => LogsScreen(
         options: context.iSpect.options,
         appBarTitle: iSpect.theme.pageTitle,
-        itemsBuilder: context.iSpect.options.itemsBuilder,
         controller: widget.logsController,
       ),
       settings: const RouteSettings(

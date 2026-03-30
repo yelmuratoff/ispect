@@ -51,7 +51,7 @@ mixin SearchHighlightMixin on ChangeNotifier {
     _focusedMatchIndex = -1;
     _lastUpdateMatchesInput = null;
     if (mode == SearchMode.highlight) {
-      filterManager.clearTitleFilters();
+      filterManager.clearLogTypeKeyFilters();
     }
     notifyListeners();
   }

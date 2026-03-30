@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
 
-typedef TitlesResult = ({List<String> all, List<String> unique});
+typedef LogTypeKeysResult = ({List<String> all, List<String> unique});
 
 /// Handles all filtering-related state and operations.
 class FilterManager {
@@ -29,7 +29,7 @@ class FilterManager {
   Timer? _filterDebounce;
   bool _isDisposed = false;
 
-  List<String>? _cachedTitles;
+  List<String>? _cachedLogTypeKeys;
   Set<Type>? _cachedTypesSet;
   String? _cachedSearchQuery;
   bool _filterCacheValid = false;
@@ -44,9 +44,9 @@ class FilterManager {
   String? _lastSearchMatchQuery;
   List<ISpectLogData>? _lastSearchMatchInput;
 
-  List<String>? _cachedAllTitles;
-  List<String>? _cachedUniqueTitles;
-  int _lastTitlesGeneration = -1;
+  List<String>? _cachedAllKeys;
+  List<String>? _cachedUniqueKeys;
+  int _lastKeysGeneration = -1;
 
   ISpectFilter get filter => _filter;
 
@@ -87,57 +87,61 @@ class FilterManager {
     _updateFilter(types: updatedTypes);
   }
 
-  void addFilterTitle(String title) {
-    final currentTitles = _getCurrentTitles();
-    if (currentTitles.contains(title)) return;
-    _updateFilter(titles: [...currentTitles, title]);
+  void addLogTypeKeyFilter(String key) {
+    final currentKeys = _getCurrentLogTypeKeys();
+    if (currentKeys.contains(key)) return;
+    _updateFilter(logTypeKeys: [...currentKeys, key]);
   }
 
-  void removeFilterTitle(String title) {
-    final currentTitles = _getCurrentTitles();
-    final updatedTitles =
-        currentTitles.where((t) => t != title).toList(growable: false);
-    if (updatedTitles.length == currentTitles.length) return;
-    _updateFilter(titles: updatedTitles);
+  void removeLogTypeKeyFilter(String key) {
+    final currentKeys = _getCurrentLogTypeKeys();
+    final updatedKeys =
+        currentKeys.where((k) => k != key).toList(growable: false);
+    if (updatedKeys.length == currentKeys.length) return;
+    _updateFilter(logTypeKeys: updatedKeys);
   }
 
-  void handleTitleFilterToggle(String title, {required bool isSelected}) {
+  void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) {
     if (isSelected) {
-      addFilterTitle(title);
+      addLogTypeKeyFilter(key);
     } else {
-      removeFilterTitle(title);
+      removeLogTypeKeyFilter(key);
     }
   }
 
-  /// Clear all title filters and set only the given title.
-  void setOnlyTitle(String title) {
-    _updateFilter(titles: [title]);
+  /// Clear all log type key filters and set only the given key.
+  void setOnlyLogTypeKey(String key) {
+    _updateFilter(logTypeKeys: [key]);
   }
 
-  /// Clear all filters (titles, types, search query).
+  /// Clear all filters (log type keys, types, search query).
   void clearAllFilters() {
     _filterDebounce?.cancel();
-    _updateFilter(titles: <String>[], types: <Type>[], searchQuery: '');
+    _updateFilter(
+      logTypeKeys: <String>[],
+      types: <Type>[],
+      searchQuery: '',
+    );
   }
 
-  void clearTitleFilters() {
-    if (_getCurrentTitles().isEmpty) return;
-    _updateFilter(titles: <String>[]);
+  void clearLogTypeKeyFilters() {
+    if (_getCurrentLogTypeKeys().isEmpty) return;
+    _updateFilter(logTypeKeys: <String>[]);
   }
 
-  /// Exclude a specific title: add all other titles except this one.
-  void excludeTitle(String title, List<String> allTitles) {
-    final filtered = allTitles.where((t) => t != title).toList(growable: false);
-    _updateFilter(titles: filtered);
+  /// Exclude a specific key: add all other keys except this one.
+  void excludeLogTypeKey(String key, List<String> allKeys) {
+    final filtered = allKeys.where((k) => k != key).toList(growable: false);
+    _updateFilter(logTypeKeys: filtered);
   }
 
   void _updateFilter({
-    List<String>? titles,
+    List<String>? logTypeKeys,
     List<Type>? types,
     String? searchQuery,
   }) {
     final newFilter = ISpectFilter(
-      titles: titles ?? _getCurrentTitles(),
+      logTypeKeys: logTypeKeys ?? _getCurrentLogTypeKeys(),
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
     );
@@ -152,15 +156,13 @@ class FilterManager {
     return _filterCache.getFiltered(logsData, filter, _dataGeneration);
   }
 
-  /// Applies only title/type filters (no search query).
+  /// Applies only log type key/type filters (no search query).
   /// Returns a stable reference on cache hits for [identical] checks.
   List<ISpectLogData> applyFiltersWithoutSearch(
     List<ISpectLogData> logsData,
   ) {
     if (logsData.isEmpty) return <ISpectLogData>[];
-    if (_filter.titles.isEmpty &&
-        _filter.types.isEmpty &&
-        _filter.logTypeKeys.isEmpty) {
+    if (_filter.types.isEmpty && _filter.logTypeKeys.isEmpty) {
       return logsData;
     }
     if (_noSearchResultGeneration == _outputGeneration &&
@@ -168,7 +170,6 @@ class FilterManager {
       return _cachedNoSearchResult!;
     }
     final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
-      titles: _filter.titles.toList(),
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
     );
@@ -210,32 +211,32 @@ class FilterManager {
     _lastSearchMatchInput = null;
   }
 
-  TitlesResult getTitles(List<ISpectLogData> logsData) {
-    if (_lastTitlesGeneration == _dataGeneration) {
-      final cachedAll = _cachedAllTitles;
-      final cachedUnique = _cachedUniqueTitles;
+  LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) {
+    if (_lastKeysGeneration == _dataGeneration) {
+      final cachedAll = _cachedAllKeys;
+      final cachedUnique = _cachedUniqueKeys;
       if (cachedAll != null && cachedUnique != null) {
         return (all: cachedAll, unique: cachedUnique);
       }
     }
 
-    final allTitles = <String>[];
-    final uniqueTitlesSet = <String>{};
+    final allKeys = <String>[];
+    final uniqueKeysSet = <String>{};
 
     for (final data in logsData) {
-      final title = data.key ?? data.title;
-      if (title == null) continue;
-      allTitles.add(title);
-      uniqueTitlesSet.add(title);
+      final key = data.key;
+      if (key == null) continue;
+      allKeys.add(key);
+      uniqueKeysSet.add(key);
     }
 
-    final uniqueTitles = uniqueTitlesSet.toList(growable: false);
+    final uniqueKeys = uniqueKeysSet.toList(growable: false);
 
-    _cachedAllTitles = allTitles;
-    _cachedUniqueTitles = uniqueTitles;
-    _lastTitlesGeneration = _dataGeneration;
+    _cachedAllKeys = allKeys;
+    _cachedUniqueKeys = uniqueKeys;
+    _lastKeysGeneration = _dataGeneration;
 
-    return (all: allTitles, unique: uniqueTitles);
+    return (all: allKeys, unique: uniqueKeys);
   }
 
   void dispose() {
@@ -245,7 +246,7 @@ class FilterManager {
   }
 
   /// Targeted invalidation when only the search query changed.
-  /// Keeps noSearch results valid (titles/types/logTypeKeys unchanged).
+  /// Keeps noSearch results valid (types/logTypeKeys unchanged).
   void _invalidateSearchOnly() {
     _outputGeneration++;
     _cachedSearchQuery = null;
@@ -260,7 +261,7 @@ class FilterManager {
   void _invalidateFilterCache() {
     _outputGeneration++;
     _filterCacheValid = false;
-    _cachedTitles = null;
+    _cachedLogTypeKeys = null;
     _cachedTypesSet = null;
     _cachedSearchQuery = null;
     _noSearchResultGeneration = -1;
@@ -270,13 +271,13 @@ class FilterManager {
     _lastSearchMatchInput = null;
   }
 
-  List<String> _getCurrentTitles() {
-    final cached = _cachedTitles;
+  List<String> _getCurrentLogTypeKeys() {
+    final cached = _cachedLogTypeKeys;
     if (_filterCacheValid && cached != null) return cached;
-    final titles = _filter.titles.toList(growable: false);
-    _cachedTitles = titles;
+    final keys = _filter.logTypeKeys.toList(growable: false);
+    _cachedLogTypeKeys = keys;
     _filterCacheValid = true;
-    return titles;
+    return keys;
   }
 
   Set<Type> _getCurrentTypesSet() {

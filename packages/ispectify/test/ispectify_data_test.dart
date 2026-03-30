@@ -21,7 +21,6 @@ void main() {
       final originalData = ISpectLogData(
         'Test message',
         logLevel: LogLevel.info,
-        title: 'Test Title',
         key: 'test-key',
         additionalData: {
           'key1': 'value1',
@@ -33,7 +32,6 @@ void main() {
 
       expect(copiedData.message, equals(originalData.message));
       expect(copiedData.logLevel, equals(originalData.logLevel));
-      expect(copiedData.title, equals(originalData.title));
       expect(copiedData.key, equals(originalData.key));
       expect(copiedData.additionalData, equals(originalData.additionalData));
       expect(copiedData.time, equals(originalData.time));
@@ -79,17 +77,17 @@ void main() {
         () {
       final originalData = ISpectLogData(
         'Original message',
-        title: 'Original Title',
+        key: 'original-key',
         additionalData: {'important': 'metadata'},
       );
 
       final copiedData = originalData.copyWith(
         message: 'New message',
-        title: 'New Title',
+        key: 'new-key',
       );
 
       expect(copiedData.message, equals('New message'));
-      expect(copiedData.title, equals('New Title'));
+      expect(copiedData.key, equals('new-key'));
       expect(copiedData.additionalData, equals(originalData.additionalData));
     });
 

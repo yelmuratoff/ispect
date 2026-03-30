@@ -6,9 +6,9 @@ import 'package:ispectify/ispectify.dart';
 /// enabling/disabling logs, storing log history, and customizing
 /// log colors and titles.
 ///
-/// Color and title customization now uses the [ISpectLogTypeRegistry]
+/// Color customization now uses the [ISpectLogTypeRegistry]
 /// for better extensibility. Custom overrides can be provided via
-/// the [customTitles] and [customColors] parameters.
+/// the [customColors] parameter.
 class ISpectLoggerOptions {
   /// Creates an instance of `ISpectLoggerOptions` with customizable settings.
   ///
@@ -17,7 +17,6 @@ class ISpectLoggerOptions {
   /// - `useConsoleLogs`: Whether to print logs to the console.
   /// - `maxHistoryItems`: Maximum number of logs to retain in history.
   /// - `logTruncateLength`: Maximum length for log messages in console.
-  /// - `customTitles`: Custom log titles that override registry defaults.
   /// - `customColors`: Custom log colors that override registry defaults.
   ISpectLoggerOptions({
     this.enabled = true,
@@ -25,7 +24,6 @@ class ISpectLoggerOptions {
     bool useConsoleLogs = true,
     int maxHistoryItems = 10000,
     int logTruncateLength = kDefaultStringTruncateLimit,
-    Map<String, String>? customTitles,
     Map<String, AnsiPen>? customColors,
   })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
         assert(
@@ -36,8 +34,6 @@ class ISpectLoggerOptions {
         _useConsoleLogs = useConsoleLogs,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,
-        _customTitles =
-            customTitles != null ? Map.unmodifiable(customTitles) : null,
         _customColors =
             customColors != null ? Map.unmodifiable(customColors) : null;
 
@@ -60,23 +56,8 @@ class ISpectLoggerOptions {
   /// Whether logging is globally enabled.
   final bool enabled;
 
-  /// Custom title overrides (immutable after creation).
-  final Map<String, String>? _customTitles;
-
   /// Custom color overrides (immutable after creation).
   final Map<String, AnsiPen>? _customColors;
-
-  /// Retrieves the title associated with a given log type key.
-  ///
-  /// First checks custom overrides, then falls back to the key itself.
-  String titleByKey(String key) {
-    // 1. Check custom override
-    final customTitle = _customTitles?[key];
-    if (customTitle != null) return customTitle;
-
-    // 2. Fallback to key itself
-    return key;
-  }
 
   /// Retrieves the ANSI color associated with a given log type key.
   ///
@@ -106,7 +87,6 @@ class ISpectLoggerOptions {
     bool? useConsoleLogs,
     int? maxHistoryItems,
     int? logTruncateLength,
-    Map<String, String>? customTitles,
     Map<String, AnsiPen>? customColors,
   }) =>
       ISpectLoggerOptions(
@@ -115,7 +95,6 @@ class ISpectLoggerOptions {
         useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
         maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
         logTruncateLength: logTruncateLength ?? _logTruncateLength,
-        customTitles: customTitles ?? _customTitles,
         customColors: customColors ?? _customColors,
       );
 }

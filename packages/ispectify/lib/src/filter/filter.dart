@@ -26,20 +26,6 @@ class LogTypeKeyFilter implements Filter<ISpectLogData> {
   }
 }
 
-/// Matches [ISpectLogData] items whose [ISpectLogData.key] or
-/// [ISpectLogData.title] is in [titles].
-class TitleFilter implements Filter<ISpectLogData> {
-  TitleFilter(List<String> titles) : titles = titles.toSet();
-
-  const TitleFilter.fromSet(this.titles);
-
-  final Set<String> titles;
-
-  @override
-  bool apply(ISpectLogData item) =>
-      titles.contains(item.key) || titles.contains(item.title);
-}
-
 /// Matches [ISpectLogData] items whose runtime type is in [types].
 class TypeFilter implements Filter<ISpectLogData> {
   TypeFilter(List<Type> types) : types = types.toSet();

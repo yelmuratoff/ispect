@@ -15,7 +15,6 @@ class LogListItem extends StatelessWidget {
     required this.isExpanded,
     required this.onItemTapped,
     required this.onSharePressed,
-    this.customItemBuilder,
     this.observer,
     this.onOpenDetail,
     this.onTypeFilterTap,
@@ -33,7 +32,6 @@ class LogListItem extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onItemTapped;
   final VoidCallback onSharePressed;
-  final ISpectLogDataBuilder? customItemBuilder;
   final ISpectNavigatorObserver? observer;
   final VoidCallback? onOpenDetail;
   final void Function(String type)? onTypeFilterTap;
@@ -44,11 +42,9 @@ class LogListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (customItemBuilder != null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        child: customItemBuilder!(context, logData),
-      );
+    final logBuilder = ISpect.read(context).options.logBuilder;
+    if (logBuilder != null) {
+      return logBuilder(context, logData);
     }
 
     if (context.screenSize.isDesktop) {

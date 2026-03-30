@@ -163,7 +163,6 @@ abstract class BaseNetworkLog extends ISpectLogData {
         _textMessage = textMessage,
         super(
           key: logKey ?? defaultLogKey,
-          title: logKey ?? defaultLogKey,
           pen: pen ?? defaultPen,
           additionalData: _withRequestId(
             metadata ??

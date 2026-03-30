@@ -459,7 +459,11 @@ class ISpectLogger {
   /// - `message`: The log message.
   void good(String message) {
     _processLog(
-      GoodLog(message, title: _options.titleByKey(ISpectLogType.good.key)),
+      LogFactory.fromType(
+        type: ISpectLogType.good,
+        message: message,
+        options: _options,
+      ),
     );
   }
 
@@ -478,10 +482,10 @@ class ISpectLogger {
     Map<String, dynamic>? parameters,
   }) {
     _processLog(
-      AnalyticsLog(
-        '${event ?? 'Event'}: $message\nParameters: $parameters',
-        analytics: analytics,
-        title: _options.titleByKey(ISpectLogType.analytics.key),
+      LogFactory.fromType(
+        type: ISpectLogType.analytics,
+        message: '${event ?? 'Event'}: $message\nParameters: $parameters',
+        options: _options,
       ),
     );
   }
@@ -491,7 +495,11 @@ class ISpectLogger {
   /// - `message`: The log message.
   void print(String message) {
     _processLog(
-      PrintLog(message, title: _options.titleByKey(ISpectLogType.print.key)),
+      LogFactory.fromType(
+        type: ISpectLogType.print,
+        message: message,
+        options: _options,
+      ),
     );
   }
 
@@ -505,10 +513,14 @@ class ISpectLogger {
     String? transitionId,
   }) {
     _processLog(
-      RouteLog(
-        message,
-        transitionId: transitionId,
-        title: _options.titleByKey(ISpectLogType.route.key),
+      LogFactory.fromType(
+        type: ISpectLogType.route,
+        message: message,
+        options: _options,
+        additionalData: <String, dynamic>{
+          if (transitionId != null) TraceKeys.correlationId: transitionId,
+          TraceKeys.category: TraceCategoryIds.navigation,
+        },
       ),
     );
   }
@@ -520,9 +532,10 @@ class ISpectLogger {
   /// - `message`: The log message.
   void provider(String message) {
     _processLog(
-      ProviderLog(
-        message,
-        title: _options.titleByKey(ISpectLogType.provider.key),
+      LogFactory.fromType(
+        type: ISpectLogType.provider,
+        message: message,
+        options: _options,
       ),
     );
   }

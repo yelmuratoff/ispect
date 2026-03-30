@@ -150,29 +150,29 @@ class LogsScreenController {
   // --- Type filtering ---
 
   void handleTypeFilter(String typeAction, List<ISpectLogData> logsData) {
-    final titles = logsViewController.getTitles(logsData);
-    final uniq = titles.unique;
+    final keys = logsViewController.getLogTypeKeys(logsData);
+    final uniq = keys.unique;
 
     if (typeAction.startsWith('__show_only__')) {
       final type = typeAction.replaceFirst('__show_only__', '');
-      logsViewController.setOnlyTitle(type);
+      logsViewController.setOnlyLogTypeKey(type);
       _syncChipsToFilter(type, uniq, showOnly: true);
       return;
     }
     if (typeAction.startsWith('__hide__')) {
       final type = typeAction.replaceFirst('__hide__', '');
-      logsViewController.excludeTitle(type, uniq);
+      logsViewController.excludeLogTypeKey(type, uniq);
       _syncChipsToFilter(type, uniq, showOnly: false);
       return;
     }
     // Simple click on type: toggle
-    final currentTitles = logsViewController.filter.titles;
-    if (currentTitles.length == 1 && currentTitles.first == typeAction) {
+    final currentKeys = logsViewController.filter.logTypeKeys;
+    if (currentKeys.length == 1 && currentKeys.first == typeAction) {
       logsViewController.filter =
-          logsViewController.filter.copyWith(titles: <String>[]);
+          logsViewController.filter.copyWith(logTypeKeys: <String>[]);
       titleFiltersController.unselectAll();
     } else {
-      logsViewController.setOnlyTitle(typeAction);
+      logsViewController.setOnlyLogTypeKey(typeAction);
       _syncChipsToFilter(typeAction, uniq, showOnly: true);
     }
   }

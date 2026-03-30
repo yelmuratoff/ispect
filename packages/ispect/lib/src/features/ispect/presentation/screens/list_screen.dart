@@ -15,7 +15,7 @@ import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
-/// - Parameters: options, appBarTitle, itemsBuilder, navigatorObserver
+/// - Parameters: options, appBarTitle, navigatorObserver
 /// - Return: StatefulWidget that displays logs in a scrollable list
 /// - Usage example: LogsScreen(options: myOptions).push(context)
 /// - Edge case notes: Handles empty state when no logs are available
@@ -322,7 +322,7 @@ class _MainLogsView extends StatelessWidget {
       logsViewController.updateSearchMatches(matches);
     }
 
-    final titles = logsViewController.getTitles(logsData);
+    final logTypeKeys = logsViewController.getLogTypeKeys(logsData);
 
     return CustomScrollView(
       controller: logsScrollController,
@@ -332,11 +332,11 @@ class _MainLogsView extends StatelessWidget {
           focusNode: searchFocusNode,
           title: appBarTitle,
           titlesController: titleFiltersController,
-          titles: titles.all,
-          uniqTitles: titles.unique,
+          titles: logTypeKeys.all,
+          uniqTitles: logTypeKeys.unique,
           controller: logsViewController,
-          onToggleTitle: (title, selected) => logsViewController
-              .handleTitleFilterToggle(title, isSelected: selected),
+          onToggleTitle: (key, selected) => logsViewController
+              .handleLogTypeKeyFilterToggle(key, isSelected: selected),
           backgroundColor: iSpectTheme.theme.background?.resolve(context),
           filteredCount: isHighlightMode
               ? logsViewController.searchMatchCount

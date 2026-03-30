@@ -33,12 +33,10 @@ class LogsScreen extends StatefulWidget {
     required this.options,
     super.key,
     this.appBarTitle,
-    this.itemsBuilder,
     this.controller,
   });
 
   final String? appBarTitle;
-  final ISpectLogDataBuilder? itemsBuilder;
   final ISpectOptions options;
   final ISpectViewController? controller;
 
@@ -105,7 +103,6 @@ class _LogsScreenState extends State<LogsScreen> {
               logsScrollController: _logsScrollController,
               logsViewController: _logsViewController,
               appBarTitle: widget.appBarTitle,
-              itemsBuilder: widget.itemsBuilder,
               onSettingsTap: () => _openLogsSettings(context),
               hasDetailPanel: showDetailPanel,
             );
@@ -443,7 +440,6 @@ class _MainLogsView extends StatefulWidget {
     required this.logsViewController,
     required this.onSettingsTap,
     this.appBarTitle,
-    this.itemsBuilder,
     this.hasDetailPanel = false,
   });
 
@@ -455,7 +451,6 @@ class _MainLogsView extends StatefulWidget {
   final ISpectViewController logsViewController;
   final VoidCallback onSettingsTap;
   final String? appBarTitle;
-  final ISpectLogDataBuilder? itemsBuilder;
   final bool hasDetailPanel;
 
   @override
@@ -556,7 +551,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
       _idToDataIndex = const {};
       _lastIdToDataIndexInput = null;
     }
-    final titles = widget.logsViewController.getTitles(widget.logsData);
+    final logTypeKeys =
+        widget.logsViewController.getLogTypeKeys(widget.logsData);
 
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
@@ -588,12 +584,12 @@ class _MainLogsViewState extends State<_MainLogsView> {
               focusNode: widget.searchFocusNode,
               title: widget.appBarTitle,
               titlesController: widget.titleFiltersController,
-              titles: titles.all,
-              uniqTitles: titles.unique,
+              titles: logTypeKeys.all,
+              uniqTitles: logTypeKeys.unique,
               controller: widget.logsViewController,
               onSettingsTap: widget.onSettingsTap,
-              onToggleTitle: (title, selected) => widget.logsViewController
-                  .handleTitleFilterToggle(title, isSelected: selected),
+              onToggleTitle: (key, selected) => widget.logsViewController
+                  .handleLogTypeKeyFilterToggle(key, isSelected: selected),
               backgroundColor:
                   widget.iSpectTheme.theme.background?.resolve(context),
               filteredCount: isHighlightMode
@@ -638,7 +634,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 child: EmptyLogsWidget(),
               ),
             if (widget.logsViewController.groupHttpLogs &&
-                widget.logsViewController.filter.titles.isEmpty)
+                widget.logsViewController.filter.logTypeKeys.isEmpty)
               _buildGroupedList(sortedEntries, isDesktop, options)
             else
               _buildFlatList(sortedEntries, isDesktop, options),
@@ -743,7 +739,6 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 Colors.grey,
             isExpanded: isSelected || widget.logsViewController.expandedLogs,
             searchMatchState: widget.logsViewController.matchStateFor(logEntry),
-            customItemBuilder: widget.itemsBuilder,
             observer: options.observer is ISpectNavigatorObserver
                 ? options.observer as ISpectNavigatorObserver?
                 : null,
@@ -849,7 +844,6 @@ class _MainLogsViewState extends State<_MainLogsView> {
               Colors.grey,
           isExpanded: isSelected || widget.logsViewController.expandedLogs,
           searchMatchState: widget.logsViewController.matchStateFor(logEntry),
-          customItemBuilder: widget.itemsBuilder,
           observer: options.observer is ISpectNavigatorObserver
               ? options.observer as ISpectNavigatorObserver?
               : null,

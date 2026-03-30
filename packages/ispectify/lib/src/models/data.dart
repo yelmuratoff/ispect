@@ -12,7 +12,6 @@ class ISpectLogData {
     this.exception,
     this.error,
     this.stackTrace,
-    this.title,
     this.pen,
     this.key,
     Map<String, dynamic>? additionalData,
@@ -34,7 +33,6 @@ class ISpectLogData {
   final String? key;
   final String? message;
   final LogLevel? logLevel;
-  final String? title;
   final AnsiPen? pen;
   final Map<String, dynamic>? additionalData;
   final Object? exception;
@@ -52,8 +50,7 @@ class ISpectLogData {
     stackTraceText,
   ]);
 
-  // ignore: deprecated_member_use_from_same_package
-  String get header => '[${key ?? title}] | $formattedTime\n';
+  String get header => '[$key] | $formattedTime\n';
 
   String? get stackTraceText =>
       (stackTrace != null && stackTrace != StackTrace.empty)
@@ -95,7 +92,6 @@ class ISpectLogData {
         other.key == key &&
         other.message == message &&
         other.logLevel == logLevel &&
-        other.title == title &&
         other.pen == pen &&
         _deepEquality.equals(other.additionalData, additionalData) &&
         other.exception == exception &&
@@ -109,7 +105,6 @@ class ISpectLogData {
         key,
         message,
         logLevel,
-        title,
         pen,
         _deepEquality.hash(additionalData),
         exception,
@@ -122,7 +117,6 @@ class ISpectLogData {
       key: $key,
       message: ${message.truncate()},
       logLevel: $logLevel,
-      title: $title,
       exception: ${exception?.toString().truncate()},
       error: ${error?.toString().truncate()},
       )''';

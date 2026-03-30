@@ -18,7 +18,6 @@ abstract class LogFactory {
     return ISpectLogData(
       message?.toString() ?? '',
       key: type.key,
-      title: options?.titleByKey(type.key),
       exception: exception,
       stackTrace: stackTrace,
       pen: pen ?? options?.penByKey(type.key),

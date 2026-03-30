@@ -7,10 +7,6 @@ Future<void> main() async {
         ISpectLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),
       },
-      customTitles: {
-        ISpectLogType.info.key: 'i',
-        CustomLog.logKey: 'Custom',
-      },
     ),
   )
     ..error('The restaurant is closed ❌')

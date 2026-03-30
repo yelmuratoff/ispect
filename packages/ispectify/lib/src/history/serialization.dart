@@ -14,7 +14,6 @@ extension ISpectLogDataSerialization on ISpectLogData {
         'id': id,
         if (key != null) 'key': key,
         'time': time.toIso8601String(),
-        if (title != null) 'title': truncated ? title.truncate() : title,
         if (logLevel != null) 'log-level': logLevel!.index.toString(),
         if (message != null)
           'message': truncated ? message.truncate() : message,
@@ -168,7 +167,6 @@ class ISpectLogDataJsonUtils {
       json['message']?.toString(),
       time: DateTime.tryParse(json['time']?.toString() ?? '') ?? DateTime.now(),
       logLevel: _parseLogLevel(json['log-level']?.toString()),
-      title: json['title']?.toString(),
       key: json['key']?.toString(),
       additionalData: json['additional-data'] is Map<String, dynamic>
           ? json['additional-data'] as Map<String, dynamic>

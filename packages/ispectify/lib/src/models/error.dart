@@ -6,7 +6,6 @@ class ISpectLogError extends ISpectLogData {
     Error error, {
     String? message,
     super.stackTrace,
-    super.title,
   }) : super(
           message,
           error: error,

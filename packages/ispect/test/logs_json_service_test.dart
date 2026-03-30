@@ -19,7 +19,6 @@ void main() {
           'Test log message 1',
           time: DateTime(2025, 1, 1, 12),
           logLevel: LogLevel.info,
-          title: 'Test',
           key: 'test_key_1',
           additionalData: {'testData': 'value1'},
         ),
@@ -27,7 +26,6 @@ void main() {
           'Test log message 2',
           time: DateTime(2025, 1, 1, 12, 1),
           logLevel: LogLevel.error,
-          title: 'Error',
           key: 'test_key_2',
           exception: Exception('Test exception'),
           additionalData: {'errorCode': 500},
@@ -36,7 +34,6 @@ void main() {
           'Test log message 3',
           time: DateTime(2025, 1, 1, 12, 2),
           logLevel: LogLevel.debug,
-          title: 'Debug',
           key: 'test_key_3',
         ),
       ];
@@ -89,7 +86,6 @@ void main() {
       final firstLog = importedLogs[0];
       expect(firstLog.message, equals('Test log message 1'));
       expect(firstLog.logLevel, equals(LogLevel.info));
-      expect(firstLog.title, equals('Test'));
       expect(firstLog.key, equals('test_key_1'));
     });
 
@@ -200,7 +196,6 @@ void main() {
         'Complex log with various data',
         time: DateTime(2025, 1, 1, 15, 30, 45),
         logLevel: LogLevel.warning,
-        title: 'Complex',
         key: 'complex_key',
         additionalData: {
           'string': 'test string',

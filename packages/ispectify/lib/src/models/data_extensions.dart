@@ -7,7 +7,6 @@ extension ISpectDataX on ISpectLogData {
     LogLevel? logLevel,
     Object? exception,
     Error? error,
-    String? title,
     StackTrace? stackTrace,
     DateTime? time,
     AnsiPen? pen,
@@ -19,7 +18,6 @@ extension ISpectDataX on ISpectLogData {
         logLevel: logLevel ?? this.logLevel,
         exception: exception ?? this.exception,
         error: error ?? this.error,
-        title: title ?? this.title,
         stackTrace: stackTrace ?? this.stackTrace,
         time: time ?? this.time,
         pen: pen ?? this.pen,
@@ -38,7 +36,7 @@ extension ISpectDataX on ISpectLogData {
           : value;
     }
 
-    final formattedTitle = truncate(title, 100);
+    final formattedKey = truncate(key, 100);
     final formattedMessage = truncate(message, 100);
     final exceptionText = truncate(exception?.toString(), 500);
     final errorText = truncate(error?.toString(), 500);
@@ -46,7 +44,7 @@ extension ISpectDataX on ISpectLogData {
 
     return '''[Item with hashcode: $hashCode
 Time: $formattedTime
-Title: $formattedTitle
+Key: $formattedKey
 Message: $formattedMessage
 Exception: $exceptionText
 Error: $errorText

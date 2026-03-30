@@ -24,20 +24,17 @@ class ISpectErrorHandler {
         final ISpectLogException logException => logException,
         final Error err => ISpectLogError(
             err,
-            title: settings.titleByKey(ISpectLogType.error.key),
             message: msg,
             stackTrace: stackTrace,
           ),
         final Exception ex => ISpectLogException(
             ex,
-            title: settings.titleByKey(ISpectLogType.exception.key),
             message: msg,
             stackTrace: stackTrace,
           ),
         _ => ISpectLogData(
             exception.toString(),
             key: ISpectLogType.error.key,
-            title: settings.titleByKey(ISpectLogType.error.key),
             logLevel: LogLevel.error,
             stackTrace: stackTrace,
           ),

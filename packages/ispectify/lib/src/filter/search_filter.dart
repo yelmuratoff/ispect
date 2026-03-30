@@ -22,13 +22,6 @@ class SearchFilter implements Filter<ISpectLogData> {
     final key = item.key;
     if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
 
-    final title = item.title;
-    if (title != null &&
-        title != key &&
-        title.toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
     final logLevel = item.logLevel;
     if (logLevel != null && logLevel.name.toLowerCase().contains(_lowerQuery)) {
       return true;

@@ -316,7 +316,8 @@ class LogsJsonService {
   Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
         'hasSearchQuery':
             filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
-        'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,
+        'logTypeKeyFiltersCount':
+            filter.filters.whereType<LogTypeKeyFilter>().length,
         'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
       };
 

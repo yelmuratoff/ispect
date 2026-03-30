@@ -8,91 +8,79 @@ void main() {
     late ISpectLogData testData3;
 
     setUp(() {
-      testData1 = ISpectLogData('Info message', key: 'test1', title: 'INFO');
-      testData2 = ISpectLogData('Error message', key: 'test2', title: 'ERROR');
-      testData3 = ISpectLogData('Debug message', key: 'test3', title: 'DEBUG');
+      testData1 = ISpectLogData('Info message', key: 'INFO');
+      testData2 = ISpectLogData('Error message', key: 'ERROR');
+      testData3 = ISpectLogData('Debug message', key: 'DEBUG');
     });
 
     test('single filter works correctly', () {
-      final filter = ISpectFilter(titles: ['INFO']);
+      final filter = ISpectFilter(logTypeKeys: ['INFO']);
 
-      expect(filter.apply(testData1), true); // Matches title
-      expect(filter.apply(testData2), false); // Doesn't match title
-      expect(filter.apply(testData3), false); // Doesn't match title
+      expect(filter.apply(testData1), true); // Matches key
+      expect(filter.apply(testData2), false); // Doesn't match key
+      expect(filter.apply(testData3), false); // Doesn't match key
     });
 
-    test('combining title and type filters expands results (OR logic)', () {
-      // Create test data with different types
-      final infoData =
-          ISpectLogData('Info message', key: 'info', title: 'INFO');
-      final errorData =
-          ISpectLogData('Error message', key: 'error', title: 'ERROR');
-      final debugData =
-          ISpectLogData('Debug message', key: 'debug', title: 'DEBUG');
+    test('combining logTypeKey and type filters expands results (OR logic)',
+        () {
+      final infoData = ISpectLogData('Info message', key: 'info');
+      final errorData = ISpectLogData('Error message', key: 'error');
+      final debugData = ISpectLogData('Debug message', key: 'debug');
 
-      // Filter that requires either INFO title OR specific type
+      // Filter that requires either INFO key OR specific type
       final filter = ISpectFilter(
-        titles: ['INFO'],
+        logTypeKeys: ['info'],
         types: [
           errorData.runtimeType,
         ], // This should match all since they're the same type
       );
 
       // With OR logic, item matches if it matches ANY criteria
-      expect(filter.apply(infoData), true); // Matches title
+      expect(filter.apply(infoData), true); // Matches key
       expect(filter.apply(errorData), true); // Matches type
       expect(filter.apply(debugData), true); // Matches type (same runtime type)
     });
 
-    test('combining title and search filters expands results (OR logic)', () {
+    test('combining logTypeKey and search filters expands results (OR logic)',
+        () {
       final filter = ISpectFilter(
-        titles: ['INFO'],
+        logTypeKeys: ['info'],
         searchQuery: 'Error',
       );
 
-      final matchingBothData =
-          ISpectLogData('Info message', key: 'test', title: 'INFO');
-      final titleOnlyData =
-          ISpectLogData('Info other', key: 'test2', title: 'INFO');
-      final searchOnlyData =
-          ISpectLogData('Error message', key: 'test3', title: 'ERROR');
+      final matchingBothData = ISpectLogData('Info message', key: 'info');
+      final keyOnlyData = ISpectLogData('Info other', key: 'info');
+      final searchOnlyData = ISpectLogData('Error message', key: 'error');
 
-      expect(filter.apply(matchingBothData), true); // Matches title
-      expect(filter.apply(titleOnlyData), true); // Matches title
+      expect(filter.apply(matchingBothData), true); // Matches key
+      expect(filter.apply(keyOnlyData), true); // Matches key
       expect(
         filter.apply(searchOnlyData),
         true,
-      ); // Matches search (contains "Error" in title)
+      ); // Matches search (contains "Error")
     });
 
     test('combining all three filters expands results (OR logic)', () {
       final filter = ISpectFilter(
-        titles: ['INFO'],
+        logTypeKeys: ['info'],
         types: [ISpectLogData], // All data is this type
         searchQuery: 'special',
       );
 
-      final allMatchData =
-          ISpectLogData('Info special message', key: 'test', title: 'INFO');
-      final titleOnly =
-          ISpectLogData('Info regular message', key: 'test2', title: 'INFO');
+      final allMatchData = ISpectLogData('Info special message', key: 'info');
+      final keyOnly = ISpectLogData('Info regular message', key: 'info');
       final searchOnly = ISpectLogData(
         'Error special message',
-        key: 'test3',
-        title: 'ERROR',
+        key: 'error',
       );
       final typeOnly = ISpectLogData(
         'Debug regular message',
-        key: 'test4',
-        title: 'DEBUG',
+        key: 'debug',
       );
 
-      expect(filter.apply(allMatchData), true); // Matches title
-      expect(filter.apply(titleOnly), true); // Matches title
-      expect(
-        filter.apply(searchOnly),
-        true,
-      ); // Matches search (title contains "Error"? Wait, let's check)
+      expect(filter.apply(allMatchData), true); // Matches key
+      expect(filter.apply(keyOnly), true); // Matches key
+      expect(filter.apply(searchOnly), true); // Matches search
       expect(filter.apply(typeOnly), true); // Matches type
     });
 
@@ -105,34 +93,34 @@ void main() {
     });
 
     test('copyWith preserves OR logic', () {
-      final originalFilter = ISpectFilter(titles: ['INFO']);
+      final originalFilter = ISpectFilter(logTypeKeys: ['INFO']);
       final copiedFilter = originalFilter.copyWith(searchQuery: 'test');
 
       // Original filter should still work
       expect(
-        originalFilter.apply(ISpectLogData('Info test', title: 'INFO')),
+        originalFilter.apply(ISpectLogData('Info test', key: 'INFO')),
         true,
       );
       expect(
-        originalFilter.apply(ISpectLogData('Error test', title: 'ERROR')),
+        originalFilter.apply(ISpectLogData('Error test', key: 'ERROR')),
         false,
       );
 
-      // Copied filter should require either title OR search
+      // Copied filter should require either key OR search
       expect(
-        copiedFilter.apply(ISpectLogData('Info test', title: 'INFO')),
+        copiedFilter.apply(ISpectLogData('Info test', key: 'INFO')),
         true,
-      ); // Matches title
+      ); // Matches key
       expect(
-        copiedFilter.apply(ISpectLogData('Info other', title: 'INFO')),
+        copiedFilter.apply(ISpectLogData('Info other', key: 'INFO')),
         true,
-      ); // Matches title
+      ); // Matches key
       expect(
-        copiedFilter.apply(ISpectLogData('Error test', title: 'ERROR')),
+        copiedFilter.apply(ISpectLogData('Error test', key: 'ERROR')),
         true,
-      ); // Matches search (title contains "Error"? Wait, search is "test", title is "ERROR" - doesn't contain "test")
+      ); // Matches search ("test" in message)
       expect(
-        copiedFilter.apply(ISpectLogData('Debug other', title: 'DEBUG')),
+        copiedFilter.apply(ISpectLogData('Debug other', key: 'DEBUG')),
         false,
       ); // Matches neither
     });
