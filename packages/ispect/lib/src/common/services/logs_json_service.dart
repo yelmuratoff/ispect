@@ -263,24 +263,47 @@ class LogsJsonService {
     String fileType = 'json',
     RedactionService? redactionService,
     bool enableRedaction = true,
+    Set<String>? redactKeys,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');
       return;
     }
 
-    final exportData = _createFilteredExportData(logs, filteredLogs, filter);
-    if (enableRedaction && redactionService != null) {
-      final logsData = exportData['logs'];
-      if (logsData is List<Map<String, dynamic>>) {
-        exportData['logs'] = _redactLogsList(logsData, redactionService);
-      }
+    final effectiveRedactKeys =
+        redactKeys ?? (enableRedaction ? defaultSensitiveKeys : null);
+
+    final String content;
+    switch (fileType) {
+      case 'txt':
+        content =
+            LogExporter.toText(filteredLogs, redactKeys: effectiveRedactKeys);
+      case 'md':
+        content = LogExporter.toMarkdown(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
+      case 'csv':
+        content =
+            LogExporter.toCsv(filteredLogs, redactKeys: effectiveRedactKeys);
+      default:
+        final exportData = _createFilteredExportData(
+          logs,
+          filteredLogs,
+          filter,
+        );
+        if (enableRedaction && redactionService != null) {
+          final logsData = exportData['logs'];
+          if (logsData is List<Map<String, dynamic>>) {
+            exportData['logs'] = _redactLogsList(logsData, redactionService);
+          }
+        }
+        const encoder = JsonEncoder.withIndent('  ', _toEncodable);
+        content = encoder.convert(exportData);
     }
-    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-    final jsonContent = encoder.convert(exportData);
 
     await LogsFileFactory.downloadFile(
-      jsonContent,
+      content,
       fileName: fileName,
       fileType: fileType,
       onShare: onShare,

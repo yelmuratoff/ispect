@@ -294,5 +294,6 @@
    "distanceRight": "справа",
    "distanceBottom": "снизу",
    "searchMode": "Режим поиска",
-   "logTypes": "Типы логов"
+   "logTypes": "Типы логов",
+   "includeSensitiveData": "Включить конфиденциальные данные"
 }

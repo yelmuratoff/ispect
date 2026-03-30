@@ -973,4 +973,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => 'Лог түрлері';
+
+  @override
+  String get includeSensitiveData => 'Құпия деректерді қосу';
 }

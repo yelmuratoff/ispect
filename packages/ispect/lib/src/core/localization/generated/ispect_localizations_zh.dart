@@ -950,4 +950,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => '日志类型';
+
+  @override
+  String get includeSensitiveData => '包含敏感数据';
 }

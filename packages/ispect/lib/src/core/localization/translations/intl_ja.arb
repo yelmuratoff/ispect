@@ -294,5 +294,6 @@
    "distanceRight": "右",
    "distanceBottom": "下",
    "searchMode": "検索モード",
-   "logTypes": "ログタイプ"
+   "logTypes": "ログタイプ",
+   "includeSensitiveData": "機密データを含める"
 }

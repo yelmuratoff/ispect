@@ -53,6 +53,7 @@ mixin DataOperationsMixin on ChangeNotifier {
   Future<void> shareLogsAsFile(
     List<ISpectLogData> logs, {
     String fileType = 'json',
+    Set<String>? redactKeys,
   }) async {
     final filteredLogs = applyCurrentFilters(logs);
     await exportService.shareFilteredLogsAsFile(
@@ -60,6 +61,7 @@ mixin DataOperationsMixin on ChangeNotifier {
       filteredLogs,
       filter,
       fileType: fileType,
+      redactKeys: redactKeys,
     );
   }
 

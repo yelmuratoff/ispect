@@ -993,4 +993,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => 'Types de journaux';
+
+  @override
+  String get includeSensitiveData => 'Inclure les données sensibles';
 }

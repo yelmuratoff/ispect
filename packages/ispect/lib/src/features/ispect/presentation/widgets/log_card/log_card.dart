@@ -4,6 +4,7 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
+import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
@@ -47,7 +48,10 @@ class LogCard extends StatelessWidget {
 
     final defaultBorder =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
-    final accentColor = color.withValues(alpha: isExpanded ? 0.9 : 0.5);
+    final sev = severityBar(data);
+    final accentColor = color.withValues(
+      alpha: isExpanded ? 0.9 : sev.alpha,
+    );
 
     final Color effectiveBg;
     final Color effectiveBorder;
@@ -97,7 +101,7 @@ class LogCard extends StatelessWidget {
               border: Border(
                 left: BorderSide(
                   color: accentColor,
-                  width: isExpanded ? 5 : 3,
+                  width: isExpanded ? sev.width + 1 : sev.width,
                 ),
               ),
             ),

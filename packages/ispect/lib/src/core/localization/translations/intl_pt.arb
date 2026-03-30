@@ -294,5 +294,6 @@
    "distanceRight": "direita",
    "distanceBottom": "baixo",
    "searchMode": "Modo de pesquisa",
-   "logTypes": "Tipos de registro"
+   "logTypes": "Tipos de registro",
+   "includeSensitiveData": "Incluir dados sensíveis"
 }

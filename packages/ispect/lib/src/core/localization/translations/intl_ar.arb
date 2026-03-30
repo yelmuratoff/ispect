@@ -294,5 +294,6 @@
    "distanceRight": "يمين",
    "distanceBottom": "أسفل",
    "searchMode": "وضع البحث",
-   "logTypes": "أنواع السجلات"
+   "logTypes": "أنواع السجلات",
+   "includeSensitiveData": "تضمين البيانات الحساسة"
 }

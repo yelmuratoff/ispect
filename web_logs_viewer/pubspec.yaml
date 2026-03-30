@@ -25,12 +25,12 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
-  ispect: ^4.4.7
-  ispectify_dio: ^4.4.7
-  ispectify_http: ^4.4.7
-  ispectify_bloc: ^4.4.7
-  ispectify_ws: ^4.4.7
-  ispectify_db: ^4.4.7
+  ispect: ^5.0.0
+  ispectify_dio: ^5.0.0
+  ispectify_http: ^5.0.0
+  ispectify_bloc: ^5.0.0
+  ispectify_ws: ^5.0.0
+  ispectify_db: ^5.0.0
 
   iconsax_plus: ^1.0.0
 

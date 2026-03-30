@@ -950,4 +950,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => '로그 유형';
+
+  @override
+  String get includeSensitiveData => '민감한 데이터 포함';
 }

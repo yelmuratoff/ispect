@@ -4184,11 +4184,11 @@ ISpect(theme: ISpectTheme(
 - [x] Dynamic filter grouping: `_resolveCategory()` с `ISpectLogType.category`, `_categoryLabel()`
 - [x] Новые icons/colors в `ISpectConstants` для 21 новых log types + LogDescriptions
 - [x] `ISpectTheme`: добавить `categoryLabels`, `logCategories`, обновить copyWith/==/hashCode/toMap/fromMap
-- [ ] l10n: добавить `category*` строки в `.arb` файлы (hardcoded English labels для новых категорий)
-- [ ] Generic correlation banner (deferred — UI enhancement)
-- [ ] Slow trace badge на log cards (deferred — UI enhancement)
-- [ ] Severity visual hierarchy (deferred — UI enhancement)
-- [ ] Mobile `log_card.dart`: badge area (deferred — UI enhancement)
+- [x] l10n: добавить `category*` строки в `.arb` файлы (все 12 языков)
+- [x] Generic correlation banner (_TraceCorrelationBanner с Corr/Txn chips)
+- [x] Slow trace badge на log cards (SlowBadge widget)
+- [x] Severity visual hierarchy (severity_bar.dart — width/alpha по severity)
+- [x] Mobile `log_card.dart`: badge area (collapsed_body.dart)
 - [x] `data_extensions.dart`: исправить `isHttpLog` (+ httpError)
 - [x] `NetworkTransaction`: обновлён для v5 trace layout (method=operation, url=target, statusCode из traceMeta)
 - [x] `ISpectNavigatorObserver`: RouteLog теперь кладёт transitionId в additionalData[TraceKeys.correlationId]
@@ -4196,10 +4196,10 @@ ISpect(theme: ISpectTheme(
 - **Done when:** `flutter analyze packages/ispect --fatal-infos` чист. `flutter test packages/ispect` проходит. В UI: фильтры группируются динамически, новые иконки отображаются, slow badge видим.
 
 ### Шаг 15: Export/Share UI (Part 3.3)
-- [ ] Создать `log_export_sheet.dart` — bottom sheet с выбором формата (JSON Lines, Text, Markdown, CSV)
-- [ ] Redaction toggle ("Include sensitive data" — default OFF)
-- [ ] Обновить `LogsJsonService` для text/markdown/csv форматов
-- [ ] Progress indicator для bulk export
+- [x] Создать `log_export_sheet.dart` — bottom sheet с выбором формата (share_all_logs_sheet.dart: JSON, Text, Markdown, CSV)
+- [x] Redaction toggle ("Include sensitive data" — default OFF, l10n во всех 12 языках)
+- [x] Обновить `LogsJsonService` для text/markdown/csv форматов (switch по fileType → LogExporter)
+- [x] Progress indicator для bulk export (_ExportButton StatefulWidget с CircularProgressIndicator)
 - **Done when:** Кнопка Share → bottom sheet → выбор формата → файл генерируется → share dialog.
 
 ### Шаг 16: Barrel exports
@@ -4238,6 +4238,6 @@ ISpect(theme: ISpectTheme(
 - [x] `./bash/sync_readme.sh` → README синхронизирован
 - [x] `./bash/check_version_sync.sh` → All packages in sync ✅
 - [x] `./bash/check_dependencies.sh` → All internal dependencies consistent ✅
-- [ ] Обновить `web_logs_viewer/` (deferred — separate task)
+- [x] Обновить `web_logs_viewer/` версии зависимостей → ^5.0.0, analyze clean
 - [ ] `./bash/publish.sh --dry-run` — blocked by uncommitted changes (expected)
 - **Done when:** `./bash/check_version_sync.sh` чист. `./bash/publish.sh --dry-run` проходит без ошибок.

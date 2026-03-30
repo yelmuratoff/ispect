@@ -294,5 +294,6 @@
    "distanceRight": "右",
    "distanceBottom": "下",
    "searchMode": "搜索模式",
-   "logTypes": "日志类型"
+   "logTypes": "日志类型",
+   "includeSensitiveData": "包含敏感数据"
 }

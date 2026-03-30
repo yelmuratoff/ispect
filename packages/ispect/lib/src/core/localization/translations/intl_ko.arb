@@ -294,5 +294,6 @@
    "distanceRight": "오른쪽",
    "distanceBottom": "아래",
    "searchMode": "검색 모드",
-   "logTypes": "로그 유형"
+   "logTypes": "로그 유형",
+   "includeSensitiveData": "민감한 데이터 포함"
 }

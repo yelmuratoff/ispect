@@ -1888,6 +1888,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Log types'**
   String get logTypes;
+
+  /// No description provided for @includeSensitiveData.
+  ///
+  /// In en, this message translates to:
+  /// **'Include sensitive data'**
+  String get includeSensitiveData;
 }
 
 class _ISpectGeneratedLocalizationDelegate

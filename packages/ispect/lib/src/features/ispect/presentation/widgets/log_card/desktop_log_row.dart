@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
@@ -440,8 +441,12 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                         ? primaryColor.withValues(alpha: 0.6)
                         : widget.isSelected
                             ? widget.color
-                            : widget.color.withValues(alpha: 0.4),
-                width: isFocused || widget.isSelected ? 3 : 2,
+                            : widget.color.withValues(
+                                alpha: severityBar(widget.data).alpha,
+                              ),
+                width: isFocused || widget.isSelected
+                    ? severityBar(widget.data).width + 1
+                    : severityBar(widget.data).width,
               ),
             ),
           ),

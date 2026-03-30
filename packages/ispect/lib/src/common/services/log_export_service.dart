@@ -22,6 +22,7 @@ class LogExportService {
     ISpectFilter filter, {
     String fileNamePrefix = 'ispect_logs_',
     String fileType = 'json',
+    Set<String>? redactKeys,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No logs match the active filters. Skipping export.');
@@ -36,6 +37,8 @@ class LogExportService {
       fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
       fileType: fileType,
       onShare: shareCallback,
+      enableRedaction: redactKeys != null,
+      redactKeys: redactKeys,
     );
   }
 

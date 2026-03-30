@@ -991,4 +991,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => 'Logtypen';
+
+  @override
+  String get includeSensitiveData => 'Sensible Daten einschließen';
 }

@@ -958,4 +958,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => 'أنواع السجلات';
+
+  @override
+  String get includeSensitiveData => 'تضمين البيانات الحساسة';
 }

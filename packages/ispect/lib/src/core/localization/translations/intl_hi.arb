@@ -294,5 +294,6 @@
    "distanceRight": "दाएं",
    "distanceBottom": "नीचे",
    "searchMode": "खोज मोड",
-   "logTypes": "लॉग प्रकार"
+   "logTypes": "लॉग प्रकार",
+   "includeSensitiveData": "संवेदनशील डेटा शामिल करें"
 }

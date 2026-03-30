@@ -975,4 +975,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get logTypes => 'Типы логов';
+
+  @override
+  String get includeSensitiveData => 'Включить конфиденциальные данные';
 }

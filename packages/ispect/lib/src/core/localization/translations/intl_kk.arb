@@ -294,5 +294,6 @@
    "distanceRight": "оң",
    "distanceBottom": "төмен",
    "searchMode": "Іздеу режимі",
-   "logTypes": "Лог түрлері"
+   "logTypes": "Лог түрлері",
+   "includeSensitiveData": "Құпия деректерді қосу"
 }
