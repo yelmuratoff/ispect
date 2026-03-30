@@ -206,58 +206,91 @@ class _ActionButtons extends StatelessWidget {
               label: l10n.downloadLogsFile,
               onPressed: isExporting
                   ? null
-                  : () async {
-                      await controller.download(contentBuilder);
-                      final path = controller.resultPath;
-                      if (path.isEmpty) return;
-                      if (!context.mounted) return;
-                      _closeSheet(context);
-                      if (kIsWeb) {
-                        unawaited(
-                          ISpectToaster.showInfoToast(
-                            context,
-                            title: l10n.downloadLogsFile,
-                          ),
-                        );
-                      } else {
-                        unawaited(
-                          ISpectToaster.showInfoToast(
-                            context,
-                            title: l10n.logsFileSaved(path),
-                            duration: const Duration(seconds: 6),
-                            action: SnackBarAction(
-                              label: l10n.copyPath,
-                              onPressed: () {
-                                copyClipboard(context, value: path);
-                              },
-                            ),
-                          ),
-                        );
-                      }
-                    },
-            ),
-            if (controller.canShare)
-              ISpectSheetActionButton(
-                icon: Icons.share_rounded,
-                label: l10n.share,
-                onPressed: isExporting
-                    ? null
                     : () async {
-                        await controller.share(contentBuilder);
+                        final messenger = ScaffoldMessenger.maybeOf(context);
+                        final capturedL10n = context.ispectL10n;
+
+                        await controller.download(contentBuilder);
+                        final path = controller.resultPath;
+                        if (path.isEmpty) return;
+
                         if (!context.mounted) return;
                         _closeSheet(context);
+
+                        if (kIsWeb) {
+                          unawaited(
+                            ISpectToaster.showInfoToast(
+                              null,
+                              title: capturedL10n.downloadLogsFile,
+                              messenger: messenger,
+                            ),
+                          );
+                        } else {
+                          unawaited(
+                            ISpectToaster.showInfoToast(
+                              null,
+                              title: capturedL10n.logsFileSaved(path),
+                              duration: const Duration(seconds: 6),
+                              messenger: messenger,
+                              l10n: capturedL10n,
+                              action: SnackBarAction(
+                                label: capturedL10n.copyPath,
+                                onPressed: () {
+                                  copyClipboard(
+                                    null,
+                                    value: path,
+                                    messenger: messenger,
+                                    l10n: capturedL10n,
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }
                       },
               ),
-            ISpectSheetActionButton(
-              icon: Icons.copy_rounded,
-              label: l10n.copyToClipboardTruncated,
-              onPressed: isExporting
-                  ? null
-                  : () {
-                      controller.copy(context, contentBuilder);
-                      _closeSheet(context);
-                    },
-            ),
+              if (controller.canShare)
+                ISpectSheetActionButton(
+                  icon: Icons.share_rounded,
+                  label: l10n.share,
+                  onPressed: isExporting
+                      ? null
+                      : () async {
+                          final messenger = ScaffoldMessenger.maybeOf(context);
+                          final capturedL10n = context.ispectL10n;
+                          await controller.share(contentBuilder);
+                          if (!context.mounted) return;
+                          _closeSheet(context);
+                          unawaited(
+                            ISpectToaster.showInfoToast(
+                              null,
+                              title: capturedL10n.share,
+                              messenger: messenger,
+                            ),
+                          );
+                        },
+                ),
+              ISpectSheetActionButton(
+                icon: Icons.copy_rounded,
+                label: l10n.copyToClipboardTruncated,
+                onPressed: isExporting
+                    ? null
+                    : () {
+                        final messenger = ScaffoldMessenger.maybeOf(context);
+                        final capturedL10n = context.ispectL10n;
+                        controller.copy(context, contentBuilder);
+                        _closeSheet(context);
+                        unawaited(
+                          ISpectToaster.showCopiedToast(
+                            null,
+                            value: '',
+                            showValue: false,
+                            messenger: messenger,
+                            l10n: capturedL10n,
+                          ),
+                        );
+                      },
+              ),
           ],
         ),
       ],

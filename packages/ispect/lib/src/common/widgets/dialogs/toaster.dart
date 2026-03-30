@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -61,16 +62,19 @@ final class ISpectToaster {
   /// - `context`: The `BuildContext` used to show the toast.
   /// - `title`: The title of the error message.
   /// - `message`: (Optional) Additional details about the error.
+  /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
   ///
   /// ### Example:
   /// ```dart
   /// ISpectToaster.showErrorToast(context, title: "Something went wrong");
   /// ```
   static Future<void> showErrorToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String title,
     String? message,
     Duration? duration,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) =>
       _showToast(
         context,
@@ -78,6 +82,8 @@ final class ISpectToaster {
         message: message,
         color: Colors.red,
         duration: duration,
+        messenger: messenger,
+        l10n: l10n,
       );
 
   /// Displays an informational toast with a dark background.
@@ -85,17 +91,21 @@ final class ISpectToaster {
   /// - `context`: The `BuildContext` used to show the toast.
   /// - `title`: The title of the message.
   /// - `message`: (Optional) Additional details.
+  /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
+  /// - `l10n`: (Optional) An explicit localizations object to use.
   ///
   /// ### Example:
   /// ```dart
   /// ISpectToaster.showInfoToast(context, title: "Update available");
   /// ```
   static Future<void> showInfoToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String title,
     String? message,
     Duration? duration,
     SnackBarAction? action,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) =>
       _showToast(
         context,
@@ -104,6 +114,8 @@ final class ISpectToaster {
         color: const Color.fromARGB(255, 49, 49, 49),
         duration: duration,
         action: action,
+        messenger: messenger,
+        l10n: l10n,
       );
 
   /// Displays a success toast with a green background.
@@ -112,18 +124,22 @@ final class ISpectToaster {
   /// - `title`: The title of the success message.
   /// - `message`: (Optional) Additional details.
   /// - `trailing`: (Optional) A trailing widget (e.g., an icon or button).
+  /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
+  /// - `l10n`: (Optional) An explicit localizations object to use.
   ///
   /// ### Example:
   /// ```dart
   /// ISpectToaster.showSuccessToast(context, title: "Upload completed");
   /// ```
   static Future<void> showSuccessToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String title,
     String? message,
     Widget? trailing,
     Duration? duration,
     SnackBarAction? action,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) =>
       _showToast(
         context,
@@ -133,6 +149,8 @@ final class ISpectToaster {
         trailing: trailing,
         duration: duration,
         action: action,
+        messenger: messenger,
+        l10n: l10n,
       );
 
   /// Displays a toast indicating that a value has been copied to the clipboard.
@@ -141,27 +159,33 @@ final class ISpectToaster {
   /// - `value`: The copied text.
   /// - `title`: (Optional) A custom title for the toast.
   /// - `showValue`: Determines whether the copied text should be displayed.
+  /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
+  /// - `l10n`: (Optional) An explicit localizations object to use.
   ///
   /// ### Example:
   /// ```dart
   /// ISpectToaster.showCopiedToast(context, value: "Copied text");
   /// ```
   static Future<void> showCopiedToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String value,
     String? title,
     bool showValue = true,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) =>
       _showCopiedToast(
         context,
         value: value,
         title: title,
         showValue: showValue,
+        messenger: messenger,
+        l10n: l10n,
       );
 
   /// A private helper method to display a custom toast message.
   static Future<void> _showToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String title,
     required Color color,
     String? message,
@@ -169,60 +193,76 @@ final class ISpectToaster {
     Widget? trailing,
     Duration? duration,
     SnackBarAction? action,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) async {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: color,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        duration: duration ?? const Duration(milliseconds: 4000),
-        action: action,
-        shape: RoundedRectangleBorder(
-          borderRadius: DecorationUtils.snackbarBorderRadius,
-        ),
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Gap(12),
-            Row(
-              children: [
-                if (icon != null) icon,
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+    final m =
+        messenger ?? (context != null ? ScaffoldMessenger.of(context) : null);
+    if (m == null) return;
+
+    m
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: color,
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          duration: duration ?? const Duration(milliseconds: 4000),
+          action: action,
+          shape: RoundedRectangleBorder(
+            borderRadius: DecorationUtils.snackbarBorderRadius,
+          ),
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Gap(12),
+              Row(
+                children: [
+                  if (icon != null) icon,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                if (trailing != null) trailing,
-              ],
-            ),
-            if (message != null)
-              Text(
-                message,
-                style: const TextStyle(color: Colors.white),
+                  if (trailing != null) trailing,
+                ],
               ),
-          ],
+              if (message != null)
+                Text(
+                  message,
+                  style: const TextStyle(color: Colors.white),
+                ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 
   /// A private helper method to display a "copied to clipboard" toast.
   static Future<void> _showCopiedToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String value,
     required bool showValue,
     String? title,
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
   }) async {
-    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final m =
+        messenger ?? (context != null ? ScaffoldMessenger.of(context) : null);
+    if (m == null) return;
 
-    final copiedText = title ?? '✅ ${context.ispectL10n.logItemCopied}';
+    m.hideCurrentSnackBar();
+
+    final localizations = l10n ?? context?.ispectL10n;
+    if (localizations == null) return;
+
+    final copiedText = title ?? '✅ ${localizations.logItemCopied}';
 
     const titleStyle = TextStyle(
       color: Colors.white,
@@ -239,11 +279,11 @@ final class ISpectToaster {
       if (showValue) TextSpan(text: '\n\n"$value"', style: valueStyle),
     ];
 
-    messenger.showSnackBar(
+    m.showSnackBar(
       SnackBar(
         backgroundColor: ISpectConstants.toastBackgroundColor,
         elevation: 0,
-        behavior: SnackBarBehavior.fixed,
+        behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: DecorationUtils.snackbarBorderRadius,
         ),
@@ -251,12 +291,14 @@ final class ISpectToaster {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Gap(12),
             Text.rich(
               TextSpan(children: textSpans),
               maxLines: 30,
               softWrap: true,
               overflow: TextOverflow.ellipsis,
             ),
+            const Gap(12),
           ],
         ),
       ),

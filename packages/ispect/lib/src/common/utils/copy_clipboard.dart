@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
+import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 
 /// Copies the given `value` to the clipboard and displays a toast notification.
 ///
@@ -22,10 +23,12 @@ import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 const int _maxClipboardLength = 100000;
 
 void copyClipboard(
-  BuildContext context, {
+  BuildContext? context, {
   required String value,
   String? title,
   bool showValue = true,
+  ISpectGeneratedLocalization? l10n,
+  ScaffoldMessengerState? messenger,
 }) {
   final String truncatedValue;
   if (value.length > _maxClipboardLength) {
@@ -41,21 +44,28 @@ void copyClipboard(
     truncatedValue = value;
   }
 
+  final capturedL10n = l10n ?? context?.ispectL10n;
+  final capturedMessenger = messenger ??
+      (context != null ? ScaffoldMessenger.maybeOf(context) : null);
+
   unawaited(
     Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
-      if (!context.mounted) return;
       ISpectToaster.showCopiedToast(
-        context,
+        null,
         value: truncatedValue,
         title: title,
         showValue: showValue,
+        messenger: capturedMessenger,
+        l10n: capturedL10n,
       );
     }).catchError((Object _) {
-      if (!context.mounted) return;
-      ISpectToaster.showErrorToast(
-        context,
-        title: 'Failed to copy to clipboard',
-      );
+      if (capturedMessenger != null) {
+        ISpectToaster.showErrorToast(
+          null,
+          title: 'Failed to copy to clipboard',
+          messenger: capturedMessenger,
+        );
+      }
     }),
   );
 }
