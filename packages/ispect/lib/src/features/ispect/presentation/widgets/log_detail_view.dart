@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 /// Detail view widget for displaying selected log data.
@@ -97,8 +98,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
   final void Function(String id)? onShowRelated;
 
   static void _copyId(BuildContext context, String id) {
-    Clipboard.setData(ClipboardData(text: id));
-    ISpectToaster.showCopiedToast(
+    copyClipboard(
       context,
       value: id,
       title: ISpectLocalization.of(context).correlationIdCopied,

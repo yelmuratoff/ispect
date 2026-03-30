@@ -134,52 +134,57 @@ class ISpectSheetActionButton extends StatelessWidget {
   const ISpectSheetActionButton({
     required this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
     super.key,
   });
 
   final IconData icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final disabled = onPressed == null;
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
     final primaryColor = context.ispectTheme.primary?.resolve(context) ??
         context.appTheme.colorScheme.primary;
+    final disabledAlpha = disabled ? 0.4 : 1.0;
 
-    return Material(
-      color: cardColor,
-      borderRadius: const BorderRadius.all(Radius.circular(10)),
-      child: InkWell(
-        onTap: onPressed,
+    return Opacity(
+      opacity: disabledAlpha,
+      child: Material(
+        color: cardColor,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: context.appTheme.colorScheme.onSurface
-                  .withValues(alpha: 0.08),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.08),
+              ),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
             ),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 16, color: primaryColor),
-                const Gap(8),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: context.appTheme.textTheme.labelMedium?.copyWith(
-                      color: context.appTheme.textColor,
-                      fontWeight: FontWeight.w500,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 16, color: primaryColor),
+                  const Gap(8),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: context.appTheme.textTheme.labelMedium?.copyWith(
+                        color: context.appTheme.textColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

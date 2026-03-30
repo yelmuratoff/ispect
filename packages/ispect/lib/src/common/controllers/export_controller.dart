@@ -3,6 +3,7 @@ import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/logs_file/logs_file.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
+import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Current state of an export operation.
@@ -113,6 +114,8 @@ class ExportController extends ChangeNotifier {
     if (_state == ExportState.exporting) return;
     _state = ExportState.exporting;
     notifyListeners();
+    // Yield to let the UI rebuild and show loading indicator.
+    await Future<void>.delayed(Duration.zero);
     try {
       final content = await contentBuilder(
         _selectedFormat,
@@ -126,7 +129,8 @@ class ExportController extends ChangeNotifier {
       }
       await execute(content);
       _state = ExportState.done;
-    } catch (_) {
+    } catch (e, st) {
+      ISpect.logger.error('Export failed: $e', stackTrace: st);
       _state = ExportState.error;
     }
     notifyListeners();

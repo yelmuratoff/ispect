@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
+import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -69,13 +71,10 @@ class ISpectExportSheet extends StatelessWidget {
                     if (controller.showRedaction)
                       _RedactionToggle(controller: controller),
                     const Gap(8),
-                    if (controller.state == ExportState.exporting)
-                      const _LoadingIndicator()
-                    else
-                      _ActionButtons(
-                        controller: controller,
-                        contentBuilder: contentBuilder,
-                      ),
+                    _ActionButtons(
+                      controller: controller,
+                      contentBuilder: contentBuilder,
+                    ),
                   ],
                 ),
               ),
@@ -175,68 +174,94 @@ class _ActionButtons extends StatelessWidget {
   final ExportController controller;
   final ExportContentBuilder contentBuilder;
 
-  @override
-  Widget build(BuildContext context) => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          ISpectSheetActionButton(
-            icon: Icons.download_rounded,
-            label: context.ispectL10n.downloadLogsFile,
-            onPressed: () async {
-              await controller.download(contentBuilder);
-              if (!context.mounted) return;
-              final path = controller.resultPath;
-              if (path.isNotEmpty) {
-                final message = kIsWeb
-                    ? context.ispectL10n.downloadLogsFile
-                    : context.ispectL10n.logsFileSaved(path);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      message,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                );
-              }
-            },
-          ),
-          if (controller.canShare)
-            ISpectSheetActionButton(
-              icon: Icons.share_rounded,
-              label: context.ispectL10n.share,
-              onPressed: () => controller.share(contentBuilder),
-            ),
-          ISpectSheetActionButton(
-            icon: Icons.copy_rounded,
-            label: context.ispectL10n.copyToClipboardTruncated,
-            onPressed: () => controller.copy(context, contentBuilder),
-          ),
-        ],
-      );
-}
-
-// ── Loading indicator ─────────────────────────────────────────────────────
-
-class _LoadingIndicator extends StatelessWidget {
-  const _LoadingIndicator();
+  void _closeSheet(BuildContext context) {
+    final route = ModalRoute.of(context);
+    if (route is ModalBottomSheetRoute) {
+      Navigator.of(context).removeRoute(route);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
+    final isExporting = controller.state == ExportState.exporting;
+    final l10n = context.ispectL10n;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2, color: primaryColor),
+    // Capture messenger before async gap.
+    final messenger = ScaffoldMessenger.of(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isExporting)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: LinearProgressIndicator(),
+          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ISpectSheetActionButton(
+              icon: Icons.download_rounded,
+              label: l10n.downloadLogsFile,
+              onPressed: isExporting
+                  ? null
+                  : () async {
+                      await controller.download(contentBuilder);
+                      final path = controller.resultPath;
+                      if (path.isEmpty) return;
+                      if (!context.mounted) return;
+                      _closeSheet(context);
+                      if (kIsWeb) {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.downloadLogsFile),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.logsFileSaved(path)),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 6),
+                            action: SnackBarAction(
+                              label: l10n.copyPath,
+                              onPressed: () {
+                                copyClipboard(context, value: path);
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                    },
+            ),
+            if (controller.canShare)
+              ISpectSheetActionButton(
+                icon: Icons.share_rounded,
+                label: l10n.share,
+                onPressed: isExporting
+                    ? null
+                    : () async {
+                        await controller.share(contentBuilder);
+                        if (!context.mounted) return;
+                        _closeSheet(context);
+                      },
+              ),
+            ISpectSheetActionButton(
+              icon: Icons.copy_rounded,
+              label: l10n.copyToClipboardTruncated,
+              onPressed: isExporting
+                  ? null
+                  : () {
+                      controller.copy(context, contentBuilder);
+                      _closeSheet(context);
+                    },
+            ),
+          ],
         ),
-      ),
+      ],
     );
   }
 }
