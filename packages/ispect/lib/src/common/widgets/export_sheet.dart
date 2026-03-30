@@ -151,7 +151,7 @@ class _RedactionToggle extends StatelessWidget {
             SizedBox(
               height: 28,
               child: FittedBox(
-                child: Switch.adaptive(
+                child: Switch(
                   value: !controller.redact,
                   onChanged: (_) => controller.toggleRedaction(),
                 ),
