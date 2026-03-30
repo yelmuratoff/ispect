@@ -597,14 +597,13 @@ class _SearchModeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = context.appTheme.colorScheme.primary;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ISpectSectionLabel(title: context.ispectL10n.searchMode),
-          const Gap(4),
-          SizedBox(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ISpectSectionLabel(title: context.ispectL10n.searchMode),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SizedBox(
             width: double.infinity,
             child: SegmentedButton<SearchMode>(
               segments: [
@@ -639,8 +638,8 @@ class _SearchModeSection extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
