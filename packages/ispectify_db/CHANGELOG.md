@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev01
+## 5.0.0-dev02
 
 ### Breaking Changes
 
@@ -65,7 +65,6 @@ logger.traceAsync(
 logger.push(source: 'fcm', operation: 'received', messageId: id);
 logger.analyticsEvent(source: 'firebase', event: 'purchase');
 ```
-
 
 ## 4.7.4
 
