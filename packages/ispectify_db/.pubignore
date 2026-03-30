@@ -12,3 +12,5 @@ example/web/
 
 # Generated/binary files
 example/lib/objectbox-model.json
+example/libisar.dylib
+example/*.dylib
