@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -95,6 +96,11 @@ class _TraceCorrelationBanner extends StatelessWidget {
   final String? transactionId;
   final void Function(String id)? onShowRelated;
 
+  static void _copyId(BuildContext context, String id) {
+    Clipboard.setData(ClipboardData(text: id));
+    ISpectToaster.showCopiedToast(context, value: id);
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = context.appTheme.colorScheme.tertiary;
@@ -108,7 +114,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
           color: color,
           onTap: onShowRelated != null
               ? () => onShowRelated!(correlationId!)
-              : null,
+              : () => _copyId(context, correlationId!),
         ),
       );
     }
@@ -120,7 +126,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
           color: color,
           onTap: onShowRelated != null
               ? () => onShowRelated!(transactionId!)
-              : null,
+              : () => _copyId(context, transactionId!),
         ),
       );
     }
@@ -188,19 +194,22 @@ class _IdChip extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '$label: ${_truncateId(value)}',
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  Flexible(
+                    child: Text(
+                      '$label: $value',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
                   if (onTap != null) ...[
                     const Gap(4),
                     Icon(
-                      Icons.filter_list_rounded,
+                      Icons.copy_rounded,
                       size: 11,
                       color: color,
                     ),
@@ -211,9 +220,6 @@ class _IdChip extends StatelessWidget {
           ),
         ),
       );
-
-  static String _truncateId(String id) =>
-      id.length > 12 ? '${id.substring(0, 12)}...' : id;
 }
 
 class _CorrelationBanner extends StatelessWidget {
