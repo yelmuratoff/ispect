@@ -295,5 +295,6 @@
    "distanceBottom": "baixo",
    "searchMode": "Modo de pesquisa",
    "logTypes": "Tipos de registro",
-   "includeSensitiveData": "Incluir dados sensíveis"
+   "includeSensitiveData": "Incluir dados sensíveis",
+   "correlationIdCopied": "ID copiado. Cole na busca para filtrar logs relacionados."
 }

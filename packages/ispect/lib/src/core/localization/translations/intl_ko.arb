@@ -295,5 +295,6 @@
    "distanceBottom": "아래",
    "searchMode": "검색 모드",
    "logTypes": "로그 유형",
-   "includeSensitiveData": "민감한 데이터 포함"
+   "includeSensitiveData": "민감한 데이터 포함",
+   "correlationIdCopied": "ID가 복사되었습니다. 검색에 붙여넣어 관련 로그를 필터링하세요."
 }

@@ -1894,6 +1894,12 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Include sensitive data'**
   String get includeSensitiveData;
+
+  /// No description provided for @correlationIdCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'ID copied. Paste it into the search bar to filter related logs.'**
+  String get correlationIdCopied;
 }
 
 class _ISpectGeneratedLocalizationDelegate

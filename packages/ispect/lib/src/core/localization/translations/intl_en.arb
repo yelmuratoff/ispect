@@ -316,5 +316,6 @@
    "distanceBottom": "bottom",
    "searchMode": "Search mode",
    "logTypes": "Log types",
-   "includeSensitiveData": "Include sensitive data"
+   "includeSensitiveData": "Include sensitive data",
+   "correlationIdCopied": "ID copied. Paste it into the search bar to filter related logs."
 }

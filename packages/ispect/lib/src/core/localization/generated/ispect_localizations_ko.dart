@@ -953,4 +953,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => '민감한 데이터 포함';
+
+  @override
+  String get correlationIdCopied => 'ID가 복사되었습니다. 검색에 붙여넣어 관련 로그를 필터링하세요.';
 }

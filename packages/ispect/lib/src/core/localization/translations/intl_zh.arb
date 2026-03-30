@@ -295,5 +295,6 @@
    "distanceBottom": "下",
    "searchMode": "搜索模式",
    "logTypes": "日志类型",
-   "includeSensitiveData": "包含敏感数据"
+   "includeSensitiveData": "包含敏感数据",
+   "correlationIdCopied": "ID已复制。粘贴到搜索栏中以筛选相关日志。"
 }

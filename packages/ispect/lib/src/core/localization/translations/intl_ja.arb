@@ -295,5 +295,6 @@
    "distanceBottom": "下",
    "searchMode": "検索モード",
    "logTypes": "ログタイプ",
-   "includeSensitiveData": "機密データを含める"
+   "includeSensitiveData": "機密データを含める",
+   "correlationIdCopied": "IDをコピーしました。検索に貼り付けて関連ログをフィルタリングできます。"
 }

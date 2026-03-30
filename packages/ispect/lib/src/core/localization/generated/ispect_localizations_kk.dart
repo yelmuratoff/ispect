@@ -976,4 +976,8 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => 'Құпия деректерді қосу';
+
+  @override
+  String get correlationIdCopied =>
+      'ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз.';
 }

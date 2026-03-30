@@ -295,5 +295,6 @@
    "distanceBottom": "снизу",
    "searchMode": "Режим поиска",
    "logTypes": "Типы логов",
-   "includeSensitiveData": "Включить конфиденциальные данные"
+   "includeSensitiveData": "Включить конфиденциальные данные",
+   "correlationIdCopied": "ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи."
 }

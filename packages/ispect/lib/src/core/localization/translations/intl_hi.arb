@@ -295,5 +295,6 @@
    "distanceBottom": "नीचे",
    "searchMode": "खोज मोड",
    "logTypes": "लॉग प्रकार",
-   "includeSensitiveData": "संवेदनशील डेटा शामिल करें"
+   "includeSensitiveData": "संवेदनशील डेटा शामिल करें",
+   "correlationIdCopied": "ID कॉपी किया गया। संबंधित लॉग फ़िल्टर करने के लिए इसे खोज में पेस्ट करें।"
 }

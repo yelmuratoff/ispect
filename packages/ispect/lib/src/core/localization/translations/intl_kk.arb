@@ -295,5 +295,6 @@
    "distanceBottom": "төмен",
    "searchMode": "Іздеу режимі",
    "logTypes": "Лог түрлері",
-   "includeSensitiveData": "Құпия деректерді қосу"
+   "includeSensitiveData": "Құпия деректерді қосу",
+   "correlationIdCopied": "ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз."
 }

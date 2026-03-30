@@ -295,5 +295,6 @@
    "distanceBottom": "bas",
    "searchMode": "Mode de recherche",
    "logTypes": "Types de journaux",
-   "includeSensitiveData": "Inclure les données sensibles"
+   "includeSensitiveData": "Inclure les données sensibles",
+   "correlationIdCopied": "ID copié. Collez-le dans la recherche pour filtrer les logs associés."
 }

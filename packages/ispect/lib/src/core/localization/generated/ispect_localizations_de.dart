@@ -994,4 +994,8 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => 'Sensible Daten einschließen';
+
+  @override
+  String get correlationIdCopied =>
+      'ID kopiert. Fügen Sie es in die Suche ein, um verwandte Logs zu filtern.';
 }

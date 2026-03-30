@@ -961,4 +961,8 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => 'تضمين البيانات الحساسة';
+
+  @override
+  String get correlationIdCopied =>
+      'تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة.';
 }

@@ -953,4 +953,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => '包含敏感数据';
+
+  @override
+  String get correlationIdCopied => 'ID已复制。粘贴到搜索栏中以筛选相关日志。';
 }

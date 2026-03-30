@@ -978,4 +978,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get includeSensitiveData => 'Включить конфиденциальные данные';
+
+  @override
+  String get correlationIdCopied =>
+      'ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи.';
 }

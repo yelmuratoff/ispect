@@ -295,5 +295,6 @@
    "distanceBottom": "أسفل",
    "searchMode": "وضع البحث",
    "logTypes": "أنواع السجلات",
-   "includeSensitiveData": "تضمين البيانات الحساسة"
+   "includeSensitiveData": "تضمين البيانات الحساسة",
+   "correlationIdCopied": "تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة."
 }

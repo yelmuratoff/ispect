@@ -98,7 +98,11 @@ class _TraceCorrelationBanner extends StatelessWidget {
 
   static void _copyId(BuildContext context, String id) {
     Clipboard.setData(ClipboardData(text: id));
-    ISpectToaster.showCopiedToast(context, value: id);
+    ISpectToaster.showCopiedToast(
+      context,
+      value: id,
+      title: ISpectLocalization.of(context).correlationIdCopied,
+    );
   }
 
   @override
