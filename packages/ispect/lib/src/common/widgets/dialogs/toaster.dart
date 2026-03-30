@@ -70,12 +70,14 @@ final class ISpectToaster {
     BuildContext context, {
     required String title,
     String? message,
+    Duration? duration,
   }) =>
       _showToast(
         context,
         title: title,
         message: message,
         color: Colors.red,
+        duration: duration,
       );
 
   /// Displays an informational toast with a dark background.
@@ -92,12 +94,16 @@ final class ISpectToaster {
     BuildContext context, {
     required String title,
     String? message,
+    Duration? duration,
+    SnackBarAction? action,
   }) =>
       _showToast(
         context,
         title: title,
         message: message,
         color: const Color.fromARGB(255, 49, 49, 49),
+        duration: duration,
+        action: action,
       );
 
   /// Displays a success toast with a green background.
@@ -116,6 +122,8 @@ final class ISpectToaster {
     required String title,
     String? message,
     Widget? trailing,
+    Duration? duration,
+    SnackBarAction? action,
   }) =>
       _showToast(
         context,
@@ -123,6 +131,8 @@ final class ISpectToaster {
         message: message,
         color: Colors.green,
         trailing: trailing,
+        duration: duration,
+        action: action,
       );
 
   /// Displays a toast indicating that a value has been copied to the clipboard.
@@ -157,13 +167,17 @@ final class ISpectToaster {
     String? message,
     Widget? icon,
     Widget? trailing,
+    Duration? duration,
+    SnackBarAction? action,
   }) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: color,
         elevation: 0,
-        behavior: SnackBarBehavior.fixed,
+        behavior: SnackBarBehavior.floating,
+        duration: duration ?? const Duration(milliseconds: 4000),
+        action: action,
         shape: RoundedRectangleBorder(
           borderRadius: DecorationUtils.snackbarBorderRadius,
         ),

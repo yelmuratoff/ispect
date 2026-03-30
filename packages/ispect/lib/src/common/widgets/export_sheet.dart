@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
+import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 /// A unified bottom sheet for exporting / sharing / copying log data.
@@ -186,9 +188,6 @@ class _ActionButtons extends StatelessWidget {
     final isExporting = controller.state == ExportState.exporting;
     final l10n = context.ispectL10n;
 
-    // Capture messenger before async gap.
-    final messenger = ScaffoldMessenger.of(context);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,17 +213,17 @@ class _ActionButtons extends StatelessWidget {
                       if (!context.mounted) return;
                       _closeSheet(context);
                       if (kIsWeb) {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.downloadLogsFile),
-                            behavior: SnackBarBehavior.floating,
+                        unawaited(
+                          ISpectToaster.showInfoToast(
+                            context,
+                            title: l10n.downloadLogsFile,
                           ),
                         );
                       } else {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.logsFileSaved(path)),
-                            behavior: SnackBarBehavior.floating,
+                        unawaited(
+                          ISpectToaster.showInfoToast(
+                            context,
+                            title: l10n.logsFileSaved(path),
                             duration: const Duration(seconds: 6),
                             action: SnackBarAction(
                               label: l10n.copyPath,
