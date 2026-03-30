@@ -11,6 +11,7 @@ import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
@@ -399,15 +400,11 @@ class _DetailView extends StatelessWidget {
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) {
-    final json = activeData.toJson();
-    return RepaintBoundary(
-      child: JsonScreen(
-        key: ValueKey(activeData.hashCode),
-        data: json,
-        truncatedData: activeData.toJson(truncated: true),
-        onClose: onClose,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => RepaintBoundary(
+        child: LogDetailView(
+          key: ValueKey(activeData.hashCode),
+          activeData: activeData,
+          onClose: onClose,
+        ),
+      );
 }

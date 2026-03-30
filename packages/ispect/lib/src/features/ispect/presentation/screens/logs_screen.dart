@@ -751,7 +751,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 : () => widget.logsViewController.handleLogItemTap(logEntry),
             onOpenDetail: isDesktop
                 ? () => widget.logsViewController.openLogDetail(logEntry)
-                : null,
+                : () => LogDetailView(
+                      activeData: logEntry,
+                      onClose: () => Navigator.of(context).pop(),
+                    ).push(context),
             onTypeFilterTap: isDesktop
                 ? (type) => _controller.handleTypeFilter(type, widget.logsData)
                 : null,
@@ -800,13 +803,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                     .selectAndFollowDetail(entry.request)
                 : () {
                     final responseLog = entry.response ?? entry.error;
-                    final l10n = ISpectLocalization.of(context);
-                    JsonScreen(
-                      data: entry.request.toJson(),
-                      truncatedData: entry.request.toJson(truncated: true),
-                      correlatedLogData: responseLog?.toJson(),
-                      correlatedLogLabel:
-                          responseLog != null ? l10n.httpResponse : null,
+                    LogDetailView(
+                      activeData: entry.request,
+                      onClose: () => Navigator.of(context).pop(),
+                      correlatedLog: responseLog,
                       correlationDuration: entry.duration,
                     ).push(context);
                   },
@@ -817,12 +817,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                         )
                     : () {
                         final log = entry.response ?? entry.error!;
-                        final l10n = ISpectLocalization.of(context);
-                        JsonScreen(
-                          data: log.toJson(),
-                          truncatedData: log.toJson(truncated: true),
-                          correlatedLogData: entry.request.toJson(),
-                          correlatedLogLabel: l10n.httpRequest,
+                        LogDetailView(
+                          activeData: log,
+                          onClose: () => Navigator.of(context).pop(),
+                          correlatedLog: entry.request,
                           correlationDuration: entry.duration,
                         ).push(context);
                       }
@@ -856,7 +854,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
               : () => widget.logsViewController.handleLogItemTap(logEntry),
           onOpenDetail: isDesktop
               ? () => widget.logsViewController.openLogDetail(logEntry)
-              : null,
+              : () => LogDetailView(
+                    activeData: logEntry,
+                    onClose: () => Navigator.of(context).pop(),
+                  ).push(context),
           onTypeFilterTap: isDesktop
               ? (type) => _controller.handleTypeFilter(type, widget.logsData)
               : null,

@@ -10,6 +10,7 @@ import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
 
 part 'collapsed_body.dart';
 
@@ -168,9 +169,9 @@ class _LogCardHeader extends StatelessWidget {
             data: data,
             message: _message,
             onShareTap: onShareTap,
-            onOpenDetail: () => JsonScreen(
-              data: data.toJson(),
-              truncatedData: data.toJson(truncated: true),
+            onOpenDetail: () => LogDetailView(
+              activeData: data,
+              onClose: () => Navigator.of(context).pop(),
             ).push(context),
           ),
           child: InkWell(
@@ -200,9 +201,9 @@ class _LogCardHeader extends StatelessWidget {
                             log: data,
                           ).push(context)
                       : null,
-                  onExpandTap: () => JsonScreen(
-                    data: data.toJson(),
-                    truncatedData: data.toJson(truncated: true),
+                  onExpandTap: () => LogDetailView(
+                    activeData: data,
+                    onClose: () => Navigator.of(context).pop(),
                   ).push(context),
                   message: data.textMessage,
                   errorMessage: data.httpLogText,

@@ -34,6 +34,16 @@ class LogDetailView extends StatelessWidget {
   /// Receives the ID string to filter by.
   final void Function(String id)? onShowRelated;
 
+  /// Push as a full-screen page (mobile).
+  void push(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(body: SafeArea(child: this)),
+        settings: const RouteSettings(name: 'ISpect Log Detail'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final json = activeData.toJson();
