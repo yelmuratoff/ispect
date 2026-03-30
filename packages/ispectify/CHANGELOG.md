@@ -4,31 +4,37 @@
 
 ### Breaking Changes
 
-- **Universal Trace Architecture:** All logging now goes through a unified `trace()` pipeline with structured `additionalData` (category, source, operation, target, meta, correlationId, transactionId).
-- **Typed log subclasses removed:** `NetworkRequestLog`, `NetworkResponseLog`, `NetworkErrorLog`, `DioRequestLog`, `DioResponseLog`, `DioErrorLog`, `HttpRequestLog`, `HttpResponseLog`, `HttpErrorLog`, `WSSentLog`, `WSReceivedLog`, `WSErrorLog`, `BlocLifecycleLog` and all its subclasses are deleted. Use `ISpectLogData` with `ISpectLogDataX` convenience getters instead.
-- **`ISpectLogType` enum:** 21 new values added (`wsError`, `authSuccess`, `authError`, `storageResult`, `storageQuery`, `storageError`, `pushReceived`, `pushSent`, `pushError`, `paymentSuccess`, `paymentError`, `stateChange`, `stateError`, `sseReceived`, `sseError`, `grpcRequest`, `grpcResponse`, `grpcError`, `graphqlRequest`, `graphqlResponse`, `graphqlError`). New `category` field on each value.
-- **`ISpectDbConfig`:** Now extends `ISpectTraceConfig`. `slowQueryThreshold` renamed to `slowThreshold`. `redactKeys` type changed from `List<String>` to `Set<String>`.
-- **`ISpectWSInterceptorSettings`:** Filter function signatures changed from typed log subclasses (`WSSentLog`) to `ISpectLogData?`.
-- **`network_logs.dart`:** No longer exported from barrel. `kRequestIdKey` removed from public API.
+- **Universal Trace Architecture:** Migration to a unified `trace()` pipeline for all logging operations. This provides structured data and consistent tracking across all application layers.
+- **Log data overhaul:** Replaced inheritance-based log types with a flattened, metadata-driven `ISpectLogData` structure. Specific getters like `isNetwork` or `httpStatusCode` are now available via extensions.
+- **Typed subclasses removed:** Classes such as `NetworkRequestLog`, `DioResponseLog`, and `BlocLifecycleLog` have been removed in favor of the new trace system.
 
-### New Features
+### Improvements
 
-- **Trace API:** `trace()`, `traceAsync()`, `traceSync()`, `traceStart()`/`traceEnd()`, `traceStream()`, `traceTransaction()` — extension methods on `ISpectLogger`.
-- **Domain extensions:** `authTrace()`, `storageTrace()`, `push()`, `analyticsEvent()`, `paymentTrace()`, `sse()`, `grpcTrace()`, `graphqlTrace()`.
-- **`ISpectLogDataX`:** Convenience getters for structured trace data (`traceCategory`, `traceSource`, `httpStatusCode`, `isNetwork`, `isDb`, etc.).
-- **`FakeISpectLogger`:** Test double with Queue-based FIFO and query methods (`byCategory`, `bySource`, `errors`, `slow`, etc.).
-- **`LogExporter`:** Batch export as JSON Lines, Text, Markdown, CSV with formula injection protection and Layer 3 redaction.
-- **`ISpectTraceConfig`:** Base config with sampling, redaction, slow threshold.
-- **`ISpectTraceCategory`:** Defines category with `pickLogKey()` for automatic log key selection.
-- **`TraceKeys`:** Constants for structured `additionalData` keys.
-- **Predefined categories:** `networkCategory`, `dbCategory`, `authCategory`, `wsCategory`, `sseCategory`, `storageCategory`, `stateCategory`, `pushCategory`, `analyticsCategory`, `paymentCategory`, `navigationCategory`, `grpcCategory`, `graphqlCategory`.
-- **Filters:** `CategoryFilter`, `SourceFilter`, `CorrelationFilter`, `TransactionFilter`.
-- **`RedactionService`:** New static methods `redactTarget()` and `redactExportString()` for Layer 2/3 redaction.
-- **`defaultSensitiveKeys`:** 22 new keys added (email, otp, csrf, device tokens, session tokens, etc.).
-- **Event correlation in BLoC:** `ISpectBlocObserver` uses `Expando<Queue<String>>` for FIFO event correlation across `onEvent` → `onTransition` → `onChange` → `onDone`.
-- **Network timing:** Dio and HTTP interceptors now track request duration via `Stopwatch`.
-- **Dynamic UI filter grouping:** Log type filters grouped by `ISpectLogType.category` instead of hardcoded prefix matching.
-- **21 new icons and colors** for new log types in `ISpectConstants`.
+- **New Trace API:** Introduced `trace()`, `traceAsync()`, `traceSync()`, and `traceTransaction()` for highly flexible logging with correlation support.
+- **Domain extensions:** Specialized methods for common operations: `authTrace()`, `storageTrace()`, `push()`, `analyticsEvent()`, `paymentTrace()`, `grpcTrace()`, and more.
+- **Log Exporter:** New utility for exporting logs in various formats (JSON Lines, Text, Markdown, CSV) with built-in redaction and security protection.
+- **Desktop layout:** Completely redesigned with a resizable split view, keyboard navigation, and persistent layout ratios.
+- **Search & Filter:** Completely revamped search with field matching and inline navigation. Filters now include chip-based selection and category grouping.
+- **HTTP Transaction Grouping:** Correlated network logs are now displayed as expandable transaction cards with status and duration indicators.
+- **Logging logic:** Enhanced live tail with new-log indicators, scroll-to-edge support, and relative time formatting.
+- **UI & Visualization:** Added 21 new icons/colors for various log types and improved JSON viewer with array support and async search.
+
+### Behavioral Changes
+
+- **Redaction by default:** All network interceptors now have PII redaction enabled by default using an expanded list of sensitive keys.
+- **BLoC correlation:** `ISpectBlocObserver` now automatically correlates events, transitions, and changes for easier debugging.
+- **Tips dialog:** Moved from automatic popup to a dedicated app bar icon.
+
+### Bug Fixes
+
+- **Async lifecycle:** Fixed critical "deactivated widget's ancestor" errors in `ISpectToaster` and clipboard operations by correctly handling `BuildContext` across async gaps.
+- **Stability:** Resolved memory leaks in UI components and improved robustness of JSON parsing for large datasets.
+- **Security:** Added protection against CSV injection in exports and limited clipboard size to prevent memory issues.
+
+### CI/Tests
+
+- **Tests:** Refactored test suite to support the new trace-based architecture and improved validation for JSON/multipart redaction.
+- **GitHub Actions:** Unified testing and analysis workflows.
 
 ### Migration Guide
 
@@ -37,7 +43,6 @@
 if (log is NetworkRequestLog) {
   print(log.method);
   print(log.url);
-  print(log.statusCode);
 }
 
 // AFTER (v5.0): Use ISpectLogDataX convenience getters
@@ -46,20 +51,6 @@ if (log.isNetwork) {
   print(log.traceOperation);  // HTTP method
   print(log.traceTarget);     // URL
   print(log.httpStatusCode);  // from traceMeta
-}
-
-// BEFORE: ISpectDbConfig
-ISpectDbConfig(slowQueryThreshold: Duration(milliseconds: 100), redactKeys: ['password'])
-
-// AFTER: ISpectDbConfig (extends ISpectTraceConfig)
-ISpectDbConfig(slowThreshold: Duration(milliseconds: 100), redactKeys: {'password'})
-
-// BEFORE: BlocLifecycleLog subclasses
-if (log is BlocEventLog) { print(log.event); }
-
-// AFTER: Use trace additionalData
-if (log.key == ISpectLogType.blocEvent.key) {
-  print(log.additionalData?['meta']?['eventType']);
 }
 
 // NEW: Trace API for custom operations
@@ -75,55 +66,6 @@ logger.push(source: 'fcm', operation: 'received', messageId: id);
 logger.analyticsEvent(source: 'firebase', event: 'purchase');
 ```
 
-## 4.8.0-dev12
-
-### Code Quality
-
-- Removed deprecated APIs and unused code.
-- Added debug-mode error logging to silent error handlers.
-
-### Behavioral Changes
-
-- Redaction enabled by default for all network interceptors (`ISpectDioInterceptor`, `ISpectHttpInterceptor`, `ISpectWSInterceptor`).
-- HTTP transaction grouping enabled by default — correlated request/response/error logs as expandable cards with duration and status badges. Configurable via `ISpectViewController(groupHttpLogs:)`.
-- Search now matches across all log fields: key, title, log level, time, message, exception, error, and additional data.
-
-### Security
-
-- Enhanced data redaction for deeper nested structures, HTTP/Dio interceptors, and logged URLs.
-- Added protection against concurrent modifications and command injections.
-- Implemented size limits for clipboard copying to prevent memory exhaustion and unauthorized data access.
-- Improved error handling to avoid masking critical exceptions.
-
-### Bug Fixes
-
-- Fixed memory leaks, use-after-dispose issues, and UI state errors.
-- Enhanced stability for JSON parsing, log deserialization, and large file streams.
-- Resolved various null-pointer exceptions, out-of-bounds errors, and unsafe type casts.
-
-### Improvements
-
-- Desktop layout with resizable split view, column resizing, keyboard navigation, sticky headers, and persistent split ratio.
-- Log screen live tail with new-log indicator, relative time formatting, scroll-to-edge FAB, log order toggle, and search/filter chips with counts.
-- JSON viewer async search with loading indicator, nested array support, and clear button.
-- Unified share sheets into `ISpectShareSheet`, redesigned settings sheet. Added `showISpectSheet` for adaptive display (dialog on desktop, sheet on mobile).
-- Draggable panel dark mode theming fix, upgraded `draggable_panel` to `^2.0.0` with M3 defaults.
-- Log cards context menu on long press, improved action buttons with tooltips.
-- Network logs request-response correlation via `requestId`, cross-navigation between correlated logs, transaction share.
-- Search highlights matching cards and scrolls to them by default; filter mode available via filter sheet. Inline ↑/↓ navigation in the search bar.
-- Replaced inline filter chips and mode toggle with a single filter button opening an adaptive sheet with search mode control and log type chips.
-- `ISpectLogData` now has an auto-generated unique `id` field.
-- Tips dialog moved from auto-popup to app bar icon button.
-- New localization keys for search mode, log types, and updated translations across all 12 languages.
-
-### CI
-
-- Introduced GitHub Actions workflow for testing and analysis.
-
-### Tests
-
-- Updated `HttpResponseData.toJson` tests to verify JSON/non-JSON body parsing and redaction scenarios.
-- Refactored HTTP logging tests to directly construct log objects for verification.
 
 ## 4.7.4
 
