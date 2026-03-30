@@ -37,8 +37,9 @@ final class ISpectToaster {
   /// ISpectToaster.showLoadingToast(context, title: "Loading...");
   /// ```
   static Future<void> showLoadingToast(
-    BuildContext context, {
+    BuildContext? context, {
     required String title,
+    ScaffoldMessengerState? messenger,
   }) =>
       _showToast(
         context,
@@ -55,6 +56,7 @@ final class ISpectToaster {
           ],
         ),
         color: const Color.fromARGB(255, 49, 49, 49),
+        messenger: messenger,
       );
 
   /// Displays an error toast with a red background.
