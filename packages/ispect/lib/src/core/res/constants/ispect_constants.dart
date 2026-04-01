@@ -373,30 +373,37 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'bloc-event',
+        title: 'BLoC Event',
         description: l10n.blocEventLogDesc,
       ),
       LogDescription(
         key: 'bloc-transition',
+        title: 'BLoC Transition',
         description: l10n.blocTransitionLogDesc,
       ),
       LogDescription(
         key: 'bloc-done',
+        title: 'BLoC Done',
         description: l10n.blocDoneLogDesc,
       ),
       LogDescription(
         key: 'bloc-close',
+        title: 'BLoC Close',
         description: l10n.blocCloseLogDesc,
       ),
       LogDescription(
         key: 'bloc-create',
+        title: 'BLoC Create',
         description: l10n.blocCreateLogDesc,
       ),
       LogDescription(
         key: 'bloc-state',
+        title: 'BLoC State',
         description: l10n.blocStateLogDesc,
       ),
       LogDescription(
         key: 'bloc-error',
+        title: 'BLoC Error',
         description: l10n.blocErrorLogDesc,
       ),
       LogDescription(
@@ -421,26 +428,32 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'ws-sent',
+        title: 'WebSocket Sent',
         description: l10n.wsSentLogDesc,
       ),
       LogDescription(
         key: 'ws-received',
+        title: 'WebSocket Received',
         description: l10n.wsReceivedLogDesc,
       ),
       LogDescription(
         key: 'db-query',
+        title: 'Database Query',
         description: l10n.dbQueryLogDesc,
       ),
       LogDescription(
         key: 'db-result',
+        title: 'Database Result',
         description: l10n.dbResultLogDesc,
       ),
       LogDescription(
         key: 'db-error',
+        title: 'Database Error',
         description: l10n.dbErrorLogDesc,
       ),
       LogDescription(
         key: 'ws-error',
+        title: 'WebSocket Error',
         description: l10n.wsErrorLogDesc,
       ),
       LogDescription(
