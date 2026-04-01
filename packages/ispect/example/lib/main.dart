@@ -459,7 +459,8 @@ class _HomePageState extends State<_HomePage> {
     logger.info('Sample info message', additionalData: {'type': 'info'});
     logger.debug('Sample debug message', additionalData: {'type': 'debug'});
     logger.verbose('Sample verbose trace', additionalData: {'type': 'verbose'});
-    logger.warning('Sample warning message', additionalData: {'type': 'warning'});
+    logger
+        .warning('Sample warning message', additionalData: {'type': 'warning'});
     logger.error(
       'Sample error message',
       exception: Exception('SampleError'),
@@ -512,7 +513,11 @@ class _HomePageState extends State<_HomePage> {
     logger.log(
       'GET https://api.example.com/missing',
       type: ISpectLogType.httpRequest,
-      additionalData: {TraceKeys.correlationId: httpErrId, 'method': 'GET'},
+      additionalData: {
+        TraceKeys.correlationId: httpErrId,
+        'method': 'GET',
+        'url': 'https://api.example.com/missing',
+      },
     );
     logger.log(
       '404 Not Found',
@@ -544,32 +549,49 @@ class _HomePageState extends State<_HomePage> {
 
     // \u2500\u2500 BLoC \u2014 correlationId = bloc instance ID, links full lifecycle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     final blocId = generateTraceId();
-    logger.log('CounterBloc', type: ISpectLogType.blocCreate,
+    logger.log('CounterBloc',
+        type: ISpectLogType.blocCreate,
         additionalData: {TraceKeys.correlationId: blocId});
-    logger.log('IncrementEvent', type: ISpectLogType.blocEvent,
-        additionalData: {TraceKeys.correlationId: blocId, 'event': 'IncrementEvent'});
-    logger.log('CounterState(0) \u2192 CounterState(1)', type: ISpectLogType.blocTransition,
+    logger.log('IncrementEvent',
+        type: ISpectLogType.blocEvent,
+        additionalData: {
+          TraceKeys.correlationId: blocId,
+          'event': 'IncrementEvent'
+        });
+    logger.log('CounterState(0) \u2192 CounterState(1)',
+        type: ISpectLogType.blocTransition,
         additionalData: {TraceKeys.correlationId: blocId, 'from': 0, 'to': 1});
-    logger.log('CounterState(1)', type: ISpectLogType.blocState,
-        additionalData: {TraceKeys.correlationId: blocId, 'state': 'CounterState(1)'});
-    logger.log('CounterBloc stream done', type: ISpectLogType.blocDone,
+    logger.log('CounterState(1)',
+        type: ISpectLogType.blocState,
+        additionalData: {
+          TraceKeys.correlationId: blocId,
+          'state': 'CounterState(1)'
+        });
+    logger.log('CounterBloc stream done',
+        type: ISpectLogType.blocDone,
         additionalData: {TraceKeys.correlationId: blocId});
-    logger.log('CounterBloc closed', type: ISpectLogType.blocClose,
+    logger.log('CounterBloc closed',
+        type: ISpectLogType.blocClose,
         additionalData: {TraceKeys.correlationId: blocId});
-    logger.log('Unhandled event', type: ISpectLogType.blocError,
+    logger.log('Unhandled event',
+        type: ISpectLogType.blocError,
         exception: Exception('Bad state: stream already closed'),
         stackTrace: StackTrace.current,
         additionalData: {TraceKeys.correlationId: blocId});
 
     // \u2500\u2500 Riverpod \u2014 correlationId = provider instance ID \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     final rvpId = generateTraceId();
-    logger.log('counterProvider', type: ISpectLogType.riverpodAdd,
+    logger.log('counterProvider',
+        type: ISpectLogType.riverpodAdd,
         additionalData: {TraceKeys.correlationId: rvpId});
-    logger.log('counterProvider: 0 \u2192 1', type: ISpectLogType.riverpodUpdate,
+    logger.log('counterProvider: 0 \u2192 1',
+        type: ISpectLogType.riverpodUpdate,
         additionalData: {TraceKeys.correlationId: rvpId, 'prev': 0, 'next': 1});
-    logger.log('counterProvider disposed', type: ISpectLogType.riverpodDispose,
+    logger.log('counterProvider disposed',
+        type: ISpectLogType.riverpodDispose,
         additionalData: {TraceKeys.correlationId: rvpId});
-    logger.log('counterProvider threw', type: ISpectLogType.riverpodFail,
+    logger.log('counterProvider threw',
+        type: ISpectLogType.riverpodFail,
         exception: Exception('ProviderException: circular dependency'),
         stackTrace: StackTrace.current,
         additionalData: {TraceKeys.correlationId: rvpId});
@@ -783,8 +805,7 @@ class _HomePageState extends State<_HomePage> {
         path: '/temp/stale.bin',
         correlationId: generateTraceId(),
         config: const ISpectTraceConfig(attachStackOnError: true),
-        run: () async =>
-            throw Exception('StorageError: object does not exist'),
+        run: () async => throw Exception('StorageError: object does not exist'),
       );
     } catch (_) {}
 
@@ -801,7 +822,8 @@ class _HomePageState extends State<_HomePage> {
     logger.push(
       source: 'fcm',
       operation: 'opened',
-      messageId: pushMsgId, // same corrId via messageId \u2192 links to received
+      messageId:
+          pushMsgId, // same corrId via messageId \u2192 links to received
       data: {'action': 'open_chat', 'chatId': 'chat_42'},
     );
     // 'send' op \u2192 pushSent type (in secondaryOperations)
@@ -853,8 +875,7 @@ class _HomePageState extends State<_HomePage> {
         await Future<void>.delayed(const Duration(milliseconds: 200));
         return {'chargeId': 'ch_001', 'status': 'succeeded'};
       },
-      projectResult: (r) =>
-          {'chargeId': r['chargeId'], 'status': r['status']},
+      projectResult: (r) => {'chargeId': r['chargeId'], 'status': r['status']},
     );
     // Same corrId = same checkout flow
     try {
