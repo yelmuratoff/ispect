@@ -302,6 +302,16 @@ class _HomePageState extends State<_HomePage> {
           _QuickLogsGrid(),
           const SizedBox(height: 20),
 
+          // All log types
+          _SectionHeader(title: 'All Log Types'),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: _generateAllLogTypes,
+            icon: const Icon(Icons.list_alt),
+            label: const Text('Generate one log per every type'),
+          ),
+          const SizedBox(height: 20),
+
           // Scenarios
           _SectionHeader(title: 'Scenarios'),
           const SizedBox(height: 8),
@@ -424,6 +434,296 @@ class _HomePageState extends State<_HomePage> {
   }
 
   // -- Actions --
+
+  void _generateAllLogTypes() {
+    final logger = ISpect.logger;
+
+    // ── General ──────────────────────────────────────────────────────────
+    logger.info('Sample info message', additionalData: {'type': 'info'});
+    logger.debug('Sample debug message', additionalData: {'type': 'debug'});
+    logger.verbose('Sample verbose trace', additionalData: {'type': 'verbose'});
+    logger
+        .warning('Sample warning message', additionalData: {'type': 'warning'});
+    logger.error(
+      'Sample error message',
+      exception: Exception('SampleError'),
+      stackTrace: StackTrace.current,
+    );
+    logger.critical(
+      'Sample critical message',
+      exception: Exception('SampleCritical'),
+      stackTrace: StackTrace.current,
+    );
+    logger.handle(
+      exception: Exception('SampleException'),
+      stackTrace: StackTrace.current,
+      message: 'Sample exception (handle)',
+    );
+    logger.good('Sample good message');
+    logger.print('Sample print message');
+    logger.route('Sample route: /home → /detail',
+        transitionId: 'transition_001');
+    logger.provider('Sample provider state updated');
+    logger.track(
+      'sample_event',
+      event: 'sample_event',
+      parameters: {'screen': 'AllLogTypes', 'source': 'manual'},
+    );
+
+    // ── Network (HTTP) ───────────────────────────────────────────────────
+    logger.log(
+      'GET https://example.com/api/data',
+      type: ISpectLogType.httpRequest,
+      additionalData: {'method': 'GET', 'url': 'https://example.com/api/data'},
+    );
+    logger.log(
+      '200 OK https://example.com/api/data',
+      type: ISpectLogType.httpResponse,
+      additionalData: {'status': 200, 'durationMs': 142},
+    );
+    logger.log(
+      '404 Not Found https://example.com/api/missing',
+      type: ISpectLogType.httpError,
+      exception: Exception('404 Not Found'),
+      stackTrace: StackTrace.current,
+      additionalData: {'status': 404},
+    );
+
+    // ── WebSocket ────────────────────────────────────────────────────────
+    logger.log(
+      'WS sent: {"type":"subscribe","channel":"chat"}',
+      type: ISpectLogType.wsSent,
+      additionalData: {'event': 'subscribe', 'channel': 'chat'},
+    );
+    logger.log(
+      'WS received: {"type":"message","text":"Hello!"}',
+      type: ISpectLogType.wsReceived,
+      additionalData: {'event': 'message', 'text': 'Hello!'},
+    );
+    logger.log(
+      'WS connection lost',
+      type: ISpectLogType.wsError,
+      exception: Exception('WebSocket: connection closed unexpectedly'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── BLoC ─────────────────────────────────────────────────────────────
+    logger.log(
+      'CounterBloc created',
+      type: ISpectLogType.blocCreate,
+      additionalData: {'bloc': 'CounterBloc'},
+    );
+    logger.log(
+      'CounterBloc → IncrementEvent',
+      type: ISpectLogType.blocEvent,
+      additionalData: {'bloc': 'CounterBloc', 'event': 'IncrementEvent'},
+    );
+    logger.log(
+      'CounterBloc: 0 → 1',
+      type: ISpectLogType.blocTransition,
+      additionalData: {'bloc': 'CounterBloc', 'from': 0, 'to': 1},
+    );
+    logger.log(
+      'CounterBloc state: CounterState(value: 1)',
+      type: ISpectLogType.blocState,
+      additionalData: {'bloc': 'CounterBloc', 'state': 'CounterState(1)'},
+    );
+    logger.log(
+      'CounterBloc stream done',
+      type: ISpectLogType.blocDone,
+      additionalData: {'bloc': 'CounterBloc'},
+    );
+    logger.log(
+      'CounterBloc closed',
+      type: ISpectLogType.blocClose,
+      additionalData: {'bloc': 'CounterBloc'},
+    );
+    logger.log(
+      'CounterBloc error',
+      type: ISpectLogType.blocError,
+      exception: Exception('BlocError: unhandled event'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Riverpod ─────────────────────────────────────────────────────────
+    logger.log(
+      'counterProvider added',
+      type: ISpectLogType.riverpodAdd,
+      additionalData: {'provider': 'counterProvider'},
+    );
+    logger.log(
+      'counterProvider: 0 → 1',
+      type: ISpectLogType.riverpodUpdate,
+      additionalData: {'provider': 'counterProvider', 'prev': 0, 'next': 1},
+    );
+    logger.log(
+      'counterProvider disposed',
+      type: ISpectLogType.riverpodDispose,
+      additionalData: {'provider': 'counterProvider'},
+    );
+    logger.log(
+      'counterProvider failed',
+      type: ISpectLogType.riverpodFail,
+      exception: Exception('RiverpodError: provider threw'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── State ─────────────────────────────────────────────────────────────
+    logger.log(
+      'State: loading → loaded',
+      type: ISpectLogType.stateChange,
+      additionalData: {'from': 'loading', 'to': 'loaded'},
+    );
+    logger.log(
+      'State transition failed',
+      type: ISpectLogType.stateError,
+      exception: Exception('StateError: unexpected state'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Database ─────────────────────────────────────────────────────────
+    logger.log(
+      'SELECT * FROM users WHERE active = 1 LIMIT 10',
+      type: ISpectLogType.dbQuery,
+      additionalData: {'table': 'users', 'source': 'sqlite'},
+    );
+    logger.log(
+      'Query result: 3 rows in 12ms',
+      type: ISpectLogType.dbResult,
+      additionalData: {'rows': 3, 'durationMs': 12},
+    );
+    logger.log(
+      'DB query failed: no such table',
+      type: ISpectLogType.dbError,
+      exception: Exception('DBError: no such table: users'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Auth ──────────────────────────────────────────────────────────────
+    logger.log(
+      'Sign-in succeeded',
+      type: ISpectLogType.authSuccess,
+      additionalData: {'uid': 'usr_001', 'provider': 'email'},
+    );
+    logger.log(
+      'Sign-in failed',
+      type: ISpectLogType.authError,
+      exception: Exception('auth/wrong-password'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Storage ───────────────────────────────────────────────────────────
+    logger.log(
+      'download /avatars/usr_001.jpg',
+      type: ISpectLogType.storageQuery,
+      additionalData: {'path': '/avatars/usr_001.jpg', 'op': 'download'},
+    );
+    logger.log(
+      'Download complete: 240 KB',
+      type: ISpectLogType.storageResult,
+      additionalData: {'path': '/avatars/usr_001.jpg', 'sizeBytes': 245760},
+    );
+    logger.log(
+      'Storage permission denied',
+      type: ISpectLogType.storageError,
+      exception: Exception('StorageError: permission denied'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Push ──────────────────────────────────────────────────────────────
+    logger.log(
+      'Push received: "New message from Alice"',
+      type: ISpectLogType.pushReceived,
+      additionalData: {'title': 'New message from Alice', 'topic': 'chat'},
+    );
+    logger.log(
+      'Push sent to topic: promotions',
+      type: ISpectLogType.pushSent,
+      additionalData: {'topic': 'promotions', 'count': 1000},
+    );
+    logger.log(
+      'Push delivery failed',
+      type: ISpectLogType.pushError,
+      exception: Exception('PushError: invalid registration token'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── Payment ───────────────────────────────────────────────────────────
+    logger.log(
+      'Payment succeeded: \$9.99 USD',
+      type: ISpectLogType.paymentSuccess,
+      additionalData: {
+        'amount': 9.99,
+        'currency': 'USD',
+        'chargeId': 'ch_001',
+      },
+    );
+    logger.log(
+      'Payment failed: card declined',
+      type: ISpectLogType.paymentError,
+      exception: Exception('PaymentError: card_declined'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── SSE ────────────────────────────────────────────────────────────────
+    logger.log(
+      'SSE event: {"status":"ok","ts":1234567890}',
+      type: ISpectLogType.sseReceived,
+      additionalData: {'event': 'update', 'data': '{"status":"ok"}'},
+    );
+    logger.log(
+      'SSE connection timeout',
+      type: ISpectLogType.sseError,
+      exception: Exception('SSEError: connection timeout after 30s'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── gRPC ───────────────────────────────────────────────────────────────
+    logger.log(
+      'gRPC UserService.GetProfile',
+      type: ISpectLogType.grpcRequest,
+      additionalData: {'service': 'UserService', 'method': 'GetProfile'},
+    );
+    logger.log(
+      'gRPC UserService.GetProfile → OK (45ms)',
+      type: ISpectLogType.grpcResponse,
+      additionalData: {
+        'service': 'UserService',
+        'method': 'GetProfile',
+        'durationMs': 45,
+      },
+    );
+    logger.log(
+      'gRPC UNAVAILABLE',
+      type: ISpectLogType.grpcError,
+      exception: Exception('gRPC status: UNAVAILABLE'),
+      stackTrace: StackTrace.current,
+    );
+
+    // ── GraphQL ────────────────────────────────────────────────────────────
+    logger.log(
+      'GraphQL query: GetUser(id: "001")',
+      type: ISpectLogType.graphqlRequest,
+      additionalData: {
+        'operation': 'GetUser',
+        'variables': {'id': '001'},
+      },
+    );
+    logger.log(
+      'GraphQL response: GetUser → {"id":"001","name":"Alice"}',
+      type: ISpectLogType.graphqlResponse,
+      additionalData: {
+        'operation': 'GetUser',
+        'data': {'user': 'Alice'},
+      },
+    );
+    logger.log(
+      'GraphQL error: field "unknown" not found',
+      type: ISpectLogType.graphqlError,
+      exception: Exception('GraphQL: Cannot query field "unknown"'),
+      stackTrace: StackTrace.current,
+    );
+  }
 
   void _togglePeriodicLogger() {
     setState(() {
