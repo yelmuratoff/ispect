@@ -35,4 +35,38 @@ extension ISpectLoggerStorage on ISpectLogger {
       projectResult: projectResult,
     );
   }
+
+  void storage({
+    required String source,
+    required String operation,
+    String? bucket,
+    String? path,
+    int? sizeBytes,
+    String? contentType,
+    bool? success,
+    Object? error,
+    Duration? duration,
+    Map<String, Object?>? meta,
+    ISpectTraceConfig? config,
+    String? correlationId,
+  }) {
+    if (!options.enabled) return;
+    trace(
+      category: storageCategory,
+      source: source,
+      operation: operation,
+      target: path,
+      success: success,
+      error: error,
+      duration: duration,
+      meta: {
+        if (bucket != null) 'bucket': bucket,
+        if (sizeBytes != null) 'sizeBytes': sizeBytes,
+        if (contentType != null) 'contentType': contentType,
+        ...?meta,
+      },
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 }

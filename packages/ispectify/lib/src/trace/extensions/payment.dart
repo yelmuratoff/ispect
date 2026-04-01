@@ -21,7 +21,7 @@ extension ISpectLoggerPayment on ISpectLogger {
       category: paymentCategory,
       source: source,
       operation: operation,
-      key: productId,
+      target: productId,
       meta: {
         if (amount != null) 'amount': amount,
         if (currency != null) 'currency': currency,
