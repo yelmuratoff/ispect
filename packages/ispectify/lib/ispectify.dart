@@ -52,7 +52,6 @@ export 'src/trace/trace_category_ids.dart';
 export 'src/trace/trace_config.dart';
 export 'src/trace/trace_extension.dart';
 export 'src/trace/trace_keys.dart';
-export 'src/trace/trace_stream_transformer.dart';
 export 'src/trace/trace_token.dart';
 export 'src/utils/common_utils.dart';
 export 'src/utils/datetime_formatter.dart';

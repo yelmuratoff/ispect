@@ -125,6 +125,41 @@ class ISpectTheme {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
         : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
+
+    Map<String, Color> parseColors(Map<String, dynamic>? raw) {
+      if (raw == null) return const {};
+      final result = <String, Color>{};
+      for (final e in raw.entries) {
+        if (e.value == null) continue;
+        if (e.value is! num) {
+          throw ArgumentError.value(
+            e.value,
+            'log_colors[${e.key}]',
+            'Expected int color value, got ${e.value.runtimeType}',
+          );
+        }
+        result[e.key] = Color((e.value as num).toInt());
+      }
+      return result;
+    }
+
+    Map<String, IconData> parseIcons(Map<String, dynamic>? raw) {
+      if (raw == null) return const {};
+      final result = <String, IconData>{};
+      for (final e in raw.entries) {
+        if (e.value == null) continue;
+        if (e.value is! num) {
+          throw ArgumentError.value(
+            e.value,
+            'log_icons[${e.key}]',
+            'Expected int codePoint value, got ${e.value.runtimeType}',
+          );
+        }
+        result[e.key] = IconData((e.value as num).toInt());
+      }
+      return result;
+    }
+
     return ISpectTheme(
       pageTitle: cast<String?>('page_title'),
       background: map['background'] != null
@@ -152,13 +187,8 @@ class ISpectTheme {
               Map.from(cast<Map<String, dynamic>>('card')),
             )
           : null,
-      logColors: cast<Map<String, dynamic>?>('log_colors')
-              ?.map((k, v) => MapEntry(k, Color((v as num?)?.toInt() ?? 0))) ??
-          const <String, Color>{},
-      logIcons: cast<Map<String, dynamic>?>('log_icons')?.map(
-            (k, v) => MapEntry(k, IconData((v as num?)?.toInt() ?? 0)),
-          ) ??
-          const <String, IconData>{},
+      logColors: parseColors(cast<Map<String, dynamic>?>('log_colors')),
+      logIcons: parseIcons(cast<Map<String, dynamic>?>('log_icons')),
       logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
               ?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
