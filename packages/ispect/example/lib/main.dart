@@ -198,6 +198,9 @@ class _HomePageState extends State<_HomePage> {
   double _nestingDepth = 2;
   bool _isGenerating = false;
 
+  // All log types
+  bool _isGeneratingAllTypes = false;
+
   // Periodic logger
   Timer? _periodicTimer;
   int _periodicCounter = 0;
@@ -306,8 +309,13 @@ class _HomePageState extends State<_HomePage> {
           _SectionHeader(title: 'All Log Types'),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: _generateAllLogTypes,
-            icon: const Icon(Icons.list_alt),
+            onPressed: _isGeneratingAllTypes ? null : _generateAllLogTypes,
+            icon: _isGeneratingAllTypes
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.list_alt),
             label: const Text('Generate one log per every type'),
           ),
           const SizedBox(height: 20),
@@ -435,15 +443,23 @@ class _HomePageState extends State<_HomePage> {
 
   // -- Actions --
 
-  void _generateAllLogTypes() {
+  Future<void> _generateAllLogTypes() async {
+    setState(() => _isGeneratingAllTypes = true);
+    try {
+      await _runAllLogTypes();
+    } finally {
+      setState(() => _isGeneratingAllTypes = false);
+    }
+  }
+
+  Future<void> _runAllLogTypes() async {
     final logger = ISpect.logger;
 
     // ── General ──────────────────────────────────────────────────────────
     logger.info('Sample info message', additionalData: {'type': 'info'});
     logger.debug('Sample debug message', additionalData: {'type': 'debug'});
     logger.verbose('Sample verbose trace', additionalData: {'type': 'verbose'});
-    logger
-        .warning('Sample warning message', additionalData: {'type': 'warning'});
+    logger.warning('Sample warning message', additionalData: {'type': 'warning'});
     logger.error(
       'Sample error message',
       exception: Exception('SampleError'),
@@ -461,8 +477,7 @@ class _HomePageState extends State<_HomePage> {
     );
     logger.good('Sample good message');
     logger.print('Sample print message');
-    logger.route('Sample route: /home → /detail',
-        transitionId: 'transition_001');
+    logger.route('/home \u2192 /detail', transitionId: generateTraceId());
     logger.provider('Sample provider state updated');
     logger.track(
       'sample_event',
@@ -470,259 +485,526 @@ class _HomePageState extends State<_HomePage> {
       parameters: {'screen': 'AllLogTypes', 'source': 'manual'},
     );
 
-    // ── Network (HTTP) ───────────────────────────────────────────────────
+    // \u2500\u2500 HTTP \u2014 correlationId links request \u2192 response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    // Success: request + response share the same corrId
+    final httpOkId = generateTraceId();
     logger.log(
-      'GET https://example.com/api/data',
+      'GET https://api.example.com/users',
       type: ISpectLogType.httpRequest,
-      additionalData: {'method': 'GET', 'url': 'https://example.com/api/data'},
+      additionalData: {
+        TraceKeys.correlationId: httpOkId,
+        'method': 'GET',
+        'url': 'https://api.example.com/users',
+      },
     );
+    await Future<void>.delayed(const Duration(milliseconds: 80));
     logger.log(
-      '200 OK https://example.com/api/data',
+      '200 OK \u2014 3 users returned',
       type: ISpectLogType.httpResponse,
-      additionalData: {'status': 200, 'durationMs': 142},
+      additionalData: {
+        TraceKeys.correlationId: httpOkId,
+        'status': 200,
+        'durationMs': 80,
+      },
+    );
+    // Error: request + error share the same corrId
+    final httpErrId = generateTraceId();
+    logger.log(
+      'GET https://api.example.com/missing',
+      type: ISpectLogType.httpRequest,
+      additionalData: {TraceKeys.correlationId: httpErrId, 'method': 'GET'},
     );
     logger.log(
-      '404 Not Found https://example.com/api/missing',
+      '404 Not Found',
       type: ISpectLogType.httpError,
       exception: Exception('404 Not Found'),
       stackTrace: StackTrace.current,
-      additionalData: {'status': 404},
+      additionalData: {TraceKeys.correlationId: httpErrId, 'status': 404},
     );
 
-    // ── WebSocket ────────────────────────────────────────────────────────
+    // \u2500\u2500 WebSocket \u2014 correlationId links frames of the same session \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final wsId = generateTraceId();
     logger.log(
-      'WS sent: {"type":"subscribe","channel":"chat"}',
+      '{"type":"subscribe","channel":"prices"}',
       type: ISpectLogType.wsSent,
-      additionalData: {'event': 'subscribe', 'channel': 'chat'},
+      additionalData: {TraceKeys.correlationId: wsId, 'channel': 'prices'},
     );
     logger.log(
-      'WS received: {"type":"message","text":"Hello!"}',
+      '{"type":"snapshot","data":[...]}',
       type: ISpectLogType.wsReceived,
-      additionalData: {'event': 'message', 'text': 'Hello!'},
+      additionalData: {TraceKeys.correlationId: wsId},
     );
     logger.log(
-      'WS connection lost',
+      'WS connection dropped',
       type: ISpectLogType.wsError,
-      exception: Exception('WebSocket: connection closed unexpectedly'),
+      exception: Exception('WebSocket: 1006 Abnormal Closure'),
       stackTrace: StackTrace.current,
+      additionalData: {TraceKeys.correlationId: wsId},
     );
 
-    // ── BLoC ─────────────────────────────────────────────────────────────
-    logger.log(
-      'CounterBloc created',
-      type: ISpectLogType.blocCreate,
-      additionalData: {'bloc': 'CounterBloc'},
+    // \u2500\u2500 BLoC \u2014 correlationId = bloc instance ID, links full lifecycle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final blocId = generateTraceId();
+    logger.log('CounterBloc', type: ISpectLogType.blocCreate,
+        additionalData: {TraceKeys.correlationId: blocId});
+    logger.log('IncrementEvent', type: ISpectLogType.blocEvent,
+        additionalData: {TraceKeys.correlationId: blocId, 'event': 'IncrementEvent'});
+    logger.log('CounterState(0) \u2192 CounterState(1)', type: ISpectLogType.blocTransition,
+        additionalData: {TraceKeys.correlationId: blocId, 'from': 0, 'to': 1});
+    logger.log('CounterState(1)', type: ISpectLogType.blocState,
+        additionalData: {TraceKeys.correlationId: blocId, 'state': 'CounterState(1)'});
+    logger.log('CounterBloc stream done', type: ISpectLogType.blocDone,
+        additionalData: {TraceKeys.correlationId: blocId});
+    logger.log('CounterBloc closed', type: ISpectLogType.blocClose,
+        additionalData: {TraceKeys.correlationId: blocId});
+    logger.log('Unhandled event', type: ISpectLogType.blocError,
+        exception: Exception('Bad state: stream already closed'),
+        stackTrace: StackTrace.current,
+        additionalData: {TraceKeys.correlationId: blocId});
+
+    // \u2500\u2500 Riverpod \u2014 correlationId = provider instance ID \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final rvpId = generateTraceId();
+    logger.log('counterProvider', type: ISpectLogType.riverpodAdd,
+        additionalData: {TraceKeys.correlationId: rvpId});
+    logger.log('counterProvider: 0 \u2192 1', type: ISpectLogType.riverpodUpdate,
+        additionalData: {TraceKeys.correlationId: rvpId, 'prev': 0, 'next': 1});
+    logger.log('counterProvider disposed', type: ISpectLogType.riverpodDispose,
+        additionalData: {TraceKeys.correlationId: rvpId});
+    logger.log('counterProvider threw', type: ISpectLogType.riverpodFail,
+        exception: Exception('ProviderException: circular dependency'),
+        stackTrace: StackTrace.current,
+        additionalData: {TraceKeys.correlationId: rvpId});
+
+    // \u2500\u2500 State \u2014 traceSync auto-times, picks stateChange / stateError \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    logger.traceSync<String>(
+      category: stateCategory,
+      source: 'home-cubit',
+      operation: 'emit',
+      run: () => 'LoadedState',
+      projectResult: (s) => {'state': s},
     );
-    logger.log(
-      'CounterBloc → IncrementEvent',
-      type: ISpectLogType.blocEvent,
-      additionalData: {'bloc': 'CounterBloc', 'event': 'IncrementEvent'},
+    try {
+      logger.traceSync<void>(
+        category: stateCategory,
+        source: 'home-cubit',
+        operation: 'emit',
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () => throw Exception('StateError: unexpected transition'),
+      );
+    } catch (_) {}
+
+    // \u2500\u2500 DB \u2014 dbTrace (query\u2192dbQuery), dbTrace (insert\u2192dbResult), slow query, \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    //         dbTrace error, dbTraceSync, dbStart/dbEnd, dbTransaction
+
+    // 'query' op \u2192 dbQuery type
+    await logger.dbTrace<List<Map<String, Object?>>>(
+      source: 'sqlite',
+      operation: 'query',
+      table: 'users',
+      statement: 'SELECT * FROM users WHERE active = ? LIMIT 10',
+      args: [true],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 12));
+        return [
+          {'id': 1, 'name': 'Alice'},
+          {'id': 2, 'name': 'Bob'},
+        ];
+      },
+      projectResult: (rows) => {'rows': rows.length},
     );
-    logger.log(
-      'CounterBloc: 0 → 1',
-      type: ISpectLogType.blocTransition,
-      additionalData: {'bloc': 'CounterBloc', 'from': 0, 'to': 1},
+    // 'insert' op \u2192 dbResult type
+    await logger.dbTrace<int>(
+      source: 'sqlite',
+      operation: 'insert',
+      table: 'events',
+      statement: 'INSERT INTO events (type, ts) VALUES (?, ?)',
+      args: ['page_view', DateTime.now().millisecondsSinceEpoch],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        return 42;
+      },
+      projectResult: (id) => {'insertedId': id},
     );
-    logger.log(
-      'CounterBloc state: CounterState(value: 1)',
-      type: ISpectLogType.blocState,
-      additionalData: {'bloc': 'CounterBloc', 'state': 'CounterState(1)'},
+    // Slow query: delay (300ms) > slowThreshold (250ms) \u2192 slow:true in log
+    await logger.dbTrace<List<Map<String, Object?>>>(
+      source: 'sqlite',
+      operation: 'query',
+      table: 'analytics',
+      statement:
+          'SELECT user_id, COUNT(*) FROM events GROUP BY user_id HAVING COUNT(*) > ?',
+      args: [10],
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        return [
+          {'user_id': 1, 'count': 42},
+        ];
+      },
     );
-    logger.log(
-      'CounterBloc stream done',
-      type: ISpectLogType.blocDone,
-      additionalData: {'bloc': 'CounterBloc'},
+    // DB error \u2192 dbError type
+    try {
+      await logger.dbTrace<void>(
+        source: 'sqlite',
+        operation: 'query',
+        table: 'missing_table',
+        statement: 'SELECT * FROM missing_table',
+        run: () async =>
+            throw Exception('DBError: no such table: missing_table'),
+      );
+    } catch (_) {}
+    // Sync variant
+    logger.dbTraceSync<String?>(
+      source: 'hive',
+      operation: 'get',
+      key: 'session_token',
+      run: () => 'eyJhbGciOiJSUzI1NiJ9...',
     );
-    logger.log(
-      'CounterBloc closed',
-      type: ISpectLogType.blocClose,
-      additionalData: {'bloc': 'CounterBloc'},
+    // Manual span: dbStart / dbEnd (when you control timing externally)
+    final dbToken = logger.dbStart(
+      source: 'sqlite',
+      operation: 'update',
+      table: 'accounts',
+      statement: 'UPDATE accounts SET last_seen = ? WHERE id = ?',
+      args: [DateTime.now().millisecondsSinceEpoch, 1],
     );
-    logger.log(
-      'CounterBloc error',
-      type: ISpectLogType.blocError,
-      exception: Exception('BlocError: unhandled event'),
-      stackTrace: StackTrace.current,
+    await Future<void>.delayed(const Duration(milliseconds: 8));
+    logger.dbEnd(dbToken, success: true, affected: 1);
+    // Transaction: injects zone txnId into every nested dbTrace/db call
+    await logger.dbTransaction(
+      source: 'sqlite',
+      logMarkers: true, // emits transaction-begin / commit / rollback logs
+      run: () async {
+        await logger.dbTrace<int>(
+          source: 'sqlite',
+          operation: 'update',
+          table: 'accounts',
+          statement: 'UPDATE accounts SET balance = balance - ? WHERE id = ?',
+          args: [50, 1],
+          run: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+            return 1;
+          },
+        );
+        await logger.dbTrace<int>(
+          source: 'sqlite',
+          operation: 'update',
+          table: 'accounts',
+          statement: 'UPDATE accounts SET balance = balance + ? WHERE id = ?',
+          args: [50, 2],
+          run: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+            return 1;
+          },
+        );
+      },
     );
 
-    // ── Riverpod ─────────────────────────────────────────────────────────
-    logger.log(
-      'counterProvider added',
-      type: ISpectLogType.riverpodAdd,
-      additionalData: {'provider': 'counterProvider'},
+    // \u2500\u2500 Auth \u2014 authTrace with projectResult, correlationId, ISpectTraceConfig \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final authCorrId = generateTraceId();
+    await logger.authTrace<Map<String, Object?>>(
+      source: 'firebase_auth',
+      operation: 'sign-in',
+      provider: 'email',
+      correlationId: authCorrId,
+      config: const ISpectTraceConfig(
+        attachStackOnError: true,
+        slowThreshold: Duration(milliseconds: 200),
+      ),
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        return {'uid': 'usr_001', 'email': 'user@example.com'};
+      },
+      projectResult: (u) => {'uid': u['uid']},
     );
-    logger.log(
-      'counterProvider: 0 → 1',
-      type: ISpectLogType.riverpodUpdate,
-      additionalData: {'provider': 'counterProvider', 'prev': 0, 'next': 1},
+    // Token refresh (same corrId = same session), sampleRate: log ~50% of successes
+    await logger.authTrace<String>(
+      source: 'firebase_auth',
+      operation: 'token-refresh',
+      userId: 'usr_001',
+      correlationId: authCorrId,
+      config: const ISpectTraceConfig(
+        sampleRate: 0.5,
+        attachStackOnError: true,
+      ),
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 60));
+        return 'eyJhbGciOiJSUzI1NiJ9...';
+      },
     );
-    logger.log(
-      'counterProvider disposed',
-      type: ISpectLogType.riverpodDispose,
-      additionalData: {'provider': 'counterProvider'},
-    );
-    logger.log(
-      'counterProvider failed',
-      type: ISpectLogType.riverpodFail,
-      exception: Exception('RiverpodError: provider threw'),
-      stackTrace: StackTrace.current,
-    );
+    // Auth error
+    try {
+      await logger.authTrace<void>(
+        source: 'firebase_auth',
+        operation: 'sign-in',
+        provider: 'google',
+        correlationId: generateTraceId(),
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          throw Exception('auth/network-request-failed');
+        },
+      );
+    } catch (_) {}
 
-    // ── State ─────────────────────────────────────────────────────────────
-    logger.log(
-      'State: loading → loaded',
-      type: ISpectLogType.stateChange,
-      additionalData: {'from': 'loading', 'to': 'loaded'},
+    // \u2500\u2500 Storage \u2014 'download'\u2192storageQuery, 'upload'\u2192storageResult \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final storageCorrId = generateTraceId();
+    // 'download' is in secondaryOperations \u2192 storageQuery type
+    await logger.storageTrace<List<int>>(
+      source: 'firebase_storage',
+      operation: 'download',
+      bucket: 'gs://my-app.appspot.com',
+      path: '/documents/report.pdf',
+      contentType: 'application/pdf',
+      correlationId: storageCorrId,
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        return List.generate(1024, (i) => i % 256);
+      },
+      projectResult: (bytes) => {'sizeBytes': bytes.length},
     );
-    logger.log(
-      'State transition failed',
-      type: ISpectLogType.stateError,
-      exception: Exception('StateError: unexpected state'),
-      stackTrace: StackTrace.current,
+    // 'upload' not in secondaryOperations \u2192 storageResult type
+    await logger.storageTrace<String>(
+      source: 'firebase_storage',
+      operation: 'upload',
+      bucket: 'gs://my-app.appspot.com',
+      path: '/avatars/usr_001/photo.jpg',
+      sizeBytes: 245760,
+      contentType: 'image/jpeg',
+      correlationId: storageCorrId,
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        return 'https://storage.googleapis.com/my-app/photo.jpg';
+      },
+      projectResult: (url) => {'downloadUrl': url},
     );
+    // Storage error
+    try {
+      await logger.storageTrace<void>(
+        source: 'firebase_storage',
+        operation: 'delete',
+        path: '/temp/stale.bin',
+        correlationId: generateTraceId(),
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () async =>
+            throw Exception('StorageError: object does not exist'),
+      );
+    } catch (_) {}
 
-    // ── Database ─────────────────────────────────────────────────────────
-    logger.log(
-      'SELECT * FROM users WHERE active = 1 LIMIT 10',
-      type: ISpectLogType.dbQuery,
-      additionalData: {'table': 'users', 'source': 'sqlite'},
+    // \u2500\u2500 Push \u2014 messageId auto-used as correlationId, links receive \u2192 open \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    const pushMsgId = 'msg_push_sample_001';
+    logger.push(
+      source: 'fcm',
+      operation: 'received',
+      title: 'New message from Alice',
+      topic: 'chat',
+      messageId: pushMsgId,
+      data: {'chatId': 'chat_42', 'senderId': 'usr_alice'},
     );
-    logger.log(
-      'Query result: 3 rows in 12ms',
-      type: ISpectLogType.dbResult,
-      additionalData: {'rows': 3, 'durationMs': 12},
+    logger.push(
+      source: 'fcm',
+      operation: 'opened',
+      messageId: pushMsgId, // same corrId via messageId \u2192 links to received
+      data: {'action': 'open_chat', 'chatId': 'chat_42'},
     );
-    logger.log(
-      'DB query failed: no such table',
-      type: ISpectLogType.dbError,
-      exception: Exception('DBError: no such table: users'),
-      stackTrace: StackTrace.current,
+    // 'send' op \u2192 pushSent type (in secondaryOperations)
+    logger.push(
+      source: 'fcm',
+      operation: 'send',
+      topic: 'promotions',
+      correlationId: generateTraceId(),
+      meta: {'count': 1000, 'dryRun': false},
     );
-
-    // ── Auth ──────────────────────────────────────────────────────────────
+    // pushError via logger.log (push() has no error param by design)
     logger.log(
-      'Sign-in succeeded',
-      type: ISpectLogType.authSuccess,
-      additionalData: {'uid': 'usr_001', 'provider': 'email'},
-    );
-    logger.log(
-      'Sign-in failed',
-      type: ISpectLogType.authError,
-      exception: Exception('auth/wrong-password'),
-      stackTrace: StackTrace.current,
-    );
-
-    // ── Storage ───────────────────────────────────────────────────────────
-    logger.log(
-      'download /avatars/usr_001.jpg',
-      type: ISpectLogType.storageQuery,
-      additionalData: {'path': '/avatars/usr_001.jpg', 'op': 'download'},
-    );
-    logger.log(
-      'Download complete: 240 KB',
-      type: ISpectLogType.storageResult,
-      additionalData: {'path': '/avatars/usr_001.jpg', 'sizeBytes': 245760},
-    );
-    logger.log(
-      'Storage permission denied',
-      type: ISpectLogType.storageError,
-      exception: Exception('StorageError: permission denied'),
-      stackTrace: StackTrace.current,
-    );
-
-    // ── Push ──────────────────────────────────────────────────────────────
-    logger.log(
-      'Push received: "New message from Alice"',
-      type: ISpectLogType.pushReceived,
-      additionalData: {'title': 'New message from Alice', 'topic': 'chat'},
-    );
-    logger.log(
-      'Push sent to topic: promotions',
-      type: ISpectLogType.pushSent,
-      additionalData: {'topic': 'promotions', 'count': 1000},
-    );
-    logger.log(
-      'Push delivery failed',
+      'FCM delivery failed: invalid token',
       type: ISpectLogType.pushError,
-      exception: Exception('PushError: invalid registration token'),
+      exception: Exception('PushError: invalid-registration-token'),
       stackTrace: StackTrace.current,
+      additionalData: {'source': 'fcm', 'operation': 'deliver'},
     );
 
-    // ── Payment ───────────────────────────────────────────────────────────
-    logger.log(
-      'Payment succeeded: \$9.99 USD',
-      type: ISpectLogType.paymentSuccess,
-      additionalData: {
-        'amount': 9.99,
-        'currency': 'USD',
-        'chargeId': 'ch_001',
+    // \u2500\u2500 Analytics \u2014 correlationId links events of the same user session \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final analyticsCorrId = generateTraceId();
+    logger.analyticsEvent(
+      source: 'firebase_analytics',
+      event: 'screen_view',
+      correlationId: analyticsCorrId,
+      parameters: {
+        'screen_name': 'AllLogTypes',
+        'screen_class': '_HomePage',
       },
     );
-    logger.log(
-      'Payment failed: card declined',
-      type: ISpectLogType.paymentError,
-      exception: Exception('PaymentError: card_declined'),
-      stackTrace: StackTrace.current,
+    logger.analyticsEvent(
+      source: 'firebase_analytics',
+      event: 'button_tap',
+      correlationId: analyticsCorrId,
+      parameters: {'button': 'generate_all_logs'},
     );
 
-    // ── SSE ────────────────────────────────────────────────────────────────
-    logger.log(
-      'SSE event: {"status":"ok","ts":1234567890}',
-      type: ISpectLogType.sseReceived,
-      additionalData: {'event': 'update', 'data': '{"status":"ok"}'},
+    // \u2500\u2500 Payment \u2014 paymentTrace with projectResult, correlationId \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final paymentCorrId = generateTraceId();
+    await logger.paymentTrace<Map<String, Object?>>(
+      source: 'stripe',
+      operation: 'charge',
+      productId: 'prod_premium_monthly',
+      amount: 9.99,
+      currency: 'USD',
+      correlationId: paymentCorrId,
+      meta: {'customerId': 'cus_abc123', 'paymentMethod': 'pm_card_visa'},
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return {'chargeId': 'ch_001', 'status': 'succeeded'};
+      },
+      projectResult: (r) =>
+          {'chargeId': r['chargeId'], 'status': r['status']},
     );
-    logger.log(
-      'SSE connection timeout',
-      type: ISpectLogType.sseError,
-      exception: Exception('SSEError: connection timeout after 30s'),
-      stackTrace: StackTrace.current,
+    // Same corrId = same checkout flow
+    try {
+      await logger.paymentTrace<void>(
+        source: 'stripe',
+        operation: 'charge',
+        amount: 29.99,
+        currency: 'USD',
+        correlationId: paymentCorrId,
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 150));
+          throw Exception('PaymentError: card_declined');
+        },
+      );
+    } catch (_) {}
+
+    // \u2500\u2500 SSE \u2014 correlationId links all events of the same stream session \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final sseId = generateTraceId();
+    logger.sse(
+      source: 'event-stream',
+      operation: 'event',
+      url: 'https://api.example.com/stream',
+      eventType: 'update',
+      eventId: 'evt-001',
+      correlationId: sseId,
+      data: {'status': 'ok', 'ts': 1234567890},
+    );
+    logger.sse(
+      source: 'event-stream',
+      operation: 'event',
+      url: 'https://api.example.com/stream',
+      eventType: 'ping',
+      eventId: 'evt-002',
+      correlationId: sseId,
+    );
+    logger.sse(
+      source: 'event-stream',
+      operation: 'error',
+      url: 'https://api.example.com/stream',
+      correlationId: sseId,
+      error: Exception('SSEError: connection timeout after 30s'),
+      errorStackTrace: StackTrace.current,
     );
 
-    // ── gRPC ───────────────────────────────────────────────────────────────
-    logger.log(
-      'gRPC UserService.GetProfile',
-      type: ISpectLogType.grpcRequest,
-      additionalData: {'service': 'UserService', 'method': 'GetProfile'},
-    );
-    logger.log(
-      'gRPC UserService.GetProfile → OK (45ms)',
-      type: ISpectLogType.grpcResponse,
-      additionalData: {
-        'service': 'UserService',
-        'method': 'GetProfile',
-        'durationMs': 45,
+    // \u2500\u2500 gRPC \u2014 correlationId links request \u2192 response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final grpcCorrId = generateTraceId();
+    await logger.grpcTrace<Map<String, Object?>>(
+      source: 'grpc',
+      operation: 'unary',
+      service: 'UserService',
+      method: 'GetProfile',
+      correlationId: grpcCorrId,
+      grpcMetadata: {
+        'x-request-id': grpcCorrId,
+        'authorization': 'Bearer eyJ...',
       },
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 45));
+        return {'userId': 'usr_001', 'displayName': 'John Doe'};
+      },
+      projectResult: (p) => {'userId': p['userId']},
     );
-    logger.log(
-      'gRPC UNAVAILABLE',
-      type: ISpectLogType.grpcError,
-      exception: Exception('gRPC status: UNAVAILABLE'),
-      stackTrace: StackTrace.current,
+    try {
+      await logger.grpcTrace<void>(
+        source: 'grpc',
+        operation: 'unary',
+        service: 'OrderService',
+        method: 'PlaceOrder',
+        correlationId: generateTraceId(),
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 30));
+          throw Exception('gRPC status: UNAVAILABLE');
+        },
+      );
+    } catch (_) {}
+
+    // \u2500\u2500 GraphQL \u2014 correlationId links query \u2192 response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    final gqlCorrId = generateTraceId();
+    await logger.graphqlTrace<Map<String, Object?>>(
+      source: 'graphql',
+      operation: 'query',
+      operationName: 'GetUser',
+      document: r'query GetUser($id: ID!) { user(id: $id) { id name email } }',
+      variables: {'id': 'usr_001'},
+      correlationId: gqlCorrId,
+      run: () async {
+        await Future<void>.delayed(const Duration(milliseconds: 60));
+        return {
+          'user': {
+            'id': 'usr_001',
+            'name': 'Alice',
+            'email': 'alice@example.com',
+          },
+        };
+      },
+      projectResult: (r) => {'userId': (r['user']! as Map)['id']},
+    );
+    try {
+      await logger.graphqlTrace<void>(
+        source: 'graphql',
+        operation: 'mutation',
+        operationName: 'DeletePost',
+        document: r'mutation DeletePost($id: ID!) { deletePost(id: $id) }',
+        variables: {'id': 'post_999'},
+        correlationId: generateTraceId(),
+        config: const ISpectTraceConfig(attachStackOnError: true),
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 40));
+          throw Exception('GraphQL: Not authorized');
+        },
+      );
+    } catch (_) {}
+
+    // \u2500\u2500 traceStart / traceEnd \u2014 manual span when auto-timing isn't available \u2500\u2500\u2500\u2500\u2500\u2500
+    final networkToken = logger.traceStart(
+      category: networkCategory,
+      source: 'custom-client',
+      operation: 'fetch',
+      target: 'https://api.example.com/config',
+      correlationId: generateTraceId(),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 55));
+    logger.traceEnd(networkToken, value: {'config': 'loaded'}, success: true);
+    // traceEnd with error
+    final authToken = logger.traceStart(
+      category: authCategory,
+      source: 'oauth',
+      operation: 'exchange-code',
+      correlationId: generateTraceId(),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    logger.traceEnd(
+      authToken,
+      success: false,
+      error: Exception('OAuth: invalid_grant'),
+      errorStackTrace: StackTrace.current,
     );
 
-    // ── GraphQL ────────────────────────────────────────────────────────────
-    logger.log(
-      'GraphQL query: GetUser(id: "001")',
-      type: ISpectLogType.graphqlRequest,
-      additionalData: {
-        'operation': 'GetUser',
-        'variables': {'id': '001'},
-      },
-    );
-    logger.log(
-      'GraphQL response: GetUser → {"id":"001","name":"Alice"}',
-      type: ISpectLogType.graphqlResponse,
-      additionalData: {
-        'operation': 'GetUser',
-        'data': {'user': 'Alice'},
-      },
-    );
-    logger.log(
-      'GraphQL error: field "unknown" not found',
-      type: ISpectLogType.graphqlError,
-      exception: Exception('GraphQL: Cannot query field "unknown"'),
-      stackTrace: StackTrace.current,
-    );
+    // \u2500\u2500 traceStream \u2014 auto logs subscribe / event / error / unsubscribe \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    await logger
+        .traceStream<int>(
+          category: dbCategory,
+          source: 'sqlite',
+          operation: 'watch-users',
+          stream: Stream.fromIterable([1, 2, 3]),
+          projectEvent: (row) => {'row': row},
+        )
+        .drain<void>();
   }
 
   void _togglePeriodicLogger() {
