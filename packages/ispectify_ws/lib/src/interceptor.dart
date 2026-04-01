@@ -102,37 +102,57 @@ final class ISpectWSInterceptor
           ? settings.printSentData
           : settings.printReceivedData;
 
-      _logger.trace(
-        category: wsCategory,
-        source: 'ws',
-        operation: operation,
-        target: url,
-        success: true,
-        correlationId: _connectionId,
-        config: useRedaction ? null : _noRedactConfig,
-        meta: {
-          if (includeData) 'data': safeData,
-          if (metricsMap != null) 'metrics': metricsMap,
-          'url': url,
-          'path': path,
-        },
-      );
+      final traceMeta = <String, Object?>{
+        if (includeData) 'data': safeData,
+        if (metricsMap != null) 'metrics': metricsMap,
+        'url': url,
+        'path': path,
+      };
+
+      if (type == wsTypeRequest) {
+        _logger.wsSend(
+          source: 'ws',
+          operation: operation,
+          target: url,
+          correlationId: _connectionId,
+          config: useRedaction ? null : _noRedactConfig,
+          meta: traceMeta,
+        );
+      } else {
+        _logger.wsReceive(
+          source: 'ws',
+          operation: operation,
+          target: url,
+          correlationId: _connectionId,
+          config: useRedaction ? null : _noRedactConfig,
+          meta: traceMeta,
+        );
+      }
     } catch (e, s) {
-      _logger.trace(
-        category: wsCategory,
-        source: 'ws',
-        operation: type == wsTypeRequest ? 'send' : 'receive',
-        target: url,
-        success: false,
-        error: e,
-        errorStackTrace: s,
-        correlationId: _connectionId,
-        config: useRedaction ? null : _noRedactConfig,
-        meta: {
-          'url': url,
-          'path': path,
-        },
-      );
+      final errMeta = <String, Object?>{'url': url, 'path': path};
+      if (type == wsTypeRequest) {
+        _logger.wsSend(
+          source: 'ws',
+          operation: 'send',
+          target: url,
+          error: e,
+          errorStackTrace: s,
+          correlationId: _connectionId,
+          config: useRedaction ? null : _noRedactConfig,
+          meta: errMeta,
+        );
+      } else {
+        _logger.wsReceive(
+          source: 'ws',
+          operation: 'receive',
+          target: url,
+          error: e,
+          errorStackTrace: s,
+          correlationId: _connectionId,
+          config: useRedaction ? null : _noRedactConfig,
+          meta: errMeta,
+        );
+      }
     }
 
     next(data);

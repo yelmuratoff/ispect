@@ -458,7 +458,7 @@ class ISpectLogger {
   /// Good logs indicate successful operations or positive outcomes.
   ///
   /// - `message`: The log message.
-  void good(String message) {
+  void good(Object? message) {
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.good,
@@ -477,7 +477,7 @@ class ISpectLogger {
   /// - `analytics`: Optional analytics service identifier.
   /// - `parameters`: Optional parameters associated with the event.
   void track(
-    String message, {
+    Object? message, {
     String? event,
     String? analytics,
     Map<String, dynamic>? parameters,
@@ -494,7 +494,7 @@ class ISpectLogger {
   /// Creates a basic print log entry.
   ///
   /// - `message`: The log message.
-  void print(String message) {
+  void print(Object? message) {
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.print,
@@ -510,7 +510,7 @@ class ISpectLogger {
   ///
   /// - `message`: The log message, typically a route name or path.
   void route(
-    String message, {
+    Object? message, {
     String? transitionId,
   }) {
     _processLog(
@@ -531,7 +531,7 @@ class ISpectLogger {
   /// These logs are used for tracking state management or dependency injection events.
   ///
   /// - `message`: The log message.
-  void provider(String message) {
+  void provider(Object? message) {
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.provider,

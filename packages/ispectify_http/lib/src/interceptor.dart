@@ -86,14 +86,11 @@ class ISpectHttpInterceptor extends InterceptorContract
       useRedaction: useRedaction,
     );
 
-    _logger.trace(
-      category: networkCategory,
+    _logger.httpRequest(
       source: 'http',
       operation: request.method,
       target: url,
-      logKey: ISpectLogType.httpRequest.key,
       correlationId: requestId,
-      success: true,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
         'requestId': requestId,
@@ -154,26 +151,34 @@ class ISpectHttpInterceptor extends InterceptorContract
       ),
     );
 
-    _logger.trace(
-      category: networkCategory,
-      source: 'http',
-      operation: request?.method ?? 'UNKNOWN',
-      target: url,
-      logKey: isErrorResponse
-          ? ISpectLogType.httpError.key
-          : ISpectLogType.httpResponse.key,
-      correlationId: requestId,
-      success: !isErrorResponse,
-      duration: sw?.elapsed,
-      config: useRedaction ? null : _noRedactConfig,
-      meta: {
-        if (requestId != null) 'requestId': requestId,
-        'statusCode': response.statusCode,
-        'responseData': responseData.toJson(
-          redactor: useRedaction ? redactor : null,
-        ),
-      },
-    );
+    final sharedMeta = <String, Object?>{
+      if (requestId != null) 'requestId': requestId,
+      'statusCode': response.statusCode,
+      'responseData': responseData.toJson(
+        redactor: useRedaction ? redactor : null,
+      ),
+    };
+    if (isErrorResponse) {
+      _logger.httpError(
+        source: 'http',
+        operation: request?.method ?? 'UNKNOWN',
+        target: url,
+        correlationId: requestId,
+        duration: sw?.elapsed,
+        config: useRedaction ? null : _noRedactConfig,
+        meta: sharedMeta,
+      );
+    } else {
+      _logger.httpResponse(
+        source: 'http',
+        operation: request?.method ?? 'UNKNOWN',
+        target: url,
+        correlationId: requestId,
+        duration: sw?.elapsed,
+        config: useRedaction ? null : _noRedactConfig,
+        meta: sharedMeta,
+      );
+    }
 
     return response;
   }

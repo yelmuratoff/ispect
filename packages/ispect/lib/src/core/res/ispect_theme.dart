@@ -198,6 +198,21 @@ class ISpectTheme {
       logCategories: cast<Map<String, dynamic>?>('log_categories')
               ?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
+      customLogTypes: (map['custom_log_types'] as List<dynamic>? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (m) => ISpectLogType(
+              m['key'] as String,
+              category: m['category'] as String? ?? TraceCategoryIds.general,
+              isError: m['is_error'] as bool? ?? false,
+              level: LogLevel.values.firstWhere(
+                (l) => l.name == m['level'],
+                orElse: () => LogLevel.info,
+              ),
+              title: m['title'] as String?,
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -429,12 +444,22 @@ class ISpectTheme {
         'divider': divider?.toMap(),
         'primary': primary?.toMap(),
         'card': card?.toMap(),
-        'log_colors': logColors,
-        'log_icons': logIcons,
+        'log_colors': logColors.map((k, v) => MapEntry(k, v.toARGB32())),
+        'log_icons': logIcons.map((k, v) => MapEntry(k, v.codePoint)),
         'log_descriptions': logDescriptions,
         'category_labels': categoryLabels,
         'log_categories': logCategories,
-        'custom_log_type_keys': customLogTypes.map((t) => t.key).toList(),
+        'custom_log_types': customLogTypes
+            .map(
+              (t) => <String, dynamic>{
+                'key': t.key,
+                'category': t.category,
+                'is_error': t.isError,
+                'level': t.level.name,
+                if (t.title != null) 'title': t.title,
+              },
+            )
+            .toList(),
       };
 
   String toJson() => json.encode(toMap());

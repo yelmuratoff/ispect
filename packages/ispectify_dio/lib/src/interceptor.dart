@@ -92,14 +92,11 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       useRedaction: useRedaction,
     );
 
-    _logger.trace(
-      category: networkCategory,
+    _logger.httpRequest(
       source: 'dio',
       operation: options.method,
       target: url,
-      logKey: ISpectLogType.httpRequest.key,
       correlationId: requestId,
-      success: true,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
         'requestId': requestId,
@@ -136,14 +133,11 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     );
     final requestData = DioRequestData(requestOptions);
 
-    _logger.trace(
-      category: networkCategory,
+    _logger.httpResponse(
       source: 'dio',
       operation: requestOptions.method,
       target: url,
-      logKey: ISpectLogType.httpResponse.key,
       correlationId: requestId,
-      success: true,
       duration: sw?.elapsed,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
@@ -180,16 +174,13 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     );
     final requestData = DioRequestData(requestOptions);
 
-    _logger.trace(
-      category: networkCategory,
+    _logger.httpError(
       source: 'dio',
       operation: requestOptions.method,
       target: url,
-      logKey: ISpectLogType.httpError.key,
-      correlationId: requestId,
-      success: false,
       error: err,
       errorStackTrace: err.stackTrace,
+      correlationId: requestId,
       duration: sw?.elapsed,
       config: useRedaction ? null : _noRedactConfig,
       meta: {

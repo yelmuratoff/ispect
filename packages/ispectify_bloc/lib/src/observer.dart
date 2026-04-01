@@ -104,29 +104,10 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (_) {}
   }
 
-  void _trace({
-    required String operation,
-    required String blocType,
-    bool? success,
-    Object? error,
-    StackTrace? errorStackTrace,
-    Map<String, Object?>? meta,
-    String? correlationId,
-  }) {
-    _logger.trace(
-      category: stateCategory,
-      source: 'bloc',
-      operation: operation,
-      target: blocType,
-      success: success ?? (error == null),
-      error: error,
-      errorStackTrace: errorStackTrace,
-      meta: settings.isRedactionActive
+  Map<String, Object?>? _applyMeta(Map<String, Object?>? meta) =>
+      settings.isRedactionActive
           ? settings.redactAdditionalData(meta ?? {})
-          : meta,
-      correlationId: correlationId,
-    );
-  }
+          : meta;
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
@@ -148,16 +129,17 @@ class ISpectBlocObserver extends BlocObserver {
     (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
 
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'event',
-      blocType: blocType,
+      stateName: blocType,
       success: true,
       correlationId: eventId,
-      meta: {
+      meta: _applyMeta({
         'blocType': blocType,
         'eventType': event.runtimeType.toString(),
         if (settings.printEventFullData && event != null) 'event': event,
-      },
+      }),
     );
   }
 
@@ -182,18 +164,19 @@ class ISpectBlocObserver extends BlocObserver {
 
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'transition',
-      blocType: blocType,
+      stateName: blocType,
       success: true,
       correlationId: eventId,
-      meta: {
+      meta: _applyMeta({
         'blocType': blocType,
         'eventType': transition.event.runtimeType.toString(),
         'currentState': settings.formatState(transition.currentState),
         'nextState': settings.formatState(transition.nextState),
         if (settings.printEventFullData) 'event': transition.event,
-      },
+      }),
     );
   }
 
@@ -216,16 +199,17 @@ class ISpectBlocObserver extends BlocObserver {
     // Peek eventId (no pop — pop happens only in onDone)
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'state',
-      blocType: blocType,
+      stateName: blocType,
       success: true,
       correlationId: eventId,
-      meta: {
+      meta: _applyMeta({
         'blocType': blocType,
         'currentState': settings.formatState(change.currentState),
         'nextState': settings.formatState(change.nextState),
-      },
+      }),
     );
   }
 
@@ -242,12 +226,13 @@ class ISpectBlocObserver extends BlocObserver {
     }
 
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'error',
-      blocType: blocType,
+      stateName: blocType,
       error: error,
       errorStackTrace: stackTrace,
-      meta: {'blocType': blocType},
+      meta: _applyMeta({'blocType': blocType}),
     );
   }
 
@@ -264,11 +249,12 @@ class ISpectBlocObserver extends BlocObserver {
     }
 
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'create',
-      blocType: blocType,
+      stateName: blocType,
       success: true,
-      meta: {'blocType': blocType},
+      meta: _applyMeta({'blocType': blocType}),
     );
   }
 
@@ -285,11 +271,12 @@ class ISpectBlocObserver extends BlocObserver {
     }
 
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'close',
-      blocType: blocType,
+      stateName: blocType,
       success: true,
-      meta: {'blocType': blocType},
+      meta: _applyMeta({'blocType': blocType}),
     );
 
     // Clear any pending event IDs for this bloc to prevent memory leaks.
@@ -318,19 +305,20 @@ class ISpectBlocObserver extends BlocObserver {
     if (!shouldLogCompletion) return;
 
     final blocType = bloc.runtimeType.toString();
-    _trace(
+    _logger.stateChange(
+      source: 'bloc',
       operation: 'done',
-      blocType: blocType,
+      stateName: blocType,
       success: error == null,
       error: error,
       errorStackTrace: stackTrace,
       correlationId: eventId,
-      meta: {
+      meta: _applyMeta({
         'blocType': blocType,
         if (event != null) 'eventType': event.runtimeType.toString(),
         if (settings.printEventFullData && event != null) 'event': event,
         'hasError': error != null,
-      },
+      }),
     );
   }
 }
