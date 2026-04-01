@@ -52,6 +52,11 @@ mixin SearchHighlightMixin on ChangeNotifier {
     _lastUpdateMatchesInput = null;
     if (mode == SearchMode.highlight) {
       filterManager.clearLogTypeKeyFilters();
+    } else {
+      filterManager.updateFilterSearchQuery(
+        searchController.text,
+        immediate: true,
+      );
     }
     notifyListeners();
   }
