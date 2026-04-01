@@ -19,11 +19,29 @@ class ISpectScopeModel extends ChangeNotifier {
     ISpectOptions? options,
     ISpectTheme theme = const ISpectTheme(),
     NavigatorObserver? observer,
-  })  : _isISpectEnabled = isISpectEnabled,
+  })  : assert(_debugValidateTheme(theme)),
+        _isISpectEnabled = isISpectEnabled,
         _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
         _options = options ?? ISpectOptions(observer: observer),
-        _theme = theme,
+        _theme = theme.copyWith(
+          logIcons: {
+            ...ISpectConstants.typeIcons,
+            ...theme.logIcons,
+          },
+        ),
         _observer = observer;
+
+  /// Runs [ISpectTheme.debugValidate] and prints any warnings via [debugPrint].
+  /// Always returns `true` so it can be used inside an `assert`.
+  static bool _debugValidateTheme(ISpectTheme theme) {
+    assert(() {
+      for (final w in theme.debugValidate()) {
+        debugPrint('[ISpect] ⚠️ $w');
+      }
+      return true;
+    }());
+    return true;
+  }
 
   // Private fields to store state
   bool _isISpectEnabled;

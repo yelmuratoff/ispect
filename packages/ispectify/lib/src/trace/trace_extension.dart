@@ -126,7 +126,15 @@ extension ISpectTrace on ISpectLogger {
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (_) {}
+        } catch (e, st) {
+          assert(() {
+            handle(
+              exception: e,
+              stackTrace: st,
+            );
+            return true;
+          }());
+        }
       }
 
       trace(
@@ -197,7 +205,16 @@ extension ISpectTrace on ISpectLogger {
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (_) {}
+        } catch (e, st) {
+          assert(() {
+            log(
+              'traceSync: projectResult threw unexpectedly — $e',
+              logLevel: LogLevel.warning,
+              stackTrace: st,
+            );
+            return true;
+          }());
+        }
       }
 
       trace(
