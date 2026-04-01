@@ -358,14 +358,17 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'http-error',
+        title: 'HTTP Error',
         description: l10n.httpErrorLogDesc,
       ),
       LogDescription(
         key: 'http-request',
+        title: 'HTTP Request',
         description: l10n.httpRequestLogDesc,
       ),
       LogDescription(
         key: 'http-response',
+        title: 'HTTP Response',
         description: l10n.httpResponseLogDesc,
       ),
       LogDescription(
@@ -490,34 +493,42 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'sse-received',
+        title: 'SSE Received',
         description: l10n.sseReceivedLogDesc,
       ),
       LogDescription(
         key: 'sse-error',
+        title: 'SSE Error',
         description: l10n.sseErrorLogDesc,
       ),
       LogDescription(
         key: 'grpc-request',
+        title: 'gRPC Request',
         description: l10n.grpcRequestLogDesc,
       ),
       LogDescription(
         key: 'grpc-response',
+        title: 'gRPC Response',
         description: l10n.grpcResponseLogDesc,
       ),
       LogDescription(
         key: 'grpc-error',
+        title: 'gRPC Error',
         description: l10n.grpcErrorLogDesc,
       ),
       LogDescription(
         key: 'graphql-request',
+        title: 'GraphQL Request',
         description: l10n.graphqlRequestLogDesc,
       ),
       LogDescription(
         key: 'graphql-response',
+        title: 'GraphQL Response',
         description: l10n.graphqlResponseLogDesc,
       ),
       LogDescription(
         key: 'graphql-error',
+        title: 'GraphQL Error',
         description: l10n.graphqlErrorLogDesc,
       ),
     ];
