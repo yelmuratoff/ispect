@@ -1,12 +1,13 @@
 # Changelog
 
-## 5.0.0-dev04
+## 5.0.0-dev05
 
 ### Breaking Changes
 
 - **Universal Trace Architecture:** Migration to a unified `trace()` pipeline for all logging operations. This provides structured data and consistent tracking across all application layers.
 - **Log data overhaul:** Replaced inheritance-based log types with a flattened, metadata-driven `ISpectLogData` structure. Specific getters like `isNetwork` or `httpStatusCode` are now available via extensions.
 - **Typed subclasses removed:** Classes such as `NetworkRequestLog`, `DioResponseLog`, and `BlocLifecycleLog` have been removed in favor of the new trace system.
+- **`ISpectLogType` converted from `enum` to `final class`:** `ISpectLogType.values` no longer exists — use `ISpectLogType.builtIn` instead. Exhaustive `switch` on enum values is no longer possible. Custom types can now be created directly: `const ISpectLogType('my-key', category: 'firebase')`.
 
 ### Improvements
 
