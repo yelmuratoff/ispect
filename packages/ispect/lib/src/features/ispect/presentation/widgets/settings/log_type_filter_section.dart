@@ -221,12 +221,6 @@ class _LogTypeGroup extends StatelessWidget {
   }
 }
 
-/// Converts `'http-request'` → `'Http Request'` for display.
-String _formatLogKey(String key) => key
-    .split('-')
-    .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-    .join(' ');
-
 class _LogTypeChip extends StatelessWidget {
   const _LogTypeChip({
     required this.logType,
@@ -281,7 +275,7 @@ class _LogTypeChip extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                logType.title ?? _formatLogKey(logType.key),
+                logType.displayTitle,
                 style: TextStyle(
                   color: effectiveColor,
                   fontSize: 12,

@@ -273,6 +273,66 @@ class ISpectTheme {
         panelTheme: panelTheme ?? this.panelTheme,
       );
 
+  /// Merges this theme with [other], giving precedence to [other] for scalar
+  /// fields and combining map/list fields (entries from [other] win on key
+  /// conflicts).
+  ///
+  /// Useful for building layered themes (e.g. package defaults + app overrides):
+  /// ```dart
+  /// final effective = ISpectTheme().merge(appTheme);
+  /// ```
+  ISpectTheme merge(ISpectTheme other) => ISpectTheme(
+        pageTitle: other.pageTitle ?? pageTitle,
+        background: other.background ?? background,
+        foreground: other.foreground ?? foreground,
+        divider: other.divider ?? divider,
+        primary: other.primary ?? primary,
+        card: other.card ?? card,
+        logColors: {...logColors, ...other.logColors},
+        logIcons: {...logIcons, ...other.logIcons},
+        logDescriptions: {...logDescriptions, ...other.logDescriptions},
+        categoryLabels: {...categoryLabels, ...other.categoryLabels},
+        logCategories: {...logCategories, ...other.logCategories},
+        customLogTypes: [
+          ...customLogTypes,
+          ...other.customLogTypes
+              .where((t) => customLogTypes.every((e) => e.key != t.key)),
+        ],
+        panelTheme: other.panelTheme ?? panelTheme,
+      );
+
+  /// Validates that all [customLogTypes] have colors and icons registered.
+  ///
+  /// Returns a list of human-readable warning messages for any missing entries.
+  /// Returns an empty list when everything is in order.
+  ///
+  /// Intended for debug-mode use — call during initialisation to catch
+  /// misconfigured custom log types early:
+  /// ```dart
+  /// assert(() {
+  ///   theme.debugValidate().forEach(debugPrint);
+  ///   return true;
+  /// }());
+  /// ```
+  List<String> debugValidate() {
+    final warnings = <String>[];
+    for (final type in customLogTypes) {
+      if (!logColors.containsKey(type.key)) {
+        warnings.add(
+          'ISpectTheme: custom log type "${type.key}" has no entry in '
+          'logColors — it will render with Colors.grey.',
+        );
+      }
+      if (!logIcons.containsKey(type.key)) {
+        warnings.add(
+          'ISpectTheme: custom log type "${type.key}" has no entry in '
+          'logIcons — it will render with Icons.bug_report_outlined.',
+        );
+      }
+    }
+    return warnings;
+  }
+
   /// Retrieves the color associated with a specific log type.
   ///
   /// - `key`: The log type identifier.

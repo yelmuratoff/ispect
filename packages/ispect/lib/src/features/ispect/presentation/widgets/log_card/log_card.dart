@@ -192,7 +192,8 @@ class _LogCardHeader extends StatelessWidget {
                 child: CollapsedBody(
                   icon: icon,
                   color: color,
-                  title: data.key,
+                  title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
+                      data.key,
                   dateTime: data.formattedTime,
                   onShareTap: onShareTap,
                   onRouteTap: data.isRouteLog && observer != null

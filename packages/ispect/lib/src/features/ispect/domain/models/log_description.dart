@@ -62,6 +62,18 @@ final class LogDescription {
   factory LogDescription.fromJson(String source) =>
       LogDescription.fromMap(json.decode(source) as Map<String, dynamic>);
 
+  /// Human-readable display title.
+  ///
+  /// Returns [title] if explicitly set; otherwise formats [key] by replacing
+  /// hyphens with spaces and capitalising each word
+  /// (e.g. `'http-request'` → `'Http Request'`).
+  String get displayTitle =>
+      title ??
+      key
+          .split('-')
+          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+          .join(' ');
+
   @override
   String toString() => '''LogDescription(
       key: $key,

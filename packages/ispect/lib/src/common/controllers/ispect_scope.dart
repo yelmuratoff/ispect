@@ -60,6 +60,12 @@ class ISpectScopeModel extends ChangeNotifier {
   /// Theming settings for ISpect.
   ISpectTheme get theme => _theme;
   set theme(ISpectTheme value) {
+    assert(() {
+      for (final warning in value.debugValidate()) {
+        debugPrint('[ISpect] ⚠️ $warning');
+      }
+      return true;
+    }());
     final updatedTheme = value.copyWith(
       logIcons: {
         ...ISpectConstants.typeIcons, // Default icons
