@@ -22,121 +22,75 @@ bash/                 # Build & release automation scripts
 docs/                 # VERSION_MANAGEMENT.md
 ```
 
-**Dependency chain**: `ispectify` is the base → all `ispectify_*` packages depend on it → `ispect` depends on all of them.
+**Dependency chain**: `ispectify` → `ispectify_*` packages → `ispect`.
+
+## Where to Find Things
+
+| What                                 | Where                                                    |
+| ------------------------------------ | -------------------------------------------------------- |
+| All log types (`ISpectLogType` enum) | `packages/ispectify/lib/src/models/log_type.dart`        |
+| Log severity levels (`LogLevel`)     | `packages/ispectify/lib/src/models/log_level.dart`       |
+| Trace categories                     | `packages/ispectify/lib/src/trace/trace_categories.dart` |
+| Core logger (`ISpectLogger`)         | `packages/ispectify/lib/src/ispectify.dart`              |
+| Domain trace extensions              | `packages/ispectify/lib/src/trace/extensions/`           |
+| `ISpect` Flutter singleton           | `packages/ispect/lib/src/ispect.dart`                    |
+| UI screens & widgets                 | `packages/ispect/lib/src/features/ispect/presentation/`  |
+| ISpectTheme, ISpectOptions           | `packages/ispect/lib/src/core/res/`                      |
+| Full working example (all features)  | `packages/ispect/example/lib/main.dart`                  |
+
+## Architecture Patterns
+
+- **Interceptor pattern** for network: settings class + interceptor class + redaction + logger integration
+- **Trace extensions**: domain logging via `traceAsync`/`traceSync`/`traceStream` in `trace/trace_extension.dart`
+- **Observer pattern** for state: `ISpectBlocObserver`, `ISpectNavigatorObserver`
+- `dependency_overrides` in pubspec files are **intentional** for monorepo — don't remove them
 
 ## Version Management
 
-**Single source of truth**: `version.config` (currently `4.8.0-dev05`).
+**Single source of truth**: `version.config` (currently `5.0.0-dev04`).
 
 **Never manually edit** package `pubspec.yaml` versions. Use:
 
 ```bash
 ./bash/update_versions.sh --bump patch|minor|major
-./bash/update_versions.sh --dry-run  # preview
-```
-
-This propagates to all `pubspec.yaml` files, internal dependency constraints, and example apps.
-
-**Validation**:
-
-```bash
-./bash/check_version_sync.sh
-./bash/check_dependencies.sh
+./bash/check_version_sync.sh   # validate
 ```
 
 ## Common Commands
 
-### Testing
-
 ```bash
-# Pure Dart packages
+# Test
 cd packages/ispectify && dart test
-cd packages/ispectify_db && dart test
-
-# Flutter packages
 cd packages/ispect && flutter test
-cd packages/ispectify_dio && flutter test
-cd packages/ispectify_http && flutter test
-cd packages/ispectify_ws && flutter test
-cd packages/ispectify_bloc && flutter test
-```
 
-### Linting
-
-```bash
-# Dart packages
+# Lint
 cd packages/ispectify && dart analyze --fatal-infos
-
-# Flutter packages
 cd packages/ispect && flutter analyze --fatal-infos
+
+# Sync docs
+./bash/update_changelog.sh && ./bash/sync_readme.sh
+
+# Publish (dependency-ordered)
+./bash/publish.sh --dry-run
+./bash/publish.sh --auto
 ```
-
-### CHANGELOG & README Sync
-
-```bash
-./bash/update_changelog.sh           # Sync root CHANGELOG to packages
-./bash/sync_readme.sh                # Sync root README to packages
-```
-
-Root `CHANGELOG.md` and `README.md` are the sources of truth — edit those, then sync.
-
-### Publishing
-
-```bash
-./bash/publish.sh --dry-run          # Validate
-./bash/publish.sh --auto             # Publish (dependency-ordered)
-```
-
-Publish order: `ispectify` → `ispectify_db` → `ispectify_bloc` → `ispectify_dio` → `ispectify_http` → `ispectify_ws` → `ispect`.
-
-## Architecture Patterns
-
-- **Interceptor pattern** for network: settings class + interceptor class + redaction support + logger integration
-- **Observer pattern** for state: `ISpectBlocObserver`, `ISpectNavigatorObserver`
-- **Database tracing**: `logger.dbTrace<T>()` wrapper with sampling rate and slow query detection
-- **Filter & redaction**: `ISpectFilter` interface, `RedactionService` for sensitive data masking
-- `dependency_overrides` in pubspec files are **intentional** for monorepo local development — don't remove them
-
-## Linter Rules (analysis_options.yaml)
-
-Strict mode enabled (`strict-casts`, `strict-inference`, `strict-raw-types`). Key enforced rules:
-
-- `avoid_print`, `avoid_dynamic_calls`
-- `prefer_const_constructors`, `prefer_final_locals`
-- `always_declare_return_types`, `prefer_typing_uninitialized_variables`
-- `use_key_in_widget_constructors`
 
 ## Production Safety
 
-ISpect is flag-gated and tree-shaken out of release builds:
+ISpect is flag-gated — zero footprint in release builds when `--dart-define=ISPECT_ENABLED=true` is omitted. The `kISpectEnabled` constant controls this.
 
-```bash
-flutter run --dart-define=ISPECT_ENABLED=true   # Development
-flutter build apk                               # Production (flag omitted = zero footprint)
-```
+## Linter Rules
 
-## Property Access Convention
-
-Use direct Flutter API access, not wrappers:
-
-```dart
-// DO:
-Theme.of(context).colorScheme.primary
-Gap(8)
-
-// DON'T:
-getPrimary(colorScheme)
-Constants.defaultPadding
-```
+Strict mode (`strict-casts`, `strict-inference`, `strict-raw-types`). Key: `avoid_print`, `prefer_const_constructors`, `always_declare_return_types`, `use_key_in_widget_constructors`.
 
 ## CI/CD
 
-- `.github/workflows/test.yml` — runs analyze + test on all packages
-- `.github/workflows/validate_versions.yml` — checks version sync on PRs
-- `.github/workflows/sync_versions_and_changelogs.yml` — auto-syncs on version.config/CHANGELOG/README changes
+- `test.yml` — analyze + test on all packages
+- `validate_versions.yml` — version sync check on PRs
+- `sync_versions_and_changelogs.yml` — auto-syncs on version.config/CHANGELOG/README changes
 
 ## Reference Docs
 
-- `bash/README.md` — automation scripts documentation
+- `bash/README.md` — automation scripts
 - `docs/VERSION_MANAGEMENT.md` — version system details
 - `.github/copilot-instructions.md` — comprehensive AI agent guide
