@@ -34,7 +34,14 @@ class LogTypeFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logDescriptions = ISpectConstants.defaultLogDescriptions(context);
+    final theme = context.ispectTheme;
+    final builtInDescriptions = ISpectConstants.defaultLogDescriptions(context);
+
+    // Merge custom types from theme — convert ISpectLogType → LogDescription
+    final customDescriptions = theme.customLogTypes.map(
+      (t) => LogDescription(key: t.key, title: t.title),
+    );
+    final logDescriptions = [...builtInDescriptions, ...customDescriptions];
 
     // Group by category
     final groups = _groupLogTypes(context, logDescriptions);
@@ -91,11 +98,12 @@ class LogTypeFilterSection extends StatelessWidget {
     BuildContext context,
     List<LogDescription> descriptions,
   ) {
-    final theme = context.ispectTheme;
+    final logCategories = context.ispectTheme.logCategories;
+    final categoryLabels = context.ispectTheme.categoryLabels;
     final groups = <String, List<LogDescription>>{};
     for (final desc in descriptions) {
-      final categoryId = _resolveCategory(desc.key, theme.logCategories);
-      final label = _categoryLabel(context, categoryId, theme.categoryLabels);
+      final categoryId = _resolveCategory(desc.key, logCategories);
+      final label = _categoryLabel(context, categoryId, categoryLabels);
       (groups[label] ??= []).add(desc);
     }
     return groups;
@@ -213,6 +221,12 @@ class _LogTypeGroup extends StatelessWidget {
   }
 }
 
+/// Converts `'http-request'` → `'Http Request'` for display.
+String _formatLogKey(String key) => key
+    .split('-')
+    .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+    .join(' ');
+
 class _LogTypeChip extends StatelessWidget {
   const _LogTypeChip({
     required this.logType,
@@ -267,7 +281,7 @@ class _LogTypeChip extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                logType.key,
+                logType.title ?? _formatLogKey(logType.key),
                 style: TextStyle(
                   color: effectiveColor,
                   fontSize: 12,

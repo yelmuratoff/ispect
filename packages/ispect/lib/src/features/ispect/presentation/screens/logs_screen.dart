@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/group_button.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/network_transaction_service.dart';
@@ -218,7 +219,7 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Future<void> _openLogsSettings(BuildContext context) async {
-    final logger = ValueNotifier(ISpect.logger);
+    final logger = ISpectLoggerNotifier(ISpect.logger);
     try {
       await ISpectSettingsBottomSheet(
         options: widget.options,
@@ -237,9 +238,8 @@ class _LogsScreenState extends State<LogsScreen> {
         _buildShareLogsAction(context),
         _buildExpandLogsAction(context),
         _buildClearHistoryAction(context),
-        if (widget.options.observer != null &&
-            widget.options.observer is ISpectNavigatorObserver)
-          _buildNavigationFlowAction(),
+        if (widget.options.observer case final ISpectNavigatorObserver observer)
+          _buildNavigationFlowAction(observer),
         if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
         _buildLogViewerAction(),
         ...widget.options.actionItems,
@@ -299,22 +299,17 @@ class _LogsScreenState extends State<LogsScreen> {
         description: context.ispectL10n.shareLogsFileDesc,
       );
 
-  ISpectActionItem _buildNavigationFlowAction() {
-    final observer = widget.options.observer;
-    assert(
-      observer is ISpectNavigatorObserver,
-      'observer must be ISpectNavigatorObserver',
-    );
-    final navObserver = observer! as ISpectNavigatorObserver;
-    return ISpectActionItem(
-      title: context.ispectL10n.navigationFlow,
-      icon: Icons.route_rounded,
-      description: context.ispectL10n.navigationFlowDesc,
-      onTap: (context) => ISpectNavigationFlowScreen(
-        observer: navObserver,
-      ).push(context),
-    );
-  }
+  ISpectActionItem _buildNavigationFlowAction(
+    ISpectNavigatorObserver observer,
+  ) =>
+      ISpectActionItem(
+        title: context.ispectL10n.navigationFlow,
+        icon: Icons.route_rounded,
+        description: context.ispectL10n.navigationFlowDesc,
+        onTap: (context) => ISpectNavigationFlowScreen(
+          observer: observer,
+        ).push(context),
+      );
 
   ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
         title: context.ispectL10n.dailySessions,

@@ -128,7 +128,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       // Convert disabled types to enabled types for filter
       final enabledTypes = initialSettings.disabledLogTypes.isEmpty
           ? <String>[] // Empty = no filter (all enabled)
-          : ISpectLogType.values
+          : ISpectLogType.builtIn
               .map((e) => e.key)
               .where((key) => !initialSettings.disabledLogTypes.contains(key))
               .toList();

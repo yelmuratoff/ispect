@@ -1,9 +1,8 @@
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member, implementation_imports
-
 import 'package:flutter/material.dart';
 
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
@@ -20,7 +19,7 @@ class ISpectSettingsBottomSheet {
   });
 
   /// ISpectLogger implementation
-  final ValueNotifier<ISpectLogger> logger;
+  final ISpectLoggerNotifier logger;
 
   /// Options for `ISpect`
   final ISpectOptions options;
@@ -60,7 +59,7 @@ class _SettingsContent extends StatefulWidget {
     this.externalScrollController,
   });
 
-  final ValueNotifier<ISpectLogger> logger;
+  final ISpectLoggerNotifier logger;
   final ISpectOptions options;
   final List<ISpectActionItem> actions;
   final ISpectViewController controller;
@@ -126,7 +125,7 @@ class _SettingsContentState extends State<_SettingsContent> {
     // Convert disabled types to enabled types for filter
     final enabledTypes = settings.disabledLogTypes.isEmpty
         ? <String>[] // Empty = no filter (all enabled)
-        : ISpectLogType.values
+        : ISpectLogType.builtIn
             .map((e) => e.key)
             .where((key) => !settings.disabledLogTypes.contains(key))
             .toList();
@@ -141,7 +140,7 @@ class _SettingsContentState extends State<_SettingsContent> {
           ? ISpectFilter(logTypeKeys: enabledTypes)
           : null,
     );
-    widget.logger.notifyListeners();
+    widget.logger.notify();
   }
 
   void _onSettingChanged(ISpectSettingsState newSettings) {
@@ -182,7 +181,7 @@ class _SettingsContentState extends State<_SettingsContent> {
 
   void _onDeselectAll() {
     // Disable all = add all types to disabled set
-    final allLogTypes = ISpectLogType.values.map((e) => e.key).toSet();
+    final allLogTypes = ISpectLogType.builtIn.map((e) => e.key).toSet();
     _onSettingChanged(
       widget.controller.settings.copyWith(disabledLogTypes: allLogTypes),
     );

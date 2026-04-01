@@ -7,21 +7,30 @@ import 'package:meta/meta.dart';
 @immutable
 final class LogDescription {
   final String key;
+
+  /// Human-readable display name for the filter chip.
+  /// When `null`, the chip formats [key] automatically
+  /// (e.g. `'http-request'` → `'Http Request'`).
+  final String? title;
+
   final String? description;
   final bool isDisabled;
   const LogDescription({
     required this.key,
+    this.title,
     this.description,
     this.isDisabled = false,
   });
 
   LogDescription copyWith({
     String? key,
+    String? title,
     String? description,
     bool? isDisabled,
   }) {
     return LogDescription(
       key: key ?? this.key,
+      title: title ?? this.title,
       description: description ?? this.description,
       isDisabled: isDisabled ?? this.isDisabled,
     );
@@ -30,6 +39,7 @@ final class LogDescription {
   Map<String, dynamic> toMap() {
     return {
       'key': key,
+      'title': title,
       'description': description,
       'is_disabled': isDisabled,
     };
@@ -41,6 +51,7 @@ final class LogDescription {
         : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
     return LogDescription(
       key: cast<String?>('key') ?? '',
+      title: cast<String?>('title'),
       description: cast<String?>('description'),
       isDisabled: cast<bool?>('is_disabled') ?? false,
     );
@@ -54,6 +65,7 @@ final class LogDescription {
   @override
   String toString() => '''LogDescription(
       key: $key,
+      title: $title,
       description: $description,
       isDisabled: $isDisabled,
       )''';
@@ -64,10 +76,11 @@ final class LogDescription {
 
     return other is LogDescription &&
         other.key == key &&
+        other.title == title &&
         other.description == description &&
         other.isDisabled == isDisabled;
   }
 
   @override
-  int get hashCode => key.hashCode ^ description.hashCode ^ isDisabled.hashCode;
+  int get hashCode => Object.hash(key, title, description, isDisabled);
 }

@@ -293,8 +293,10 @@ class ISpectLogger {
   /// This is the primary logging method that other specialized methods use.
   ///
   /// - `message`: The main log message.
-  /// - `logLevel`: The severity level of the log. If not provided, will be inferred from `type` or default to `LogLevel.debug`.
-  /// - `type`: The log type that may imply a specific severity level.
+  /// - `logLevel`: The severity level of the log. If not provided, will be
+  ///   inferred from [type] or default to [LogLevel.debug].
+  /// - `type`: Log type — built-in (`ISpectLogType.httpRequest`) or custom
+  ///   (`const ISpectLogType('my-key', category: 'firebase')`).
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
@@ -308,7 +310,6 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    // Determine the appropriate log level
     final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
 
     _handleLog(

@@ -111,7 +111,7 @@ class _JsonScreenState extends State<JsonScreen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     final bgColor = iSpect.theme.background?.resolve(context);
-    final logKey = widget.data['key'] as String?;
+    final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
 
@@ -517,7 +517,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    final correlatedKey = correlatedLogData['key'] as String?;
+    final correlatedKey = correlatedLogData['key']?.toString();
     final targetColor =
         iSpect.theme.getTypeColor(context, key: correlatedKey) ??
             context.appTheme.colorScheme.primary;
@@ -638,8 +638,8 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
     if (label == null) return null;
     // Simple heuristic: labels come from l10n (httpRequest/httpResponse).
     // We can't access l10n here, but we swap them by checking the data key.
-    final currentKey = data['key'] as String?;
-    final correlatedKey = correlatedLogData['key'] as String?;
+    final currentKey = data['key']?.toString();
+    final correlatedKey = correlatedLogData['key']?.toString();
     if (currentKey == correlatedKey) return label;
     // The label passed is for the correlated log. After navigation,
     // the "correlated" becomes the current data's label.

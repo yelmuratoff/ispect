@@ -37,9 +37,18 @@ class NativeLogsFile extends BaseLogsFile {
     }
   }
 
-  /// Gets platform-appropriate directory for log storage
-  Future<Directory> _getPlatformDirectory() async =>
-      (await platformDirectoryProvider.logsBaseDirectory()) as Directory;
+  /// Gets platform-appropriate directory for log storage.
+  Future<Directory> _getPlatformDirectory() async {
+    final result = await platformDirectoryProvider.logsBaseDirectory();
+    if (result is! Directory) {
+      throw StateError(
+        'Expected dart:io Directory from logsBaseDirectory(), '
+        'got ${result.runtimeType}. '
+        'This method must not be called on web.',
+      );
+    }
+    return result;
+  }
 
   /// Ensures logs subdirectory exists
   Future<Directory> _ensureLogsDirectory(Directory parentDir) async {
@@ -186,7 +195,15 @@ class NativeLogsFile extends BaseLogsFile {
     String fileName,
     String fileType,
   ) async {
-    final dir = (await platformDirectoryProvider.tempDirectory()) as Directory;
+    final tempResult = await platformDirectoryProvider.tempDirectory();
+    if (tempResult is! Directory) {
+      throw StateError(
+        'Expected dart:io Directory from tempDirectory(), '
+        'got ${tempResult.runtimeType}. '
+        'This method must not be called on web.',
+      );
+    }
+    final dir = tempResult;
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
     final safeFileType = fileType.replaceAll(RegExp(r'[^\w]'), '');
