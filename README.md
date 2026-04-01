@@ -495,7 +495,17 @@ ISpect.run(
 
 ```dart
 ISpectBuilder(
-  options: ISpectOptions(observer: observer),
+  options: ISpectOptions(
+    observer: observer,
+    initialSettings: ISpectSettingsState(
+      disabledLogTypes: {
+        'riverpod-add',
+        'riverpod-update',
+        'riverpod-dispose',
+        'riverpod-fail',
+      },
+    ),
+  ),
   theme: ISpectTheme(
     pageTitle: 'Debug Panel',
     background: ISpectDynamicColor(light: Colors.white, dark: Colors.black),
@@ -518,12 +528,6 @@ ISpectBuilder(
     logDescriptions: {
       'error': 'Critical application errors',
       'info': 'Informational messages',
-    },
-    disabledLogTypes: {
-      'riverpod-add',
-      'riverpod-update',
-      'riverpod-dispose',
-      'riverpod-fail',
     },
   ),
   child: child ?? const SizedBox.shrink(),
