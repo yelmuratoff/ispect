@@ -157,7 +157,8 @@ List<Widget> _buildActionWidgets({
       ),
     );
     if (tx.request.curlCommand != null) {
-      widgets.add(
+      widgets.addAll([
+        const Gap(4),
         _SmallActionIcon(
           icon: Icons.terminal_rounded,
           color: color,
@@ -165,26 +166,28 @@ List<Widget> _buildActionWidgets({
           onPressed: () =>
               copyClipboard(context, value: tx.request.curlCommand!),
         ),
-      );
+      ]);
     }
     if (onOpenRequestDetail != null) {
-      widgets.add(
+      widgets.addAll([
+        const Gap(4),
         _DetailChip(
           label: l10n.httpRequest,
           color: color,
           onTap: onOpenRequestDetail,
         ),
-      );
+      ]);
     }
     if ((tx.response != null || tx.error != null) &&
         onOpenResponseDetail != null) {
-      widgets.add(
+      widgets.addAll([
+        const Gap(4),
         _DetailChip(
           label: l10n.httpResponse,
           color: color,
           onTap: onOpenResponseDetail,
         ),
-      );
+      ]);
     }
   } else {
     widgets.add(
