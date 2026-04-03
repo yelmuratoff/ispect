@@ -461,15 +461,8 @@ final class ISpectLogType {
 
   /// Human-readable display title.
   ///
-  /// Returns [title] if explicitly set; otherwise formats [key] by replacing
-  /// hyphens with spaces and capitalising each word
-  /// (e.g. `'http-request'` → `'Http Request'`).
-  String get displayTitle => title ?? _formatKey(key);
-
-  static String _formatKey(String key) => key
-      .split('-')
-      .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-      .join(' ');
+  /// Returns [title] if explicitly set; otherwise returns [key] as-is.
+  String get displayTitle => title ?? key;
 
   // ── Value semantics ────────────────────────────────────────────────────────
 
