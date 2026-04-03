@@ -47,7 +47,7 @@ class ISpectBuilder extends StatefulWidget {
   const ISpectBuilder({
     required this.child,
     required this.options,
-    this.isISpectEnabled = true,
+    this.isISpectEnabled = kISpectEnabled,
     this.theme,
     this.controller,
     super.key,
@@ -62,7 +62,7 @@ class ISpectBuilder extends StatefulWidget {
   /// The global `kISpectEnabled` controls tree-shaking at compile time.
   static Widget wrap({
     required Widget child,
-    bool isISpectEnabled = true,
+    bool isISpectEnabled = kISpectEnabled,
     ISpectOptions? options,
     ISpectTheme? theme,
     DraggablePanelController? controller,
