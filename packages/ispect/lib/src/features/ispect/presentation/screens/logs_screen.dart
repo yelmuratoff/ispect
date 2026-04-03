@@ -779,6 +779,8 @@ class _MainLogsViewState extends State<_MainLogsView> {
           return NetworkTransactionCard(
             key: ValueKey(entry.requestId),
             transaction: entry,
+            searchMatchState:
+                widget.logsViewController.matchStateForTransaction(entry),
             typeColumnWidth: _controller.typeColumnWidth,
             timeColumnWidth: _controller.timeColumnWidth,
             onTap: isDesktop

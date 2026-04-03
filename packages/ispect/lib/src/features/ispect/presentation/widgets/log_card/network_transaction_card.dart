@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
@@ -22,6 +23,7 @@ class NetworkTransactionCard extends StatelessWidget {
     this.onOpenResponseDetail,
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
+    this.searchMatchState = SearchMatchState.none,
     super.key,
   });
 
@@ -31,6 +33,7 @@ class NetworkTransactionCard extends StatelessWidget {
   final VoidCallback? onOpenResponseDetail;
   final double typeColumnWidth;
   final double timeColumnWidth;
+  final SearchMatchState searchMatchState;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +45,7 @@ class NetworkTransactionCard extends StatelessWidget {
         onOpenResponseDetail: onOpenResponseDetail,
         typeColumnWidth: typeColumnWidth,
         timeColumnWidth: timeColumnWidth,
+        searchMatchState: searchMatchState,
       );
     }
     return Padding(
@@ -51,6 +55,7 @@ class NetworkTransactionCard extends StatelessWidget {
         onTap: onTap,
         onOpenRequestDetail: onOpenRequestDetail,
         onOpenResponseDetail: onOpenResponseDetail,
+        searchMatchState: searchMatchState,
       ),
     );
   }
@@ -245,12 +250,14 @@ class _MobileTransactionCard extends StatefulWidget {
     this.onTap,
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
+    this.searchMatchState = SearchMatchState.none,
   });
 
   final NetworkTransaction transaction;
   final VoidCallback? onTap;
   final VoidCallback? onOpenRequestDetail;
   final VoidCallback? onOpenResponseDetail;
+  final SearchMatchState searchMatchState;
 
   @override
   State<_MobileTransactionCard> createState() => _MobileTransactionCardState();
@@ -265,17 +272,48 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   Widget build(BuildContext context) {
     final color = _transactionColor(tx);
 
-    final borderColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
     final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.5);
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final isFocused = widget.searchMatchState == SearchMatchState.focused;
+    final isMatch = widget.searchMatchState == SearchMatchState.match;
+
+    final Color effectiveBg;
+    final Color effectiveBorder;
+    final double borderWidth;
+    final List<BoxShadow>? boxShadow;
+
+    if (isFocused) {
+      effectiveBg = primaryColor.withValues(alpha: 0.12);
+      effectiveBorder = primaryColor;
+      borderWidth = 2;
+      boxShadow = [
+        BoxShadow(
+          color: primaryColor.withValues(alpha: 0.25),
+          blurRadius: 10,
+          spreadRadius: 1,
+        ),
+      ];
+    } else if (isMatch) {
+      effectiveBg = primaryColor.withValues(alpha: 0.06);
+      effectiveBorder = primaryColor.withValues(alpha: 0.5);
+      borderWidth = 1.5;
+      boxShadow = null;
+    } else {
+      effectiveBg = cardColor;
+      effectiveBorder =
+          context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+      borderWidth = 1;
+      boxShadow = null;
+    }
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: cardColor,
+        color: effectiveBg,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: effectiveBorder, width: borderWidth),
+        boxShadow: boxShadow,
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -467,6 +505,7 @@ class _DesktopTransactionRow extends StatefulWidget {
     this.onTap,
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
+    this.searchMatchState = SearchMatchState.none,
   });
 
   final NetworkTransaction transaction;
@@ -475,6 +514,7 @@ class _DesktopTransactionRow extends StatefulWidget {
   final VoidCallback? onOpenResponseDetail;
   final double typeColumnWidth;
   final double timeColumnWidth;
+  final SearchMatchState searchMatchState;
 
   @override
   State<_DesktopTransactionRow> createState() => _DesktopTransactionRowState();
@@ -494,9 +534,30 @@ class _DesktopTransactionRowState extends State<_DesktopTransactionRow> {
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
 
-    final bgColor = _isHovered
-        ? onSurface.withValues(alpha: 0.06)
-        : color.withValues(alpha: 0.03);
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final isFocused = widget.searchMatchState == SearchMatchState.focused;
+    final isMatch = widget.searchMatchState == SearchMatchState.match;
+
+    final Color bgColor;
+    if (isFocused) {
+      bgColor = primaryColor.withValues(alpha: 0.16);
+    } else if (isMatch) {
+      bgColor = primaryColor.withValues(alpha: 0.08);
+    } else if (_isHovered) {
+      bgColor = onSurface.withValues(alpha: 0.06);
+    } else {
+      bgColor = color.withValues(alpha: 0.03);
+    }
+
+    final Color leftBorderColor;
+    if (isFocused) {
+      leftBorderColor = primaryColor;
+    } else if (isMatch) {
+      leftBorderColor = primaryColor.withValues(alpha: 0.6);
+    } else {
+      leftBorderColor = color;
+    }
+    final leftBorderWidth = isFocused ? 3.0 : 2.0;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -506,7 +567,7 @@ class _DesktopTransactionRowState extends State<_DesktopTransactionRow> {
           color: bgColor,
           border: Border(
             bottom: BorderSide(color: borderColor),
-            left: BorderSide(color: color, width: 2),
+            left: BorderSide(color: leftBorderColor, width: leftBorderWidth),
           ),
         ),
         child: Column(

@@ -94,6 +94,22 @@ mixin SearchHighlightMixin on ChangeNotifier {
     return SearchMatchState.none;
   }
 
+  /// Returns the [SearchMatchState] for a network transaction.
+  ///
+  /// A transaction matches if any of its constituent logs (request, response,
+  /// error) is in the current search match set.
+  SearchMatchState matchStateForTransaction(NetworkTransaction tx) {
+    if (_searchMode != SearchMode.highlight) return SearchMatchState.none;
+    final ids = [
+      tx.request.id,
+      if (tx.response != null) tx.response!.id,
+      if (tx.error != null) tx.error!.id,
+    ];
+    if (ids.contains(focusedMatchId)) return SearchMatchState.focused;
+    if (ids.any(_searchMatchIdSet.contains)) return SearchMatchState.match;
+    return SearchMatchState.none;
+  }
+
   void focusNextMatch() {
     if (_searchMatchIds.isEmpty) return;
     _focusedMatchIndex = (_focusedMatchIndex + 1) % _searchMatchIds.length;
