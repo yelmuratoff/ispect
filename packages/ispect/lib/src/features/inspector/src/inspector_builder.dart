@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:inspector/inspector.dart' as pkg_inspector;
 import 'package:ispect/ispect.dart';
@@ -43,11 +42,12 @@ import 'package:ispect/src/features/performance/src/builder.dart';
 class ISpectBuilder extends StatefulWidget {
   /// Creates an ISpectBuilder that wraps [child] with debugging tools.
   ///
-  /// Set [isISpectEnabled] to false in production for security.
+  /// Set [isISpectEnabled] to false to hide the panel at runtime (e.g. non-admin users).
+  /// Compile-time gating is handled by [kISpectEnabled] via `--dart-define=ISPECT_ENABLED=true`.
   const ISpectBuilder({
     required this.child,
     required this.options,
-    this.isISpectEnabled = kDebugMode,
+    this.isISpectEnabled = true,
     this.theme,
     this.controller,
     super.key,
