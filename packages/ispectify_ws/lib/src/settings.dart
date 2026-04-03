@@ -54,19 +54,41 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   AnsiPen? get sentPen => requestPen;
   AnsiPen? get receivedPen => responsePen;
 
+  /// Creates a copy with updated values.
+  ///
+  /// Accepts both WS-specific names (`printSentData`, `printReceivedData`,
+  /// `sentPen`, `receivedPen`, etc.) and the base-interface aliases
+  /// (`printRequestData`, `printResponseData`, `requestPen`, `responsePen`).
+  /// WS-specific names take precedence when both are provided.
+  ///
+  /// `printErrorHeaders` is accepted for interface compatibility but has no
+  /// effect — WebSocket logging never prints error headers.
+  @override
   ISpectWSInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    // WS-specific names (preferred)
+    bool? printSentData,
+    bool? printSentHeaders,
     bool? printReceivedData,
+    bool? printReceivedHeaders,
     bool? printReceivedMessage,
     bool? printErrorData,
     bool? printErrorMessage,
-    bool? printSentData,
-    bool? printReceivedHeaders,
-    bool? printSentHeaders,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     AnsiPen? errorPen,
+    // Base-interface aliases (used by BaseNetworkInterceptor.configure)
+    bool? printRequestData,
+    bool? printRequestHeaders,
+    bool? printResponseData,
+    bool? printResponseHeaders,
+    bool? printResponseMessage,
+    AnsiPen? requestPen,
+    AnsiPen? responsePen,
+    // Accepted for interface compatibility; has no effect on WS.
+    // ignore: avoid_unused_constructor_parameters
+    bool? printErrorHeaders,
     bool Function(ISpectLogData data)? sentFilter,
     bool Function(ISpectLogData data)? receivedFilter,
     bool Function(ISpectLogData data)? errorFilter,
@@ -74,15 +96,21 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
-        printReceivedData: printReceivedData ?? this.printReceivedData,
-        printReceivedMessage: printReceivedMessage ?? this.printReceivedMessage,
+        printSentData: printSentData ?? printRequestData ?? this.printSentData,
+        printSentHeaders:
+            printSentHeaders ?? printRequestHeaders ?? this.printSentHeaders,
+        printReceivedData:
+            printReceivedData ?? printResponseData ?? this.printReceivedData,
+        printReceivedHeaders: printReceivedHeaders ??
+            printResponseHeaders ??
+            this.printReceivedHeaders,
+        printReceivedMessage: printReceivedMessage ??
+            printResponseMessage ??
+            this.printReceivedMessage,
         printErrorData: printErrorData ?? this.printErrorData,
         printErrorMessage: printErrorMessage ?? this.printErrorMessage,
-        printSentData: printSentData ?? this.printSentData,
-        printReceivedHeaders: printReceivedHeaders ?? this.printReceivedHeaders,
-        printSentHeaders: printSentHeaders ?? this.printSentHeaders,
-        sentPen: sentPen ?? this.sentPen,
-        receivedPen: receivedPen ?? this.receivedPen,
+        sentPen: sentPen ?? requestPen ?? this.sentPen,
+        receivedPen: receivedPen ?? responsePen ?? this.receivedPen,
         errorPen: errorPen ?? this.errorPen,
         sentFilter: sentFilter ?? this.sentFilter,
         receivedFilter: receivedFilter ?? this.receivedFilter,

@@ -163,6 +163,63 @@ mixin BaseNetworkInterceptor {
   }) =>
       enabled && (filter?.call(value) ?? true);
 
+  // ---------------------------------------------------------------------------
+  // Runtime reconfiguration (opt-in)
+  // ---------------------------------------------------------------------------
+
+  /// The current settings exposed for runtime reconfiguration.
+  ///
+  /// Returns `null` by default — override in interceptors that support
+  /// [configure] (e.g. Dio, HTTP). WS and other read-only interceptors
+  /// do not need to override this.
+  BaseNetworkInterceptorSettings? get configurableSettings => null;
+
+  /// Applies [updated] settings. Override alongside [configurableSettings].
+  ///
+  /// The default implementation is a no-op.
+  // ignore: use_setters_to_change_properties
+  void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {}
+
+  /// Reconfigures logging options at runtime without replacing the interceptor.
+  ///
+  /// Only fields provided (non-null) are updated; omitted fields retain their
+  /// current values. Has no effect when [configurableSettings] returns `null`.
+  void configure({
+    bool? printResponseData,
+    bool? printResponseHeaders,
+    bool? printResponseMessage,
+    bool? printErrorData,
+    bool? printErrorHeaders,
+    bool? printErrorMessage,
+    bool? printRequestData,
+    bool? printRequestHeaders,
+    bool? enableRedaction,
+    AnsiPen? requestPen,
+    AnsiPen? responsePen,
+    AnsiPen? errorPen,
+    RedactionService? redactor,
+  }) {
+    final current = configurableSettings;
+    if (current == null) return;
+    applyConfigurableSettings(
+      current.copyWith(
+        printResponseData: printResponseData,
+        printResponseHeaders: printResponseHeaders,
+        printResponseMessage: printResponseMessage,
+        printErrorData: printErrorData,
+        printErrorHeaders: printErrorHeaders,
+        printErrorMessage: printErrorMessage,
+        printRequestData: printRequestData,
+        printRequestHeaders: printRequestHeaders,
+        enableRedaction: enableRedaction,
+        requestPen: requestPen,
+        responsePen: responsePen,
+        errorPen: errorPen,
+      ),
+    );
+    if (redactor != null) this.redactor = redactor;
+  }
+
   /// Processes and redacts a map, ensuring string keys.
   ///
   /// Applies redaction if enabled, then converts to Map<String, dynamic>.

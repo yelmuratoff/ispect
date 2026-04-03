@@ -74,4 +74,24 @@ abstract class BaseNetworkInterceptorSettings
   /// Custom [AnsiPen] for error log console output.
   @override
   final AnsiPen? errorPen;
+
+  /// Creates a copy with the given fields replaced.
+  ///
+  /// Subclasses must override to preserve their own fields (e.g. filter
+  /// callbacks) while delegating the base-field handling to this declaration.
+  BaseNetworkInterceptorSettings copyWith({
+    bool? enabled,
+    bool? enableRedaction,
+    bool? printResponseData,
+    bool? printResponseHeaders,
+    bool? printResponseMessage,
+    bool? printErrorData,
+    bool? printErrorHeaders,
+    bool? printErrorMessage,
+    bool? printRequestData,
+    bool? printRequestHeaders,
+    AnsiPen? requestPen,
+    AnsiPen? responsePen,
+    AnsiPen? errorPen,
+  });
 }

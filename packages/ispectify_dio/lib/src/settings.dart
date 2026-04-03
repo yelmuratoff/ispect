@@ -34,6 +34,7 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   /// You can add your custom logic to log only specific Dio errors.
   final bool Function(DioException response)? errorFilter;
 
+  @override
   ISpectDioInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,

@@ -34,6 +34,7 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   /// You can add your custom logic to log only specific HTTP errors.
   final bool Function(BaseResponse response)? errorFilter;
 
+  @override
   ISpectHttpInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,

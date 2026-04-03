@@ -30,36 +30,12 @@ class ISpectHttpInterceptor extends InterceptorContract
   @override
   bool get enableRedaction => settings.enableRedaction;
 
-  void configure({
-    bool? printResponseData,
-    bool? printResponseHeaders,
-    bool? printResponseMessage,
-    bool? printErrorData,
-    bool? printErrorHeaders,
-    bool? printErrorMessage,
-    bool? printRequestData,
-    bool? printRequestHeaders,
-    bool? enableRedaction,
-    AnsiPen? requestPen,
-    AnsiPen? responsePen,
-    AnsiPen? errorPen,
-    RedactionService? redactor,
-  }) {
-    _settings = _settings.copyWith(
-      printRequestData: printRequestData,
-      printRequestHeaders: printRequestHeaders,
-      printResponseData: printResponseData,
-      printErrorData: printErrorData,
-      printErrorHeaders: printErrorHeaders,
-      printErrorMessage: printErrorMessage,
-      printResponseHeaders: printResponseHeaders,
-      printResponseMessage: printResponseMessage,
-      enableRedaction: enableRedaction,
-      requestPen: requestPen,
-      responsePen: responsePen,
-      errorPen: errorPen,
-    );
-    if (redactor != null) this.redactor = redactor;
+  @override
+  BaseNetworkInterceptorSettings get configurableSettings => _settings;
+
+  @override
+  void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {
+    _settings = updated as ISpectHttpInterceptorSettings;
   }
 
   @override
