@@ -20,6 +20,7 @@ export 'src/models/log_type.dart';
 export 'src/models/models.dart';
 export 'src/network/base_interceptor.dart';
 export 'src/network/curl_utils.dart';
+export 'src/network/network_console_message_builder.dart';
 export 'src/network/network_interceptor_settings.dart';
 export 'src/network/network_interceptor_settings_builder.dart';
 export 'src/network/network_json_keys.dart';

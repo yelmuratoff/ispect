@@ -1,7 +1,8 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Builds a rich console message for HTTP network logs, respecting
-/// [BaseNetworkInterceptorSettings] print flags.
+/// Builds a rich console message for HTTP network logs.
+///
+/// Delegates to the shared [buildNetworkConsoleMessage] from `ispectify` core.
 String buildHttpConsoleMessage({
   required String source,
   required String operation,
@@ -18,26 +19,21 @@ String buildHttpConsoleMessage({
   bool printBody = false,
   bool printHeaders = false,
   bool printErrorMessage = false,
-}) {
-  final buf = StringBuffer('[$source] $operation → $target');
-  if (duration != null) buf.write(' ${duration.inMilliseconds}ms');
-  if (!success) buf.write(' FAILED');
-
-  if (printStatusCode && statusCode != null) {
-    buf.write('\nStatus: $statusCode');
-  }
-  if (printStatusMessage && statusMessage != null && statusMessage.isNotEmpty) {
-    buf.write('\nMessage: $statusMessage');
-  }
-  if (printErrorMessage && errorMessage != null && errorMessage.isNotEmpty) {
-    buf.write('\nError: $errorMessage');
-  }
-  if (printBody && body != null) {
-    buf.write('\nData: ${JsonTruncator.pretty(body)}');
-  }
-  if (printHeaders && headers != null && headers.isNotEmpty) {
-    buf.write('\nHeaders: ${JsonTruncator.pretty(headers)}');
-  }
-
-  return buf.toString();
-}
+}) =>
+    buildNetworkConsoleMessage(
+      source: source,
+      operation: operation,
+      target: target,
+      duration: duration,
+      success: success,
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+      body: body,
+      headers: headers,
+      errorMessage: errorMessage,
+      printStatusCode: printStatusCode,
+      printStatusMessage: printStatusMessage,
+      printBody: printBody,
+      printHeaders: printHeaders,
+      printErrorMessage: printErrorMessage,
+    );
