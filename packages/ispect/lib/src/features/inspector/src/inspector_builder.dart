@@ -172,7 +172,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         // Add inspector from the inspector package.
         currentChild = pkg_inspector.Inspector(
           isPanelVisible: model.isISpectEnabled,
-          isEnabled: model.isISpectEnabled ? null : false,
+          isEnabled: model.isISpectEnabled,
           panelBuilder: _buildPanel,
           child: currentChild,
         );
