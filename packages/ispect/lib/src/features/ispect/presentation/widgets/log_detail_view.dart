@@ -115,6 +115,9 @@ class _TraceCorrelationBanner extends StatelessWidget {
           label: 'Corr',
           value: correlationId!,
           color: color,
+          actionIcon: onShowRelated != null
+              ? Icons.filter_list_rounded
+              : Icons.copy_rounded,
           onTap: onShowRelated != null
               ? () => onShowRelated!(correlationId!)
               : () => _copyId(context, correlationId!),
@@ -127,6 +130,9 @@ class _TraceCorrelationBanner extends StatelessWidget {
           label: 'Txn',
           value: transactionId!,
           color: color,
+          actionIcon: onShowRelated != null
+              ? Icons.filter_list_rounded
+              : Icons.copy_rounded,
           onTap: onShowRelated != null
               ? () => onShowRelated!(transactionId!)
               : () => _copyId(context, transactionId!),
@@ -175,12 +181,14 @@ class _IdChip extends StatelessWidget {
     required this.value,
     required this.color,
     this.onTap,
+    this.actionIcon = Icons.copy_rounded,
   });
 
   final String label;
   final String value;
   final Color color;
   final VoidCallback? onTap;
+  final IconData actionIcon;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -212,7 +220,7 @@ class _IdChip extends StatelessWidget {
                   if (onTap != null) ...[
                     const Gap(4),
                     Icon(
-                      Icons.copy_rounded,
+                      actionIcon,
                       size: 11,
                       color: color,
                     ),

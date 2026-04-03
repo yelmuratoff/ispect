@@ -737,10 +737,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 : () => widget.logsViewController.handleLogItemTap(logEntry),
             onOpenDetail: isDesktop
                 ? () => widget.logsViewController.openLogDetail(logEntry)
-                : () => LogDetailView(
-                      activeData: logEntry,
-                      onClose: () => Navigator.of(context).pop(),
-                    ).push(context),
+                : null,
+            onShowRelated: isDesktop
+                ? null
+                : (id) => widget.logsViewController.searchByCorrelationId(id),
             onTypeFilterTap: isDesktop
                 ? (type) => _controller.handleTypeFilter(type, widget.logsData)
                 : null,
@@ -796,6 +796,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                       onClose: () => Navigator.of(context).pop(),
                       correlatedLog: responseLog,
                       correlationDuration: entry.duration,
+                      onShowRelated: (id) {
+                        widget.logsViewController.searchByCorrelationId(id);
+                        Navigator.of(context).pop();
+                      },
                     ).push(context);
                   },
             onOpenResponseDetail: (entry.response ?? entry.error) != null
@@ -810,6 +814,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
                           onClose: () => Navigator.of(context).pop(),
                           correlatedLog: entry.request,
                           correlationDuration: entry.duration,
+                          onShowRelated: (id) {
+                            widget.logsViewController.searchByCorrelationId(id);
+                            Navigator.of(context).pop();
+                          },
                         ).push(context);
                       }
                 : null,
@@ -842,10 +850,10 @@ class _MainLogsViewState extends State<_MainLogsView> {
               : () => widget.logsViewController.handleLogItemTap(logEntry),
           onOpenDetail: isDesktop
               ? () => widget.logsViewController.openLogDetail(logEntry)
-              : () => LogDetailView(
-                    activeData: logEntry,
-                    onClose: () => Navigator.of(context).pop(),
-                  ).push(context),
+              : null,
+          onShowRelated: isDesktop
+              ? null
+              : (id) => widget.logsViewController.searchByCorrelationId(id),
           onTypeFilterTap: isDesktop
               ? (type) => _controller.handleTypeFilter(type, widget.logsData)
               : null,

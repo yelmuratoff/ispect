@@ -17,6 +17,7 @@ class LogListItem extends StatelessWidget {
     required this.onSharePressed,
     this.observer,
     this.onOpenDetail,
+    this.onShowRelated,
     this.onTypeFilterTap,
     this.useRelativeTime = false,
     this.typeColumnWidth = 100,
@@ -34,6 +35,7 @@ class LogListItem extends StatelessWidget {
   final VoidCallback onSharePressed;
   final ISpectNavigatorObserver? observer;
   final VoidCallback? onOpenDetail;
+  final void Function(String id)? onShowRelated;
   final void Function(String type)? onTypeFilterTap;
   final bool useRelativeTime;
   final double typeColumnWidth;
@@ -78,6 +80,7 @@ class LogListItem extends StatelessWidget {
         onShareTap: onSharePressed,
         onTap: onItemTapped,
         observer: observer,
+        onShowRelated: onShowRelated,
       ),
     );
   }

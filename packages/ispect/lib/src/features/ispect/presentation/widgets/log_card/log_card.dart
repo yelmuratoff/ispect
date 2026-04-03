@@ -24,6 +24,7 @@ class LogCard extends StatelessWidget {
     required this.onTap,
     this.observer,
     this.onShareTap,
+    this.onShowRelated,
     this.searchMatchState = SearchMatchState.none,
     super.key,
   });
@@ -36,6 +37,7 @@ class LogCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
+  final void Function(String id)? onShowRelated;
   final SearchMatchState searchMatchState;
 
   @override
@@ -117,6 +119,7 @@ class LogCard extends StatelessWidget {
                   onTap: onTap,
                   onShareTap: onShareTap,
                   observer: observer,
+                  onShowRelated: onShowRelated,
                 ),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 200),
@@ -144,6 +147,7 @@ class _LogCardHeader extends StatelessWidget {
     required this.onTap,
     required this.observer,
     this.onShareTap,
+    this.onShowRelated,
   });
 
   final IconData icon;
@@ -153,6 +157,7 @@ class _LogCardHeader extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
+  final void Function(String id)? onShowRelated;
 
   String get _message {
     final msg = data.isHttpLog ? data.httpLogText : data.textMessage;
@@ -172,6 +177,12 @@ class _LogCardHeader extends StatelessWidget {
             onOpenDetail: () => LogDetailView(
               activeData: data,
               onClose: () => Navigator.of(context).pop(),
+              onShowRelated: onShowRelated != null
+                  ? (id) {
+                      onShowRelated!(id);
+                      Navigator.of(context).pop();
+                    }
+                  : null,
             ).push(context),
           ),
           child: InkWell(
@@ -205,6 +216,12 @@ class _LogCardHeader extends StatelessWidget {
                   onExpandTap: () => LogDetailView(
                     activeData: data,
                     onClose: () => Navigator.of(context).pop(),
+                    onShowRelated: onShowRelated != null
+                        ? (id) {
+                            onShowRelated!(id);
+                            Navigator.of(context).pop();
+                          }
+                        : null,
                   ).push(context),
                   message: data.textMessage,
                   errorMessage: data.httpLogText,
