@@ -1,6 +1,7 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
+import 'package:ispectify_http/src/message_builder.dart';
 import 'package:ispectify_http/src/settings.dart';
 
 /// HTTP client interceptor that logs requests/responses via the trace API.
@@ -86,17 +87,28 @@ class ISpectHttpInterceptor extends InterceptorContract
       useRedaction: useRedaction,
     );
 
+    final requestDataJson = HttpRequestData(request).toJson(
+      redactor: useRedaction ? redactor : null,
+    );
+
     _logger.httpRequest(
       source: 'http',
       operation: request.method,
       target: url,
       correlationId: requestId,
       config: useRedaction ? null : _noRedactConfig,
+      consoleMessage: buildHttpConsoleMessage(
+        source: 'http',
+        operation: request.method,
+        target: url,
+        printBody: settings.printRequestData,
+        printHeaders: settings.printRequestHeaders,
+        body: requestDataJson[NetworkJsonKeys.data],
+        headers: _asStringMap(requestDataJson[NetworkJsonKeys.headers]),
+      ),
       meta: {
         'request-id': requestId,
-        'request-data': HttpRequestData(request).toJson(
-          redactor: useRedaction ? redactor : null,
-        ),
+        'request-data': requestDataJson,
       },
     );
     return request;
@@ -151,36 +163,77 @@ class ISpectHttpInterceptor extends InterceptorContract
       ),
     );
 
+    final responseDataJson = responseData.toJson(
+      redactor: useRedaction ? redactor : null,
+    );
     final sharedMeta = <String, Object?>{
       if (requestId != null) 'request-id': requestId,
       'status-code': response.statusCode,
-      'response-data': responseData.toJson(
-        redactor: useRedaction ? redactor : null,
-      ),
+      'response-data': responseDataJson,
     };
+
+    final method = request?.method ?? 'UNKNOWN';
+
     if (isErrorResponse) {
       _logger.httpError(
         source: 'http',
-        operation: request?.method ?? 'UNKNOWN',
+        operation: method,
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
         config: useRedaction ? null : _noRedactConfig,
+        consoleMessage: buildHttpConsoleMessage(
+          source: 'http',
+          operation: method,
+          target: url,
+          duration: sw?.elapsed,
+          success: false,
+          statusCode: response.statusCode,
+          statusMessage: response.reasonPhrase,
+          body: responseDataJson[NetworkJsonKeys.body],
+          headers: _asStringMap(responseDataJson[NetworkJsonKeys.headers]),
+          printStatusCode: true,
+          printStatusMessage: settings.printErrorMessage,
+          printBody: settings.printErrorData,
+          printHeaders: settings.printErrorHeaders,
+        ),
         meta: sharedMeta,
       );
     } else {
       _logger.httpResponse(
         source: 'http',
-        operation: request?.method ?? 'UNKNOWN',
+        operation: method,
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
         config: useRedaction ? null : _noRedactConfig,
+        consoleMessage: buildHttpConsoleMessage(
+          source: 'http',
+          operation: method,
+          target: url,
+          duration: sw?.elapsed,
+          statusCode: response.statusCode,
+          statusMessage: response.reasonPhrase,
+          body: responseDataJson[NetworkJsonKeys.body],
+          headers: _asStringMap(responseDataJson[NetworkJsonKeys.headers]),
+          printStatusCode: true,
+          printStatusMessage: settings.printResponseMessage,
+          printBody: settings.printResponseData,
+          printHeaders: settings.printResponseHeaders,
+        ),
         meta: sharedMeta,
       );
     }
 
     return response;
+  }
+
+  static Map<String, dynamic>? _asStringMap(Object? value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), v));
+    }
+    return null;
   }
 
   Object? _responseBodyPayload(

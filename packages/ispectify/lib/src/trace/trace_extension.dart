@@ -36,6 +36,7 @@ extension ISpectTrace on ISpectLogger {
     String? logKey,
     String? correlationId,
     LogLevel? logLevel,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
 
@@ -52,14 +53,15 @@ extension ISpectTrace on ISpectLogger {
           ? RedactionService.redactTarget(target, cfg.redactKeys)
           : target;
 
-      final message = buildTraceMessage(
-        source: source,
-        operation: operation,
-        target: safeTarget,
-        key: key,
-        duration: duration,
-        success: !isError,
-      );
+      final message = consoleMessage ??
+          buildTraceMessage(
+            source: source,
+            operation: operation,
+            target: safeTarget,
+            key: key,
+            duration: duration,
+            success: !isError,
+          );
 
       final safeMeta = cfg.redact
           ? RedactionService.redactByKeys(meta, cfg.redactKeys)

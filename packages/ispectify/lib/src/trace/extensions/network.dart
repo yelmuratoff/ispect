@@ -12,6 +12,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
     String? correlationId,
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
     trace(
@@ -24,6 +25,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
       correlationId: correlationId,
       config: config,
       meta: meta,
+      consoleMessage: consoleMessage,
     );
   }
 
@@ -35,6 +37,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
     String? correlationId,
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
     trace(
@@ -48,6 +51,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
       correlationId: correlationId,
       config: config,
       meta: meta,
+      consoleMessage: consoleMessage,
     );
   }
 
@@ -61,6 +65,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
     String? correlationId,
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
     trace(
@@ -76,6 +81,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
       correlationId: correlationId,
       config: config,
       meta: meta,
+      consoleMessage: consoleMessage,
     );
   }
 }
