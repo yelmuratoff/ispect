@@ -15,6 +15,7 @@ extension ISpectLoggerWs on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
     trace(
@@ -32,6 +33,7 @@ extension ISpectLoggerWs on ISpectLogger {
       },
       config: config,
       correlationId: correlationId,
+      consoleMessage: consoleMessage,
     );
   }
 
@@ -46,6 +48,7 @@ extension ISpectLoggerWs on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
+    String? consoleMessage,
   }) {
     if (!options.enabled) return;
     trace(
@@ -63,6 +66,7 @@ extension ISpectLoggerWs on ISpectLogger {
       },
       config: config,
       correlationId: correlationId,
+      consoleMessage: consoleMessage,
     );
   }
 }

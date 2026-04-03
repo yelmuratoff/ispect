@@ -65,7 +65,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev07
+  ispect: ^5.0.0-dev08
 ```
 
 ```dart
@@ -364,13 +364,13 @@ Install only what your project needs. Each package works independently.
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev07 # Core UI, inspector, log viewer
-  ispectify: ^5.0.0-dev07 # Logging backbone (Dart-only, no Flutter)
-  ispectify_dio: ^5.0.0-dev07 # Dio HTTP interceptor
-  ispectify_http: ^5.0.0-dev07 # http package interceptor
-  ispectify_ws: ^5.0.0-dev07 # WebSocket traffic capture
-  ispectify_db: ^5.0.0-dev07 # Database operation tracking
-  ispectify_bloc: ^5.0.0-dev07 # BLoC event/state observer
+  ispect: ^5.0.0-dev08 # Core UI, inspector, log viewer
+  ispectify: ^5.0.0-dev08 # Logging backbone (Dart-only, no Flutter)
+  ispectify_dio: ^5.0.0-dev08 # Dio HTTP interceptor
+  ispectify_http: ^5.0.0-dev08 # http package interceptor
+  ispectify_ws: ^5.0.0-dev08 # WebSocket traffic capture
+  ispectify_db: ^5.0.0-dev08 # Database operation tracking
+  ispectify_bloc: ^5.0.0-dev08 # BLoC event/state observer
 ```
 
 ### Dio
