@@ -99,8 +99,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       correlationId: requestId,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
-        'requestId': requestId,
-        'requestData': DioRequestData(options).toJson(
+        'request-id': requestId,
+        'request-data': DioRequestData(options).toJson(
           redactor: useRedaction ? redactor : null,
         ),
       },
@@ -141,9 +141,9 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       duration: sw?.elapsed,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
-        if (requestId != null) 'requestId': requestId,
-        'statusCode': response.statusCode,
-        'responseData': DioResponseData(
+        if (requestId != null) 'request-id': requestId,
+        'status-code': response.statusCode,
+        'response-data': DioResponseData(
           response: response,
           requestData: requestData,
         ).toJson(redactor: useRedaction ? redactor : null),
@@ -184,9 +184,9 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       duration: sw?.elapsed,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
-        if (requestId != null) 'requestId': requestId,
-        'statusCode': err.response?.statusCode,
-        'errorData': DioErrorData(
+        if (requestId != null) 'request-id': requestId,
+        'status-code': err.response?.statusCode,
+        'error-data': DioErrorData(
           exception: err,
           requestData: requestData,
           responseData: DioResponseData(

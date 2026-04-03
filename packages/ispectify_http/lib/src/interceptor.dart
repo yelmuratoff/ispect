@@ -93,8 +93,8 @@ class ISpectHttpInterceptor extends InterceptorContract
       correlationId: requestId,
       config: useRedaction ? null : _noRedactConfig,
       meta: {
-        'requestId': requestId,
-        'requestData': HttpRequestData(request).toJson(
+        'request-id': requestId,
+        'request-data': HttpRequestData(request).toJson(
           redactor: useRedaction ? redactor : null,
         ),
       },
@@ -152,9 +152,9 @@ class ISpectHttpInterceptor extends InterceptorContract
     );
 
     final sharedMeta = <String, Object?>{
-      if (requestId != null) 'requestId': requestId,
-      'statusCode': response.statusCode,
-      'responseData': responseData.toJson(
+      if (requestId != null) 'request-id': requestId,
+      'status-code': response.statusCode,
+      'response-data': responseData.toJson(
         redactor: useRedaction ? redactor : null,
       ),
     };
