@@ -30,8 +30,6 @@ final class ISpectWSInterceptor
   @override
   bool get enableRedaction => settings.enableRedaction;
 
-  static const _noRedactConfig = ISpectTraceConfig(redact: false);
-
   void setClient(WebSocketClient client) {
     _client = client;
     _connectionId = generateTraceId();
@@ -109,12 +107,12 @@ final class ISpectWSInterceptor
         'path': path,
       };
 
-      final consoleMsg = _buildWsConsoleMessage(
+      final consoleMsg = buildNetworkConsoleMessage(
         source: 'ws',
         operation: operation,
         target: url,
-        data: includeData ? safeData : null,
-        printData: includeData,
+        body: includeData ? safeData : null,
+        printBody: includeData,
       );
 
       if (type == wsTypeRequest) {
@@ -123,7 +121,7 @@ final class ISpectWSInterceptor
           operation: operation,
           target: url,
           correlationId: _connectionId,
-          config: useRedaction ? null : _noRedactConfig,
+          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
           meta: traceMeta,
           consoleMessage: consoleMsg,
         );
@@ -133,7 +131,7 @@ final class ISpectWSInterceptor
           operation: operation,
           target: url,
           correlationId: _connectionId,
-          config: useRedaction ? null : _noRedactConfig,
+          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
           meta: traceMeta,
           consoleMessage: consoleMsg,
         );
@@ -148,7 +146,7 @@ final class ISpectWSInterceptor
           error: e,
           errorStackTrace: s,
           correlationId: _connectionId,
-          config: useRedaction ? null : _noRedactConfig,
+          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
           meta: errMeta,
         );
       } else {
@@ -159,27 +157,13 @@ final class ISpectWSInterceptor
           error: e,
           errorStackTrace: s,
           correlationId: _connectionId,
-          config: useRedaction ? null : _noRedactConfig,
+          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
           meta: errMeta,
         );
       }
     }
 
     next(data);
-  }
-
-  static String _buildWsConsoleMessage({
-    required String source,
-    required String operation,
-    required String target,
-    required Object? data,
-    required bool printData,
-  }) {
-    final buf = StringBuffer('[$source] $operation → $target');
-    if (printData && data != null) {
-      buf.write('\nData: $data');
-    }
-    return buf.toString();
   }
 
   Map<String, dynamic>? _processMetrics(bool useRedaction) {

@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/src/data/_data.dart';
-import 'package:ispectify_dio/src/message_builder.dart';
 import 'package:ispectify_dio/src/settings.dart';
 
 /// Dio HTTP client interceptor that logs requests/responses via the trace API.
@@ -32,10 +31,6 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
 
   @override
   bool get enableRedaction => settings.enableRedaction;
-
-  /// Trace config that respects interceptor's redaction setting.
-  /// When enableRedaction is false, Layer 2 (trace pipeline) won't redact meta.
-  static const _noRedactConfig = ISpectTraceConfig(redact: false);
 
   void configure({
     bool? printResponseData,
@@ -102,15 +97,17 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       operation: options.method,
       target: url,
       correlationId: requestId,
-      config: useRedaction ? null : _noRedactConfig,
-      consoleMessage: buildDioConsoleMessage(
+      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      consoleMessage: buildNetworkConsoleMessage(
         source: 'dio',
         operation: options.method,
         target: url,
         printBody: settings.printRequestData,
         printHeaders: settings.printRequestHeaders,
         body: requestDataJson[NetworkJsonKeys.data],
-        headers: _asStringMap(requestDataJson[NetworkJsonKeys.headers]),
+        headers: BaseNetworkInterceptor.asStringMap(
+          requestDataJson[NetworkJsonKeys.headers],
+        ),
       ),
       meta: {
         'request-id': requestId,
@@ -155,8 +152,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       target: url,
       correlationId: requestId,
       duration: sw?.elapsed,
-      config: useRedaction ? null : _noRedactConfig,
-      consoleMessage: buildDioConsoleMessage(
+      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      consoleMessage: buildNetworkConsoleMessage(
         source: 'dio',
         operation: requestOptions.method,
         target: url,
@@ -164,7 +161,9 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
         statusCode: response.statusCode,
         statusMessage: response.statusMessage,
         body: responseDataJson[NetworkJsonKeys.data],
-        headers: _asStringMap(responseDataJson[NetworkJsonKeys.headers]),
+        headers: BaseNetworkInterceptor.asStringMap(
+          responseDataJson[NetworkJsonKeys.headers],
+        ),
         printStatusCode: true,
         printStatusMessage: settings.printResponseMessage,
         printBody: settings.printResponseData,
@@ -220,8 +219,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       errorStackTrace: err.stackTrace,
       correlationId: requestId,
       duration: sw?.elapsed,
-      config: useRedaction ? null : _noRedactConfig,
-      consoleMessage: buildDioConsoleMessage(
+      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      consoleMessage: buildNetworkConsoleMessage(
         source: 'dio',
         operation: requestOptions.method,
         target: url,
@@ -233,7 +232,9 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
             ? errorDataJson[NetworkJsonKeys.message] as String?
             : null,
         body: errorResponseJson?[NetworkJsonKeys.data],
-        headers: _asStringMap(errorResponseJson?[NetworkJsonKeys.headers]),
+        headers: BaseNetworkInterceptor.asStringMap(
+          errorResponseJson?[NetworkJsonKeys.headers],
+        ),
         printStatusCode: true,
         printStatusMessage: settings.printErrorMessage,
         printErrorMessage: settings.printErrorMessage,
@@ -246,13 +247,5 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
         'error-data': errorDataJson,
       },
     );
-  }
-
-  static Map<String, dynamic>? _asStringMap(Object? value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) {
-      return value.map((k, v) => MapEntry(k.toString(), v));
-    }
-    return null;
   }
 }

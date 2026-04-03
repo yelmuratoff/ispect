@@ -1,7 +1,6 @@
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
-import 'package:ispectify_http/src/message_builder.dart';
 import 'package:ispectify_http/src/settings.dart';
 
 /// HTTP client interceptor that logs requests/responses via the trace API.
@@ -30,8 +29,6 @@ class ISpectHttpInterceptor extends InterceptorContract
 
   @override
   bool get enableRedaction => settings.enableRedaction;
-
-  static const _noRedactConfig = ISpectTraceConfig(redact: false);
 
   void configure({
     bool? printResponseData,
@@ -96,15 +93,17 @@ class ISpectHttpInterceptor extends InterceptorContract
       operation: request.method,
       target: url,
       correlationId: requestId,
-      config: useRedaction ? null : _noRedactConfig,
-      consoleMessage: buildHttpConsoleMessage(
+      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      consoleMessage: buildNetworkConsoleMessage(
         source: 'http',
         operation: request.method,
         target: url,
         printBody: settings.printRequestData,
         printHeaders: settings.printRequestHeaders,
         body: requestDataJson[NetworkJsonKeys.data],
-        headers: _asStringMap(requestDataJson[NetworkJsonKeys.headers]),
+        headers: BaseNetworkInterceptor.asStringMap(
+          requestDataJson[NetworkJsonKeys.headers],
+        ),
       ),
       meta: {
         'request-id': requestId,
@@ -181,8 +180,8 @@ class ISpectHttpInterceptor extends InterceptorContract
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: useRedaction ? null : _noRedactConfig,
-        consoleMessage: buildHttpConsoleMessage(
+        config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+        consoleMessage: buildNetworkConsoleMessage(
           source: 'http',
           operation: method,
           target: url,
@@ -191,7 +190,9 @@ class ISpectHttpInterceptor extends InterceptorContract
           statusCode: response.statusCode,
           statusMessage: response.reasonPhrase,
           body: responseDataJson[NetworkJsonKeys.body],
-          headers: _asStringMap(responseDataJson[NetworkJsonKeys.headers]),
+          headers: BaseNetworkInterceptor.asStringMap(
+            responseDataJson[NetworkJsonKeys.headers],
+          ),
           printStatusCode: true,
           printStatusMessage: settings.printErrorMessage,
           printBody: settings.printErrorData,
@@ -206,8 +207,8 @@ class ISpectHttpInterceptor extends InterceptorContract
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: useRedaction ? null : _noRedactConfig,
-        consoleMessage: buildHttpConsoleMessage(
+        config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+        consoleMessage: buildNetworkConsoleMessage(
           source: 'http',
           operation: method,
           target: url,
@@ -215,7 +216,9 @@ class ISpectHttpInterceptor extends InterceptorContract
           statusCode: response.statusCode,
           statusMessage: response.reasonPhrase,
           body: responseDataJson[NetworkJsonKeys.body],
-          headers: _asStringMap(responseDataJson[NetworkJsonKeys.headers]),
+          headers: BaseNetworkInterceptor.asStringMap(
+            responseDataJson[NetworkJsonKeys.headers],
+          ),
           printStatusCode: true,
           printStatusMessage: settings.printResponseMessage,
           printBody: settings.printResponseData,
@@ -226,14 +229,6 @@ class ISpectHttpInterceptor extends InterceptorContract
     }
 
     return response;
-  }
-
-  static Map<String, dynamic>? _asStringMap(Object? value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) {
-      return value.map((k, v) => MapEntry(k.toString(), v));
-    }
-    return null;
   }
 
   Object? _responseBodyPayload(
