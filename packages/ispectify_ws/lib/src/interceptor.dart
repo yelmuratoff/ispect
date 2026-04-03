@@ -109,6 +109,14 @@ final class ISpectWSInterceptor
         'path': path,
       };
 
+      final consoleMsg = _buildWsConsoleMessage(
+        source: 'ws',
+        operation: operation,
+        target: url,
+        data: includeData ? safeData : null,
+        printData: includeData,
+      );
+
       if (type == wsTypeRequest) {
         _logger.wsSend(
           source: 'ws',
@@ -117,6 +125,7 @@ final class ISpectWSInterceptor
           correlationId: _connectionId,
           config: useRedaction ? null : _noRedactConfig,
           meta: traceMeta,
+          consoleMessage: consoleMsg,
         );
       } else {
         _logger.wsReceive(
@@ -126,6 +135,7 @@ final class ISpectWSInterceptor
           correlationId: _connectionId,
           config: useRedaction ? null : _noRedactConfig,
           meta: traceMeta,
+          consoleMessage: consoleMsg,
         );
       }
     } catch (e, s) {
@@ -156,6 +166,20 @@ final class ISpectWSInterceptor
     }
 
     next(data);
+  }
+
+  static String _buildWsConsoleMessage({
+    required String source,
+    required String operation,
+    required String target,
+    required Object? data,
+    required bool printData,
+  }) {
+    final buf = StringBuffer('[$source] $operation → $target');
+    if (printData && data != null) {
+      buf.write('\nData: $data');
+    }
+    return buf.toString();
   }
 
   Map<String, dynamic>? _processMetrics(bool useRedaction) {

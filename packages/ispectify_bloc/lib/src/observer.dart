@@ -129,15 +129,19 @@ class ISpectBlocObserver extends BlocObserver {
     (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
 
     final blocType = bloc.runtimeType.toString();
+    final eventTypeName = event.runtimeType.toString();
     _logger.stateChange(
       source: 'bloc',
       operation: 'event',
       stateName: blocType,
       success: true,
       correlationId: eventId,
+      consoleMessage: settings.printEventFullData && event != null
+          ? '[bloc] event → $blocType\nEvent($eventTypeName): $event'
+          : '[bloc] event → $blocType ($eventTypeName)',
       meta: _applyMeta({
         'blocType': blocType,
-        'eventType': event.runtimeType.toString(),
+        'eventType': eventTypeName,
         if (settings.printEventFullData && event != null) 'event': event,
       }),
     );
@@ -164,17 +168,28 @@ class ISpectBlocObserver extends BlocObserver {
 
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
     final blocType = bloc.runtimeType.toString();
+    final currentStateFormatted = settings.formatState(transition.currentState);
+    final nextStateFormatted = settings.formatState(transition.nextState);
+    final eventTypeName = transition.event.runtimeType.toString();
     _logger.stateChange(
       source: 'bloc',
       operation: 'transition',
       stateName: blocType,
       success: true,
       correlationId: eventId,
+      consoleMessage: _buildBlocTransitionMessage(
+        blocType: blocType,
+        eventTypeName: eventTypeName,
+        currentState: currentStateFormatted,
+        nextState: nextStateFormatted,
+        printEventFullData: settings.printEventFullData,
+        event: transition.event,
+      ),
       meta: _applyMeta({
         'blocType': blocType,
-        'eventType': transition.event.runtimeType.toString(),
-        'currentState': settings.formatState(transition.currentState),
-        'nextState': settings.formatState(transition.nextState),
+        'eventType': eventTypeName,
+        'currentState': currentStateFormatted,
+        'nextState': nextStateFormatted,
         if (settings.printEventFullData) 'event': transition.event,
       }),
     );
@@ -199,16 +214,23 @@ class ISpectBlocObserver extends BlocObserver {
     // Peek eventId (no pop — pop happens only in onDone)
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
     final blocType = bloc.runtimeType.toString();
+    final currentStateFormatted = settings.formatState(change.currentState);
+    final nextStateFormatted = settings.formatState(change.nextState);
     _logger.stateChange(
       source: 'bloc',
       operation: 'state',
       stateName: blocType,
       success: true,
       correlationId: eventId,
+      consoleMessage: _buildBlocChangeMessage(
+        blocType: blocType,
+        currentState: currentStateFormatted,
+        nextState: nextStateFormatted,
+      ),
       meta: _applyMeta({
         'blocType': blocType,
-        'currentState': settings.formatState(change.currentState),
-        'nextState': settings.formatState(change.nextState),
+        'currentState': currentStateFormatted,
+        'nextState': nextStateFormatted,
       }),
     );
   }
@@ -305,6 +327,7 @@ class ISpectBlocObserver extends BlocObserver {
     if (!shouldLogCompletion) return;
 
     final blocType = bloc.runtimeType.toString();
+    final eventTypeName = event?.runtimeType.toString();
     _logger.stateChange(
       source: 'bloc',
       operation: 'done',
@@ -313,12 +336,40 @@ class ISpectBlocObserver extends BlocObserver {
       error: error,
       errorStackTrace: stackTrace,
       correlationId: eventId,
+      consoleMessage: settings.printEventFullData && event != null
+          ? '[bloc] done → $blocType\nEvent($eventTypeName): $event'
+          : '[bloc] done → $blocType${eventTypeName != null ? ' ($eventTypeName)' : ''}',
       meta: _applyMeta({
         'blocType': blocType,
-        if (event != null) 'eventType': event.runtimeType.toString(),
+        if (event != null) 'eventType': eventTypeName,
         if (settings.printEventFullData && event != null) 'event': event,
         'hasError': error != null,
       }),
     );
   }
+
+  static String _buildBlocTransitionMessage({
+    required String blocType,
+    required String eventTypeName,
+    required Object currentState,
+    required Object nextState,
+    required bool printEventFullData,
+    required Object? event,
+  }) {
+    final buf = StringBuffer('[bloc] transition → $blocType')
+      ..write('\n$currentState → $nextState');
+    if (printEventFullData && event != null) {
+      buf.write('\nEvent($eventTypeName): $event');
+    } else {
+      buf.write(' ($eventTypeName)');
+    }
+    return buf.toString();
+  }
+
+  static String _buildBlocChangeMessage({
+    required String blocType,
+    required Object currentState,
+    required Object nextState,
+  }) =>
+      '[bloc] state → $blocType\n$currentState → $nextState';
 }
