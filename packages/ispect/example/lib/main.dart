@@ -1385,6 +1385,14 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
   String? _accessToken;
   String? _refreshToken;
 
+  final _dbConfig = const ISpectDbConfig(
+    sampleRate: 1.0,
+    redact: true,
+    attachStackOnError: true,
+    enableTransactionMarkers: true,
+    slowThreshold: Duration(milliseconds: 250),
+  );
+
   @override
   void initState() {
     super.initState();
@@ -1412,14 +1420,6 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
               .build(),
         ),
       ],
-    );
-
-    ISpectDbCore.config = ISpectDbConfig(
-      sampleRate: 1.0,
-      redact: true,
-      attachStackOnError: true,
-      enableTransactionMarkers: true,
-      slowThreshold: Duration(milliseconds: 250),
     );
   }
 
@@ -1807,6 +1807,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       table: 'users',
       statement: 'SELECT * FROM users WHERE active = ? ORDER BY name LIMIT 10',
       args: [true],
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 15));
         return [
@@ -1826,6 +1827,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       table: 'users',
       statement: "INSERT INTO users (name, email, active) VALUES (?, ?, ?)",
       args: ['Dave', 'dave@example.com', true],
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 8));
         return 4;
@@ -1841,6 +1843,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       table: 'users',
       statement: 'UPDATE users SET name = ?, email = ? WHERE id = ?',
       args: ['Dave Updated', 'dave_new@example.com', 4],
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 10));
         return 1;
@@ -1856,6 +1859,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       table: 'users',
       statement: 'DELETE FROM users WHERE id = ?',
       args: [4],
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 5));
         return 1;
@@ -1868,6 +1872,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
     await ISpect.logger.dbTransaction(
       source: 'drift',
       logMarkers: true,
+      config: _dbConfig,
       run: () async {
         await ISpect.logger.dbTrace<int>(
           source: 'drift',
@@ -1875,6 +1880,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
           table: 'accounts',
           statement: 'UPDATE accounts SET balance = balance - ? WHERE id = ?',
           args: [100, 1],
+          config: _dbConfig,
           run: () async {
             await Future<void>.delayed(const Duration(milliseconds: 5));
             return 1;
@@ -1886,6 +1892,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
           table: 'accounts',
           statement: 'UPDATE accounts SET balance = balance + ? WHERE id = ?',
           args: [100, 2],
+          config: _dbConfig,
           run: () async {
             await Future<void>.delayed(const Duration(milliseconds: 5));
             return 1;
@@ -1900,6 +1907,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       source: 'hive',
       operation: 'get',
       key: 'session_token',
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 3));
         return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
@@ -1910,6 +1918,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       source: 'shared_prefs',
       operation: 'write',
       key: 'onboarding_done',
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 2));
         return true;
@@ -1925,6 +1934,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
       statement:
           'SELECT user_id, COUNT(*) as cnt, AVG(duration) as avg_dur FROM analytics GROUP BY user_id HAVING cnt > ? ORDER BY avg_dur DESC',
       args: [10],
+      config: _dbConfig,
       run: () async {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         return [
