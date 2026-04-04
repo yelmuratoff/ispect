@@ -9,12 +9,10 @@ library;
 
 import 'package:get_storage/get_storage.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/get_storage_interceptor.dart';
 
 Future<void> getStorageExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   // Initialize and wrap
   await GetStorage.init('ispect_example');

@@ -41,6 +41,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
     required ISpectLogger logger,
     required String collectionName,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _collection = delegate,
         _logger = logger,
         _name = collectionName,
@@ -50,6 +51,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
   final ISpectLogger _logger;
   final String _name;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'isar';
@@ -76,6 +78,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         key: id.toString(),
         run: () => _collection.get(id),
         projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
       );
 
   @override
@@ -89,6 +92,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           'requested': ids.length,
           'found': items.where((e) => e != null).length,
         },
+        config: config,
       );
 
   @override
@@ -99,6 +103,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'key': key.toString()},
         run: () => _collection.getByIndex(indexName, key),
         projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
       );
 
   @override
@@ -113,6 +118,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           'requested': keys.length,
           'found': items.where((e) => e != null).length,
         },
+        config: config,
       );
 
   // --- Reads (Sync) -------------------------------------------------------
@@ -125,6 +131,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         key: id.toString(),
         run: () => _collection.getSync(id),
         projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
       );
 
   @override
@@ -138,6 +145,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           'requested': ids.length,
           'found': items.where((e) => e != null).length,
         },
+        config: config,
       );
 
   @override
@@ -148,6 +156,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'key': key.toString()},
         run: () => _collection.getByIndexSync(indexName, key),
         projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
       );
 
   @override
@@ -162,6 +171,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           'requested': keys.length,
           'found': items.where((e) => e != null).length,
         },
+        config: config,
       );
 
   // --- Writes (Async) -----------------------------------------------------
@@ -173,6 +183,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: () => _collection.put(object),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -182,6 +193,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: () => _collection.putAll(objects),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   @override
@@ -192,6 +204,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName},
         run: () => _collection.putByIndex(indexName, object),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -203,6 +216,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName},
         run: () => _collection.putAllByIndex(indexName, objects),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   // --- Writes (Sync) ------------------------------------------------------
@@ -214,6 +228,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: () => _collection.putSync(object, saveLinks: saveLinks),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -224,6 +239,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: () => _collection.putAllSync(objects, saveLinks: saveLinks),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   @override
@@ -239,6 +255,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           saveLinks: saveLinks,
         ),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -258,6 +275,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           saveLinks: saveLinks,
         ),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   // --- Deletes (Async) ----------------------------------------------------
@@ -270,6 +288,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         key: id.toString(),
         run: () => _collection.delete(id),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -280,6 +299,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'ids': ids.length},
         run: () => _collection.deleteAll(ids),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -290,6 +310,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'key': key.toString()},
         run: () => _collection.deleteByIndex(indexName, key),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -301,6 +322,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'keys': keys.length},
         run: () => _collection.deleteAllByIndex(indexName, keys),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -309,6 +331,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'clear',
         table: _name,
         run: _collection.clear,
+        config: config,
       );
 
   // --- Deletes (Sync) -----------------------------------------------------
@@ -321,6 +344,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         key: id.toString(),
         run: () => _collection.deleteSync(id),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -331,6 +355,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'ids': ids.length},
         run: () => _collection.deleteAllSync(ids),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -341,6 +366,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'key': key.toString()},
         run: () => _collection.deleteByIndexSync(indexName, key),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -352,6 +378,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         meta: {'index': indexName, 'keys': keys.length},
         run: () => _collection.deleteAllByIndexSync(indexName, keys),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -360,6 +387,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'clearSync',
         table: _name,
         run: _collection.clearSync,
+        config: config,
       );
 
   // --- Aggregations -------------------------------------------------------
@@ -371,6 +399,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: _collection.count,
         projectResult: (n) => {'count': n},
+        config: config,
       );
 
   @override
@@ -380,6 +409,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         table: _name,
         run: _collection.countSync,
         projectResult: (n) => {'count': n},
+        config: config,
       );
 
   @override
@@ -396,6 +426,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           includeLinks: includeLinks,
         ),
         projectResult: (bytes) => {'sizeBytes': bytes},
+        config: config,
       );
 
   @override
@@ -409,6 +440,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
           includeLinks: includeLinks,
         ),
         projectResult: (bytes) => {'sizeBytes': bytes},
+        config: config,
       );
 
   // --- Import -------------------------------------------------------------
@@ -419,6 +451,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'importJson',
         table: _name,
         run: () => _collection.importJson(json),
+        config: config,
       );
 
   @override
@@ -427,6 +460,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'importJsonSync',
         table: _name,
         run: () => _collection.importJsonSync(json),
+        config: config,
       );
 
   @override
@@ -435,6 +469,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'importJsonRaw',
         table: _name,
         run: () => _collection.importJsonRaw(jsonBytes),
+        config: config,
       );
 
   @override
@@ -443,6 +478,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'importJsonRawSync',
         table: _name,
         run: () => _collection.importJsonRawSync(jsonBytes),
+        config: config,
       );
 
   // --- Query Building -----------------------------------------------------
@@ -504,6 +540,7 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'verify',
         table: _name,
         run: () => _collection.verify(objects),
+        config: config,
       );
 
   @override
@@ -518,5 +555,6 @@ final class ISpectIsarCollection<T> implements IsarCollection<T> {
         operation: 'verifyLink',
         table: _name,
         run: () => _collection.verifyLink(linkName, sourceIds, targetIds),
+        config: config,
       );
 }

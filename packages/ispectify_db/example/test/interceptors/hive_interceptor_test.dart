@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:hive_ce/hive.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/hive_interceptor.dart';
 import 'package:test/test.dart';
 
@@ -14,7 +13,6 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     tempDir = Directory.systemTemp.createTempSync('hive_test_');
     Hive.init(tempDir.path);
     realBox = await Hive.openBox<String>('test');
@@ -23,7 +21,6 @@ void main() {
 
   tearDown(() async {
     await Hive.close();
-    ISpectDbCore.config = ISpectDbConfig();
     tempDir.deleteSync(recursive: true);
   });
 

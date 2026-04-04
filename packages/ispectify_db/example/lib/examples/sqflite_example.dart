@@ -14,13 +14,17 @@ Future<void> sqfliteExample() async {
   sqfliteFfiInit();
 
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig(
-    slowThreshold: const Duration(milliseconds: 100),
+  const dbConfig = ISpectDbConfig(
+    slowThreshold: Duration(milliseconds: 100),
     enableTransactionMarkers: true,
   );
 
   final realDb = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
-  final db = ISpectSqfliteDatabase(delegate: realDb, logger: logger);
+  final db = ISpectSqfliteDatabase(
+    delegate: realDb,
+    logger: logger,
+    config: dbConfig,
+  );
 
   // Create table
   await db.execute('''

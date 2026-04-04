@@ -7,12 +7,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/flutter_secure_storage_interceptor.dart';
 
 Future<void> secureStorageExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   FlutterSecureStorage delegate = const FlutterSecureStorage();
 

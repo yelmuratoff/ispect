@@ -7,11 +7,11 @@ class DioRequestData {
 
   final RequestOptions requestOptions;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  }) {
+  /// Returns a raw JSON-compatible map of the request.
+  ///
+  /// No redaction is applied. Call [redact] on the result when redaction
+  /// is required.
+  Map<String, dynamic> toJson() {
     final normalizedHeaders =
         NetworkPayloadSanitizer.toStringKeyMap(requestOptions.headers);
     final normalizedQuery =
@@ -20,7 +20,7 @@ class DioRequestData {
         NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra);
     final normalizedData = _normalizeBody(requestOptions.data);
 
-    final map = <String, dynamic>{
+    return <String, dynamic>{
       // --- Identity: what & where ---
       NetworkJsonKeys.method: requestOptions.method,
       NetworkJsonKeys.url: requestOptions.uri.toString(),
@@ -52,9 +52,15 @@ class DioRequestData {
       // --- Meta ---
       NetworkJsonKeys.extra: normalizedExtra,
     };
+  }
 
-    if (redactor == null) return map;
-
+  /// Applies in-place redaction to a map produced by [toJson].
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
     NetworkMapRedactor.redactPathFields(map, redactor);
     NetworkMapRedactor.redactUrl(map, redactor);
     NetworkMapRedactor.redactData(
@@ -84,8 +90,6 @@ class DioRequestData {
       ignoredKeys: ignoredKeys,
       preserveKeys: {NetworkJsonKeys.ispectRequestId},
     );
-
-    return map;
   }
 
   Object? _normalizeBody(Object? data) {

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/objectbox_interceptor.dart';
 import 'package:ispectify_db_example/models/objectbox_task.dart';
 import 'package:ispectify_db_example/objectbox.g.dart';
@@ -16,7 +15,6 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     tempDir = Directory.systemTemp.createTempSync('objectbox_test_');
     store = await openStore(directory: tempDir.path);
     realBox = store.box<ObjectBoxTask>();
@@ -29,7 +27,6 @@ void main() {
 
   tearDown(() {
     store.close();
-    ISpectDbCore.config = ISpectDbConfig();
     if (tempDir.existsSync()) {
       tempDir.deleteSync(recursive: true);
     }

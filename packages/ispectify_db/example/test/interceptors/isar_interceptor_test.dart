@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/isar_interceptor.dart';
 import 'package:ispectify_db_example/models/isar_user.dart';
 import 'package:test/test.dart';
@@ -19,7 +18,6 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     tempDir = Directory.systemTemp.createTempSync('isar_test_');
     isar = await Isar.open([IsarUserSchema], directory: tempDir.path);
     traced = ISpectIsarCollection(
@@ -31,7 +29,6 @@ void main() {
 
   tearDown(() async {
     await isar.close(deleteFromDisk: true);
-    ISpectDbCore.config = ISpectDbConfig();
     if (tempDir.existsSync()) {
       tempDir.deleteSync(recursive: true);
     }

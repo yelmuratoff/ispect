@@ -10,7 +10,6 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/isar_interceptor.dart';
 import 'package:ispectify_db_example/models/isar_post.dart';
 import 'package:ispectify_db_example/models/isar_user.dart';
@@ -19,7 +18,6 @@ Future<void> isarExample() async {
   await Isar.initializeIsarCore(download: true);
 
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   final tempDir = Directory.systemTemp.createTempSync('isar_example_');
 

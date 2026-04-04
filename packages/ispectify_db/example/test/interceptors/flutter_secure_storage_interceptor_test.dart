@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/flutter_secure_storage_interceptor.dart';
 
 void main() {
@@ -49,7 +48,6 @@ void main() {
       ..['token'] = 'secret-jwt';
 
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     storage = const FlutterSecureStorage();
     traced = ISpectSecureStorage(delegate: storage, logger: logger);
   });
@@ -60,7 +58,6 @@ void main() {
       const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
       null,
     );
-    ISpectDbCore.config = ISpectDbConfig();
   });
 
   Map<String, Object?> lastAdditional() =>

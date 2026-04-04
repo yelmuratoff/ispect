@@ -12,14 +12,12 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     db = await newDatabaseFactoryMemory().openDatabase('test.db');
     traced = intMapStoreFactory.store('users').traced(logger);
   });
 
   tearDown(() async {
     await db.close();
-    ISpectDbCore.config = ISpectDbConfig();
   });
 
   Map<String, Object?> lastAdditional() =>
@@ -162,10 +160,13 @@ void main() {
 
   group('transaction', () {
     test('wraps inner calls with transactionId', () async {
-      ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
+      final tracedWithMarkers = intMapStoreFactory.store('users').traced(
+            logger,
+            config: const ISpectDbConfig(enableTransactionMarkers: true),
+          );
 
-      await traced.transaction(db, (txn) async {
-        await traced.record(10).put(txn, {'name': 'TxnUser'});
+      await tracedWithMarkers.transaction(db, (txn) async {
+        await tracedWithMarkers.record(10).put(txn, {'name': 'TxnUser'});
       });
 
       final putLog = logger.history.lastWhere(

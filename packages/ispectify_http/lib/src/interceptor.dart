@@ -12,14 +12,17 @@ class ISpectHttpInterceptor extends InterceptorContract
         const ISpectHttpInterceptorSettings(),
     RedactionService? redactor,
   })  : _settings = settings,
-        _logger = logger ?? ISpectLogger() {
-    if (redactor != null) this.redactor = redactor;
-  }
+        _logger = logger ?? ISpectLogger(),
+        _redactor = redactor ?? RedactionService();
 
   final ISpectLogger _logger;
+  final RedactionService _redactor;
 
   @override
   ISpectLogger get logger => _logger;
+
+  @override
+  RedactionService get redactor => _redactor;
 
   ISpectHttpInterceptorSettings get settings => _settings;
   ISpectHttpInterceptorSettings _settings;
@@ -60,9 +63,8 @@ class ISpectHttpInterceptor extends InterceptorContract
       useRedaction: useRedaction,
     );
 
-    final requestDataJson = HttpRequestData(request).toJson(
-      redactor: useRedaction ? redactor : null,
-    );
+    final requestDataJson = HttpRequestData(request).toJson();
+    if (useRedaction) HttpRequestData.redact(requestDataJson, redactor);
 
     _logger.httpRequest(
       source: 'http',
@@ -138,9 +140,8 @@ class ISpectHttpInterceptor extends InterceptorContract
       ),
     );
 
-    final responseDataJson = responseData.toJson(
-      redactor: useRedaction ? redactor : null,
-    );
+    final responseDataJson = responseData.toJson();
+    if (useRedaction) HttpResponseData.redact(responseDataJson, redactor);
     final sharedMeta = <String, Object?>{
       if (requestId != null) 'request-id': requestId,
       'status-code': response.statusCode,
@@ -215,10 +216,6 @@ class ISpectHttpInterceptor extends InterceptorContract
     if (!include) return null;
     if (response is! Response || response.body.isEmpty) return null;
 
-    return payload.body(
-      response.body,
-      enableRedaction: useRedaction,
-      normalizer: NetworkPayloadSanitizer.decodeJsonGracefully,
-    );
+    return NetworkPayloadSanitizer.decodeJsonGracefully(response.body);
   }
 }

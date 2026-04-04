@@ -6,9 +6,14 @@ import 'package:ispectify_db/src/constants.dart';
 import 'package:ispectify_db/src/db_core.dart';
 import 'package:ispectify_db/src/db_preprocess_input.dart';
 import 'package:ispectify_db/src/db_token.dart';
+import 'package:ispectify_db/src/sql_digest.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
 /// Database logging extension on [ISpectLogger].
+///
+/// All methods accept an optional [config] parameter. When omitted, the default
+/// [ISpectDbConfig] is used. Pass a custom config to override sampling, redaction,
+/// statement/arg length limits, and transaction marker settings per call-site.
 ///
 /// All methods delegate to the unified trace API via [trace]/[traceAsync]/
 /// [traceTransaction], placing DB-specific data in [TraceKeys.meta].
@@ -41,14 +46,14 @@ extension ISpectLoggerDb on ISpectLogger {
     int? maxStatementLength,
     String? transactionId,
     StackTrace? errorStackTrace,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     if (!options.enabled) return;
-    if (!ISpectDbCore.shouldLog(sample)) return;
+    if (!ISpectDbCore.shouldLog(sample, config)) return;
 
-    final cfg = ISpectDbCore.config;
     final dbMeta = _preprocessDb(
       DbPreprocessInput(
-        cfg: cfg,
+        cfg: config,
         statement: statement,
         args: args,
         namedArgs: namedArgs,
@@ -83,7 +88,7 @@ extension ISpectLoggerDb on ISpectLogger {
       errorStackTrace: errorStackTrace,
       duration: duration,
       sample: sample,
-      config: cfg,
+      config: config,
       meta: dbMeta,
       correlationId: txnId,
       logLevel: isError ? LogLevel.error : null,
@@ -114,11 +119,11 @@ extension ISpectLoggerDb on ISpectLogger {
     int? sizeBytes,
     bool? cacheHit,
     String? transactionId,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) async {
     if (!options.enabled) return run();
-    if (!ISpectDbCore.shouldLog(sample)) return run();
+    if (!ISpectDbCore.shouldLog(sample, config)) return run();
 
-    final cfg = ISpectDbCore.config;
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 
     final sw = Stopwatch()..start();
@@ -136,7 +141,7 @@ extension ISpectLoggerDb on ISpectLogger {
     } finally {
       sw.stop();
       _logTraceResult(
-        cfg: cfg,
+        config: config,
         txnId: txnId,
         source: source,
         operation: operation,
@@ -190,11 +195,11 @@ extension ISpectLoggerDb on ISpectLogger {
     int? sizeBytes,
     bool? cacheHit,
     String? transactionId,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     if (!options.enabled) return run();
-    if (!ISpectDbCore.shouldLog(sample)) return run();
+    if (!ISpectDbCore.shouldLog(sample, config)) return run();
 
-    final cfg = ISpectDbCore.config;
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
 
     final sw = Stopwatch()..start();
@@ -210,7 +215,7 @@ extension ISpectLoggerDb on ISpectLogger {
     } finally {
       sw.stop();
       _logTraceResult(
-        cfg: cfg,
+        config: config,
         txnId: txnId,
         source: source,
         operation: operation,
@@ -242,7 +247,7 @@ extension ISpectLoggerDb on ISpectLogger {
 
   /// Shared finally-block logic for [dbTrace] and [dbTraceSync].
   void _logTraceResult({
-    required ISpectDbConfig cfg,
+    required ISpectDbConfig config,
     required String? txnId,
     required String source,
     required String operation,
@@ -272,7 +277,7 @@ extension ISpectLoggerDb on ISpectLogger {
 
       final dbMeta = _preprocessDb(
         DbPreprocessInput(
-          cfg: cfg,
+          cfg: config,
           statement: statement,
           args: args,
           namedArgs: namedArgs,
@@ -304,7 +309,7 @@ extension ISpectLoggerDb on ISpectLogger {
         errorStackTrace: st,
         duration: elapsed,
         sample: sample,
-        config: cfg,
+        config: config,
         meta: dbMeta,
         correlationId: txnId,
       );
@@ -369,6 +374,7 @@ extension ISpectLoggerDb on ISpectLogger {
     int? sizeBytes,
     bool? cacheHit,
     Map<String, Object?>? meta,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     token.stopTiming();
     db(
@@ -390,6 +396,7 @@ extension ISpectLoggerDb on ISpectLogger {
       duration: token.elapsed,
       meta: {...?token.meta, ...?meta},
       transactionId: token.transactionId,
+      config: config,
     );
   }
 
@@ -399,9 +406,9 @@ extension ISpectLoggerDb on ISpectLogger {
     String source = dbDefaultSource,
     Map<String, Object?>? meta,
     bool? logMarkers,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) async {
-    final enableMarkers =
-        logMarkers ?? ISpectDbCore.config.enableTransactionMarkers;
+    final enableMarkers = logMarkers ?? config.enableTransactionMarkers;
     return traceTransaction(
       category: dbCategory,
       source: source,
@@ -441,7 +448,7 @@ extension ISpectLoggerDb on ISpectLogger {
     );
 
     final processedMeta = redactData(input.meta);
-    final digest = ISpectDbCore.sqlDigest(input.statement);
+    final digest = DbSqlDigest.compute(input.statement);
 
     final truncatedValue = ISpectDbCore.truncateValue(
       redactData(input.value),

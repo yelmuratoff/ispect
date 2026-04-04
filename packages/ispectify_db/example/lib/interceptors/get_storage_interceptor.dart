@@ -36,6 +36,7 @@ final class ISpectGetStorage implements GetStorage {
     required ISpectLogger logger,
     String source = defaultSource,
     String? containerName,
+    this.config = const ISpectDbConfig(),
   })  : _box = delegate,
         _logger = logger,
         _source = source,
@@ -45,6 +46,7 @@ final class ISpectGetStorage implements GetStorage {
   final ISpectLogger _logger;
   final String _source;
   final String? _containerName;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'get_storage';
@@ -67,6 +69,7 @@ final class ISpectGetStorage implements GetStorage {
       key: key,
       success: true,
       cacheHit: result,
+      config: config,
     );
     return result;
   }
@@ -81,6 +84,7 @@ final class ISpectGetStorage implements GetStorage {
         table: _containerName,
         success: true,
         items: (result as Iterable<dynamic>).length,
+        config: config,
       );
     }
     return result;
@@ -97,6 +101,7 @@ final class ISpectGetStorage implements GetStorage {
         success: true,
         items: (result as Iterable<dynamic>).length,
         meta: {'target': 'values'},
+        config: config,
       );
     }
     return result;
@@ -111,6 +116,7 @@ final class ISpectGetStorage implements GetStorage {
         table: _containerName,
         key: key,
         run: () => _box.write(key, value),
+        config: config,
       );
 
   @override
@@ -123,6 +129,7 @@ final class ISpectGetStorage implements GetStorage {
       key: key,
       success: true,
       meta: {'memoryOnly': true},
+      config: config,
     );
   }
 
@@ -134,6 +141,7 @@ final class ISpectGetStorage implements GetStorage {
         key: key,
         meta: {'ifNull': true},
         run: () => _box.writeIfNull(key, value),
+        config: config,
       );
 
   // --- Deletes (async) ------------------------------------------------------
@@ -145,6 +153,7 @@ final class ISpectGetStorage implements GetStorage {
         table: _containerName,
         key: key,
         run: () => _box.remove(key),
+        config: config,
       );
 
   @override
@@ -153,6 +162,7 @@ final class ISpectGetStorage implements GetStorage {
         operation: 'clear',
         table: _containerName,
         run: _box.erase,
+        config: config,
       );
 
   // --- Persistence (passthrough) --------------------------------------------
@@ -202,6 +212,7 @@ final class ISpectGetStorage implements GetStorage {
       key: key,
       success: true,
       cacheHit: result != null,
+      config: config,
     );
     return result;
   }

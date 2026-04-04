@@ -4,24 +4,22 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:test/test.dart';
 
+/// Default config used across most tests in this file.
+const _cfg = ISpectDbConfig(
+  redactKeys: {'password', 'token'},
+  maxValueLength: 50,
+  maxArgsLength: 12,
+  maxStatementLength: 40,
+  attachStackOnError: true,
+  enableTransactionMarkers: true,
+  slowThreshold: Duration(milliseconds: 1),
+);
+
 void main() {
   late ISpectLogger logger;
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = const ISpectDbConfig(
-      redactKeys: {'password', 'token'},
-      maxValueLength: 50,
-      maxArgsLength: 12,
-      maxStatementLength: 40,
-      attachStackOnError: true,
-      enableTransactionMarkers: true,
-      slowThreshold: Duration(milliseconds: 1),
-    );
-  });
-
-  tearDown(() {
-    ISpectDbCore.config = const ISpectDbConfig();
   });
 
   group('db()', () {
@@ -36,6 +34,7 @@ void main() {
         success: true,
         duration: const Duration(milliseconds: 10),
         meta: {'note': 'test'},
+        config: _cfg,
       );
 
       expect(logger.history, isNotEmpty);
@@ -99,13 +98,13 @@ void main() {
       // digest, positional args). trace() still applies its own
       // redaction from cfg.redact. To fully skip, use a config with
       // redact: false.
-      ISpectDbCore.config = const ISpectDbConfig(redact: false);
       logger.db(
         source: 'sqflite',
         operation: 'query',
         statement: 'SELECT * FROM users',
         namedArgs: {'password': 'secret123'},
         redact: false,
+        config: const ISpectDbConfig(redact: false),
       );
 
       final add = logger.history.last.additionalData ?? {};
@@ -135,6 +134,7 @@ void main() {
         operation: 'query',
         statement: 'SELECT * FROM users WHERE password = ?',
         args: ['super-secret'],
+        config: _cfg,
       );
 
       final add = logger.history.last.additionalData ?? {};
@@ -230,6 +230,7 @@ void main() {
         source: 'sqflite',
         operation: 'query',
         duration: Duration.zero,
+        config: _cfg,
       );
 
       final add = logger.history.last.additionalData ?? {};
@@ -241,46 +242,46 @@ void main() {
 
   group('sqlDigest', () {
     test('returns null for null or empty input', () {
-      expect(ISpectDbCore.sqlDigest(null), isNull);
-      expect(ISpectDbCore.sqlDigest(''), isNull);
+      expect(DbSqlDigest.compute(null), isNull);
+      expect(DbSqlDigest.compute(''), isNull);
     });
 
     test('normalizes single-quoted strings to ?', () {
-      final digest = ISpectDbCore.sqlDigest("SELECT * FROM t WHERE a = 'foo'");
+      final digest = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'foo'");
       expect(digest, isNotNull);
       expect(digest, contains('?'));
       expect(digest, isNot(contains('foo')));
     });
 
     test('normalizes double-quoted strings to ?', () {
-      final digest = ISpectDbCore.sqlDigest('SELECT * FROM t WHERE a = "bar"');
+      final digest = DbSqlDigest.compute('SELECT * FROM t WHERE a = "bar"');
       expect(digest, isNotNull);
       expect(digest, contains('?'));
       expect(digest, isNot(contains('bar')));
     });
 
     test('normalizes digits to ?', () {
-      final digest = ISpectDbCore.sqlDigest('SELECT * FROM t WHERE id = 42');
+      final digest = DbSqlDigest.compute('SELECT * FROM t WHERE id = 42');
       expect(digest, isNotNull);
       expect(digest, contains('?'));
       expect(digest, isNot(contains('42')));
     });
 
     test('produces stable hash for identical normalized statements', () {
-      final digest1 = ISpectDbCore.sqlDigest("SELECT * FROM t WHERE a = 'x'");
-      final digest2 = ISpectDbCore.sqlDigest("SELECT * FROM t WHERE a = 'y'");
+      final digest1 = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'x'");
+      final digest2 = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'y'");
       expect(digest1, equals(digest2));
     });
 
     test('produces different hash for structurally different statements', () {
-      final digest1 = ISpectDbCore.sqlDigest('SELECT * FROM users');
-      final digest2 = ISpectDbCore.sqlDigest('DELETE FROM users');
+      final digest1 = DbSqlDigest.compute('SELECT * FROM users');
+      final digest2 = DbSqlDigest.compute('DELETE FROM users');
       expect(digest1, isNot(equals(digest2)));
     });
 
     test('truncates long statements to 80 chars before hash', () {
       final longStmt = 'SELECT ${'a, ' * 100}FROM t';
-      final digest = ISpectDbCore.sqlDigest(longStmt)!;
+      final digest = DbSqlDigest.compute(longStmt)!;
       final prefix = digest.split('|').first;
       expect(prefix.length, 80);
     });
@@ -288,21 +289,26 @@ void main() {
 
   group('sampleRate', () {
     test('sampleRate 0.0 drops all logs', () {
-      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 0);
-      logger.db(source: 'test', operation: 'query');
+      logger.db(
+        source: 'test',
+        operation: 'query',
+        config: const ISpectDbConfig(sampleRate: 0),
+      );
       expect(logger.history, isEmpty);
     });
 
     test('sampleRate 1.0 logs everything', () {
-      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 1);
       for (var i = 0; i < 10; i++) {
-        logger.db(source: 'test', operation: 'query');
+        logger.db(
+          source: 'test',
+          operation: 'query',
+          config: const ISpectDbConfig(sampleRate: 1),
+        );
       }
       expect(logger.history.length, 10);
     });
 
     test('sampleRate null logs everything', () {
-      ISpectDbCore.config = const ISpectDbConfig();
       for (var i = 0; i < 5; i++) {
         logger.db(source: 'test', operation: 'query');
       }
@@ -310,17 +316,21 @@ void main() {
     });
 
     test('per-call sample override takes precedence', () {
-      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 1);
-      logger.db(source: 'test', operation: 'query', sample: 0);
+      logger.db(
+        source: 'test',
+        operation: 'query',
+        sample: 0,
+        config: const ISpectDbConfig(sampleRate: 1),
+      );
       expect(logger.history, isEmpty);
     });
 
     test('dbTrace with sampleRate 0 still executes the callback', () async {
-      ISpectDbCore.config = const ISpectDbConfig(sampleRate: 0);
       var executed = false;
       await logger.dbTrace(
         source: 'test',
         operation: 'query',
+        config: const ISpectDbConfig(sampleRate: 0),
         run: () async {
           executed = true;
         },
@@ -339,6 +349,7 @@ void main() {
           operation: 'write',
           key: 'a',
           run: () async => failing(),
+          config: _cfg,
         );
         fail('should throw');
       } catch (_) {
@@ -787,7 +798,7 @@ void main() {
 
   group('buildMessage', () {
     test('includes all fields', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'sqflite',
         operation: 'query',
         table: 'users',
@@ -814,7 +825,7 @@ void main() {
     });
 
     test('formats cache miss', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'cache',
         operation: 'get',
         cacheHit: false,
@@ -823,28 +834,28 @@ void main() {
     });
 
     test('formats bytes correctly', () {
-      final small = ISpectDbCore.buildMessage(
+      final small = DbMessageFormatter.build(
         source: 'file',
         operation: 'write',
         sizeBytes: 500,
       );
       expect(small, contains('Size: 500 B'));
 
-      final kb = ISpectDbCore.buildMessage(
+      final kb = DbMessageFormatter.build(
         source: 'file',
         operation: 'write',
         sizeBytes: 1536,
       );
       expect(kb, contains('Size: 1.5 KB'));
 
-      final mb = ISpectDbCore.buildMessage(
+      final mb = DbMessageFormatter.build(
         source: 'file',
         operation: 'write',
         sizeBytes: 2 * 1024 * 1024,
       );
       expect(mb, contains('Size: 2.0 MB'));
 
-      final gb = ISpectDbCore.buildMessage(
+      final gb = DbMessageFormatter.build(
         source: 'file',
         operation: 'write',
         sizeBytes: 3 * 1024 * 1024 * 1024,
@@ -853,7 +864,7 @@ void main() {
     });
 
     test('formats zero bytes', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'file',
         operation: 'write',
         sizeBytes: 0,
@@ -862,7 +873,7 @@ void main() {
     });
 
     test('shows table only when target is null', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'sqflite',
         operation: 'query',
         table: 'users',
@@ -872,7 +883,7 @@ void main() {
     });
 
     test('shows target only when table is null', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'file',
         operation: 'read',
         target: '/data/config.json',
@@ -882,7 +893,7 @@ void main() {
     });
 
     test('shows table → target when both present', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'sqflite',
         operation: 'query',
         table: 'users',
@@ -892,7 +903,7 @@ void main() {
     });
 
     test('minimal message with only required fields', () {
-      final msg = ISpectDbCore.buildMessage(
+      final msg = DbMessageFormatter.build(
         source: 'kv',
         operation: 'get',
       );

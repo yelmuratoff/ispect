@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/shared_preferences_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,12 +11,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({'theme': 'dark'});
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     final prefs = await SharedPreferences.getInstance();
     traced = ISpectSharedPreferences(delegate: prefs, logger: logger);
   });
-
-  tearDown(() => ISpectDbCore.config = ISpectDbConfig());
 
   Map<String, Object?> lastAdditional() =>
       logger.history.last.additionalData ?? {};

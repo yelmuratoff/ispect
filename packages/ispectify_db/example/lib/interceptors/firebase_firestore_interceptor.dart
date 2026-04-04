@@ -39,6 +39,7 @@ final class ISpectFirestoreCollection<T extends Object?>
     required CollectionReference<T> delegate,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _collection = delegate,
         _logger = logger,
         _source = source;
@@ -46,6 +47,7 @@ final class ISpectFirestoreCollection<T extends Object?>
   final CollectionReference<T> _collection;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'firestore';
@@ -69,6 +71,7 @@ final class ISpectFirestoreCollection<T extends Object?>
         delegate: _collection.doc(path),
         logger: _logger,
         source: _source,
+        config: config,
       );
 
   @override
@@ -78,6 +81,7 @@ final class ISpectFirestoreCollection<T extends Object?>
         table: _collection.path,
         run: () => _collection.add(data),
         projectResult: (ref) => {'docId': ref.id},
+        config: config,
       );
 
   @override
@@ -92,6 +96,7 @@ final class ISpectFirestoreCollection<T extends Object?>
         ),
         logger: _logger,
         source: _source,
+        config: config,
       );
 
   // --- Traced Query terminal operations ------------------------------------
@@ -103,6 +108,7 @@ final class ISpectFirestoreCollection<T extends Object?>
         table: _collection.path,
         run: () => _collection.get(options),
         projectResult: (snap) => {'docs': snap.size},
+        config: config,
       );
 
   // --- Passthrough Query builders ------------------------------------------
@@ -273,6 +279,7 @@ final class ISpectFirestoreDocument<T extends Object?>
     required DocumentReference<T> delegate,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _doc = delegate,
         _logger = logger,
         _source = source;
@@ -280,6 +287,7 @@ final class ISpectFirestoreDocument<T extends Object?>
   final DocumentReference<T> _doc;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'firestore';
@@ -297,6 +305,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         key: _doc.id,
         run: () => _doc.get(options),
         projectResult: (snap) => {'exists': snap.exists},
+        config: config,
       );
 
   @override
@@ -307,6 +316,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         key: _doc.id,
         meta: (options?.merge ?? false) ? {'merge': true} : null,
         run: () => _doc.set(data, options),
+        config: config,
       );
 
   @override
@@ -316,6 +326,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         table: _doc.path,
         key: _doc.id,
         run: () => _doc.update(data),
+        config: config,
       );
 
   @override
@@ -325,6 +336,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         table: _doc.path,
         key: _doc.id,
         run: _doc.delete,
+        config: config,
       );
 
   // --- Passthrough ---------------------------------------------------------
@@ -340,6 +352,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         delegate: _doc.parent,
         logger: _logger,
         source: _source,
+        config: config,
       );
 
   @override
@@ -351,6 +364,7 @@ final class ISpectFirestoreDocument<T extends Object?>
         delegate: _doc.collection(collectionPath),
         logger: _logger,
         source: _source,
+        config: config,
       );
 
   @override
@@ -375,5 +389,6 @@ final class ISpectFirestoreDocument<T extends Object?>
         ),
         logger: _logger,
         source: _source,
+        config: config,
       );
 }

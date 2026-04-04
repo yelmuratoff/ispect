@@ -37,7 +37,7 @@ void main() {
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     expect(meta, isNotNull);
     // requestData contains the full request JSON including FormData
-    final requestData = meta?['responseData'] as Map?;
+    final requestData = meta?['response-data'] as Map?;
     final request = requestData?['request'] as Map?;
     final data = request?['data'] as Map?;
     expect(data, isNotNull);
@@ -74,9 +74,9 @@ void main() {
     final log = logger.history.last;
     expect(log.key, ISpectLogType.httpResponse.key);
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
-    expect(meta?['statusCode'], 200);
+    expect(meta?['status-code'], 200);
     // FormData response body is stored as-is in responseData.data
-    final responseData = meta?['responseData'] as Map?;
+    final responseData = meta?['response-data'] as Map?;
     expect(responseData, isNotNull);
     // data is a FormData — it's not serialized to Map by DioResponseData.toJson()
     expect(responseData?['data'], isA<FormData>());
@@ -111,7 +111,7 @@ void main() {
     final log = logger.history.last;
     expect(log.key, ISpectLogType.httpRequest.key);
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
-    final requestData = meta?['requestData'] as Map?;
+    final requestData = meta?['request-data'] as Map?;
     final data = requestData?['data'] as Map?;
     expect(data, isNotNull);
 

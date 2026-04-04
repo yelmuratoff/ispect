@@ -22,21 +22,11 @@ class HttpResponseData {
   /// [response.body].
   final Object? preDecodedBody;
 
-  /// Converts this response data to a JSON-compatible map.
-  ///
-  /// When [redactor] is null, raw data (including URL query parameters,
-  /// headers with auth tokens, body content, and multipart filenames)
-  /// is returned without any sanitization. Callers opting out of
-  /// redaction accept responsibility for handling sensitive data.
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  }) {
+  Map<String, dynamic> toJson() {
     final resp = response;
     final preDecoded = preDecodedBody;
     final multipart = multipartRequest;
-    final map = <String, dynamic>{
+    return <String, dynamic>{
       // --- Status: first thing you check ---
       NetworkJsonKeys.statusCode: baseResponse.statusCode,
       NetworkJsonKeys.statusMessage: baseResponse.reasonPhrase,
@@ -48,24 +38,8 @@ class HttpResponseData {
       // --- Payload ---
       NetworkJsonKeys.headers: baseResponse.headers,
       if (resp != null)
-        NetworkJsonKeys.body: preDecoded != null
-            ? (redactor != null
-                ? _redactPreDecoded(
-                    preDecoded,
-                    redactor,
-                    ignoredValues,
-                    ignoredKeys,
-                  )
-                : preDecoded)
-            : (redactor != null
-                ? _getRedactedBody(
-                    resp.body,
-                    redactor,
-                    ignoredValues,
-                    ignoredKeys,
-                  )
-                : _tryDecodeJson(resp.body)),
-      if (resp != null && redactor == null)
+        NetworkJsonKeys.body: preDecoded ?? _tryDecodeJson(resp.body),
+      if (resp != null)
         NetworkJsonKeys.bodyBytes: resp.bodyBytes.length.toString(),
       NetworkJsonKeys.contentLength: baseResponse.contentLength,
 
@@ -81,17 +55,16 @@ class HttpResponseData {
             HttpMultipartSerializer.serialize(multipart),
 
       // --- Original request (reference) ---
-      NetworkJsonKeys.request: redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
+      NetworkJsonKeys.request: requestData.toJson(),
     };
+  }
 
-    if (redactor == null) return map;
-
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
     NetworkMapRedactor.redactUrl(map, redactor);
     final redactedHeaders = NetworkMapRedactor.redactHeaders(
       map,
@@ -110,40 +83,27 @@ class HttpResponseData {
       ignoredKeys: ignoredKeys,
     );
 
-    return map;
-  }
+    final body = map[NetworkJsonKeys.body];
+    if (body != null) {
+      map[NetworkJsonKeys.body] = redactor.redact(
+            body,
+            ignoredValues: ignoredValues,
+            ignoredKeys: ignoredKeys,
+          ) ??
+          body;
+    }
 
-  /// Redacts an already-decoded body value without re-parsing JSON.
-  static Object _redactPreDecoded(
-    Object body,
-    RedactionService redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  ) {
-    final redacted = redactor.redact(
-      body,
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
-    return redacted is Object ? redacted : body;
+    final requestMap = map[NetworkJsonKeys.request];
+    if (requestMap is Map<String, dynamic>) {
+      HttpRequestData.redact(
+        requestMap,
+        redactor,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+    }
   }
 
   static Object _tryDecodeJson(String body) =>
       NetworkPayloadSanitizer.decodeJsonGracefully(body) ?? body;
-
-  /// Helper method to get redacted body content
-  static Object _getRedactedBody(
-    String body,
-    RedactionService redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  ) {
-    final decoded = NetworkPayloadSanitizer.decodeJsonGracefully(body) ?? body;
-    final redacted = redactor.redact(
-      decoded,
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
-    );
-    return redacted is Object ? redacted : decoded;
-  }
 }

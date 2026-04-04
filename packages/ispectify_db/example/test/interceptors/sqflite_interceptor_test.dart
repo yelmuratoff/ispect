@@ -1,5 +1,4 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/sqflite_interceptor.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
@@ -13,7 +12,6 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     realDb = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
     traced = ISpectSqfliteDatabase(delegate: realDb, logger: logger);
     await traced.execute('''
@@ -27,7 +25,6 @@ void main() {
 
   tearDown(() async {
     await realDb.close();
-    ISpectDbCore.config = ISpectDbConfig();
   });
 
   Map<String, Object?> lastAdditional() =>
@@ -153,8 +150,6 @@ void main() {
 
   group('transaction', () {
     test('wraps inner calls with transactionId', () async {
-      ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
-
       await traced.transaction((txn) async {
         await txn.rawInsert(
           'INSERT INTO users (name) VALUES (?)',

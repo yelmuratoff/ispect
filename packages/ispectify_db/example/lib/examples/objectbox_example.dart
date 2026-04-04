@@ -11,14 +11,12 @@ library;
 import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/objectbox_interceptor.dart';
 import 'package:ispectify_db_example/models/objectbox_task.dart';
 import 'package:ispectify_db_example/objectbox.g.dart';
 
 Future<void> objectboxExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   final tempDir = Directory.systemTemp.createTempSync('objectbox_example_');
 

@@ -1,6 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/firebase_firestore_interceptor.dart';
 import 'package:test/test.dart';
 
@@ -11,15 +10,12 @@ void main() {
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     fakeFirestore = FakeFirebaseFirestore();
     traced = ISpectFirestoreCollection(
       delegate: fakeFirestore.collection('users'),
       logger: logger,
     );
   });
-
-  tearDown(() => ISpectDbCore.config = ISpectDbConfig());
 
   Map<String, Object?> lastAdditional() =>
       logger.history.last.additionalData ?? {};

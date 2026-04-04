@@ -24,6 +24,7 @@ final class ISpectSqfliteDatabase implements Database {
     required Database delegate,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _db = delegate,
         _logger = logger,
         _source = source;
@@ -31,6 +32,7 @@ final class ISpectSqfliteDatabase implements Database {
   final Database _db;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'sqflite';
@@ -52,6 +54,7 @@ final class ISpectSqfliteDatabase implements Database {
         args: arguments,
         run: () => _db.rawQuery(sql, arguments),
         projectResult: (rows) => {'rows': rows.length},
+        config: config,
       );
 
   @override
@@ -63,6 +66,7 @@ final class ISpectSqfliteDatabase implements Database {
         args: arguments,
         run: () => _db.rawInsert(sql, arguments),
         projectResult: (id) => {'lastInsertId': id},
+        config: config,
       );
 
   @override
@@ -74,6 +78,7 @@ final class ISpectSqfliteDatabase implements Database {
         args: arguments,
         run: () => _db.rawUpdate(sql, arguments),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   @override
@@ -85,6 +90,7 @@ final class ISpectSqfliteDatabase implements Database {
         args: arguments,
         run: () => _db.rawDelete(sql, arguments),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   @override
@@ -95,6 +101,7 @@ final class ISpectSqfliteDatabase implements Database {
         statement: sql,
         args: arguments,
         run: () => _db.execute(sql, arguments),
+        config: config,
       );
 
   // --- Traced convenience methods -----------------------------------------
@@ -131,6 +138,7 @@ final class ISpectSqfliteDatabase implements Database {
           offset: offset,
         ),
         projectResult: (rows) => {'rows': rows.length},
+        config: config,
       );
 
   @override
@@ -152,6 +160,7 @@ final class ISpectSqfliteDatabase implements Database {
           conflictAlgorithm: conflictAlgorithm,
         ),
         projectResult: (id) => {'lastInsertId': id},
+        config: config,
       );
 
   @override
@@ -175,6 +184,7 @@ final class ISpectSqfliteDatabase implements Database {
           conflictAlgorithm: conflictAlgorithm,
         ),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   @override
@@ -189,6 +199,7 @@ final class ISpectSqfliteDatabase implements Database {
         table: table,
         run: () => _db.delete(table, where: where, whereArgs: whereArgs),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   // --- Transaction --------------------------------------------------------
@@ -201,6 +212,7 @@ final class ISpectSqfliteDatabase implements Database {
       _logger.dbTransaction(
         source: _source,
         run: () => _db.transaction(action, exclusive: exclusive),
+        config: config,
       );
 
   @override
@@ -210,6 +222,7 @@ final class ISpectSqfliteDatabase implements Database {
       _logger.dbTransaction(
         source: _source,
         run: () => _db.readTransaction(action),
+        config: config,
       );
 
   // --- Passthrough --------------------------------------------------------

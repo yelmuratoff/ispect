@@ -9,7 +9,6 @@ import 'dart:io';
 
 import 'package:hive_ce/hive.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/hive_interceptor.dart';
 
 Future<void> hiveExample() async {
@@ -18,7 +17,6 @@ Future<void> hiveExample() async {
   try {
     Hive.init(tempDir.path);
     final logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
 
     final realBox = await Hive.openBox<String>('settings');
     final box = ISpectHiveBox<String>(delegate: realBox, logger: logger);

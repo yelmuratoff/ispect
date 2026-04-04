@@ -35,6 +35,7 @@ final class ISpectRealm implements Realm {
     required Realm delegate,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.logConfig = const ISpectDbConfig(),
   })  : _realm = delegate,
         _logger = logger,
         _source = source;
@@ -42,6 +43,7 @@ final class ISpectRealm implements Realm {
   final Realm _realm;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig logConfig;
 
   /// Default source identifier.
   static const defaultSource = 'realm';
@@ -61,6 +63,7 @@ final class ISpectRealm implements Realm {
       key: primaryKey.toString(),
       success: true,
       cacheHit: result != null,
+      config: logConfig,
     );
     return result;
   }
@@ -74,6 +77,7 @@ final class ISpectRealm implements Realm {
       table: '$T',
       success: true,
       items: results.length,
+      config: logConfig,
     );
     return results;
   }
@@ -92,6 +96,7 @@ final class ISpectRealm implements Realm {
       args: args,
       success: true,
       items: results.length,
+      config: logConfig,
     );
     return results;
   }
@@ -107,6 +112,7 @@ final class ISpectRealm implements Realm {
       table: '$T',
       success: true,
       meta: {'update': update},
+      config: logConfig,
     );
     return result;
   }
@@ -120,6 +126,7 @@ final class ISpectRealm implements Realm {
       table: '$T',
       success: true,
       meta: {'count': items.length, 'update': update},
+      config: logConfig,
     );
   }
 
@@ -131,6 +138,7 @@ final class ISpectRealm implements Realm {
       operation: 'delete',
       table: '${object.runtimeType}',
       success: true,
+      config: logConfig,
     );
   }
 
@@ -144,6 +152,7 @@ final class ISpectRealm implements Realm {
       table: '$T',
       success: true,
       meta: {'count': count},
+      config: logConfig,
     );
   }
 
@@ -155,6 +164,7 @@ final class ISpectRealm implements Realm {
       operation: 'clear',
       table: '$T',
       success: true,
+      config: logConfig,
     );
   }
 
@@ -165,6 +175,7 @@ final class ISpectRealm implements Realm {
         source: _source,
         operation: 'transaction',
         run: () => _realm.write(writeCallback),
+        config: logConfig,
       );
 
   @override
@@ -176,6 +187,7 @@ final class ISpectRealm implements Realm {
         source: _source,
         operation: 'transaction',
         run: () => _realm.writeAsync(writeCallback, cancellationToken),
+        config: logConfig,
       );
 
   // --- Passthrough ----------------------------------------------------------
@@ -218,6 +230,7 @@ final class ISpectRealm implements Realm {
         delegate: _realm.freeze(),
         logger: _logger,
         source: _source,
+        logConfig: logConfig,
       );
 
   @override

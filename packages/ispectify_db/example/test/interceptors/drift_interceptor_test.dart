@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/drift_interceptor.dart';
 import 'package:test/test.dart';
 
@@ -20,7 +19,6 @@ void main() {
 
   setUp(() async {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
 
     // Real NativeDatabase with interceptor plugged in natively.
     executor = NativeDatabase.memory(
@@ -39,7 +37,6 @@ void main() {
 
   tearDown(() async {
     await executor.close();
-    ISpectDbCore.config = ISpectDbConfig();
   });
 
   Map<String, Object?> lastAdditional() =>

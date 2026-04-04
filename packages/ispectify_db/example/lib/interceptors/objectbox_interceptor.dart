@@ -34,6 +34,7 @@ final class ISpectObjectBox<T> implements Box<T> {
     required ISpectLogger logger,
     required String boxName,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _box = delegate,
         _logger = logger,
         _boxName = boxName,
@@ -43,6 +44,7 @@ final class ISpectObjectBox<T> implements Box<T> {
   final ISpectLogger _logger;
   final String _boxName;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'objectbox';
@@ -62,7 +64,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       key: id.toString(),
       success: true,
       cacheHit: result != null,
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -76,7 +79,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       meta: {'ids': ids.length},
       items: result.where((e) => e != null).length,
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -89,7 +93,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       table: _boxName,
       success: true,
       items: result.length,
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -103,6 +108,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         key: id.toString(),
         run: () => _box.getAsync(id),
         projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
       );
 
   @override
@@ -117,6 +123,7 @@ final class ISpectObjectBox<T> implements Box<T> {
           'requested': ids.length,
           'found': items.where((e) => e != null).length,
         },
+        config: config,
       );
 
   @override
@@ -126,6 +133,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: () => _box.getAllAsync(),
         projectResult: (items) => {'count': items.length},
+        config: config,
       );
 
   // --- Sync writes ----------------------------------------------------------
@@ -137,6 +145,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: () => _box.put(object, mode: mode),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -148,6 +157,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         meta: {'count': objects.length},
         run: () => _box.putMany(objects, mode: mode),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   // --- Async writes ---------------------------------------------------------
@@ -160,6 +170,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: () => _box.putAsync(object, mode: mode),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -170,6 +181,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: () => _box.putAndGetAsync(object, mode: mode),
         projectResult: (obj) => '1 object',
+        config: config,
       );
 
   @override
@@ -182,6 +194,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         meta: {'count': objects.length},
         run: () => _box.putManyAsync(objects, mode: mode),
         projectResult: (ids) => {'inserted': ids.length},
+        config: config,
       );
 
   @override
@@ -194,6 +207,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         meta: {'count': objects.length},
         run: () => _box.putAndGetManyAsync(objects, mode: mode),
         projectResult: (items) => {'inserted': items.length},
+        config: config,
       );
 
   @override
@@ -203,6 +217,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: () => _box.putQueued(object, mode: mode),
         projectResult: (id) => {'id': id},
+        config: config,
       );
 
   @override
@@ -221,6 +236,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         key: id.toString(),
         run: () => _box.remove(id),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -231,6 +247,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         meta: {'ids': ids.length},
         run: () => _box.removeMany(ids),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -240,6 +257,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: _box.removeAll,
         projectResult: (count) => {'cleared': count},
+        config: config,
       );
 
   // --- Async deletes --------------------------------------------------------
@@ -252,6 +270,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         key: id.toString(),
         run: () => _box.removeAsync(id),
         projectResult: (deleted) => {'deleted': deleted},
+        config: config,
       );
 
   @override
@@ -262,6 +281,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         meta: {'ids': ids.length},
         run: () => _box.removeManyAsync(ids),
         projectResult: (count) => {'deleted': count},
+        config: config,
       );
 
   @override
@@ -271,6 +291,7 @@ final class ISpectObjectBox<T> implements Box<T> {
         table: _boxName,
         run: _box.removeAllAsync,
         projectResult: (count) => {'cleared': count},
+        config: config,
       );
 
   // --- Aggregations ---------------------------------------------------------
@@ -284,7 +305,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       table: _boxName,
       success: true,
       items: result,
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -297,7 +319,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       table: _boxName,
       success: true,
       meta: {'isEmpty': result},
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -311,7 +334,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       key: id.toString(),
       success: true,
       cacheHit: result,
-    );
+      config: config,
+      );
     return result;
   }
 
@@ -324,7 +348,8 @@ final class ISpectObjectBox<T> implements Box<T> {
       table: _boxName,
       success: true,
       meta: {'ids': ids.length, 'allExist': result},
-    );
+      config: config,
+      );
     return result;
   }
 

@@ -12,13 +12,13 @@ class DioResponseData {
 
   final DioRequestData requestData;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  }) {
+  /// Returns a raw JSON-compatible map of the response.
+  ///
+  /// No redaction is applied. Call [redact] on the result when redaction
+  /// is required.
+  Map<String, dynamic> toJson() {
     final headers = response?.headers;
-    final map = <String, dynamic>{
+    return <String, dynamic>{
       // --- Status: first thing you check ---
       NetworkJsonKeys.statusCode: response?.statusCode,
       NetworkJsonKeys.statusMessage: response?.statusMessage,
@@ -49,17 +49,19 @@ class DioResponseData {
       NetworkJsonKeys.extra: response?.extra,
 
       // --- Original request (reference) ---
-      NetworkJsonKeys.request: redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
+      NetworkJsonKeys.request: requestData.toJson(),
     };
+  }
 
-    if (redactor == null) return map;
-
+  /// Applies in-place redaction to a map produced by [toJson].
+  ///
+  /// Also redacts the embedded [NetworkJsonKeys.request] sub-map.
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
     NetworkMapRedactor.redactUrl(map, redactor);
     NetworkMapRedactor.redactData(
       map,
@@ -82,6 +84,14 @@ class DioResponseData {
     );
     NetworkMapRedactor.redactRedirects(map, redactor);
 
-    return map;
+    if (map[NetworkJsonKeys.request]
+        case final Map<String, dynamic> requestMap) {
+      DioRequestData.redact(
+        requestMap,
+        redactor,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      );
+    }
   }
 }

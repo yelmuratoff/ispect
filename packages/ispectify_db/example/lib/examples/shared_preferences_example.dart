@@ -8,13 +8,11 @@
 library;
 
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/shared_preferences_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> sharedPreferencesExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   final realPrefs = await SharedPreferences.getInstance();
   final prefs = ISpectSharedPreferences(delegate: realPrefs, logger: logger);

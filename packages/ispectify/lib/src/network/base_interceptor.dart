@@ -3,8 +3,7 @@ import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 
 /// Mixin providing common functionality for network interceptors.
 ///
-/// Implementing classes must provide [logger] and [enableRedaction].
-/// Optionally set [redactor] in the constructor for custom redaction behavior.
+/// Implementing classes must provide [logger], [enableRedaction], and [redactor].
 mixin BaseNetworkInterceptor {
   /// Shared trace config that disables Layer 2 (trace pipeline) redaction.
   ///
@@ -32,39 +31,15 @@ mixin BaseNetworkInterceptor {
   /// Implementations should return their specific settings' redaction flag.
   bool get enableRedaction;
 
-  RedactionService _redactor = RedactionService();
-  late NetworkPayloadSanitizer _payloadSanitizer =
-      NetworkPayloadSanitizer(_redactor);
-
-  /// Gets the current redaction service.
-  RedactionService get redactor => _redactor;
-
-  /// Updates the redaction service instance.
+  /// The redaction service for this interceptor.
   ///
-  /// Allows runtime reconfiguration of redaction behavior without
-  /// recreating the interceptor.
-  set redactor(RedactionService newRedactor) {
-    _redactor = newRedactor;
-    _payloadSanitizer = NetworkPayloadSanitizer(newRedactor);
-  }
+  /// Implementing classes must override this to return their redactor instance.
+  RedactionService get redactor;
 
-  /// Provides helper functions for sanitizing headers and bodies.
-  NetworkPayloadSanitizer get payload => _payloadSanitizer;
+  late final NetworkPayloadSanitizer _payloadSanitizer =
+      NetworkPayloadSanitizer(redactor);
 
-  /// Redacts HTTP headers according to redaction rules.
-  ///
-  /// Returns redacted headers as Map<String, dynamic> for maximum compatibility.
-  Map<String, dynamic> redactHeaders(
-    Map<String, dynamic> headers, {
-    required bool useRedaction,
-  }) =>
-      payload.headersMap(headers, enableRedaction: useRedaction);
-
-  /// Redacts request/response body data.
-  ///
-  /// Returns redacted data or original if redaction is disabled.
-  Object? redactBody(Object? data, {required bool useRedaction}) =>
-      payload.body(data, enableRedaction: useRedaction);
+  NetworkPayloadSanitizer get _payload => _payloadSanitizer;
 
   /// Redacts query parameter values and userInfo credentials in a URL.
   ///
@@ -88,44 +63,11 @@ mixin BaseNetworkInterceptor {
         path: redactUrl(uri.path, useRedaction: useRedaction),
       );
 
-  /// Redacts URLs embedded in a message string (e.g. error messages).
-  ///
-  /// Returns the original [message] if `null` or redaction is disabled.
-  /// Delegates to [RedactionService.redactUrlsInText].
-  String? redactErrorMessage(
-    String? message, {
-    required bool useRedaction,
-  }) {
-    if (message == null || !useRedaction) return message;
-    return redactor.redactUrlsInText(message);
-  }
-
-  /// Sanitizes body data and returns it as a non-empty map, or `null`.
-  ///
-  /// Applies optional [normalizer] before redaction, then wraps the result
-  /// in a string-keyed map. Returns `null` when the data is `null` or the
-  /// resulting map is empty.
-  Map<String, dynamic>? bodyAsMap(
-    Object? data, {
-    required bool useRedaction,
-    Object? Function(Object?)? normalizer,
-  }) {
-    if (data == null) return null;
-    final sanitized = payload.body(
-      data,
-      enableRedaction: useRedaction,
-      normalizer: normalizer,
-    );
-    if (sanitized == null) return null;
-    final map = payload.ensureMap(sanitized);
-    return map.isEmpty ? null : map;
-  }
-
-  /// Applies [redactBody] with error handling: logs a warning and returns
+  /// Applies redaction with error handling: logs a warning and returns
   /// a placeholder on failure instead of propagating the exception.
   Object safeRedact(Object data, {required bool useRedaction}) {
     try {
-      return redactBody(data, useRedaction: useRedaction) ?? data;
+      return _payload.body(data, enableRedaction: useRedaction) ?? data;
     } catch (e, s) {
       logger.logData(
         ISpectLogData(
@@ -135,19 +77,6 @@ mixin BaseNetworkInterceptor {
         ),
       );
       return ph.redactionFailedPlaceholder;
-    }
-  }
-
-  /// Wraps a log-building callback in try-catch, logging a warning on failure
-  /// instead of propagating the exception.
-  ///
-  /// Use this in interceptor hooks (`onRequest`, `onResponse`, `onError`)
-  /// to prevent log-building failures from breaking the HTTP pipeline.
-  void safeLog(ISpectLogData Function() builder) {
-    try {
-      logger.logData(builder());
-    } catch (e, st) {
-      logger.log('Failed to build log: $e', stackTrace: st);
     }
   }
 
@@ -197,7 +126,6 @@ mixin BaseNetworkInterceptor {
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
-    RedactionService? redactor,
   }) {
     final current = configurableSettings;
     if (current == null) return;
@@ -217,7 +145,6 @@ mixin BaseNetworkInterceptor {
         errorPen: errorPen,
       ),
     );
-    if (redactor != null) this.redactor = redactor;
   }
 
   /// Processes and redacts a map, ensuring string keys.
@@ -229,7 +156,7 @@ mixin BaseNetworkInterceptor {
   }) {
     try {
       final redacted =
-          payload.body(data, enableRedaction: useRedaction) ?? data;
+          _payload.body(data, enableRedaction: useRedaction) ?? data;
 
       if (redacted is Map<String, dynamic>) return redacted;
 
@@ -237,7 +164,7 @@ mixin BaseNetworkInterceptor {
       return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
     } catch (_) {
       try {
-        return payload.stringKeyMap(data);
+        return _payload.stringKeyMap(data);
       } catch (_) {
         return <String, dynamic>{'raw': ph.conversionFailedPlaceholder};
       }

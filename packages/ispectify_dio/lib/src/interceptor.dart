@@ -12,14 +12,17 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     this.addonId,
     RedactionService? redactor,
   })  : _settings = settings,
-        _logger = logger ?? ISpectLogger() {
-    if (redactor != null) this.redactor = redactor;
-  }
+        _logger = logger ?? ISpectLogger(),
+        _redactor = redactor ?? RedactionService();
 
   final ISpectLogger _logger;
+  final RedactionService _redactor;
 
   @override
   ISpectLogger get logger => _logger;
+
+  @override
+  RedactionService get redactor => _redactor;
 
   static const _requestIdExtraKey = NetworkJsonKeys.ispectRequestId;
   static const _stopwatchExtraKey = '_ispect_sw';
@@ -64,9 +67,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
       useRedaction: useRedaction,
     );
 
-    final requestDataJson = DioRequestData(options).toJson(
-      redactor: useRedaction ? redactor : null,
-    );
+    final requestDataJson = DioRequestData(options).toJson();
+    if (useRedaction) DioRequestData.redact(requestDataJson, redactor);
 
     _logger.httpRequest(
       source: 'dio',
@@ -120,7 +122,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
     final responseDataJson = DioResponseData(
       response: response,
       requestData: requestData,
-    ).toJson(redactor: useRedaction ? redactor : null);
+    ).toJson();
+    if (useRedaction) DioResponseData.redact(responseDataJson, redactor);
 
     _logger.httpResponse(
       source: 'dio',
@@ -182,7 +185,8 @@ class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
         response: err.response,
         requestData: requestData,
       ),
-    ).toJson(redactor: useRedaction ? redactor : null);
+    ).toJson();
+    if (useRedaction) DioErrorData.redact(errorDataJson, redactor);
 
     final errorResponseJson =
         errorDataJson[NetworkJsonKeys.response] as Map<String, dynamic>?;

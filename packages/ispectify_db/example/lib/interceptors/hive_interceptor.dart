@@ -26,6 +26,7 @@ final class ISpectHiveBox<E> implements Box<E> {
     required Box<E> delegate,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _box = delegate,
         _logger = logger,
         _source = source;
@@ -33,6 +34,7 @@ final class ISpectHiveBox<E> implements Box<E> {
   final Box<E> _box;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'hive';
@@ -52,6 +54,7 @@ final class ISpectHiveBox<E> implements Box<E> {
       success: true,
       cacheHit: result != null,
       meta: {'box': _box.name},
+      config: config,
     );
     return result;
   }
@@ -66,6 +69,7 @@ final class ISpectHiveBox<E> implements Box<E> {
       success: true,
       cacheHit: result != null,
       meta: {'box': _box.name},
+      config: config,
     );
     return result;
   }
@@ -80,6 +84,7 @@ final class ISpectHiveBox<E> implements Box<E> {
       success: true,
       cacheHit: result,
       meta: {'box': _box.name},
+      config: config,
     );
     return result;
   }
@@ -93,6 +98,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         key: key.toString(),
         meta: {'box': _box.name},
         run: () => _box.put(key, value),
+        config: config,
       );
 
   @override
@@ -102,6 +108,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         key: 'index:$index',
         meta: {'box': _box.name},
         run: () => _box.putAt(index, value),
+        config: config,
       );
 
   @override
@@ -110,6 +117,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         operation: 'write',
         meta: {'box': _box.name, 'entries': entries.length},
         run: () => _box.putAll(entries),
+        config: config,
       );
 
   @override
@@ -119,6 +127,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         meta: {'box': _box.name},
         run: () => _box.add(value),
         projectResult: (key) => {'autoKey': key},
+        config: config,
       );
 
   @override
@@ -128,6 +137,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         meta: {'box': _box.name, 'count': values.length},
         run: () => _box.addAll(values),
         projectResult: (keys) => {'inserted': keys.length},
+        config: config,
       );
 
   @override
@@ -137,6 +147,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         key: key.toString(),
         meta: {'box': _box.name},
         run: () => _box.delete(key),
+        config: config,
       );
 
   @override
@@ -146,6 +157,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         key: 'index:$index',
         meta: {'box': _box.name},
         run: () => _box.deleteAt(index),
+        config: config,
       );
 
   @override
@@ -154,6 +166,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         operation: 'delete',
         meta: {'box': _box.name, 'keys': keys.length},
         run: () => _box.deleteAll(keys),
+        config: config,
       );
 
   @override
@@ -163,6 +176,7 @@ final class ISpectHiveBox<E> implements Box<E> {
         meta: {'box': _box.name},
         run: _box.clear,
         projectResult: (count) => {'cleared': count},
+        config: config,
       );
 
   // --- Passthrough reads --------------------------------------------------

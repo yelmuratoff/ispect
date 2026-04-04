@@ -12,13 +12,15 @@ import 'package:sembast/sembast_memory.dart';
 
 Future<void> sembastExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig(enableTransactionMarkers: true);
+  const dbConfig = ISpectDbConfig(enableTransactionMarkers: true);
 
   final db = await newDatabaseFactoryMemory().openDatabase('example.db');
 
   // Convenience extension: .traced(logger)
-  final store = intMapStoreFactory.store('users').traced(logger);
-  final settingsStore = stringMapStoreFactory.store('settings').traced(logger);
+  final store =
+      intMapStoreFactory.store('users').traced(logger, config: dbConfig);
+  final settingsStore =
+      stringMapStoreFactory.store('settings').traced(logger, config: dbConfig);
 
   // Record-level operations via store.record(key)
   await store.record(1).put(db, {'name': 'Alice', 'role': 'admin'});

@@ -81,7 +81,7 @@ void main() {
       expect(last.key, ISpectLogType.httpResponse.key);
       final meta = last.additionalData?[TraceKeys.meta];
       expect(meta, isA<Map<String, dynamic>>());
-      expect((meta as Map<String, dynamic>)['statusCode'], 200);
+      expect((meta as Map<String, dynamic>)['status-code'], 200);
     });
   });
 }

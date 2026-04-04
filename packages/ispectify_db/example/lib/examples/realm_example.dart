@@ -1,12 +1,10 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/realm_interceptor.dart';
 import 'package:ispectify_db_example/models/realm_task.dart';
 import 'package:realm/realm.dart';
 
 Future<void> realmExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig();
 
   final config = Configuration.inMemory([RealmTask.schema]);
   final realm = Realm(config);

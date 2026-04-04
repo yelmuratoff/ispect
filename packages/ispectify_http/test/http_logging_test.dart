@@ -98,7 +98,8 @@ void main() {
         expect(unredactedBody['password'], equals('secret123'));
         expect(unredactedBody['token'], equals('abc123'));
 
-        final redactedJson = responseData.toJson(redactor: redactor);
+        final redactedJson = responseData.toJson();
+        HttpResponseData.redact(redactedJson, redactor);
         final redactedBody = redactedJson['body'] as Map<String, dynamic>;
         expect(redactedBody['password'], isNot(equals('secret123')));
         expect(redactedBody['token'], isNot(equals('abc123')));
@@ -163,7 +164,8 @@ void main() {
         multipartRequest: request,
       );
 
-      final json = responseData.toJson(redactor: redactor);
+      final json = responseData.toJson();
+      HttpResponseData.redact(json, redactor);
       final mp = json['multipart-request'] as Map<String, dynamic>;
       final fields = mp['fields'] as Map<String, dynamic>;
 
@@ -265,7 +267,8 @@ void main() {
         multipartRequest: null,
       );
 
-      final json = responseData.toJson(redactor: redactor);
+      final json = responseData.toJson();
+      HttpResponseData.redact(json, redactor);
       final body = json['body'];
 
       expect(body, isA<Map<String, dynamic>>());

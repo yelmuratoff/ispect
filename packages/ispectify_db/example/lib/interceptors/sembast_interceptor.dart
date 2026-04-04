@@ -45,8 +45,10 @@ extension ISpectSembastStoreExtension<K extends sembast.RecordKeyBase?,
   ISpectSembastStore<K, V> traced(
     ISpectLogger logger, {
     String source = ISpectSembastStore.defaultSource,
+    ISpectDbConfig config = const ISpectDbConfig(),
   }) =>
-      ISpectSembastStore(store: this, logger: logger, source: source);
+      ISpectSembastStore(
+          store: this, logger: logger, source: source, config: config);
 }
 
 // ---------------------------------------------------------------------------
@@ -67,6 +69,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
     required sembast.StoreRef<K, V> store,
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _store = store,
         _logger = logger,
         _source = source;
@@ -74,6 +77,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
   final sembast.StoreRef<K, V> _store;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'sembast';
@@ -92,6 +96,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         delegate: _store.record(key),
         logger: _logger,
         source: _source,
+        config: config,
       );
 
   @override
@@ -115,6 +120,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.find(db, finder: finder),
         projectResult: (snaps) => {'found': snaps.length},
+        config: config,
       );
 
   /// Find the first record matching a [finder].
@@ -128,6 +134,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.findFirst(db, finder: finder),
         projectResult: (snap) => snap != null ? '1 record' : 'null',
+        config: config,
       );
 
   /// Count records in the store.
@@ -141,6 +148,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.count(db, filter: filter),
         projectResult: (n) => {'count': n},
+        config: config,
       );
 
   // --- Traced store writes --------------------------------------------------
@@ -152,6 +160,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.add(db, value),
         projectResult: (key) => {'autoKey': key},
+        config: config,
       );
 
   /// Add multiple records.
@@ -163,6 +172,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         meta: {'count': values.length},
         run: () => _store.addAll(db, values),
         projectResult: (keys) => {'inserted': keys.length},
+        config: config,
       );
 
   /// Update records matching a [finder].
@@ -177,6 +187,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.update(db, value, finder: finder),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   /// Delete records matching a [finder].
@@ -190,6 +201,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         table: name,
         run: () => _store.delete(db, finder: finder),
         projectResult: (n) => {'deleted': n},
+        config: config,
       );
 
   /// Drop the entire store.
@@ -198,6 +210,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
         operation: 'clear',
         table: name,
         run: () => _store.drop(db),
+        config: config,
       );
 
   // --- Passthrough reads (delegated to avoid SembastStoreRef casts) ---------
@@ -299,6 +312,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       _logger.dbTransaction(
         source: _source,
         run: () => db.transaction(action),
+        config: config,
       );
 
   // --- Equality (same as Sembast: name-based) -------------------------------
@@ -333,6 +347,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
     required sembast.RecordRef<K, V> delegate,
     required ISpectLogger logger,
     String source = ISpectSembastStore.defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _record = delegate,
         _logger = logger,
         _source = source;
@@ -340,6 +355,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
   final sembast.RecordRef<K, V> _record;
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// The underlying record reference.
   sembast.RecordRef<K, V> get delegate => _record;
@@ -366,6 +382,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         table: store.name,
         key: key.toString(),
         run: () => _record.get(db),
+        config: config,
       );
 
   /// Get the record snapshot.
@@ -379,6 +396,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         key: key.toString(),
         run: () => _record.getSnapshot(db),
         projectResult: (snap) => snap != null ? '1 record' : 'null',
+        config: config,
       );
 
   /// Check if the record exists.
@@ -389,6 +407,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         key: key.toString(),
         run: () => _record.exists(db),
         projectResult: (val) => {'exists': val},
+        config: config,
       );
 
   // --- Traced writes --------------------------------------------------------
@@ -400,6 +419,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         table: store.name,
         key: key.toString(),
         run: () => _record.add(db, value),
+        config: config,
       );
 
   /// Put (insert or update) the record.
@@ -417,6 +437,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         meta: (merge ?? false) ? {'merge': true} : null,
         run: () =>
             _record.put(db, value, merge: merge, ifNotExists: ifNotExists),
+        config: config,
       );
 
   /// Update the record. Returns null if not found.
@@ -426,6 +447,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         table: store.name,
         key: key.toString(),
         run: () => _record.update(db, value),
+        config: config,
       );
 
   /// Delete the record.
@@ -435,6 +457,7 @@ final class ISpectSembastRecord<K extends sembast.RecordKeyBase?,
         table: store.name,
         key: key.toString(),
         run: () => _record.delete(db),
+        config: config,
       );
 
   // --- Passthrough ----------------------------------------------------------

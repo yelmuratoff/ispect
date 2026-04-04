@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/get_storage_interceptor.dart';
 
 void main() {
@@ -40,7 +39,6 @@ void main() {
     await box.erase();
 
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     traced = ISpectGetStorage(
       delegate: box,
       logger: logger,
@@ -49,7 +47,6 @@ void main() {
   });
 
   tearDown(() async {
-    ISpectDbCore.config = ISpectDbConfig();
     // Allow background flushes to settle before clearing mock.
     await Future<void>.delayed(const Duration(milliseconds: 50));
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

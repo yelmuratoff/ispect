@@ -32,11 +32,13 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
   ISpectDriftInterceptor({
     required ISpectLogger logger,
     String source = defaultSource,
+    this.config = const ISpectDbConfig(),
   })  : _logger = logger,
         _source = source;
 
   final ISpectLogger _logger;
   final String _source;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'drift';
@@ -54,6 +56,7 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         args: args,
         run: () => executor.runSelect(statement, args),
         projectResult: (rows) => {'rows': rows.length},
+        config: config,
       );
 
   @override
@@ -69,6 +72,7 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         args: args,
         run: () => executor.runInsert(statement, args),
         projectResult: (id) => {'lastInsertId': id},
+        config: config,
       );
 
   @override
@@ -84,6 +88,7 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         args: args,
         run: () => executor.runUpdate(statement, args),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   @override
@@ -99,6 +104,7 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         args: args,
         run: () => executor.runDelete(statement, args),
         projectResult: (n) => {'affected': n},
+        config: config,
       );
 
   @override
@@ -113,6 +119,7 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         statement: statement,
         args: args,
         run: () => executor.runCustom(statement, args),
+        config: config,
       );
 
   @override
@@ -126,5 +133,6 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
         meta: {'batchSize': statements.statements.length},
         run: () => executor.runBatched(statements),
         projectResult: (_) => {'statements': statements.statements.length},
+        config: config,
       );
 }

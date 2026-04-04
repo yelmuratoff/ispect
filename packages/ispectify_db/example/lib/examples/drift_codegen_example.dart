@@ -19,13 +19,13 @@ import 'package:ispectify_db_example/models/drift_models.dart';
 
 Future<void> driftCodegenExample() async {
   final logger = ISpectLogger();
-  ISpectDbCore.config = ISpectDbConfig(
-    slowThreshold: const Duration(milliseconds: 100),
+  const dbConfig = ISpectDbConfig(
+    slowThreshold: Duration(milliseconds: 100),
   );
 
   // 1. Create native memory database and wrap it with ISpectDriftInterceptor
   final executor = NativeDatabase.memory().interceptWith(
-    ISpectDriftInterceptor(logger: logger),
+    ISpectDriftInterceptor(logger: logger, config: dbConfig),
   );
 
   // 2. Initialize the generated AppDatabase with the intercepted executor

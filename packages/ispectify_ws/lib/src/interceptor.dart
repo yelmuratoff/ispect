@@ -12,11 +12,11 @@ final class ISpectWSInterceptor
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
     RedactionService? redactor,
-  }) : _logger = logger {
-    if (redactor != null) this.redactor = redactor;
-  }
+  })  : _logger = logger,
+        _redactor = redactor ?? RedactionService();
 
   final ISpectLogger _logger;
+  final RedactionService _redactor;
   final ISpectWSInterceptorSettings settings;
   final void Function(WebSocketClient)? onClientReady;
   WebSocketClient? _client;
@@ -26,6 +26,9 @@ final class ISpectWSInterceptor
 
   @override
   ISpectLogger get logger => _logger;
+
+  @override
+  RedactionService get redactor => _redactor;
 
   @override
   bool get enableRedaction => settings.enableRedaction;

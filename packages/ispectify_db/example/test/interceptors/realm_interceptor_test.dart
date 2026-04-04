@@ -1,5 +1,4 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_db_example/interceptors/realm_interceptor.dart';
 import 'package:ispectify_db_example/models/realm_task.dart';
 import 'package:realm/realm.dart';
@@ -12,7 +11,6 @@ void main() {
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = ISpectDbConfig();
     final config = Configuration.inMemory([RealmTask.schema]);
     realm = Realm(config);
     traced = ISpectRealm(delegate: realm, logger: logger);
@@ -22,7 +20,6 @@ void main() {
     if (!realm.isClosed) {
       realm.close();
     }
-    ISpectDbCore.config = ISpectDbConfig();
   });
 
   Map<String, Object?> lastAdditional() =>

@@ -37,6 +37,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     required ISpectLogger logger,
     String source = defaultSource,
     this.forceRedact = true,
+    this.config = const ISpectDbConfig(),
   })  : _storage = delegate,
         _logger = logger,
         _source = source;
@@ -47,6 +48,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
 
   /// Whether values should be redacted in logs (defaults to true).
   final bool forceRedact;
+  final ISpectDbConfig config;
 
   /// Default source identifier.
   static const defaultSource = 'secure_storage';
@@ -81,6 +83,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
         source: _source,
         operation: 'isCupertinoProtectedDataAvailable',
         run: _storage.isCupertinoProtectedDataAvailable,
+        config: config,
       );
 
   @override
@@ -97,6 +100,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
       operation: 'registerListener',
       key: key,
       run: () => _storage.registerListener(key: key, listener: listener),
+      config: config,
     );
   }
 
@@ -106,6 +110,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
       source: _source,
       operation: 'unregisterAllListeners',
       run: _storage.unregisterAllListeners,
+      config: config,
     );
   }
 
@@ -116,6 +121,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
       operation: 'unregisterAllListenersForKey',
       key: key,
       run: () => _storage.unregisterAllListenersForKey(key: key),
+      config: config,
     );
   }
 
@@ -129,6 +135,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
       operation: 'unregisterListener',
       key: key,
       run: () => _storage.unregisterListener(key: key, listener: listener),
+      config: config,
     );
   }
 
@@ -157,6 +164,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           wOptions: wOptions,
         ),
         projectResult: (val) => val != null ? '***' : null,
+        config: config,
       );
 
   @override
@@ -185,6 +193,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           mOptions: mOptions,
           wOptions: wOptions,
         ),
+        config: config,
       );
 
   @override
@@ -210,6 +219,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           mOptions: mOptions,
           wOptions: wOptions,
         ),
+        config: config,
       );
 
   @override
@@ -232,6 +242,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           mOptions: mOptions,
           wOptions: wOptions,
         ),
+        config: config,
       );
 
   @override
@@ -256,6 +267,7 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           wOptions: wOptions,
         ),
         projectResult: (entries) => {'keys': entries.length},
+        config: config,
       );
 
   @override
@@ -282,5 +294,6 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
           wOptions: wOptions,
         ),
         projectResult: (exists) => {'exists': exists},
+        config: config,
       );
 }
