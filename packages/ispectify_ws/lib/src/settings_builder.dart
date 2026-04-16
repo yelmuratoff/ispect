@@ -3,9 +3,15 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 
 /// Builder for [ISpectWSInterceptorSettings] providing fluent API.
+///
+/// Provides WS-specific aliases: [withSentFilter] / [withReceivedFilter]
+/// map to the base [withRequestFilter] / [withResponseFilter] methods.
 class ISpectWSInterceptorSettingsBuilder
     extends BaseNetworkInterceptorSettingsBuilder<
-        ISpectWSInterceptorSettingsBuilder> {
+        ISpectWSInterceptorSettingsBuilder,
+        ISpectLogData,
+        ISpectLogData,
+        ISpectLogData> {
   ISpectWSInterceptorSettingsBuilder();
 
   factory ISpectWSInterceptorSettingsBuilder.development() =>
@@ -20,30 +26,17 @@ class ISpectWSInterceptorSettingsBuilder
   factory ISpectWSInterceptorSettingsBuilder.disabled() =>
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
-  bool Function(ISpectLogData data)? _sentFilter;
-  bool Function(ISpectLogData data)? _receivedFilter;
-  bool Function(ISpectLogData data)? _errorFilter;
-
+  /// Alias for [withRequestFilter] using WS naming convention.
   ISpectWSInterceptorSettingsBuilder withSentFilter(
     bool Function(ISpectLogData data) filter,
-  ) {
-    _sentFilter = filter;
-    return this;
-  }
+  ) =>
+      withRequestFilter(filter);
 
+  /// Alias for [withResponseFilter] using WS naming convention.
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
     bool Function(ISpectLogData data) filter,
-  ) {
-    _receivedFilter = filter;
-    return this;
-  }
-
-  ISpectWSInterceptorSettingsBuilder withErrorFilter(
-    bool Function(ISpectLogData data) filter,
-  ) {
-    _errorFilter = filter;
-    return this;
-  }
+  ) =>
+      withResponseFilter(filter);
 
   @override
   ISpectWSInterceptorSettings build() => ISpectWSInterceptorSettings(
@@ -59,8 +52,8 @@ class ISpectWSInterceptorSettingsBuilder
         sentPen: requestPen,
         receivedPen: responsePen,
         errorPen: errorPen,
-        sentFilter: _sentFilter,
-        receivedFilter: _receivedFilter,
-        errorFilter: _errorFilter,
+        sentFilter: requestFilter,
+        receivedFilter: responseFilter,
+        errorFilter: errorFilter,
       );
 }

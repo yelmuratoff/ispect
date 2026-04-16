@@ -16,7 +16,10 @@ import 'package:ispectify_http/src/settings.dart';
 /// {@end-tool}
 class ISpectHttpInterceptorSettingsBuilder
     extends BaseNetworkInterceptorSettingsBuilder<
-        ISpectHttpInterceptorSettingsBuilder> {
+        ISpectHttpInterceptorSettingsBuilder,
+        BaseRequest,
+        BaseResponse,
+        BaseResponse> {
   /// Creates a builder with default settings (moderate verbosity).
   ISpectHttpInterceptorSettingsBuilder();
 
@@ -36,40 +39,6 @@ class ISpectHttpInterceptorSettingsBuilder
   factory ISpectHttpInterceptorSettingsBuilder.disabled() =>
       ISpectHttpInterceptorSettingsBuilder()..enabled = false;
 
-  bool Function(BaseRequest request)? _requestFilter;
-  bool Function(BaseResponse response)? _responseFilter;
-  bool Function(BaseResponse response)? _errorFilter;
-
-  /// Sets a custom request filter.
-  ///
-  /// Only requests where the filter returns `true` will be logged.
-  ISpectHttpInterceptorSettingsBuilder withRequestFilter(
-    bool Function(BaseRequest) filter,
-  ) {
-    _requestFilter = filter;
-    return this;
-  }
-
-  /// Sets a custom response filter.
-  ///
-  /// Only responses where the filter returns `true` will be logged.
-  ISpectHttpInterceptorSettingsBuilder withResponseFilter(
-    bool Function(BaseResponse) filter,
-  ) {
-    _responseFilter = filter;
-    return this;
-  }
-
-  /// Sets a custom error filter.
-  ///
-  /// Only errors where the filter returns `true` will be logged.
-  ISpectHttpInterceptorSettingsBuilder withErrorFilter(
-    bool Function(BaseResponse) filter,
-  ) {
-    _errorFilter = filter;
-    return this;
-  }
-
   @override
   ISpectHttpInterceptorSettings build() => ISpectHttpInterceptorSettings(
         enabled: enabled,
@@ -85,8 +54,8 @@ class ISpectHttpInterceptorSettingsBuilder
         requestPen: requestPen,
         responsePen: responsePen,
         errorPen: errorPen,
-        requestFilter: _requestFilter,
-        responseFilter: _responseFilter,
-        errorFilter: _errorFilter,
+        requestFilter: requestFilter,
+        responseFilter: responseFilter,
+        errorFilter: errorFilter,
       );
 }

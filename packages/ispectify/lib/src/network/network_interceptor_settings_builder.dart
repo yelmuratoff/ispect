@@ -5,15 +5,24 @@ import 'package:ispectify/ispectify.dart';
 /// Base builder for network interceptor settings.
 ///
 /// Provides all common builder methods (redaction toggles, data/header
-/// visibility, pens, environment presets) via a self-referential generic so
-/// that subclass methods return the correct builder type for fluent chaining.
+/// visibility, pens, environment presets, filters) via a self-referential
+/// generic so that subclass methods return the correct builder type for
+/// fluent chaining.
+///
+/// Type parameters:
+/// - [B] — the concrete builder type (self-referential for fluent chaining)
+/// - [TReq] — the type passed to the request filter function
+/// - [TRes] — the type passed to the response filter function
+/// - [TErr] — the type passed to the error filter function
 ///
 /// Subclasses must:
-/// 1. Extend `BaseNetworkInterceptorSettingsBuilder<ConcreteBuilder>`
-/// 2. Add filter-specific fields and `withXxxFilter()` methods
-/// 3. Override [build] to construct the package-specific settings object
+/// 1. Extend `BaseNetworkInterceptorSettingsBuilder<ConcreteBuilder, ...>`
+/// 2. Override [build] to construct the package-specific settings object
 abstract class BaseNetworkInterceptorSettingsBuilder<
-    B extends BaseNetworkInterceptorSettingsBuilder<B>> {
+    B extends BaseNetworkInterceptorSettingsBuilder<B, TReq, TRes, TErr>,
+    TReq,
+    TRes,
+    TErr> {
   /// Creates a builder with default settings (moderate verbosity).
   BaseNetworkInterceptorSettingsBuilder()
       : enabled = true,
@@ -40,6 +49,10 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   AnsiPen? requestPen;
   AnsiPen? responsePen;
   AnsiPen? errorPen;
+
+  bool Function(TReq)? requestFilter;
+  bool Function(TRes)? responseFilter;
+  bool Function(TErr)? errorFilter;
 
   /// Returns `this` cast to the concrete builder type for fluent chaining.
   B get _self => this as B;
@@ -184,7 +197,35 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   }
 
   // ---------------------------------------------------------------------------
-  // Environment presets (convenience for subclass factories)
+  // Filters
+  // ---------------------------------------------------------------------------
+
+  /// Sets a custom request filter.
+  ///
+  /// Only requests where the filter returns `true` will be logged.
+  B withRequestFilter(bool Function(TReq) filter) {
+    requestFilter = filter;
+    return _self;
+  }
+
+  /// Sets a custom response filter.
+  ///
+  /// Only responses where the filter returns `true` will be logged.
+  B withResponseFilter(bool Function(TRes) filter) {
+    responseFilter = filter;
+    return _self;
+  }
+
+  /// Sets a custom error filter.
+  ///
+  /// Only errors where the filter returns `true` will be logged.
+  B withErrorFilter(bool Function(TErr) filter) {
+    errorFilter = filter;
+    return _self;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Environment presets
   // ---------------------------------------------------------------------------
 
   /// Applies development preset: all headers, all data, redaction enabled.
