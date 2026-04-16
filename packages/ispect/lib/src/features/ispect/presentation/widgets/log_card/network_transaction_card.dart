@@ -152,18 +152,29 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
+              Semantics(
+                button: true,
+                expanded: _expanded,
+                label:
+                    '${tx.method ?? "HTTP"} ${tx.url ?? ""} — ${tx.statusCode ?? "pending"}',
                 onTap: () {
                   setState(() => _expanded = !_expanded);
                   widget.onTap?.call();
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: _MobileHeader(
-                    tx: tx,
-                    color: color,
-                    expanded: _expanded,
+                child: GestureDetector(
+                  excludeFromSemantics: true,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() => _expanded = !_expanded);
+                    widget.onTap?.call();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: _MobileHeader(
+                      tx: tx,
+                      color: color,
+                      expanded: _expanded,
+                    ),
                   ),
                 ),
               ),
@@ -392,116 +403,128 @@ class _DesktopTransactionRowState extends State<_DesktopTransactionRow> {
         ),
         child: Column(
           children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            Semantics(
+              button: true,
+              expanded: _expanded,
+              label:
+                  '${tx.method ?? "HTTP"} ${tx.url ?? ""} — ${tx.statusCode ?? "pending"}',
               onTap: () {
                 setState(() => _expanded = !_expanded);
                 widget.onTap?.call();
               },
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isCompact = constraints.maxWidth < 480;
-                    final scaled = _scaleDesktopColumns(
-                      available: constraints.maxWidth,
-                      typeWidth: isCompact ? 40 : widget.typeColumnWidth,
-                      timeWidth: isCompact ? 0 : widget.timeColumnWidth,
-                    );
-                    return Row(
-                      children: [
-                        Icon(
-                          Icons.swap_vert_rounded,
-                          size: 16,
-                          color: color,
-                        ),
-                        const Gap(8),
-                        SizedBox(
-                          width: scaled.typeWidth,
-                          child: Text(
-                            'http-transaction',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
+              child: GestureDetector(
+                excludeFromSemantics: true,
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() => _expanded = !_expanded);
+                  widget.onTap?.call();
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isCompact = constraints.maxWidth < 480;
+                      final scaled = _scaleDesktopColumns(
+                        available: constraints.maxWidth,
+                        typeWidth: isCompact ? 40 : widget.typeColumnWidth,
+                        timeWidth: isCompact ? 0 : widget.timeColumnWidth,
+                      );
+                      return Row(
+                        children: [
+                          Icon(
+                            Icons.swap_vert_rounded,
+                            size: 16,
+                            color: color,
                           ),
-                        ),
-                        const Gap(8),
-                        if (!isCompact) ...[
+                          const Gap(8),
                           SizedBox(
-                            width: scaled.timeWidth,
+                            width: scaled.typeWidth,
                             child: Text(
-                              tx.request.formattedTime,
+                              'http-transaction',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: onSurface.withValues(alpha: 0.45),
-                                fontSize: 11,
-                                fontFamily: 'monospace',
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
                               ),
                             ),
                           ),
-                          const Gap(12),
-                        ],
-                        MethodBadge(
-                          method: tx.method ?? 'HTTP',
-                          color: color,
-                        ),
-                        const Gap(6),
-                        Expanded(
-                          child: Text(
-                            tx.url ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: onSurface.withValues(alpha: 0.75),
-                              fontSize: 12,
+                          const Gap(8),
+                          if (!isCompact) ...[
+                            SizedBox(
+                              width: scaled.timeWidth,
+                              child: Text(
+                                tx.request.formattedTime,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: onSurface.withValues(alpha: 0.45),
+                                  fontSize: 11,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ),
+                            const Gap(12),
+                          ],
+                          MethodBadge(
+                            method: tx.method ?? 'HTTP',
+                            color: color,
+                          ),
+                          const Gap(6),
+                          Expanded(
+                            child: Text(
+                              tx.url ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: onSurface.withValues(alpha: 0.75),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                        ),
-                        if (tx.statusCode case final code?) ...[
-                          const Gap(8),
-                          DesktopStatusBadge(statusCode: code),
-                        ],
-                        if (tx.duration case final d?) ...[
-                          const Gap(8),
-                          DurationBadge(duration: d),
-                        ],
-                        if (tx.isPending) ...[
-                          const Gap(8),
-                          PendingBadge(
-                            label: ISpectLocalization.of(context).pending,
-                          ),
-                        ],
-                        if (_isHovered) ...[
-                          const Gap(8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: buildActionWidgets(
-                              context: context,
-                              tx: tx,
-                              color: color,
-                              useDesktopStyle: true,
-                              onOpenRequestDetail: widget.onOpenRequestDetail,
-                              onOpenResponseDetail: widget.onOpenResponseDetail,
+                          if (tx.statusCode case final code?) ...[
+                            const Gap(8),
+                            DesktopStatusBadge(statusCode: code),
+                          ],
+                          if (tx.duration case final d?) ...[
+                            const Gap(8),
+                            DurationBadge(duration: d),
+                          ],
+                          if (tx.isPending) ...[
+                            const Gap(8),
+                            PendingBadge(
+                              label: ISpectLocalization.of(context).pending,
                             ),
+                          ],
+                          if (_isHovered) ...[
+                            const Gap(8),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: buildActionWidgets(
+                                context: context,
+                                tx: tx,
+                                color: color,
+                                useDesktopStyle: true,
+                                onOpenRequestDetail: widget.onOpenRequestDetail,
+                                onOpenResponseDetail:
+                                    widget.onOpenResponseDetail,
+                              ),
+                            ),
+                          ],
+                          const Gap(4),
+                          Icon(
+                            _expanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 16,
+                            color: onSurface.withValues(alpha: 0.3),
                           ),
                         ],
-                        const Gap(4),
-                        Icon(
-                          _expanded
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
-                          size: 16,
-                          color: onSurface.withValues(alpha: 0.3),
-                        ),
-                      ],
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

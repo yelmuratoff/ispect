@@ -130,24 +130,28 @@ class _DragDivider extends StatelessWidget {
     final lineColor =
         isActive ? primaryColor.withValues(alpha: 0.5) : defaultColor;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.resizeColumn,
-      onEnter: (_) => onHoverChanged(true),
-      onExit: (_) => onHoverChanged(false),
-      child: GestureDetector(
-        onHorizontalDragStart: (_) => onDragStart(),
-        onHorizontalDragUpdate: (details) => onDragUpdate(details.delta.dx),
-        onHorizontalDragEnd: (_) => onDragEnd(),
-        child: SizedBox(
-          width: width,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: isActive ? 3 : 1,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: lineColor,
-                borderRadius: const BorderRadius.all(Radius.circular(2)),
+    return Semantics(
+      label: 'Resize divider',
+      slider: true,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeColumn,
+        onEnter: (_) => onHoverChanged(true),
+        onExit: (_) => onHoverChanged(false),
+        child: GestureDetector(
+          onHorizontalDragStart: (_) => onDragStart(),
+          onHorizontalDragUpdate: (details) => onDragUpdate(details.delta.dx),
+          onHorizontalDragEnd: (_) => onDragEnd(),
+          child: SizedBox(
+            width: width,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: isActive ? 3 : 1,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: lineColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(2)),
+                ),
               ),
             ),
           ),

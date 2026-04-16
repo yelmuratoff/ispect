@@ -162,36 +162,42 @@ class DetailChip extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: label,
         onTap: onTap,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.all(Radius.circular(6)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onTap: onTap,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.08),
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const Gap(4),
-                  Icon(
-                    Icons.open_in_new_rounded,
-                    size: 12,
-                    color: color.withValues(alpha: 0.7),
-                  ),
-                ],
+                    const Gap(4),
+                    Icon(
+                      Icons.open_in_new_rounded,
+                      size: 12,
+                      color: color.withValues(alpha: 0.7),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -214,17 +220,23 @@ class SmallActionIcon extends StatelessWidget {
   final String? tooltip;
 
   @override
-  Widget build(BuildContext context) => Tooltip(
-        message: tooltip ?? '',
-        child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Icon(
-              icon,
-              size: 15,
-              color: color.withValues(alpha: 0.6),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: tooltip ?? '',
+        onTap: onPressed,
+        child: Tooltip(
+          message: tooltip ?? '',
+          child: InkWell(
+            excludeFromSemantics: true,
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                icon,
+                size: 15,
+                color: color.withValues(alpha: 0.6),
+              ),
             ),
           ),
         ),

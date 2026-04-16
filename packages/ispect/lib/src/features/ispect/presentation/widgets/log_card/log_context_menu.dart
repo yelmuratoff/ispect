@@ -179,44 +179,50 @@ class _ActionTile extends StatelessWidget {
     final primaryColor = context.ispectTheme.primary?.resolve(context) ??
         context.appTheme.colorScheme.primary;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: InkWell(
-          onTap: onTap,
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Material(
+          color: Colors.transparent,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Row(
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.1),
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(icon, size: 18, color: primaryColor),
-                  ),
-                ),
-                const Gap(14),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                      color: context.appTheme.textColor,
-                      fontWeight: FontWeight.w500,
+          child: InkWell(
+            excludeFromSemantics: true,
+            onTap: onTap,
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Row(
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(icon, size: 18, color: primaryColor),
                     ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 18,
-                  color: context.appTheme.textColor.withValues(alpha: 0.3),
-                ),
-              ],
+                  const Gap(14),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                        color: context.appTheme.textColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: context.appTheme.textColor.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -157,34 +157,41 @@ class ISpectSheetActionButton extends StatelessWidget {
       child: Material(
         color: cardColor,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: InkWell(
+        child: Semantics(
+          button: true,
+          label: label,
           onTap: onPressed,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: context.appTheme.colorScheme.onSurface
-                    .withValues(alpha: 0.08),
+          child: InkWell(
+            excludeFromSemantics: true,
+            onTap: onPressed,
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: context.appTheme.colorScheme.onSurface
+                      .withValues(alpha: 0.08),
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 16, color: primaryColor),
-                  const Gap(8),
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: context.appTheme.textTheme.labelMedium?.copyWith(
-                        color: context.appTheme.textColor,
-                        fontWeight: FontWeight.w500,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 16, color: primaryColor),
+                    const Gap(8),
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: context.appTheme.textTheme.labelMedium?.copyWith(
+                          color: context.appTheme.textColor,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

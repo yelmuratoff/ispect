@@ -165,77 +165,87 @@ class _LogCardHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Material(
-        type: MaterialType.transparency,
-        child: GestureDetector(
-          onLongPressStart: (details) => showLogContextMenu(
-            context: context,
-            position: details.globalPosition,
-            data: data,
-            message: _message,
-            onShareTap: onShareTap,
-            onOpenDetail: () => LogDetailView(
-              activeData: data,
-              onClose: () => Navigator.of(context).pop(),
-              onShowRelated: onShowRelated != null
-                  ? (id) {
-                      onShowRelated!(id);
-                      Navigator.of(context).pop();
-                    }
-                  : null,
-            ).push(context),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(10),
-              bottomRight: Radius.circular(10),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        expanded: isExpanded,
+        label:
+            '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: $_message',
+        onTap: onTap,
+        child: Material(
+          type: MaterialType.transparency,
+          child: GestureDetector(
+            excludeFromSemantics: true,
+            onLongPressStart: (details) => showLogContextMenu(
+              context: context,
+              position: details.globalPosition,
+              data: data,
+              message: _message,
+              onShareTap: onShareTap,
+              onOpenDetail: () => LogDetailView(
+                activeData: data,
+                onClose: () => Navigator.of(context).pop(),
+                onShowRelated: onShowRelated != null
+                    ? (id) {
+                        onShowRelated!(id);
+                        Navigator.of(context).pop();
+                      }
+                    : null,
+              ).push(context),
             ),
-            child: ColoredBox(
-              color: isExpanded
-                  ? color.withValues(alpha: 0.08)
-                  : Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                child: CollapsedBody(
-                  icon: icon,
-                  color: color,
-                  title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
-                      data.key,
-                  dateTime: data.formattedTime,
-                  onShareTap: onShareTap,
-                  onRouteTap: data.isRouteLog && observer != null
-                      ? () => ISpectNavigationFlowScreen(
-                            observer: observer!,
-                            log: data,
-                          ).push(context)
-                      : null,
-                  onExpandTap: () => LogDetailView(
-                    activeData: data,
-                    onClose: () => Navigator.of(context).pop(),
-                    onShowRelated: onShowRelated != null
-                        ? (id) {
-                            onShowRelated!(id);
-                            Navigator.of(context).pop();
-                          }
+            child: InkWell(
+              excludeFromSemantics: true,
+              onTap: onTap,
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(10),
+                bottomRight: Radius.circular(10),
+              ),
+              child: ColoredBox(
+                color: isExpanded
+                    ? color.withValues(alpha: 0.08)
+                    : Colors.transparent,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  child: CollapsedBody(
+                    icon: icon,
+                    color: color,
+                    title:
+                        ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
+                            data.key,
+                    dateTime: data.formattedTime,
+                    onShareTap: onShareTap,
+                    onRouteTap: data.isRouteLog && observer != null
+                        ? () => ISpectNavigationFlowScreen(
+                              observer: observer!,
+                              log: data,
+                            ).push(context)
                         : null,
-                  ).push(context),
-                  message: data.textMessage,
-                  errorMessage: data.httpLogText,
-                  expanded: isExpanded,
-                  isHTTP: data.key == ISpectLogType.httpRequest.key,
-                  statusCode: data.httpStatusCode,
-                  slowDurationMs:
-                      (data.traceSlow ?? false) ? data.traceDurationMs : null,
-                  onCopyCurlTap: () {
-                    final curl = data.curlCommand;
-                    if (curl != null) {
-                      copyClipboard(context, value: curl);
-                    }
-                  },
+                    onExpandTap: () => LogDetailView(
+                      activeData: data,
+                      onClose: () => Navigator.of(context).pop(),
+                      onShowRelated: onShowRelated != null
+                          ? (id) {
+                              onShowRelated!(id);
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                    ).push(context),
+                    message: data.textMessage,
+                    errorMessage: data.httpLogText,
+                    expanded: isExpanded,
+                    isHTTP: data.key == ISpectLogType.httpRequest.key,
+                    statusCode: data.httpStatusCode,
+                    slowDurationMs:
+                        (data.traceSlow ?? false) ? data.traceDurationMs : null,
+                    onCopyCurlTap: () {
+                      final curl = data.curlCommand;
+                      if (curl != null) {
+                        copyClipboard(context, value: curl);
+                      }
+                    },
+                  ),
                 ),
               ),
             ),

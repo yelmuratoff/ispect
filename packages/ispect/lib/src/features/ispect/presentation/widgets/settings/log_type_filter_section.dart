@@ -64,16 +64,24 @@ class LogTypeFilterSection extends StatelessWidget {
                     letterSpacing: 1.2,
                   ),
                 ),
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  label: _isAllEnabled
+                      ? context.ispectL10n.deselectAll
+                      : context.ispectL10n.selectAll,
                   onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
-                  child: Text(
-                    _isAllEnabled
-                        ? context.ispectL10n.deselectAll
-                        : context.ispectL10n.selectAll,
-                    style: context.appTheme.textTheme.labelSmall?.copyWith(
-                      color: context.ispectTheme.primary?.resolve(context) ??
-                          context.appTheme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
+                  child: GestureDetector(
+                    excludeFromSemantics: true,
+                    onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
+                    child: Text(
+                      _isAllEnabled
+                          ? context.ispectL10n.deselectAll
+                          : context.ispectL10n.selectAll,
+                      style: context.appTheme.textTheme.labelSmall?.copyWith(
+                        color: context.ispectTheme.primary?.resolve(context) ??
+                            context.appTheme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -244,45 +252,52 @@ class _LogTypeChip extends StatelessWidget {
         ? typeColor
         : context.appTheme.textColor.withValues(alpha: 0.25);
 
-    Widget chip = Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onToggled,
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: isEnabled
-                ? effectiveColor?.withValues(alpha: 0.12)
-                : context.appTheme.colorScheme.onSurface
-                    .withValues(alpha: 0.04),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(
+    Widget chip = Semantics(
+      toggled: isEnabled,
+      label: logType.displayTitle,
+      onTap: onToggled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          excludeFromSemantics: true,
+          onTap: onToggled,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
               color: isEnabled
-                  ? effectiveColor?.withValues(alpha: 0.3) ?? Colors.transparent
+                  ? effectiveColor?.withValues(alpha: 0.12)
                   : context.appTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.08),
+                      .withValues(alpha: 0.04),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: Border.all(
+                color: isEnabled
+                    ? effectiveColor?.withValues(alpha: 0.3) ??
+                        Colors.transparent
+                    : context.appTheme.colorScheme.onSurface
+                        .withValues(alpha: 0.08),
+              ),
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                typeIcon,
-                size: 14,
-                color: effectiveColor,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                logType.displayTitle,
-                style: TextStyle(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  typeIcon,
+                  size: 14,
                   color: effectiveColor,
-                  fontSize: 12,
-                  fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                Text(
+                  logType.displayTitle,
+                  style: TextStyle(
+                    color: effectiveColor,
+                    fontSize: 12,
+                    fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -155,33 +155,44 @@ class _SortableColumnHeader extends StatelessWidget {
     final activeColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
 
-    Widget header = MouseRegion(
-      cursor:
-          onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: onTap != null ? () => onTap!(columnIndex) : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: labelStyle.copyWith(
-                  color: isActive ? activeColor : labelColor,
+    final sortHint = isActive
+        ? (isAscending ? 'sorted ascending' : 'sorted descending')
+        : 'not sorted';
+
+    Widget header = Semantics(
+      button: true,
+      label: 'Sort by $label, $sortHint',
+      onTap: onTap != null ? () => onTap!(columnIndex) : null,
+      child: MouseRegion(
+        cursor:
+            onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onTap: onTap != null ? () => onTap!(columnIndex) : null,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  label,
+                  style: labelStyle.copyWith(
+                    color: isActive ? activeColor : labelColor,
+                  ),
                 ),
               ),
-            ),
-            const Gap(2),
-            Icon(
-              isActive
-                  ? (isAscending
-                      ? Icons.arrow_upward_rounded
-                      : Icons.arrow_downward_rounded)
-                  : Icons.unfold_more_rounded,
-              size: 12,
-              color: isActive ? activeColor : labelColor.withValues(alpha: 0.5),
-            ),
-          ],
+              const Gap(2),
+              Icon(
+                isActive
+                    ? (isAscending
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded)
+                    : Icons.unfold_more_rounded,
+                size: 12,
+                color:
+                    isActive ? activeColor : labelColor.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -193,23 +204,27 @@ class _SortableColumnHeader extends StatelessWidget {
           children: [
             Expanded(child: header),
             if (onResize != null)
-              MouseRegion(
-                cursor: SystemMouseCursors.resizeColumn,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragUpdate: (details) =>
-                      onResize!(columnIndex, details.delta.dx),
-                  child: SizedBox(
-                    width: 12,
-                    height: 20,
-                    child: Center(
-                      child: Container(
-                        width: 2,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: labelColor.withValues(alpha: 0.3),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(1)),
+              Semantics(
+                label: 'Resize $label column',
+                slider: true,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragUpdate: (details) =>
+                        onResize!(columnIndex, details.delta.dx),
+                    child: SizedBox(
+                      width: 12,
+                      height: 20,
+                      child: Center(
+                        child: Container(
+                          width: 2,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: labelColor.withValues(alpha: 0.3),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(1)),
+                          ),
                         ),
                       ),
                     ),

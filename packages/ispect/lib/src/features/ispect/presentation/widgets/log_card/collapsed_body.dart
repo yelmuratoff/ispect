@@ -214,21 +214,27 @@ class SquareIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget button = GestureDetector(
+    Widget button = Semantics(
+      button: true,
+      label: tooltip ?? '',
       onTap: onPressed,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Icon(
-              icon,
-              size: 15,
-              color: color.withValues(alpha: 0.7),
+      child: GestureDetector(
+        excludeFromSemantics: true,
+        onTap: onPressed,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(
+                icon,
+                size: 15,
+                color: color.withValues(alpha: 0.7),
+              ),
             ),
           ),
         ),

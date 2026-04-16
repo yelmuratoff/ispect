@@ -150,69 +150,80 @@ class _JsonAttributeState extends State<JsonAttribute> {
         builder: (context, searchData) {
           final valueStyle = _valueStyle;
 
-          return MouseRegion(
-            cursor: switch (_hasInteraction) {
-              true => SystemMouseCursors.click,
-              false => MouseCursor.defer,
-            },
-            onEnter: (_) => _handleMouseEnter(),
-            onExit: (_) => _handleMouseExit(),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _hasInteraction
-                  ? () => _handleTap(context, valueStyle)
-                  : null,
-              child: RepaintBoundary(
-                child: AnimatedBuilder(
-                  animation: widget.node,
-                  builder: (context, _) => Padding(
-                    padding: _kBottomPadding,
-                    child: Row(
-                      crossAxisAlignment: widget.node.isRoot
-                          ? CrossAxisAlignment.center
-                          : CrossAxisAlignment.start,
-                      children: [
-                        SelectionContainer.disabled(
-                          child: IndentationWidget(
-                            depth: widget.node.treeDepth,
-                            indentationPadding: widget.theme.indentationPadding,
-                            color: widget.theme.indentationLineColor,
-                          ),
-                        ),
-                        _buildToggleForNode(),
-                        _buildNodeKey(
-                          context,
-                          searchData.searchTerm,
-                          searchData.hasSearchResults,
-                          searchData.focusedKeyMatchIndex,
-                        ),
-                        SizedBox(
-                          width: 8,
-                          child: KeySeparatorText(
-                            style: widget.theme.rootKeyTextStyle,
-                          ),
-                        ),
-                        _buildSuffixForValue(widget.node.value),
-                        if (widget.node.isRoot)
+          return Semantics(
+            button: _hasInteraction,
+            expanded: widget.node.isRoot && !widget.node.isCollapsed
+                ? true
+                : widget.node.isRoot
+                    ? false
+                    : null,
+            label: widget.node.key,
+            child: MouseRegion(
+              cursor: switch (_hasInteraction) {
+                true => SystemMouseCursors.click,
+                false => MouseCursor.defer,
+              },
+              onEnter: (_) => _handleMouseEnter(),
+              onExit: (_) => _handleMouseExit(),
+              child: GestureDetector(
+                excludeFromSemantics: true,
+                behavior: HitTestBehavior.opaque,
+                onTap: _hasInteraction
+                    ? () => _handleTap(context, valueStyle)
+                    : null,
+                child: RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: widget.node,
+                    builder: (context, _) => Padding(
+                      padding: _kBottomPadding,
+                      child: Row(
+                        crossAxisAlignment: widget.node.isRoot
+                            ? CrossAxisAlignment.center
+                            : CrossAxisAlignment.start,
+                        children: [
                           SelectionContainer.disabled(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 6),
-                              child: CopyButton(
-                                node: widget.node,
-                                theme: widget.theme,
-                              ),
+                            child: IndentationWidget(
+                              depth: widget.node.treeDepth,
+                              indentationPadding:
+                                  widget.theme.indentationPadding,
+                              color: widget.theme.indentationLineColor,
                             ),
                           ),
-                        _buildValueOrRootInfo(
-                          context,
-                          searchData.searchTerm,
-                          searchData.hasSearchResults,
-                          searchData.focusedValueMatchIndex,
-                          valueStyle,
-                        ),
-                        if (widget.trailingBuilder != null)
-                          widget.trailingBuilder!(context, widget.node),
-                      ],
+                          _buildToggleForNode(),
+                          _buildNodeKey(
+                            context,
+                            searchData.searchTerm,
+                            searchData.hasSearchResults,
+                            searchData.focusedKeyMatchIndex,
+                          ),
+                          SizedBox(
+                            width: 8,
+                            child: KeySeparatorText(
+                              style: widget.theme.rootKeyTextStyle,
+                            ),
+                          ),
+                          _buildSuffixForValue(widget.node.value),
+                          if (widget.node.isRoot)
+                            SelectionContainer.disabled(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: CopyButton(
+                                  node: widget.node,
+                                  theme: widget.theme,
+                                ),
+                              ),
+                            ),
+                          _buildValueOrRootInfo(
+                            context,
+                            searchData.searchTerm,
+                            searchData.hasSearchResults,
+                            searchData.focusedValueMatchIndex,
+                            valueStyle,
+                          ),
+                          if (widget.trailingBuilder != null)
+                            widget.trailingBuilder!(context, widget.node),
+                        ],
+                      ),
                     ),
                   ),
                 ),

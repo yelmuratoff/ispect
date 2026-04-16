@@ -238,32 +238,38 @@ class _AppBarTitle extends StatelessWidget {
   final String? title;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: () {
-          if (kReleaseMode) return;
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DailySessionsScreen(
-                history: ISpect.logger.fileLogHistory,
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: title ?? 'ISpect',
+        hint: 'Open session history',
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onTap: () {
+            if (kReleaseMode) return;
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => DailySessionsScreen(
+                  history: ISpect.logger.fileLogHistory,
+                ),
+                settings: const RouteSettings(name: 'ISpect Info Screen'),
               ),
-              settings: const RouteSettings(name: 'ISpect Info Screen'),
-            ),
-          );
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                title ?? '',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+            );
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  title ?? '',
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
 }

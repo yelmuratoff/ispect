@@ -258,35 +258,42 @@ class _LogTypeChip extends StatelessWidget {
     final borderColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
 
-    return GestureDetector(
+    return Semantics(
+      toggled: isSelected,
+      label: '$title ($count)',
       onTap: () => onSelected(!isSelected),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.all(
-            color: isSelected ? typeColor.withValues(alpha: 0.4) : borderColor,
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(typeIcon, size: 14, color: typeColor),
-            const Gap(6),
-            Text(
-              '$count  $title',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected
-                    ? typeColor
-                    : context.appTheme.textTheme.bodyMedium?.color,
-              ),
+      child: GestureDetector(
+        excludeFromSemantics: true,
+        onTap: () => onSelected(!isSelected),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: Border.all(
+              color:
+                  isSelected ? typeColor.withValues(alpha: 0.4) : borderColor,
             ),
-          ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(typeIcon, size: 14, color: typeColor),
+              const Gap(6),
+              Text(
+                '$count  $title',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected
+                      ? typeColor
+                      : context.appTheme.textTheme.bodyMedium?.color,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

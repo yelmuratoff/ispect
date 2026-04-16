@@ -19,20 +19,25 @@ class CopyButton extends StatelessWidget {
   final JsonExplorerTheme theme;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-        onTap: () {
-          copyClipboard(
-            context,
-            value: '${node.key}: ${JsonTruncator.pretty(node.rawValue)}',
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(2),
-          child: Icon(
-            Icons.copy_rounded,
-            size: 14,
-            color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: 'Copy ${node.key}',
+        child: InkWell(
+          excludeFromSemantics: true,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          onTap: () {
+            copyClipboard(
+              context,
+              value: '${node.key}: ${JsonTruncator.pretty(node.rawValue)}',
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: Icon(
+              Icons.copy_rounded,
+              size: 14,
+              color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
+            ),
           ),
         ),
       );
