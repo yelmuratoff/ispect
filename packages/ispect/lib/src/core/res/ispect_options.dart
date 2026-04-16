@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
+import 'package:ispect/src/common/plugins/inspector_plugin.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
@@ -61,6 +62,7 @@ final class ISpectOptions {
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
+    this.plugins = const [],
     this.logBuilder,
     this.onShare,
     this.onOpenFile,
@@ -126,6 +128,13 @@ final class ISpectOptions {
   /// - `label`: The text label displayed for the button
   /// - `onTap`: A callback function triggered when the button is tapped
   final List<DraggablePanelButtonItem> panelButtons;
+
+  /// A list of plugins that extend the inspector panel with custom screens.
+  ///
+  /// Each plugin provides an icon, title, and screen that will be added
+  /// to the draggable panel. Plugins also support lifecycle hooks
+  /// ([InspectorPlugin.onInit] and [InspectorPlugin.onDispose]).
+  final List<InspectorPlugin> plugins;
 
   /// Custom builder for log card widget. If null, uses default card.
   ///
@@ -219,6 +228,7 @@ final class ISpectOptions {
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
+    List<InspectorPlugin>? plugins,
     ISpectLogDataBuilder? logBuilder,
     ISpectShareCallback? onShare,
     ISpectOpenFileCallback? onOpenFile,
@@ -236,6 +246,7 @@ final class ISpectOptions {
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
+      plugins: plugins ?? this.plugins,
       logBuilder: logBuilder ?? this.logBuilder,
       onShare: onShare ?? this.onShare,
       onOpenFile: onOpenFile ?? this.onOpenFile,
@@ -260,6 +271,7 @@ final class ISpectOptions {
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
+        listEquals(other.plugins, plugins) &&
         other.logBuilder == logBuilder &&
         other.onShare == onShare &&
         other.onOpenFile == onOpenFile &&
@@ -282,6 +294,7 @@ final class ISpectOptions {
       _deepEquality.hash(actionItems),
       _deepEquality.hash(panelItems),
       _deepEquality.hash(panelButtons),
+      _deepEquality.hash(plugins),
       logBuilder,
       onShare,
       onOpenFile,
@@ -303,6 +316,7 @@ final class ISpectOptions {
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
+      plugins: $plugins,
       logBuilder: $logBuilder,
       onShare: $onShare,
       onOpenFile: $onOpenFile,

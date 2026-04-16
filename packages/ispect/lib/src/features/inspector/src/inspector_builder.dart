@@ -119,6 +119,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     // Apply initial settings to logger if provided
     _applyInitialSettings();
+
+    // Initialize plugins
+    for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
+      plugin.onInit();
+    }
   }
 
   /// Applies initial settings from options to the logger.
@@ -148,6 +153,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   @override
   void dispose() {
+    // Dispose plugins
+    for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
+      plugin.onDispose();
+    }
+
     _logPageController.dispose();
     if (widget.controller == null) {
       _panelController.dispose();
@@ -256,6 +266,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
               description: context.ispectL10n.zoomPickColor,
             ),
           ...options.panelItems,
+          // Plugin-generated panel items
+          for (final plugin in options.plugins)
+            DraggablePanelItem(
+              icon: plugin.icon,
+              enableBadge: plugin.enableBadge,
+              description: plugin.description ?? plugin.title,
+              onTap: (context) => _launchPluginScreen(context, plugin, options),
+            ),
         ],
         buttons: options.panelButtons,
         child: child,
@@ -276,6 +294,26 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         null => null,
       },
     );
+  }
+
+  Future<void> _launchPluginScreen(
+    BuildContext context,
+    InspectorPlugin plugin,
+    ISpectOptions options,
+  ) async {
+    final route = MaterialPageRoute<void>(
+      builder: (_) => ISpectScopeController(
+        model: model,
+        // Use Builder so that buildScreen receives a context
+        // that has ISpectScopeController as an ancestor,
+        // giving plugins access to context.iSpect, context.ispectTheme, etc.
+        child: Builder(
+          builder: (scopeContext) => plugin.buildScreen(scopeContext),
+        ),
+      ),
+      settings: RouteSettings(name: 'ISpect Plugin: ${plugin.id}'),
+    );
+    await options.push(context, route);
   }
 
   Future<void> _launchInfospect(
