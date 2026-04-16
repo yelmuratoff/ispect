@@ -17,6 +17,74 @@ import 'package:ispectify/src/utils/common_utils.dart';
 final _txnZoneKey = Object();
 
 extension ISpectTrace on ISpectLogger {
+  // ── Domain-extension shortcuts ──────────────────────────────────────
+  //
+  // These wrap [trace] / [traceAsync] with the enabled-check so that
+  // domain extensions (auth, storage, push …) don't repeat the guard.
+
+  /// Convenience wrapper: checks [options.enabled], then delegates to [trace].
+  void traceCategory({
+    required ISpectTraceCategory category,
+    required String source,
+    required String operation,
+    String? target,
+    String? key,
+    bool? success,
+    Object? error,
+    StackTrace? errorStackTrace,
+    Duration? duration,
+    Map<String, Object?>? meta,
+    ISpectTraceConfig? config,
+    String? logKey,
+    String? correlationId,
+    String? consoleMessage,
+  }) {
+    if (!options.enabled) return;
+    trace(
+      category: category,
+      source: source,
+      operation: operation,
+      target: target,
+      key: key,
+      success: success,
+      error: error,
+      errorStackTrace: errorStackTrace,
+      duration: duration,
+      meta: meta,
+      config: config,
+      logKey: logKey,
+      correlationId: correlationId,
+      consoleMessage: consoleMessage,
+    );
+  }
+
+  /// Convenience wrapper: checks [options.enabled], then delegates to
+  /// [traceAsync].
+  Future<T> traceCategoryAsync<T>({
+    required ISpectTraceCategory category,
+    required String source,
+    required String operation,
+    required Future<T> Function() run,
+    String? target,
+    Map<String, Object?>? meta,
+    Object? Function(T)? projectResult,
+    ISpectTraceConfig? config,
+    String? correlationId,
+  }) {
+    if (!options.enabled) return run();
+    return traceAsync(
+      category: category,
+      source: source,
+      operation: operation,
+      target: target,
+      meta: meta,
+      run: run,
+      projectResult: projectResult,
+      config: config,
+      correlationId: correlationId,
+    );
+  }
+
   // ── Fire-and-forget ─────────────────────────────────────────────────
 
   void trace({

@@ -16,25 +16,23 @@ extension ISpectLoggerStorage on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return run();
-    return traceAsync(
-      category: storageCategory,
-      source: source,
-      operation: operation,
-      target: path,
-      config: config,
-      correlationId: correlationId,
-      meta: {
-        if (bucket != null) 'bucket': bucket,
-        if (sizeBytes != null) 'sizeBytes': sizeBytes,
-        if (contentType != null) 'contentType': contentType,
-        ...?meta,
-      },
-      run: run,
-      projectResult: projectResult,
-    );
-  }
+  }) =>
+      traceCategoryAsync(
+        category: storageCategory,
+        source: source,
+        operation: operation,
+        target: path,
+        meta: {
+          if (bucket != null) 'bucket': bucket,
+          if (sizeBytes != null) 'sizeBytes': sizeBytes,
+          if (contentType != null) 'contentType': contentType,
+          ...?meta,
+        },
+        run: run,
+        projectResult: projectResult,
+        config: config,
+        correlationId: correlationId,
+      );
 
   void storage({
     required String source,
@@ -49,24 +47,22 @@ extension ISpectLoggerStorage on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: storageCategory,
-      source: source,
-      operation: operation,
-      target: path,
-      success: success,
-      error: error,
-      duration: duration,
-      meta: {
-        if (bucket != null) 'bucket': bucket,
-        if (sizeBytes != null) 'sizeBytes': sizeBytes,
-        if (contentType != null) 'contentType': contentType,
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: storageCategory,
+        source: source,
+        operation: operation,
+        target: path,
+        success: success,
+        error: error,
+        duration: duration,
+        meta: {
+          if (bucket != null) 'bucket': bucket,
+          if (sizeBytes != null) 'sizeBytes': sizeBytes,
+          if (contentType != null) 'contentType': contentType,
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+      );
 }

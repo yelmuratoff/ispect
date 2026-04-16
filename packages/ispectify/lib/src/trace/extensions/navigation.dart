@@ -13,21 +13,19 @@ extension ISpectLoggerNavigation on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: navigationCategory,
-      source: source,
-      operation: operation,
-      target: routeName,
-      success: true,
-      meta: {
-        if (fromRoute != null) 'from': fromRoute,
-        if (arguments != null) 'arguments': '$arguments',
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: navigationCategory,
+        source: source,
+        operation: operation,
+        target: routeName,
+        success: true,
+        meta: {
+          if (fromRoute != null) 'from': fromRoute,
+          if (arguments != null) 'arguments': '$arguments',
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+      );
 }

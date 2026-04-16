@@ -13,20 +13,18 @@ extension ISpectLoggerState on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return run();
-    return traceAsync(
-      category: stateCategory,
-      source: source,
-      operation: operation,
-      target: stateName,
-      meta: meta,
-      run: run,
-      projectResult: projectResult,
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategoryAsync(
+        category: stateCategory,
+        source: source,
+        operation: operation,
+        target: stateName,
+        meta: meta,
+        run: run,
+        projectResult: projectResult,
+        config: config,
+        correlationId: correlationId,
+      );
 
   void stateChange({
     required String source,
@@ -43,26 +41,24 @@ extension ISpectLoggerState on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: stateCategory,
-      source: source,
-      operation: operation,
-      target: stateName,
-      success: success ?? (error == null),
-      error: error,
-      errorStackTrace: errorStackTrace,
-      duration: duration,
-      meta: {
-        if (fromState != null) 'from': '$fromState',
-        if (toState != null) 'to': '$toState',
-        if (event != null) 'event': event,
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: stateCategory,
+        source: source,
+        operation: operation,
+        target: stateName,
+        success: success ?? (error == null),
+        error: error,
+        errorStackTrace: errorStackTrace,
+        duration: duration,
+        meta: {
+          if (fromState != null) 'from': '$fromState',
+          if (toState != null) 'to': '$toState',
+          if (event != null) 'event': event,
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+        consoleMessage: consoleMessage,
+      );
 }

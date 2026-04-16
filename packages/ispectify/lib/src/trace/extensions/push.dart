@@ -14,22 +14,20 @@ extension ISpectLoggerPush on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: pushCategory,
-      source: source,
-      operation: operation,
-      key: messageId,
-      meta: {
-        if (title != null) 'title': title,
-        if (topic != null) 'topic': topic,
-        if (data != null) 'data': data,
-        ...?meta,
-      },
-      config: config,
-      // Auto-correlation: use messageId if correlationId not provided.
-      correlationId: correlationId ?? messageId,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: pushCategory,
+        source: source,
+        operation: operation,
+        key: messageId,
+        meta: {
+          if (title != null) 'title': title,
+          if (topic != null) 'topic': topic,
+          if (data != null) 'data': data,
+          ...?meta,
+        },
+        config: config,
+        // Auto-correlation: use messageId if correlationId not provided.
+        correlationId: correlationId ?? messageId,
+      );
 }

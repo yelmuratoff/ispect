@@ -16,26 +16,24 @@ extension ISpectLoggerWs on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: wsCategory,
-      source: source,
-      operation: operation,
-      target: target,
-      success: error == null,
-      error: error,
-      errorStackTrace: errorStackTrace,
-      meta: {
-        if (eventType != null) 'eventType': eventType,
-        if (sizeBytes != null) 'sizeBytes': sizeBytes,
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: wsCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        success: error == null,
+        error: error,
+        errorStackTrace: errorStackTrace,
+        meta: {
+          if (eventType != null) 'eventType': eventType,
+          if (sizeBytes != null) 'sizeBytes': sizeBytes,
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+        consoleMessage: consoleMessage,
+      );
 
   void wsReceive({
     required String source,
@@ -49,24 +47,22 @@ extension ISpectLoggerWs on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: wsCategory,
-      source: source,
-      operation: operation,
-      target: target,
-      success: error == null,
-      error: error,
-      errorStackTrace: errorStackTrace,
-      meta: {
-        if (eventType != null) 'eventType': eventType,
-        if (sizeBytes != null) 'sizeBytes': sizeBytes,
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: wsCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        success: error == null,
+        error: error,
+        errorStackTrace: errorStackTrace,
+        meta: {
+          if (eventType != null) 'eventType': eventType,
+          if (sizeBytes != null) 'sizeBytes': sizeBytes,
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+        consoleMessage: consoleMessage,
+      );
 }

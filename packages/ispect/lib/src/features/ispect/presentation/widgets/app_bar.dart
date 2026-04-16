@@ -1,5 +1,7 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -60,6 +62,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
   TextEditingController get _searchController =>
       widget.controller.searchController;
   final _hasSearchText = ValueNotifier(false);
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -70,6 +73,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.removeListener(_syncSearchText);
     _hasSearchText.dispose();
     super.dispose();
@@ -188,10 +192,14 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   void _onSearchChanged(String query) {
     _hasSearchText.value = query.isNotEmpty;
-    widget.controller.updateFilterSearchQuery(query);
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      widget.controller.updateFilterSearchQuery(query);
+    });
   }
 
   void _onSearchClear() {
+    _debounce?.cancel();
     _searchController.clear();
     _hasSearchText.value = false;
     widget.controller.updateFilterSearchQuery('');
@@ -295,7 +303,7 @@ class _SearchBar extends StatelessWidget {
       focusNode: focusNode,
       controller: searchController,
       backgroundColor: WidgetStatePropertyAll(cardColor),
-      constraints: const BoxConstraints(minHeight: 45),
+      constraints: const BoxConstraints(minHeight: 48),
       shape: const WidgetStatePropertyAll(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -321,8 +329,8 @@ class _SearchBar extends StatelessWidget {
           IconButton(
             iconSize: 20,
             constraints: const BoxConstraints.tightFor(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
             ),
             padding: EdgeInsets.zero,
             onPressed: onClear,
@@ -410,17 +418,13 @@ class _NavButton extends StatelessWidget {
   final String? tooltip;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 28,
-        height: 28,
-        child: IconButton(
-          iconSize: 18,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-          onPressed: onPressed,
-          tooltip: tooltip,
-          icon: Icon(icon, color: color),
-        ),
+  Widget build(BuildContext context) => IconButton(
+        iconSize: 18,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        onPressed: onPressed,
+        tooltip: tooltip,
+        icon: Icon(icon, color: color),
       );
 }
 
@@ -445,8 +449,8 @@ class _FilterButton extends StatelessWidget {
     return Tooltip(
       message: context.ispectL10n.filters,
       child: SizedBox(
-        width: 45,
-        height: 45,
+        width: 48,
+        height: 48,
         child: Material(
           color:
               hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,

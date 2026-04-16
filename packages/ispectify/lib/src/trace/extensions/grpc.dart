@@ -16,22 +16,20 @@ extension ISpectLoggerGrpc on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return run();
-    return traceAsync(
-      category: grpcCategory,
-      source: source,
-      operation: operation,
-      target: service != null && method != null ? '$service/$method' : null,
-      meta: {
-        if (service != null) 'service': service,
-        if (method != null) 'method': method,
-        if (grpcMetadata != null) 'grpcMetadata': grpcMetadata,
-      },
-      run: run,
-      projectResult: projectResult,
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategoryAsync(
+        category: grpcCategory,
+        source: source,
+        operation: operation,
+        target: service != null && method != null ? '$service/$method' : null,
+        meta: {
+          if (service != null) 'service': service,
+          if (method != null) 'method': method,
+          if (grpcMetadata != null) 'grpcMetadata': grpcMetadata,
+        },
+        run: run,
+        projectResult: projectResult,
+        config: config,
+        correlationId: correlationId,
+      );
 }

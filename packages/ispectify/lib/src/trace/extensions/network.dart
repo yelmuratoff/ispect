@@ -13,21 +13,19 @@ extension ISpectLoggerNetwork on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: networkCategory,
-      source: source,
-      operation: operation,
-      target: target,
-      logKey: ISpectLogType.httpRequest.key,
-      success: true,
-      correlationId: correlationId,
-      config: config,
-      meta: meta,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: networkCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        logKey: ISpectLogType.httpRequest.key,
+        success: true,
+        correlationId: correlationId,
+        config: config,
+        meta: meta,
+        consoleMessage: consoleMessage,
+      );
 
   void httpResponse({
     required String source,
@@ -38,22 +36,20 @@ extension ISpectLoggerNetwork on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: networkCategory,
-      source: source,
-      operation: operation,
-      target: target,
-      logKey: ISpectLogType.httpResponse.key,
-      success: true,
-      duration: duration,
-      correlationId: correlationId,
-      config: config,
-      meta: meta,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: networkCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        logKey: ISpectLogType.httpResponse.key,
+        success: true,
+        duration: duration,
+        correlationId: correlationId,
+        config: config,
+        meta: meta,
+        consoleMessage: consoleMessage,
+      );
 
   void httpError({
     required String source,
@@ -66,22 +62,20 @@ extension ISpectLoggerNetwork on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? consoleMessage,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: networkCategory,
-      source: source,
-      operation: operation,
-      target: target,
-      logKey: ISpectLogType.httpError.key,
-      success: false,
-      error: error,
-      errorStackTrace: errorStackTrace,
-      duration: duration,
-      correlationId: correlationId,
-      config: config,
-      meta: meta,
-      consoleMessage: consoleMessage,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: networkCategory,
+        source: source,
+        operation: operation,
+        target: target,
+        logKey: ISpectLogType.httpError.key,
+        success: false,
+        error: error,
+        errorStackTrace: errorStackTrace,
+        duration: duration,
+        correlationId: correlationId,
+        config: config,
+        meta: meta,
+        consoleMessage: consoleMessage,
+      );
 }

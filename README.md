@@ -153,6 +153,21 @@ flutter build apk \
 
 ---
 
+## Security Considerations
+
+### Log file storage
+
+Exported log files (via the share or daily sessions feature) are stored as **plain-text JSON** on disk. While ISpect provides comprehensive [data redaction](#data-redaction) for network traffic (headers, URLs, bodies), **custom log messages** written via `ISpect.logger.info(...)` or similar methods are stored as-is.
+
+**Recommendations:**
+
+- **Never log PII** (emails, phone numbers, tokens, passwords) via `ISpect.logger.*` methods.
+- Review your redaction configuration to ensure sensitive headers and URL parameters are covered.
+- In production builds, ISpect is fully tree-shaken when `kISpectEnabled` is `false` (see [Production Safety](#production-safety)), so no log files are created.
+- For sensitive environments, consider clearing daily sessions regularly or disabling file logging.
+
+---
+
 ## Logger Configuration
 
 ```dart

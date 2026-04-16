@@ -217,7 +217,7 @@ class SquareIconButton extends StatelessWidget {
     Widget button = GestureDetector(
       onTap: onPressed,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.08),

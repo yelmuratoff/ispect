@@ -7,6 +7,10 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
 /// Native platform implementation for log file operations.
 ///
+/// **Security note:** Log files are stored as plain-text JSON. Avoid logging
+/// PII or sensitive data via `ISpect.logger.*` methods, as it will be written
+/// to disk without encryption.
+///
 /// - Parameters: Android, iOS, macOS, Windows, Linux support
 /// - Return: File objects for native file system operations
 /// - Usage example: `final logsFile = NativeLogsFile(); await logsFile.createFile(logs);`

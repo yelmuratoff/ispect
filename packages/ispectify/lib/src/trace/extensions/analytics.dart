@@ -10,16 +10,14 @@ extension ISpectLoggerAnalytics on ISpectLogger {
     Map<String, Object?>? parameters,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: analyticsCategory,
-      source: source,
-      operation: event,
-      meta: parameters,
-      success: true,
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: analyticsCategory,
+        source: source,
+        operation: event,
+        meta: parameters,
+        success: true,
+        config: config,
+        correlationId: correlationId,
+      );
 }

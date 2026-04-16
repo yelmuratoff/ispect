@@ -15,22 +15,20 @@ extension ISpectLoggerPayment on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return run();
-    return traceAsync(
-      category: paymentCategory,
-      source: source,
-      operation: operation,
-      target: productId,
-      meta: {
-        if (amount != null) 'amount': amount,
-        if (currency != null) 'currency': currency,
-        ...?meta,
-      },
-      run: run,
-      projectResult: projectResult,
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategoryAsync(
+        category: paymentCategory,
+        source: source,
+        operation: operation,
+        target: productId,
+        meta: {
+          if (amount != null) 'amount': amount,
+          if (currency != null) 'currency': currency,
+          ...?meta,
+        },
+        run: run,
+        projectResult: projectResult,
+        config: config,
+        correlationId: correlationId,
+      );
 }

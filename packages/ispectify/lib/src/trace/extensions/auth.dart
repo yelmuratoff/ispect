@@ -14,23 +14,21 @@ extension ISpectLoggerAuth on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return run();
-    return traceAsync(
-      category: authCategory,
-      source: source,
-      operation: operation,
-      meta: {
-        if (userId != null) 'userId': userId,
-        if (provider != null) 'provider': provider,
-        ...?meta,
-      },
-      run: run,
-      projectResult: projectResult,
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategoryAsync(
+        category: authCategory,
+        source: source,
+        operation: operation,
+        meta: {
+          if (userId != null) 'userId': userId,
+          if (provider != null) 'provider': provider,
+          ...?meta,
+        },
+        run: run,
+        projectResult: projectResult,
+        config: config,
+        correlationId: correlationId,
+      );
 
   void auth({
     required String source,
@@ -43,22 +41,20 @@ extension ISpectLoggerAuth on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: authCategory,
-      source: source,
-      operation: operation,
-      success: success,
-      error: error,
-      duration: duration,
-      meta: {
-        if (userId != null) 'userId': userId,
-        if (provider != null) 'provider': provider,
-        ...?meta,
-      },
-      config: config,
-      correlationId: correlationId,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: authCategory,
+        source: source,
+        operation: operation,
+        success: success,
+        error: error,
+        duration: duration,
+        meta: {
+          if (userId != null) 'userId': userId,
+          if (provider != null) 'provider': provider,
+          ...?meta,
+        },
+        config: config,
+        correlationId: correlationId,
+      );
 }

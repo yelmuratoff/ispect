@@ -198,7 +198,7 @@ class _JsonScreenState extends State<JsonScreen> {
                   Expanded(
                     child: SearchBar(
                       controller: _searchController,
-                      constraints: const BoxConstraints(minHeight: 42),
+                      constraints: const BoxConstraints(minHeight: 48),
                       backgroundColor: WidgetStatePropertyAll(
                         context.ispectTheme.card?.resolve(context),
                       ),
@@ -221,8 +221,8 @@ class _JsonScreenState extends State<JsonScreen> {
                           IconButton(
                             iconSize: 18,
                             constraints: const BoxConstraints.tightFor(
-                              width: 28,
-                              height: 28,
+                              width: 36,
+                              height: 36,
                             ),
                             padding: EdgeInsets.zero,
                             onPressed: _onSearchClear,

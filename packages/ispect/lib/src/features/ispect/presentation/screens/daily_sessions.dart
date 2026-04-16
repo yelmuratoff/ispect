@@ -33,6 +33,7 @@ class DailySessionsScreen extends StatefulWidget {
 
 class _DailySessionsScreenState extends State<DailySessionsScreen> {
   final List<DateTime> _dates = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -76,6 +77,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   Future<void> _loadSessions({bool isRefreshing = false}) async {
     final history = widget.history;
     if (history == null) {
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
 
@@ -85,7 +87,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
       ..addAll(availableDates.reversed);
 
     if (mounted) {
-      setState(() {});
+      setState(() => _isLoading = false);
 
       if (isRefreshing) {
         await ISpectToaster.showInfoToast(
@@ -149,23 +151,25 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
             ),
         ],
       ),
-      body: _dates.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.only(top: 16, left: 16),
-              child: EmptyLogsWidget(),
-            )
-          : ListView.builder(
-              itemCount: _dates.length,
-              itemBuilder: (context, index) {
-                final session = _dates[index];
-                return _SessionListTile(
-                  key: ObjectKey(session),
-                  session: session,
-                  history: widget.history!,
-                  onTap: () => _navigateToSession(session),
-                );
-              },
-            ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator.adaptive())
+          : _dates.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 16, left: 16),
+                  child: EmptyLogsWidget(),
+                )
+              : ListView.builder(
+                  itemCount: _dates.length,
+                  itemBuilder: (context, index) {
+                    final session = _dates[index];
+                    return _SessionListTile(
+                      key: ObjectKey(session),
+                      session: session,
+                      history: widget.history!,
+                      onTap: () => _navigateToSession(session),
+                    );
+                  },
+                ),
     );
   }
 

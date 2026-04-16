@@ -15,23 +15,21 @@ extension ISpectLoggerSSE on ISpectLogger {
     Map<String, Object?>? data,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) {
-    if (!options.enabled) return;
-    trace(
-      category: sseCategory,
-      source: source,
-      operation: operation,
-      target: url,
-      key: eventId,
-      error: error,
-      errorStackTrace: errorStackTrace,
-      success: error == null,
-      meta: {
-        if (eventType != null) 'eventType': eventType,
-        if (data != null) 'data': data,
-      },
-      correlationId: correlationId,
-      config: config,
-    );
-  }
+  }) =>
+      traceCategory(
+        category: sseCategory,
+        source: source,
+        operation: operation,
+        target: url,
+        key: eventId,
+        error: error,
+        errorStackTrace: errorStackTrace,
+        success: error == null,
+        meta: {
+          if (eventType != null) 'eventType': eventType,
+          if (data != null) 'data': data,
+        },
+        correlationId: correlationId,
+        config: config,
+      );
 }

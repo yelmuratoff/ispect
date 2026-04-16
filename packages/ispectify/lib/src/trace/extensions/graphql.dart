@@ -16,9 +16,8 @@ extension ISpectLoggerGraphQL on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return run();
     final cfg = config ?? const ISpectTraceConfig();
-    return traceAsync(
+    return traceCategoryAsync(
       category: graphqlCategory,
       source: source,
       operation: operation,
