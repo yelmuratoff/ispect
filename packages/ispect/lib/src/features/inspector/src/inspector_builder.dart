@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:inspector/inspector.dart' as pkg_inspector;
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/error_boundary.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 
@@ -102,6 +104,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final LogPageController _logPageController;
   late final DraggablePanelController _panelController;
 
+  ErrorWidgetBuilder? _originalErrorWidgetBuilder;
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +128,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
       plugin.onInit();
     }
+
+    // Override ErrorWidget.builder to show a styled fallback for ISpect routes
+    _originalErrorWidgetBuilder = ErrorWidget.builder;
+    ErrorWidget.builder = _buildErrorWidget;
   }
 
   /// Applies initial settings from options to the logger.
@@ -153,6 +161,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   @override
   void dispose() {
+    // Restore original ErrorWidget.builder
+    if (_originalErrorWidgetBuilder != null) {
+      ErrorWidget.builder = _originalErrorWidgetBuilder!;
+    }
+
     // Dispose plugins
     for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
       plugin.onDispose();
@@ -165,6 +178,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     model.dispose();
     super.dispose();
   }
+
+  Widget _buildErrorWidget(FlutterErrorDetails details) =>
+      _ISpectRenderErrorFallback(details: details);
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +324,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         // that has ISpectScopeController as an ancestor,
         // giving plugins access to context.iSpect, context.ispectTheme, etc.
         child: Builder(
-          builder: (scopeContext) => plugin.buildScreen(scopeContext),
+          builder: (scopeContext) => SafePluginScreen(
+            pluginBuilder: (ctx) => plugin.buildScreen(ctx),
+            pluginId: plugin.id,
+          ),
         ),
       ),
       settings: RouteSettings(name: 'ISpect Plugin: ${plugin.id}'),
@@ -337,5 +356,78 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         _logPageController.setInLoggerPage(isLoggerPage: false);
       }
     }
+  }
+}
+
+/// Minimal fallback widget for layout/paint errors caught by
+/// [ErrorWidget.builder] on ISpect routes.
+///
+/// Uses only base Material widgets and [Theme.of] colors to avoid
+/// recursive failures if ISpect theming is broken.
+class _ISpectRenderErrorFallback extends StatelessWidget {
+  const _ISpectRenderErrorFallback({required this.details});
+
+  final FlutterErrorDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final errorMessage = details.exceptionAsString().split('\n').first;
+
+    return Material(
+      color: colorScheme.surface,
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Render error',
+                  style: textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (kDebugMode && details.stack != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: SingleChildScrollView(
+                      child: SelectableText(
+                        details.stack.toString(),
+                        style: textTheme.bodySmall?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
