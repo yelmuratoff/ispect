@@ -89,6 +89,35 @@ class RedactionService {
         RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
       ).redact(data, keyName: keyName);
 
+  /// Like [redactHeaders], but also returns [RedactionStats] describing
+  /// what was redacted and why.
+  HeaderRedactionResult redactHeadersWithStats(
+    Map<String, Object?> headers, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
+    final walker = _createWalker(
+      RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+    );
+    final result = walker.redactHeaders(headers);
+    return HeaderRedactionResult(headers: result, stats: walker.stats);
+  }
+
+  /// Like [redact], but also returns [RedactionStats] describing
+  /// what was redacted and why.
+  RedactionResult redactWithStats(
+    Object? data, {
+    String? keyName,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
+    final walker = _createWalker(
+      RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+    );
+    final result = walker.redact(data, keyName: keyName);
+    return RedactionResult(data: result, stats: walker.stats);
+  }
+
   RedactionWalker _createWalker(RedactionRequest request) =>
       RedactionWalker(_config, request, _strategy);
 

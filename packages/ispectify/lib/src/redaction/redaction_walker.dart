@@ -5,6 +5,7 @@ import 'package:ispectify/src/redaction/constants/detection_patterns.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
+import 'package:ispectify/src/redaction/redaction_stats.dart';
 import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 
 /// Recursive tree-walker that delegates leaf redaction to [RedactionStrategy]
@@ -16,11 +17,15 @@ import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 /// `ignoreValue()` or `ignoreKey()` on the service).
 class RedactionWalker {
   RedactionWalker(this.config, this.request, this.strategy)
-      : _cachedContext = null;
+      : _cachedContext = null,
+        stats = RedactionStats();
 
   final RedactionConfig config;
   final RedactionRequest request;
   final RedactionStrategy strategy;
+
+  /// Counters populated during traversal.
+  final RedactionStats stats;
 
   RedactionContext? _cachedContext;
 
@@ -41,7 +46,10 @@ class RedactionWalker {
     required int depth,
   }) {
     if (node == null) return null;
-    if (depth >= config.maxDepth) return config.placeholder;
+    if (depth >= config.maxDepth) {
+      stats.incrementDepthLimited();
+      return config.placeholder;
+    }
 
     // Delegate leaf redaction to pluggable strategies.
     final ctx = _cachedContext ??= _createContext();
@@ -50,7 +58,10 @@ class RedactionWalker {
       keyName: keyName,
       context: ctx,
     );
-    if (strategyResult != null) return strategyResult;
+    if (strategyResult != null) {
+      _trackStrategyHit(keyName);
+      return strategyResult;
+    }
 
     // Structural traversal — strategies had no opinion, recurse into
     // containers or pass through leaf values unchanged.
@@ -77,6 +88,19 @@ class RedactionWalker {
         isLikelyBase64: _isLikelyBase64,
         isProbablyBinaryString: _isProbablyBinaryString,
       );
+
+  /// Determines whether the hit was key-based or pattern-based.
+  void _trackStrategyHit(String? keyName) {
+    if (keyName != null) {
+      final lower = keyName.toLowerCase();
+      if (config.fullyMaskedKeyNamesLower.contains(lower) ||
+          (_cachedContext?.isSensitiveKeyLower(lower) ?? false)) {
+        stats.incrementKeyBased();
+        return;
+      }
+    }
+    stats.incrementPatternBased();
+  }
 
   // ---------------------------------------------------------------------------
   // Structural traversal
