@@ -183,13 +183,13 @@ final class ISpectWSInterceptor
   bool _shouldLog(ISpectLogData log) {
     final logKey = log.key;
     if (logKey == ISpectLogType.wsSent.key) {
-      return settings.sentFilter?.call(log) ?? true;
+      return settings.shouldProcessSent(log);
     }
     if (logKey == ISpectLogType.wsReceived.key) {
-      return settings.receivedFilter?.call(log) ?? true;
+      return settings.shouldProcessReceived(log);
     }
     if (logKey == ISpectLogType.wsError.key) {
-      return settings.errorFilter?.call(log) ?? true;
+      return settings.shouldProcessError(log);
     }
     return true;
   }

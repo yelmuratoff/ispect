@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-// ignore_for_file: avoid_returning_this
+// ignore_for_file: avoid_returning_this, deprecated_member_use_from_same_package
 
 /// Base builder for network interceptor settings.
 ///
@@ -50,9 +50,16 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   AnsiPen? responsePen;
   AnsiPen? errorPen;
 
+  @Deprecated('Use requestChain instead')
   bool Function(TReq)? requestFilter;
+  @Deprecated('Use responseChain instead')
   bool Function(TRes)? responseFilter;
+  @Deprecated('Use errorChain instead')
   bool Function(TErr)? errorFilter;
+
+  NetworkFilterChain<TReq>? requestChain;
+  NetworkFilterChain<TRes>? responseChain;
+  NetworkFilterChain<TErr>? errorChain;
 
   /// Returns `this` cast to the concrete builder type for fluent chaining.
   B get _self => this as B;
@@ -197,30 +204,49 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   }
 
   // ---------------------------------------------------------------------------
-  // Filters
+  // Filters (legacy — prefer filter chains)
   // ---------------------------------------------------------------------------
 
-  /// Sets a custom request filter.
-  ///
-  /// Only requests where the filter returns `true` will be logged.
+  /// Sets a custom request filter callback.
+  @Deprecated('Use withRequestChain instead')
   B withRequestFilter(bool Function(TReq) filter) {
     requestFilter = filter;
     return _self;
   }
 
-  /// Sets a custom response filter.
-  ///
-  /// Only responses where the filter returns `true` will be logged.
+  /// Sets a custom response filter callback.
+  @Deprecated('Use withResponseChain instead')
   B withResponseFilter(bool Function(TRes) filter) {
     responseFilter = filter;
     return _self;
   }
 
-  /// Sets a custom error filter.
-  ///
-  /// Only errors where the filter returns `true` will be logged.
+  /// Sets a custom error filter callback.
+  @Deprecated('Use withErrorChain instead')
   B withErrorFilter(bool Function(TErr) filter) {
     errorFilter = filter;
+    return _self;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Filter chains
+  // ---------------------------------------------------------------------------
+
+  /// Sets a [NetworkFilterChain] for request filtering.
+  B withRequestChain(NetworkFilterChain<TReq> chain) {
+    requestChain = chain;
+    return _self;
+  }
+
+  /// Sets a [NetworkFilterChain] for response filtering.
+  B withResponseChain(NetworkFilterChain<TRes> chain) {
+    responseChain = chain;
+    return _self;
+  }
+
+  /// Sets a [NetworkFilterChain] for error filtering.
+  B withErrorChain(NetworkFilterChain<TErr> chain) {
+    errorChain = chain;
     return _self;
   }
 

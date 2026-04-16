@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
 
 /// WebSocket interceptor settings.
@@ -23,9 +24,12 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     super.errorPen,
-    this.sentFilter,
-    this.receivedFilter,
-    this.errorFilter,
+    @Deprecated('Use sentChain instead') this.sentFilter,
+    @Deprecated('Use receivedChain instead') this.receivedFilter,
+    @Deprecated('Use errorChain instead') this.errorFilter,
+    this.sentChain,
+    this.receivedChain,
+    this.errorChain,
   }) : super(
           printRequestData: printSentData,
           printRequestHeaders: printSentHeaders,
@@ -38,13 +42,43 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         );
 
   /// Filter for sent messages. Return `false` to suppress logging.
+  @Deprecated('Use sentChain instead')
   final bool Function(ISpectLogData data)? sentFilter;
 
   /// Filter for received messages. Return `false` to suppress logging.
+  @Deprecated('Use receivedChain instead')
   final bool Function(ISpectLogData data)? receivedFilter;
 
   /// Filter for error events. Return `false` to suppress logging.
+  @Deprecated('Use errorChain instead')
   final bool Function(ISpectLogData data)? errorFilter;
+
+  /// Filter chain for sent messages. Takes priority over [sentFilter].
+  final NetworkFilterChain<ISpectLogData>? sentChain;
+
+  /// Filter chain for received messages. Takes priority over [receivedFilter].
+  final NetworkFilterChain<ISpectLogData>? receivedChain;
+
+  /// Filter chain for errors. Takes priority over [errorFilter].
+  final NetworkFilterChain<ISpectLogData>? errorChain;
+
+  /// Returns `true` when the sent message should be logged.
+  bool shouldProcessSent(ISpectLogData value) {
+    if (sentChain != null) return sentChain!.apply(value);
+    return sentFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the received message should be logged.
+  bool shouldProcessReceived(ISpectLogData value) {
+    if (receivedChain != null) return receivedChain!.apply(value);
+    return receivedFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the error should be logged.
+  bool shouldProcessError(ISpectLogData value) {
+    if (errorChain != null) return errorChain!.apply(value);
+    return errorFilter?.call(value) ?? true;
+  }
 
   bool get printSentData => printRequestData;
   bool get printSentHeaders => printRequestHeaders;
@@ -89,9 +123,15 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     // Accepted for interface compatibility; has no effect on WS.
     // ignore: avoid_unused_constructor_parameters
     bool? printErrorHeaders,
+    @Deprecated('Use sentChain instead')
     bool Function(ISpectLogData data)? sentFilter,
+    @Deprecated('Use receivedChain instead')
     bool Function(ISpectLogData data)? receivedFilter,
+    @Deprecated('Use errorChain instead')
     bool Function(ISpectLogData data)? errorFilter,
+    NetworkFilterChain<ISpectLogData>? sentChain,
+    NetworkFilterChain<ISpectLogData>? receivedChain,
+    NetworkFilterChain<ISpectLogData>? errorChain,
   }) =>
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,
@@ -115,5 +155,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         sentFilter: sentFilter ?? this.sentFilter,
         receivedFilter: receivedFilter ?? this.receivedFilter,
         errorFilter: errorFilter ?? this.errorFilter,
+        sentChain: sentChain ?? this.sentChain,
+        receivedChain: receivedChain ?? this.receivedChain,
+        errorChain: errorChain ?? this.errorChain,
       );
 }

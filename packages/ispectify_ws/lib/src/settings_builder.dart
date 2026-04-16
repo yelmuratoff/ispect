@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_returning_this
+// ignore_for_file: avoid_returning_this, deprecated_member_use, deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 
@@ -27,16 +27,30 @@ class ISpectWSInterceptorSettingsBuilder
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
   /// Alias for [withRequestFilter] using WS naming convention.
+  @Deprecated('Use withSentChain instead')
   ISpectWSInterceptorSettingsBuilder withSentFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
       withRequestFilter(filter);
 
   /// Alias for [withResponseFilter] using WS naming convention.
+  @Deprecated('Use withReceivedChain instead')
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
       withResponseFilter(filter);
+
+  /// Sets a [NetworkFilterChain] for sent message filtering (WS alias).
+  ISpectWSInterceptorSettingsBuilder withSentChain(
+    NetworkFilterChain<ISpectLogData> chain,
+  ) =>
+      withRequestChain(chain);
+
+  /// Sets a [NetworkFilterChain] for received message filtering (WS alias).
+  ISpectWSInterceptorSettingsBuilder withReceivedChain(
+    NetworkFilterChain<ISpectLogData> chain,
+  ) =>
+      withResponseChain(chain);
 
   @override
   ISpectWSInterceptorSettings build() => ISpectWSInterceptorSettings(
@@ -55,5 +69,8 @@ class ISpectWSInterceptorSettingsBuilder
         sentFilter: requestFilter,
         receivedFilter: responseFilter,
         errorFilter: errorFilter,
+        sentChain: requestChain,
+        receivedChain: responseChain,
+        errorChain: errorChain,
       );
 }

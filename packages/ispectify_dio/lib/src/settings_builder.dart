@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_returning_this
+// ignore_for_file: avoid_returning_this, deprecated_member_use, deprecated_member_use_from_same_package
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/src/settings.dart';
@@ -57,5 +57,8 @@ class ISpectDioInterceptorSettingsBuilder
         requestFilter: requestFilter,
         responseFilter: responseFilter,
         errorFilter: errorFilter,
+        requestChain: requestChain,
+        responseChain: responseChain,
+        errorChain: errorChain,
       );
 }

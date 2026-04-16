@@ -54,11 +54,7 @@ class ISpectDioInterceptor extends Interceptor
     RequestInterceptorHandler handler,
   ) {
     super.onRequest(options, handler);
-    if (!shouldProcess(
-      enabled: settings.enabled,
-      filter: settings.requestFilter,
-      value: options,
-    )) {
+    if (!settings.enabled || !settings.shouldProcessRequest(options)) {
       return;
     }
 
@@ -105,11 +101,7 @@ class ISpectDioInterceptor extends Interceptor
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
-    if (!shouldProcess(
-      enabled: settings.enabled,
-      filter: settings.responseFilter,
-      value: response,
-    )) {
+    if (!settings.enabled || !settings.shouldProcessResponse(response)) {
       return;
     }
 
@@ -164,11 +156,7 @@ class ISpectDioInterceptor extends Interceptor
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
-    if (!shouldProcess(
-      enabled: settings.enabled,
-      filter: settings.errorFilter,
-      value: err,
-    )) {
+    if (!settings.enabled || !settings.shouldProcessError(err)) {
       return;
     }
 

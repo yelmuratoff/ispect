@@ -49,11 +49,7 @@ class ISpectHttpInterceptor extends InterceptorContract
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
-    if (!shouldProcess(
-      enabled: settings.enabled,
-      filter: settings.requestFilter,
-      value: request,
-    )) {
+    if (!settings.enabled || !settings.shouldProcessRequest(request)) {
       return request;
     }
 
@@ -102,20 +98,11 @@ class ISpectHttpInterceptor extends InterceptorContract
     final isErrorResponse =
         response.statusCode >= 400 && response.statusCode < 600;
 
-    if (!isErrorResponse &&
-        !shouldProcess(
-          enabled: settings.enabled,
-          filter: settings.responseFilter,
-          value: response,
-        )) {
+    if (!settings.enabled) return response;
+    if (!isErrorResponse && !settings.shouldProcessResponse(response)) {
       return response;
     }
-    if (isErrorResponse &&
-        !shouldProcess(
-          enabled: settings.enabled,
-          filter: settings.errorFilter,
-          value: response,
-        )) {
+    if (isErrorResponse && !settings.shouldProcessError(response)) {
       return response;
     }
 
