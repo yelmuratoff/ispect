@@ -1,0 +1,202 @@
+import 'package:flutter/material.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
+
+class ISpectSearchBar extends StatelessWidget {
+  const ISpectSearchBar({
+    required this.focusNode,
+    required this.searchController,
+    required this.hasSearchText,
+    required this.isHighlightMode,
+    required this.focusedMatchPosition,
+    required this.searchMatchCount,
+    required this.onChanged,
+    required this.onClear,
+    required this.onNextMatch,
+    required this.onPreviousMatch,
+    super.key,
+  });
+
+  final FocusNode focusNode;
+  final TextEditingController searchController;
+  final bool hasSearchText;
+  final bool isHighlightMode;
+  final int focusedMatchPosition;
+  final int searchMatchCount;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+  final VoidCallback onNextMatch;
+  final VoidCallback onPreviousMatch;
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = context.ispectTheme.card?.resolve(context);
+
+    return SearchBar(
+      focusNode: focusNode,
+      controller: searchController,
+      backgroundColor: WidgetStatePropertyAll(cardColor),
+      constraints: const BoxConstraints(minHeight: 48),
+      shape: const WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+      ),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Icon(
+          Icons.search_rounded,
+          size: 22,
+          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
+      ),
+      trailing: [
+        if (isHighlightMode && hasSearchText)
+          _SearchMatchNavigation(
+            focusedPosition: focusedMatchPosition,
+            totalMatches: searchMatchCount,
+            onNext: onNextMatch,
+            onPrevious: onPreviousMatch,
+          )
+        else if (hasSearchText)
+          IconButton(
+            iconSize: 20,
+            constraints: const BoxConstraints.tightFor(
+              width: 36,
+              height: 36,
+            ),
+            padding: EdgeInsets.zero,
+            onPressed: onClear,
+            tooltip: context.ispectL10n.clearSearch,
+            icon: Icon(
+              Icons.close_rounded,
+              color:
+                  context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          )
+        else if (context.screenSize.isDesktop)
+          const _SearchShortcutBadge(),
+      ],
+      hintText: context.ispectL10n.search,
+      onChanged: onChanged,
+      elevation: const WidgetStatePropertyAll(0),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inline search match navigation: [▲] 1/5 [▼]
+// ---------------------------------------------------------------------------
+
+class _SearchMatchNavigation extends StatelessWidget {
+  const _SearchMatchNavigation({
+    required this.focusedPosition,
+    required this.totalMatches,
+    required this.onNext,
+    required this.onPrevious,
+  });
+
+  final int focusedPosition;
+  final int totalMatches;
+  final VoidCallback onNext;
+  final VoidCallback onPrevious;
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = context.appTheme.colorScheme.primary;
+    final mutedColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.3);
+    final hasMatches = totalMatches > 0;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _NavButton(
+          icon: Icons.keyboard_arrow_up_rounded,
+          onPressed: hasMatches ? onPrevious : null,
+          color: hasMatches ? primaryColor : mutedColor,
+          tooltip: context.ispectL10n.previousMatch,
+        ),
+        Text(
+          hasMatches ? '$focusedPosition/$totalMatches' : '0/0',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: hasMatches ? primaryColor : mutedColor,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        _NavButton(
+          icon: Icons.keyboard_arrow_down_rounded,
+          onPressed: hasMatches ? onNext : null,
+          color: hasMatches ? primaryColor : mutedColor,
+          tooltip: context.ispectL10n.nextMatch,
+        ),
+      ],
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  const _NavButton({
+    required this.icon,
+    required this.onPressed,
+    required this.color,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final Color color;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        iconSize: 18,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        onPressed: onPressed,
+        tooltip: tooltip,
+        icon: Icon(icon, color: color),
+      );
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard shortcut badge (desktop only)
+// ---------------------------------------------------------------------------
+
+class _SearchShortcutBadge extends StatelessWidget {
+  const _SearchShortcutBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final isApple = Theme.of(context).platform == TargetPlatform.macOS;
+    final label = isApple ? '\u2318K' : 'Ctrl+K';
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: onSurface.withValues(alpha: 0.05),
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          border: Border.all(
+            color: onSurface.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: onSurface.withValues(alpha: 0.35),
+              fontFamily: 'monospace',
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
