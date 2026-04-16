@@ -964,4 +964,22 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String logsFileSaved(String path) {
     return '파일 저장됨: $path';
   }
+
+  @override
+  String get back => '뒤로';
+
+  @override
+  String get close => '닫기';
+
+  @override
+  String get clearSearch => '검색 지우기';
+
+  @override
+  String get previousMatch => '이전 일치';
+
+  @override
+  String get nextMatch => '다음 일치';
+
+  @override
+  String get moreOptions => '더보기';
 }

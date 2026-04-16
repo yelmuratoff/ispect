@@ -1008,4 +1008,22 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String logsFileSaved(String path) {
     return 'Fichier enregistré : $path';
   }
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get clearSearch => 'Effacer la recherche';
+
+  @override
+  String get previousMatch => 'Correspondance précédente';
+
+  @override
+  String get nextMatch => 'Correspondance suivante';
+
+  @override
+  String get moreOptions => 'Plus d\'options';
 }

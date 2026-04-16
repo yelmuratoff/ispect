@@ -96,6 +96,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
           pinned: true,
           leading: IconButton(
             onPressed: () => context.iSpect.options.pop(context),
+            tooltip: context.ispectL10n.back,
             icon: const Icon(Icons.arrow_back_rounded),
           ),
           scrolledUnderElevation: 0,
@@ -325,6 +326,7 @@ class _SearchBar extends StatelessWidget {
             ),
             padding: EdgeInsets.zero,
             onPressed: onClear,
+            tooltip: context.ispectL10n.clearSearch,
             icon: Icon(
               Icons.close_rounded,
               color:
@@ -372,6 +374,7 @@ class _SearchMatchNavigation extends StatelessWidget {
           icon: Icons.keyboard_arrow_up_rounded,
           onPressed: hasMatches ? onPrevious : null,
           color: hasMatches ? primaryColor : mutedColor,
+          tooltip: context.ispectL10n.previousMatch,
         ),
         Text(
           hasMatches ? '$focusedPosition/$totalMatches' : '0/0',
@@ -386,6 +389,7 @@ class _SearchMatchNavigation extends StatelessWidget {
           icon: Icons.keyboard_arrow_down_rounded,
           onPressed: hasMatches ? onNext : null,
           color: hasMatches ? primaryColor : mutedColor,
+          tooltip: context.ispectL10n.nextMatch,
         ),
       ],
     );
@@ -397,11 +401,13 @@ class _NavButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.color,
+    this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback? onPressed;
   final Color color;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -412,6 +418,7 @@ class _NavButton extends StatelessWidget {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints.tightFor(width: 28, height: 28),
           onPressed: onPressed,
+          tooltip: tooltip,
           icon: Icon(icon, color: color),
         ),
       );

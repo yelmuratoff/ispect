@@ -120,6 +120,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
+          tooltip: context.ispectL10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         actionsPadding: const EdgeInsets.only(right: 12),

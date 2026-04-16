@@ -298,5 +298,11 @@
    "includeSensitiveData": "تضمين البيانات الحساسة",
    "correlationIdCopied": "تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة.",
    "downloadLogsFile": "تحميل ملف السجلات",
-   "logsFileSaved": "تم حفظ الملف: {path}"
+   "logsFileSaved": "تم حفظ الملف: {path}",
+   "back": "رجوع",
+   "close": "إغلاق",
+   "clearSearch": "مسح البحث",
+   "previousMatch": "التطابق السابق",
+   "nextMatch": "التطابق التالي",
+   "moreOptions": "المزيد"
 }

@@ -65,6 +65,7 @@ class ISpectBottomSheetHeader extends StatelessWidget {
           ),
           IconButton(
             onPressed: onClose ?? () => Navigator.pop(context),
+            tooltip: context.ispectL10n.close,
             style: IconButton.styleFrom(
               backgroundColor: context.appTheme.colorScheme.onSurface
                   .withValues(alpha: 0.06),

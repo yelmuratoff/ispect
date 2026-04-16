@@ -298,5 +298,11 @@
    "includeSensitiveData": "Incluir datos sensibles",
    "correlationIdCopied": "ID copiado. Pégalo en la búsqueda para filtrar logs relacionados.",
    "downloadLogsFile": "Descargar archivo de logs",
-   "logsFileSaved": "Archivo guardado: {path}"
+   "logsFileSaved": "Archivo guardado: {path}",
+   "back": "Volver",
+   "close": "Cerrar",
+   "clearSearch": "Borrar búsqueda",
+   "previousMatch": "Coincidencia anterior",
+   "nextMatch": "Siguiente coincidencia",
+   "moreOptions": "Más opciones"
 }

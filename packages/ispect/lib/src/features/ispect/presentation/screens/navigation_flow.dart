@@ -60,6 +60,7 @@ class _ISpectNavigationFlowScreenState
               context.appTheme.scaffoldBackgroundColor,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
+            tooltip: context.ispectL10n.back,
             icon: const Icon(Icons.arrow_back_rounded),
           ),
           actionsPadding: const EdgeInsets.only(right: 12),
@@ -68,6 +69,7 @@ class _ISpectNavigationFlowScreenState
               icon: const Icon(
                 Icons.more_horiz_rounded,
               ),
+              tooltip: context.ispectL10n.moreOptions,
               onPressed: () {
                 ISpectNavigationFlowActionsSheet(
                   items: _items,

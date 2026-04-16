@@ -298,5 +298,11 @@
    "includeSensitiveData": "민감한 데이터 포함",
    "correlationIdCopied": "ID가 복사되었습니다. 검색에 붙여넣어 관련 로그를 필터링하세요.",
    "downloadLogsFile": "로그 파일 다운로드",
-   "logsFileSaved": "파일 저장됨: {path}"
+   "logsFileSaved": "파일 저장됨: {path}",
+   "back": "뒤로",
+   "close": "닫기",
+   "clearSearch": "검색 지우기",
+   "previousMatch": "이전 일치",
+   "nextMatch": "다음 일치",
+   "moreOptions": "더보기"
 }

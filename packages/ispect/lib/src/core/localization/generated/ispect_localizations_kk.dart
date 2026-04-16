@@ -988,4 +988,22 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String logsFileSaved(String path) {
     return 'Файл сақталды: $path';
   }
+
+  @override
+  String get back => 'Артқа';
+
+  @override
+  String get close => 'Жабу';
+
+  @override
+  String get clearSearch => 'Іздеуді тазалау';
+
+  @override
+  String get previousMatch => 'Алдыңғы сәйкестік';
+
+  @override
+  String get nextMatch => 'Келесі сәйкестік';
+
+  @override
+  String get moreOptions => 'Қосымша';
 }

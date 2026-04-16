@@ -298,5 +298,11 @@
    "includeSensitiveData": "機密データを含める",
    "correlationIdCopied": "IDをコピーしました。検索に貼り付けて関連ログをフィルタリングできます。",
    "downloadLogsFile": "ログファイルをダウンロード",
-   "logsFileSaved": "ファイル保存先: {path}"
+   "logsFileSaved": "ファイル保存先: {path}",
+   "back": "戻る",
+   "close": "閉じる",
+   "clearSearch": "検索をクリア",
+   "previousMatch": "前の一致",
+   "nextMatch": "次の一致",
+   "moreOptions": "その他"
 }

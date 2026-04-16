@@ -298,5 +298,11 @@
    "includeSensitiveData": "包含敏感数据",
    "correlationIdCopied": "ID已复制。粘贴到搜索栏中以筛选相关日志。",
    "downloadLogsFile": "下载日志文件",
-   "logsFileSaved": "文件已保存: {path}"
+   "logsFileSaved": "文件已保存: {path}",
+   "back": "返回",
+   "close": "关闭",
+   "clearSearch": "清除搜索",
+   "previousMatch": "上一个匹配",
+   "nextMatch": "下一个匹配",
+   "moreOptions": "更多选项"
 }

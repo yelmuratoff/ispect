@@ -93,6 +93,7 @@ class NavigationTransitionCard extends StatelessWidget {
       SquareIconButton(
         icon: Icons.more_horiz_rounded,
         color: theme.colorScheme.primary,
+        tooltip: context.ispectL10n.moreOptions,
         onPressed: () {
           ISpectNavigationFlowActionsSheet(
             items: items,

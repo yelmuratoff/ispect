@@ -964,4 +964,22 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String logsFileSaved(String path) {
     return '文件已保存: $path';
   }
+
+  @override
+  String get back => '返回';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get clearSearch => '清除搜索';
+
+  @override
+  String get previousMatch => '上一个匹配';
+
+  @override
+  String get nextMatch => '下一个匹配';
+
+  @override
+  String get moreOptions => '更多选项';
 }

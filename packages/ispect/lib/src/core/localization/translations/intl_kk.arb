@@ -298,5 +298,11 @@
    "includeSensitiveData": "Құпия деректерді қосу",
    "correlationIdCopied": "ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз.",
    "downloadLogsFile": "Лог файлын жүктеу",
-   "logsFileSaved": "Файл сақталды: {path}"
+   "logsFileSaved": "Файл сақталды: {path}",
+   "back": "Артқа",
+   "close": "Жабу",
+   "clearSearch": "Іздеуді тазалау",
+   "previousMatch": "Алдыңғы сәйкестік",
+   "nextMatch": "Келесі сәйкестік",
+   "moreOptions": "Қосымша"
 }

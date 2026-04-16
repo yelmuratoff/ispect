@@ -326,5 +326,11 @@
             "type": "String"
          }
       }
-   }
+   },
+   "back": "Back",
+   "close": "Close",
+   "clearSearch": "Clear search",
+   "previousMatch": "Previous match",
+   "nextMatch": "Next match",
+   "moreOptions": "More options"
 }

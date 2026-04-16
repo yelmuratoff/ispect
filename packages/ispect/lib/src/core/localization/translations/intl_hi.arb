@@ -298,5 +298,11 @@
    "includeSensitiveData": "संवेदनशील डेटा शामिल करें",
    "correlationIdCopied": "ID कॉपी किया गया। संबंधित लॉग फ़िल्टर करने के लिए इसे खोज में पेस्ट करें।",
    "downloadLogsFile": "लॉग फ़ाइल डाउनलोड करें",
-   "logsFileSaved": "फ़ाइल सहेजी गई: {path}"
+   "logsFileSaved": "फ़ाइल सहेजी गई: {path}",
+   "back": "वापस",
+   "close": "बंद करें",
+   "clearSearch": "खोज साफ़ करें",
+   "previousMatch": "पिछला मिलान",
+   "nextMatch": "अगला मिलान",
+   "moreOptions": "और विकल्प"
 }

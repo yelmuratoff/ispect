@@ -125,6 +125,7 @@ class _JsonScreenState extends State<JsonScreen> {
         backgroundColor: bgColor ?? context.appTheme.scaffoldBackgroundColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: context.ispectL10n.back,
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
         ),
         title: Row(
@@ -225,6 +226,7 @@ class _JsonScreenState extends State<JsonScreen> {
                             ),
                             padding: EdgeInsets.zero,
                             onPressed: _onSearchClear,
+                            tooltip: context.ispectL10n.clearSearch,
                             icon: Icon(
                               Icons.close_rounded,
                               color: context.appTheme.colorScheme.onSurface
