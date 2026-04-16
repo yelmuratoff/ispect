@@ -5,7 +5,11 @@ import 'package:ispectify_http/src/settings.dart';
 
 /// HTTP client interceptor that logs requests/responses via the trace API.
 class ISpectHttpInterceptor extends InterceptorContract
-    with BaseNetworkInterceptor {
+    with
+        NetworkLoggerMixin,
+        NetworkRedactionMixin,
+        NetworkConfigurationMixin,
+        BaseNetworkInterceptor {
   ISpectHttpInterceptor({
     ISpectLogger? logger,
     ISpectHttpInterceptorSettings settings =

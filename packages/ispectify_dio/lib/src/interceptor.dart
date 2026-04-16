@@ -4,7 +4,12 @@ import 'package:ispectify_dio/src/data/_data.dart';
 import 'package:ispectify_dio/src/settings.dart';
 
 /// Dio HTTP client interceptor that logs requests/responses via the trace API.
-class ISpectDioInterceptor extends Interceptor with BaseNetworkInterceptor {
+class ISpectDioInterceptor extends Interceptor
+    with
+        NetworkLoggerMixin,
+        NetworkRedactionMixin,
+        NetworkConfigurationMixin,
+        BaseNetworkInterceptor {
   ISpectDioInterceptor({
     ISpectLogger? logger,
     ISpectDioInterceptorSettings settings =

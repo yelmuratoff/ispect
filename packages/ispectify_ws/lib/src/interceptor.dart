@@ -5,7 +5,7 @@ import 'package:ws/ws.dart';
 
 /// WebSocket interceptor that logs events via the trace API.
 final class ISpectWSInterceptor
-    with BaseNetworkInterceptor
+    with NetworkLoggerMixin, NetworkRedactionMixin
     implements WSInterceptor {
   ISpectWSInterceptor({
     required ISpectLogger logger,
@@ -124,7 +124,7 @@ final class ISpectWSInterceptor
           operation: operation,
           target: url,
           correlationId: _connectionId,
-          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: traceMeta,
           consoleMessage: consoleMsg,
         );
@@ -134,7 +134,7 @@ final class ISpectWSInterceptor
           operation: operation,
           target: url,
           correlationId: _connectionId,
-          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: traceMeta,
           consoleMessage: consoleMsg,
         );
@@ -149,7 +149,7 @@ final class ISpectWSInterceptor
           error: e,
           errorStackTrace: s,
           correlationId: _connectionId,
-          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: errMeta,
         );
       } else {
@@ -160,7 +160,7 @@ final class ISpectWSInterceptor
           error: e,
           errorStackTrace: s,
           correlationId: _connectionId,
-          config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: errMeta,
         );
       }
