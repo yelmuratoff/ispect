@@ -55,6 +55,14 @@ jobs:
           name: coverage-dart-${{ matrix.package }}
           path: packages/${{ matrix.package }}/coverage/
 
+      - name: Upload to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          directory: packages/${{ matrix.package }}/coverage/
+          flags: ${{ matrix.package }}
+          fail_ci_if_error: false
+
   # Flutter packages
   test-flutter:
     name: "Test Flutter packages"
@@ -101,3 +109,11 @@ jobs:
         with:
           name: coverage-flutter-${{ matrix.package }}
           path: packages/${{ matrix.package }}/coverage/
+
+      - name: Upload to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          directory: packages/${{ matrix.package }}/coverage/
+          flags: ${{ matrix.package }}
+          fail_ci_if_error: false

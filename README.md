@@ -11,6 +11,9 @@
     <a href="https://github.com/yelmuratoff/ispect">
       <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=for-the-badge&logo=github&labelColor=0360a9&color=2ab7f6" alt="GitHub stars">
     </a>
+    <a href="https://codecov.io/gh/yelmuratoff/ispect">
+      <img src="https://img.shields.io/codecov/c/github/yelmuratoff/ispect?style=for-the-badge&logo=codecov&labelColor=0360a9&color=2ab7f6" alt="Coverage">
+    </a>
   </p>
 
   <p>
