@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Manages active log selection and detail panel state.
-mixin SelectionMixin on ChangeNotifier {
+class SelectionController extends ChangeNotifier {
   ISpectLogData? _activeData;
   ISpectLogData? _detailData;
 

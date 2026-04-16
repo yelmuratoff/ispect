@@ -5,8 +5,10 @@ import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Manages search highlighting state and navigation (desktop).
-mixin SearchHighlightMixin on ChangeNotifier {
-  FilterManager get filterManager;
+class SearchHighlightController extends ChangeNotifier {
+  SearchHighlightController({required this.filterManager});
+
+  final FilterManager filterManager;
 
   final searchController = TextEditingController();
 
@@ -127,7 +129,9 @@ mixin SearchHighlightMixin on ChangeNotifier {
   List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) =>
       filterManager.findSearchMatches(logsData);
 
-  void disposeSearch() {
+  @override
+  void dispose() {
     searchController.dispose();
+    super.dispose();
   }
 }

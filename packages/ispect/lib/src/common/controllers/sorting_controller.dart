@@ -3,12 +3,19 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Manages desktop column sorting state.
-mixin SortingMixin on ChangeNotifier {
+class SortingController extends ChangeNotifier {
+  SortingController({required ValueGetter<bool> isLogOrderReversed})
+      : _isLogOrderReversed = isLogOrderReversed;
+
+  final ValueGetter<bool> _isLogOrderReversed;
+
   LogSortColumn _sortColumn = LogSortColumn.time;
   LogSortDirection _sortDirection = LogSortDirection.descending;
 
   LogSortColumn get sortColumn => _sortColumn;
   LogSortDirection get sortDirection => _sortDirection;
+
+  bool get isLogOrderReversed => _isLogOrderReversed();
 
   void toggleSort(LogSortColumn column) {
     if (_sortColumn == column) {
@@ -45,8 +52,6 @@ mixin SortingMixin on ChangeNotifier {
     }
     return sorted;
   }
-
-  bool get isLogOrderReversed;
 
   ({ISpectLogData entry, int actualIndex})? getLogEntryAtIndex(
     List<ISpectLogData> filteredEntries,

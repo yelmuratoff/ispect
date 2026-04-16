@@ -2,14 +2,17 @@ import 'package:flutter/foundation.dart';
 
 /// Manages display toggle states: expand/collapse, order, grouping,
 /// and timestamp format.
-mixin DisplayTogglesMixin on ChangeNotifier {
+class DisplayController extends ChangeNotifier {
   bool _expandedLogs = true;
   bool _isLogOrderReversed = true;
   bool _groupHttpLogs = true;
   bool _useRelativeTime = false;
 
-  /// Sets the initial value for [groupHttpLogs].
-  set initialGroupHttpLogs(bool value) => _groupHttpLogs = value;
+  /// Sets the initial value for [groupHttpLogs] before listeners attach.
+  // ignore: use_setters_to_change_properties
+  void setInitialGroupHttpLogs({required bool value}) {
+    _groupHttpLogs = value;
+  }
 
   bool get expandedLogs => _expandedLogs;
 

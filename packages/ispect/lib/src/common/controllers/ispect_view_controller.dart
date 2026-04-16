@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/mixins/data_operations_mixin.dart';
-import 'package:ispect/src/common/controllers/mixins/display_toggles_mixin.dart';
-import 'package:ispect/src/common/controllers/mixins/search_highlight_mixin.dart';
-import 'package:ispect/src/common/controllers/mixins/selection_mixin.dart';
-import 'package:ispect/src/common/controllers/mixins/sorting_mixin.dart';
+import 'package:ispect/src/common/controllers/display_controller.dart';
+import 'package:ispect/src/common/controllers/search_highlight_controller.dart';
+import 'package:ispect/src/common/controllers/selection_controller.dart';
+import 'package:ispect/src/common/controllers/sorting_controller.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/managers/settings_manager.dart';
 import 'package:ispect/src/common/services/log_export_service.dart';
@@ -37,45 +36,171 @@ enum SearchMatchState {
   focused,
 }
 
-class ISpectViewController extends ChangeNotifier
-    with
-        SelectionMixin,
-        SearchHighlightMixin,
-        SortingMixin,
-        DisplayTogglesMixin,
-        DataOperationsMixin {
+/// Facade over focused controllers, unified via [Listenable.merge].
+///
+/// Each domain concern lives in its own [ChangeNotifier]:
+/// - [SelectionController] — active/detail log selection
+/// - [SearchHighlightController] — search match state and navigation
+/// - [SortingController] — column sort state
+/// - [DisplayController] — expand/collapse, order, grouping, timestamps
+///
+/// Consumers that need all updates use the facade directly as a [Listenable].
+/// Consumers that care about a single concern can listen to the specific
+/// sub-controller via [selection], [search], [sorting], or [display].
+class ISpectViewController implements Listenable {
   ISpectViewController({
     ISpectShareCallback? onShare,
     ISpectSettingsState? initialSettings,
     bool groupHttpLogs = true,
   })  : _exportService = LogExportService(onShare: onShare),
         _importService = const LogImportService() {
-    initialGroupHttpLogs = groupHttpLogs;
-    _settingsManager = SettingsManager(
-      initialSettings: initialSettings,
-      onChanged: notifyListeners,
-    );
+    _display = DisplayController()
+      ..setInitialGroupHttpLogs(value: groupHttpLogs);
+
     _filterManager = FilterManager(
       initialFilter: ISpectFilter(),
-      onChanged: notifyListeners,
+      onChanged: _onSubNotify,
     );
+    _settingsManager = SettingsManager(
+      initialSettings: initialSettings,
+      onChanged: _onSubNotify,
+    );
+
+    _selection = SelectionController();
+    _search = SearchHighlightController(filterManager: _filterManager);
+    _sorting = SortingController(
+      isLogOrderReversed: () => _display.isLogOrderReversed,
+    );
+
+    _merged = Listenable.merge([
+      _selection,
+      _search,
+      _sorting,
+      _display,
+      _pipelineNotifier,
+    ]);
   }
+
+  // --- Sub-controllers (exposed for targeted listening) ---
+
+  late final SelectionController _selection;
+  late final SearchHighlightController _search;
+  late final SortingController _sorting;
+  late final DisplayController _display;
+
+  /// Active/detail log selection.
+  SelectionController get selection => _selection;
+
+  /// Search match state and navigation.
+  SearchHighlightController get search => _search;
+
+  /// Column sort state.
+  SortingController get sorting => _sorting;
+
+  /// Display toggles (expand, order, grouping, timestamps).
+  DisplayController get display => _display;
+
+  // --- Internal dependencies ---
 
   late final FilterManager _filterManager;
   late final SettingsManager _settingsManager;
   final LogExportService _exportService;
   final LogImportService _importService;
 
-  // --- Mixin dependencies ---
+  /// Notifier for filter/settings pipeline changes (no own state).
+  final _pipelineNotifier = _SignalNotifier();
+  late final Listenable _merged;
+
+  void _onSubNotify() => _pipelineNotifier.notify();
+
+  // --- Listenable (merged) ---
 
   @override
-  FilterManager get filterManager => _filterManager;
+  void addListener(VoidCallback listener) => _merged.addListener(listener);
 
   @override
-  LogExportService get exportService => _exportService;
+  void removeListener(VoidCallback listener) =>
+      _merged.removeListener(listener);
 
-  @override
-  LogImportService get importService => _importService;
+  // --- Selection delegation ---
+
+  ISpectLogData? get activeData => _selection.activeData;
+  set activeData(ISpectLogData? data) => _selection.activeData = data;
+
+  ISpectLogData? get detailData => _selection.detailData;
+  set detailData(ISpectLogData? data) => _selection.detailData = data;
+
+  void selectLog(ISpectLogData entry) => _selection.selectLog(entry);
+
+  void openLogDetail(ISpectLogData entry) => _selection.openLogDetail(entry);
+
+  void selectAndFollowDetail(ISpectLogData entry) =>
+      _selection.selectAndFollowDetail(entry);
+
+  void closeDetail() => _selection.closeDetail();
+
+  void handleLogItemTap(ISpectLogData logEntry) =>
+      _selection.handleLogItemTap(logEntry);
+
+  // --- Search delegation ---
+
+  TextEditingController get searchController => _search.searchController;
+  SearchMode get searchMode => _search.searchMode;
+  set searchMode(SearchMode mode) => _search.searchMode = mode;
+
+  List<int> get searchMatchIds => _search.searchMatchIds;
+  Set<int> get searchMatchIdSet => _search.searchMatchIdSet;
+  int get focusedMatchIndex => _search.focusedMatchIndex;
+  int get focusedMatchPosition => _search.focusedMatchPosition;
+  int get searchMatchCount => _search.searchMatchCount;
+  bool get hasSearchMatches => _search.hasSearchMatches;
+  int get focusedMatchId => _search.focusedMatchId;
+
+  void updateSearchMatches(List<ISpectLogData> matches) =>
+      _search.updateSearchMatches(matches);
+
+  SearchMatchState matchStateFor(ISpectLogData logEntry) =>
+      _search.matchStateFor(logEntry);
+
+  SearchMatchState matchStateForTransaction(NetworkTransaction tx) =>
+      _search.matchStateForTransaction(tx);
+
+  void focusNextMatch() => _search.focusNextMatch();
+  void focusPreviousMatch() => _search.focusPreviousMatch();
+
+  List<ISpectLogData> findSearchMatches(List<ISpectLogData> logsData) =>
+      _search.findSearchMatches(logsData);
+
+  // --- Sorting delegation ---
+
+  LogSortColumn get sortColumn => _sorting.sortColumn;
+  LogSortDirection get sortDirection => _sorting.sortDirection;
+  bool get isLogOrderReversed => _display.isLogOrderReversed;
+
+  void toggleSort(LogSortColumn column) => _sorting.toggleSort(column);
+
+  List<ISpectLogData> applySorting(List<ISpectLogData> entries) =>
+      _sorting.applySorting(entries);
+
+  ({ISpectLogData entry, int actualIndex})? getLogEntryAtIndex(
+    List<ISpectLogData> filteredEntries,
+    int index,
+  ) =>
+      _sorting.getLogEntryAtIndex(filteredEntries, index);
+
+  // --- Display delegation ---
+
+  bool get expandedLogs => _display.expandedLogs;
+  set expandedLogs(bool value) => _display.expandedLogs = value;
+
+  void toggleExpandedLogs() => _display.toggleExpandedLogs();
+  void toggleLogOrder() => _display.toggleLogOrder();
+
+  bool get groupHttpLogs => _display.groupHttpLogs;
+  void toggleGroupHttpLogs() => _display.toggleGroupHttpLogs();
+
+  bool get useRelativeTime => _display.useRelativeTime;
+  void toggleTimestampFormat() => _display.toggleTimestampFormat();
 
   // --- Settings ---
 
@@ -86,9 +211,7 @@ class ISpectViewController extends ChangeNotifier
 
   // --- Filter delegation ---
 
-  @override
   ISpectFilter get filter => _filterManager.filter;
-
   set filter(ISpectFilter val) => _filterManager.filter = val;
 
   void updateFilterSearchQuery(String query) =>
@@ -100,7 +223,6 @@ class ISpectViewController extends ChangeNotifier
   }
 
   void addFilterType(Type type) => _filterManager.addFilterType(type);
-
   void removeFilterType(Type type) => _filterManager.removeFilterType(type);
 
   void addLogTypeKeyFilter(String key) =>
@@ -116,7 +238,6 @@ class ISpectViewController extends ChangeNotifier
 
   void clearAllFilters() => _filterManager.clearAllFilters();
 
-  @override
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) =>
       _filterManager.applyCurrentFilters(logsData);
 
@@ -135,14 +256,101 @@ class ISpectViewController extends ChangeNotifier
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
 
+  // --- Data operations (stateless delegation) ---
+
+  Future<void> downloadLogsFile(String logs) async =>
+      _exportService.downloadLogsFile(logs);
+
+  void copyLogEntryText(
+    BuildContext context,
+    ISpectLogData logEntry,
+    void Function(BuildContext, {required String value}) copyClipboard,
+  ) {
+    final text = logEntry.toJson(truncated: true).toString();
+    copyClipboard(context, value: text);
+  }
+
+  void copyAllLogsToClipboard(
+    BuildContext context,
+    List<ISpectLogData> logs,
+    void Function(
+      BuildContext, {
+      required String value,
+      String? title,
+      bool? showValue,
+    }) copyClipboard,
+    String title,
+  ) {
+    final logsText =
+        logs.map((log) => log.toJson(truncated: true).toString()).join('\n');
+
+    copyClipboard(
+      context,
+      value: logsText,
+      title: title,
+      showValue: false,
+    );
+  }
+
+  void clearLogsHistory(VoidCallback clearHistory) {
+    clearHistory();
+    _pipelineNotifier.notify();
+  }
+
+  Future<String> downloadLogsToDevice(
+    List<ISpectLogData> logs, {
+    String fileType = 'json',
+    Set<String>? redactKeys,
+  }) async {
+    final filteredLogs = applyCurrentFilters(logs);
+    return _exportService.saveFilteredLogsToDevice(
+      logs,
+      filteredLogs,
+      filter,
+      fileType: fileType,
+      redactKeys: redactKeys,
+    );
+  }
+
+  Future<void> shareLogsAsFile(
+    List<ISpectLogData> logs, {
+    String fileType = 'json',
+    Set<String>? redactKeys,
+  }) async {
+    final filteredLogs = applyCurrentFilters(logs);
+    await _exportService.shareFilteredLogsAsFile(
+      logs,
+      filteredLogs,
+      filter,
+      fileType: fileType,
+      redactKeys: redactKeys,
+    );
+  }
+
+  Future<void> shareAllLogsAsJsonFile(List<ISpectLogData> logs) async =>
+      _exportService.shareAllLogsAsJsonFile(logs);
+
+  Future<List<ISpectLogData>> importLogsFromJson(String jsonContent) async =>
+      _importService.importLogsFromJson(jsonContent);
+
+  bool validateLogsJsonContent(String jsonContent) =>
+      _importService.validateLogsJsonContent(jsonContent);
+
   // --- Lifecycle ---
 
-  void update() => notifyListeners();
+  void update() => _pipelineNotifier.notify();
 
-  @override
   void dispose() {
-    disposeSearch();
+    _search.dispose();
+    _selection.dispose();
+    _sorting.dispose();
+    _display.dispose();
+    _pipelineNotifier.dispose();
     _filterManager.dispose();
-    super.dispose();
   }
+}
+
+/// Lightweight notifier for pipeline events (filter/settings changes).
+class _SignalNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
 }
