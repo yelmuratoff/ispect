@@ -142,7 +142,7 @@ String _buildErrorText({
 /// Extracts shared fields and constructor logic. The common metadata fields
 /// (`method`, `url`, `path`) are auto-included — subclasses only provide
 /// their specific extra entries via [extraMetadata].
-abstract class BaseNetworkLog extends ISpectLogData {
+abstract base class BaseNetworkLog extends ISpectLogData {
   BaseNetworkLog(
     super.message, {
     required this.method,
@@ -190,7 +190,7 @@ abstract class BaseNetworkLog extends ISpectLogData {
   String get textMessage => _textMessage;
 }
 
-class NetworkRequestLog extends BaseNetworkLog {
+base class NetworkRequestLog extends BaseNetworkLog {
   NetworkRequestLog(
     super.message, {
     required super.method,
@@ -227,7 +227,7 @@ class NetworkRequestLog extends BaseNetworkLog {
   final Object? body;
 }
 
-class NetworkResponseLog extends BaseNetworkLog {
+base class NetworkResponseLog extends BaseNetworkLog {
   NetworkResponseLog(
     super.message, {
     required super.method,
@@ -282,7 +282,7 @@ class NetworkResponseLog extends BaseNetworkLog {
   final Object? responseBody;
 }
 
-class NetworkErrorLog extends BaseNetworkLog {
+base class NetworkErrorLog extends BaseNetworkLog {
   NetworkErrorLog(
     super.message, {
     required super.method,

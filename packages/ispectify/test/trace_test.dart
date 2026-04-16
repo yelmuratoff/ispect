@@ -329,7 +329,7 @@ void main() {
     test('trace field getters return correct values', () {
       final log = ISpectLogData(
         'test',
-        additionalData: {
+        additionalData: const {
           TraceKeys.category: 'network',
           TraceKeys.source: 'dio',
           TraceKeys.operation: 'GET',
@@ -353,7 +353,7 @@ void main() {
     test('defensive getters return null on wrong types', () {
       final log = ISpectLogData(
         'test',
-        additionalData: {
+        additionalData: const {
           TraceKeys.meta: 'not a map',
           TraceKeys.durationMs: 'not int',
           TraceKeys.category: 123,
@@ -368,7 +368,7 @@ void main() {
     test('paymentAmount handles int as double', () {
       final log = ISpectLogData(
         'test',
-        additionalData: {
+        additionalData: const {
           TraceKeys.meta: <String, dynamic>{'amount': 100},
         },
       );
@@ -389,11 +389,11 @@ void main() {
       final filter = const CategoryFilter({'network'});
       final match = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.category: 'network'},
+        additionalData: const {TraceKeys.category: 'network'},
       );
       final noMatch = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.category: 'db'},
+        additionalData: const {TraceKeys.category: 'db'},
       );
       final missing = ISpectLogData('test');
 
@@ -406,7 +406,7 @@ void main() {
       final filter = const SourceFilter({'dio'});
       final match = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.source: 'dio'},
+        additionalData: const {TraceKeys.source: 'dio'},
       );
       expect(filter.apply(match), isTrue);
     });
@@ -415,11 +415,11 @@ void main() {
       final filter = const CorrelationFilter('abc');
       final match = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.correlationId: 'abc'},
+        additionalData: const {TraceKeys.correlationId: 'abc'},
       );
       final noMatch = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.correlationId: 'xyz'},
+        additionalData: const {TraceKeys.correlationId: 'xyz'},
       );
       expect(filter.apply(match), isTrue);
       expect(filter.apply(noMatch), isFalse);
@@ -429,7 +429,7 @@ void main() {
       final filter = const TransactionFilter('txn-1');
       final match = ISpectLogData(
         'test',
-        additionalData: {TraceKeys.transactionId: 'txn-1'},
+        additionalData: const {TraceKeys.transactionId: 'txn-1'},
       );
       expect(filter.apply(match), isTrue);
     });
@@ -578,7 +578,7 @@ void main() {
       final log = ISpectLogData(
         'test message',
         key: 'info',
-        additionalData: {
+        additionalData: const {
           TraceKeys.category: 'general',
           TraceKeys.source: 'app',
         },

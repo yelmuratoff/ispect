@@ -20,7 +20,7 @@ void main() {
           time: DateTime(2025, 1, 1, 12),
           logLevel: LogLevel.info,
           key: 'test_key_1',
-          additionalData: {'testData': 'value1'},
+          additionalData: const {'testData': 'value1'},
         ),
         ISpectLogData(
           'Test log message 2',
@@ -28,7 +28,7 @@ void main() {
           logLevel: LogLevel.error,
           key: 'test_key_2',
           exception: Exception('Test exception'),
-          additionalData: {'errorCode': 500},
+          additionalData: const {'errorCode': 500},
         ),
         ISpectLogData(
           'Test log message 3',
@@ -197,7 +197,7 @@ void main() {
         time: DateTime(2025, 1, 1, 15, 30, 45),
         logLevel: LogLevel.warning,
         key: 'complex_key',
-        additionalData: {
+        additionalData: const {
           'string': 'test string',
           'number': 42,
           'boolean': true,

@@ -48,7 +48,8 @@ final class ISpect {
   }
 
   /// Disposes current ISpect state (useful for testing or hot restart).
-  static void dispose() {
+  static Future<void> dispose() async {
+    await _logger?.dispose();
     _isInitialized = false;
     _logger = null;
     _errorHandler = null;

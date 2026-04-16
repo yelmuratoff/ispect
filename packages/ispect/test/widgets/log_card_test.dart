@@ -140,7 +140,7 @@ void main() {
           'GET /api/users',
           key: 'http-request',
           time: DateTime(2024, 1, 1, 12),
-          additionalData: {
+          additionalData: const {
             'meta': {'statusCode': 200},
           },
         );

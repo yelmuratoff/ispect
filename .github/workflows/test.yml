@@ -46,7 +46,14 @@ jobs:
       - name: Run tests
         run: |
           cd packages/${{ matrix.package }}
-          dart test
+          dart test --coverage=coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-dart-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/coverage/
 
   # Flutter packages
   test-flutter:
@@ -86,4 +93,11 @@ jobs:
       - name: Run tests
         run: |
           cd packages/${{ matrix.package }}
-          flutter test
+          flutter test --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-flutter-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/coverage/

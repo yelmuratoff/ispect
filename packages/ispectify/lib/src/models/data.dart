@@ -1,10 +1,14 @@
-// ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
+import 'package:meta/meta.dart';
 
 /// Core log entry model. All fields are immutable after construction.
-class ISpectLogData {
+///
+/// Uses `base` modifier to prevent external `implements` while allowing
+/// subclasses like [ISpectLogError], [ISpectLogException], [BaseNetworkLog].
+@immutable
+base class ISpectLogData {
   ISpectLogData(
     Object? message, {
     DateTime? time,

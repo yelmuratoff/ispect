@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
 
-class ISpectLogException extends ISpectLogData {
+base class ISpectLogException extends ISpectLogData {
   ISpectLogException(
     Exception exception, {
     String? message,

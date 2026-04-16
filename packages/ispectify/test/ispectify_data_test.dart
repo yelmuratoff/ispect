@@ -22,7 +22,7 @@ void main() {
         'Test message',
         logLevel: LogLevel.info,
         key: 'test-key',
-        additionalData: {
+        additionalData: const {
           'key1': 'value1',
           'key2': {'nested': 'value2'},
         },
@@ -44,7 +44,7 @@ void main() {
     test('copyWith() preserves additionalData when no parameters provided', () {
       final originalData = ISpectLogData(
         'Test message',
-        additionalData: {
+        additionalData: const {
           'key1': 'value1',
           'key2': {'nested': 'value2'},
         },
@@ -58,7 +58,7 @@ void main() {
     test('copyWith() allows overriding additionalData', () {
       final originalData = ISpectLogData(
         'Test message',
-        additionalData: {'original': 'data'},
+        additionalData: const {'original': 'data'},
       );
 
       final newAdditionalData = {'new': 'data'};
@@ -78,7 +78,7 @@ void main() {
       final originalData = ISpectLogData(
         'Original message',
         key: 'original-key',
-        additionalData: {'important': 'metadata'},
+        additionalData: const {'important': 'metadata'},
       );
 
       final copiedData = originalData.copyWith(
@@ -100,7 +100,7 @@ void main() {
       final data = ISpectLogData(
         'Test request',
         key: 'http-request',
-        additionalData: {
+        additionalData: const {
           'method': 'POST',
           'uri': 'https://example.com/api',
           'headers': {'Content-Type': 'application/json'},
@@ -119,7 +119,7 @@ void main() {
       final data = ISpectLogData(
         'Response received',
         key: 'http-response',
-        additionalData: {
+        additionalData: const {
           'request-options': {
             'method': 'POST',
             'uri': 'https://example.com/api',
@@ -140,7 +140,7 @@ void main() {
       final data = ISpectLogData(
         'Request failed',
         key: 'http-error',
-        additionalData: {
+        additionalData: const {
           'request-options': {
             'method': 'GET',
             'uri': 'https://example.com/fail',
