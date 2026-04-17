@@ -17,8 +17,10 @@ final class ISpect {
 
   /// Returns the global logger instance.
   ///
-  /// When `kISpectEnabled` is `false`, returns a default logger.
-  /// All logging methods are no-ops due to internal checks in `_processLog()`.
+  /// When `kISpectEnabled` is `true`, requires prior [initialize]; otherwise
+  /// throws [StateError]. When disabled, lazily creates a default logger on
+  /// first access so call-sites built before [run] don't crash — all logging
+  /// methods are no-ops in this mode.
   static ISpectLogger get logger {
     if (!_isInitialized) {
       if (!kISpectEnabled) {

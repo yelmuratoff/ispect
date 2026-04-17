@@ -97,20 +97,19 @@ base class ISpectLogData {
         other.key == key &&
         other.message == message &&
         other.logLevel == logLevel &&
-        other.pen == pen &&
         _deepEquality.equals(other.additionalData, additionalData) &&
         other.exception == exception &&
         other.error == error &&
         other.stackTrace == stackTrace;
   }
 
+  // [pen] excluded: presentation (console color), not content.
   @override
   int get hashCode => Object.hash(
         time,
         key,
         message,
         logLevel,
-        pen,
         _deepEquality.hash(additionalData),
         exception,
         error,
