@@ -4,6 +4,7 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
+import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
@@ -240,7 +241,9 @@ class _LogCardHeader extends StatelessWidget {
                     slowDurationMs:
                         (data.traceSlow ?? false) ? data.traceDurationMs : null,
                     onCopyCurlTap: () {
-                      final curl = data.curlCommand;
+                      final curl = data.curlCommandWith(
+                        redactor: defaultCurlRedactor,
+                      );
                       if (curl != null) {
                         copyClipboard(context, value: curl);
                       }

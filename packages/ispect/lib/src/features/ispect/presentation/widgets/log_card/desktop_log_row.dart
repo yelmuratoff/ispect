@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
@@ -628,12 +629,13 @@ class _DesktopRowActions extends StatelessWidget {
             tooltip: context.ispectL10n.share,
             onPressed: onShareTap,
           ),
-          if (data.curlCommand != null)
+          if (data.curlCommandWith(redactor: defaultCurlRedactor)
+              case final curl?)
             _DesktopActionIcon(
               icon: Icons.terminal_rounded,
               color: color,
               tooltip: context.ispectL10n.copyAsCurl,
-              onPressed: () => copyClipboard(context, value: data.curlCommand!),
+              onPressed: () => copyClipboard(context, value: curl),
             ),
           _DesktopActionIcon(
             icon: Icons.open_in_full_rounded,

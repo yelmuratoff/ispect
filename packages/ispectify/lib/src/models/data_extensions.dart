@@ -80,15 +80,22 @@ StackTrace: $stackTraceText]''';
   bool get isRouteLog => key == ISpectLogType.route.key;
 
   /// Generates a cURL command for HTTP logs, or `null` for non-HTTP entries.
-  String? get curlCommand {
+  ///
+  /// **Headers and body are NOT redacted.** Prefer [curlCommandWith] and
+  /// pass a [RedactionService] when the result is exposed to users.
+  String? get curlCommand => curlCommandWith();
+
+  /// Like [curlCommand], but routes headers and body through [redactor]
+  /// when one is provided.
+  String? curlCommandWith({RedactionService? redactor}) {
     if (key == ISpectLogType.httpRequest.key) {
-      return CurlUtils.generateCurl(additionalData);
+      return CurlUtils.generateCurl(additionalData, redactor: redactor);
     } else if (key == ISpectLogType.httpResponse.key ||
         key == ISpectLogType.httpError.key) {
       final requestOptions =
           additionalData?['request-options'] as Map<String, dynamic>?;
       return requestOptions != null
-          ? CurlUtils.generateCurl(requestOptions)
+          ? CurlUtils.generateCurl(requestOptions, redactor: redactor)
           : null;
     }
     return null;

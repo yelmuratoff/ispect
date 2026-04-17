@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -52,7 +53,7 @@ Future<void> showLogContextMenu({
     case LogContextAction.share:
       onShareTap?.call();
     case LogContextAction.copyCurl:
-      final curl = data.curlCommand;
+      final curl = data.curlCommandWith(redactor: defaultCurlRedactor);
       if (curl != null) copyClipboard(context, value: curl);
     case LogContextAction.openDetail:
       onOpenDetail?.call();

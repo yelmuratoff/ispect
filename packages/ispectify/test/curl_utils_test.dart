@@ -96,5 +96,86 @@ void main() {
       expect(curl!.contains('rm -rf'), isTrue);
       expect(curl.contains('" ;'), isFalse);
     });
+
+    group('redactor', () {
+      test('redacts Authorization header when redactor is provided', () {
+        final data = {
+          'method': 'POST',
+          'uri': 'https://api.example.com/v1/me',
+          'headers': {
+            'Authorization': 'Bearer s3cret-token-value',
+            'Content-Type': 'application/json',
+          },
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        expect(curl, isNot(contains('s3cret-token-value')));
+        expect(curl, isNot(contains('Bearer s3cret-token-value')));
+        // Non-sensitive headers survive untouched.
+        expect(curl, contains("-H 'Content-Type: application/json'"));
+      });
+
+      test('redacts Cookie and X-API-Key headers', () {
+        final data = {
+          'method': 'GET',
+          'uri': 'https://api.example.com',
+          'headers': {
+            'Cookie': 'session=abc123; refresh=def456',
+            'X-API-Key': 'live_pk_aaaaaaaa',
+          },
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        expect(curl, isNot(contains('abc123')));
+        expect(curl, isNot(contains('def456')));
+        expect(curl, isNot(contains('live_pk_aaaaaaaa')));
+      });
+
+      test('redacts sensitive keys in JSON body', () {
+        final data = {
+          'method': 'POST',
+          'uri': 'https://api.example.com/login',
+          'headers': <String, Object?>{},
+          'data': {'locale': 'en_US', 'password': 'p@ssw0rd!'},
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        expect(curl, isNot(contains('p@ssw0rd!')));
+        // Non-sensitive payload values pass through unchanged.
+        expect(curl, contains('en_US'));
+      });
+
+      test('passes raw headers and body through when redactor is null', () {
+        final data = {
+          'method': 'POST',
+          'uri': 'https://api.example.com',
+          'headers': {'Authorization': 'Bearer raw-token'},
+          'data': '{"password":"raw"}',
+        };
+        final curl = CurlUtils.generateCurl(data);
+        expect(curl, contains('Bearer raw-token'));
+        expect(curl, contains('"password":"raw"'));
+      });
+
+      test('preserves shell-escape after redaction', () {
+        final data = {
+          'method': 'POST',
+          'uri': 'https://example.com',
+          'headers': {
+            'X-Custom': 'value"; rm -rf / #',
+            'Authorization': 'Bearer secret',
+          },
+          'data': "it's a test",
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        // Single quotes in values still escaped as '\''
+        expect(curl, contains(r"it'\''s a test"));
+        // Sensitive header masked, non-sensitive escaped safely
+        expect(curl, isNot(contains('Bearer secret')));
+        expect(curl!.contains('rm -rf'), isTrue);
+        expect(curl.contains('" ;'), isFalse);
+      });
+    });
   });
 }

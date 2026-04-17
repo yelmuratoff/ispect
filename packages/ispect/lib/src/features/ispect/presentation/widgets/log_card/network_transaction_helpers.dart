@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/share_sheet.dart';
@@ -95,6 +96,8 @@ List<Widget> buildActionWidgets({
   final l10n = ISpectLocalization.of(context);
   final widgets = <Widget>[];
 
+  final redactedCurl =
+      tx.request.curlCommandWith(redactor: defaultCurlRedactor);
   if (useDesktopStyle) {
     widgets.add(
       SmallActionIcon(
@@ -104,15 +107,14 @@ List<Widget> buildActionWidgets({
         onPressed: () => shareTransaction(context, tx),
       ),
     );
-    if (tx.request.curlCommand != null) {
+    if (redactedCurl != null) {
       widgets.addAll([
         const Gap(4),
         SmallActionIcon(
           icon: Icons.terminal_rounded,
           color: color,
           tooltip: l10n.copyAsCurl,
-          onPressed: () =>
-              copyClipboard(context, value: tx.request.curlCommand!),
+          onPressed: () => copyClipboard(context, value: redactedCurl),
         ),
       ]);
     }
@@ -125,15 +127,14 @@ List<Widget> buildActionWidgets({
         onPressed: () => shareTransaction(context, tx),
       ),
     );
-    if (tx.request.curlCommand != null) {
+    if (redactedCurl != null) {
       widgets.addAll([
         const Gap(4),
         SquareIconButton(
           icon: Icons.terminal_rounded,
           color: color,
           tooltip: l10n.copyAsCurl,
-          onPressed: () =>
-              copyClipboard(context, value: tx.request.curlCommand!),
+          onPressed: () => copyClipboard(context, value: redactedCurl),
         ),
       ]);
     }
