@@ -4,7 +4,12 @@ import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 import 'package:ispectify/src/trace/trace_helpers.dart';
 
+/// Trace helpers for GraphQL queries, mutations, and subscriptions.
 extension ISpectLoggerGraphQL on ISpectLogger {
+  /// Traces an async GraphQL operation under [graphqlCategory].
+  ///
+  /// Captures [operationName], [document] (truncated per config), and
+  /// [variables] in meta; awaits [run] and records duration / result.
   Future<T> graphqlTrace<T>({
     required String source,
     required String operation,

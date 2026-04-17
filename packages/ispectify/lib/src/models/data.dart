@@ -6,7 +6,8 @@ import 'package:meta/meta.dart';
 /// Core log entry model. All fields are immutable after construction.
 ///
 /// Uses `base` modifier to prevent external `implements` while allowing
-/// subclasses like [ISpectLogError], [ISpectLogException], [BaseNetworkLog].
+/// subclasses like [ISpectLogError], [ISpectLogException], and network log
+/// types from interceptor packages.
 @immutable
 base class ISpectLogData {
   ISpectLogData(

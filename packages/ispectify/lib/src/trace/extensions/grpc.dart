@@ -3,7 +3,10 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for gRPC calls.
 extension ISpectLoggerGrpc on ISpectLogger {
+  /// Traces an async gRPC call under [grpcCategory].
+  ///
   /// For unary and server-streaming gRPC calls.
   /// For client-streaming / bidi-streaming, use `traceStream()` directly.
   Future<T> grpcTrace<T>({

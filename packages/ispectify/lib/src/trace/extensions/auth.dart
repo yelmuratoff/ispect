@@ -3,7 +3,12 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for authentication flows (sign-in, sign-out, refresh, etc.).
 extension ISpectLoggerAuth on ISpectLogger {
+  /// Traces an async auth operation under [authCategory].
+  ///
+  /// Awaits [run], records duration, and logs success or failure with
+  /// `userId`/`provider` captured in meta.
   Future<T> authTrace<T>({
     required String source,
     required String operation,
@@ -30,6 +35,11 @@ extension ISpectLoggerAuth on ISpectLogger {
         correlationId: correlationId,
       );
 
+  /// Logs a one-shot auth event without awaiting a future.
+  ///
+  /// Use when the operation isn't structured as a `Future` (e.g. logging an
+  /// already-completed result, emitting a breadcrumb, or recording failure
+  /// from a callback).
   void auth({
     required String source,
     required String operation,

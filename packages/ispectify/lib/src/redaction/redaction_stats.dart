@@ -1,9 +1,8 @@
-/// Lightweight counters tracking what a single [RedactionWalker] traversal
-/// redacted.
+/// Lightweight counters tracking what a single redaction traversal redacted.
 ///
 /// Useful for debugging ("why is my field hidden?") and observability.
-/// Each [RedactionWalker] instance owns one [RedactionStats] that is
-/// populated during traversal and exposed via [RedactionResult].
+/// Each traversal owns one [RedactionStats] that is populated during the walk
+/// and exposed via [RedactionResult] or [HeaderRedactionResult].
 class RedactionStats {
   int _keyBased = 0;
   int _patternBased = 0;

@@ -4,7 +4,13 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for raw HTTP request / response / error events.
+///
+/// These are typically emitted by interceptor packages (ispectify_dio,
+/// ispectify_http) — call them directly only when instrumenting a custom HTTP
+/// client.
 extension ISpectLoggerNetwork on ISpectLogger {
+  /// Logs an outgoing HTTP request under [networkCategory].
   void httpRequest({
     required String source,
     required String operation,
@@ -27,6 +33,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
         consoleMessage: consoleMessage,
       );
 
+  /// Logs an HTTP response (2xx/3xx) under [networkCategory].
   void httpResponse({
     required String source,
     required String operation,
@@ -51,6 +58,7 @@ extension ISpectLoggerNetwork on ISpectLogger {
         consoleMessage: consoleMessage,
       );
 
+  /// Logs an HTTP error (4xx/5xx or transport failure) under [networkCategory].
   void httpError({
     required String source,
     required String operation,

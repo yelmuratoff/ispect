@@ -12,6 +12,26 @@ export 'package:ispectify/src/redaction/constants/key_defaults.dart';
 /// (by default [KeyBasedRedaction] + [PatternBasedRedaction] via
 /// [CompositeRedactionStrategy]). The internal walker only handles structural
 /// traversal of Maps and Lists with depth limiting.
+///
+/// Example:
+/// ```dart
+/// final redactor = RedactionService(
+///   sensitiveKeys: {'authorization', 'password', 'token'},
+///   placeholder: '***',
+/// );
+///
+/// final headers = redactor.redactHeaders({
+///   'authorization': 'Bearer abc123',
+///   'content-type': 'application/json',
+/// });
+/// // {authorization: ***, content-type: application/json}
+///
+/// final body = redactor.redact({
+///   'user': 'alice',
+///   'password': 'p@ss',
+/// });
+/// // {user: alice, password: ***}
+/// ```
 class RedactionService {
   RedactionService({
     Set<String>? sensitiveKeys,
@@ -235,7 +255,8 @@ class RedactionService {
   // ---------------------------------------------------------------------------
 
   /// Redacts URL credentials and query params with sensitive keys in a target
-  /// string. Used by [trace()] pipeline for auto-redaction of target field.
+  /// string. Used by the `trace()` pipeline for auto-redaction of the target
+  /// field.
   static String redactTarget(String target, Set<String> redactKeys) {
     // 1. URL credentials: ://user:pass@host → ://***:***@host
     var result = target.replaceAllMapped(

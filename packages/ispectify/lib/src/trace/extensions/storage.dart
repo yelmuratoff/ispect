@@ -3,7 +3,13 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for object-storage / file-storage operations
+/// (S3, Firebase Storage, local fs, etc.).
 extension ISpectLoggerStorage on ISpectLogger {
+  /// Traces an async storage operation under [storageCategory].
+  ///
+  /// [path] becomes the log target; [bucket], [sizeBytes], and [contentType]
+  /// are stored in meta.
   Future<T> storageTrace<T>({
     required String source,
     required String operation,
@@ -34,6 +40,7 @@ extension ISpectLoggerStorage on ISpectLogger {
         correlationId: correlationId,
       );
 
+  /// Logs a one-shot storage event without awaiting a future.
   void storage({
     required String source,
     required String operation,

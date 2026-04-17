@@ -3,7 +3,11 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for payment and in-app purchase flows.
 extension ISpectLoggerPayment on ISpectLogger {
+  /// Traces an async payment operation under [paymentCategory].
+  ///
+  /// [productId] becomes the log target; [amount] and [currency] go to meta.
   Future<T> paymentTrace<T>({
     required String source,
     required String operation,

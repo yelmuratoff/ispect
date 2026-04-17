@@ -39,6 +39,10 @@ class ISpectBaseLogger {
   final LoggerOutput _output;
   final ILoggerFilter? _filter;
 
+  /// Formats [msg] and writes it through the configured output.
+  ///
+  /// No-ops when [ConsoleSettings.enabled] is `false`, [level] is below
+  /// [ConsoleSettings.level], or the configured [ILoggerFilter] rejects it.
   void log(
     Object? msg, {
     LogLevel? level,
@@ -71,13 +75,25 @@ class ISpectBaseLogger {
     );
   }
 
+  /// Shorthand for `log(msg, level: LogLevel.critical)`.
   void critical(Object? msg) => log(msg, level: LogLevel.critical);
+
+  /// Shorthand for `log(msg, level: LogLevel.error)`.
   void error(Object? msg) => log(msg, level: LogLevel.error);
+
+  /// Shorthand for `log(msg, level: LogLevel.warning)`.
   void warning(Object? msg) => log(msg, level: LogLevel.warning);
+
+  /// Shorthand for `log(msg, level: LogLevel.debug)`.
   void debug(Object? msg) => log(msg, level: LogLevel.debug);
+
+  /// Shorthand for `log(msg, level: LogLevel.verbose)`.
   void verbose(Object? msg) => log(msg, level: LogLevel.verbose);
+
+  /// Shorthand for `log(msg, level: LogLevel.info)`.
   void info(Object? msg) => log(msg, level: LogLevel.info);
 
+  /// Returns a new logger with selected fields replaced.
   ISpectBaseLogger copyWith({
     ConsoleSettings? settings,
     ILoggerFormatter? formatter,

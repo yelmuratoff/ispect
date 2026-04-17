@@ -22,7 +22,7 @@ extension ISpectTrace on ISpectLogger {
   // These wrap [trace] / [traceAsync] with the enabled-check so that
   // domain extensions (auth, storage, push …) don't repeat the guard.
 
-  /// Convenience wrapper: checks [options.enabled], then delegates to [trace].
+  /// Convenience wrapper: checks `options.enabled`, then delegates to [trace].
   void traceCategory({
     required ISpectTraceCategory category,
     required String source,
@@ -58,7 +58,7 @@ extension ISpectTrace on ISpectLogger {
     );
   }
 
-  /// Convenience wrapper: checks [options.enabled], then delegates to
+  /// Convenience wrapper: checks `options.enabled`, then delegates to
   /// [traceAsync].
   Future<T> traceCategoryAsync<T>({
     required ISpectTraceCategory category,

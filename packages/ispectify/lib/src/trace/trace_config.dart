@@ -6,6 +6,25 @@ import 'package:meta/meta.dart';
 ///
 /// Subclasses (e.g. `ISpectDbConfig`) must override [copyWith] to preserve
 /// their additional fields.
+///
+/// Example:
+/// ```dart
+/// // Log all errors, sample 10% of successes, redact sensitive keys,
+/// // and mark operations slower than 500ms as "slow".
+/// const cfg = ISpectTraceConfig(
+///   sampleRate: 0.1,
+///   errorSampleRate: 1.0,
+///   redact: true,
+///   slowThreshold: Duration(milliseconds: 500),
+///   attachStackOnError: true,
+/// );
+///
+/// await logger.authTrace(
+///   operation: 'login',
+///   config: cfg,
+///   () => authService.signIn(email, password),
+/// );
+/// ```
 @immutable
 class ISpectTraceConfig {
   const ISpectTraceConfig({

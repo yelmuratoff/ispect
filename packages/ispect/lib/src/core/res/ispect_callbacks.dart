@@ -6,10 +6,21 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispectify/ispectify.dart';
 
+/// Invoked when the user shares logs from the inspector panel.
+///
+/// Implementations typically hand [request] to `share_plus` or a platform
+/// share sheet.
 typedef ISpectShareCallback = Future<void> Function(ISpectShareRequest request);
 
+/// Invoked when the user taps an exported log file path in the viewer.
+///
+/// Implementations typically open the file with `open_file` or similar.
 typedef ISpectOpenFileCallback = Future<void> Function(String path);
 
+/// Invoked when the log viewer needs to load log content from an external
+/// source (file picker, clipboard, URL, etc.).
+///
+/// Return the raw log content as a string, or `null` if the user cancelled.
 typedef ISpectLoadLogContentCallback = Future<String?> Function(
   BuildContext context,
 );
@@ -40,6 +51,7 @@ typedef ISpectSettingsChangedCallback = void Function(
 /// Can be serialized to JSON for persistence and restored on app restart.
 @immutable
 final class ISpectSettingsState {
+  /// Creates a snapshot of the current ISpect settings.
   const ISpectSettingsState({
     required this.enabled,
     required this.useConsoleLogs,
@@ -77,7 +89,8 @@ final class ISpectSettingsState {
         'disabledLogTypes': disabledLogTypes.toList(),
       };
 
-  /// Creates settings from JSON.
+  /// Creates settings from JSON, falling back to permissive defaults when
+  /// fields are missing.
   factory ISpectSettingsState.fromJson(Map<String, dynamic> json) {
     return ISpectSettingsState(
       enabled: json['enabled'] as bool? ?? true,
@@ -90,6 +103,7 @@ final class ISpectSettingsState {
     );
   }
 
+  /// Returns a copy with the provided fields replaced.
   ISpectSettingsState copyWith({
     bool? enabled,
     bool? useConsoleLogs,
@@ -136,16 +150,24 @@ final class ISpectSettingsState {
 /// Describes content to pass into a custom share handler.
 @immutable
 final class ISpectShareRequest {
+  /// Creates a share request. At least one of [text] or [filePaths] should
+  /// be provided for the share to be meaningful.
   const ISpectShareRequest({
     this.subject,
     this.text,
     this.filePaths = const [],
   });
 
+  /// Optional subject line (used by platforms that support it, e.g. email).
   final String? subject;
+
+  /// Plain-text payload to share.
   final String? text;
+
+  /// Absolute file paths to share as attachments.
   final List<String> filePaths;
 
+  /// Whether [filePaths] contains at least one entry.
   bool get hasFiles => filePaths.isNotEmpty;
 
   @override
@@ -173,6 +195,7 @@ final class ISpectShareRequest {
       filePaths: $filePaths,
       )''';
 
+  /// Returns a copy with the provided fields replaced.
   ISpectShareRequest copyWith({
     String? subject,
     String? text,

@@ -18,6 +18,22 @@ abstract class NetworkFilter<T> {
 /// An empty chain permits everything (returns `true`).
 ///
 /// Chains are value-like: [add] and [merge] return new instances.
+///
+/// Example:
+/// ```dart
+/// // Build a chain that logs only successful (2xx) GET/POST responses.
+/// final chain = NetworkFilterChain<Response<dynamic>>([
+///   const StatusCodeFilter.successOnly(),
+///   const HttpMethodFilter({'GET', 'POST'}),
+/// ]);
+///
+/// if (chain.apply(response)) {
+///   logger.logNetworkResponse(response);
+/// }
+///
+/// // Extend an existing chain:
+/// final sampled = chain.add(const SamplingFilter(0.1));
+/// ```
 class NetworkFilterChain<T> {
   /// Creates a chain from an ordered list of filters.
   const NetworkFilterChain(List<NetworkFilter<T>> filters) : _filters = filters;

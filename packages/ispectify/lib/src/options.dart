@@ -6,9 +6,9 @@ import 'package:ispectify/ispectify.dart';
 /// enabling/disabling logs, storing log history, and customizing
 /// log colors and titles.
 ///
-/// Color customization now uses the [ISpectLogTypeRegistry]
-/// for better extensibility. Custom overrides can be provided via
-/// the [customColors] parameter.
+/// Color customization uses the built-in log-type registry for better
+/// extensibility. Custom overrides can be provided via the `customColors`
+/// constructor parameter.
 class ISpectLoggerOptions {
   /// Creates an instance of `ISpectLoggerOptions` with customizable settings.
   ///

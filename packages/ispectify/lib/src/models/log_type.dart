@@ -18,9 +18,9 @@ import 'package:meta/meta.dart';
 /// );
 /// ```
 ///
-/// Register custom types with the UI filter via [ISpectTheme.customLogTypes].
-/// Set colors and icons per-key via [ISpectTheme.logColors] /
-/// [ISpectTheme.logIcons]. Category labels go in [ISpectTheme.categoryLabels].
+/// Register custom types with the UI filter via `ISpectTheme.customLogTypes`.
+/// Set colors and icons per-key via `ISpectTheme.logColors` /
+/// `ISpectTheme.logIcons`. Category labels go in `ISpectTheme.categoryLabels`.
 @immutable
 final class ISpectLogType {
   const ISpectLogType(

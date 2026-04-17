@@ -3,7 +3,12 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for push / remote notifications.
 extension ISpectLoggerPush on ISpectLogger {
+  /// Logs a push notification event under [pushCategory].
+  ///
+  /// When [correlationId] is omitted, [messageId] is used as the correlation
+  /// id so send and receive events on the same message line up.
   void push({
     required String source,
     required String operation,

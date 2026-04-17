@@ -3,7 +3,11 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for Server-Sent Events (SSE) streams.
 extension ISpectLoggerSSE on ISpectLogger {
+  /// Logs an SSE event under [sseCategory].
+  ///
+  /// Success is inferred from [error] being `null`.
   void sse({
     required String source,
     required String operation,

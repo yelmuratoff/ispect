@@ -3,7 +3,9 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for WebSocket send / receive events.
 extension ISpectLoggerWs on ISpectLogger {
+  /// Logs an outbound WebSocket message under [wsCategory].
   void wsSend({
     required String source,
     required String operation,
@@ -35,6 +37,7 @@ extension ISpectLoggerWs on ISpectLogger {
         consoleMessage: consoleMessage,
       );
 
+  /// Logs an inbound WebSocket message under [wsCategory].
   void wsReceive({
     required String source,
     required String operation,

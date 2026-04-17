@@ -3,7 +3,11 @@ import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
 
+/// Trace helpers for state-management layers (BLoC, Cubit, Riverpod, etc.).
 extension ISpectLoggerState on ISpectLogger {
+  /// Traces an async state operation under [stateCategory].
+  ///
+  /// [stateName] becomes the log target (e.g. `"AuthBloc"`).
   Future<T> stateTrace<T>({
     required String source,
     required String operation,
@@ -26,6 +30,10 @@ extension ISpectLoggerState on ISpectLogger {
         correlationId: correlationId,
       );
 
+  /// Logs a state-change event (transition) under [stateCategory].
+  ///
+  /// [fromState] and [toState] are stringified and stored in meta, along with
+  /// the triggering [event] when provided.
   void stateChange({
     required String source,
     required String operation,

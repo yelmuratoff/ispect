@@ -1,11 +1,12 @@
 import 'package:ispectify/src/trace/trace_category.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 
-/// Token returned by [traceStart] for manual span timing.
+/// Token returned by `traceStart` for manual span timing.
 ///
-/// Always call [traceEnd] after [traceStart]. If [traceEnd] is not called,
+/// Always call `traceEnd` after `traceStart`. If `traceEnd` is not called,
 /// the [Stopwatch] continues running until GC (bytes-level leak).
-/// [traceStart] returns `null` when logger is disabled — [traceEnd(null)] is a no-op.
+/// `traceStart` returns `null` when logger is disabled — calling
+/// `traceEnd(null)` is a no-op.
 final class ISpectTraceToken {
   ISpectTraceToken({
     required Stopwatch stopwatch,
