@@ -266,7 +266,9 @@ class ISpectViewController implements Listenable {
     ISpectLogData logEntry,
     void Function(BuildContext, {required String value}) copyClipboard,
   ) {
-    final text = logEntry.toJson(truncated: true).toString();
+    final rawText = logEntry.toJson(truncated: true).toString();
+    final text =
+        RedactionService.redactExportString(rawText, defaultSensitiveKeys);
     copyClipboard(context, value: text);
   }
 
@@ -281,8 +283,10 @@ class ISpectViewController implements Listenable {
     }) copyClipboard,
     String title,
   ) {
-    final logsText =
+    final rawText =
         logs.map((log) => log.toJson(truncated: true).toString()).join('\n');
+    final logsText =
+        RedactionService.redactExportString(rawText, defaultSensitiveKeys);
 
     copyClipboard(
       context,

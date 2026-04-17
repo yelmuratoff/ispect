@@ -231,7 +231,7 @@ class LogsScreenController {
             ? (activeData.httpLogText ?? '')
             : activeData.textMessage;
         if (text.isNotEmpty) {
-          copyClipboard(context, value: text);
+          copyClipboard(context, value: text, redact: true);
           return KeyEventResult.handled;
         }
       }

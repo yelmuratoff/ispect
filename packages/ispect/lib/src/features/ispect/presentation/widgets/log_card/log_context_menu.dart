@@ -49,7 +49,7 @@ Future<void> showLogContextMenu({
 
   switch (action) {
     case LogContextAction.copyMessage:
-      copyClipboard(context, value: message);
+      copyClipboard(context, value: message, redact: true);
     case LogContextAction.share:
       onShareTap?.call();
     case LogContextAction.copyCurl:
