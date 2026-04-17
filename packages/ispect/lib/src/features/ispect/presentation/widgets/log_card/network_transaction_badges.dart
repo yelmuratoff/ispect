@@ -73,20 +73,25 @@ class DesktopStatusBadge extends StatelessWidget {
       < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
       _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
     };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.12),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        child: Text(
-          '$statusCode',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
+    return Semantics(
+      container: true,
+      label: 'HTTP status $statusCode',
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: bgColor.withValues(alpha: 0.12),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          child: Text(
+            '$statusCode',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ),

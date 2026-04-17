@@ -220,9 +220,10 @@ class SquareIconButton extends StatelessWidget {
       onTap: onPressed,
       child: GestureDetector(
         excludeFromSemantics: true,
+        behavior: HitTestBehavior.opaque,
         onTap: onPressed,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
@@ -284,20 +285,25 @@ class _StatusCodeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bgColor, textColor) = _colorsForStatus(statusCode);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.12),
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Text(
-          '$statusCode',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
+    return Semantics(
+      container: true,
+      label: 'HTTP status $statusCode',
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: bgColor.withValues(alpha: 0.12),
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          child: Text(
+            '$statusCode',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ),

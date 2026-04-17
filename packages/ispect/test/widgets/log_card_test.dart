@@ -174,5 +174,70 @@ void main() {
         expect(decoration.boxShadow, isNotEmpty);
       },
     );
+
+    testWidgets(
+      'Given a LogCard, '
+      'When it is rendered, '
+      'Then the header exposes a button Semantics node with the log label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          buildLogCard(
+            data: makeLogData(message: 'Semantic label message'),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.bySemanticsLabel(RegExp('info.*Semantic label message')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'Given an HTTP LogCard with statusCode 404, '
+      'When it is rendered, '
+      'Then the status badge exposes a semantic label with the code',
+      (tester) async {
+        final data = ISpectLogData(
+          'GET /api/missing',
+          key: 'http-request',
+          time: DateTime(2024, 1, 1, 12),
+          additionalData: const {
+            'meta': {'statusCode': 404},
+          },
+        );
+
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(buildLogCard(data: data));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.bySemanticsLabel('HTTP status 404'),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'Given a LogCard, '
+      'When the action buttons are laid out, '
+      'Then each SquareIconButton has a tap target of at least 44 dp',
+      (tester) async {
+        await tester.pumpWidget(buildLogCard());
+        await tester.pumpAndSettle();
+
+        final buttons = find.byType(SquareIconButton);
+        expect(buttons, findsWidgets);
+        for (final element in buttons.evaluate()) {
+          final size = tester.getSize(find.byWidget(element.widget));
+          expect(size.width, greaterThanOrEqualTo(44));
+          expect(size.height, greaterThanOrEqualTo(44));
+        }
+      },
+    );
   });
 }

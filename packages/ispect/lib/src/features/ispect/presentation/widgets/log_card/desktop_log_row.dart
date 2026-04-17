@@ -433,6 +433,10 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
       bgColor = zebraColor;
     }
 
+    final semanticLabel =
+        '${ISpectLogType.fromKey(widget.data.key ?? '')?.displayTitle ?? widget.data.key ?? "Log"}: $_message';
+    final semanticTap = widget.onOpenDetail != null ? _handleTap : widget.onTap;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onHover: (event) => _mousePosition = event.position,
@@ -440,138 +444,134 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         setState(() => _isHovered = false);
         _cancelTooltip();
       },
-      child: GestureDetector(
-        onTap: widget.onOpenDetail != null ? _handleTap : widget.onTap,
-        onSecondaryTapUp: (details) =>
-            _showContextMenu(context, details.globalPosition),
-        onLongPress: () => _showContextMenu(context, _mousePosition),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: bgColor,
-            border: Border(
-              bottom: BorderSide(color: borderColor),
-              left: BorderSide(
-                color: isFocused
-                    ? primaryColor
-                    : isMatch
-                        ? primaryColor.withValues(alpha: 0.6)
-                        : widget.isSelected
-                            ? widget.color
-                            : widget.color.withValues(
-                                alpha: severityBar(widget.data).alpha,
-                              ),
-                width: isFocused || widget.isSelected
-                    ? severityBar(widget.data).width + 1
-                    : severityBar(widget.data).width,
+      child: Semantics(
+        button: true,
+        selected: widget.isSelected,
+        label: semanticLabel,
+        onTap: semanticTap,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onTap: semanticTap,
+          onSecondaryTapUp: (details) =>
+              _showContextMenu(context, details.globalPosition),
+          onLongPress: () => _showContextMenu(context, _mousePosition),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: bgColor,
+              border: Border(
+                bottom: BorderSide(color: borderColor),
+                left: BorderSide(
+                  color: isFocused
+                      ? primaryColor
+                      : isMatch
+                          ? primaryColor.withValues(alpha: 0.6)
+                          : widget.isSelected
+                              ? widget.color
+                              : widget.color.withValues(
+                                  alpha: severityBar(widget.data).alpha,
+                                ),
+                  width: isFocused || widget.isSelected
+                      ? severityBar(widget.data).width + 1
+                      : severityBar(widget.data).width,
+                ),
               ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isCompact = constraints.maxWidth < 480;
-                final scaled = _scaleColumnWidths(
-                  available: constraints.maxWidth,
-                  typeWidth: isCompact ? 40 : widget.typeColumnWidth,
-                  timeWidth: isCompact ? 0 : widget.timeColumnWidth,
-                );
-                return Row(
-                  children: [
-                    Icon(widget.icon, size: 16, color: widget.color),
-                    const Gap(8),
-                    // Type column
-                    SizedBox(
-                      width: scaled.typeWidth,
-                      child: MouseRegion(
-                        cursor: widget.onTypeFilterTap != null
-                            ? SystemMouseCursors.click
-                            : SystemMouseCursors.basic,
-                        onEnter: (_) {
-                          final desc =
-                              ISpect.read(context).theme.getTypeDescription(
-                                    context,
-                                    key: widget.data.key,
-                                  );
-                          if (desc != null) _scheduleTooltip(desc);
-                        },
-                        onExit: (_) => _cancelTooltip(),
-                        child: GestureDetector(
-                          onTap: widget.onTypeFilterTap != null &&
-                                  widget.data.key != null
-                              ? () => widget.onTypeFilterTap!(widget.data.key!)
-                              : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isCompact = constraints.maxWidth < 480;
+                  final scaled = _scaleColumnWidths(
+                    available: constraints.maxWidth,
+                    typeWidth: isCompact ? 40 : widget.typeColumnWidth,
+                    timeWidth: isCompact ? 0 : widget.timeColumnWidth,
+                  );
+                  return Row(
+                    children: [
+                      Icon(widget.icon, size: 16, color: widget.color),
+                      const Gap(8),
+                      // Type column
+                      SizedBox(
+                        width: scaled.typeWidth,
+                        child: MouseRegion(
+                          cursor: widget.onTypeFilterTap != null
+                              ? SystemMouseCursors.click
+                              : SystemMouseCursors.basic,
+                          onEnter: (_) {
+                            final desc =
+                                ISpect.read(context).theme.getTypeDescription(
+                                      context,
+                                      key: widget.data.key,
+                                    );
+                            if (desc != null) _scheduleTooltip(desc);
+                          },
+                          onExit: (_) => _cancelTooltip(),
+                          child: _TypeFilterTarget(
+                            typeKey: widget.data.key,
+                            color: widget.color,
+                            onTypeFilterTap: widget.onTypeFilterTap,
+                          ),
+                        ),
+                      ),
+                      const Gap(8),
+                      if (!isCompact) ...[
+                        SizedBox(
+                          width: scaled.timeWidth,
                           child: Text(
-                            widget.data.key ?? '',
+                            _displayTime,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: widget.color,
-                              fontWeight: FontWeight.w600,
+                              color: onSurface.withValues(alpha: 0.45),
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                        const Gap(12),
+                      ],
+                      if (widget.data.httpStatusCode
+                          case final int statusCode) ...[
+                        _DesktopStatusCodeBadge(statusCode: statusCode),
+                        const Gap(8),
+                      ],
+                      if ((widget.data.traceSlow ?? false) &&
+                          widget.data.traceDurationMs != null) ...[
+                        SlowBadge(durationMs: widget.data.traceDurationMs!),
+                        const Gap(8),
+                      ],
+                      Expanded(
+                        child: MouseRegion(
+                          onEnter: _message.isNotEmpty
+                              ? (_) => _scheduleTooltip(_message)
+                              : null,
+                          onExit: (_) => _cancelTooltip(),
+                          child: Text(
+                            _message,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: onSurface.withValues(alpha: 0.75),
                               fontSize: 12,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const Gap(8),
-                    if (!isCompact) ...[
-                      SizedBox(
-                        width: scaled.timeWidth,
-                        child: Text(
-                          _displayTime,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: onSurface.withValues(alpha: 0.45),
-                            fontSize: 11,
-                            fontFamily: 'monospace',
-                          ),
+                      // Actions (visible on hover or selected)
+                      if (_isHovered || widget.isSelected) ...[
+                        const Gap(8),
+                        _DesktopRowActions(
+                          color: widget.color,
+                          data: widget.data,
+                          observer: widget.observer,
+                          onShareTap: widget.onShareTap,
+                          onOpenDetail: widget.onOpenDetail ?? widget.onTap,
                         ),
-                      ),
-                      const Gap(12),
+                      ],
                     ],
-                    if (widget.data.httpStatusCode
-                        case final int statusCode) ...[
-                      _DesktopStatusCodeBadge(statusCode: statusCode),
-                      const Gap(8),
-                    ],
-                    if ((widget.data.traceSlow ?? false) &&
-                        widget.data.traceDurationMs != null) ...[
-                      SlowBadge(durationMs: widget.data.traceDurationMs!),
-                      const Gap(8),
-                    ],
-                    Expanded(
-                      child: MouseRegion(
-                        onEnter: _message.isNotEmpty
-                            ? (_) => _scheduleTooltip(_message)
-                            : null,
-                        onExit: (_) => _cancelTooltip(),
-                        child: Text(
-                          _message,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: onSurface.withValues(alpha: 0.75),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Actions (visible on hover or selected)
-                    if (_isHovered || widget.isSelected) ...[
-                      const Gap(8),
-                      _DesktopRowActions(
-                        color: widget.color,
-                        data: widget.data,
-                        observer: widget.observer,
-                        onShareTap: widget.onShareTap,
-                        onOpenDetail: widget.onOpenDetail ?? widget.onTap,
-                      ),
-                    ],
-                  ],
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -661,17 +661,23 @@ class _DesktopActionIcon extends StatelessWidget {
   final String? tooltip;
 
   @override
-  Widget build(BuildContext context) => Tooltip(
-        message: tooltip ?? '',
-        child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Icon(
-              icon,
-              size: 15,
-              color: color.withValues(alpha: 0.6),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: tooltip ?? '',
+        onTap: onPressed,
+        child: Tooltip(
+          message: tooltip ?? '',
+          child: InkWell(
+            excludeFromSemantics: true,
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                icon,
+                size: 15,
+                color: color.withValues(alpha: 0.6),
+              ),
             ),
           ),
         ),
@@ -690,22 +696,68 @@ class _DesktopStatusCodeBadge extends StatelessWidget {
       < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
       _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
     };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.12),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        child: Text(
-          '$statusCode',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
+    return Semantics(
+      container: true,
+      label: 'HTTP status $statusCode',
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: bgColor.withValues(alpha: 0.12),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          child: Text(
+            '$statusCode',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TypeFilterTarget extends StatelessWidget {
+  const _TypeFilterTarget({
+    required this.typeKey,
+    required this.color,
+    required this.onTypeFilterTap,
+  });
+
+  final String? typeKey;
+  final Color color;
+  final void Function(String type)? onTypeFilterTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isInteractive = onTypeFilterTap != null && typeKey != null;
+    final onTap = isInteractive ? () => onTypeFilterTap!(typeKey!) : null;
+    final text = Text(
+      typeKey ?? '',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: color,
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      ),
+    );
+    if (!isInteractive) {
+      return text;
+    }
+    return Semantics(
+      button: true,
+      label: 'Filter by type ${typeKey!}',
+      onTap: onTap,
+      child: GestureDetector(
+        excludeFromSemantics: true,
+        onTap: onTap,
+        child: text,
       ),
     );
   }
