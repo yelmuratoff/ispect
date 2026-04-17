@@ -14,7 +14,7 @@ extension ISpectContextExtension on BuildContext {
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 
-  ISpectScopeModel get iSpect => ISpectScopeController.of(this);
+  ISpectScopeModel get iSpect => ISpect.read(this);
 
   Color adjustColor(Color color) => isDarkMode
       ? adjustColorBrightness(color, 0.9)

@@ -128,18 +128,7 @@ class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
 
   /// Retrieves the nearest `ISpectScopeModel` in the widget tree.
   ///
-  /// Throws an assertion error if no `ISpectScopeController` is found.
-  static ISpectScopeModel of(BuildContext context) {
-    final inherited =
-        context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
-    if (inherited == null || inherited.notifier == null) {
-      throw FlutterError(
-        'ISpectScopeController.of() called with a context that does not '
-        'contain an ISpectScopeController.\n'
-        'Ensure that ISpectBuilder is an ancestor of the widget using this '
-        'context.',
-      );
-    }
-    return inherited.notifier!;
-  }
+  /// Throws a [FlutterError] if no `ISpectScopeController` is found.
+  @Deprecated('Use ISpect.read(context) instead. Will be removed in 6.0.0.')
+  static ISpectScopeModel of(BuildContext context) => ISpect.read(context);
 }

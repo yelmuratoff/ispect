@@ -72,9 +72,26 @@ final class ISpect {
     _warnedAboutLazyInit = false;
   }
 
-  /// Reads the `ISpectScopeModel` from the widget tree.
-  static ISpectScopeModel read(BuildContext context) =>
-      ISpectScopeController.of(context);
+  /// Reads the nearest [ISpectScopeModel] from the widget tree.
+  ///
+  /// This is the canonical way to access the scope model; prefer it over
+  /// `ISpectScopeController.of(context)`, which is deprecated.
+  ///
+  /// Throws a [FlutterError] if no `ISpectScopeController` is an ancestor —
+  /// ensure `ISpectBuilder` wraps the widget that uses this context.
+  static ISpectScopeModel read(BuildContext context) {
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
+    if (inherited == null || inherited.notifier == null) {
+      throw FlutterError(
+        'ISpect.read() called with a context that does not contain an '
+        'ISpectScopeController.\n'
+        'Ensure that ISpectBuilder is an ancestor of the widget using this '
+        'context.',
+      );
+    }
+    return inherited.notifier!;
+  }
 
   /// Runs the app with centralized logging and error capture.
   ///
