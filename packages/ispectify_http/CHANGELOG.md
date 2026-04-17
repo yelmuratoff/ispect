@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev12
+## 5.0.0-dev13
 
 ### Breaking Changes
 
@@ -25,6 +25,10 @@
 - **Redaction by default:** All network interceptors now have PII redaction enabled by default using an expanded list of sensitive keys.
 - **BLoC correlation:** `ISpectBlocObserver` now automatically correlates events, transitions, and changes for easier debugging.
 - **Tips dialog:** Moved from automatic popup to a dedicated app bar icon.
+
+### Deprecations
+
+- **`ISpectScopeController.of(context)` is deprecated** in favor of the canonical `ISpect.read(context)`. The two were duplicate entry points to the same `InheritedNotifier` lookup. `of` remains as a forwarder and will be removed in 6.0.0.
 
 ### Bug Fixes
 

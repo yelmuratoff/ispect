@@ -11,6 +11,9 @@
     <a href="https://github.com/yelmuratoff/ispect">
       <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=for-the-badge&logo=github&labelColor=0360a9&color=2ab7f6" alt="GitHub stars">
     </a>
+    <a href="https://codecov.io/gh/yelmuratoff/ispect">
+      <img src="https://img.shields.io/codecov/c/github/yelmuratoff/ispect?style=for-the-badge&logo=codecov&labelColor=0360a9&color=2ab7f6" alt="Coverage">
+    </a>
   </p>
 
   <p>
@@ -65,7 +68,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev12
+  ispect: ^5.0.0-dev13
 ```
 
 ```dart
@@ -150,6 +153,21 @@ flutter build apk \
   --dart-define=ISPECT_ENABLED=true \
   --dart-define=ENVIRONMENT=staging
 ```
+
+---
+
+## Security Considerations
+
+### Log file storage
+
+Exported log files (via the share or daily sessions feature) are stored as **plain-text JSON** on disk. While ISpect provides comprehensive [data redaction](#data-redaction) for network traffic (headers, URLs, bodies), **custom log messages** written via `ISpect.logger.info(...)` or similar methods are stored as-is.
+
+**Recommendations:**
+
+- **Never log PII** (emails, phone numbers, tokens, passwords) via `ISpect.logger.*` methods.
+- Review your redaction configuration to ensure sensitive headers and URL parameters are covered.
+- In production builds, ISpect is fully tree-shaken when `kISpectEnabled` is `false` (see [Production Safety](#production-safety)), so no log files are created.
+- For sensitive environments, consider clearing daily sessions regularly or disabling file logging.
 
 ---
 
@@ -364,13 +382,13 @@ Install only what your project needs. Each package works independently.
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev12 # Core UI, inspector, log viewer
-  ispectify: ^5.0.0-dev12 # Logging backbone (Dart-only, no Flutter)
-  ispectify_dio: ^5.0.0-dev12 # Dio HTTP interceptor
-  ispectify_http: ^5.0.0-dev12 # http package interceptor
-  ispectify_ws: ^5.0.0-dev12 # WebSocket traffic capture
-  ispectify_db: ^5.0.0-dev12 # Database operation tracking
-  ispectify_bloc: ^5.0.0-dev12 # BLoC event/state observer
+  ispect: ^5.0.0-dev13 # Core UI, inspector, log viewer
+  ispectify: ^5.0.0-dev13 # Logging backbone (Dart-only, no Flutter)
+  ispectify_dio: ^5.0.0-dev13 # Dio HTTP interceptor
+  ispectify_http: ^5.0.0-dev13 # http package interceptor
+  ispectify_ws: ^5.0.0-dev13 # WebSocket traffic capture
+  ispectify_db: ^5.0.0-dev13 # Database operation tracking
+  ispectify_bloc: ^5.0.0-dev13 # BLoC event/state observer
 ```
 
 ### Dio

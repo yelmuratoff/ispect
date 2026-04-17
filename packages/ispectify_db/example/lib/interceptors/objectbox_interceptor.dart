@@ -65,7 +65,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       cacheHit: result != null,
       config: config,
-      );
+    );
     return result;
   }
 
@@ -80,7 +80,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       meta: {'ids': ids.length},
       items: result.where((e) => e != null).length,
       config: config,
-      );
+    );
     return result;
   }
 
@@ -94,7 +94,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       items: result.length,
       config: config,
-      );
+    );
     return result;
   }
 
@@ -306,7 +306,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       items: result,
       config: config,
-      );
+    );
     return result;
   }
 
@@ -320,7 +320,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       meta: {'isEmpty': result},
       config: config,
-      );
+    );
     return result;
   }
 
@@ -335,7 +335,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       cacheHit: result,
       config: config,
-      );
+    );
     return result;
   }
 
@@ -349,7 +349,7 @@ final class ISpectObjectBox<T> implements Box<T> {
       success: true,
       meta: {'ids': ids.length, 'allExist': result},
       config: config,
-      );
+    );
     return result;
   }
 
