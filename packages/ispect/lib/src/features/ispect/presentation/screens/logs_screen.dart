@@ -5,6 +5,7 @@ import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/services/log_correlation_index.dart';
 import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
@@ -54,6 +55,10 @@ class _LogsScreenState extends State<LogsScreen> {
 
   /// Persisted split ratio so it survives detail panel toggling.
   double _splitRatio = 0.4;
+
+  /// Correlation index for O(1) request↔response/error lookup in the
+  /// detail panel. Rebuilt lazily when the input list identity changes.
+  final _correlationIndex = LogCorrelationIndex();
 
   @override
   void initState() {
@@ -179,44 +184,18 @@ class _LogsScreenState extends State<LogsScreen> {
 
   /// Finds a correlated log entry for the given [activeLog].
   ///
-  /// For a response/error, returns the matching request (and vice versa)
-  /// using the requestId stored in additionalData.
-  ({ISpectLogData? log, Duration? duration})? _findCorrelation(
+  /// Delegates to [LogCorrelationIndex] for an O(1) lookup by requestId,
+  /// returning the opposite role (request → response/error, response/error
+  /// → request).
+  LogCorrelation? _findCorrelation(
     ISpectLogData activeLog,
     List<ISpectLogData> allLogs,
-  ) {
-    if (!activeLog.isHttpLog) return null;
-
-    // v5: traceMeta['requestId'], v4 fallback: additionalData['request-id']
-    final requestId = activeLog.requestId ??
-        activeLog.additionalData?['request-id'] as String?;
-    if (requestId == null) return null;
-
-    final isRequest = activeLog.key == ISpectLogType.httpRequest.key;
-
-    for (final log in allLogs) {
-      if (identical(log, activeLog)) continue;
-      final logRid =
-          log.requestId ?? log.additionalData?['request-id'] as String?;
-      if (logRid != requestId) continue;
-
-      // If viewing request, find its response/error.
-      // If viewing response/error, find the request.
-      if (isRequest && log.key != ISpectLogType.httpRequest.key) {
-        return (
-          log: log,
-          duration: log.time.difference(activeLog.time),
-        );
-      }
-      if (!isRequest && log.key == ISpectLogType.httpRequest.key) {
-        return (
-          log: log,
-          duration: activeLog.time.difference(log.time),
-        );
-      }
-    }
-    return null;
-  }
+  ) =>
+      _correlationIndex.find(
+        activeLog,
+        allLogs,
+        _logsViewController.outputGeneration,
+      );
 
   Future<void> _openLogsSettings(BuildContext context) async {
     final logger = ISpectLoggerNotifier(ISpect.logger);
