@@ -13,22 +13,32 @@ final class ISpect {
 
   static ISpectLogger? _logger;
   static bool _isInitialized = false;
+  static bool _warnedAboutLazyInit = false;
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
   ///
-  /// When `kISpectEnabled` is `true`, requires prior [initialize]; otherwise
-  /// throws [StateError]. When disabled, lazily creates a default logger on
-  /// first access so call-sites built before [run] don't crash — all logging
-  /// methods are no-ops in this mode.
+  /// Lazily creates a default [ISpectLogger] on first access so call-sites
+  /// built before [run]/[initialize] (early DI wiring, hot-restart, tests)
+  /// don't crash. The returned instance is fully functional, but it has no
+  /// access to the options/error handler that [run] would have configured —
+  /// so if `kISpectEnabled` is `true` and no explicit initialization happened,
+  /// a one-time warning is emitted via [debugPrint] to nudge the developer
+  /// toward calling [initialize] or [run].
+  ///
+  /// When `kISpectEnabled` is `false` (default in release builds), the lazy
+  /// fallback stays silent — the logger is effectively unreachable from the
+  /// rest of ISpect and gets tree-shaken.
   static ISpectLogger get logger {
     if (!_isInitialized) {
-      if (!kISpectEnabled) {
-        _logger = ISpectLogger();
-        _isInitialized = true;
-      } else {
-        throw StateError(
-          'ISpect is not initialized. Call ISpect.initialize() first.',
+      _logger = ISpectLogger();
+      _isInitialized = true;
+      if (kISpectEnabled && !_warnedAboutLazyInit) {
+        _warnedAboutLazyInit = true;
+        debugPrint(
+          '⚠️ ISpect: logger accessed before initialize(). Falling back to '
+          'a default ISpectLogger. Call ISpect.initialize() or ISpect.run() '
+          'to wire up options, error handling and UI integration.',
         );
       }
     }
@@ -50,11 +60,16 @@ final class ISpect {
   }
 
   /// Disposes current ISpect state (useful for testing or hot restart).
+  ///
+  /// Resets the lazy-init warning flag so a subsequent uninitialized access
+  /// emits the warning again — dispose is treated as a full reset, not a
+  /// suppression.
   static Future<void> dispose() async {
     await _logger?.dispose();
     _isInitialized = false;
     _logger = null;
     _errorHandler = null;
+    _warnedAboutLazyInit = false;
   }
 
   /// Reads the `ISpectScopeModel` from the widget tree.
@@ -143,7 +158,6 @@ final class ISpect {
     onInitialized?.call();
   }
 
-  /// Runs code inside a guarded zone for error capturing and logging.
   static void _runInZone<T>(
     T Function() callback, {
     required bool isPrintLoggingEnabled,
