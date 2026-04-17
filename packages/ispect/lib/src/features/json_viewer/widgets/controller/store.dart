@@ -7,7 +7,6 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
-import 'package:ispect/src/features/json_viewer/services/json_performance_manager.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 
@@ -33,12 +32,8 @@ class JsonExplorerStore extends ChangeNotifier {
       NodeHierarchyCacheService();
   JsonNodeService? _nodeService;
   JsonSearchService? _searchService;
-  UniversalPerformanceManager? _performanceManager;
 
   bool get mounted => _mounted;
-
-  /// Gets performance manager for optimization insights
-  UniversalPerformanceManager? get performanceManager => _performanceManager;
 
   /// Gets the list of nodes to be displayed.
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
@@ -216,7 +211,6 @@ class JsonExplorerStore extends ChangeNotifier {
     // Initialize services
     _nodeService = JsonNodeService();
     _searchService = JsonSearchService();
-    _performanceManager = PerformanceManagerFactory.createDevelopmentManager();
 
     if (!mounted) return;
 
@@ -230,12 +224,6 @@ class JsonExplorerStore extends ChangeNotifier {
   @override
   void dispose() {
     _hierarchyCacheService.clear();
-
-    // Dispose performance manager
-    final pm = _performanceManager;
-    if (pm is JsonPerformanceManager) {
-      pm.reset();
-    }
 
     // Cancel any ongoing search
     _currentSearchOperation?.cancel();
