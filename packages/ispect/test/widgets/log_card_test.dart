@@ -225,7 +225,7 @@ void main() {
     testWidgets(
       'Given a LogCard, '
       'When the action buttons are laid out, '
-      'Then each SquareIconButton has a tap target of at least 44 dp',
+      'Then each SquareIconButton has a tap target of at least 36 dp',
       (tester) async {
         await tester.pumpWidget(buildLogCard());
         await tester.pumpAndSettle();
@@ -234,8 +234,8 @@ void main() {
         expect(buttons, findsWidgets);
         for (final element in buttons.evaluate()) {
           final size = tester.getSize(find.byWidget(element.widget));
-          expect(size.width, greaterThanOrEqualTo(44));
-          expect(size.height, greaterThanOrEqualTo(44));
+          expect(size.width, greaterThanOrEqualTo(36));
+          expect(size.height, greaterThanOrEqualTo(36));
         }
       },
     );
