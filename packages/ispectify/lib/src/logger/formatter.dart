@@ -8,10 +8,13 @@ abstract interface class ILoggerFormatter {
   );
 }
 
-/// Prefixes the first line with `- ` and indents subsequent lines.
+/// Renders single-line logs verbatim and indents continuation lines of
+/// multi-line payloads (e.g. network curl dumps, JSON bodies).
 ///
 /// ```
-/// - First line
+/// Single-line message
+///
+/// - First line of multi-line payload
 ///   Second line
 ///   Third line
 /// ```
@@ -25,19 +28,23 @@ class ExtendedLoggerFormatter implements ILoggerFormatter {
   ) {
     final message = details.message?.toString() ?? '';
 
-    final List<String> msgBorderedLines;
+    final List<String> lines;
     if (message.isEmpty) {
-      msgBorderedLines = ['- (empty log message)'];
+      lines = ['(empty log message)'];
     } else {
-      final lines = message.split('\n');
-      msgBorderedLines = [
-        '- ${lines.first}',
-        ...lines.skip(1).map((line) => '  $line'),
-      ];
+      final rawLines = message.split('\n');
+      if (rawLines.length == 1) {
+        lines = rawLines;
+      } else {
+        lines = [
+          '- ${rawLines.first}',
+          ...rawLines.skip(1).map((line) => '  $line'),
+        ];
+      }
     }
 
     return settings.enableColors
-        ? msgBorderedLines.map(details.pen.write).join('\n')
-        : msgBorderedLines.join('\n');
+        ? lines.map(details.pen.write).join('\n')
+        : lines.join('\n');
   }
 }

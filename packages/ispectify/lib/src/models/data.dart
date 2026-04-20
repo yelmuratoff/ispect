@@ -55,7 +55,38 @@ base class ISpectLogData {
     stackTraceText,
   ]);
 
-  String get header => '[$key] | $formattedTime\n';
+  /// Single-line header for console output.
+  ///
+  /// Format: `LEVEL [key] | HH:MM:SS.mmm | `
+  ///
+  /// - `LEVEL` is the canonical severity label (`INFO`, `ERROR`, …) so the
+  ///   output is grep-friendly and aligned with industry log conventions.
+  /// - `[key]` is the log category/type (e.g. `route`, `httpResponse`) and is
+  ///   omitted when it is redundant with the level (either equal to it, or
+  ///   when the level was implicitly derived from the key).
+  /// - No trailing newline: the message follows inline so each log entry
+  ///   occupies a single line (multi-line payloads keep their own newlines).
+  String get header {
+    final explicitLevel = logLevel?.name;
+    final levelFromKey = _levelFromKey(key);
+    final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
+    final keyIsLevel =
+        key != null && (key == explicitLevel || key == levelFromKey);
+    final keyLabel = key != null && !keyIsLevel ? ' [$key]' : '';
+    return '$levelLabel$keyLabel | $formattedTime | ';
+  }
+
+  static const _keyToLevelNames = <String>{
+    'critical',
+    'error',
+    'warning',
+    'info',
+    'debug',
+    'verbose',
+  };
+
+  static String? _levelFromKey(String? key) =>
+      key != null && _keyToLevelNames.contains(key) ? key : null;
 
   String? get stackTraceText =>
       (stackTrace != null && stackTrace != StackTrace.empty)

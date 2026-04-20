@@ -223,11 +223,11 @@ class SquareIconButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(6),

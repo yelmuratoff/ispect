@@ -11,12 +11,17 @@ class ISpectDateTimeFormatter {
 
   /// Returns the formatted time with hours, minutes, seconds, and milliseconds.
   ///
-  /// Format: `HH:MM:SS | Xms`
+  /// Format: `HH:MM:SS.mmm`
+  ///
+  /// Milliseconds are appended as a decimal part of the timestamp — they
+  /// represent the fractional second, not a duration. Real durations (e.g.
+  /// elapsed time of a traced operation) are rendered separately by the
+  /// trace helpers.
   String get timeAndSeconds {
     final d = date;
     if (d == null) return '';
 
-    return '${_pad(d.hour)}:${_pad(d.minute)}:${_pad(d.second)} | ${d.millisecond}ms';
+    return '${_pad(d.hour)}:${_pad(d.minute)}:${_pad(d.second)}.${_pad3(d.millisecond)}';
   }
 
   /// Returns the full formatted date and time.
@@ -56,4 +61,7 @@ class ISpectDateTimeFormatter {
 
   /// Pads single-digit values with a leading zero.
   String _pad(int value) => value.toString().padLeft(2, '0');
+
+  /// Pads millisecond values to three digits.
+  String _pad3(int value) => value.toString().padLeft(3, '0');
 }
