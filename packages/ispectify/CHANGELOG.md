@@ -9,6 +9,10 @@
 - **Typed subclasses removed:** Classes such as `NetworkRequestLog`, `DioResponseLog`, and `BlocLifecycleLog` have been removed in favor of the new trace system.
 - **`ISpectLogType` converted from `enum` to `final class`:** `ISpectLogType.values` no longer exists — use `ISpectLogType.builtIn` instead. Exhaustive `switch` on enum values is no longer possible. Custom types can now be created directly: `const ISpectLogType('my-key', category: 'firebase')`.
 
+### Added
+
+- **`ispect_layout` package:** New standalone visual layout inspector for Flutter — tap any widget to read size, constraints, padding, decoration, text styles, transform matrix, and clip shape; compare two widgets to see the pixel gap between them. Forked from [`inspector`](https://github.com/kekland/inspector) 4.1.0 and maintained inside the ISpect monorepo. On top of the upstream feature set it adds expanded render-object coverage (`RenderTransform` matrix decomposition, `RenderBackdropFilter`, all `RenderClip*`, `RenderEditable`), a wrapper-ancestors section for same-size proxies, gradient/shadow/border-radius breakdowns, image-source introspection, a RichText preview, and a refactored `BoxInfoPanelWidget` split into testable extractor and widget modules.
+
 ### Improvements
 
 - **New Trace API:** Introduced `trace()`, `traceAsync()`, `traceSync()`, and `traceTransaction()` for highly flexible logging with correlation support.

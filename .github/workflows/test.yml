@@ -73,6 +73,7 @@ jobs:
       matrix:
         package:
           - ispect
+          - ispect_layout
           - ispectify_dio
           - ispectify_http
           - ispectify_ws

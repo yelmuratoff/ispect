@@ -27,6 +27,7 @@ echo ""
 # Array of package directories
 PACKAGES=(
     "ispect"
+    "ispect_layout"
     "ispectify"
     "ispectify_bloc"
     "ispectify_db"

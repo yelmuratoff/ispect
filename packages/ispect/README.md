@@ -389,6 +389,7 @@ dependencies:
   ispectify_ws: ^5.0.0-dev14 # WebSocket traffic capture
   ispectify_db: ^5.0.0-dev14 # Database operation tracking
   ispectify_bloc: ^5.0.0-dev14 # BLoC event/state observer
+  ispect_layout: ^5.0.0-dev14 # Visual layout inspector (sizes, paddings, compare)
 ```
 
 ### Dio
@@ -506,6 +507,42 @@ ISpect.run(
   },
 );
 ```
+
+### Layout inspector
+
+Tap any widget to read its render box — size, constraints, padding, decoration, text styles, transform matrix, clip shape — and compare two widgets side by side to measure the pixel gap between them. Works standalone, independent of the rest of the ISpect toolkit.
+
+**What it surfaces:**
+
+- Size, padding, constraints from the render box and hit-test path visualisation.
+- Decoration breakdown: color, per-side border, shadows (incl. `spreadRadius`), gradients (visual preview, stops, `begin/end`, `tileMode`), `DecorationImage`.
+- Border radius formatted per corner (TL/TR/BR/BL), collapsed when uniform, elliptical radii rendered as `x×y`.
+- Text inspection: plain-text preview, span-by-span style breakdown, `didExceedMaxLines`, `maxLines`, `overflow`, `textScaler`.
+- Render-object coverage: `RenderFlex`, `RenderStack`, `RenderWrap`, `RenderImage`, `RenderOpacity` / `RenderAnimatedOpacity`, `RenderPhysicalShape` / `RenderPhysicalModel`, `RenderFittedBox`, `RenderAspectRatio`, `RenderCustomPaint`, `RenderTransform` (matrix decomposition), `RenderBackdropFilter`, every `RenderClip*`, `RenderEditable` (TextField).
+- Wrapper ancestors: when the selection is wrapped in same-size proxies (Transform, ClipRRect, BackdropFilter, Opacity, FittedBox, …) their properties are surfaced as separate sub-sections.
+- Compare mode: tap **Compare** (or press `Y`) and pick a second widget to see horizontal/vertical gaps or LTRB offsets with a visual overlay.
+- Color picker with pixel-level sampling and `ColorScheme` hints, a zoom/magnifier overlay, and physical-keyboard shortcuts.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ispect_layout/ispect_layout.dart';
+
+void main() {
+  runApp(
+    MaterialApp(
+      home: const MyApp(),
+      builder: (context, child) => Inspector(
+        isEnabled: true, // typically kDebugMode
+        child: child!,
+      ),
+    ),
+  );
+}
+```
+
+Tap the widget-inspector FAB to start selecting. Tap the **Compare** icon (or press `Y`) to lock the current selection, then tap a second widget to see the pixel distance. See `packages/ispect_layout/example/lib/showcase_example.dart` for a tour of every render-object type the inspector handles.
+
+> Forked from [`inspector`](https://github.com/kekland/inspector) by Erzhan (kekland) — thanks for the original work. The fork continues the package with expanded render-object coverage, a wrapper-ancestors section, richer decoration breakdowns, image-source introspection, a `TextField` inspector, and a refactored architecture. Inspired by [inspx](https://github.com/raunofreiberg/inspx).
 
 ---
 
