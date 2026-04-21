@@ -25,6 +25,8 @@ environment:
 dependency_overrides:
   ispectify:
     path: ../ispectify
+  ispect_layout:
+    path: ../ispect_layout
 
 dependencies:
   flutter:
@@ -43,7 +45,7 @@ dependencies:
   web: ^1.1.1
 
   # UI
-  inspector: ^4.0.0
+  ispect_layout: ^5.0.0-dev14
   draggable_panel: ^2.0.2
   super_sliver_list: ^0.4.1
 

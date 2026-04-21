@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:inspector/inspector.dart' as pkg_inspector;
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
 import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
+import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
 
 /// A widget that wraps your app with ISpect debugging tools.
 ///

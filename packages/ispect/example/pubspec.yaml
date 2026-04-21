@@ -9,6 +9,8 @@ environment:
 dependency_overrides:
   ispect:
     path: ../../ispect
+  ispect_layout:
+    path: ../../ispect_layout
   ispectify:
     path: ../../ispectify
   ispectify_http:
