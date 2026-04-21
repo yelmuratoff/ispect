@@ -51,16 +51,16 @@
 
 Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPECT_ENABLED` is not defined, the entire toolkit compiles to no-ops and is eliminated by Dart's tree-shaker. Zero bytes in production.
 
-| Capability                | What it does                                                                 |
-| ------------------------- | ---------------------------------------------------------------------------- |
-| **Zero-footprint builds** | Compile-time `const` guard removes all code from release APK/IPA             |
-| **Visual inspector**      | Tap any widget to see its render box, padding, constraints, and color        |
-| **Structured logs**       | Typed log entries with levels, filtering, export/import, and session history |
-| **Network capture**       | Request/response inspection for Dio, http, and WebSocket clients             |
+| Capability                | What it does                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| **Zero-footprint builds** | Compile-time `const` guard removes all code from release APK/IPA              |
+| **Visual inspector**      | Tap any widget to see its render box, padding, constraints, and color         |
+| **Structured logs**       | Typed log entries with levels, filtering, export/import, and session history  |
+| **Network capture**       | Request/response inspection for Dio, http, and WebSocket clients              |
 | **Transaction grouping**  | Correlated request/response pairs with duration, status, and cross-navigation |
-| **Automatic redaction**   | Tokens, passwords, PII, and credit cards masked before they reach logs       |
-| **Observer hooks**        | Forward log events to Sentry, Crashlytics, or any backend in real-time       |
-| **12 languages**          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                               |
+| **Automatic redaction**   | Tokens, passwords, PII, and credit cards masked before they reach logs        |
+| **Observer hooks**        | Forward log events to Sentry, Crashlytics, or any backend in real-time        |
+| **12 languages**          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                                |
 
 ---
 
@@ -68,7 +68,7 @@ Most Flutter debugging tools stay in your binary. ISpect doesn't — when `ISPEC
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev14
+  ispect: ^5.0.0-dev15
 ```
 
 ```dart
@@ -382,14 +382,14 @@ Install only what your project needs. Each package works independently.
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev14 # Core UI, inspector, log viewer
-  ispectify: ^5.0.0-dev14 # Logging backbone (Dart-only, no Flutter)
-  ispectify_dio: ^5.0.0-dev14 # Dio HTTP interceptor
-  ispectify_http: ^5.0.0-dev14 # http package interceptor
-  ispectify_ws: ^5.0.0-dev14 # WebSocket traffic capture
-  ispectify_db: ^5.0.0-dev14 # Database operation tracking
-  ispectify_bloc: ^5.0.0-dev14 # BLoC event/state observer
-  ispect_layout: ^5.0.0-dev14 # Visual layout inspector (sizes, paddings, compare)
+  ispect: ^5.0.0-dev15 # Core UI, inspector, log viewer
+  ispectify: ^5.0.0-dev15 # Logging backbone (Dart-only, no Flutter)
+  ispectify_dio: ^5.0.0-dev15 # Dio HTTP interceptor
+  ispectify_http: ^5.0.0-dev15 # http package interceptor
+  ispectify_ws: ^5.0.0-dev15 # WebSocket traffic capture
+  ispectify_db: ^5.0.0-dev15 # Database operation tracking
+  ispectify_bloc: ^5.0.0-dev15 # BLoC event/state observer
+  ispect_layout: ^5.0.0-dev15 # Visual layout inspector (sizes, paddings, compare)
 ```
 
 ### Dio
@@ -542,7 +542,7 @@ void main() {
 
 Tap the widget-inspector FAB to start selecting. Tap the **Compare** icon (or press `Y`) to lock the current selection, then tap a second widget to see the pixel distance. See `packages/ispect_layout/example/lib/showcase_example.dart` for a tour of every render-object type the inspector handles.
 
-> Forked from [`inspector`](https://github.com/kekland/inspector) by Erzhan (kekland) — thanks for the original work. The fork continues the package with expanded render-object coverage, a wrapper-ancestors section, richer decoration breakdowns, image-source introspection, a `TextField` inspector, and a refactored architecture. Inspired by [inspx](https://github.com/raunofreiberg/inspx).
+> Forked from [`inspector`](https://github.com/kekland/inspector) by Erzhan (kekland) — thanks for the original work. The fork continues the package with expanded render-object coverage, a wrapper-ancestors section, richer decoration breakdowns, image-source introspection, a input fields inspector, and a refactored architecture. Inspired by [inspx](https://github.com/raunofreiberg/inspx).
 
 ---
 
