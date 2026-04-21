@@ -9,6 +9,7 @@ export 'src/history/history.dart';
 export 'src/history/serialization.dart';
 export 'src/ispectify.dart';
 export 'src/logger/console_utils.dart';
+export 'src/logger/entry_formatter.dart';
 export 'src/logger/formatter.dart';
 export 'src/logger/logger.dart';
 export 'src/models/data.dart';

@@ -39,6 +39,35 @@ class ISpectDateTimeFormatter {
   /// Uses [timeAndSeconds] as the standard format.
   String get defaultFormat => date == null ? '' : timeAndSeconds;
 
+  /// Returns an ISO-8601 timestamp with the local timezone offset.
+  ///
+  /// Format: `YYYY-MM-DDTHH:MM:SS.mmm±HH:MM`
+  ///
+  /// Use for human-readable logs when the developer wants to preserve local
+  /// time visually while keeping the output parseable.
+  String get iso8601Local {
+    final d = date;
+    if (d == null) return '';
+    final local = d.isUtc ? d.toLocal() : d;
+    final offset = local.timeZoneOffset;
+    final sign = offset.isNegative ? '-' : '+';
+    final abs = offset.abs();
+    final hh = _pad(abs.inHours);
+    final mm = _pad(abs.inMinutes.remainder(60));
+    // Strip trailing zero fractional seconds past ms; rely on toIso8601String
+    // which already gives yyyy-MM-ddTHH:mm:ss.mmm.
+    final base = DateTime(
+      local.year,
+      local.month,
+      local.day,
+      local.hour,
+      local.minute,
+      local.second,
+      local.millisecond,
+    ).toIso8601String();
+    return '$base$sign$hh:$mm';
+  }
+
   /// Returns a localized human-readable relative time string.
   ///
   /// Uses [now] for computing the difference (defaults to [DateTime.now]).

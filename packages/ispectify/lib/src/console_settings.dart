@@ -15,6 +15,9 @@ class ConsoleSettings {
   /// - `lineSymbol`: The symbol used for log separators (default: `'─'`).
   /// - `maxLineWidth`: Maximum width for log lines (default: `110`).
   /// - `enableColors`: Enables ANSI colors in console output (default: `true`).
+  /// - `fullTimestamp`: When `true`, console timestamps include the full
+  ///   ISO-8601 date with timezone; when `false`, only `HH:MM:SS.mmm`
+  ///   (default: `false`).
   ConsoleSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enabled = true,
@@ -23,6 +26,7 @@ class ConsoleSettings {
     this.lineSymbol = '─',
     this.maxLineWidth = 110,
     this.enableColors = true,
+    this.fullTimestamp = false,
   })  : assert(maxLineWidth > 0, 'maxLineWidth must be positive'),
         colors = Map<LogLevel, AnsiPen>.unmodifiable({
           ...ConsoleUtils.ansiColors,
@@ -50,6 +54,9 @@ class ConsoleSettings {
   /// Whether ANSI colors are enabled in logs.
   final bool enableColors;
 
+  /// Whether to render console timestamps in full ISO-8601 form with timezone.
+  final bool fullTimestamp;
+
   /// Creates a new instance of `ConsoleSettings` with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
@@ -61,6 +68,7 @@ class ConsoleSettings {
     String? lineSymbol,
     int? maxLineWidth,
     bool? enableColors,
+    bool? fullTimestamp,
   }) =>
       ConsoleSettings(
         colors: colors ?? this.colors,
@@ -70,5 +78,6 @@ class ConsoleSettings {
         lineSymbol: lineSymbol ?? this.lineSymbol,
         maxLineWidth: maxLineWidth ?? this.maxLineWidth,
         enableColors: enableColors ?? this.enableColors,
+        fullTimestamp: fullTimestamp ?? this.fullTimestamp,
       );
 }

@@ -57,10 +57,19 @@ base class ISpectLogData {
 
   /// Single-line header for console output.
   ///
-  /// Format: `LEVEL [key] | HH:MM:SS.mmm | `
+  /// Retained for backward compatibility. Prefer
+  /// `HumanLogEntryFormatter` / `JsonLogEntryFormatter` via
+  /// `ConsoleSettings.format` — they see the full entry context
+  /// (source, correlation IDs, duration) and know about
+  /// [ConsoleSettings.fullTimestamp].
+  ///
+  /// Format: `LEVEL   [key] | HH:MM:SS.mmm | `
   ///
   /// - `LEVEL` is the canonical severity label (`INFO`, `ERROR`, …) so the
   ///   output is grep-friendly and aligned with industry log conventions.
+  ///   Right-padded to [_levelColumnWidth] so levels align in a visual column;
+  ///   `CRITICAL` overflows by one character — acceptable since critical logs
+  ///   are rare and should stand out anyway.
   /// - `[key]` is the log category/type (e.g. `route`, `httpResponse`) and is
   ///   omitted when it is redundant with the level (either equal to it, or
   ///   when the level was implicitly derived from the key).
@@ -70,11 +79,19 @@ base class ISpectLogData {
     final explicitLevel = logLevel?.name;
     final levelFromKey = _levelFromKey(key);
     final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
+    final paddedLevel = levelLabel.padRight(_levelColumnWidth);
     final keyIsLevel =
         key != null && (key == explicitLevel || key == levelFromKey);
     final keyLabel = key != null && !keyIsLevel ? ' [$key]' : '';
-    return '$levelLabel$keyLabel | $formattedTime | ';
+    return '$paddedLevel$keyLabel | $formattedTime | ';
   }
+
+  /// Width of the level column in [header] output.
+  ///
+  /// Chosen as `7` to fit `WARNING`/`VERBOSE` exactly and leave `INFO`/`DEBUG`/
+  /// `ERROR` with consistent right-padding, trading a one-character overflow
+  /// on `CRITICAL` for tighter columns in the 99% case.
+  static const int _levelColumnWidth = 7;
 
   static const _keyToLevelNames = <String>{
     'critical',
