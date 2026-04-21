@@ -1,6 +1,6 @@
 name: ispect
 description: Logging and inspector tool for Flutter development and testing
-version: 5.0.0-dev13
+version: 5.0.0-dev14
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -36,7 +36,7 @@ dependencies:
   collection: ^1.19.1
 
   # Logging
-  ispectify: ^5.0.0-dev13
+  ispectify: ^5.0.0-dev14
 
   # Utils
   path_provider: ^2.1.5
