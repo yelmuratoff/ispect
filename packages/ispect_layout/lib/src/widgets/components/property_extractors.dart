@@ -114,12 +114,12 @@ List<PropSpec> constraintsProps(BoxConstraints c) {
   return [
     (
       icon: Icons.swap_horiz,
-      subtitle: 'W constraint',
+      subtitle: 'width',
       child: Text(fmt(c.minWidth, c.maxWidth)),
     ),
     (
       icon: Icons.swap_vert,
-      subtitle: 'H constraint',
+      subtitle: 'height',
       child: Text(fmt(c.minHeight, c.maxHeight)),
     ),
   ];
