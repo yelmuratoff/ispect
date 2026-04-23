@@ -40,6 +40,16 @@
 
 Standalone package — works independently of the rest of the [ISpect toolkit](#the-ispect-toolkit).
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="220" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="220" />
+</div>
+
 ## What it surfaces
 
 - **Render box**: size, padding, constraints, and hit-test path visualisation.
