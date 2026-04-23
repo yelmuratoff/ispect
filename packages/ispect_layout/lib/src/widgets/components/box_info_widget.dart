@@ -23,9 +23,10 @@ class BoxInfoWidget extends StatelessWidget {
   final VoidCallback? onCompare;
   final bool isCompareActive;
 
-  Color get _targetColor => Colors.blue.shade700;
-
-  Color get _containerColor => Colors.yellow.shade700;
+  static const Color _selectedColor = Color(0xFF2962FF);
+  static const Color _comparedColor = Color(0xFFFF6D00);
+  static const Color _hoveredColor = Color(0xFF448AFF);
+  static const Color _containerColor = Color(0xFFFFB300);
 
   Widget _buildTargetBoxSizeWidget(BuildContext context) {
     return Positioned(
@@ -38,7 +39,7 @@ class BoxInfoWidget extends StatelessWidget {
         child: Align(
           child: InformationBoxWidget.size(
             size: boxInfo!.targetRenderBox.displaySize,
-            color: _targetColor,
+            color: _selectedColor,
           ),
         ),
       ),
@@ -57,14 +58,17 @@ class BoxInfoWidget extends StatelessWidget {
   Widget _buildBoxOverlay(
     BuildContext context,
     BoxInfo boxInfo, {
+    required OverlayRole role,
+    required Color accentColor,
     bool showContainerRenderBox = true,
   }) {
     return IgnorePointer(
       child: CustomPaint(
         painter: OverlayPainter(
           boxInfo: boxInfo,
-          targetRectColor: _targetColor.withValues(alpha: 0.35),
-          containerRectColor: _containerColor.withValues(alpha: 0.35),
+          role: role,
+          accentColor: accentColor,
+          containerColor: showContainerRenderBox ? _containerColor : null,
           showContainerRenderBox: showContainerRenderBox,
         ),
       ),
@@ -76,13 +80,28 @@ class BoxInfoWidget extends StatelessWidget {
     return Stack(
       children: [
         if (boxInfo?.targetRenderBox.attached == true)
-          _buildBoxOverlay(context, boxInfo!),
+          _buildBoxOverlay(
+            context,
+            boxInfo!,
+            role: OverlayRole.selected,
+            accentColor: _selectedColor,
+          ),
         if (hoveredBoxInfo?.targetRenderBox.attached == true)
-          _buildBoxOverlay(context, hoveredBoxInfo!,
-              showContainerRenderBox: false),
+          _buildBoxOverlay(
+            context,
+            hoveredBoxInfo!,
+            role: OverlayRole.hovered,
+            accentColor: _hoveredColor,
+            showContainerRenderBox: false,
+          ),
         if (comparedBoxInfo?.targetRenderBox.attached == true)
-          _buildBoxOverlay(context, comparedBoxInfo!,
-              showContainerRenderBox: false),
+          _buildBoxOverlay(
+            context,
+            comparedBoxInfo!,
+            role: OverlayRole.compared,
+            accentColor: _comparedColor,
+            showContainerRenderBox: false,
+          ),
         if (boxInfo?.targetRenderBox.attached == true &&
             comparedBoxInfo?.targetRenderBox.attached == true)
           IgnorePointer(
