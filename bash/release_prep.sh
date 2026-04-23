@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
 # release_prep.sh - one-shot release preparation.
 #
-# Default flow:
-#   1. Bump version in version.config and all pubspecs.
+# Default flow (non-interactive, always runs top to bottom):
+#   1. Bump version in version.config and all pubspecs (skip with --skip-bump).
 #   2. Ensure root CHANGELOG.md has a section for the new version
-#      (inserts a stub near the top if missing).
-#   3. Open $EDITOR on CHANGELOG.md so you can finalize the entry.
-#   4. Propagate root CHANGELOG.md to every package.
-#   5. Rebuild per-package READMEs from docs/readme/.
-#   6. Run `dart format .` on the tree.
+#      (inserts an empty stub near the top if missing).
+#   3. Propagate root CHANGELOG.md to every package.
+#   4. Rebuild per-package READMEs from docs/readme/.
+#   5. Run `dart format .` on the tree.
 #
-# Usage:
-#   ./bash/release_prep.sh                  # default: bump patch + full flow
-#   ./bash/release_prep.sh minor            # same, minor bump
-#   ./bash/release_prep.sh major            # same, major bump
-#   ./bash/release_prep.sh --skip-bump      # keep current version, just sync docs
-#   ./bash/release_prep.sh --no-edit        # auto-insert stub, don't open editor
-#   ./bash/release_prep.sh --help
+# Typical flow:
+#   ./bash/release_prep.sh             # bump patch + stub + propagate + README + format
+#   ... edit CHANGELOG.md, fill in the stub with real entries ...
+#   ./bash/release_prep.sh --skip-bump # re-propagate CHANGELOG + rebuild READMEs + format
 #
-# Each underlying step can also be run independently:
+# Options:
+#   patch|minor|major     Bump kind (default: patch). Ignored with --skip-bump.
+#   --skip-bump           Keep current version, just sync docs.
+#   --edit                Open $EDITOR on CHANGELOG.md between stub-insert and propagate.
+#   --help                Show this help.
+#
+# Each step remains independently runnable:
 #   ./bash/update_versions.sh --bump patch
 #   ./bash/update_changelog.sh --full-copy --yes
 #   ./bash/build_readme.sh
@@ -31,17 +33,17 @@ cd "$ROOT_DIR"
 
 BUMP_KIND="patch"
 SKIP_BUMP=0
-NO_EDIT=0
+OPEN_EDITOR=0
 
 usage() {
-  sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 for arg in "$@"; do
   case "$arg" in
     patch|minor|major) BUMP_KIND="$arg" ;;
     --skip-bump)       SKIP_BUMP=1 ;;
-    --no-edit)         NO_EDIT=1 ;;
+    --edit)            OPEN_EDITOR=1 ;;
     --help|-h)         usage; exit 0 ;;
     *) echo "[ERR] Unknown argument: $arg" >&2; usage; exit 2 ;;
   esac
@@ -58,7 +60,7 @@ else
   echo "==> Skipping version bump"
 fi
 
-# Read (possibly new) version
+# Read current version (post-bump or unchanged)
 # shellcheck disable=SC1090
 source "$VERSION_FILE"
 NEW_VERSION="$VERSION"
@@ -70,8 +72,10 @@ section_present() {
 }
 
 insert_stub() {
-  local stub
-  stub=$(cat <<MARKDOWN
+  local stub_file
+  stub_file=$(mktemp)
+  cat > "$stub_file" <<MARKDOWN
+
 ## ${NEW_VERSION}
 
 ### Added
@@ -87,49 +91,52 @@ insert_stub() {
 -
 
 MARKDOWN
-)
-  awk -v stub="$stub" '
-    NR==1 { print; print ""; print stub; next }
+  awk -v sf="$stub_file" '
+    NR==1 {
+      print
+      while ((getline line < sf) > 0) print line
+      close(sf)
+      next
+    }
     { print }
   ' "$CHANGELOG" > "$CHANGELOG.tmp" && mv "$CHANGELOG.tmp" "$CHANGELOG"
+  rm -f "$stub_file"
 }
 
-if [[ $SKIP_BUMP -eq 0 ]]; then
-  if section_present; then
-    echo "==> $CHANGELOG already has a section for $NEW_VERSION"
-  else
-    echo "==> Inserting stub section for $NEW_VERSION in $CHANGELOG"
-    insert_stub
-  fi
+if section_present; then
+  echo "==> $CHANGELOG already has a section for $NEW_VERSION"
+else
+  echo "==> Inserting stub section for $NEW_VERSION in $CHANGELOG"
+  insert_stub
+fi
 
-  # 3. Open editor unless --no-edit
-  if [[ $NO_EDIT -eq 0 ]]; then
-    EDITOR_CMD="${EDITOR:-}"
-    if [[ -z $EDITOR_CMD ]]; then
-      if   command -v code >/dev/null 2>&1; then EDITOR_CMD="code --wait"
-      elif command -v vim  >/dev/null 2>&1; then EDITOR_CMD="vim"
-      elif command -v nano >/dev/null 2>&1; then EDITOR_CMD="nano"
-      fi
+# Optional: open editor (non-fatal — failures don't abort the rest)
+if [[ $OPEN_EDITOR -eq 1 ]]; then
+  EDITOR_CMD="${EDITOR:-}"
+  if [[ -z $EDITOR_CMD ]]; then
+    if   command -v code >/dev/null 2>&1; then EDITOR_CMD="code --wait"
+    elif command -v vim  >/dev/null 2>&1; then EDITOR_CMD="vim"
+    elif command -v nano >/dev/null 2>&1; then EDITOR_CMD="nano"
     fi
-    if [[ -n $EDITOR_CMD ]]; then
-      echo "==> Opening $CHANGELOG ($EDITOR_CMD) - save & close to continue"
-      # shellcheck disable=SC2086
-      $EDITOR_CMD "$CHANGELOG"
-    else
-      echo "[WARN] No editor found (\$EDITOR unset, no code/vim/nano); skipping edit step"
-    fi
+  fi
+  if [[ -n $EDITOR_CMD ]]; then
+    echo "==> Opening $CHANGELOG ($EDITOR_CMD) - save & close to continue"
+    # shellcheck disable=SC2086
+    $EDITOR_CMD "$CHANGELOG" || echo "[WARN] Editor exited non-zero; continuing anyway"
+  else
+    echo "[WARN] No editor found; skipping"
   fi
 fi
 
-# 4. Propagate CHANGELOG to packages
+# 3. Propagate CHANGELOG to packages
 echo "==> Propagating CHANGELOG to packages"
 ./bash/update_changelog.sh --full-copy --yes
 
-# 5. Rebuild READMEs
+# 4. Rebuild READMEs
 echo "==> Rebuilding READMEs"
 ./bash/build_readme.sh
 
-# 6. Format
+# 5. Format
 echo "==> Formatting Dart sources"
 dart format .
 
