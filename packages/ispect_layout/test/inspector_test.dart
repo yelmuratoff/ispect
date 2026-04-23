@@ -31,6 +31,7 @@ import 'package:ispect_layout/ispect_layout.dart';
 // }
 
 const _containerKey = ValueKey('container');
+const _roundedMaterialChildKey = ValueKey('rounded-material-child');
 
 Widget _buildBody() {
   return MaterialApp(
@@ -49,10 +50,34 @@ Widget _buildBody() {
                 height: 100.0,
                 decoration: const BoxDecoration(
                   color: Colors.blue,
+                  borderRadius: BorderRadius.all(Radius.circular(12.0)),
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildMaterialShapeBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(child: child!),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Material(
+          color: Colors.orange,
+          elevation: 4.0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(18.0)),
+          ),
+          child: const SizedBox(
+            key: _roundedMaterialChildKey,
+            width: 120.0,
+            height: 48.0,
+          ),
         ),
       ),
     ),
@@ -217,6 +242,31 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('L:50.0  T:150.0  R:50.0  B:150.0'), findsOneWidget);
+      expect(find.text('border radius'), findsOneWidget);
+      expect(find.text('12.0'), findsOneWidget);
+    });
+
+    testWidgets('shows shape border radius for Material shapes',
+        (tester) async {
+      await tester.pumpWidget(_buildMaterialShapeBody());
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      final child = tester.renderObject(find.byKey(_roundedMaterialChildKey))
+          as RenderBox;
+
+      final position = (child.localToGlobal(Offset.zero) & child.size).center;
+
+      await tester.tapAt(position);
+      await tester.pump();
+
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('RoundedRectangleBorder'), findsOneWidget);
+      expect(find.text('border radius'), findsOneWidget);
+      expect(find.text('18.0'), findsOneWidget);
     });
 
     // testWidgets('hit-test result golden test', (tester) async {

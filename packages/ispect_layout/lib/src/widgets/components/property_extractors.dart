@@ -33,6 +33,30 @@ String formatRadius(Radius r) =>
   );
 }
 
+String describeShapeBorder(ShapeBorder shape) => shape.runtimeType.toString();
+
+BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
+  if (shape is RoundedRectangleBorder) return shape.borderRadius;
+  if (shape is BeveledRectangleBorder) return shape.borderRadius;
+  if (shape is ContinuousRectangleBorder) return shape.borderRadius;
+  return null;
+}
+
+List<PropSpec> shapeBorderProps(ShapeBorder shape) => [
+      (
+        icon: Icons.circle_outlined,
+        subtitle: 'shape',
+        child: Text(describeShapeBorder(shape)),
+      ),
+      if (extractShapeBorderRadius(shape) case final borderRadius?)
+        if (formatBorderRadius(borderRadius) case final br?)
+          (
+            icon: Icons.rounded_corner,
+            subtitle: br.label,
+            child: Text(br.value),
+          ),
+    ];
+
 /// Best-effort short description of an [ImageProvider]: URL for network
 /// images, asset name for bundled assets, file path for files, else runtime
 /// type. Recurses into [ResizeImage].
@@ -422,8 +446,17 @@ List<PropSpec> clipRectProps(RenderClipRect target) =>
 List<PropSpec> clipOvalProps(RenderClipOval target) =>
     _genericClipProps(target.clipper?.runtimeType, target.clipBehavior);
 
-List<PropSpec> clipPathProps(RenderClipPath target) =>
-    _genericClipProps(target.clipper?.runtimeType, target.clipBehavior);
+List<PropSpec> clipPathProps(RenderClipPath target) => [
+      if (target.clipper case final ShapeBorderClipper clipper)
+        ...shapeBorderProps(clipper.shape)
+      else if (target.clipper != null)
+        (
+          icon: Icons.brush,
+          subtitle: 'clipper',
+          child: Text(target.clipper.runtimeType.toString()),
+        ),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+    ];
 
 List<PropSpec> _genericClipProps(Type? clipperType, Clip clipBehavior) => [
       if (clipperType != null)
@@ -570,19 +603,41 @@ List<PropSpec> _physicalFinishProps({
       ),
     ];
 
-List<PropSpec> physicalShapeProps(RenderPhysicalShape target) =>
-    _physicalFinishProps(
-      color: target.color,
-      elevation: target.elevation,
-      shadowColor: target.shadowColor,
-    );
+List<PropSpec> physicalShapeProps(RenderPhysicalShape target) => [
+      ..._physicalFinishProps(
+        color: target.color,
+        elevation: target.elevation,
+        shadowColor: target.shadowColor,
+      ),
+      if (target.clipper case final ShapeBorderClipper clipper)
+        ...shapeBorderProps(clipper.shape)
+      else
+        (
+          icon: Icons.brush,
+          subtitle: 'clipper',
+          child: Text(target.clipper.runtimeType.toString()),
+        ),
+    ];
 
-List<PropSpec> physicalModelProps(RenderPhysicalModel target) =>
-    _physicalFinishProps(
-      color: target.color,
-      elevation: target.elevation,
-      shadowColor: target.shadowColor,
-    );
+List<PropSpec> physicalModelProps(RenderPhysicalModel target) => [
+      ..._physicalFinishProps(
+        color: target.color,
+        elevation: target.elevation,
+        shadowColor: target.shadowColor,
+      ),
+      (
+        icon: Icons.circle_outlined,
+        subtitle: 'shape',
+        child: Text(target.shape.name),
+      ),
+      if (formatBorderRadius(target.borderRadius ?? BorderRadius.zero)
+          case final br?)
+        (
+          icon: Icons.rounded_corner,
+          subtitle: br.label,
+          child: Text(br.value),
+        ),
+    ];
 
 List<PropSpec> fittedBoxProps(RenderFittedBox target) => [
       (
