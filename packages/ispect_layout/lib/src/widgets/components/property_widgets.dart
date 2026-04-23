@@ -201,9 +201,10 @@ class ShadowsView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final s in shadows)
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
             spacing: 4,
+            runSpacing: 2,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [ColorHexChip(s.color), Text(line(s))],
           ),
       ],
