@@ -211,6 +211,11 @@ void main() {
 
       expect(find.textContaining('RenderDecoratedBox'), findsOneWidget);
       expect(find.text('100.0 × 100.0'), findsWidgets);
+
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
       expect(find.text('L:50.0  T:150.0  R:50.0  B:150.0'), findsOneWidget);
     });
 
