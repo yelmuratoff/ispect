@@ -35,6 +35,7 @@
   </p>
 </div>
 
+
 **ispect_layout** is a visual layout inspector for Flutter — tap any widget at runtime to read its render box (size, constraints, padding, decoration, text styles, transform matrix, clip shape) and compare two widgets side-by-side to measure the pixel gap between them.
 
 Standalone package — works independently of the rest of the [ISpect toolkit](#the-ispect-toolkit).
@@ -54,7 +55,7 @@ Standalone package — works independently of the rest of the [ISpect toolkit](#
 
 ```yaml
 dependencies:
-  ispect_layout: 5.0.0-dev19
+  ispect_layout: ^5.0.0-dev20
 ```
 
 ## Quick start
@@ -88,16 +89,17 @@ Forked from [`inspector`](https://github.com/kekland/inspector) by Erzhan (kekla
 
 ISpect is a modular monorepo. Install only what your project needs — each package works independently.
 
-| Package                                                     | What it does                                                                          |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI — debug panel, log viewer, navigation observer, inspector integration      |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core — typed log entries, filtering, tracing, observers             |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction                                         |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction                                   |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction                                    |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing (SQL, ORM, KV stores)                                      |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer                                              |
+| Package | What it does |
+| --- | --- |
+| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
+| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
+
 
 ## Contributing
 
