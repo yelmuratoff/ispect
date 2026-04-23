@@ -16,6 +16,16 @@
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="250" />
 </div>
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" />
+  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" />
+</div>
+
 ## Why ISpect?
 
 Most Flutter debug tooling ships in your binary. ISpect doesn't — when `ISPECT_ENABLED` isn't defined at compile time, the entire toolkit compiles to `const`-guarded no-ops and Dart's tree-shaker strips it from the release APK/IPA. Zero bytes in production.
