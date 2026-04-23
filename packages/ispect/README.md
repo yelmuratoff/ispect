@@ -35,7 +35,6 @@
   </p>
 </div>
 
-
 **ISpect** is a production-safe debugging toolkit for Flutter. It provides a visual debug panel, structured logging, network monitoring, and data redaction — all automatically stripped from release builds via compile-time tree-shaking.
 
 **[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
@@ -54,14 +53,14 @@
 
 ## What's in the box
 
-| Capability | What it does |
-| --- | --- |
-| Zero-footprint builds | Compile-time `const` guard removes all code from release APK/IPA |
-| Draggable debug panel | Floating panel with quick actions, custom items, and badge notifications |
-| Visual inspector | Tap any widget to see its render box, padding, constraints, and colours |
-| Structured logs | Typed log entries with levels, filtering, export/import, and session history |
-| Observer hooks | Forward log events to Sentry, Crashlytics, or any backend in real time |
-| 12 languages | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi |
+| Capability            | What it does                                                                 |
+| --------------------- | ---------------------------------------------------------------------------- |
+| Zero-footprint builds | Compile-time `const` guard removes all code from release APK/IPA             |
+| Draggable debug panel | Floating panel with quick actions, custom items, and badge notifications     |
+| Visual inspector      | Tap any widget to see its render box, padding, constraints, and colours      |
+| Structured logs       | Typed log entries with levels, filtering, export/import, and session history |
+| Observer hooks        | Forward log events to Sentry, Crashlytics, or any backend in real time       |
+| 12 languages          | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                               |
 
 For Dio/http/WS/DB/BLoC capture and the standalone layout inspector, see the [toolkit packages](#the-ispect-toolkit).
 
@@ -69,7 +68,7 @@ For Dio/http/WS/DB/BLoC capture and the standalone layout inspector, see the [to
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev18
+  ispect: 5.0.0-dev19
 ```
 
 ## Quick start
@@ -138,7 +137,6 @@ class ISpectConfig {
 ```
 
 Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. See [ispect on pub.dev](https://pub.dev/packages/ispect) for the full production-safety guide.
-
 
 ## Logger configuration
 
@@ -426,17 +424,16 @@ See [example/](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/e
 
 ISpect is a modular monorepo. Install only what your project needs — each package works independently.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI — debug panel, log viewer, navigation observer, inspector integration      |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core — typed log entries, filtering, tracing, observers             |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction                                         |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction                                   |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction                                    |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing (SQL, ORM, KV stores)                                      |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer                                              |
 
 ## Contributing
 

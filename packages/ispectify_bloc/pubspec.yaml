@@ -1,6 +1,6 @@
 name: ispectify_bloc
 description: BLoC state management integration for ISpect toolkit
-version: 5.0.0-dev18
+version: 5.0.0-dev19
 homepage: https://github.com/yelmuratoff/ispect.git
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
@@ -12,7 +12,7 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ispectify: ^5.0.0-dev18
+  ispectify: ^5.0.0-dev19
   bloc: ^9.1.0
   meta: ^1.16.0
 

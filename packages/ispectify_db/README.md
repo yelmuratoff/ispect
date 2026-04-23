@@ -35,7 +35,6 @@
   </p>
 </div>
 
-
 **ispectify_db** adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension — with timing, row counts, slow-query detection, and redaction.
 
 - Works with any driver: sqflite, drift, Isar, ObjectBox, shared_preferences, hive, etc. — just wrap the call.
@@ -48,8 +47,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^5.0.0-dev18
-  ispectify_db: ^5.0.0-dev18
+  ispectify: 5.0.0-dev19
+  ispectify_db: 5.0.0-dev19
 ```
 
 ## Quick start
@@ -87,13 +86,13 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 
 ## Configuration
 
-| Field | Default | What it does |
-| --- | --- | --- |
-| `sampleRate` | `1.0` | Fraction of calls to log (e.g. `0.1` = 10%). |
-| `redact` | `true` | Mask sensitive keys in `args` and `statement`. |
-| `redactKeys` | built-in set | Override the redaction key list. |
-| `attachStackOnError` | `true` | Capture and log stack trace on failure. |
-| `slowQueryThreshold` | `null` | If set, durations above the threshold are re-logged as `db-slow-query`. |
+| Field                | Default      | What it does                                                            |
+| -------------------- | ------------ | ----------------------------------------------------------------------- |
+| `sampleRate`         | `1.0`        | Fraction of calls to log (e.g. `0.1` = 10%).                            |
+| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                          |
+| `redactKeys`         | built-in set | Override the redaction key list.                                        |
+| `attachStackOnError` | `true`       | Capture and log stack trace on failure.                                 |
+| `slowQueryThreshold` | `null`       | If set, durations above the threshold are re-logged as `db-slow-query`. |
 
 ```dart
 ISpectDbCore.config = const ISpectDbConfig(
@@ -107,17 +106,16 @@ ISpectDbCore.config = const ISpectDbConfig(
 
 ISpect is a modular monorepo. Install only what your project needs — each package works independently.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI — debug panel, log viewer, navigation observer, inspector integration      |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core — typed log entries, filtering, tracing, observers             |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction                                         |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction                                   |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction                                    |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing (SQL, ORM, KV stores)                                      |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer                                              |
 
 ## Contributing
 
