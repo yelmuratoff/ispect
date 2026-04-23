@@ -429,12 +429,25 @@ class InspectorController {
     return offset0;
   }
 
+  /// Clamps the pointer to the screen rect so color picker / zoom keep
+  /// tracking the nearest valid pixel when the finger drifts off-screen
+  /// instead of freezing or flying the overlay out of view.
+  Offset _clampToScreen(Offset offset, BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    if (size.isEmpty) return offset;
+    return Offset(
+      offset.dx.clamp(0.0, size.width),
+      offset.dy.clamp(0.0, size.height),
+    );
+  }
+
   void _onColorPickerHover(Offset offset, BuildContext context) {
     if (_image == null || byteDataStateNotifier.value == null) return;
 
-    final shiftedOffset = _extractShiftedOffset(offset, context);
-    final x = shiftedOffset.dx.round();
-    final y = shiftedOffset.dy.round();
+    final clamped = _clampToScreen(offset, context);
+    final shiftedOffset = _extractShiftedOffset(clamped, context);
+    final x = shiftedOffset.dx.round().clamp(0, _image!.width - 1);
+    final y = shiftedOffset.dy.round().clamp(0, _image!.height - 1);
 
     final color = getPixelFromByteData(
       byteDataStateNotifier.value!,
@@ -455,13 +468,14 @@ class InspectorController {
         (stackKey.currentContext!.findRenderObject() as RenderStack)
             .localToGlobal(Offset.zero);
 
-    selectedColorOffsetNotifier.value = offset - overlayOffset;
+    selectedColorOffsetNotifier.value = clamped - overlayOffset;
   }
 
   void _onZoomHover(Offset offset, BuildContext context) {
     if (_image == null || byteDataStateNotifier.value == null) return;
 
-    final shiftedOffset = _extractShiftedOffset(offset, context);
+    final clamped = _clampToScreen(offset, context);
+    final shiftedOffset = _extractShiftedOffset(clamped, context);
 
     if (stackKey.currentContext == null) return;
 
@@ -469,7 +483,10 @@ class InspectorController {
         (stackKey.currentContext!.findRenderObject() as RenderStack)
             .localToGlobal(Offset.zero);
 
-    zoomImageOffsetNotifier.value = shiftedOffset;
-    zoomOverlayOffsetNotifier.value = offset - overlayOffset;
+    zoomImageOffsetNotifier.value = Offset(
+      shiftedOffset.dx.clamp(0.0, _image!.width.toDouble()),
+      shiftedOffset.dy.clamp(0.0, _image!.height.toDouble()),
+    );
+    zoomOverlayOffsetNotifier.value = clamped - overlayOffset;
   }
 }

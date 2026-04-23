@@ -223,7 +223,7 @@ class InspectorState extends State<Inspector> {
             return Positioned(
               left: offset.dx.clamp(0, screenSize.width - overlaySize),
               top: (offset.dy - overlaySize - _overlayOffsetY)
-                  .clamp(0, screenSize.height),
+                  .clamp(0, screenSize.height - overlaySize),
               child: ZoomableColorPickerOverlay(
                 color: color,
                 isColorSchemeHintEnabled: _controller.isColorSchemeHintEnabled,
@@ -300,10 +300,15 @@ class InspectorState extends State<Inspector> {
                   ((zoomScale - 2.0) / 10.0).clamp(0, 1),
                 )!
                 .toDouble();
+            final screenSize = MediaQuery.sizeOf(context);
+            final left = (offset.dx - overlaySize / 2)
+                .clamp(0.0, screenSize.width - overlaySize);
+            final top = (offset.dy - overlaySize / 2)
+                .clamp(0.0, screenSize.height - overlaySize);
 
             return Positioned(
-              left: offset.dx - overlaySize / 2,
-              top: offset.dy - overlaySize / 2,
+              left: left,
+              top: top,
               child: IgnorePointer(
                 child: ZoomOverlayWidget(
                   image: _controller.image!,
