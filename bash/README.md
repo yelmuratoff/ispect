@@ -26,6 +26,10 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ./bash/check_version_sync.sh && ./bash/check_dependencies.sh && ./bash/build_readme.sh --check
 ```
 
+```bash
+./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh && dart format .
+```
+
 ## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).
