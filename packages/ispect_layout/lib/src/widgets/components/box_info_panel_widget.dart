@@ -37,7 +37,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
         child: Theme(
           data: theme.copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            initiallyExpanded: true,
+            initiallyExpanded: false,
             title: _PanelTitleBar(
               target: target,
               onCompare: onCompare,
@@ -50,41 +50,134 @@ class BoxInfoPanelWidget extends StatelessWidget {
             ),
             expandedAlignment: Alignment.centerLeft,
             expandedCrossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _MainRow(boxInfo: boxInfo),
-              Divider(height: 16.0, color: dividerColor),
-              PropSection(props: constraintsProps(target.constraints)),
-              if (hasCompare) ...[
-                Divider(height: 16.0, color: dividerColor),
-                _ComparedRow(
-                  boxInfo: boxInfo,
-                  comparedBoxInfo: comparedBoxInfo!,
-                ),
-              ],
-              ..._buildTargetSections(target, dividerColor),
-              ..._buildWrapperSections(theme, dividerColor),
-            ],
+            children: _buildSections(context, target, dividerColor, hasCompare),
           ),
         ),
       ),
     );
   }
 
-  /// Paragraph gets a dedicated section (text preview + span style
-  /// breakdown). Everything else collapses type-specific props and resolved
-  /// decoration into a single [PropSection].
-  List<Widget> _buildTargetSections(RenderBox target, Color dividerColor) {
-    if (target is RenderParagraph) {
-      return [
-        Divider(height: 16.0, color: dividerColor),
-        _ParagraphSection(target: target),
-      ];
+  List<Widget> _buildSections(
+    BuildContext context,
+    RenderBox target,
+    Color dividerColor,
+    bool hasCompare,
+  ) {
+    final out = <Widget>[];
+    void divider() => out.add(Divider(height: 20.0, color: dividerColor));
+
+    // LAYOUT: size, padding, constraints.
+    out
+      ..add(const _SectionHeader('layout'))
+      ..add(_MainRow(boxInfo: boxInfo))
+      ..add(const SizedBox(height: 8))
+      ..add(PropSection(props: constraintsProps(target.constraints)));
+
+    if (hasCompare) {
+      divider();
+      out
+        ..add(const _SectionHeader('compare'))
+        ..add(
+          _ComparedRow(
+            boxInfo: boxInfo,
+            comparedBoxInfo: comparedBoxInfo!,
+          ),
+        );
     }
-    final props = [...typeProps(target), ..._resolvedDecorationProps()];
-    if (props.isEmpty) return const [];
+
+    if (target is RenderParagraph) {
+      out.addAll(_paragraphSections(context, target, dividerColor));
+    } else {
+      final tProps = typeProps(target);
+      if (tProps.isNotEmpty) {
+        divider();
+        out
+          ..add(const _SectionHeader('type'))
+          ..add(PropSection(props: tProps));
+      }
+      final dProps = _resolvedDecorationProps();
+      if (dProps.isNotEmpty) {
+        divider();
+        out
+          ..add(const _SectionHeader('appearance'))
+          ..add(PropSection(props: dProps));
+      }
+    }
+
+    out.addAll(_wrapperSections(context, dividerColor));
+    return out;
+  }
+
+  List<Widget> _paragraphSections(
+    BuildContext context,
+    RenderParagraph target,
+    Color dividerColor,
+  ) {
+    final theme = Theme.of(context);
+    final preview = previewText(target.text);
+    final pProps = paragraphProps(target);
+    final spanSections = extractTextStyles(target.text)
+        .map(spanProps)
+        .where((p) => p.isNotEmpty)
+        .toList();
+
+    final out = <Widget>[];
+    if (preview.isNotEmpty || pProps.isNotEmpty) {
+      out
+        ..add(Divider(height: 20.0, color: dividerColor))
+        ..add(const _SectionHeader('text'));
+      if (preview.isNotEmpty) {
+        out.add(
+          PropChip(
+            icon: Icons.text_snippet_outlined,
+            subtitle: 'text',
+            backgroundColor: theme.chipTheme.backgroundColor,
+            expandChild: true,
+            child: Text(
+              '"$preview"',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(fontStyle: FontStyle.italic),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        );
+        if (pProps.isNotEmpty) out.add(const SizedBox(height: 6));
+      }
+      if (pProps.isNotEmpty) {
+        out.add(PropSection(props: pProps));
+      }
+    }
+
+    if (spanSections.isNotEmpty) {
+      out
+        ..add(Divider(height: 20.0, color: dividerColor))
+        ..add(const _SectionHeader('typography'));
+      for (var i = 0; i < spanSections.length; i++) {
+        if (i > 0) out.add(const SizedBox(height: 6));
+        out.add(PropSection(props: spanSections[i]));
+      }
+    }
+    return out;
+  }
+
+  List<Widget> _wrapperSections(BuildContext context, Color dividerColor) {
+    final theme = Theme.of(context);
+    final wrappers = _wrappersWithTypeProps();
+    if (wrappers.isEmpty) return const [];
     return [
-      Divider(height: 16.0, color: dividerColor),
-      PropSection(props: props),
+      for (final box in wrappers) ...[
+        Divider(height: 20.0, color: dividerColor),
+        const _SectionHeader('wrapper'),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            describeIdentity(box),
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+        PropSection(props: typeProps(box)),
+      ],
     ];
   }
 
@@ -106,27 +199,6 @@ class BoxInfoPanelWidget extends StatelessWidget {
       return decorationProps(d);
     }
     return [];
-  }
-
-  /// Surfaces same-size ancestor wrappers (Transform, Clip*, BackdropFilter,
-  /// Opacity, FittedBox, etc.) whose props would otherwise be hidden when
-  /// the inspector selects an inner decorated/proxy child.
-  List<Widget> _buildWrapperSections(ThemeData theme, Color dividerColor) {
-    final wrappers = _wrappersWithTypeProps();
-    if (wrappers.isEmpty) return const [];
-    return [
-      for (final box in wrappers) ...[
-        Divider(height: 16.0, color: dividerColor),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            describeIdentity(box),
-            style: theme.textTheme.bodySmall,
-          ),
-        ),
-        PropSection(props: typeProps(box)),
-      ],
-    ];
   }
 
   /// Walks the parent chain, collecting render boxes that share the target's
@@ -162,12 +234,29 @@ class _PanelTitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = target.displaySize;
     return Row(
       children: [
         Expanded(
-          child: Text(
-            describeIdentity(target),
-            style: theme.textTheme.bodySmall,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                describeIdentity(target),
+                style: theme.textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${size.width.toStringAsFixed(1)} × '
+                '${size.height.toStringAsFixed(1)}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ),
         if (onCompare != null)
@@ -257,44 +346,24 @@ class _ComparedRow extends StatelessWidget {
   }
 }
 
-class _ParagraphSection extends StatelessWidget {
-  const _ParagraphSection({required this.target});
-  final RenderParagraph target;
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.label);
+  final String label;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dividerColor = theme.colorScheme.outlineVariant;
-    final spanSections = extractTextStyles(target.text)
-        .map(spanProps)
-        .where((p) => p.isNotEmpty)
-        .toList();
-    final preview = previewText(target.text);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 4,
-      children: [
-        if (preview.isNotEmpty)
-          PropChip(
-            icon: Icons.text_snippet_outlined,
-            subtitle: 'text',
-            backgroundColor: theme.chipTheme.backgroundColor,
-            expandChild: true,
-            child: Text(
-              '"$preview"',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(fontStyle: FontStyle.italic),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        PropSection(props: paragraphProps(target)),
-        if (spanSections.isNotEmpty) ...[
-          Divider(height: 12, color: dividerColor),
-          for (final props in spanSections) PropSection(props: props),
-        ],
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 8),
+      child: Text(
+        label.toUpperCase(),
+        style: theme.textTheme.labelSmall?.copyWith(
+          letterSpacing: 0.8,
+          fontSize: 10.0,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }

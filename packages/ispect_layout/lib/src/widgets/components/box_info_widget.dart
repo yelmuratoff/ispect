@@ -55,6 +55,26 @@ class BoxInfoWidget extends StatelessWidget {
     );
   }
 
+  /// Places the info panel on the side of the screen opposite to the target,
+  /// so selection details never cover the widget being inspected. Respects
+  /// safe-area insets so the panel doesn't collide with the status bar or
+  /// the bottom gesture area.
+  Widget _buildPanelSlot(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final screenHeight = mq.size.height;
+    final targetCenterY = boxInfo!.targetRectShifted.center.dy;
+    final panelOnTop = targetCenterY > screenHeight / 2;
+
+    const gap = 12.0;
+    return Positioned(
+      left: gap,
+      right: gap,
+      top: panelOnTop ? mq.padding.top + gap : null,
+      bottom: panelOnTop ? null : mq.padding.bottom + gap,
+      child: _buildTargetBoxInfoPanel(context),
+    );
+  }
+
   Widget _buildBoxOverlay(
     BuildContext context,
     BoxInfo boxInfo, {
@@ -113,16 +133,9 @@ class BoxInfoWidget extends StatelessWidget {
               ),
             ),
           ),
-        // ..._buildPaddingWidgets(context),
         if (boxInfo?.targetRenderBox.attached == true) ...[
           _buildTargetBoxSizeWidget(context),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: _buildTargetBoxInfoPanel(context),
-            ),
-          ),
+          _buildPanelSlot(context),
         ],
       ],
     );
