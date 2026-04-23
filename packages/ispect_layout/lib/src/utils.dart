@@ -27,10 +27,15 @@ class InspectorUtils {
     RenderObject renderObject,
     Offset globalOffset,
   ) sync* {
-    if (renderObject is RenderBox) {
-      final local = renderObject.globalToLocal(globalOffset);
+    if (renderObject is RenderBox && renderObject.hasSize) {
+      final globalRect = MatrixUtils.transformRect(
+        renderObject.getTransformTo(null),
+        Offset.zero & renderObject.size,
+      );
 
-      if ((Offset.zero & renderObject.size).contains(local)) {
+      if (globalRect.isFinite &&
+          !globalRect.isEmpty &&
+          globalRect.contains(globalOffset)) {
         yield renderObject;
       }
     }
