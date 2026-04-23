@@ -1,3 +1,9 @@
+<!--
+  GENERATED FILE — do not edit by hand.
+  Source:     docs/readme/ispect_layout.md
+  Regenerate: ./bash/build_readme.sh
+-->
+
 <div align="center">
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
 
@@ -5,11 +11,14 @@
     <a href="https://pub.dev/packages/ispect_layout">
       <img src="https://img.shields.io/pub/v/ispect_layout?include_prereleases&style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="pub version">
     </a>
-    <a href="https://opensource.org/licenses/MIT">
+    <a href="https://github.com/yelmuratoff/ispect/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/license-mit-blue?style=for-the-badge&labelColor=0360a9&color=2ab7f6" alt="License">
     </a>
     <a href="https://github.com/yelmuratoff/ispect">
       <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=for-the-badge&logo=github&labelColor=0360a9&color=2ab7f6" alt="GitHub stars">
+    </a>
+    <a href="https://codecov.io/gh/yelmuratoff/ispect">
+      <img src="https://img.shields.io/codecov/c/github/yelmuratoff/ispect?style=for-the-badge&logo=codecov&labelColor=0360a9&color=2ab7f6" alt="Coverage">
     </a>
   </p>
 
@@ -20,55 +29,27 @@
     <a href="https://pub.dev/packages/ispect_layout/score">
       <img src="https://img.shields.io/pub/points/ispect_layout?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub points">
     </a>
-    <a href="https://pub.dev/packages/ispect_layout/downloads">
+    <a href="https://pub.dev/packages/ispect_layout">
       <img src="https://img.shields.io/pub/dm/ispect_layout?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub downloads">
     </a>
   </p>
 </div>
 
-**ispect_layout** is a standalone visual layout inspector for Flutter. Tap any widget in a running app to read its render box — size, constraints, padding, decoration, text styles, transform matrix, clip shape — then tap a second widget to measure the pixel gap between them. Sample any pixel's color and magnify pixel-dense regions without leaving the app.
 
-Works on its own — no dependency on the rest of the ISpect toolkit.
+**ispect_layout** is a visual layout inspector for Flutter — tap any widget at runtime to read its render box (size, constraints, padding, decoration, text styles, transform matrix, clip shape) and compare two widgets side-by-side to measure the pixel gap between them.
 
-<div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/1.jpg?raw=true" width="260" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/2.jpg?raw=true" width="260" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/3.jpg?raw=true" width="260" />
-</div>
+Standalone package — works independently of the rest of the [ISpect toolkit](#the-ispect-toolkit).
 
-<div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/4.jpg?raw=true" width="260" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/5.jpg?raw=true" width="260" />
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/6.jpg?raw=true" width="260" />
-</div>
+## What it surfaces
 
-<div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/7.jpg?raw=true" width="260" />
-</div>
-
----
-
-## Features
-
-| Mode             | What it does                                                                                                                            | Default shortcut |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| **Inspector**    | Tap a widget, see a full render-object breakdown and the hit-test path visualised over the UI.                                          | `Alt` / `Meta`   |
-| **Compare**      | Lock a selection, tap a second widget, and read the horizontal/vertical gap or LTRB offset with an overlay between the two boxes.       | `Y`              |
-| **Color picker** | Hover/tap any on-screen pixel to capture its color. A zoomable magnifier shows neighbouring pixels and the closest `ColorScheme` token. | `Shift`          |
-| **Zoom**         | Pixel-level magnifier for dense UI — mouse-wheel / trackpad changes zoom level in-place.                                                | `Z`              |
-
-### Render-object coverage
-
-The inspector surfaces the actual render object, not just the widget name, so wrappers that share the same bounds are shown separately under **Wrapper ancestors**:
-
-- **Layout:** `RenderFlex`, `RenderStack`, `RenderWrap`, `RenderAspectRatio`, `RenderFittedBox`, `RenderCustomPaint`
-- **Decoration:** color, per-side border, shadows (incl. `spreadRadius`), gradients (visual preview + stops, `begin`/`end`, `tileMode`), `DecorationImage`, per-corner border radius (collapsed when uniform, elliptical radii rendered as `x×y`)
-- **Effects:** `RenderOpacity` / `RenderAnimatedOpacity`, `RenderPhysicalShape` / `RenderPhysicalModel`, `RenderTransform` (matrix decomposition), `RenderBackdropFilter`, every `RenderClip*`
-- **Text:** plain-text preview, span-by-span style breakdown, `didExceedMaxLines`, `maxLines`, `overflow`, `textScaler`
-- **Images:** `RenderImage` with image-source introspection (network, asset, file, memory)
-- **Fields:** `RenderEditable` — live `TextField` inspection (selection, obscure state, text style)
-
----
+- **Render box**: size, padding, constraints, and hit-test path visualisation.
+- **Decoration**: colour, per-side border, shadows (incl. `spreadRadius`), gradients (visual preview, stops, `begin` / `end`, `tileMode`), `DecorationImage`.
+- **Border radius** formatted per corner (TL / TR / BR / BL), collapsed when uniform, elliptical radii rendered as `x×y`.
+- **Text**: plain-text preview, span-by-span style breakdown, `didExceedMaxLines`, `maxLines`, `overflow`, `textScaler`.
+- **Render-object coverage**: `RenderFlex`, `RenderStack`, `RenderWrap`, `RenderImage`, `RenderOpacity` / `RenderAnimatedOpacity`, `RenderPhysicalShape` / `RenderPhysicalModel`, `RenderFittedBox`, `RenderAspectRatio`, `RenderCustomPaint`, `RenderTransform` (matrix decomposition), `RenderBackdropFilter`, every `RenderClip*`, and `RenderEditable` (text fields).
+- **Wrapper ancestors**: when the selection is wrapped in same-size proxies (Transform, ClipRRect, BackdropFilter, Opacity, FittedBox, …), each ancestor's properties are surfaced as a separate sub-section.
+- **Compare mode**: tap **Compare** (or press `Y`) and pick a second widget to see horizontal / vertical gaps or LTRB offsets with a visual overlay.
+- **Colour picker** with pixel-level sampling, `ColorScheme` hints, a zoom / magnifier overlay, and physical-keyboard shortcuts.
 
 ## Install
 
@@ -77,17 +58,7 @@ dependencies:
   ispect_layout: ^5.0.0-dev15
 ```
 
-```dart
-import 'package:ispect_layout/ispect_layout.dart';
-```
-
-Platforms: Android, iOS, web, macOS, Windows, Linux. Flutter ≥ 3.22, Dart ≥ 3.6.
-
----
-
-## Quick Start
-
-Wrap your app with `Inspector` via `MaterialApp.builder`. The default FAB panel appears on the right edge of the screen in debug builds.
+## Quick start
 
 ```dart
 import 'package:flutter/material.dart';
@@ -96,9 +67,9 @@ import 'package:ispect_layout/ispect_layout.dart';
 void main() {
   runApp(
     MaterialApp(
-      home: const MyHomePage(),
+      home: const MyApp(),
       builder: (context, child) => Inspector(
-        isEnabled: true, // omit to auto-disable in release
+        isEnabled: true, // typically `kDebugMode`.
         child: child!,
       ),
     ),
@@ -106,176 +77,42 @@ void main() {
 }
 ```
 
-### Production safety
+Tap the widget-inspector FAB to start selecting. Tap the **Compare** icon (or press `Y`) to lock the current selection, then tap a second widget to see the pixel distance.
 
-When `isEnabled` is `null`, the inspector automatically disables itself in release builds (`kReleaseMode`). For explicit control, gate it behind your own flag:
-
-```dart
-Inspector(
-  isEnabled: kDebugMode, // or a --dart-define flag
-  child: child!,
-)
-```
-
-When disabled, `Inspector` returns the child verbatim — no overlay, no keyboard handler, no gesture listener.
-
----
-
-## Inspector Configuration
-
-All modes, shortcuts, and feature toggles live on `InspectorController`. Pass a pre-configured one to `Inspector(controller: ...)` if you need to override defaults or drive the inspector from outside the widget tree.
-
-```dart
-final controller = InspectorController(
-  isEnabled: true,
-  // Feature toggles — each mode can be disabled independently.
-  isWidgetInspectorEnabled: true,
-  isWidgetInspectAndCompareEnabled: true,
-  isColorPickerEnabled: true,
-  isColorSchemeHintEnabled: true, // suggests closest ColorScheme token
-  isZoomEnabled: true,
-
-  // Keyboard shortcuts (desktop & web). Hold to activate, release to exit.
-  widgetInspectorShortcuts: const [
-    LogicalKeyboardKey.alt,
-    LogicalKeyboardKey.altLeft,
-    LogicalKeyboardKey.altRight,
-    LogicalKeyboardKey.meta,
-    LogicalKeyboardKey.metaLeft,
-    LogicalKeyboardKey.metaRight,
-  ],
-  widgetInspectAndCompareShortcuts: const [LogicalKeyboardKey.keyY],
-  colorPickerShortcuts: const [
-    LogicalKeyboardKey.shift,
-    LogicalKeyboardKey.shiftLeft,
-    LogicalKeyboardKey.shiftRight,
-  ],
-  zoomShortcuts: const [LogicalKeyboardKey.keyZ],
-);
-
-Inspector(controller: controller, child: child!);
-```
-
-### Programmatic control
-
-`InspectorController` exposes a `modeNotifier` you can observe and `setMode` to drive it:
-
-```dart
-// Switch modes from your own UI / button
-controller.setMode(InspectorMode.inspector);
-controller.setMode(InspectorMode.colorPicker);
-controller.setMode(InspectorMode.zoom);
-controller.setMode(InspectorMode.none); // disable
-
-// React to mode changes
-ListenableBuilder(
-  listenable: controller.modeNotifier,
-  builder: (_, __) => Text('Mode: ${controller.modeNotifier.value.name}'),
-);
-```
-
-Additional notifiers you can listen to:
-
-- `currentRenderBoxNotifier` — currently selected `BoxInfo`
-- `hoveredRenderBoxNotifier` — box under the pointer while hovering
-- `comparedRenderBoxNotifier` — the second box in Compare mode
-- `selectedColorStateNotifier` — color under the pointer in Color Picker
-- `zoomScaleNotifier` — live zoom level (scroll/pinch adjusts it)
-
----
-
-## Custom Panel
-
-The default floating control panel can be replaced wholesale with `panelBuilder`. Use this to integrate the inspector into your own dev toolbar or drop in a different panel library:
-
-```dart
-Inspector(
-  child: child!,
-  panelBuilder: (context, controller, content) {
-    return ListenableBuilder(
-      listenable: controller.modeNotifier,
-      child: content,
-      builder: (context, child) => MyCustomPanel(
-        inspectorActive: controller.modeNotifier.value == InspectorMode.inspector,
-        onToggleInspector: () => controller.setMode(
-          controller.modeNotifier.value == InspectorMode.inspector
-              ? InspectorMode.none
-              : InspectorMode.inspector,
-        ),
-        child: child,
-      ),
-    );
-  },
-)
-```
-
-The `content` parameter is the full render tree + overlays — put it wherever your panel lays things out. See [`example/lib/custom_inspector_example.dart`](example/lib/custom_inspector_example.dart) for a complete walkthrough using [`draggable_panel`](https://pub.dev/packages/draggable_panel).
-
-To hide the built-in panel but keep keyboard shortcuts working, pass `isPanelVisible: false`:
-
-```dart
-Inspector(
-  isPanelVisible: false, // FAB hidden; Alt/Shift/Y/Z still work
-  child: child!,
-);
-```
-
----
-
-## Compare Mode
-
-Compare mode measures the pixel distance between two widgets. Flow:
-
-1. Enter **Inspector** mode, tap a widget.
-2. Press `Y` (or tap the **Compare** button on the selection overlay).
-3. Tap a second widget. The overlay renders the horizontal/vertical gap, or LTRB offsets if the boxes overlap.
-
-Drive it from code:
-
-```dart
-controller.enterCompareMode();  // requires a current selection
-controller.exitCompareMode();
-```
-
----
-
-## Example
-
-The package ships with two runnable examples:
-
-- [`example/lib/main.dart`](example/lib/main.dart) — minimal integration with a scrollable list.
-- [`example/lib/showcase_example.dart`](example/lib/showcase_example.dart) — a tour of every render-object type the inspector handles (Typography, Layout, Decoration, Spacing, Mixed, Transform & Clip, Fields, Images).
-
-```bash
-cd packages/ispect_layout/example
-flutter run -t lib/showcase_example.dart
-```
-
----
+See [`example/lib/showcase_example.dart`](https://github.com/yelmuratoff/ispect/blob/main/packages/ispect_layout/example/lib/showcase_example.dart) for a tour of every render-object type the inspector handles.
 
 ## Attribution
 
-Forked from [`inspector`](https://github.com/kekland/inspector) 4.1.0 by Erzhan ([kekland](https://github.com/kekland)) — thanks for the original work. This fork continues the package inside the ISpect monorepo with:
+Forked from [`inspector`](https://github.com/kekland/inspector) by Erzhan (kekland) — thanks for the original work. The fork continues the package with expanded render-object coverage, a wrapper-ancestors section, richer decoration breakdowns, image-source introspection, an input-fields inspector, and a refactored architecture. Inspired by [inspx](https://github.com/raunofreiberg/inspx).
 
-- Expanded render-object coverage (`RenderTransform` matrix decomposition, `RenderBackdropFilter`, all `RenderClip*`, `RenderEditable` for `TextField`).
-- A dedicated **Wrapper ancestors** section for same-size proxies (`Transform`, `ClipRRect`, `BackdropFilter`, `Opacity`, `FittedBox`, …).
-- Richer decoration breakdowns: gradients with visual preview, shadow `spreadRadius`, per-corner border radius, `DecorationImage`.
-- Image-source introspection for `RenderImage` (network / asset / file / memory).
-- RichText preview and span-by-span style breakdown.
-- A refactored `BoxInfoPanelWidget` split into testable extractor and widget modules.
+## The ISpect toolkit
 
-Inspired by [inspx](https://github.com/raunofreiberg/inspx).
+ISpect is a modular monorepo. Install only what your project needs — each package works independently.
 
----
+| Package | What it does |
+| --- | --- |
+| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
+| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
+
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/ispect/blob/main/CONTRIBUTING.md) for guidelines, and open issues or pull requests at the [ISpect repository](https://github.com/yelmuratoff/ispect).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 
 <div align="center">
   <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" />
+    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" alt="Contributors" />
   </a>
 </div>

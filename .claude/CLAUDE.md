@@ -68,7 +68,7 @@ cd packages/ispectify && dart analyze --fatal-infos
 cd packages/ispect && flutter analyze --fatal-infos
 
 # Sync docs
-./bash/update_changelog.sh && ./bash/sync_readme.sh
+./bash/update_changelog.sh && ./bash/build_readme.sh
 
 # Publish (dependency-ordered)
 ./bash/publish.sh --dry-run

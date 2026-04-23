@@ -1,40 +1,4 @@
-<!--
-  GENERATED FILE — do not edit by hand.
-  Source:     docs/readme/ispect.md
-  Regenerate: ./bash/build_readme.sh
--->
-
-<div align="center">
-  <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
-
-  <p>
-    <a href="https://pub.dev/packages/ispect">
-      <img src="https://img.shields.io/pub/v/ispect?include_prereleases&style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="pub version">
-    </a>
-    <a href="https://github.com/yelmuratoff/ispect/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/license-mit-blue?style=for-the-badge&labelColor=0360a9&color=2ab7f6" alt="License">
-    </a>
-    <a href="https://github.com/yelmuratoff/ispect">
-      <img src="https://img.shields.io/github/stars/yelmuratoff/ispect?style=for-the-badge&logo=github&labelColor=0360a9&color=2ab7f6" alt="GitHub stars">
-    </a>
-    <a href="https://codecov.io/gh/yelmuratoff/ispect">
-      <img src="https://img.shields.io/codecov/c/github/yelmuratoff/ispect?style=for-the-badge&logo=codecov&labelColor=0360a9&color=2ab7f6" alt="Coverage">
-    </a>
-  </p>
-
-  <p>
-    <a href="https://pub.dev/packages/ispect/score">
-      <img src="https://img.shields.io/pub/likes/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub likes">
-    </a>
-    <a href="https://pub.dev/packages/ispect/score">
-      <img src="https://img.shields.io/pub/points/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub points">
-    </a>
-    <a href="https://pub.dev/packages/ispect">
-      <img src="https://img.shields.io/pub/dm/ispect?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub downloads">
-    </a>
-  </p>
-</div>
-
+<!-- partial:header -->
 
 **ISpect** is a production-safe debugging toolkit for Flutter. It provides a visual debug panel, structured logging, network monitoring, and data redaction — all automatically stripped from release builds via compile-time tree-shaking.
 
@@ -69,7 +33,7 @@ For Dio/http/WS/DB/BLoC capture and the standalone layout inspector, see the [to
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev15
+  ispect: ^{{version}}
 ```
 
 ## Quick start
@@ -105,40 +69,7 @@ flutter run --dart-define=ISPECT_ENABLED=true
 flutter build apk
 ```
 
-## Production safety
-
-ISpect is flag-gated — with zero footprint in release builds when `ISPECT_ENABLED` is not defined at compile time. `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops and Dart's tree-shaker eliminates the entire toolkit.
-
-```bash
-# Development — toolkit active.
-flutter run --dart-define=ISPECT_ENABLED=true
-
-# Release — toolkit removed by the tree-shaker.
-flutter build apk
-```
-
-For environment-aware control:
-
-```dart
-import 'package:flutter/foundation.dart';
-
-class ISpectConfig {
-  static const bool isEnabled = bool.fromEnvironment(
-    'ISPECT_ENABLED',
-    defaultValue: kDebugMode,
-  );
-
-  static const String environment = String.fromEnvironment(
-    'ENVIRONMENT',
-    defaultValue: 'development',
-  );
-
-  static bool get shouldInitialize => isEnabled && environment != 'production';
-}
-```
-
-Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. See [ispect on pub.dev](https://pub.dev/packages/ispect) for the full production-safety guide.
-
+<!-- partial:production_safety -->
 
 ## Logger configuration
 
@@ -422,34 +353,6 @@ Exported log files (share, daily sessions) are stored as **plain-text JSON** on 
 
 See [example/](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect/example) for a complete working app.
 
-## The ISpect toolkit
+<!-- partial:install_matrix -->
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
-
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
-
-## Contributing
-
-Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/ispect/blob/main/CONTRIBUTING.md) for guidelines, and open issues or pull requests at the [ISpect repository](https://github.com/yelmuratoff/ispect).
-
-## License
-
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
-
----
-
-<div align="center">
-  <a href="https://github.com/yelmuratoff/ispect/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yelmuratoff/ispect" alt="Contributors" />
-  </a>
-</div>
+<!-- partial:footer -->

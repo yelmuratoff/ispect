@@ -92,8 +92,8 @@ void main() {
 ./bash/update_versions.sh --bump patch
 
 # 2. Update CHANGELOG.md (root) with new section
-# 3. Sync README to all packages
-./bash/sync_readme.sh
+# 3. Rebuild package READMEs from docs/readme/ sources
+./bash/build_readme.sh
 
 # 4. Dry-run publish to validate
 ./bash/publish.sh --dry-run
@@ -107,16 +107,29 @@ The `publish.sh` script enforces:
 - No `any` version constraints
 - No committed `Podfile.lock` files
 
-### README Synchronization
+### README Management
 
-READMEs are **synchronized** from the workspace root:
+Package READMEs are **generated** from per-package sources in `docs/readme/`. Edit the source, not the generated output.
 
 ```bash
-# Sync README from root to all packages
-./bash/sync_readme.sh
+# Rebuild every README from docs/readme/ sources.
+./bash/build_readme.sh
+
+# Verify generated files match sources (pre-commit / CI).
+./bash/build_readme.sh --check
+
+# Rebuild one package only.
+./bash/build_readme.sh --package ispectify_dio
 ```
 
-The root `README.md` is copied to all package directories. Any changes should be made to the root README and then synced.
+Sources:
+
+- `docs/readme/<package>.md` — body for the corresponding package.
+- `docs/readme/root.md` — body for the repo-root README.
+- `docs/readme/_partials/*.md` — shared fragments (header, footer, install matrix, redaction, production safety).
+- Markers: `<!-- partial:NAME -->`, `{{version}}`, `{{package}}`.
+
+Never edit `packages/*/README.md` directly — changes are overwritten on the next build.
 
 ### CHANGELOG Management
 
@@ -296,8 +309,8 @@ flutter build apk
    - Ensures CHANGELOG documents current version
 
 2. **Sync Versions, Changelogs, and READMEs** (`.github/workflows/sync_versions_and_changelogs.yml`)
-   - Triggers on changes to `version.config`, `CHANGELOG.md`, or `README.md`
-   - Runs `update_versions.sh` and `sync_readme.sh`
+   - Triggers on changes to `version.config`, `CHANGELOG.md`, or `docs/readme/**`
+   - Runs `update_versions.sh` and `build_readme.sh`
    - Auto-commits updated `pubspec.yaml`, CHANGELOG, and README files to all packages
 
 ### Pre-Commit Hook
@@ -319,7 +332,8 @@ Validates before commit:
 | `version.config` | Single source of truth for version |
 | `bash/update_versions.sh` | Semantic version bumping + propagation |
 | `bash/publish.sh` | Dependency-ordered multi-package publishing |
-| `bash/sync_readme.sh` | Sync root README to all packages |
+| `bash/build_readme.sh` | Assemble per-package READMEs from `docs/readme/` sources |
+| `docs/readme/` | Per-package README sources and shared partials |
 | `packages/ispect/lib/ispect.dart` | Main export barrel file |
 | `packages/ispectify/lib/src/ispectify.dart` | Core logging engine |
 | `packages/ispectify_*/lib/src/interceptor.dart` | Interceptor implementations |
@@ -327,7 +341,7 @@ Validates before commit:
 ## Common Pitfalls
 
 1. **Don't manually edit package versions** → Use `./bash/update_versions.sh`
-2. **Don't edit package READMEs directly** → Edit root `README.md` then sync with `./bash/sync_readme.sh`
+2. **Don't edit package READMEs directly** → Edit the matching `docs/readme/<package>.md` (or a shared partial) then run `./bash/build_readme.sh`
 3. **Don't remove `dependency_overrides`** → Required for local monorepo development
 4. **Don't use raw `dart test`** → Use workspace tasks or navigate to package directory
 5. **Don't commit ISpect-enabled builds** → Always gate behind `--dart-define=ISPECT_ENABLED`
@@ -339,11 +353,12 @@ Validates before commit:
 # Version bump workflow
 ./bash/update_versions.sh --bump patch && \
 ./bash/update_changelog.sh && \
-./bash/sync_readme.sh
+./bash/build_readme.sh
 
 # Validation workflow
 ./bash/check_version_sync.sh && \
-./bash/check_dependencies.sh
+./bash/check_dependencies.sh && \
+./bash/build_readme.sh --check
 
 # Publish workflow
 ./bash/publish.sh --dry-run && \

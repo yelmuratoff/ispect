@@ -8,8 +8,11 @@ on:
       - develop
     paths:
       - 'packages/*/pubspec.yaml'
+      - 'packages/*/README.md'
       - 'version.config'
       - 'CHANGELOG.md'
+      - 'docs/readme/**'
+      - 'bash/build_readme.sh'
 
 jobs:
   validate-versions:
@@ -38,6 +41,22 @@ jobs:
           fi
           echo "✅ Version synchronization check passed!"
           
+      - name: Check README Sync
+        id: check_readme
+        run: |
+          set -euo pipefail
+
+          if [[ ! -x bash/build_readme.sh ]]; then
+            chmod +x bash/build_readme.sh
+          fi
+
+          echo "🔍 Checking that generated READMEs match docs/readme/ sources..."
+          if ! ./bash/build_readme.sh --check; then
+            echo "❌ README drift detected. Please run './bash/build_readme.sh' and commit the result."
+            exit 1
+          fi
+          echo "✅ README sync check passed!"
+
       - name: Check Dependencies Consistency
         id: check_dependencies
         run: |

@@ -24,6 +24,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "🔍 Checking README sync..."
+
+# Verify generated READMEs are in sync with docs/readme/ sources
+./bash/build_readme.sh --check >/dev/null
+if [ $? -ne 0 ]; then
+  echo "❌ README drift detected. Please run './bash/build_readme.sh' and stage the changes."
+  exit 1
+fi
+
 # Check CHANGELOG structure (optional)
 if [ -f "CHANGELOG.md" ]; then
   if ! grep -q "^# Changelog" "CHANGELOG.md"; then

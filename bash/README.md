@@ -6,125 +6,135 @@ Maintenance scripts, quality gates, and release helpers for the ISpect monorepo.
 
 Scripts:
 
-- pre-commit.sh – Local git hook (version sync, internal deps, changelog presence).
-- publish.sh – Ordered multi‑package publish with preflight validation, dry‑run & auto mode.
-- update_versions.sh – Semantic bump & propagation of version + internal dependency constraints.
-- update_changelog.sh – Append / propagate a specific changelog section or overwrite all.
-- sync_readme.sh – Sync root README.md to all packages.
-- check_version_sync.sh – Ensure every package version == version.config.
-- check_dependencies.sh – Verify internal dependency constraints reference the current version.
-- bump_version.sh – Legacy bump helper (kept for backward compatibility; prefer update_versions.sh --bump).
+- `pre-commit.sh` — local git hook (version sync, dependency sync, README sync, changelog presence).
+- `publish.sh` — ordered multi-package publish with preflight validation, dry-run, and auto mode.
+- `update_versions.sh` — semantic bump and propagation of version + internal dependency constraints.
+- `update_changelog.sh` — append / propagate a specific changelog section or overwrite all.
+- `build_readme.sh` — assemble every package README from `docs/readme/` sources (primary doc builder).
+- `update_readme.sh` — thin wrapper over `build_readme.sh` for symmetry with `update_versions.sh`.
+- `check_version_sync.sh` — ensure every package version matches `version.config`.
+- `check_dependencies.sh` — verify internal dependency constraints reference the current version.
+- `bump_version.sh` — legacy bump helper (kept for backward compatibility; prefer `update_versions.sh --bump`).
 
-```bash
-./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh && dart format .
-```
-
-and if everything is ok, run
-
-```bash
-./bash/publish.sh --auto
-```
-
-## Quick Start
+## Quick start
 
 ```bash
 # 1. Install pre-commit hook
 cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 # 2. Validate everything before working
-./bash/check_version_sync.sh && ./bash/check_dependencies.sh
-
-# 3. Sync README to all packages
-./bash/sync_readme.sh
+./bash/check_version_sync.sh && ./bash/check_dependencies.sh && ./bash/build_readme.sh --check
 ```
 
-## Version Management
+## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).
-
-Semantic bump + propagate (recommended):
 
 ```bash
 # Dry-run (see what would change)
 ./bash/update_versions.sh --dry-run
 
-# Bump patch (e.g. 4.3.6 -> 4.3.7) and update all pubspecs & examples
+# Bump patch / minor / major
 ./bash/update_versions.sh --bump patch
-
-# Bump minor
 ./bash/update_versions.sh --bump minor
-
-# Bump major
 ./bash/update_versions.sh --bump major
 ```
 
-The script:
+`update_versions.sh`:
 
 - Updates each package `version:` line.
 - Aligns internal dependency references (`^<VERSION>`).
 - Updates example pubspec internal references.
 - Ensures a root CHANGELOG section exists; then propagates its section to packages.
-- Supports `--dry-run` for a non‑destructive preview.
+- Supports `--dry-run` for a non-destructive preview.
 
-Legacy (still works):
-
-```bash
-./bash/bump_version.sh patch
-```
-
-## Changelog Propagation
-
-`update_changelog.sh` modes:
+## Changelog propagation
 
 ```bash
-# Append latest root section to packages (default safest mode)
+# Append the latest root section to packages (default, safest).
 ./bash/update_changelog.sh
 
-# Propagate a specific version section
-./bash/update_changelog.sh --version 4.3.6
+# Propagate a specific version section.
+./bash/update_changelog.sh --version 5.0.0-dev15
 
-# Overwrite EVERY package CHANGELOG with root (destructive)
+# Overwrite every package CHANGELOG with root (destructive).
 ./bash/update_changelog.sh --full-copy --yes
 ```
 
-## README Synchronization
+## README management
 
-`sync_readme.sh` copies the root README.md to all packages.
+Package READMEs are **generated** from focused, per-package sources in `docs/readme/`. Do not edit `packages/*/README.md` by hand — edits are overwritten on the next build.
 
-```bash
-# Sync README from workspace root to all packages
-./bash/sync_readme.sh
+Layout:
+
+```
+docs/readme/
+  _partials/
+    header.md              # logo + pub.dev badges (uses {{package}} placeholder)
+    footer.md              # contributing, license, contrib-rocks
+    install_matrix.md      # toolkit package table
+    redaction.md           # shared redaction config block
+    production_safety.md   # shared tree-shaking / ISPECT_ENABLED block
+  root.md                  # body for the repo-root README.md
+  ispect.md                # body for packages/ispect/README.md
+  ispect_layout.md         # body for packages/ispect_layout/README.md
+  ispectify.md             # body for packages/ispectify/README.md
+  ispectify_dio.md         # body for packages/ispectify_dio/README.md
+  ispectify_http.md        # body for packages/ispectify_http/README.md
+  ispectify_ws.md          # body for packages/ispectify_ws/README.md
+  ispectify_db.md          # body for packages/ispectify_db/README.md
+  ispectify_bloc.md        # body for packages/ispectify_bloc/README.md
 ```
 
-## Publish Workflow
+Markers expanded during build:
 
-Best‑practice multi‑package release (dry‑run first):
+- `<!-- partial:NAME -->` → content of `docs/readme/_partials/NAME.md`.
+- `{{version}}` → `VERSION` from `version.config`.
+- `{{package}}` → target package name (root uses `ispect`).
+
+Commands:
 
 ```bash
-# Ensure working tree clean & versions aligned
+# Rebuild every README from sources.
+./bash/build_readme.sh
+
+# Verify outputs match sources (used by pre-commit and CI).
+./bash/build_readme.sh --check
+
+# Rebuild a single target.
+./bash/build_readme.sh --package ispect_layout
+
+# Preview without writing.
+./bash/build_readme.sh --dry-run
+```
+
+Editing workflow: change the relevant `docs/readme/<package>.md` (or a partial), run `./bash/build_readme.sh`, review the generated file, commit both the source and the output.
+
+## Publish workflow
+
+```bash
+# Ensure versions aligned and READMEs built.
 ./bash/update_versions.sh --dry-run
+./bash/build_readme.sh
 
-# Sync README to all packages
-./bash/sync_readme.sh
-
-# Changelog section already added? (root) – if not, add and propagate
+# Add / propagate changelog section for the current version.
 ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2)
 
-# Dry-run publish (all packages in dependency order)
+# Dry-run publish (all packages in dependency order).
 ./bash/publish.sh --dry-run
 
-# Real publish (no prompts)
+# Real publish (no prompts).
 ./bash/publish.sh --auto
 ```
 
-Features in `publish.sh`:
+`publish.sh` features:
 
 - Ordered dependency publishing.
-- Preflight: forbids `any` constraints & committed Podfile.lock.
-- Failure summarization with per‑package logs in `.publish_logs`.
+- Preflight: forbids `any` constraints and committed `Podfile.lock`.
+- Failure summarisation with per-package logs in `.publish_logs`.
 - `--dry-run`, `--auto`, `-v/--verbose`.
 
-## Pre-Commit Hook
+## Pre-commit hook
 
 Install:
 
@@ -134,41 +144,30 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 Checks performed:
 
-- Version synchronization with `version.config`.
+- Version synchronisation with `version.config`.
 - Internal dependency versions (`^<VERSION>`).
-- Root changelog contains current version.
-- (Optional) Additional custom project rules.
+- Generated READMEs match `docs/readme/` sources.
+- Root changelog contains the current version.
 
-## Recommended Daily Macro
-
-```bash
-./bash/update_versions.sh --dry-run \
-	&& ./bash/sync_readme.sh \
-	&& ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2)
-```
-
-## Minimal Release Shortcut
+## Daily macros
 
 ```bash
+# Check everything is consistent.
+./bash/check_version_sync.sh \
+  && ./bash/check_dependencies.sh \
+  && ./bash/build_readme.sh --check
+
+# Sync everything after a version bump.
 ./bash/update_versions.sh --bump patch \
-	&& ./bash/sync_readme.sh \
-	&& ./bash/publish.sh --dry-run \
-	&& ./bash/publish.sh --auto
+  && ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2) \
+  && ./bash/build_readme.sh
 ```
 
 ## Notes
 
 - Internal path overrides during local development may trigger pub.dev hints (acceptable for monorepo cycles).
-- Always inspect dry-run output before real publish.
+- Always inspect dry-run output before a real publish.
 - Use semantic bump flags for consistent version progression.
-
-## Old Personal Shortcut (Updated)
-
-```bash
-./bash/update_versions.sh --bump patch \
-	&& ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2) \
-	&& ./bash/sync_readme.sh
-```
 
 ---
 
