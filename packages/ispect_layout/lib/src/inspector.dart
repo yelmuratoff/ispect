@@ -34,14 +34,16 @@ class Inspector extends StatefulWidget {
     this.alignment = Alignment.center,
     this.isPanelVisible = true,
     this.isEnabled,
+    this.decimalPlaces = 1,
     this.panelBuilder,
-  });
+  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
 
   final Widget child;
   final InspectorController? controller;
   final bool isPanelVisible;
   final Alignment alignment;
   final bool? isEnabled;
+  final int decimalPlaces;
   final Widget Function(
           BuildContext context, InspectorController controller, Widget child)?
       panelBuilder;
@@ -92,21 +94,30 @@ class InspectorState extends State<Inspector> {
     _controller = widget.controller ??
         InspectorController(
           isEnabled: _isEnabled,
+          decimalPlaces: widget.decimalPlaces,
         );
   }
 
   @override
   void didUpdateWidget(covariant Inspector oldWidget) {
     if (oldWidget.isEnabled != widget.isEnabled ||
-        oldWidget.controller != widget.controller) {
+        oldWidget.controller != widget.controller ||
+        (oldWidget.decimalPlaces != widget.decimalPlaces &&
+            widget.controller == null)) {
       if (oldWidget.controller == null && widget.controller != null) {
         _controller.dispose();
       }
 
       if (widget.controller != null) {
         _controller = widget.controller!;
-      } else if (oldWidget.controller != null) {
-        _controller = InspectorController(isEnabled: _isEnabled);
+      } else {
+        if (oldWidget.controller == null) {
+          _controller.dispose();
+        }
+        _controller = InspectorController(
+          isEnabled: _isEnabled,
+          decimalPlaces: widget.decimalPlaces,
+        );
       }
     }
 
@@ -261,6 +272,7 @@ class InspectorState extends State<Inspector> {
                 comparedBoxInfo: _controller.comparedRenderBoxNotifier.value,
                 onCompare: onCompare,
                 isCompareActive: isCompareActive,
+                decimalPlaces: _controller.decimalPlaces,
               ),
             );
           },

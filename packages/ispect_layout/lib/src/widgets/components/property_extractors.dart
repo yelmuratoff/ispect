@@ -3,33 +3,48 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 
 // ─── Format helpers ──────────────────────────────────────────────────────────
 
-String _fmt(double v, [int digits = 1]) => v.toStringAsFixed(digits);
+String _fmt(double v, int decimalPlaces) =>
+    formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
-String _fmtOffset(Offset o) => '(${_fmt(o.dx)}, ${_fmt(o.dy)})';
+String _fmtOffset(Offset o, int decimalPlaces) =>
+    formatInspectorOffset(o, decimalPlaces: decimalPlaces);
 
 /// Formats a single [Radius], collapsing to a scalar when x == y.
-String formatRadius(Radius r) =>
-    r.x == r.y ? _fmt(r.x) : '${_fmt(r.x)}×${_fmt(r.y)}';
+String formatRadius(
+  Radius r, {
+  int decimalPlaces = 1,
+}) =>
+    r.x == r.y
+        ? _fmt(r.x, decimalPlaces)
+        : '${_fmt(r.x, decimalPlaces)}×${_fmt(r.y, decimalPlaces)}';
 
 /// Formats a [BorderRadiusGeometry], collapsing uniform values and showing
 /// elliptical `(x×y)` radii only when x != y.
 ///
 /// Returns `null` when the radius is zero — callers should skip the chip.
 ({String label, String value})? formatBorderRadius(
-    BorderRadiusGeometry geometry) {
+  BorderRadiusGeometry geometry, {
+  int decimalPlaces = 1,
+}) {
   final r = geometry.resolve(TextDirection.ltr);
   if (r == BorderRadius.zero) return null;
   final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
   if (corners.every((c) => c == corners.first)) {
-    return (label: 'border radius', value: formatRadius(corners.first));
+    return (
+      label: 'border radius',
+      value: formatRadius(corners.first, decimalPlaces: decimalPlaces),
+    );
   }
   return (
     label: 'radius TL/TR/BR/BL',
-    value: corners.map(formatRadius).join(', '),
+    value: corners
+        .map((corner) => formatRadius(corner, decimalPlaces: decimalPlaces))
+        .join(', '),
   );
 }
 
@@ -42,14 +57,22 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
   return null;
 }
 
-List<PropSpec> shapeBorderProps(ShapeBorder shape) => [
+List<PropSpec> shapeBorderProps(
+  ShapeBorder shape, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.circle_outlined,
         subtitle: 'shape',
         child: Text(describeShapeBorder(shape)),
       ),
       if (extractShapeBorderRadius(shape) case final borderRadius?)
-        if (formatBorderRadius(borderRadius) case final br?)
+        if (formatBorderRadius(
+          borderRadius,
+          decimalPlaces: decimalPlaces,
+        )
+            case final br?)
           (
             icon: Icons.rounded_corner,
             subtitle: br.label,
@@ -128,11 +151,14 @@ ImageProvider? resolveImageProvider(RenderImage target) {
 
 // ─── Property extractors ─────────────────────────────────────────────────────
 
-List<PropSpec> constraintsProps(BoxConstraints c) {
+List<PropSpec> constraintsProps(
+  BoxConstraints c, {
+  int decimalPlaces = 1,
+}) {
   String fmt(double min, double max) {
-    if (min == max) return '=${_fmt(min)}';
-    final hi = max == double.infinity ? '∞' : _fmt(max);
-    return '${_fmt(min)}–$hi';
+    if (min == max) return '=${_fmt(min, decimalPlaces)}';
+    final hi = max == double.infinity ? '∞' : _fmt(max, decimalPlaces);
+    return '${_fmt(min, decimalPlaces)}–$hi';
   }
 
   return [
@@ -149,7 +175,11 @@ List<PropSpec> constraintsProps(BoxConstraints c) {
   ];
 }
 
-List<PropSpec> paragraphProps(RenderParagraph target) => [
+List<PropSpec> paragraphProps(
+  RenderParagraph target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.format_align_left,
         subtitle: 'text align',
@@ -187,7 +217,11 @@ List<PropSpec> paragraphProps(RenderParagraph target) => [
         ),
     ];
 
-List<PropSpec> spanProps(TextStyle style) => [
+List<PropSpec> spanProps(
+  TextStyle style, {
+  int decimalPlaces = 1,
+}) =>
+    [
       if (style.fontFamily != null)
         (
           icon: Icons.font_download,
@@ -198,7 +232,7 @@ List<PropSpec> spanProps(TextStyle style) => [
         (
           icon: Icons.format_size,
           subtitle: 'font size',
-          child: Text(_fmt(style.fontSize!)),
+          child: Text(_fmt(style.fontSize!, decimalPlaces)),
         ),
       if (style.fontWeight != null)
         (
@@ -222,19 +256,19 @@ List<PropSpec> spanProps(TextStyle style) => [
         (
           icon: Icons.height,
           subtitle: 'height',
-          child: Text(_fmt(style.height!)),
+          child: Text(_fmt(style.height!, decimalPlaces)),
         ),
       if (style.letterSpacing != null)
         (
           icon: Icons.horizontal_distribute,
           subtitle: 'letter spacing',
-          child: Text(_fmt(style.letterSpacing!)),
+          child: Text(_fmt(style.letterSpacing!, decimalPlaces)),
         ),
       if (style.wordSpacing != null)
         (
           icon: Icons.space_bar,
           subtitle: 'word spacing',
-          child: Text(_fmt(style.wordSpacing!)),
+          child: Text(_fmt(style.wordSpacing!, decimalPlaces)),
         ),
       if (style.decoration != null && style.decoration != TextDecoration.none)
         (
@@ -250,14 +284,21 @@ List<PropSpec> spanProps(TextStyle style) => [
         ),
     ];
 
-List<PropSpec> decorationProps(BoxDecoration d) => [
+List<PropSpec> decorationProps(
+  BoxDecoration d, {
+  int decimalPlaces = 1,
+}) =>
+    [
       if (d.color != null)
         (
           icon: Icons.palette,
           subtitle: 'color',
           child: ColorHexChip(d.color!),
         ),
-      if (formatBorderRadius(d.borderRadius ?? BorderRadius.zero)
+      if (formatBorderRadius(
+        d.borderRadius ?? BorderRadius.zero,
+        decimalPlaces: decimalPlaces,
+      )
           case final br?)
         (
           icon: Icons.rounded_corner,
@@ -270,18 +311,19 @@ List<PropSpec> decorationProps(BoxDecoration d) => [
           subtitle: 'shape',
           child: Text(d.shape.name),
         ),
-      if (d.border != null) ..._borderProps(d.border!),
+      if (d.border != null)
+        ..._borderProps(d.border!, decimalPlaces: decimalPlaces),
       if (d.boxShadow != null && d.boxShadow!.isNotEmpty)
         (
           icon: Icons.blur_on,
           subtitle: 'shadows',
-          child: ShadowsView(d.boxShadow!),
+          child: ShadowsView(d.boxShadow!, decimalPlaces: decimalPlaces),
         ),
       if (d.gradient != null)
         (
           icon: Icons.gradient,
           subtitle: 'gradient',
-          child: GradientView(d.gradient!),
+          child: GradientView(d.gradient!, decimalPlaces: decimalPlaces),
         ),
       if (d.image != null) ..._decorationImageProps(d.image!),
     ];
@@ -317,7 +359,10 @@ List<PropSpec> _decorationImageProps(DecorationImage img) => [
         ),
     ];
 
-List<PropSpec> _borderProps(BoxBorder border) {
+List<PropSpec> _borderProps(
+  BoxBorder border, {
+  int decimalPlaces = 1,
+}) {
   if (border is! Border) {
     return [
       (
@@ -342,8 +387,8 @@ List<PropSpec> _borderProps(BoxBorder border) {
   // Uniform border — single chip
   if (colors.length == 1 && activeSides.isNotEmpty) {
     final wStr = widths.length == 1
-        ? 'w:${_fmt(widths.first)}'
-        : 'w:${sides.map((s) => _fmt(s.width)).join('/')}';
+        ? 'w:${_fmt(widths.first, decimalPlaces)}'
+        : 'w:${sides.map((s) => _fmt(s.width, decimalPlaces)).join('/')}';
     return [
       (
         icon: Icons.border_all,
@@ -361,7 +406,10 @@ List<PropSpec> _borderProps(BoxBorder border) {
         (
           icon: Icons.border_all,
           subtitle: 'border ${sideLabels[i]}',
-          child: sideChild(sides[i].color, 'w:${_fmt(sides[i].width)}'),
+          child: sideChild(
+            sides[i].color,
+            'w:${_fmt(sides[i].width, decimalPlaces)}',
+          ),
         ),
   ];
 }
@@ -380,7 +428,11 @@ List<PropSpec> stackProps(RenderStack target) => [
         ),
     ];
 
-List<PropSpec> wrapProps(RenderWrap target) => [
+List<PropSpec> wrapProps(
+  RenderWrap target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.swap_horiz,
         subtitle: 'direction',
@@ -390,13 +442,13 @@ List<PropSpec> wrapProps(RenderWrap target) => [
         (
           icon: Icons.space_bar,
           subtitle: 'spacing',
-          child: Text(_fmt(target.spacing)),
+          child: Text(_fmt(target.spacing, decimalPlaces)),
         ),
       if (target.runSpacing != 0)
         (
           icon: Icons.height,
           subtitle: 'run spacing',
-          child: Text(_fmt(target.runSpacing)),
+          child: Text(_fmt(target.runSpacing, decimalPlaces)),
         ),
       if (target.alignment != WrapAlignment.start)
         (
@@ -420,8 +472,16 @@ PropSpec? _clipBehaviorProp(Clip clipBehavior) => clipBehavior == Clip.none
         child: Text(clipBehavior.name),
       );
 
-List<PropSpec> clipRRectProps(RenderClipRRect target) => [
-      if (formatBorderRadius(target.borderRadius) case final br?)
+List<PropSpec> clipRRectProps(
+  RenderClipRRect target, {
+  int decimalPlaces = 1,
+}) =>
+    [
+      if (formatBorderRadius(
+        target.borderRadius,
+        decimalPlaces: decimalPlaces,
+      )
+          case final br?)
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
@@ -430,8 +490,16 @@ List<PropSpec> clipRRectProps(RenderClipRRect target) => [
       if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
-List<PropSpec> clipRSuperellipseProps(RenderClipRSuperellipse target) => [
-      if (formatBorderRadius(target.borderRadius) case final br?)
+List<PropSpec> clipRSuperellipseProps(
+  RenderClipRSuperellipse target, {
+  int decimalPlaces = 1,
+}) =>
+    [
+      if (formatBorderRadius(
+        target.borderRadius,
+        decimalPlaces: decimalPlaces,
+      )
+          case final br?)
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
@@ -446,9 +514,13 @@ List<PropSpec> clipRectProps(RenderClipRect target) =>
 List<PropSpec> clipOvalProps(RenderClipOval target) =>
     _genericClipProps(target.clipper?.runtimeType, target.clipBehavior);
 
-List<PropSpec> clipPathProps(RenderClipPath target) => [
+List<PropSpec> clipPathProps(
+  RenderClipPath target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       if (target.clipper case final ShapeBorderClipper clipper)
-        ...shapeBorderProps(clipper.shape)
+        ...shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces)
       else if (target.clipper != null)
         (
           icon: Icons.brush,
@@ -513,7 +585,10 @@ List<PropSpec> flexProps(RenderFlex target) => [
         ),
     ];
 
-List<PropSpec> imageProps(RenderImage target) {
+List<PropSpec> imageProps(
+  RenderImage target, {
+  int decimalPlaces = 1,
+}) {
   final provider = resolveImageProvider(target);
   final rawImage = target.image;
   return [
@@ -544,13 +619,13 @@ List<PropSpec> imageProps(RenderImage target) {
       (
         icon: Icons.swap_horiz,
         subtitle: 'width',
-        child: Text(_fmt(target.width!)),
+        child: Text(_fmt(target.width!, decimalPlaces)),
       ),
     if (target.height != null)
       (
         icon: Icons.swap_vert,
         subtitle: 'height',
-        child: Text(_fmt(target.height!)),
+        child: Text(_fmt(target.height!, decimalPlaces)),
       ),
     if (target.repeat != ImageRepeat.noRepeat)
       (
@@ -567,19 +642,27 @@ List<PropSpec> imageProps(RenderImage target) {
   ];
 }
 
-List<PropSpec> opacityProps(RenderOpacity target) => [
+List<PropSpec> opacityProps(
+  RenderOpacity target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.opacity,
         subtitle: 'opacity',
-        child: Text(target.opacity.toStringAsFixed(2)),
+        child: Text(_fmt(target.opacity, decimalPlaces)),
       ),
     ];
 
-List<PropSpec> animatedOpacityProps(RenderAnimatedOpacity target) => [
+List<PropSpec> animatedOpacityProps(
+  RenderAnimatedOpacity target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.opacity,
         subtitle: 'opacity',
-        child: Text(target.opacity.value.toStringAsFixed(2)),
+        child: Text(_fmt(target.opacity.value, decimalPlaces)),
       ),
     ];
 
@@ -587,6 +670,7 @@ List<PropSpec> _physicalFinishProps({
   required Color color,
   required double elevation,
   required Color shadowColor,
+  int decimalPlaces = 1,
 }) =>
     [
       (icon: Icons.palette, subtitle: 'color', child: ColorHexChip(color)),
@@ -594,7 +678,7 @@ List<PropSpec> _physicalFinishProps({
         (
           icon: Icons.layers,
           subtitle: 'elevation',
-          child: Text(_fmt(elevation)),
+          child: Text(_fmt(elevation, decimalPlaces)),
         ),
       (
         icon: Icons.blur_on,
@@ -603,14 +687,19 @@ List<PropSpec> _physicalFinishProps({
       ),
     ];
 
-List<PropSpec> physicalShapeProps(RenderPhysicalShape target) => [
+List<PropSpec> physicalShapeProps(
+  RenderPhysicalShape target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       ..._physicalFinishProps(
         color: target.color,
         elevation: target.elevation,
         shadowColor: target.shadowColor,
+        decimalPlaces: decimalPlaces,
       ),
       if (target.clipper case final ShapeBorderClipper clipper)
-        ...shapeBorderProps(clipper.shape)
+        ...shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces)
       else
         (
           icon: Icons.brush,
@@ -619,18 +708,26 @@ List<PropSpec> physicalShapeProps(RenderPhysicalShape target) => [
         ),
     ];
 
-List<PropSpec> physicalModelProps(RenderPhysicalModel target) => [
+List<PropSpec> physicalModelProps(
+  RenderPhysicalModel target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       ..._physicalFinishProps(
         color: target.color,
         elevation: target.elevation,
         shadowColor: target.shadowColor,
+        decimalPlaces: decimalPlaces,
       ),
       (
         icon: Icons.circle_outlined,
         subtitle: 'shape',
         child: Text(target.shape.name),
       ),
-      if (formatBorderRadius(target.borderRadius ?? BorderRadius.zero)
+      if (formatBorderRadius(
+        target.borderRadius ?? BorderRadius.zero,
+        decimalPlaces: decimalPlaces,
+      )
           case final br?)
         (
           icon: Icons.rounded_corner,
@@ -653,15 +750,22 @@ List<PropSpec> fittedBoxProps(RenderFittedBox target) => [
         ),
     ];
 
-List<PropSpec> aspectRatioProps(RenderAspectRatio target) => [
+List<PropSpec> aspectRatioProps(
+  RenderAspectRatio target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.aspect_ratio,
         subtitle: 'aspect ratio',
-        child: Text(target.aspectRatio.toStringAsFixed(2)),
+        child: Text(_fmt(target.aspectRatio, decimalPlaces)),
       ),
     ];
 
-List<PropSpec> transformProps(RenderTransform target) {
+List<PropSpec> transformProps(
+  RenderTransform target, {
+  int decimalPlaces = 1,
+}) {
   final matrix = Matrix4.identity();
   final child = target.child;
   if (child != null) target.applyPaintTransform(child, matrix);
@@ -671,7 +775,7 @@ List<PropSpec> transformProps(RenderTransform target) {
   final scaleX = math.sqrt(m[0] * m[0] + m[1] * m[1]);
   final scaleY = math.sqrt(m[4] * m[4] + m[5] * m[5]);
   final rotationDeg = math.atan2(m[1], m[0]) * 180 / math.pi;
-  String f(double v) => v.toStringAsFixed(2);
+  String f(double v) => _fmt(v, decimalPlaces);
 
   return [
     if (tx.abs() > 0.001 || ty.abs() > 0.001)
@@ -698,7 +802,7 @@ List<PropSpec> transformProps(RenderTransform target) {
       (
         icon: Icons.place,
         subtitle: 'origin',
-        child: EllipsizedText(_fmtOffset(target.origin!)),
+        child: EllipsizedText(_fmtOffset(target.origin!, decimalPlaces)),
       ),
     if (target.alignment != null)
       (
@@ -781,24 +885,39 @@ List<PropSpec> editableProps(RenderEditable target) => [
 
 /// Type-specific props for any [RenderBox]. Returns an empty list when the
 /// type has no known extractor.
-List<PropSpec> typeProps(RenderBox target) => [
+List<PropSpec> typeProps(
+  RenderBox target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       if (target is RenderStack) ...stackProps(target),
       if (target is RenderFlex) ...flexProps(target),
-      if (target is RenderWrap) ...wrapProps(target),
-      if (target is RenderImage) ...imageProps(target),
-      if (target is RenderOpacity) ...opacityProps(target),
-      if (target is RenderAnimatedOpacity) ...animatedOpacityProps(target),
-      if (target is RenderPhysicalShape) ...physicalShapeProps(target),
-      if (target is RenderPhysicalModel) ...physicalModelProps(target),
-      if (target is RenderClipRRect) ...clipRRectProps(target),
-      if (target is RenderClipRSuperellipse) ...clipRSuperellipseProps(target),
+      if (target is RenderWrap)
+        ...wrapProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderImage)
+        ...imageProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderOpacity)
+        ...opacityProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderAnimatedOpacity)
+        ...animatedOpacityProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderPhysicalShape)
+        ...physicalShapeProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderPhysicalModel)
+        ...physicalModelProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderClipRRect)
+        ...clipRRectProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderClipRSuperellipse)
+        ...clipRSuperellipseProps(target, decimalPlaces: decimalPlaces),
       if (target is RenderClipRect) ...clipRectProps(target),
       if (target is RenderClipOval) ...clipOvalProps(target),
-      if (target is RenderClipPath) ...clipPathProps(target),
+      if (target is RenderClipPath)
+        ...clipPathProps(target, decimalPlaces: decimalPlaces),
       if (target is RenderCustomPaint) ...customPaintProps(target),
       if (target is RenderFittedBox) ...fittedBoxProps(target),
-      if (target is RenderAspectRatio) ...aspectRatioProps(target),
-      if (target is RenderTransform) ...transformProps(target),
+      if (target is RenderAspectRatio)
+        ...aspectRatioProps(target, decimalPlaces: decimalPlaces),
+      if (target is RenderTransform)
+        ...transformProps(target, decimalPlaces: decimalPlaces),
       if (target is RenderBackdropFilter) ...backdropFilterProps(target),
       if (target is RenderEditable) ...editableProps(target),
     ];

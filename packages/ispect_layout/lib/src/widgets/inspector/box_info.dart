@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/renderbox_extension.dart';
 import 'package:ispect_layout/src/size_extension.dart';
 
@@ -168,15 +169,13 @@ class BoxInfo {
       : null;
 
   /// Describes the original (logical) padding without zoom transformation.
-  String describeOriginalPadding() {
+  String describeOriginalPadding({int decimalPlaces = 1}) {
     final padding = _calculateOriginalPadding();
 
-    final left = padding.left.toStringAsFixed(1);
-    final top = padding.top.toStringAsFixed(1);
-    final right = padding.right.toStringAsFixed(1);
-    final bottom = padding.bottom.toStringAsFixed(1);
-
-    return 'L:$left  T:$top  R:$right  B:$bottom';
+    return 'L:${formatInspectorDouble(padding.left, decimalPlaces: decimalPlaces)}'
+        '  T:${formatInspectorDouble(padding.top, decimalPlaces: decimalPlaces)}'
+        '  R:${formatInspectorDouble(padding.right, decimalPlaces: decimalPlaces)}'
+        '  B:${formatInspectorDouble(padding.bottom, decimalPlaces: decimalPlaces)}';
   }
 
   /// True when the detected container is a flex layout (Row/Column).

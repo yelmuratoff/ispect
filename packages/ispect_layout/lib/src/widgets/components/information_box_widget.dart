@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect_layout/src/number_format.dart';
 
 class InformationBoxWidget extends StatelessWidget {
   const InformationBoxWidget({
@@ -10,26 +11,28 @@ class InformationBoxWidget extends StatelessWidget {
   factory InformationBoxWidget.size({
     Key? key,
     required Size size,
+    int decimalPlaces = 1,
     Color? color,
   }) {
     return InformationBoxWidget(
       key: key,
       color: color,
-      child: Text(
-        '${size.width.toStringAsFixed(1)} × ${size.height.toStringAsFixed(1)}',
-      ),
+      child: Text(formatInspectorSize(size, decimalPlaces: decimalPlaces)),
     );
   }
 
   factory InformationBoxWidget.number({
     Key? key,
     required double number,
+    int decimalPlaces = 1,
     Color? color,
   }) {
     return InformationBoxWidget(
       key: key,
       color: color,
-      child: Text(number.toStringAsFixed(1)),
+      child: Text(
+        formatInspectorDouble(number, decimalPlaces: decimalPlaces),
+      ),
     );
   }
 

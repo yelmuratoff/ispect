@@ -11,6 +11,7 @@ class BoxInfoWidget extends StatelessWidget {
   const BoxInfoWidget({
     super.key,
     this.boxInfo,
+    required this.decimalPlaces,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
     this.onCompare,
@@ -18,6 +19,7 @@ class BoxInfoWidget extends StatelessWidget {
   });
 
   final BoxInfo? boxInfo;
+  final int decimalPlaces;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
@@ -39,6 +41,7 @@ class BoxInfoWidget extends StatelessWidget {
         child: Align(
           child: InformationBoxWidget.size(
             size: boxInfo!.targetRenderBox.displaySize,
+            decimalPlaces: decimalPlaces,
             color: _selectedColor,
           ),
         ),
@@ -49,6 +52,7 @@ class BoxInfoWidget extends StatelessWidget {
   Widget _buildTargetBoxInfoPanel(BuildContext context) {
     return BoxInfoPanelWidget(
       boxInfo: boxInfo!,
+      decimalPlaces: decimalPlaces,
       comparedBoxInfo: comparedBoxInfo,
       onCompare: onCompare,
       isCompareActive: isCompareActive,

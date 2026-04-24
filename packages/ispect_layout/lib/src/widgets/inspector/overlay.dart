@@ -9,6 +9,7 @@ class InspectorOverlay extends StatefulWidget {
     super.key,
     required this.size,
     required this.boxInfo,
+    required this.decimalPlaces,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
     this.onCompare,
@@ -17,6 +18,7 @@ class InspectorOverlay extends StatefulWidget {
 
   final Size size;
   final BoxInfo? boxInfo;
+  final int decimalPlaces;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
@@ -96,6 +98,7 @@ class _InspectorOverlayState extends State<InspectorOverlay>
       height: widget.size.height,
       child: BoxInfoWidget(
         boxInfo: widget.boxInfo,
+        decimalPlaces: widget.decimalPlaces,
         hoveredBoxInfo: widget.hoveredBoxInfo,
         comparedBoxInfo: widget.comparedBoxInfo,
         onCompare: widget.onCompare,

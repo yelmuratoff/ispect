@@ -28,6 +28,7 @@ class InspectorController {
     this.isColorPickerEnabled = true,
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
+    this.decimalPlaces = 1,
     this.widgetInspectorShortcuts = const [
       LogicalKeyboardKey.alt,
       LogicalKeyboardKey.altLeft,
@@ -47,7 +48,7 @@ class InspectorController {
     this.zoomShortcuts = const [
       LogicalKeyboardKey.keyZ,
     ],
-  });
+  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
 
   final bool isEnabled;
   final bool isWidgetInspectorEnabled;
@@ -55,6 +56,7 @@ class InspectorController {
   final bool isColorPickerEnabled;
   final bool isColorSchemeHintEnabled;
   final bool isZoomEnabled;
+  final int decimalPlaces;
 
   final List<LogicalKeyboardKey> widgetInspectorShortcuts;
   final List<LogicalKeyboardKey> widgetInspectAndCompareShortcuts;

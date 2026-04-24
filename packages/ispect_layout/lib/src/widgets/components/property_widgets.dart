@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
 
 /// Declarative spec for a single info chip; rendered by [PropSection].
@@ -184,12 +185,14 @@ class PropSection extends StatelessWidget {
 
 /// Visual list of [BoxShadow]s: color swatch + blur/spread/offset line.
 class ShadowsView extends StatelessWidget {
-  const ShadowsView(this.shadows, {super.key});
+  const ShadowsView(this.shadows, {super.key, this.decimalPlaces = 1});
   final List<BoxShadow> shadows;
+  final int decimalPlaces;
 
   @override
   Widget build(BuildContext context) {
-    String f(double v) => v.toStringAsFixed(1);
+    String f(double v) =>
+        formatInspectorDouble(v, decimalPlaces: decimalPlaces);
     String line(BoxShadow s) => [
           'blur:${f(s.blurRadius)}',
           if (s.spreadRadius != 0) 'spread:${f(s.spreadRadius)}',
@@ -235,8 +238,9 @@ class GradientPreview extends StatelessWidget {
 /// Full gradient breakdown: preview, type label, color stops, and
 /// shape-specific details (begin/end, center/radius, angles).
 class GradientView extends StatelessWidget {
-  const GradientView(this.gradient, {super.key});
+  const GradientView(this.gradient, {super.key, this.decimalPlaces = 1});
   final Gradient gradient;
+  final int decimalPlaces;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +261,7 @@ class GradientView extends StatelessWidget {
         ],
       RadialGradient(:final center, :final radius, :final tileMode) => [
           'center:$center',
-          'r:${radius.toStringAsFixed(2)}',
+          'r:${formatInspectorDouble(radius, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
       SweepGradient(
@@ -268,8 +272,8 @@ class GradientView extends StatelessWidget {
       ) =>
         [
           'center:$center',
-          'start:${startAngle.toStringAsFixed(2)}',
-          'end:${endAngle.toStringAsFixed(2)}',
+          'start:${formatInspectorDouble(startAngle, decimalPlaces: decimalPlaces)}',
+          'end:${formatInspectorDouble(endAngle, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
       _ => <String>[],
@@ -292,7 +296,9 @@ class GradientView extends StatelessWidget {
             children: [
               ColorHexChip(g.colors[i]),
               if (stops != null && i < stops.length)
-                Text('@${stops[i].toStringAsFixed(2)}'),
+                Text(
+                  '@${formatInspectorDouble(stops[i], decimalPlaces: decimalPlaces)}',
+                ),
             ],
           ),
         for (final d in detail) Text(d, style: const TextStyle(fontSize: 10)),

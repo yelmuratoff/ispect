@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/property_extractors.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
@@ -12,12 +13,14 @@ class BoxInfoPanelWidget extends StatelessWidget {
   const BoxInfoPanelWidget({
     super.key,
     required this.boxInfo,
+    required this.decimalPlaces,
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
   });
 
   final BoxInfo boxInfo;
+  final int decimalPlaces;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
@@ -40,6 +43,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
             initiallyExpanded: false,
             title: _PanelTitleBar(
               target: target,
+              decimalPlaces: decimalPlaces,
               onCompare: onCompare,
               isCompareActive: isCompareActive,
             ),
@@ -69,9 +73,16 @@ class BoxInfoPanelWidget extends StatelessWidget {
     // LAYOUT: size, padding, constraints.
     out
       ..add(const _SectionHeader('layout'))
-      ..add(_MainRow(boxInfo: boxInfo))
+      ..add(_MainRow(boxInfo: boxInfo, decimalPlaces: decimalPlaces))
       ..add(const SizedBox(height: 8))
-      ..add(PropSection(props: constraintsProps(target.constraints)));
+      ..add(
+        PropSection(
+          props: constraintsProps(
+            target.constraints,
+            decimalPlaces: decimalPlaces,
+          ),
+        ),
+      );
 
     if (hasCompare) {
       divider();
@@ -81,6 +92,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
           _ComparedRow(
             boxInfo: boxInfo,
             comparedBoxInfo: comparedBoxInfo!,
+            decimalPlaces: decimalPlaces,
           ),
         );
     }
@@ -88,7 +100,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
     if (target is RenderParagraph) {
       out.addAll(_paragraphSections(context, target, dividerColor));
     } else {
-      final tProps = typeProps(target);
+      final tProps = typeProps(target, decimalPlaces: decimalPlaces);
       if (tProps.isNotEmpty) {
         divider();
         out
@@ -115,9 +127,9 @@ class BoxInfoPanelWidget extends StatelessWidget {
   ) {
     final theme = Theme.of(context);
     final preview = previewText(target.text);
-    final pProps = paragraphProps(target);
+    final pProps = paragraphProps(target, decimalPlaces: decimalPlaces);
     final spanSections = extractTextStyles(target.text)
-        .map(spanProps)
+        .map((style) => spanProps(style, decimalPlaces: decimalPlaces))
         .where((p) => p.isNotEmpty)
         .toList();
 
@@ -176,7 +188,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
             style: theme.textTheme.bodySmall,
           ),
         ),
-        PropSection(props: typeProps(box)),
+        PropSection(props: typeProps(box, decimalPlaces: decimalPlaces)),
       ],
     ];
   }
@@ -196,7 +208,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
       ];
     }
     if (boxInfo.decoratedBoxForDisplay?.decoration case final BoxDecoration d) {
-      return decorationProps(d);
+      return decorationProps(d, decimalPlaces: decimalPlaces);
     }
     return [];
   }
@@ -223,11 +235,13 @@ class BoxInfoPanelWidget extends StatelessWidget {
 class _PanelTitleBar extends StatelessWidget {
   const _PanelTitleBar({
     required this.target,
+    required this.decimalPlaces,
     required this.onCompare,
     required this.isCompareActive,
   });
 
   final RenderBox target;
+  final int decimalPlaces;
   final VoidCallback? onCompare;
   final bool isCompareActive;
 
@@ -250,8 +264,7 @@ class _PanelTitleBar extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${size.width.toStringAsFixed(1)} × '
-                '${size.height.toStringAsFixed(1)}',
+                formatInspectorSize(size, decimalPlaces: decimalPlaces),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -281,8 +294,9 @@ class _PanelTitleBar extends StatelessWidget {
 }
 
 class _MainRow extends StatelessWidget {
-  const _MainRow({required this.boxInfo});
+  const _MainRow({required this.boxInfo, required this.decimalPlaces});
   final BoxInfo boxInfo;
+  final int decimalPlaces;
 
   @override
   Widget build(BuildContext context) {
@@ -298,8 +312,7 @@ class _MainRow extends StatelessWidget {
           subtitle: 'size',
           backgroundColor: bg,
           child: Text(
-            '${displaySize.width.toStringAsFixed(1)} × '
-            '${displaySize.height.toStringAsFixed(1)}',
+            formatInspectorSize(displaySize, decimalPlaces: decimalPlaces),
           ),
         ),
         if (boxInfo.containerRect != null && !boxInfo.isContainerFlex)
@@ -307,7 +320,9 @@ class _MainRow extends StatelessWidget {
             icon: Icons.straighten,
             subtitle: 'padding (LTRB)',
             backgroundColor: bg,
-            child: Text(boxInfo.describeOriginalPadding()),
+            child: Text(
+              boxInfo.describeOriginalPadding(decimalPlaces: decimalPlaces),
+            ),
           ),
       ],
     );
@@ -318,10 +333,12 @@ class _ComparedRow extends StatelessWidget {
   const _ComparedRow({
     required this.boxInfo,
     required this.comparedBoxInfo,
+    required this.decimalPlaces,
   });
 
   final BoxInfo boxInfo;
   final BoxInfo comparedBoxInfo;
+  final int decimalPlaces;
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +356,9 @@ class _ComparedRow extends StatelessWidget {
           (
             icon: d.icon,
             subtitle: d.side.name,
-            child: Text(d.value.toStringAsFixed(1)),
+            child: Text(
+              formatInspectorDouble(d.value, decimalPlaces: decimalPlaces),
+            ),
           ),
       ],
     );

@@ -61,6 +61,28 @@ Widget _buildBody() {
   );
 }
 
+Widget _buildPrecisionBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(
+      decimalPlaces: 3,
+      child: child!,
+    ),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Container(
+          key: _containerKey,
+          width: 100.125,
+          height: 100.375,
+          decoration: const BoxDecoration(
+            color: Colors.blue,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 Widget _buildMaterialShapeBody() {
   return MaterialApp(
     builder: (context, child) => Inspector(child: child!),
@@ -245,6 +267,22 @@ void main() {
 
       expect(getButton().backgroundColor, Colors.white);
       expect(getButton().foregroundColor, Colors.black54);
+    });
+
+    testWidgets('respects decimalPlaces from Inspector', (tester) async {
+      await tester.pumpWidget(_buildPrecisionBody());
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      final container =
+          tester.renderObject(find.byKey(_containerKey)) as RenderBox;
+      final position =
+          (container.localToGlobal(Offset.zero) & container.size).center;
+
+      await tester.tapAt(position);
+      await tester.pump();
+
+      expect(find.text('100.125 × 100.375'), findsWidgets);
     });
 
     testWidgets('can hit-test a Container', (tester) async {
