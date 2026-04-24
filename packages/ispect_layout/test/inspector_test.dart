@@ -83,6 +83,19 @@ Widget _buildPrecisionBody() {
   );
 }
 
+Widget _buildCollapsedPanelBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(
+      initialPanelExpanded: false,
+      child: child!,
+    ),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: const SizedBox.expand(),
+    ),
+  );
+}
+
 Widget _buildMaterialShapeBody() {
   return MaterialApp(
     builder: (context, child) => Inspector(child: child!),
@@ -164,6 +177,14 @@ void main() {
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
       expect(find.byIcon(Icons.format_shapes), findsOneWidget);
       expect(find.byIcon(Icons.colorize), findsOneWidget);
+    });
+
+    testWidgets('panel can start collapsed', (tester) async {
+      await tester.pumpWidget(_buildCollapsedPanelBody());
+
+      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+      expect(find.byIcon(Icons.format_shapes), findsNothing);
+      expect(find.byIcon(Icons.colorize), findsNothing);
     });
 
     // testWidgets('open panel golden test', (tester) async {

@@ -25,7 +25,8 @@ import 'widgets/multi_value_listenable.dart';
 /// [isPanelVisible] controls the visibility of the control panel - setting it
 /// to [false] will hide the panel, but the other functionality can still be
 /// accessed through keyboard shortcuts. If you want to disable the inspector
-/// entirely, use [isEnabled].
+/// entirely, use [isEnabled]. [initialPanelExpanded] controls whether the
+/// visible panel starts expanded or collapsed.
 class Inspector extends StatefulWidget {
   const Inspector({
     super.key,
@@ -33,6 +34,7 @@ class Inspector extends StatefulWidget {
     this.controller,
     this.alignment = Alignment.center,
     this.isPanelVisible = true,
+    this.initialPanelExpanded = true,
     this.isEnabled,
     this.decimalPlaces = 1,
     this.panelBuilder,
@@ -41,6 +43,7 @@ class Inspector extends StatefulWidget {
   final Widget child;
   final InspectorController? controller;
   final bool isPanelVisible;
+  final bool initialPanelExpanded;
   final Alignment alignment;
   final bool? isEnabled;
   final int decimalPlaces;
@@ -368,6 +371,7 @@ class InspectorState extends State<Inspector> {
               valueListenable: _controller.modeNotifier,
               builder: (context, mode, _) => InspectorPanel(
                 controller: _controller,
+                initialIsVisible: widget.initialPanelExpanded,
               ),
             ),
           ),

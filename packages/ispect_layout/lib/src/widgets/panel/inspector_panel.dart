@@ -5,18 +5,34 @@ class InspectorPanel extends StatefulWidget {
   const InspectorPanel({
     super.key,
     required this.controller,
+    this.initialIsVisible = true,
   });
 
   final InspectorController controller;
+  final bool initialIsVisible;
 
   @override
   State<InspectorPanel> createState() => _InspectorPanelState();
 }
 
 class _InspectorPanelState extends State<InspectorPanel> {
-  bool _isVisible = true;
+  late bool _isVisible;
 
   InspectorController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _isVisible = widget.initialIsVisible;
+  }
+
+  @override
+  void didUpdateWidget(covariant InspectorPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIsVisible != widget.initialIsVisible) {
+      _isVisible = widget.initialIsVisible;
+    }
+  }
 
   void _toggleVisibility() {
     setState(() => _isVisible = !_isVisible);
