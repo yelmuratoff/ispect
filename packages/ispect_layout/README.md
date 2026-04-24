@@ -58,7 +58,7 @@ Standalone package — works independently of the rest of the [ISpect toolkit](#
 - **Text**: plain-text preview, span-by-span style breakdown, `didExceedMaxLines`, `maxLines`, `overflow`, `textScaler`.
 - **Render-object coverage**: `RenderFlex`, `RenderStack`, `RenderWrap`, `RenderImage`, `RenderOpacity` / `RenderAnimatedOpacity`, `RenderPhysicalShape` / `RenderPhysicalModel`, `RenderFittedBox`, `RenderAspectRatio`, `RenderCustomPaint`, `RenderTransform` (matrix decomposition), `RenderBackdropFilter`, every `RenderClip*`, and `RenderEditable` (text fields).
 - **Wrapper ancestors**: when the selection is wrapped in same-size proxies (Transform, ClipRRect, BackdropFilter, Opacity, FittedBox, …), each ancestor's properties are surfaced as a separate sub-section.
-- **Compare mode**: tap **Compare** (or press `Y`) and pick a second widget to see horizontal / vertical gaps or LTRB offsets with a visual overlay.
+- **Compare mode**: tap **Compare** (or press `Alt+Y`) and pick a second widget to see horizontal / vertical gaps or LTRB offsets with a visual overlay.
 - **Colour picker** with pixel-level sampling, `ColorScheme` hints, a zoom / magnifier overlay, and physical-keyboard shortcuts.
 
 ## Install
@@ -87,7 +87,48 @@ void main() {
 }
 ```
 
-Tap the widget-inspector FAB to start selecting. Tap the **Compare** icon (or press `Y`) to lock the current selection, then tap a second widget to see the pixel distance.
+Tap the widget-inspector FAB to start selecting. Tap the **Compare** icon (or press `Alt+Y`) to lock the current selection, then tap a second widget to see the pixel distance.
+
+## Defaults and configuration
+
+Default keyboard shortcuts are chosen to avoid interfering with normal typing:
+
+- `Alt+W` — widget inspector
+- `Alt+Y` — compare selected widget with another widget
+- `Alt+C` — colour picker
+- `Alt+Z` — zoom overlay
+
+You can also configure panel state and value precision directly on `Inspector`:
+
+```dart
+Inspector(
+  isEnabled: true,
+  initialPanelExpanded: false,
+  decimalPlaces: 3,
+  child: child!,
+)
+```
+
+For custom multi-key shortcuts, pass `ShortcutActivator`s to `InspectorController`:
+
+```dart
+import 'package:flutter/services.dart';
+import 'package:ispect_layout/ispect_layout.dart';
+
+final controller = InspectorController(
+  zoomShortcutActivators: const [
+    SingleActivator(LogicalKeyboardKey.keyZ, alt: true, meta: true),
+  ],
+  colorPickerShortcutActivators: const [
+    SingleActivator(LogicalKeyboardKey.keyC, control: true, alt: true),
+  ],
+);
+
+Inspector(
+  controller: controller,
+  child: child!,
+)
+```
 
 See [`example/lib/showcase_example.dart`](https://github.com/yelmuratoff/ispect/blob/main/packages/ispect_layout/example/lib/showcase_example.dart) for a tour of every render-object type the inspector handles.
 

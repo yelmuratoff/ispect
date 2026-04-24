@@ -182,6 +182,7 @@ void main() {
       await _enterInspectorAndSelectA(tester);
 
       // When
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
@@ -197,6 +198,7 @@ void main() {
       await tester.pump();
 
       // When
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
@@ -209,6 +211,7 @@ void main() {
       // Given
       await tester.pumpWidget(_buildBody());
       await _enterInspectorAndSelectA(tester);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
@@ -219,6 +222,8 @@ void main() {
 
       // When
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyY);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
@@ -233,11 +238,13 @@ void main() {
       // Given
       await tester.pumpWidget(_buildBody());
       await _enterInspectorAndSelectA(tester);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
       // When — release key (old hold behaviour would have exited here)
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyY);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
       // Then — still in compareSelect

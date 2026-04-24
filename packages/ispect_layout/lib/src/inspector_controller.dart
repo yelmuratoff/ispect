@@ -29,25 +29,14 @@ class InspectorController {
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
     this.decimalPlaces = 1,
-    this.widgetInspectorShortcuts = const [
-      LogicalKeyboardKey.alt,
-      LogicalKeyboardKey.altLeft,
-      LogicalKeyboardKey.altRight,
-      LogicalKeyboardKey.meta,
-      LogicalKeyboardKey.metaLeft,
-      LogicalKeyboardKey.metaRight,
-    ],
-    this.widgetInspectAndCompareShortcuts = const [
-      LogicalKeyboardKey.keyY,
-    ],
-    this.colorPickerShortcuts = const [
-      LogicalKeyboardKey.shift,
-      LogicalKeyboardKey.shiftLeft,
-      LogicalKeyboardKey.shiftRight,
-    ],
-    this.zoomShortcuts = const [
-      LogicalKeyboardKey.keyZ,
-    ],
+    this.widgetInspectorShortcuts,
+    this.widgetInspectAndCompareShortcuts,
+    this.colorPickerShortcuts,
+    this.zoomShortcuts,
+    this.widgetInspectorShortcutActivators,
+    this.widgetInspectAndCompareShortcutActivators,
+    this.colorPickerShortcutActivators,
+    this.zoomShortcutActivators,
   }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
 
   final bool isEnabled;
@@ -58,10 +47,15 @@ class InspectorController {
   final bool isZoomEnabled;
   final int decimalPlaces;
 
-  final List<LogicalKeyboardKey> widgetInspectorShortcuts;
-  final List<LogicalKeyboardKey> widgetInspectAndCompareShortcuts;
-  final List<LogicalKeyboardKey> colorPickerShortcuts;
-  final List<LogicalKeyboardKey> zoomShortcuts;
+  final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
+  final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
+  final List<LogicalKeyboardKey>? colorPickerShortcuts;
+  final List<LogicalKeyboardKey>? zoomShortcuts;
+
+  final List<ShortcutActivator>? widgetInspectorShortcutActivators;
+  final List<ShortcutActivator>? widgetInspectAndCompareShortcutActivators;
+  final List<ShortcutActivator>? colorPickerShortcutActivators;
+  final List<ShortcutActivator>? zoomShortcutActivators;
 
   final GlobalKey stackKey = GlobalKey();
   final GlobalKey repaintBoundaryKey = GlobalKey();
@@ -108,17 +102,105 @@ class InspectorController {
     _onPointerHoverDebounce?.cancel();
   }
 
-  bool handlesInspectorShortcutKey(LogicalKeyboardKey key) =>
-      widgetInspectorShortcuts.contains(key);
+  List<ShortcutActivator> get effectiveWidgetInspectorShortcutActivators =>
+      _resolveShortcutActivators(
+        explicit: widgetInspectorShortcutActivators,
+        legacyKeys: widgetInspectorShortcuts,
+        defaultActivators: const [
+          SingleActivator(
+            LogicalKeyboardKey.keyW,
+            alt: true,
+            includeRepeats: false,
+          ),
+        ],
+      );
 
-  bool handlesCompareShortcutKey(LogicalKeyboardKey key) =>
-      widgetInspectAndCompareShortcuts.contains(key);
+  List<ShortcutActivator>
+      get effectiveWidgetInspectAndCompareShortcutActivators =>
+          _resolveShortcutActivators(
+            explicit: widgetInspectAndCompareShortcutActivators,
+            legacyKeys: widgetInspectAndCompareShortcuts,
+            defaultActivators: const [
+              SingleActivator(
+                LogicalKeyboardKey.keyY,
+                alt: true,
+                includeRepeats: false,
+              ),
+            ],
+            legacyFactory: _legacyToggleActivator,
+          );
 
-  bool handlesColorPickerShortcutKey(LogicalKeyboardKey key) =>
-      colorPickerShortcuts.contains(key);
+  List<ShortcutActivator> get effectiveColorPickerShortcutActivators =>
+      _resolveShortcutActivators(
+        explicit: colorPickerShortcutActivators,
+        legacyKeys: colorPickerShortcuts,
+        defaultActivators: const [
+          SingleActivator(
+            LogicalKeyboardKey.keyC,
+            alt: true,
+            includeRepeats: false,
+          ),
+        ],
+      );
 
-  bool handlesZoomShortcutKey(LogicalKeyboardKey key) =>
-      zoomShortcuts.contains(key);
+  List<ShortcutActivator> get effectiveZoomShortcutActivators =>
+      _resolveShortcutActivators(
+        explicit: zoomShortcutActivators,
+        legacyKeys: zoomShortcuts,
+        defaultActivators: const [
+          SingleActivator(
+            LogicalKeyboardKey.keyZ,
+            alt: true,
+            includeRepeats: false,
+          ),
+        ],
+      );
+
+  bool acceptsWidgetInspectorShortcut(KeyEvent event, HardwareKeyboard state) =>
+      _matchesAnyShortcut(
+        effectiveWidgetInspectorShortcutActivators,
+        event,
+        state,
+      );
+
+  bool acceptsCompareShortcut(KeyEvent event, HardwareKeyboard state) =>
+      _matchesAnyShortcut(
+        effectiveWidgetInspectAndCompareShortcutActivators,
+        event,
+        state,
+      );
+
+  bool acceptsColorPickerShortcut(KeyEvent event, HardwareKeyboard state) =>
+      _matchesAnyShortcut(
+        effectiveColorPickerShortcutActivators,
+        event,
+        state,
+      );
+
+  bool acceptsZoomShortcut(KeyEvent event, HardwareKeyboard state) =>
+      _matchesAnyShortcut(
+        effectiveZoomShortcutActivators,
+        event,
+        state,
+      );
+
+  bool isWidgetInspectorShortcutStillPressed(HardwareKeyboard state) =>
+      _isAnyShortcutPressed(
+        effectiveWidgetInspectorShortcutActivators,
+        state,
+      );
+
+  bool isColorPickerShortcutStillPressed(HardwareKeyboard state) =>
+      _isAnyShortcutPressed(
+        effectiveColorPickerShortcutActivators,
+        state,
+      );
+
+  bool isZoomShortcutStillPressed(HardwareKeyboard state) =>
+      _isAnyShortcutPressed(
+        effectiveZoomShortcutActivators,
+        state,
+      );
 
   void handleInspectorShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.inspector);
@@ -131,6 +213,82 @@ class InspectorController {
 
   void handleZoomShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.zoom);
+
+  List<ShortcutActivator> _resolveShortcutActivators({
+    required List<ShortcutActivator>? explicit,
+    required List<LogicalKeyboardKey>? legacyKeys,
+    required List<ShortcutActivator> defaultActivators,
+    ShortcutActivator Function(LogicalKeyboardKey key)? legacyFactory,
+  }) {
+    if (explicit != null) return List.unmodifiable(explicit);
+    if (legacyKeys != null) {
+      return List.unmodifiable(
+        legacyKeys.map(legacyFactory ?? _legacyHoldActivator),
+      );
+    }
+    return defaultActivators;
+  }
+
+  bool _matchesAnyShortcut(
+    List<ShortcutActivator> activators,
+    KeyEvent event,
+    HardwareKeyboard state,
+  ) {
+    for (final activator in activators) {
+      if (activator.accepts(event, state)) return true;
+    }
+    return false;
+  }
+
+  bool _isAnyShortcutPressed(
+    List<ShortcutActivator> activators,
+    HardwareKeyboard state,
+  ) {
+    for (final activator in activators) {
+      if (_isShortcutPressed(activator, state)) return true;
+    }
+    return false;
+  }
+
+  bool _isShortcutPressed(ShortcutActivator activator, HardwareKeyboard state) {
+    final pressed = state.logicalKeysPressed;
+
+    if (activator is SingleActivator) {
+      return pressed.contains(activator.trigger) &&
+          activator.control == state.isControlPressed &&
+          activator.shift == state.isShiftPressed &&
+          activator.alt == state.isAltPressed &&
+          activator.meta == state.isMetaPressed;
+    }
+
+    if (activator is LogicalKeySet) {
+      final requiredKeys = activator.keys
+          .map(
+            (key) =>
+                LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key})
+                    .single,
+          )
+          .toSet();
+      final pressedKeys = LogicalKeyboardKey.collapseSynonyms(pressed);
+      return requiredKeys.every(pressedKeys.contains);
+    }
+
+    return false;
+  }
+
+  static ShortcutActivator _legacyHoldActivator(LogicalKeyboardKey key) {
+    if (_isModifierKey(key)) {
+      return LogicalKeySet(key);
+    }
+    return SingleActivator(key, includeRepeats: false);
+  }
+
+  static ShortcutActivator _legacyToggleActivator(LogicalKeyboardKey key) =>
+      SingleActivator(key, includeRepeats: false);
+
+  static bool _isModifierKey(LogicalKeyboardKey key) => _modifierKeys.contains(
+        LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key}).single,
+      );
 
   void _toggleMode(bool enable, InspectorMode targetMode) {
     if (targetMode == InspectorMode.inspectAndCompare) {
@@ -513,3 +671,10 @@ class InspectorController {
     zoomOverlayOffsetNotifier.value = clamped - overlayOffset;
   }
 }
+
+final _modifierKeys = <LogicalKeyboardKey>{
+  LogicalKeyboardKey.alt,
+  LogicalKeyboardKey.control,
+  LogicalKeyboardKey.meta,
+  LogicalKeyboardKey.shift,
+};

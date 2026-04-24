@@ -86,6 +86,8 @@ class InspectorState extends State<Inspector> {
   static const double _overlayMinSize = 128;
   static const double _overlayMaxSize = 246;
   static const double _overlayOffsetY = 16;
+  static const _enterInspectorIntent = _EnterInspectorIntent();
+  static const _enterColorPickerIntent = _EnterColorPickerIntent();
   static const _toggleCompareIntent = _ToggleCompareIntent();
   static const _enterZoomIntent = _EnterZoomIntent();
 
@@ -336,6 +338,18 @@ class InspectorState extends State<Inspector> {
       shortcuts: _buildShortcuts(),
       child: Actions(
         actions: {
+          _EnterInspectorIntent: CallbackAction<_EnterInspectorIntent>(
+            onInvoke: (_) {
+              _controller.handleInspectorShortcut(true);
+              return null;
+            },
+          ),
+          _EnterColorPickerIntent: CallbackAction<_EnterColorPickerIntent>(
+            onInvoke: (_) {
+              _controller.handleColorPickerShortcut(true);
+              return null;
+            },
+          ),
           _ToggleCompareIntent: CallbackAction<_ToggleCompareIntent>(
             onInvoke: (_) {
               _controller.handleCompareShortcut();
@@ -382,90 +396,95 @@ class InspectorState extends State<Inspector> {
   Map<ShortcutActivator, Intent> _buildShortcuts() {
     final shortcuts = <ShortcutActivator, Intent>{};
 
-    for (final key in _controller.widgetInspectAndCompareShortcuts) {
-      if (!_supportsSingleActivator(key)) continue;
-      shortcuts.putIfAbsent(
-        SingleActivator(key, includeRepeats: false),
-        () => _toggleCompareIntent,
-      );
+    for (final activator
+        in _controller.effectiveWidgetInspectorShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterInspectorIntent);
     }
 
-    for (final key in _controller.zoomShortcuts) {
-      if (!_supportsSingleActivator(key)) continue;
-      shortcuts.putIfAbsent(
-        SingleActivator(key, includeRepeats: false),
-        () => _enterZoomIntent,
-      );
+    for (final activator
+        in _controller.effectiveWidgetInspectAndCompareShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _toggleCompareIntent);
+    }
+
+    for (final activator
+        in _controller.effectiveColorPickerShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterColorPickerIntent);
+    }
+
+    for (final activator in _controller.effectiveZoomShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterZoomIntent);
     }
 
     return shortcuts;
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
-    final key = event.logicalKey;
+    final state = HardwareKeyboard.instance;
 
-    if (_controller.handlesInspectorShortcutKey(key)) {
-      if (event is KeyRepeatEvent) return KeyEventResult.handled;
-      _controller.handleInspectorShortcut(event is! KeyUpEvent);
+    if (_controller.acceptsWidgetInspectorShortcut(event, state) ||
+        _controller.acceptsCompareShortcut(event, state) ||
+        _controller.acceptsColorPickerShortcut(event, state) ||
+        _controller.acceptsZoomShortcut(event, state)) {
+      return KeyEventResult.ignored;
+    }
+
+    if (_shouldReleaseInspectorShortcut(event, state)) {
+      _controller.handleInspectorShortcut(false);
       return KeyEventResult.handled;
     }
 
-    if (_controller.handlesColorPickerShortcutKey(key)) {
-      if (event is KeyRepeatEvent) return KeyEventResult.handled;
-      _controller.handleColorPickerShortcut(event is! KeyUpEvent);
+    if (_shouldReleaseColorPickerShortcut(event, state)) {
+      _controller.handleColorPickerShortcut(false);
       return KeyEventResult.handled;
     }
 
-    if (_controller.handlesCompareShortcutKey(key)) {
-      if (event is KeyUpEvent || event is KeyRepeatEvent) {
-        return KeyEventResult.handled;
-      }
-
-      if (_supportsSingleActivator(key)) {
-        return KeyEventResult.ignored;
-      }
-
-      _controller.handleCompareShortcut();
+    if (_shouldReleaseZoomShortcut(event, state)) {
+      _controller.handleZoomShortcut(false);
       return KeyEventResult.handled;
     }
 
-    if (_controller.handlesZoomShortcutKey(key)) {
-      if (event is KeyUpEvent) {
-        _controller.handleZoomShortcut(false);
-        return KeyEventResult.handled;
-      }
-
-      if (event is KeyRepeatEvent) return KeyEventResult.handled;
-
-      if (_supportsSingleActivator(key)) {
-        return KeyEventResult.ignored;
-      }
-
-      _controller.handleZoomShortcut(true);
+    if (_isRepeatFromShortcut(event, state)) {
       return KeyEventResult.handled;
     }
 
     return KeyEventResult.ignored;
   }
 
-  bool _supportsSingleActivator(LogicalKeyboardKey key) =>
-      !_modifierKeys.contains(key);
+  bool _shouldReleaseInspectorShortcut(
+          KeyEvent event, HardwareKeyboard state) =>
+      event is KeyUpEvent &&
+      _controller.modeNotifier.value == InspectorMode.inspector &&
+      !_controller.isWidgetInspectorShortcutStillPressed(state);
+
+  bool _shouldReleaseColorPickerShortcut(
+          KeyEvent event, HardwareKeyboard state) =>
+      event is KeyUpEvent &&
+      _controller.modeNotifier.value == InspectorMode.colorPicker &&
+      !_controller.isColorPickerShortcutStillPressed(state);
+
+  bool _shouldReleaseZoomShortcut(KeyEvent event, HardwareKeyboard state) =>
+      event is KeyUpEvent &&
+      _controller.modeNotifier.value == InspectorMode.zoom &&
+      !_controller.isZoomShortcutStillPressed(state);
+
+  bool _isRepeatFromShortcut(KeyEvent event, HardwareKeyboard state) =>
+      event is KeyRepeatEvent &&
+      ((_controller.modeNotifier.value == InspectorMode.inspector &&
+              _controller.isWidgetInspectorShortcutStillPressed(state)) ||
+          (_controller.modeNotifier.value == InspectorMode.colorPicker &&
+              _controller.isColorPickerShortcutStillPressed(state)) ||
+          (_controller.modeNotifier.value == InspectorMode.zoom &&
+              _controller.isZoomShortcutStillPressed(state)) ||
+          _controller.acceptsCompareShortcut(event, state));
 }
 
-final _modifierKeys = <LogicalKeyboardKey>{
-  LogicalKeyboardKey.alt,
-  LogicalKeyboardKey.altLeft,
-  LogicalKeyboardKey.altRight,
-  LogicalKeyboardKey.control,
-  LogicalKeyboardKey.controlLeft,
-  LogicalKeyboardKey.controlRight,
-  LogicalKeyboardKey.meta,
-  LogicalKeyboardKey.metaLeft,
-  LogicalKeyboardKey.metaRight,
-  LogicalKeyboardKey.shift,
-  LogicalKeyboardKey.shiftLeft,
-  LogicalKeyboardKey.shiftRight,
-};
+class _EnterInspectorIntent extends Intent {
+  const _EnterInspectorIntent();
+}
+
+class _EnterColorPickerIntent extends Intent {
+  const _EnterColorPickerIntent();
+}
 
 class _ToggleCompareIntent extends Intent {
   const _ToggleCompareIntent();

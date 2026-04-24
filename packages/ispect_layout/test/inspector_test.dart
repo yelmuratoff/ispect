@@ -96,6 +96,27 @@ Widget _buildCollapsedPanelBody() {
   );
 }
 
+Widget _buildCustomShortcutBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(
+      controller: InspectorController(
+        zoomShortcutActivators: const [
+          SingleActivator(
+            LogicalKeyboardKey.keyZ,
+            alt: true,
+            meta: true,
+          ),
+        ],
+      ),
+      child: child!,
+    ),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: const SizedBox.expand(),
+    ),
+  );
+}
+
 Widget _buildMaterialShapeBody() {
   return MaterialApp(
     builder: (context, child) => Inspector(child: child!),
@@ -251,11 +272,13 @@ void main() {
       expect(getButton().foregroundColor, Colors.black54);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
       await tester.pump();
 
       expect(getButton().backgroundColor, Colors.blue);
       expect(getButton().foregroundColor, Colors.white);
 
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
@@ -277,6 +300,7 @@ void main() {
       expect(getButton().backgroundColor, Colors.white);
       expect(getButton().foregroundColor, Colors.black54);
 
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
       await tester.pump();
 
@@ -284,6 +308,38 @@ void main() {
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+      await tester.pump();
+
+      expect(getButton().backgroundColor, Colors.white);
+      expect(getButton().foregroundColor, Colors.black54);
+    });
+
+    testWidgets('supports custom multikey zoom shortcuts', (tester) async {
+      await tester.pumpWidget(_buildCustomShortcutBody());
+
+      final finder = find.ancestor(
+        of: find.byIcon(Icons.zoom_in),
+        matching: find.byType(FloatingActionButton),
+      );
+
+      FloatingActionButton getButton() =>
+          tester.widget(finder) as FloatingActionButton;
+
+      expect(getButton().backgroundColor, Colors.white);
+      expect(getButton().foregroundColor, Colors.black54);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
+      await tester.pump();
+
+      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().foregroundColor, Colors.white);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
       expect(getButton().backgroundColor, Colors.white);
