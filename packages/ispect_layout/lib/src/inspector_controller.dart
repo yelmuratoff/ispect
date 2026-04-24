@@ -6,8 +6,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-
-import 'keyboard_handler.dart';
 import 'utils.dart';
 import 'widgets/color_picker/color_picker_snackbar.dart';
 import 'widgets/color_picker/utils.dart';
@@ -49,20 +47,7 @@ class InspectorController {
     this.zoomShortcuts = const [
       LogicalKeyboardKey.keyZ,
     ],
-  }) {
-    _keyboardHandler = KeyboardHandler(
-      onInspectorStateChanged: (v) => _toggleMode(v, InspectorMode.inspector),
-      onInspectAndCompareChanged: (v) =>
-          _toggleMode(v, InspectorMode.inspectAndCompare),
-      onColorPickerStateChanged: (v) =>
-          _toggleMode(v, InspectorMode.colorPicker),
-      onZoomStateChanged: (v) => _toggleMode(v, InspectorMode.zoom),
-      colorPickerStateKeys: colorPickerShortcuts,
-      inspectorStateKeys: widgetInspectorShortcuts,
-      inspectAndCompareKeys: widgetInspectAndCompareShortcuts,
-      zoomStateKeys: zoomShortcuts,
-    );
-  }
+  });
 
   final bool isEnabled;
   final bool isWidgetInspectorEnabled;
@@ -100,17 +85,12 @@ class InspectorController {
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
   Timer? _onPointerHoverDebounce;
-  late final KeyboardHandler _keyboardHandler;
-
-  void registerKeyboardHandler() {
-    _keyboardHandler.register();
-  }
-
-  void unregisterKeyboardHandler() {
-    _keyboardHandler.dispose();
-  }
+  bool _isDisposed = false;
+  int _imageCaptureEpoch = 0;
 
   void dispose() {
+    _isDisposed = true;
+    _imageCaptureEpoch++;
     _image?.dispose();
     modeNotifier.dispose();
     byteDataStateNotifier.dispose();
@@ -124,8 +104,31 @@ class InspectorController {
     zoomScaleNotifier.dispose();
     zoomOverlayOffsetNotifier.dispose();
     _onPointerHoverDebounce?.cancel();
-    _keyboardHandler.dispose();
   }
+
+  bool handlesInspectorShortcutKey(LogicalKeyboardKey key) =>
+      widgetInspectorShortcuts.contains(key);
+
+  bool handlesCompareShortcutKey(LogicalKeyboardKey key) =>
+      widgetInspectAndCompareShortcuts.contains(key);
+
+  bool handlesColorPickerShortcutKey(LogicalKeyboardKey key) =>
+      colorPickerShortcuts.contains(key);
+
+  bool handlesZoomShortcutKey(LogicalKeyboardKey key) =>
+      zoomShortcuts.contains(key);
+
+  void handleInspectorShortcut(bool isPressed) =>
+      _toggleMode(isPressed, InspectorMode.inspector);
+
+  void handleCompareShortcut() =>
+      _toggleMode(true, InspectorMode.inspectAndCompare);
+
+  void handleColorPickerShortcut(bool isPressed) =>
+      _toggleMode(isPressed, InspectorMode.colorPicker);
+
+  void handleZoomShortcut(bool isPressed) =>
+      _toggleMode(isPressed, InspectorMode.zoom);
 
   void _toggleMode(bool enable, InspectorMode targetMode) {
     if (targetMode == InspectorMode.inspectAndCompare) {
@@ -242,14 +245,17 @@ class InspectorController {
       case InspectorMode.compareSelect:
         break;
       case InspectorMode.colorPicker:
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _extractByteData();
+        final captureEpoch = ++_imageCaptureEpoch;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await _extractByteData(captureEpoch);
         });
         break;
       case InspectorMode.zoom:
+        final captureEpoch = ++_imageCaptureEpoch;
         zoomScaleNotifier.value = 2.0;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _extractByteData();
+          await _extractByteData(captureEpoch);
+          if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
           if (_pointerHoverPosition != null &&
               stackKey.currentContext != null) {
             _onZoomHover(_pointerHoverPosition!, stackKey.currentContext!);
@@ -262,8 +268,10 @@ class InspectorController {
   }
 
   void _cleanupImage() {
+    _imageCaptureEpoch++;
     _image?.dispose();
     _image = null;
+    if (_isDisposed) return;
     byteDataStateNotifier.value = null;
   }
 
@@ -401,7 +409,8 @@ class InspectorController {
     );
   }
 
-  Future<void> _extractByteData() async {
+  Future<void> _extractByteData(int captureEpoch) async {
+    if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
     if (_image != null) return;
     if (repaintBoundaryKey.currentContext == null) return;
 
@@ -411,8 +420,20 @@ class InspectorController {
     final context = repaintBoundaryKey.currentContext!;
     final pixelRatio = MediaQuery.of(context).devicePixelRatio;
 
-    _image = await boundary.toImage(pixelRatio: pixelRatio);
-    byteDataStateNotifier.value = await _image!.toByteData();
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
+    if (_isDisposed || captureEpoch != _imageCaptureEpoch) {
+      image.dispose();
+      return;
+    }
+
+    final byteData = await image.toByteData();
+    if (_isDisposed || captureEpoch != _imageCaptureEpoch) {
+      image.dispose();
+      return;
+    }
+
+    _image = image;
+    byteDataStateNotifier.value = byteData;
   }
 
   Offset _extractShiftedOffset(Offset offset, BuildContext context) {

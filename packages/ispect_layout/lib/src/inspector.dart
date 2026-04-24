@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
 import 'package:ispect_layout/src/widgets/ignore_tap_gesture.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
@@ -80,6 +81,8 @@ class InspectorState extends State<Inspector> {
   static const double _overlayMinSize = 128;
   static const double _overlayMaxSize = 246;
   static const double _overlayOffsetY = 16;
+  static const _toggleCompareIntent = _ToggleCompareIntent();
+  static const _enterZoomIntent = _EnterZoomIntent();
 
   @override
   void initState() {
@@ -90,10 +93,6 @@ class InspectorState extends State<Inspector> {
         InspectorController(
           isEnabled: _isEnabled,
         );
-
-    if (_isEnabled) {
-      _controller.registerKeyboardHandler();
-    }
   }
 
   @override
@@ -106,14 +105,8 @@ class InspectorState extends State<Inspector> {
 
       if (widget.controller != null) {
         _controller = widget.controller!;
-        if (_isEnabled) {
-          _controller.registerKeyboardHandler();
-        }
       } else if (oldWidget.controller != null) {
         _controller = InspectorController(isEnabled: _isEnabled);
-        if (_isEnabled) {
-          _controller.registerKeyboardHandler();
-        }
       }
     }
 
@@ -324,13 +317,38 @@ class InspectorState extends State<Inspector> {
       ],
     );
 
+    final keyboardAwareContent = Shortcuts(
+      shortcuts: _buildShortcuts(),
+      child: Actions(
+        actions: {
+          _ToggleCompareIntent: CallbackAction<_ToggleCompareIntent>(
+            onInvoke: (_) {
+              _controller.handleCompareShortcut();
+              return null;
+            },
+          ),
+          _EnterZoomIntent: CallbackAction<_EnterZoomIntent>(
+            onInvoke: (_) {
+              _controller.handleZoomShortcut(true);
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          onKeyEvent: _handleKeyEvent,
+          child: content,
+        ),
+      ),
+    );
+
     if (widget.panelBuilder != null) {
-      return widget.panelBuilder!(context, _controller, content);
+      return widget.panelBuilder!(context, _controller, keyboardAwareContent);
     }
 
     return Stack(
       children: [
-        content,
+        keyboardAwareContent,
         if (_isPanelVisible)
           Align(
             alignment: Alignment.centerRight,
@@ -344,4 +362,99 @@ class InspectorState extends State<Inspector> {
       ],
     );
   }
+
+  Map<ShortcutActivator, Intent> _buildShortcuts() {
+    final shortcuts = <ShortcutActivator, Intent>{};
+
+    for (final key in _controller.widgetInspectAndCompareShortcuts) {
+      if (!_supportsSingleActivator(key)) continue;
+      shortcuts.putIfAbsent(
+        SingleActivator(key, includeRepeats: false),
+        () => _toggleCompareIntent,
+      );
+    }
+
+    for (final key in _controller.zoomShortcuts) {
+      if (!_supportsSingleActivator(key)) continue;
+      shortcuts.putIfAbsent(
+        SingleActivator(key, includeRepeats: false),
+        () => _enterZoomIntent,
+      );
+    }
+
+    return shortcuts;
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    final key = event.logicalKey;
+
+    if (_controller.handlesInspectorShortcutKey(key)) {
+      if (event is KeyRepeatEvent) return KeyEventResult.handled;
+      _controller.handleInspectorShortcut(event is! KeyUpEvent);
+      return KeyEventResult.handled;
+    }
+
+    if (_controller.handlesColorPickerShortcutKey(key)) {
+      if (event is KeyRepeatEvent) return KeyEventResult.handled;
+      _controller.handleColorPickerShortcut(event is! KeyUpEvent);
+      return KeyEventResult.handled;
+    }
+
+    if (_controller.handlesCompareShortcutKey(key)) {
+      if (event is KeyUpEvent || event is KeyRepeatEvent) {
+        return KeyEventResult.handled;
+      }
+
+      if (_supportsSingleActivator(key)) {
+        return KeyEventResult.ignored;
+      }
+
+      _controller.handleCompareShortcut();
+      return KeyEventResult.handled;
+    }
+
+    if (_controller.handlesZoomShortcutKey(key)) {
+      if (event is KeyUpEvent) {
+        _controller.handleZoomShortcut(false);
+        return KeyEventResult.handled;
+      }
+
+      if (event is KeyRepeatEvent) return KeyEventResult.handled;
+
+      if (_supportsSingleActivator(key)) {
+        return KeyEventResult.ignored;
+      }
+
+      _controller.handleZoomShortcut(true);
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
+  bool _supportsSingleActivator(LogicalKeyboardKey key) =>
+      !_modifierKeys.contains(key);
+}
+
+final _modifierKeys = <LogicalKeyboardKey>{
+  LogicalKeyboardKey.alt,
+  LogicalKeyboardKey.altLeft,
+  LogicalKeyboardKey.altRight,
+  LogicalKeyboardKey.control,
+  LogicalKeyboardKey.controlLeft,
+  LogicalKeyboardKey.controlRight,
+  LogicalKeyboardKey.meta,
+  LogicalKeyboardKey.metaLeft,
+  LogicalKeyboardKey.metaRight,
+  LogicalKeyboardKey.shift,
+  LogicalKeyboardKey.shiftLeft,
+  LogicalKeyboardKey.shiftRight,
+};
+
+class _ToggleCompareIntent extends Intent {
+  const _ToggleCompareIntent();
+}
+
+class _EnterZoomIntent extends Intent {
+  const _EnterZoomIntent();
 }

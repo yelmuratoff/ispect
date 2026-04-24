@@ -220,6 +220,33 @@ void main() {
       expect(getButton().foregroundColor, Colors.black54);
     });
 
+    testWidgets('zoom can be toggled via keyboard shortcut', (tester) async {
+      await tester.pumpWidget(_buildBody());
+
+      final finder = find.ancestor(
+        of: find.byIcon(Icons.zoom_in),
+        matching: find.byType(FloatingActionButton),
+      );
+
+      FloatingActionButton getButton() =>
+          tester.widget(finder) as FloatingActionButton;
+
+      expect(getButton().backgroundColor, Colors.white);
+      expect(getButton().foregroundColor, Colors.black54);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
+      await tester.pump();
+
+      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().foregroundColor, Colors.white);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
+      await tester.pump();
+
+      expect(getButton().backgroundColor, Colors.white);
+      expect(getButton().foregroundColor, Colors.black54);
+    });
+
     testWidgets('can hit-test a Container', (tester) async {
       await tester.pumpWidget(_buildBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
