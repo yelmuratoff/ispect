@@ -85,10 +85,18 @@ if [[ ! -d "$SRC_DIR" ]]; then
 fi
 
 # --- Rendering ---
-# render_template <src-file> <package-name> → stdout
-render_template() {
-  local src="$1" pkg="$2"
+# expand_partials <src-file> <depth> → stdout
+# Recursively expands `<!-- partial:NAME -->` markers. A partial may itself
+# reference other partials (e.g. the shared `root_body` partial pulls in
+# header/install_matrix/production_safety/footer).
+expand_partials() {
+  local src="$1" depth="${2:-0}"
   local line partial_name partial_path
+
+  if (( depth > 16 )); then
+    echo "${RED}error: partial recursion too deep (>16) while processing $src${NC}" >&2
+    exit 2
+  fi
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$line" =~ ^[[:space:]]*\<!--[[:space:]]*partial:([A-Za-z0-9_]+)[[:space:]]*--\>[[:space:]]*$ ]]; then
@@ -98,13 +106,19 @@ render_template() {
         echo "${RED}error: unknown partial '$partial_name' referenced in $src${NC}" >&2
         exit 2
       fi
-      cat "$partial_path"
+      expand_partials "$partial_path" $((depth + 1))
       # Keep a blank line after the partial for breathing room.
       echo ""
     else
       printf '%s\n' "$line"
     fi
-  done < "$src" | awk -v ver="$VERSION" -v pkg="$pkg" '
+  done < "$src"
+}
+
+# render_template <src-file> <package-name> → stdout
+render_template() {
+  local src="$1" pkg="$2"
+  expand_partials "$src" 0 | awk -v ver="$VERSION" -v pkg="$pkg" '
     {
       gsub(/\{\{version\}\}/, ver)
       gsub(/\{\{package\}\}/, pkg)

@@ -43,34 +43,30 @@
 ## Preview
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="900" alt="ISpect desktop log viewer" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="760" alt="ISpect desktop log viewer" />
   <p><em>Desktop log viewer and standalone web demo.</em></p>
 </div>
 
-<table align="center">
+<table>
   <tr>
-    <td align="center" width="20%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="175" alt="Inspector panel" />
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="240" alt="Inspector panel" /><br />
+      <sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub>
     </td>
-    <td align="center" width="20%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="175" alt="Color picker" />
-    </td>
-    <td align="center" width="20%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="175" alt="Settings panel" />
-    </td>
-    <td align="center" width="20%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="175" alt="JSON viewer" />
-    </td>
-    <td align="center" width="20%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="175" alt="Share sheet" />
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="240" alt="Color picker" /><br />
+      <sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub>
     </td>
   </tr>
   <tr>
-    <td align="center" width="20%"><sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub></td>
-    <td align="center" width="20%"><sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub></td>
-    <td align="center" width="20%"><sub><strong>Settings</strong><br />Toggle tools, filters, and debug behavior.</sub></td>
-    <td align="center" width="20%"><sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub></td>
-    <td align="center" width="20%"><sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub></td>
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="240" alt="JSON viewer" /><br />
+      <sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
+      <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
+    </td>
   </tr>
 </table>
 
@@ -78,13 +74,14 @@
   <summary><strong>Mobile showcase</strong></summary>
   <br />
   <div align="center">
+    <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="180" alt="Settings panel" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" alt="Typography inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" alt="Layout inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" alt="Spacing inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" alt="Decoration inspector on mobile" />
   </div>
   <br />
   <div align="center">
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" alt="Decoration inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" alt="Transform inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" alt="Effects inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" alt="Alignment and margin inspector on mobile" />
