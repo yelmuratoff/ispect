@@ -1,6 +1,5 @@
 import 'package:flutter/rendering.dart';
 import 'package:ispect_layout/src/number_format.dart';
-import 'package:ispect_layout/src/renderbox_extension.dart';
 import 'package:ispect_layout/src/size_extension.dart';
 
 /// Contains information about the currently selected [RenderBox].
@@ -62,14 +61,24 @@ class BoxInfo {
     }
 
     if (findContainer) {
-      /// The >= is used to check whether the item is fully contained by the other box.
-      /// The isGreaterThan is used to avoid selecting the same box as the target box.
+      // Precompute target's ancestor set once, so the descendant check is
+      // O(1) per candidate instead of walking the parent chain each time
+      // (previously O(n*depth), visible on deep trees).
+      final ancestors = <RenderObject>{};
+      for (RenderObject? node = targetRenderBox.parent;
+          node != null;
+          node = node.parent) {
+        ancestors.add(node);
+      }
+
+      // The >= is used to check whether the item is fully contained by the other box.
+      // The isGreaterThan is used to avoid selecting the same box as the target box.
       for (final box in boxes) {
         if (box.size >= targetRenderBox.size &&
             box.size.isGreaterThan(targetRenderBox.size)) {
           if ((containerRenderBox == null ||
                   box.size.isSmallerThan(containerRenderBox.size)) &&
-              targetRenderBox.isDescendantOf(box)) {
+              ancestors.contains(box)) {
             containerRenderBox = box;
           }
         }

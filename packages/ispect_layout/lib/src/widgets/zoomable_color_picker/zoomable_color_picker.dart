@@ -1,10 +1,9 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/widgets/color_picker/color_scheme_inspector.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
-import 'package:ispect_layout/src/widgets/components/information_box_widget.dart';
+import 'package:ispect_layout/src/widgets/zoom/zoom_painter.dart';
 
 /// A combined overlay widget for zoomable color picker with color display
 /// and zoom level indicators.
@@ -112,7 +111,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
                             child: CustomPaint(
                               isComplex: true,
                               willChange: true,
-                              painter: _ZoomPainter(
+                              painter: ZoomPainter(
                                 image: image,
                                 imageOffset: imageOffset,
                                 overlaySize: overlaySize,
@@ -156,7 +155,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
                           alignment: Alignment.bottomCenter,
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: _ZoomLevelDisplay(zoomScale: zoomScale),
+                            child: ZoomLevelIndicator(zoomScale: zoomScale),
                           ),
                         ),
                         // Center color indicator dot
@@ -211,124 +210,6 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// Custom painter for rendering zoomed image content in the overlay.
-///
-/// Optimizes performance with proper shouldRepaint implementation
-/// and efficient canvas operations.
-/// Areas outside the image bounds are filled with [backgroundColor].
-class _ZoomPainter extends CustomPainter {
-  _ZoomPainter({
-    required this.image,
-    required this.imageOffset,
-    required this.overlaySize,
-    required this.zoomScale,
-    required this.pixelRatio,
-    required this.backgroundColor,
-  })  : _backgroundPaint = Paint()..color = backgroundColor,
-        _imagePaint = Paint()..filterQuality = FilterQuality.low;
-
-  final ui.Image image;
-  final Offset imageOffset;
-  final double overlaySize;
-  final double zoomScale;
-  final double pixelRatio;
-  final Color backgroundColor;
-
-  final Paint _backgroundPaint;
-  final Paint _imagePaint;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Fill background for areas outside image bounds
-    canvas.drawRect(Offset.zero & size, _backgroundPaint);
-
-    final halfSize = overlaySize / 2.0;
-    final scale = (1 / pixelRatio) * zoomScale;
-
-    canvas
-      ..clipRect(Offset.zero & size)
-      ..translate(halfSize, halfSize)
-      ..scale(scale)
-      ..drawImage(image, -imageOffset, _imagePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ZoomPainter oldDelegate) =>
-      image != oldDelegate.image ||
-      imageOffset != oldDelegate.imageOffset ||
-      overlaySize != oldDelegate.overlaySize ||
-      zoomScale != oldDelegate.zoomScale ||
-      pixelRatio != oldDelegate.pixelRatio ||
-      backgroundColor != oldDelegate.backgroundColor;
-}
-
-/// Auto-hiding zoom level display widget with smooth fade animation.
-///
-/// Shows zoom scale for 1 second after changes, then fades out.
-/// Properly manages timer lifecycle and mounted state checks.
-class _ZoomLevelDisplay extends StatefulWidget {
-  const _ZoomLevelDisplay({
-    required this.zoomScale,
-  });
-
-  final double zoomScale;
-
-  @override
-  State<_ZoomLevelDisplay> createState() => _ZoomLevelDisplayState();
-}
-
-class _ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
-  static const _visibilityDuration = Duration(seconds: 1);
-  static const _animationDuration = Duration(milliseconds: 200);
-
-  Timer? _hideTimer;
-  bool _isVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _showZoomScale();
-  }
-
-  @override
-  void didUpdateWidget(covariant _ZoomLevelDisplay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.zoomScale != oldWidget.zoomScale) {
-      _showZoomScale();
-    }
-  }
-
-  @override
-  void dispose() {
-    _hideTimer?.cancel();
-    super.dispose();
-  }
-
-  void _showZoomScale() {
-    if (!mounted) return;
-
-    setState(() => _isVisible = true);
-
-    _hideTimer?.cancel();
-    _hideTimer = Timer(_visibilityDuration, () {
-      if (mounted) {
-        setState(() => _isVisible = false);
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _isVisible ? 1.0 : 0.0,
-      duration: _animationDuration,
-      child: InformationBoxWidget(
-        child: Text('x${widget.zoomScale}'),
       ),
     );
   }

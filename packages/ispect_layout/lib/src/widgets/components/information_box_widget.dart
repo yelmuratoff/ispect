@@ -39,7 +39,7 @@ class InformationBoxWidget extends StatelessWidget {
   final Widget child;
   final Color? color;
 
-  static double get preferredHeight => 24.0;
+  static const double preferredHeight = 24.0;
 
   @override
   Widget build(BuildContext context) {

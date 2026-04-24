@@ -283,13 +283,40 @@ class _PanelTitleBar extends StatelessWidget {
           ),
         IconButton(
           iconSize: 18.0,
-          onPressed: () => Clipboard.setData(
-            ClipboardData(text: target.toStringDeep()),
-          ),
+          onPressed: () => _copyRenderTreeToClipboard(context, target),
           icon: const Icon(Icons.copy),
         ),
       ],
     );
+  }
+
+  static const int _maxClipboardChars = 10000;
+
+  Future<void> _copyRenderTreeToClipboard(
+    BuildContext context,
+    RenderBox target,
+  ) async {
+    final full = target.toStringDeep();
+    final truncated = full.length > _maxClipboardChars
+        ? '${full.substring(0, _maxClipboardChars)}\n… (${full.length - _maxClipboardChars} more chars)'
+        : full;
+
+    await Clipboard.setData(ClipboardData(text: truncated));
+
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            full.length > _maxClipboardChars
+                ? 'Copied render tree ($_maxClipboardChars / ${full.length} chars)'
+                : 'Copied render tree (${full.length} chars)',
+          ),
+        ),
+      );
   }
 }
 

@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:ispect_layout/src/widgets/components/information_box_widget.dart';
+
+import 'zoom_painter.dart';
 
 class ZoomOverlayWidget extends StatelessWidget {
   const ZoomOverlayWidget({
@@ -47,7 +47,7 @@ class ZoomOverlayWidget extends StatelessWidget {
             child: CustomPaint(
               isComplex: true,
               willChange: true,
-              painter: _ZoomPainter(
+              painter: ZoomPainter(
                 image: image,
                 imageOffset: imageOffset,
                 overlaySize: overlaySize,
@@ -60,103 +60,10 @@ class ZoomOverlayWidget extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: _ZoomLevelDisplay(zoomScale: zoomScale),
+              child: ZoomLevelIndicator(zoomScale: zoomScale),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ZoomPainter extends CustomPainter {
-  _ZoomPainter({
-    required this.image,
-    required this.imageOffset,
-    required this.overlaySize,
-    required this.zoomScale,
-    required this.pixelRatio,
-  });
-
-  final ui.Image image;
-  final Offset imageOffset;
-  final double overlaySize;
-  final double zoomScale;
-  final double pixelRatio;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final negatedOffset = -imageOffset;
-
-    canvas.clipRect(Offset.zero & size);
-    canvas.translate(overlaySize / 2.0, overlaySize / 2.0);
-    canvas.scale((1 / pixelRatio) * zoomScale);
-    canvas.drawImage(image, negatedOffset, Paint());
-  }
-
-  @override
-  bool shouldRepaint(_ZoomPainter oldDelegate) =>
-      oldDelegate.image != image ||
-      oldDelegate.imageOffset != imageOffset ||
-      oldDelegate.pixelRatio != pixelRatio ||
-      oldDelegate.overlaySize != overlaySize ||
-      oldDelegate.zoomScale != zoomScale;
-}
-
-class _ZoomLevelDisplay extends StatefulWidget {
-  const _ZoomLevelDisplay({
-    required this.zoomScale,
-  });
-
-  final double zoomScale;
-
-  @override
-  State<_ZoomLevelDisplay> createState() => __ZoomLevelDisplayState();
-}
-
-class __ZoomLevelDisplayState extends State<_ZoomLevelDisplay> {
-  Timer? _zoomHideTimer;
-  bool _isZoomScaleVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _showZoomScale();
-  }
-
-  Future<void> _showZoomScale() async {
-    setState(() => _isZoomScaleVisible = true);
-
-    _zoomHideTimer?.cancel();
-
-    _zoomHideTimer = Timer(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() => _isZoomScaleVisible = false);
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant _ZoomLevelDisplay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.zoomScale != oldWidget.zoomScale) {
-      _showZoomScale();
-    }
-  }
-
-  @override
-  void dispose() {
-    _zoomHideTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _isZoomScaleVisible ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 200),
-      child: InformationBoxWidget(
-        child: Text('x${widget.zoomScale.toString()}'),
       ),
     );
   }

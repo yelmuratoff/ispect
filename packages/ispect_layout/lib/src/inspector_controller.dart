@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -47,9 +46,21 @@ class InspectorController {
   final bool isZoomEnabled;
   final int decimalPlaces;
 
+  /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
+  /// multi-key chords and the full [ShortcutActivator] API. Will be removed
+  /// in 5.1.0.
+  @Deprecated(
+      'Use widgetInspectorShortcutActivators. Will be removed in 5.1.0.')
   final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
+
+  @Deprecated(
+      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 5.1.0.')
   final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
+
+  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 5.1.0.')
   final List<LogicalKeyboardKey>? colorPickerShortcuts;
+
+  @Deprecated('Use zoomShortcutActivators. Will be removed in 5.1.0.')
   final List<LogicalKeyboardKey>? zoomShortcuts;
 
   final List<ShortcutActivator>? widgetInspectorShortcutActivators;
@@ -80,7 +91,6 @@ class InspectorController {
   ui.Image? _image;
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
-  Timer? _onPointerHoverDebounce;
   bool _isDisposed = false;
   int _imageCaptureEpoch = 0;
 
@@ -99,12 +109,12 @@ class InspectorController {
     zoomImageOffsetNotifier.dispose();
     zoomScaleNotifier.dispose();
     zoomOverlayOffsetNotifier.dispose();
-    _onPointerHoverDebounce?.cancel();
   }
 
   List<ShortcutActivator> get effectiveWidgetInspectorShortcutActivators =>
       _resolveShortcutActivators(
         explicit: widgetInspectorShortcutActivators,
+        // ignore: deprecated_member_use_from_same_package
         legacyKeys: widgetInspectorShortcuts,
         defaultActivators: const [
           SingleActivator(
@@ -119,6 +129,7 @@ class InspectorController {
       get effectiveWidgetInspectAndCompareShortcutActivators =>
           _resolveShortcutActivators(
             explicit: widgetInspectAndCompareShortcutActivators,
+            // ignore: deprecated_member_use_from_same_package
             legacyKeys: widgetInspectAndCompareShortcuts,
             defaultActivators: const [
               SingleActivator(
@@ -133,6 +144,7 @@ class InspectorController {
   List<ShortcutActivator> get effectiveColorPickerShortcutActivators =>
       _resolveShortcutActivators(
         explicit: colorPickerShortcutActivators,
+        // ignore: deprecated_member_use_from_same_package
         legacyKeys: colorPickerShortcuts,
         defaultActivators: const [
           SingleActivator(
@@ -146,6 +158,7 @@ class InspectorController {
   List<ShortcutActivator> get effectiveZoomShortcutActivators =>
       _resolveShortcutActivators(
         explicit: zoomShortcutActivators,
+        // ignore: deprecated_member_use_from_same_package
         legacyKeys: zoomShortcuts,
         defaultActivators: const [
           SingleActivator(
@@ -310,8 +323,25 @@ class InspectorController {
   }
 
   /// Enter compare mode: wait for the user to tap a second widget.
+  ///
+  /// Requires a prior selection. Without one we surface a short snackbar
+  /// via [stackKey]'s context if it's available, so the user gets visible
+  /// feedback instead of silent no-op.
   void enterCompareMode() {
-    if (currentRenderBoxNotifier.value == null) return;
+    if (currentRenderBoxNotifier.value == null) {
+      final context = stackKey.currentContext;
+      if (context != null) {
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        messenger?.clearSnackBars();
+        messenger?.showSnackBar(
+          const SnackBar(
+            content: Text('Select a widget first, then press Compare.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
     setMode(InspectorMode.compareSelect);
   }
 
@@ -488,11 +518,7 @@ class InspectorController {
   }
 
   void onPointerHoverDebounced(Offset pointerOffset, BuildContext context) {
-    if (_onPointerHoverDebounce?.isActive ?? false) return;
-    _onPointerHoverDebounce = Timer(
-      const Duration(milliseconds: 0),
-      () => _onPointerHover(pointerOffset),
-    );
+    _onPointerHover(pointerOffset);
   }
 
   void _onPointerHover(Offset pointerOffset) {
@@ -559,7 +585,7 @@ class InspectorController {
     if (stackKey.currentContext == null) return null;
 
     final overlayOffset =
-        (stackKey.currentContext!.findRenderObject() as RenderStack)
+        (stackKey.currentContext!.findRenderObject()! as RenderBox)
             .localToGlobal(Offset.zero);
 
     return BoxInfo.fromHitTestResults(
@@ -646,7 +672,7 @@ class InspectorController {
     if (stackKey.currentContext == null) return;
 
     final overlayOffset =
-        (stackKey.currentContext!.findRenderObject() as RenderStack)
+        (stackKey.currentContext!.findRenderObject()! as RenderBox)
             .localToGlobal(Offset.zero);
 
     selectedColorOffsetNotifier.value = clamped - overlayOffset;
@@ -661,7 +687,7 @@ class InspectorController {
     if (stackKey.currentContext == null) return;
 
     final overlayOffset =
-        (stackKey.currentContext!.findRenderObject() as RenderStack)
+        (stackKey.currentContext!.findRenderObject()! as RenderBox)
             .localToGlobal(Offset.zero);
 
     zoomImageOffsetNotifier.value = Offset(

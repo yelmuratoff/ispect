@@ -51,23 +51,6 @@ class Inspector extends StatefulWidget {
           BuildContext context, InspectorController controller, Widget child)?
       panelBuilder;
 
-  static InspectorState of(BuildContext context) {
-    final InspectorState? result = maybeOf(context);
-    if (result != null) {
-      return result;
-    }
-    throw FlutterError.fromParts([
-      ErrorSummary(
-        "Inspector.of() error.",
-      ),
-      context.describeElement("the context"),
-    ]);
-  }
-
-  static InspectorState? maybeOf(BuildContext? context) {
-    return context?.findAncestorStateOfType<InspectorState>();
-  }
-
   @override
   InspectorState createState() => InspectorState();
 }
@@ -105,28 +88,26 @@ class InspectorState extends State<Inspector> {
 
   @override
   void didUpdateWidget(covariant Inspector oldWidget) {
-    if (oldWidget.isEnabled != widget.isEnabled ||
-        oldWidget.controller != widget.controller ||
-        (oldWidget.decimalPlaces != widget.decimalPlaces &&
-            widget.controller == null)) {
-      if (oldWidget.controller == null && widget.controller != null) {
+    super.didUpdateWidget(oldWidget);
+
+    final controllerChanged = oldWidget.controller != widget.controller;
+    final isEnabledChanged = oldWidget.isEnabled != widget.isEnabled;
+    final decimalPlacesChanged =
+        oldWidget.decimalPlaces != widget.decimalPlaces &&
+            widget.controller == null;
+
+    if (controllerChanged || isEnabledChanged || decimalPlacesChanged) {
+      // Dispose the previous controller only if we owned it (created
+      // internally). A user-supplied controller must be disposed by the user.
+      if (oldWidget.controller == null) {
         _controller.dispose();
       }
-
-      if (widget.controller != null) {
-        _controller = widget.controller!;
-      } else {
-        if (oldWidget.controller == null) {
-          _controller.dispose();
-        }
-        _controller = InspectorController(
-          isEnabled: _isEnabled,
-          decimalPlaces: widget.decimalPlaces,
-        );
-      }
+      _controller = widget.controller ??
+          InspectorController(
+            isEnabled: _isEnabled,
+            decimalPlaces: widget.decimalPlaces,
+          );
     }
-
-    super.didUpdateWidget(oldWidget);
 
     if (widget.isPanelVisible != oldWidget.isPanelVisible) {
       _isPanelVisible = widget.isPanelVisible;
@@ -363,8 +344,11 @@ class InspectorState extends State<Inspector> {
             },
           ),
         },
+        // Not autofocus — the inspector should never steal focus from
+        // TextFields or other interactive descendants. Shortcuts still fire
+        // as long as the focus tree includes this node, which it always does
+        // (the Focus sits above the whole app tree).
         child: Focus(
-          autofocus: true,
           onKeyEvent: _handleKeyEvent,
           child: content,
         ),
@@ -381,12 +365,10 @@ class InspectorState extends State<Inspector> {
         if (_isPanelVisible)
           Align(
             alignment: Alignment.centerRight,
-            child: ValueListenableBuilder<InspectorMode>(
-              valueListenable: _controller.modeNotifier,
-              builder: (context, mode, _) => InspectorPanel(
-                controller: _controller,
-                initialIsVisible: widget.initialPanelExpanded,
-              ),
+            // InspectorPanel subscribes to modeNotifier internally.
+            child: InspectorPanel(
+              controller: _controller,
+              initialIsVisible: widget.initialPanelExpanded,
             ),
           ),
       ],

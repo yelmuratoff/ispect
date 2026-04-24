@@ -79,6 +79,16 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   @override
   Widget build(BuildContext context) {
+    // Subscribe locally so the panel updates correctly when used outside
+    // Inspector.build (e.g., via a custom panelBuilder that doesn't wrap
+    // InspectorPanel in its own ValueListenableBuilder).
+    return ListenableBuilder(
+      listenable: controller.modeNotifier,
+      builder: (context, _) => _build(context),
+    );
+  }
+
+  Widget _build(BuildContext context) {
     final mode = controller.modeNotifier.value;
 
     final height = 16.0 +
