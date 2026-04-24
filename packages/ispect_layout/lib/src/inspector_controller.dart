@@ -3,12 +3,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'inspector_state.dart';
+import 'pixel_capture.dart';
+import 'shortcut_registry.dart';
+import 'theme.dart';
 import 'utils.dart';
 import 'widgets/color_picker/color_picker_snackbar.dart';
 import 'widgets/color_picker/utils.dart';
 import 'widgets/inspector/box_info.dart';
+
+export 'inspector_state.dart';
 
 enum InspectorMode {
   none,
@@ -28,6 +33,7 @@ class InspectorController {
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
     this.decimalPlaces = 1,
+    this.theme = InspectorTheme.defaults,
     this.widgetInspectorShortcuts,
     this.widgetInspectAndCompareShortcuts,
     this.colorPickerShortcuts,
@@ -36,7 +42,14 @@ class InspectorController {
     this.widgetInspectAndCompareShortcutActivators,
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
-  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
+  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
+    // Keep the sealed `stateNotifier` in sync with the legacy granular
+    // notifiers. Legacy notifiers remain the mutation surface — internal
+    // logic writes to them, and we recompute the union state here.
+    for (final l in _allStateInputs) {
+      l.addListener(_recomputeStateNotifier);
+    }
+  }
 
   final bool isEnabled;
   final bool isWidgetInspectorEnabled;
@@ -45,6 +58,7 @@ class InspectorController {
   final bool isColorSchemeHintEnabled;
   final bool isZoomEnabled;
   final int decimalPlaces;
+  final InspectorTheme theme;
 
   /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
@@ -88,6 +102,65 @@ class InspectorController {
   final zoomScaleNotifier = ValueNotifier<double>(2.0);
   final zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
 
+  /// Consolidated sealed-state view. Updated automatically whenever any of
+  /// the legacy granular notifiers changes.
+  ///
+  /// Exists alongside the legacy notifiers for callers who prefer
+  /// exhaustive `switch` over composing multiple listeners.
+  final stateNotifier =
+      ValueNotifier<InspectorUiState>(const InspectorIdleState());
+
+  late final List<Listenable> _allStateInputs = [
+    modeNotifier,
+    byteDataStateNotifier,
+    currentRenderBoxNotifier,
+    hoveredRenderBoxNotifier,
+    comparedRenderBoxNotifier,
+    selectedColorOffsetNotifier,
+    selectedColorStateNotifier,
+    selectedColorImageOffsetNotifier,
+    zoomImageOffsetNotifier,
+    zoomScaleNotifier,
+    zoomOverlayOffsetNotifier,
+  ];
+
+  void _recomputeStateNotifier() {
+    if (_isDisposed) return;
+    stateNotifier.value = _computeStateSnapshot();
+  }
+
+  InspectorUiState _computeStateSnapshot() {
+    switch (modeNotifier.value) {
+      case InspectorMode.none:
+        return const InspectorIdleState();
+      case InspectorMode.inspector:
+      case InspectorMode.inspectAndCompare:
+      case InspectorMode.compareSelect:
+        return InspectorInspectState(
+          selected: currentRenderBoxNotifier.value,
+          hovered: hoveredRenderBoxNotifier.value,
+          compared: comparedRenderBoxNotifier.value,
+          comparing: modeNotifier.value == InspectorMode.compareSelect,
+        );
+      case InspectorMode.colorPicker:
+        return InspectorColorPickerState(
+          image: _image,
+          byteData: byteDataStateNotifier.value,
+          pointerOffset: selectedColorOffsetNotifier.value,
+          imageOffset: selectedColorImageOffsetNotifier.value,
+          pickedColor: selectedColorStateNotifier.value,
+        );
+      case InspectorMode.zoom:
+        return InspectorZoomState(
+          image: _image,
+          byteData: byteDataStateNotifier.value,
+          pointerOffset: zoomOverlayOffsetNotifier.value,
+          imageOffset: zoomImageOffsetNotifier.value,
+          scale: zoomScaleNotifier.value,
+        );
+    }
+  }
+
   ui.Image? _image;
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
@@ -98,6 +171,9 @@ class InspectorController {
     _isDisposed = true;
     _imageCaptureEpoch++;
     _image?.dispose();
+    for (final l in _allStateInputs) {
+      l.removeListener(_recomputeStateNotifier);
+    }
     modeNotifier.dispose();
     byteDataStateNotifier.dispose();
     currentRenderBoxNotifier.dispose();
@@ -109,111 +185,59 @@ class InspectorController {
     zoomImageOffsetNotifier.dispose();
     zoomScaleNotifier.dispose();
     zoomOverlayOffsetNotifier.dispose();
+    stateNotifier.dispose();
   }
 
+  /// Shortcut configuration + accept/isPressed logic. The controller
+  /// delegates here for all keyboard-shortcut work — see [InspectorShortcuts].
+  late final InspectorShortcuts _shortcuts = InspectorShortcuts(
+    inspectorActivators: widgetInspectorShortcutActivators,
+    // ignore: deprecated_member_use_from_same_package
+    inspectorLegacyKeys: widgetInspectorShortcuts,
+    compareActivators: widgetInspectAndCompareShortcutActivators,
+    // ignore: deprecated_member_use_from_same_package
+    compareLegacyKeys: widgetInspectAndCompareShortcuts,
+    colorPickerActivators: colorPickerShortcutActivators,
+    // ignore: deprecated_member_use_from_same_package
+    colorPickerLegacyKeys: colorPickerShortcuts,
+    zoomActivators: zoomShortcutActivators,
+    // ignore: deprecated_member_use_from_same_package
+    zoomLegacyKeys: zoomShortcuts,
+  );
+
   List<ShortcutActivator> get effectiveWidgetInspectorShortcutActivators =>
-      _resolveShortcutActivators(
-        explicit: widgetInspectorShortcutActivators,
-        // ignore: deprecated_member_use_from_same_package
-        legacyKeys: widgetInspectorShortcuts,
-        defaultActivators: const [
-          SingleActivator(
-            LogicalKeyboardKey.keyW,
-            alt: true,
-            includeRepeats: false,
-          ),
-        ],
-      );
+      _shortcuts.effectiveInspectorActivators;
 
   List<ShortcutActivator>
       get effectiveWidgetInspectAndCompareShortcutActivators =>
-          _resolveShortcutActivators(
-            explicit: widgetInspectAndCompareShortcutActivators,
-            // ignore: deprecated_member_use_from_same_package
-            legacyKeys: widgetInspectAndCompareShortcuts,
-            defaultActivators: const [
-              SingleActivator(
-                LogicalKeyboardKey.keyY,
-                alt: true,
-                includeRepeats: false,
-              ),
-            ],
-            legacyFactory: _legacyToggleActivator,
-          );
+          _shortcuts.effectiveCompareActivators;
 
   List<ShortcutActivator> get effectiveColorPickerShortcutActivators =>
-      _resolveShortcutActivators(
-        explicit: colorPickerShortcutActivators,
-        // ignore: deprecated_member_use_from_same_package
-        legacyKeys: colorPickerShortcuts,
-        defaultActivators: const [
-          SingleActivator(
-            LogicalKeyboardKey.keyC,
-            alt: true,
-            includeRepeats: false,
-          ),
-        ],
-      );
+      _shortcuts.effectiveColorPickerActivators;
 
   List<ShortcutActivator> get effectiveZoomShortcutActivators =>
-      _resolveShortcutActivators(
-        explicit: zoomShortcutActivators,
-        // ignore: deprecated_member_use_from_same_package
-        legacyKeys: zoomShortcuts,
-        defaultActivators: const [
-          SingleActivator(
-            LogicalKeyboardKey.keyZ,
-            alt: true,
-            includeRepeats: false,
-          ),
-        ],
-      );
+      _shortcuts.effectiveZoomActivators;
 
   bool acceptsWidgetInspectorShortcut(KeyEvent event, HardwareKeyboard state) =>
-      _matchesAnyShortcut(
-        effectiveWidgetInspectorShortcutActivators,
-        event,
-        state,
-      );
+      _shortcuts.acceptsInspector(event, state);
 
   bool acceptsCompareShortcut(KeyEvent event, HardwareKeyboard state) =>
-      _matchesAnyShortcut(
-        effectiveWidgetInspectAndCompareShortcutActivators,
-        event,
-        state,
-      );
+      _shortcuts.acceptsCompare(event, state);
 
   bool acceptsColorPickerShortcut(KeyEvent event, HardwareKeyboard state) =>
-      _matchesAnyShortcut(
-        effectiveColorPickerShortcutActivators,
-        event,
-        state,
-      );
+      _shortcuts.acceptsColorPicker(event, state);
 
   bool acceptsZoomShortcut(KeyEvent event, HardwareKeyboard state) =>
-      _matchesAnyShortcut(
-        effectiveZoomShortcutActivators,
-        event,
-        state,
-      );
+      _shortcuts.acceptsZoom(event, state);
 
   bool isWidgetInspectorShortcutStillPressed(HardwareKeyboard state) =>
-      _isAnyShortcutPressed(
-        effectiveWidgetInspectorShortcutActivators,
-        state,
-      );
+      _shortcuts.inspectorStillPressed(state);
 
   bool isColorPickerShortcutStillPressed(HardwareKeyboard state) =>
-      _isAnyShortcutPressed(
-        effectiveColorPickerShortcutActivators,
-        state,
-      );
+      _shortcuts.colorPickerStillPressed(state);
 
   bool isZoomShortcutStillPressed(HardwareKeyboard state) =>
-      _isAnyShortcutPressed(
-        effectiveZoomShortcutActivators,
-        state,
-      );
+      _shortcuts.zoomStillPressed(state);
 
   void handleInspectorShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.inspector);
@@ -226,82 +250,6 @@ class InspectorController {
 
   void handleZoomShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.zoom);
-
-  List<ShortcutActivator> _resolveShortcutActivators({
-    required List<ShortcutActivator>? explicit,
-    required List<LogicalKeyboardKey>? legacyKeys,
-    required List<ShortcutActivator> defaultActivators,
-    ShortcutActivator Function(LogicalKeyboardKey key)? legacyFactory,
-  }) {
-    if (explicit != null) return List.unmodifiable(explicit);
-    if (legacyKeys != null) {
-      return List.unmodifiable(
-        legacyKeys.map(legacyFactory ?? _legacyHoldActivator),
-      );
-    }
-    return defaultActivators;
-  }
-
-  bool _matchesAnyShortcut(
-    List<ShortcutActivator> activators,
-    KeyEvent event,
-    HardwareKeyboard state,
-  ) {
-    for (final activator in activators) {
-      if (activator.accepts(event, state)) return true;
-    }
-    return false;
-  }
-
-  bool _isAnyShortcutPressed(
-    List<ShortcutActivator> activators,
-    HardwareKeyboard state,
-  ) {
-    for (final activator in activators) {
-      if (_isShortcutPressed(activator, state)) return true;
-    }
-    return false;
-  }
-
-  bool _isShortcutPressed(ShortcutActivator activator, HardwareKeyboard state) {
-    final pressed = state.logicalKeysPressed;
-
-    if (activator is SingleActivator) {
-      return pressed.contains(activator.trigger) &&
-          activator.control == state.isControlPressed &&
-          activator.shift == state.isShiftPressed &&
-          activator.alt == state.isAltPressed &&
-          activator.meta == state.isMetaPressed;
-    }
-
-    if (activator is LogicalKeySet) {
-      final requiredKeys = activator.keys
-          .map(
-            (key) =>
-                LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key})
-                    .single,
-          )
-          .toSet();
-      final pressedKeys = LogicalKeyboardKey.collapseSynonyms(pressed);
-      return requiredKeys.every(pressedKeys.contains);
-    }
-
-    return false;
-  }
-
-  static ShortcutActivator _legacyHoldActivator(LogicalKeyboardKey key) {
-    if (_isModifierKey(key)) {
-      return LogicalKeySet(key);
-    }
-    return SingleActivator(key, includeRepeats: false);
-  }
-
-  static ShortcutActivator _legacyToggleActivator(LogicalKeyboardKey key) =>
-      SingleActivator(key, includeRepeats: false);
-
-  static bool _isModifierKey(LogicalKeyboardKey key) => _modifierKeys.contains(
-        LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key}).single,
-      );
 
   void _toggleMode(bool enable, InspectorMode targetMode) {
     if (targetMode == InspectorMode.inspectAndCompare) {
@@ -598,43 +546,25 @@ class InspectorController {
   Future<void> _extractByteData(int captureEpoch) async {
     if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
     if (_image != null) return;
-    if (repaintBoundaryKey.currentContext == null) return;
 
-    final boundary = repaintBoundaryKey.currentContext!.findRenderObject()!
-        as RenderRepaintBoundary;
+    final captured = await PixelCapture.capture(repaintBoundaryKey);
+    if (captured == null) return;
 
-    final context = repaintBoundaryKey.currentContext!;
-    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
-
-    final image = await boundary.toImage(pixelRatio: pixelRatio);
     if (_isDisposed || captureEpoch != _imageCaptureEpoch) {
-      image.dispose();
+      captured.image.dispose();
       return;
     }
 
-    final byteData = await image.toByteData();
-    if (_isDisposed || captureEpoch != _imageCaptureEpoch) {
-      image.dispose();
-      return;
-    }
-
-    _image = image;
-    byteDataStateNotifier.value = byteData;
+    _image = captured.image;
+    byteDataStateNotifier.value = captured.byteData;
   }
 
-  Offset _extractShiftedOffset(Offset offset, BuildContext context) {
-    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
-
-    if (repaintBoundaryKey.currentContext == null) return Offset.zero;
-
-    var offset0 = (repaintBoundaryKey.currentContext!.findRenderObject()!
-            as RenderRepaintBoundary)
-        .globalToLocal(offset);
-
-    offset0 *= pixelRatio;
-
-    return offset0;
-  }
+  Offset _extractShiftedOffset(Offset offset, BuildContext context) =>
+      PixelCapture.globalToImagePx(
+        boundaryKey: repaintBoundaryKey,
+        globalOffset: offset,
+        context: context,
+      );
 
   /// Clamps the pointer to the screen rect so color picker / zoom keep
   /// tracking the nearest valid pixel when the finger drifts off-screen
@@ -697,10 +627,3 @@ class InspectorController {
     zoomOverlayOffsetNotifier.value = clamped - overlayOffset;
   }
 }
-
-final _modifierKeys = <LogicalKeyboardKey>{
-  LogicalKeyboardKey.alt,
-  LogicalKeyboardKey.control,
-  LogicalKeyboardKey.meta,
-  LogicalKeyboardKey.shift,
-};

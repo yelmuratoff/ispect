@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
 
 import '../inspector/box_info.dart';
@@ -12,6 +13,7 @@ class BoxInfoWidget extends StatelessWidget {
     super.key,
     this.boxInfo,
     required this.decimalPlaces,
+    required this.theme,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
     this.onCompare,
@@ -20,15 +22,11 @@ class BoxInfoWidget extends StatelessWidget {
 
   final BoxInfo? boxInfo;
   final int decimalPlaces;
+  final InspectorTheme theme;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
-
-  static const Color _selectedColor = Color(0xFF2962FF);
-  static const Color _comparedColor = Color(0xFFFF6D00);
-  static const Color _hoveredColor = Color(0xFF448AFF);
-  static const Color _containerColor = Color(0xFFFFB300);
 
   Widget _buildTargetBoxSizeWidget(BuildContext context) {
     return Positioned(
@@ -42,7 +40,7 @@ class BoxInfoWidget extends StatelessWidget {
           child: InformationBoxWidget.size(
             size: boxInfo!.targetRenderBox.displaySize,
             decimalPlaces: decimalPlaces,
-            color: _selectedColor,
+            color: theme.selectedColor,
           ),
         ),
       ),
@@ -92,7 +90,7 @@ class BoxInfoWidget extends StatelessWidget {
           boxInfo: boxInfo,
           role: role,
           accentColor: accentColor,
-          containerColor: showContainerRenderBox ? _containerColor : null,
+          containerColor: showContainerRenderBox ? theme.containerColor : null,
           showContainerRenderBox: showContainerRenderBox,
         ),
       ),
@@ -108,14 +106,14 @@ class BoxInfoWidget extends StatelessWidget {
             context,
             boxInfo!,
             role: OverlayRole.selected,
-            accentColor: _selectedColor,
+            accentColor: theme.selectedColor,
           ),
         if (hoveredBoxInfo?.targetRenderBox.attached == true)
           _buildBoxOverlay(
             context,
             hoveredBoxInfo!,
             role: OverlayRole.hovered,
-            accentColor: _hoveredColor,
+            accentColor: theme.hoveredColor,
             showContainerRenderBox: false,
           ),
         if (comparedBoxInfo?.targetRenderBox.attached == true)
@@ -123,7 +121,7 @@ class BoxInfoWidget extends StatelessWidget {
             context,
             comparedBoxInfo!,
             role: OverlayRole.compared,
-            accentColor: _comparedColor,
+            accentColor: theme.comparedColor,
             showContainerRenderBox: false,
           ),
         if (boxInfo?.targetRenderBox.attached == true &&
@@ -133,7 +131,7 @@ class BoxInfoWidget extends StatelessWidget {
               painter: CompareOverlayPainter(
                 boxInfoA: boxInfo!,
                 boxInfoB: comparedBoxInfo!,
-                lineColor: Colors.green.shade700,
+                lineColor: theme.compareLineColor ?? Colors.green.shade700,
               ),
             ),
           ),

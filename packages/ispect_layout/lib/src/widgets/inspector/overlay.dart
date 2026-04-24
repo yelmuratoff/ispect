@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:ispect_layout/src/theme.dart';
 
 import '../components/box_info_widget.dart';
 import 'box_info.dart';
@@ -10,6 +11,7 @@ class InspectorOverlay extends StatefulWidget {
     required this.size,
     required this.boxInfo,
     required this.decimalPlaces,
+    required this.theme,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
     this.onCompare,
@@ -19,6 +21,7 @@ class InspectorOverlay extends StatefulWidget {
   final Size size;
   final BoxInfo? boxInfo;
   final int decimalPlaces;
+  final InspectorTheme theme;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
@@ -116,6 +119,7 @@ class _InspectorOverlayState extends State<InspectorOverlay>
       child: BoxInfoWidget(
         boxInfo: widget.boxInfo,
         decimalPlaces: widget.decimalPlaces,
+        theme: widget.theme,
         hoveredBoxInfo: widget.hoveredBoxInfo,
         comparedBoxInfo: widget.comparedBoxInfo,
         onCompare: widget.onCompare,

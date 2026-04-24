@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
+import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/ignore_tap_gesture.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect_layout/src/widgets/zoomable_color_picker/zoomable_color_picker.dart';
@@ -37,6 +38,7 @@ class Inspector extends StatefulWidget {
     this.initialPanelExpanded = true,
     this.isEnabled,
     this.decimalPlaces = 1,
+    this.theme,
     this.panelBuilder,
   }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
 
@@ -47,6 +49,12 @@ class Inspector extends StatefulWidget {
   final Alignment alignment;
   final bool? isEnabled;
   final int decimalPlaces;
+
+  /// Overlay accent colours. When non-null and no [controller] is provided,
+  /// this is forwarded to the internally-created [InspectorController].
+  /// Ignored if [controller] is supplied (set it there instead).
+  final InspectorTheme? theme;
+
   final Widget Function(
           BuildContext context, InspectorController controller, Widget child)?
       panelBuilder;
@@ -83,6 +91,7 @@ class InspectorState extends State<Inspector> {
         InspectorController(
           isEnabled: _isEnabled,
           decimalPlaces: widget.decimalPlaces,
+          theme: widget.theme ?? InspectorTheme.defaults,
         );
   }
 
@@ -259,6 +268,7 @@ class InspectorState extends State<Inspector> {
                 onCompare: onCompare,
                 isCompareActive: isCompareActive,
                 decimalPlaces: _controller.decimalPlaces,
+                theme: _controller.theme,
               ),
             );
           },
