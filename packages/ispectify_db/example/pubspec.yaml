@@ -19,7 +19,7 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
-  ispectify: ^5.0.0-dev24
+  ispectify: ^5.0.0-dev25
   ispectify_db:
     path: ..
   collection: ^1.18.0
