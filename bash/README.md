@@ -30,6 +30,20 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh && dart format .
 ```
 
+`release_prep.sh` common flows:
+
+```bash
+# Standard release prep: bump and create a fresh changelog stub.
+./bash/release_prep.sh
+
+# Re-sync changelog/README after editing entries.
+./bash/release_prep.sh --skip-bump
+
+# Dev cycle: bump current prerelease and carry the existing changelog section
+# forward to the new version (for example 5.0.0-dev22 -> 5.0.0-dev23).
+./bash/release_prep.sh --carry-changelog
+```
+
 ## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).

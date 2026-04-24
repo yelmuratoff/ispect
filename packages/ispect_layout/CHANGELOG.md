@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev22
+## 5.0.0-dev23
 
 ### Breaking Changes
 
@@ -12,9 +12,6 @@
 ### Added
 
 - **`ispect_layout` package:** New standalone visual layout inspector for Flutter — tap any widget to read size, constraints, padding, decoration, text styles, transform matrix, and clip shape; compare two widgets to see the pixel gap between them. Forked from [`inspector`](https://github.com/kekland/inspector) 4.1.0 and maintained inside the ISpect monorepo. On top of the upstream feature set it adds expanded render-object coverage (`RenderTransform` matrix decomposition, `RenderBackdropFilter`, all `RenderClip*`, `RenderEditable`), a wrapper-ancestors section for same-size proxies, gradient/shadow/border-radius breakdowns, image-source introspection, a RichText preview, and a refactored `BoxInfoPanelWidget` split into testable extractor and widget modules.
-- `Inspector.initialPanelExpanded` to control whether the visible panel starts expanded or collapsed.
-- `Inspector.decimalPlaces` to control rendered numeric precision across sizes, padding, compare distances, gradients, and typography-related values.
-- Multi-key shortcut configuration via `ShortcutActivator` lists on `InspectorController` for widget inspector, compare mode, color picker, and zoom.
 
 ### Improvements
 
@@ -32,8 +29,6 @@
 - **Redaction by default:** All network interceptors now have PII redaction enabled by default using an expanded list of sensitive keys.
 - **BLoC correlation:** `ISpectBlocObserver` now automatically correlates events, transitions, and changes for easier debugging.
 - **Tips dialog:** Moved from automatic popup to a dedicated app bar icon.
-- Default keyboard shortcuts are now safer for normal text input: `Alt+W` (inspector), `Alt+Y` (compare), `Alt+C` (color picker), `Alt+Z` (zoom).
-- Keyboard shortcut handling now supports multi-key activators while preserving hold/release behavior for inspector, color picker, and zoom.
 
 ### Deprecations
 

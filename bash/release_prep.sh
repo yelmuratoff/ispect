@@ -10,13 +10,20 @@
 #   5. Run `dart format .` on the tree.
 #
 # Typical flow:
-#   ./bash/release_prep.sh             # bump patch + stub + propagate + README + format
+#   ./bash/release_prep.sh
+#       bump patch + stub + propagate + README + format
 #   ... edit CHANGELOG.md, fill in the stub with real entries ...
-#   ./bash/release_prep.sh --skip-bump # re-propagate CHANGELOG + rebuild READMEs + format
+#   ./bash/release_prep.sh --skip-bump
+#       re-propagate CHANGELOG + rebuild READMEs + format
+#   ./bash/release_prep.sh --carry-changelog
+#       bump version and rename current CHANGELOG section
+#       to the new version instead of inserting a fresh stub
 #
 # Options:
 #   patch|minor|major     Bump kind (default: patch). Ignored with --skip-bump.
 #   --skip-bump           Keep current version, just sync docs.
+#   --carry-changelog     After bump, rename the previous version section in
+#                         CHANGELOG.md to the new version (useful for devXX -> devYY).
 #   --edit                Open $EDITOR on CHANGELOG.md between stub-insert and propagate.
 #   --help                Show this help.
 #
@@ -34,6 +41,7 @@ cd "$ROOT_DIR"
 BUMP_KIND="patch"
 SKIP_BUMP=0
 OPEN_EDITOR=0
+CARRY_CHANGELOG=0
 
 usage() {
   sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
@@ -43,6 +51,8 @@ for arg in "$@"; do
   case "$arg" in
     patch|minor|major) BUMP_KIND="$arg" ;;
     --skip-bump)       SKIP_BUMP=1 ;;
+    --carry-changelog|--rename-current-changelog)
+                       CARRY_CHANGELOG=1 ;;
     --edit)            OPEN_EDITOR=1 ;;
     --help|-h)         usage; exit 0 ;;
     *) echo "[ERR] Unknown argument: $arg" >&2; usage; exit 2 ;;
@@ -51,6 +61,16 @@ done
 
 CHANGELOG="CHANGELOG.md"
 VERSION_FILE="version.config"
+
+# Read current version before any bump.
+# shellcheck disable=SC1090
+source "$VERSION_FILE"
+PREVIOUS_VERSION="$VERSION"
+
+if [[ $SKIP_BUMP -eq 1 && $CARRY_CHANGELOG -eq 1 ]]; then
+  echo "[ERR] --carry-changelog cannot be combined with --skip-bump" >&2
+  exit 2
+fi
 
 # 1. Bump version
 if [[ $SKIP_BUMP -eq 0 ]]; then
@@ -69,6 +89,18 @@ echo "==> Target version: $NEW_VERSION"
 # 2. Ensure root CHANGELOG has a section for NEW_VERSION
 section_present() {
   grep -qE "^## ${NEW_VERSION}([[:space:]]|$)" "$CHANGELOG"
+}
+
+previous_section_present() {
+  grep -qE "^## ${PREVIOUS_VERSION}([[:space:]]|$)" "$CHANGELOG"
+}
+
+rename_previous_section() {
+  awk -v old="## ${PREVIOUS_VERSION}" -v new="## ${NEW_VERSION}" '
+    BEGIN { replaced=0 }
+    !replaced && $0 == old { print new; replaced=1; next }
+    { print }
+  ' "$CHANGELOG" > "$CHANGELOG.tmp" && mv "$CHANGELOG.tmp" "$CHANGELOG"
 }
 
 insert_stub() {
@@ -105,6 +137,11 @@ MARKDOWN
 
 if section_present; then
   echo "==> $CHANGELOG already has a section for $NEW_VERSION"
+elif [[ $CARRY_CHANGELOG -eq 1 ]] &&
+     [[ $PREVIOUS_VERSION != "$NEW_VERSION" ]] &&
+     previous_section_present; then
+  echo "==> Renaming CHANGELOG section $PREVIOUS_VERSION -> $NEW_VERSION"
+  rename_previous_section
 else
   echo "==> Inserting stub section for $NEW_VERSION in $CHANGELOG"
   insert_stub
