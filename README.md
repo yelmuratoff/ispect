@@ -40,27 +40,56 @@
 
 **[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
 
-<div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="700" />
-</div>
+## Preview
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="250" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="250" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="250" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="250" />
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="250" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="760" alt="ISpect desktop log viewer" />
+  <p><em>Desktop log viewer and standalone web demo.</em></p>
 </div>
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" />
-  <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" />
-</div>
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="250" alt="Inspector panel" /><br />
+      <sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="250" alt="Color picker" /><br />
+      <sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="250" alt="Settings panel" /><br />
+      <sub><strong>Settings</strong><br />Toggle tools, filters, and debug behavior.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="250" alt="JSON viewer" /><br />
+      <sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="250" alt="Share sheet" /><br />
+      <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary><strong>Mobile showcase</strong></summary>
+  <br />
+  <div align="center">
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" alt="Typography inspector on mobile" />
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" alt="Layout inspector on mobile" />
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" alt="Spacing inspector on mobile" />
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" alt="Decoration inspector on mobile" />
+  </div>
+  <br />
+  <div align="center">
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" alt="Transform inspector on mobile" />
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" alt="Effects inspector on mobile" />
+    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" alt="Alignment and margin inspector on mobile" />
+  </div>
+</details>
 
 ## Why ISpect?
 
@@ -99,7 +128,7 @@ ISpect is a modular monorepo. Install only what your project needs — each pack
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev23
+  ispect: ^5.0.0-dev24
 ```
 
 ```dart

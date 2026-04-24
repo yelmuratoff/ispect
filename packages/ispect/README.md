@@ -79,7 +79,7 @@ For Dio/http/WS/DB/BLoC capture and the standalone layout inspector, see the [to
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev23
+  ispect: ^5.0.0-dev24
 ```
 
 ## Quick start
