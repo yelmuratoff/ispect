@@ -7,34 +7,34 @@
 ## Preview
 
 <div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="760" alt="ISpect desktop log viewer" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/desktop.png?raw=true" width="900" alt="ISpect desktop log viewer" />
   <p><em>Desktop log viewer and standalone web demo.</em></p>
 </div>
 
-<table>
+<table align="center">
   <tr>
-    <td align="center" width="33%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="250" alt="Inspector panel" /><br />
-      <sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub>
+    <td align="center" width="20%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="175" alt="Inspector panel" />
     </td>
-    <td align="center" width="33%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="250" alt="Color picker" /><br />
-      <sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub>
+    <td align="center" width="20%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="175" alt="Color picker" />
     </td>
-    <td align="center" width="33%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="250" alt="Settings panel" /><br />
-      <sub><strong>Settings</strong><br />Toggle tools, filters, and debug behavior.</sub>
+    <td align="center" width="20%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="175" alt="Settings panel" />
+    </td>
+    <td align="center" width="20%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="175" alt="JSON viewer" />
+    </td>
+    <td align="center" width="20%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="175" alt="Share sheet" />
     </td>
   </tr>
   <tr>
-    <td align="center" width="50%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="250" alt="JSON viewer" /><br />
-      <sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub>
-    </td>
-    <td align="center" width="50%">
-      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="250" alt="Share sheet" /><br />
-      <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
-    </td>
+    <td align="center" width="20%"><sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub></td>
+    <td align="center" width="20%"><sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub></td>
+    <td align="center" width="20%"><sub><strong>Settings</strong><br />Toggle tools, filters, and debug behavior.</sub></td>
+    <td align="center" width="20%"><sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub></td>
+    <td align="center" width="20%"><sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub></td>
   </tr>
 </table>
 
