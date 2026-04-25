@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/size_extension.dart';
 
@@ -242,8 +243,9 @@ class BoxInfo {
 
   /// The fill color of a [ColoredBox] that is or wraps the target, if any.
   ///
-  /// [_RenderColoredBox] is a private Flutter class — dynamic dispatch is used
-  /// because there is no public type to cast to.
+  /// `_RenderColoredBox` is a private Flutter class, so dynamic dispatch on
+  /// `.color` is used. Discrimination is done via [_coloredBoxRuntimeType] —
+  /// see its declaration for the rationale.
   Color? get coloredBoxColor =>
       _tryColoredBoxColor(targetRenderBox) ??
       (targetRenderBox is RenderProxyBoxMixin
@@ -259,13 +261,34 @@ class BoxInfo {
   }
 
   Color? _tryColoredBoxColor(RenderBox box) {
-    if (!box.runtimeType.toString().contains('ColoredBox')) return null;
+    if (box.runtimeType != _coloredBoxRuntimeType) return null;
     try {
       return (box as dynamic).color as Color;
     } catch (_) {
       return null;
     }
   }
+}
+
+/// Captures `_RenderColoredBox`'s runtime [Type] without referencing its
+/// private name. We construct a [ColoredBox] widget and call its
+/// `createRenderObject` directly — Flutter's implementation ignores the
+/// passed [BuildContext], so a `noSuchMethod` stub is sufficient.
+/// Returns `null` if Flutter ever changes that contract; the caller then
+/// gracefully degrades and the [ColoredBox] color simply isn't surfaced.
+final Type? _coloredBoxRuntimeType = (() {
+  try {
+    return const ColoredBox(color: Color(0x00000000))
+        .createRenderObject(_NoopBuildContext())
+        .runtimeType;
+  } catch (_) {
+    return null;
+  }
+})();
+
+class _NoopBuildContext implements BuildContext {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 Rect? getRectFromRenderBox(RenderBox renderBox) {

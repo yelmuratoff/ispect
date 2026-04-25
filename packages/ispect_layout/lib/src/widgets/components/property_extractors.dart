@@ -58,6 +58,16 @@ String describeShapeBorder(ShapeBorder shape) => shape.runtimeType.toString();
 // SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
 // `Instance of '<TypeName>'`. The helpers below read public fields (or
 // safely peek at private discriminators) so labels stay readable.
+//
+// Anything that pokes at Flutter internals (private fields, factory-derived
+// runtime types) is validated once in debug via [_assertReleaseSafeContracts]
+// — if a Flutter upgrade renames a field or changes a class shape, you get
+// a clear assertion at first use pointing at the broken function instead of
+// silent fallback to `'ColorFilter'` / `'ImageFilter'`.
+
+/// Default `Object.toString()` returns this prefix (Dart specification);
+/// detecting it tells us a class's `toString()` override was stripped by AOT.
+const _kStrippedToStringPrefix = "Instance of '";
 
 String describeAlignment(AlignmentGeometry alignment) {
   String fmt(double v) => v.toStringAsFixed(1);
@@ -115,45 +125,45 @@ String describeTextScaler(TextScaler scaler) {
   return '${factor.toStringAsFixed(2)}×';
 }
 
-/// [ImageFilter] subclasses are library-private, so we identify the kind by
-/// comparing `runtimeType` against factory-constructed sentinels (no hardcoded
-/// names) and read parameter fields via `dynamic` (the fields themselves —
-/// `sigmaX`, `radiusX`, `innerFilter`, … — are public on the private classes).
+/// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc.) are library-
+/// private. We identify the kind by comparing `runtimeType` against factory-
+/// constructed sentinels (no hardcoded class-name strings) and read parameter
+/// fields via `dynamic`. The fields themselves (`sigmaX`, `radiusX`,
+/// `innerFilter`, …) are public on those private classes —
+/// see `dart:ui/painting.dart` `_GaussianBlurImageFilter` and friends.
 String describeImageFilter(ImageFilter filter) {
+  assert(_assertReleaseSafeContracts());
   final raw = filter.toString();
-  if (!raw.startsWith("Instance of '")) return raw;
-  final kind = _ImageFilterKinds.lookup(filter.runtimeType);
+  if (!raw.startsWith(_kStrippedToStringPrefix)) return raw;
+  final kind = _ImageFilterKind.lookup(filter.runtimeType);
   if (kind == null) return 'ImageFilter';
   try {
     final dyn = filter as dynamic;
     String d(Object? v) => (v as double).toStringAsFixed(1);
     return switch (kind) {
-      _ImageFilterKinds.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
-      _ImageFilterKinds.dilate =>
-        'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKinds.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKinds.matrix => 'matrix',
-      _ImageFilterKinds.compose =>
+      _ImageFilterKind.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
+      _ImageFilterKind.dilate => 'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
+      _ImageFilterKind.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
+      _ImageFilterKind.matrix => 'matrix',
+      _ImageFilterKind.compose =>
         'compose(${describeImageFilter(dyn.innerFilter as ImageFilter)} '
             '→ ${describeImageFilter(dyn.outerFilter as ImageFilter)})',
-      _ => kind,
     };
   } catch (_) {
-    return 'ImageFilter.$kind';
+    return 'ImageFilter.${kind.name}';
   }
 }
 
-/// Lazy `Type → kind` registry. Built by constructing one filter per public
-/// factory and recording its `runtimeType`. Survives renames of the private
-/// subclasses and never references their names.
-abstract final class _ImageFilterKinds {
-  static const blur = 'blur';
-  static const dilate = 'dilate';
-  static const erode = 'erode';
-  static const matrix = 'matrix';
-  static const compose = 'compose';
+/// `Type → kind` registry built by constructing one filter per public
+/// factory; survives renames of the private subclasses.
+enum _ImageFilterKind {
+  blur,
+  dilate,
+  erode,
+  matrix,
+  compose;
 
-  static final Map<Type, String> _byType = () {
+  static final Map<Type, _ImageFilterKind> _byType = () {
     final identity4x4 = Float64List.fromList(<double>[
       1, 0, 0, 0, //
       0, 1, 0, 0, //
@@ -171,7 +181,7 @@ abstract final class _ImageFilterKinds {
     };
   }();
 
-  static String? lookup(Type t) => _byType[t];
+  static _ImageFilterKind? lookup(Type t) => _byType[t];
 }
 
 BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
@@ -220,14 +230,15 @@ String describeImageProvider(ImageProvider provider) {
   return provider.runtimeType.toString();
 }
 
-/// [ColorFilter] is a single class discriminated by private `_type` /
-/// `_color` / `_blendMode` / `_matrix` fields. In debug we parse the official
-/// `toString()`. In release we discriminate via `==` against parameter-less
-/// gamma sentinels and probe field nullability for mode / matrix — no magic
-/// numbers, no string heuristics.
+/// [ColorFilter] is a single class discriminated by private fields
+/// (`_type`, `_color`, `_blendMode`, `_matrix` — see `dart:ui/painting.dart`).
+/// In debug we parse the official `toString()`. In release we use `==` against
+/// parameter-less gamma sentinels and probe field nullability for mode /
+/// matrix — no magic numbers, no string heuristics.
 String describeColorFilter(ColorFilter f) {
+  assert(_assertReleaseSafeContracts());
   final s = f.toString();
-  if (!s.startsWith("Instance of '")) {
+  if (!s.startsWith(_kStrippedToStringPrefix)) {
     final blend = RegExp(r'BlendMode\.(\w+)').firstMatch(s);
     if (s.startsWith('ColorFilter.mode') && blend != null) {
       return 'mode · ${blend.group(1)}';
@@ -253,9 +264,62 @@ String _describeColorFilterModeOrMatrix(ColorFilter f) {
     }
     if (dyn._matrix != null) return 'matrix';
   } catch (_) {
-    // Private field renamed upstream — fall through.
+    // Private field renamed upstream — debug assert in
+    // [_assertReleaseSafeContracts] catches this loudly; we degrade silently
+    // in release.
   }
   return 'ColorFilter';
+}
+
+// ─── Debug-only contract validation ──────────────────────────────────────────
+//
+// Runs once at first call to any helper that depends on Flutter internals.
+// If a Flutter upgrade renames a private field or changes a class shape, the
+// assert fires with a message naming the broken function — fix points are
+// localised, no silent UI degradation in development.
+
+bool _contractsValidated = false;
+
+bool _assertReleaseSafeContracts() {
+  if (_contractsValidated) return true;
+  _contractsValidated = true;
+
+  // ColorFilter — used by [_describeColorFilterModeOrMatrix].
+  // Source: dart:ui/painting.dart, `class ColorFilter`.
+  final modeFilter = const ColorFilter.mode(Color(0xFF010203), BlendMode.srcIn);
+  final dynColor = modeFilter as dynamic;
+  assert(
+    dynColor._color is Color && dynColor._blendMode is BlendMode,
+    'describeColorFilter: ColorFilter._color/_blendMode renamed in Flutter; '
+    'update _describeColorFilterModeOrMatrix in property_extractors.dart',
+  );
+
+  // ImageFilter — used by [describeImageFilter] for value extraction.
+  // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
+  final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
+  final dynBlur = blur as dynamic;
+  assert(
+    dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0,
+    'describeImageFilter: blur sigmaX/sigmaY renamed in Flutter; '
+    'update the blur branch of describeImageFilter',
+  );
+  final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
+  final dynDilate = dilate as dynamic;
+  assert(
+    dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0,
+    'describeImageFilter: dilate/erode radiusX/radiusY renamed in Flutter; '
+    'update the dilate/erode branches of describeImageFilter',
+  );
+  final compose = ImageFilter.compose(outer: blur, inner: dilate);
+  final dynCompose = compose as dynamic;
+  assert(
+    dynCompose.innerFilter is ImageFilter &&
+        dynCompose.outerFilter is ImageFilter,
+    'describeImageFilter: compose innerFilter/outerFilter renamed in Flutter; '
+    'update the compose branch of describeImageFilter',
+  );
+
+  return true;
 }
 
 /// Flattens all [TextStyle]s found across an [InlineSpan] tree in traversal
