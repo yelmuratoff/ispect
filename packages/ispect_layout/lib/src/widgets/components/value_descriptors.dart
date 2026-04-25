@@ -4,10 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:ispect_layout/src/number_format.dart';
 
-// ─── Internal numeric helpers (re-exported via formatRadius etc.) ────────────
-
-const _kAlignmentDecimals = 1;
-
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
@@ -55,21 +51,19 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 // Flutter's AOT release build strips `toString()` overrides on several
 // painting / dart:ui types (FontWeight, TextDecoration, AlignmentGeometry,
 // SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
-// `Instance of '<TypeName>'`. The helpers below read public fields (or
-// safely peek at private discriminators) so labels stay readable.
+// `Instance of '<TypeName>'`. The helpers below read public fields or peek
+// at private discriminators so labels stay readable.
 //
-// Anything that pokes at Flutter internals (private fields, factory-derived
-// runtime types) is validated once in debug via [_assertReleaseSafeContracts]
-// — if a Flutter upgrade renames a field or changes a class shape, the
-// assert fires at first use pointing at the broken function instead of
-// silently degrading to `'ColorFilter'` / `'ImageFilter'`.
+// Anything depending on Flutter internals is validated once in debug via
+// [_assertReleaseSafeContracts] — Flutter renames or shape changes fire an
+// assert at first use naming the broken function.
 
-/// Default `Object.toString()` returns this prefix (Dart specification);
-/// detecting it tells us a class's `toString()` override was stripped by AOT.
+/// Default `Object.toString()` output starts with this prefix (Dart spec);
+/// detecting it tells us a `toString()` override was stripped by AOT.
 const _kStrippedToStringPrefix = "Instance of '";
 
 String describeAlignment(AlignmentGeometry alignment) {
-  String fmt(double v) => v.toStringAsFixed(_kAlignmentDecimals);
+  String fmt(double v) => v.toStringAsFixed(1);
   if (alignment is Alignment) {
     return switch ((alignment.x, alignment.y)) {
       (-1.0, -1.0) => 'topLeft',
@@ -114,8 +108,8 @@ String describeTextDecoration(TextDecoration decoration) {
   return parts.isEmpty ? 'none' : parts.join(' + ');
 }
 
-/// Reads `textScaleFactor` (deprecated but is the only public field shared by
-/// every [TextScaler] subclass — linear, system, clamped).
+/// `textScaleFactor` is the only public field shared by every [TextScaler]
+/// subclass (linear / system / clamped), even after deprecation.
 String describeTextScaler(TextScaler scaler) {
   if (identical(scaler, TextScaler.noScaling)) return 'no scaling';
   // ignore: deprecated_member_use
@@ -124,12 +118,11 @@ String describeTextScaler(TextScaler scaler) {
   return '${factor.toStringAsFixed(2)}×';
 }
 
-/// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc.) are library-
-/// private. We identify the kind by comparing `runtimeType` against factory-
-/// constructed sentinels (no hardcoded class-name strings) and read parameter
-/// fields via `dynamic`. The fields themselves (`sigmaX`, `radiusX`,
-/// `innerFilter`, …) are public on the private classes —
-/// see `dart:ui/painting.dart` `_GaussianBlurImageFilter` and friends.
+/// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc. in
+/// `dart:ui/painting.dart`) are library-private. Kind is identified by
+/// comparing `runtimeType` against factory-constructed sentinels; parameter
+/// fields (`sigmaX`, `radiusX`, `innerFilter`, …) are public on the
+/// private classes and read via `dynamic`.
 String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
   final raw = filter.toString();
@@ -153,8 +146,6 @@ String describeImageFilter(ImageFilter filter) {
   }
 }
 
-/// `Type → kind` registry built by constructing one filter per public
-/// factory; survives renames of the private subclasses.
 enum _ImageFilterKind {
   blur,
   dilate,
@@ -184,8 +175,8 @@ enum _ImageFilterKind {
 }
 
 /// Best-effort short description of an [ImageProvider]: URL for network
-/// images, asset name for bundled assets, file path for files, else runtime
-/// type. Recurses into [ResizeImage].
+/// images, asset name for bundled assets, file path for files; falls back
+/// to the runtime type for unknown providers. Recurses into [ResizeImage].
 String describeImageProvider(ImageProvider provider) {
   if (provider is NetworkImage) return provider.url;
   if (provider is AssetImage) return provider.assetName;
@@ -200,11 +191,10 @@ String describeImageProvider(ImageProvider provider) {
 }
 
 /// [ColorFilter] is a single class discriminated by private fields
-/// (`_type`, `_color`, `_blendMode`, `_matrix` — see `dart:ui/painting.dart`).
-/// Tries three strategies in order: parse the official `toString()` (works
-/// in debug), match parameter-less gamma sentinels via `==`, then probe
-/// fields via `dynamic`. Each strategy returns `null` to delegate to the
-/// next.
+/// (`_type` / `_color` / `_blendMode` / `_matrix` in `dart:ui/painting.dart`).
+/// Resolves through three strategies in order, each returning `null` to
+/// delegate down: official `toString()` (debug-only), `==` against parameter-
+/// less gamma sentinels, then `dynamic` field probing.
 String describeColorFilter(ColorFilter f) {
   assert(_assertReleaseSafeContracts());
   return _describeColorFilterFromToString(f) ??
@@ -243,9 +233,8 @@ String? _describeColorFilterFromFields(ColorFilter f) {
     }
     if (dyn._matrix != null) return 'matrix';
   } catch (_) {
-    // Private field renamed upstream — debug assert in
-    // [_assertReleaseSafeContracts] catches this loudly; we degrade silently
-    // in release.
+    // Field renamed upstream — debug assert in [_assertReleaseSafeContracts]
+    // surfaces this; release silently degrades to 'ColorFilter'.
   }
   return null;
 }
@@ -256,7 +245,7 @@ const _kPreviewSampleCap = 120;
 const _kPreviewDisplayCap = 80;
 
 /// Flattens all [TextStyle]s found across an [InlineSpan] tree in traversal
-/// order. Used to show each distinct span style as its own subsection.
+/// order.
 List<TextStyle> extractTextStyles(InlineSpan span, [List<TextStyle>? out]) {
   out ??= [];
   if (span.style != null) out.add(span.style!);
@@ -269,8 +258,7 @@ List<TextStyle> extractTextStyles(InlineSpan span, [List<TextStyle>? out]) {
 }
 
 /// Truncated, newline-escaped plain-text preview of an [InlineSpan]. Caps at
-/// [_kPreviewDisplayCap] visible characters; appends `…` when the underlying
-/// text is longer.
+/// [_kPreviewDisplayCap] visible characters; appends `…` when longer.
 String previewText(InlineSpan span) {
   final buf = StringBuffer();
   span.visitChildren((child) {
@@ -284,11 +272,6 @@ String previewText(InlineSpan span) {
 }
 
 // ─── Debug-only contract validation ──────────────────────────────────────────
-//
-// Runs once at first call to any helper that depends on Flutter internals.
-// If a Flutter upgrade renames a private field or changes a class shape, the
-// assert fires with a message naming the broken function — fix points are
-// localised, no silent UI degradation in development.
 
 bool _contractsValidated = false;
 
@@ -296,30 +279,28 @@ bool _assertReleaseSafeContracts() {
   if (_contractsValidated) return true;
   _contractsValidated = true;
 
-  // ColorFilter — used by [_describeColorFilterFromFields].
   // Source: dart:ui/painting.dart, `class ColorFilter`.
   const modeFilter = ColorFilter.mode(Color(0xFF010203), BlendMode.srcIn);
   final dynColor = modeFilter as dynamic;
   assert(
     dynColor._color is Color && dynColor._blendMode is BlendMode,
-    'describeColorFilter: ColorFilter._color/_blendMode renamed in Flutter; '
+    'ColorFilter._color/_blendMode renamed in Flutter; '
     'update _describeColorFilterFromFields in value_descriptors.dart',
   );
 
-  // ImageFilter — used by [describeImageFilter] for value extraction.
   // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
   final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
   final dynBlur = blur as dynamic;
   assert(
     dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0,
-    'describeImageFilter: blur sigmaX/sigmaY renamed in Flutter; '
+    'ImageFilter.blur sigmaX/sigmaY renamed in Flutter; '
     'update the blur branch of describeImageFilter',
   );
   final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
   final dynDilate = dilate as dynamic;
   assert(
     dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0,
-    'describeImageFilter: dilate/erode radiusX/radiusY renamed in Flutter; '
+    'ImageFilter.dilate/erode radiusX/radiusY renamed in Flutter; '
     'update the dilate/erode branches of describeImageFilter',
   );
   final compose = ImageFilter.compose(outer: blur, inner: dilate);
@@ -327,7 +308,7 @@ bool _assertReleaseSafeContracts() {
   assert(
     dynCompose.innerFilter is ImageFilter &&
         dynCompose.outerFilter is ImageFilter,
-    'describeImageFilter: compose innerFilter/outerFilter renamed in Flutter; '
+    'ImageFilter.compose innerFilter/outerFilter renamed in Flutter; '
     'update the compose branch of describeImageFilter',
   );
 

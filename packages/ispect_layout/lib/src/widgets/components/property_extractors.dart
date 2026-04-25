@@ -9,16 +9,12 @@ import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
 export 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
-// ─── Tunables ────────────────────────────────────────────────────────────────
-
 /// Below this magnitude a transform component (translate / scale - 1) is
 /// considered noise and the corresponding chip is suppressed.
 const _kTransformEpsilon = 0.001;
 
-/// Below this magnitude the rotation chip is suppressed (radians-converted).
+/// Below this magnitude (degrees) the rotation chip is suppressed.
 const _kRotationEpsilon = 0.01;
-
-// ─── Internal numeric helpers ────────────────────────────────────────────────
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
@@ -27,8 +23,8 @@ String _fmtOffset(Offset o, int decimalPlaces) =>
     formatInspectorOffset(o, decimalPlaces: decimalPlaces);
 
 /// Recovers the [ImageProvider] that produced a [RenderImage] via its
-/// `debugCreator`. Only works in debug builds where Flutter populates
-/// [RenderObject.debugCreator]; returns `null` in release/profile.
+/// [RenderObject.debugCreator]. Only debug builds populate it; returns
+/// `null` in release/profile.
 ImageProvider? resolveImageProvider(RenderImage target) {
   if (!kDebugMode) return null;
   final creator = target.debugCreator;
@@ -305,14 +301,14 @@ List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
         children: [ColorHexChip(color), Text(wStr)],
       );
 
-  if (_uniformActiveSides(border) case final uniform?) {
+  if (_uniformActiveBorderColor(border) case final color?) {
     return [
       (
         icon: Icons.border_all,
         subtitle: 'border',
         child: sideChild(
-          uniform.color,
-          'w:${_formatUniformWidth(border, decimalPlaces)}',
+          color,
+          'w:${_formatBorderWidths(border, decimalPlaces)}',
         ),
       ),
     ];
@@ -329,18 +325,17 @@ List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
   ];
 }
 
-/// Color shared by every active (width > 0) side, or `null` if sides differ
-/// in color or there are no active sides.
-({Color color})? _uniformActiveSides(Border border) {
+/// Color shared by every active (width > 0) side, or `null` when sides
+/// differ in color or no side is active.
+Color? _uniformActiveBorderColor(Border border) {
   final active = [border.top, border.right, border.bottom, border.left]
-      .where((s) => s.width > 0)
-      .toList();
+      .where((s) => s.width > 0);
   if (active.isEmpty) return null;
   final color = active.first.color;
-  return active.every((s) => s.color == color) ? (color: color) : null;
+  return active.every((s) => s.color == color) ? color : null;
 }
 
-String _formatUniformWidth(Border border, int decimalPlaces) {
+String _formatBorderWidths(Border border, int decimalPlaces) {
   final sides = [border.top, border.right, border.bottom, border.left];
   final widths = sides.map((s) => s.width).toSet();
   return widths.length == 1
@@ -786,147 +781,90 @@ List<PropSpec> editableProps(RenderEditable target) => [
 
 // ─── Registry-driven dispatcher ──────────────────────────────────────────────
 //
-// Single source of truth for both [typeProps] (build the chip list for a box)
-// and [hasTypeProps] (is the box worth surfacing as a same-size wrapper).
-// To support a new RenderBox type, add one entry below — both functions pick
-// it up automatically.
+// Single source of truth for both [typeProps] and [hasTypeProps]. Add one
+// entry per supported render-box; both functions pick it up automatically.
+//
+// `wrapper: true` means the box may legitimately appear as a same-size proxy
+// in the parent chain. Layout-shaping types (Stack, Flex, Wrap, Image,
+// Editable, Paragraph) own their geometry and are not wrappers.
 
-typedef _PropsBuilder = List<PropSpec> Function(
-  RenderBox target, {
-  required int decimalPlaces,
-});
-
-/// `match`: `is`-test for the box. `build`: chip list. `wrapper`: whether
-/// this box may legitimately appear as a same-size proxy in the parent
-/// chain (used by `hasTypeProps`). Layout-shaping types (Stack, Flex, Wrap,
-/// Image, Editable, Paragraph) are not wrappers — they own their geometry.
-typedef _PropsRule = ({
+typedef _Rule = ({
   bool Function(RenderBox) match,
-  _PropsBuilder build,
+  List<PropSpec> Function(RenderBox, int decimalPlaces) build,
   bool wrapper,
 });
 
-final List<_PropsRule> _propsRules = [
-  (
-    match: (b) => b is RenderStack,
-    build: (b, {required decimalPlaces}) => stackProps(b as RenderStack),
+_Rule _rule<T extends RenderBox>(
+  List<PropSpec> Function(T, int decimalPlaces) build, {
+  required bool wrapper,
+  bool Function(T)? where,
+}) =>
+    (
+      match: (b) => b is T && (where == null || where(b)),
+      build: (b, dp) => build(b as T, dp),
+      wrapper: wrapper,
+    );
+
+final List<_Rule> _propsRules = [
+  _rule<RenderStack>((b, _) => stackProps(b), wrapper: false),
+  _rule<RenderFlex>((b, _) => flexProps(b), wrapper: false),
+  _rule<RenderWrap>(
+    (b, dp) => wrapProps(b, decimalPlaces: dp),
     wrapper: false,
   ),
-  (
-    match: (b) => b is RenderFlex,
-    build: (b, {required decimalPlaces}) => flexProps(b as RenderFlex),
+  _rule<RenderImage>(
+    (b, dp) => imageProps(b, decimalPlaces: dp),
     wrapper: false,
   ),
-  (
-    match: (b) => b is RenderWrap,
-    build: (b, {required decimalPlaces}) =>
-        wrapProps(b as RenderWrap, decimalPlaces: decimalPlaces),
-    wrapper: false,
-  ),
-  (
-    match: (b) => b is RenderImage,
-    build: (b, {required decimalPlaces}) =>
-        imageProps(b as RenderImage, decimalPlaces: decimalPlaces),
-    wrapper: false,
-  ),
-  (
-    match: (b) => b is RenderEditable,
-    build: (b, {required decimalPlaces}) => editableProps(b as RenderEditable),
-    wrapper: false,
-  ),
-  (
-    match: (b) => b is RenderOpacity,
-    build: (b, {required decimalPlaces}) =>
-        opacityProps(b as RenderOpacity, decimalPlaces: decimalPlaces),
+  _rule<RenderEditable>((b, _) => editableProps(b), wrapper: false),
+  _rule<RenderOpacity>(
+    (b, dp) => opacityProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderAnimatedOpacity,
-    build: (b, {required decimalPlaces}) => animatedOpacityProps(
-          b as RenderAnimatedOpacity,
-          decimalPlaces: decimalPlaces,
-        ),
+  _rule<RenderAnimatedOpacity>(
+    (b, dp) => animatedOpacityProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderPhysicalShape,
-    build: (b, {required decimalPlaces}) => physicalShapeProps(
-          b as RenderPhysicalShape,
-          decimalPlaces: decimalPlaces,
-        ),
+  _rule<RenderPhysicalShape>(
+    (b, dp) => physicalShapeProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderPhysicalModel,
-    build: (b, {required decimalPlaces}) => physicalModelProps(
-          b as RenderPhysicalModel,
-          decimalPlaces: decimalPlaces,
-        ),
+  _rule<RenderPhysicalModel>(
+    (b, dp) => physicalModelProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderClipRRect,
-    build: (b, {required decimalPlaces}) =>
-        clipRRectProps(b as RenderClipRRect, decimalPlaces: decimalPlaces),
+  _rule<RenderClipRRect>(
+    (b, dp) => clipRRectProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderClipRSuperellipse,
-    build: (b, {required decimalPlaces}) => clipRSuperellipseProps(
-          b as RenderClipRSuperellipse,
-          decimalPlaces: decimalPlaces,
-        ),
+  _rule<RenderClipRSuperellipse>(
+    (b, dp) => clipRSuperellipseProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderClipRect,
-    build: (b, {required decimalPlaces}) => clipRectProps(b as RenderClipRect),
+  _rule<RenderClipRect>((b, _) => clipRectProps(b), wrapper: true),
+  _rule<RenderClipOval>((b, _) => clipOvalProps(b), wrapper: true),
+  _rule<RenderClipPath>(
+    (b, dp) => clipPathProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderClipOval,
-    build: (b, {required decimalPlaces}) => clipOvalProps(b as RenderClipOval),
+  // Skip in the wrapper chain when neither painter is set — the section
+  // would render as an empty header.
+  _rule<RenderCustomPaint>(
+    (b, _) => customPaintProps(b),
+    wrapper: true,
+    where: (b) => b.painter != null || b.foregroundPainter != null,
+  ),
+  _rule<RenderFittedBox>((b, _) => fittedBoxProps(b), wrapper: true),
+  _rule<RenderAspectRatio>(
+    (b, dp) => aspectRatioProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: (b) => b is RenderClipPath,
-    build: (b, {required decimalPlaces}) =>
-        clipPathProps(b as RenderClipPath, decimalPlaces: decimalPlaces),
+  _rule<RenderTransform>(
+    (b, dp) => transformProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    // Skip in the wrapper chain when neither painter is set — the section
-    // would render as an empty header. typeProps still dispatches for the
-    // (rare) case where the wrapper check is bypassed.
-    match: (b) =>
-        b is RenderCustomPaint &&
-        (b.painter != null || b.foregroundPainter != null),
-    build: (b, {required decimalPlaces}) =>
-        customPaintProps(b as RenderCustomPaint),
-    wrapper: true,
-  ),
-  (
-    match: (b) => b is RenderFittedBox,
-    build: (b, {required decimalPlaces}) =>
-        fittedBoxProps(b as RenderFittedBox),
-    wrapper: true,
-  ),
-  (
-    match: (b) => b is RenderAspectRatio,
-    build: (b, {required decimalPlaces}) =>
-        aspectRatioProps(b as RenderAspectRatio, decimalPlaces: decimalPlaces),
-    wrapper: true,
-  ),
-  (
-    match: (b) => b is RenderTransform,
-    build: (b, {required decimalPlaces}) =>
-        transformProps(b as RenderTransform, decimalPlaces: decimalPlaces),
-    wrapper: true,
-  ),
-  (
-    match: (b) => b is RenderBackdropFilter,
-    build: (b, {required decimalPlaces}) =>
-        backdropFilterProps(b as RenderBackdropFilter),
+  _rule<RenderBackdropFilter>(
+    (b, _) => backdropFilterProps(b),
     wrapper: true,
   ),
 ];
@@ -934,14 +872,13 @@ final List<_PropsRule> _propsRules = [
 /// Type-specific props for any [RenderBox]. Returns an empty list when no
 /// rule matches.
 ///
-/// [RenderParagraph] is intentionally absent — `box_info_panel_widget.dart`
-/// renders paragraphs through dedicated `text` / `typography` sections via
-/// [paragraphProps] and [spanProps], so dispatching them through the generic
-/// `type` section would duplicate output.
+/// [RenderParagraph] is intentionally absent: `box_info_panel_widget.dart`
+/// renders paragraphs through dedicated `text` / `typography` sections, so
+/// dispatching them through the generic `type` section would duplicate
+/// output.
 List<PropSpec> typeProps(RenderBox target, {int decimalPlaces = 1}) => [
       for (final rule in _propsRules)
-        if (rule.match(target))
-          ...rule.build(target, decimalPlaces: decimalPlaces),
+        if (rule.match(target)) ...rule.build(target, decimalPlaces),
     ];
 
 /// Whether [box] is worth surfacing as a same-size wrapper in the parent
