@@ -184,7 +184,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Text(
-            describeIdentity(box),
+            _describeIdentity(box),
             style: theme.textTheme.bodySmall,
           ),
         ),
@@ -230,6 +230,15 @@ class BoxInfoPanelWidget extends StatelessWidget {
   }
 }
 
+/// Release-safe replacement for [describeIdentity].
+///
+/// Why: Flutter's `describeIdentity` uses `objectRuntimeType`, which returns
+/// the literal string `<optimized out>` in profile/release builds, producing
+/// labels like `<optimized out>#a1b2c`. Reading `runtimeType` directly works
+/// in release mode (without `--obfuscate`) and yields the real class name.
+String _describeIdentity(Object? object) =>
+    '${object.runtimeType}#${shortHash(object)}';
+
 // ─── Private widgets ─────────────────────────────────────────────────────────
 
 class _PanelTitleBar extends StatelessWidget {
@@ -257,7 +266,7 @@ class _PanelTitleBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                describeIdentity(target),
+                _describeIdentity(target),
                 style: theme.textTheme.bodySmall,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
