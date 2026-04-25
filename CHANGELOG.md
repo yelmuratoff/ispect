@@ -12,6 +12,9 @@
 ### Added
 
 - **`ispect_layout` package:** New standalone visual layout inspector for Flutter — tap any widget to read size, constraints, padding, decoration, text styles, transform matrix, and clip shape; compare two widgets to see the pixel gap between them. Forked from [`inspector`](https://github.com/kekland/inspector) 4.1.0 and maintained inside the ISpect monorepo. On top of the upstream feature set it adds expanded render-object coverage (`RenderTransform` matrix decomposition, `RenderBackdropFilter`, all `RenderClip*`, `RenderEditable`), a wrapper-ancestors section for same-size proxies, gradient/shadow/border-radius breakdowns, image-source introspection, a RichText preview, and a refactored `BoxInfoPanelWidget` split into testable extractor and widget modules.
+- **Inspector plugin system:** Extensible plugin architecture for the ISpect panel with lifecycle hooks, custom screens, and action items. `SafePluginScreen` and a global `ErrorWidget` override keep third-party plugin failures from taking down the host UI.
+- **Custom log types:** Define your own `ISpectLogType` instances with category, configurable display title, color, and icon. Theme validation safely merges custom and built-in entries.
+- **Database interceptor cookbook:** Drop-in interceptors and runnable examples for Hive, Isar, Drift, Sembast, ObjectBox, Realm, Firestore, Sqflite, SharedPreferences, GetStorage, and FlutterSecureStorage in `packages/ispectify_db/example`.
 
 ### Improvements
 
@@ -19,10 +22,18 @@
 - **Domain extensions:** Specialized methods for common operations: `authTrace()`, `storageTrace()`, `push()`, `analyticsEvent()`, `paymentTrace()`, `grpcTrace()`, and more.
 - **Log Exporter:** New utility for exporting logs in various formats (JSON Lines, Text, Markdown, CSV) with built-in redaction and security protection.
 - **Desktop layout:** Completely redesigned with a resizable split view, keyboard navigation, and persistent layout ratios.
-- **Search & Filter:** Completely revamped search with field matching and inline navigation. Filters now include chip-based selection and category grouping.
-- **HTTP Transaction Grouping:** Correlated network logs are now displayed as expandable transaction cards with status and duration indicators.
+- **Search & Filter:** Completely revamped search with field matching and inline navigation. Filters now include chip-based selection and category grouping. Correlation IDs and transaction IDs are filterable directly from log details.
+- **HTTP Transaction Grouping:** Correlated network logs are now displayed as expandable transaction cards with status and duration indicators, plus dedicated transaction badges and detailed request/response views.
 - **Logging logic:** Enhanced live tail with new-log indicators, scroll-to-edge support, and relative time formatting.
 - **UI & Visualization:** Added 21 new icons/colors for various log types and improved JSON viewer with array support and async search.
+- **Inspector controls:** Multi-key `ShortcutActivator` shortcuts via Flutter `Shortcuts`/`Actions`, `initialPanelExpanded` for default panel state, configurable `decimalPlaces`, smart panel positioning, shape-border and border-radius extraction for clipping and physical widgets, and globally-transformed hit testing for accurate overlap detection.
+- **Configurable log formatters:** Pluggable human-readable and JSON Lines formatters with ISO-8601 timestamps for console output and exports.
+- **`consoleMessage`:** Optional parameter on trace, network, WebSocket, and BLoC logs to tailor IDE console output without affecting structured metadata.
+- **Lazy logger initialization:** `ISpect.logger` is now lazily constructed and emits a developer warning when used before `ISpect.run`.
+- **Redaction reach:** cURL command redaction through `RedactionService`, opt-in clipboard redaction on `copyClipboard`, and optional redaction statistics for data and header operations.
+- **Log correlation index:** O(1) request/response/error lookup in the log screen, removing scan-time matching on large histories.
+- **Database tracing:** `DbSqlDigest` for normalized SQL grouping, `DbMessageFormatter` for consistent log construction, and new `sizeBytes` and `cacheHit` fields for performance insight.
+- **Accessibility:** Semantic labels on log cards and transaction widgets, increased touch targets (36dp minimum), and tooltips on app bar navigation, search, and filter actions.
 
 ### Behavioral Changes
 
@@ -33,16 +44,21 @@
 ### Deprecations
 
 - **`ISpectScopeController.of(context)` is deprecated** in favor of the canonical `ISpect.read(context)`. The two were duplicate entry points to the same `InheritedNotifier` lookup. `of` remains as a forwarder and will be removed in 6.0.0.
+- **Per-callback network filters** (`requestFilter`, `responseFilter`, `errorFilter`) on `ispectify_dio`, `ispectify_http`, and `ispectify_ws` are deprecated in favor of the new composable filter chain. Existing callbacks continue to work as forwarders and will be removed in 6.0.0.
 
 ### Bug Fixes
 
 - **Async lifecycle:** Fixed critical "deactivated widget's ancestor" errors in `ISpectToaster` and clipboard operations by correctly handling `BuildContext` across async gaps.
 - **Stability:** Resolved memory leaks in UI components and improved robustness of JSON parsing for large datasets.
 - **Security:** Added protection against CSV injection in exports and limited clipboard size to prevent memory issues.
+- **Inspector overlays:** Clamped overlay rects and pointer coordinates to screen bounds — fixes off-screen tracking and out-of-viewport selection.
+- **Inspector release safety:** Replaced `describeIdentity` and other diagnostic-only formatters with release-safe equivalents so the layout inspector no longer throws or leaks debug data in profile/release builds.
 
 ### CI/Tests
 
 - **Tests:** Refactored test suite to support the new trace-based architecture and improved validation for JSON/multipart redaction.
+- **Test expansion:** Added widget tests for `ISpectAppBar`, `EmptyLogsWidget`, `LogCard`, and `ISpectBuilder`; integration tests for the BLoC, Dio, and HTTP logging pipelines; and a comprehensive `ISpectBlocObserver` lifecycle/correlation suite.
+- **Codecov:** Integrated coverage reporting with a Flutter version matrix in CI and added a coverage badge to the README.
 - **GitHub Actions:** Unified testing and analysis workflows.
 
 ### Migration Guide
