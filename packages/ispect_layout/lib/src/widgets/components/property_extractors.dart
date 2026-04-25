@@ -1,351 +1,30 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
+import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
-// ─── Format helpers ──────────────────────────────────────────────────────────
+export 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
+
+// ─── Tunables ────────────────────────────────────────────────────────────────
+
+/// Below this magnitude a transform component (translate / scale - 1) is
+/// considered noise and the corresponding chip is suppressed.
+const _kTransformEpsilon = 0.001;
+
+/// Below this magnitude the rotation chip is suppressed (radians-converted).
+const _kRotationEpsilon = 0.01;
+
+// ─── Internal numeric helpers ────────────────────────────────────────────────
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
 String _fmtOffset(Offset o, int decimalPlaces) =>
     formatInspectorOffset(o, decimalPlaces: decimalPlaces);
-
-/// Formats a single [Radius], collapsing to a scalar when x == y.
-String formatRadius(
-  Radius r, {
-  int decimalPlaces = 1,
-}) =>
-    r.x == r.y
-        ? _fmt(r.x, decimalPlaces)
-        : '${_fmt(r.x, decimalPlaces)}×${_fmt(r.y, decimalPlaces)}';
-
-/// Formats a [BorderRadiusGeometry], collapsing uniform values and showing
-/// elliptical `(x×y)` radii only when x != y.
-///
-/// Returns `null` when the radius is zero — callers should skip the chip.
-({String label, String value})? formatBorderRadius(
-  BorderRadiusGeometry geometry, {
-  int decimalPlaces = 1,
-}) {
-  final r = geometry.resolve(TextDirection.ltr);
-  if (r == BorderRadius.zero) return null;
-  final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
-  if (corners.every((c) => c == corners.first)) {
-    return (
-      label: 'border radius',
-      value: formatRadius(corners.first, decimalPlaces: decimalPlaces),
-    );
-  }
-  return (
-    label: 'radius TL/TR/BR/BL',
-    value: corners
-        .map((corner) => formatRadius(corner, decimalPlaces: decimalPlaces))
-        .join(', '),
-  );
-}
-
-String describeShapeBorder(ShapeBorder shape) => shape.runtimeType.toString();
-
-// ─── Release-safe value formatters ───────────────────────────────────────────
-//
-// Flutter's AOT release build strips `toString()` overrides on several
-// painting / dart:ui types (FontWeight, TextDecoration, AlignmentGeometry,
-// SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
-// `Instance of '<TypeName>'`. The helpers below read public fields (or
-// safely peek at private discriminators) so labels stay readable.
-//
-// Anything that pokes at Flutter internals (private fields, factory-derived
-// runtime types) is validated once in debug via [_assertReleaseSafeContracts]
-// — if a Flutter upgrade renames a field or changes a class shape, you get
-// a clear assertion at first use pointing at the broken function instead of
-// silent fallback to `'ColorFilter'` / `'ImageFilter'`.
-
-/// Default `Object.toString()` returns this prefix (Dart specification);
-/// detecting it tells us a class's `toString()` override was stripped by AOT.
-const _kStrippedToStringPrefix = "Instance of '";
-
-String describeAlignment(AlignmentGeometry alignment) {
-  String fmt(double v) => v.toStringAsFixed(1);
-  if (alignment is Alignment) {
-    return switch ((alignment.x, alignment.y)) {
-      (-1.0, -1.0) => 'topLeft',
-      (0.0, -1.0) => 'topCenter',
-      (1.0, -1.0) => 'topRight',
-      (-1.0, 0.0) => 'centerLeft',
-      (0.0, 0.0) => 'center',
-      (1.0, 0.0) => 'centerRight',
-      (-1.0, 1.0) => 'bottomLeft',
-      (0.0, 1.0) => 'bottomCenter',
-      (1.0, 1.0) => 'bottomRight',
-      _ => '(${fmt(alignment.x)}, ${fmt(alignment.y)})',
-    };
-  }
-  if (alignment is AlignmentDirectional) {
-    return switch ((alignment.start, alignment.y)) {
-      (-1.0, -1.0) => 'topStart',
-      (0.0, -1.0) => 'topCenter',
-      (1.0, -1.0) => 'topEnd',
-      (-1.0, 0.0) => 'centerStart',
-      (0.0, 0.0) => 'center',
-      (1.0, 0.0) => 'centerEnd',
-      (-1.0, 1.0) => 'bottomStart',
-      (0.0, 1.0) => 'bottomCenter',
-      (1.0, 1.0) => 'bottomEnd',
-      _ => 'directional(${fmt(alignment.start)}, ${fmt(alignment.y)})',
-    };
-  }
-  return alignment.runtimeType.toString();
-}
-
-String describeFontWeight(FontWeight weight) => 'w${weight.value}';
-
-String describeFontStyle(FontStyle style) => style.name;
-
-String describeTextDecoration(TextDecoration decoration) {
-  final parts = <String>[
-    if (decoration.contains(TextDecoration.underline)) 'underline',
-    if (decoration.contains(TextDecoration.overline)) 'overline',
-    if (decoration.contains(TextDecoration.lineThrough)) 'lineThrough',
-  ];
-  return parts.isEmpty ? 'none' : parts.join(' + ');
-}
-
-/// `textScaleFactor` is deprecated but is the only public field shared by
-/// all [TextScaler] subclasses (linear, system, clamped).
-String describeTextScaler(TextScaler scaler) {
-  if (identical(scaler, TextScaler.noScaling)) return 'no scaling';
-  // ignore: deprecated_member_use
-  final factor = scaler.textScaleFactor;
-  if (factor == 1.0) return 'no scaling';
-  return '${factor.toStringAsFixed(2)}×';
-}
-
-/// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc.) are library-
-/// private. We identify the kind by comparing `runtimeType` against factory-
-/// constructed sentinels (no hardcoded class-name strings) and read parameter
-/// fields via `dynamic`. The fields themselves (`sigmaX`, `radiusX`,
-/// `innerFilter`, …) are public on those private classes —
-/// see `dart:ui/painting.dart` `_GaussianBlurImageFilter` and friends.
-String describeImageFilter(ImageFilter filter) {
-  assert(_assertReleaseSafeContracts());
-  final raw = filter.toString();
-  if (!raw.startsWith(_kStrippedToStringPrefix)) return raw;
-  final kind = _ImageFilterKind.lookup(filter.runtimeType);
-  if (kind == null) return 'ImageFilter';
-  try {
-    final dyn = filter as dynamic;
-    String d(Object? v) => (v as double).toStringAsFixed(1);
-    return switch (kind) {
-      _ImageFilterKind.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
-      _ImageFilterKind.dilate => 'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKind.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKind.matrix => 'matrix',
-      _ImageFilterKind.compose =>
-        'compose(${describeImageFilter(dyn.innerFilter as ImageFilter)} '
-            '→ ${describeImageFilter(dyn.outerFilter as ImageFilter)})',
-    };
-  } catch (_) {
-    return 'ImageFilter.${kind.name}';
-  }
-}
-
-/// `Type → kind` registry built by constructing one filter per public
-/// factory; survives renames of the private subclasses.
-enum _ImageFilterKind {
-  blur,
-  dilate,
-  erode,
-  matrix,
-  compose;
-
-  static final Map<Type, _ImageFilterKind> _byType = () {
-    final identity4x4 = Float64List.fromList(<double>[
-      1, 0, 0, 0, //
-      0, 1, 0, 0, //
-      0, 0, 1, 0, //
-      0, 0, 0, 1, //
-    ]);
-    final blurFilter = ImageFilter.blur();
-    return {
-      blurFilter.runtimeType: blur,
-      ImageFilter.dilate().runtimeType: dilate,
-      ImageFilter.erode().runtimeType: erode,
-      ImageFilter.matrix(identity4x4).runtimeType: matrix,
-      ImageFilter.compose(outer: blurFilter, inner: blurFilter).runtimeType:
-          compose,
-    };
-  }();
-
-  static _ImageFilterKind? lookup(Type t) => _byType[t];
-}
-
-BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
-  if (shape is RoundedRectangleBorder) return shape.borderRadius;
-  if (shape is BeveledRectangleBorder) return shape.borderRadius;
-  if (shape is ContinuousRectangleBorder) return shape.borderRadius;
-  return null;
-}
-
-List<PropSpec> shapeBorderProps(
-  ShapeBorder shape, {
-  int decimalPlaces = 1,
-}) =>
-    [
-      (
-        icon: Icons.circle_outlined,
-        subtitle: 'shape',
-        child: Text(describeShapeBorder(shape)),
-      ),
-      if (extractShapeBorderRadius(shape) case final borderRadius?)
-        if (formatBorderRadius(
-          borderRadius,
-          decimalPlaces: decimalPlaces,
-        )
-            case final br?)
-          (
-            icon: Icons.rounded_corner,
-            subtitle: br.label,
-            child: Text(br.value),
-          ),
-    ];
-
-/// Best-effort short description of an [ImageProvider]: URL for network
-/// images, asset name for bundled assets, file path for files, else runtime
-/// type. Recurses into [ResizeImage].
-String describeImageProvider(ImageProvider provider) {
-  if (provider is NetworkImage) return provider.url;
-  if (provider is AssetImage) return provider.assetName;
-  if (provider is ExactAssetImage) return provider.assetName;
-  if (provider is FileImage) return provider.file.path;
-  if (provider is MemoryImage) return 'MemoryImage(${provider.bytes.length}B)';
-  if (provider is ResizeImage) {
-    return '${provider.width ?? '?'}×${provider.height ?? '?'} '
-        '${describeImageProvider(provider.imageProvider)}';
-  }
-  return provider.runtimeType.toString();
-}
-
-/// [ColorFilter] is a single class discriminated by private fields
-/// (`_type`, `_color`, `_blendMode`, `_matrix` — see `dart:ui/painting.dart`).
-/// In debug we parse the official `toString()`. In release we use `==` against
-/// parameter-less gamma sentinels and probe field nullability for mode /
-/// matrix — no magic numbers, no string heuristics.
-String describeColorFilter(ColorFilter f) {
-  assert(_assertReleaseSafeContracts());
-  final s = f.toString();
-  if (!s.startsWith(_kStrippedToStringPrefix)) {
-    final blend = RegExp(r'BlendMode\.(\w+)').firstMatch(s);
-    if (s.startsWith('ColorFilter.mode') && blend != null) {
-      return 'mode · ${blend.group(1)}';
-    }
-    return s.replaceFirst('ColorFilter.', '');
-  }
-  if (f == _linearToSrgbGamma) return 'linearToSrgbGamma';
-  if (f == _srgbToLinearGamma) return 'srgbToLinearGamma';
-  return _describeColorFilterModeOrMatrix(f);
-}
-
-const _linearToSrgbGamma = ColorFilter.linearToSrgbGamma();
-const _srgbToLinearGamma = ColorFilter.srgbToLinearGamma();
-
-String _describeColorFilterModeOrMatrix(ColorFilter f) {
-  try {
-    final dyn = f as dynamic;
-    final color = dyn._color as Color?;
-    final blend = dyn._blendMode as BlendMode?;
-    if (color != null && blend != null) {
-      final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
-      return 'mode · ${blend.name} · #$hex';
-    }
-    if (dyn._matrix != null) return 'matrix';
-  } catch (_) {
-    // Private field renamed upstream — debug assert in
-    // [_assertReleaseSafeContracts] catches this loudly; we degrade silently
-    // in release.
-  }
-  return 'ColorFilter';
-}
-
-// ─── Debug-only contract validation ──────────────────────────────────────────
-//
-// Runs once at first call to any helper that depends on Flutter internals.
-// If a Flutter upgrade renames a private field or changes a class shape, the
-// assert fires with a message naming the broken function — fix points are
-// localised, no silent UI degradation in development.
-
-bool _contractsValidated = false;
-
-bool _assertReleaseSafeContracts() {
-  if (_contractsValidated) return true;
-  _contractsValidated = true;
-
-  // ColorFilter — used by [_describeColorFilterModeOrMatrix].
-  // Source: dart:ui/painting.dart, `class ColorFilter`.
-  final modeFilter = const ColorFilter.mode(Color(0xFF010203), BlendMode.srcIn);
-  final dynColor = modeFilter as dynamic;
-  assert(
-    dynColor._color is Color && dynColor._blendMode is BlendMode,
-    'describeColorFilter: ColorFilter._color/_blendMode renamed in Flutter; '
-    'update _describeColorFilterModeOrMatrix in property_extractors.dart',
-  );
-
-  // ImageFilter — used by [describeImageFilter] for value extraction.
-  // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
-  final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
-  final dynBlur = blur as dynamic;
-  assert(
-    dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0,
-    'describeImageFilter: blur sigmaX/sigmaY renamed in Flutter; '
-    'update the blur branch of describeImageFilter',
-  );
-  final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
-  final dynDilate = dilate as dynamic;
-  assert(
-    dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0,
-    'describeImageFilter: dilate/erode radiusX/radiusY renamed in Flutter; '
-    'update the dilate/erode branches of describeImageFilter',
-  );
-  final compose = ImageFilter.compose(outer: blur, inner: dilate);
-  final dynCompose = compose as dynamic;
-  assert(
-    dynCompose.innerFilter is ImageFilter &&
-        dynCompose.outerFilter is ImageFilter,
-    'describeImageFilter: compose innerFilter/outerFilter renamed in Flutter; '
-    'update the compose branch of describeImageFilter',
-  );
-
-  return true;
-}
-
-/// Flattens all [TextStyle]s found across an [InlineSpan] tree in traversal
-/// order. Used to show each distinct span style as its own subsection.
-List<TextStyle> extractTextStyles(InlineSpan span, [List<TextStyle>? out]) {
-  out ??= [];
-  if (span.style != null) out.add(span.style!);
-  if (span is TextSpan && span.children != null) {
-    for (final c in span.children!) {
-      extractTextStyles(c, out);
-    }
-  }
-  return out;
-}
-
-/// Truncated, newline-escaped plain-text preview of an [InlineSpan]. Caps at
-/// 80 visible characters; appends `…` when the underlying text is longer.
-String previewText(InlineSpan span) {
-  final buf = StringBuffer();
-  span.visitChildren((child) {
-    if (child is TextSpan && child.text != null) buf.write(child.text);
-    return buf.length < 120;
-  });
-  final raw = buf.toString().replaceAll('\n', '⏎');
-  return raw.length <= 80 ? raw : '${raw.substring(0, 80)}…';
-}
 
 /// Recovers the [ImageProvider] that produced a [RenderImage] via its
 /// `debugCreator`. Only works in debug builds where Flutter populates
@@ -359,12 +38,38 @@ ImageProvider? resolveImageProvider(RenderImage target) {
   return null;
 }
 
-// ─── Property extractors ─────────────────────────────────────────────────────
+// ─── Common chip builders ────────────────────────────────────────────────────
 
-List<PropSpec> constraintsProps(
-  BoxConstraints c, {
+PropSpec? _clipBehaviorProp(Clip clipBehavior) => clipBehavior == Clip.none
+    ? null
+    : (
+        icon: Icons.crop,
+        subtitle: 'clip behavior',
+        child: Text(clipBehavior.name),
+      );
+
+/// Renders a clipper as a [shapeBorderProps] section when it is a
+/// [ShapeBorderClipper], else as a single chip with the runtime type name.
+List<PropSpec> _clipperProps(
+  CustomClipper<dynamic>? clipper, {
   int decimalPlaces = 1,
 }) {
+  if (clipper == null) return const [];
+  if (clipper is ShapeBorderClipper) {
+    return shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces);
+  }
+  return [
+    (
+      icon: Icons.brush,
+      subtitle: 'clipper',
+      child: Text(clipper.runtimeType.toString()),
+    ),
+  ];
+}
+
+// ─── Property extractors ─────────────────────────────────────────────────────
+
+List<PropSpec> constraintsProps(BoxConstraints c, {int decimalPlaces = 1}) {
   String fmt(double min, double max) {
     if (min == max) return '=${_fmt(min, decimalPlaces)}';
     final hi = max == double.infinity ? '∞' : _fmt(max, decimalPlaces);
@@ -427,11 +132,7 @@ List<PropSpec> paragraphProps(
         ),
     ];
 
-List<PropSpec> spanProps(
-  TextStyle style, {
-  int decimalPlaces = 1,
-}) =>
-    [
+List<PropSpec> spanProps(TextStyle style, {int decimalPlaces = 1}) => [
       if (style.fontFamily != null)
         (
           icon: Icons.font_download,
@@ -494,11 +195,27 @@ List<PropSpec> spanProps(
         ),
     ];
 
-List<PropSpec> decorationProps(
-  BoxDecoration d, {
+List<PropSpec> shapeBorderProps(
+  ShapeBorder shape, {
   int decimalPlaces = 1,
 }) =>
     [
+      (
+        icon: Icons.circle_outlined,
+        subtitle: 'shape',
+        child: Text(shape.runtimeType.toString()),
+      ),
+      if (extractShapeBorderRadius(shape) case final borderRadius?)
+        if (formatBorderRadius(borderRadius, decimalPlaces: decimalPlaces)
+            case final br?)
+          (
+            icon: Icons.rounded_corner,
+            subtitle: br.label,
+            child: Text(br.value),
+          ),
+    ];
+
+List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
       if (d.color != null)
         (
           icon: Icons.palette,
@@ -569,10 +286,9 @@ List<PropSpec> _decorationImageProps(DecorationImage img) => [
         ),
     ];
 
-List<PropSpec> _borderProps(
-  BoxBorder border, {
-  int decimalPlaces = 1,
-}) {
+// ─── Border ──────────────────────────────────────────────────────────────────
+
+List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
   if (border is! Border) {
     return [
       (
@@ -583,46 +299,65 @@ List<PropSpec> _borderProps(
     ];
   }
 
-  final sides = [border.top, border.right, border.bottom, border.left];
-  final widths = sides.map((s) => s.width).toSet();
-  final activeSides = sides.where((s) => s.width > 0).toList();
-  final colors = activeSides.map((s) => s.color).toSet();
-
   Widget sideChild(Color color, String wStr) => Row(
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
         children: [ColorHexChip(color), Text(wStr)],
       );
 
-  // Uniform border — single chip
-  if (colors.length == 1 && activeSides.isNotEmpty) {
-    final wStr = widths.length == 1
-        ? 'w:${_fmt(widths.first, decimalPlaces)}'
-        : 'w:${sides.map((s) => _fmt(s.width, decimalPlaces)).join('/')}';
+  if (_uniformActiveSides(border) case final uniform?) {
     return [
       (
         icon: Icons.border_all,
         subtitle: 'border',
-        child: sideChild(colors.first, wStr),
+        child: sideChild(
+          uniform.color,
+          'w:${_formatUniformWidth(border, decimalPlaces)}',
+        ),
       ),
     ];
   }
 
-  // Non-uniform border — one chip per active side
-  const sideLabels = ['T', 'R', 'B', 'L'];
   return [
-    for (var i = 0; i < sides.length; i++)
-      if (sides[i].width > 0)
-        (
-          icon: Icons.border_all,
-          subtitle: 'border ${sideLabels[i]}',
-          child: sideChild(
-            sides[i].color,
-            'w:${_fmt(sides[i].width, decimalPlaces)}',
-          ),
-        ),
+    for (final side in _activeSidesWithLabels(border))
+      (
+        icon: Icons.border_all,
+        subtitle: 'border ${side.label}',
+        child: sideChild(
+            side.side.color, 'w:${_fmt(side.side.width, decimalPlaces)}'),
+      ),
   ];
 }
+
+/// Color shared by every active (width > 0) side, or `null` if sides differ
+/// in color or there are no active sides.
+({Color color})? _uniformActiveSides(Border border) {
+  final active = [border.top, border.right, border.bottom, border.left]
+      .where((s) => s.width > 0)
+      .toList();
+  if (active.isEmpty) return null;
+  final color = active.first.color;
+  return active.every((s) => s.color == color) ? (color: color) : null;
+}
+
+String _formatUniformWidth(Border border, int decimalPlaces) {
+  final sides = [border.top, border.right, border.bottom, border.left];
+  final widths = sides.map((s) => s.width).toSet();
+  return widths.length == 1
+      ? _fmt(widths.first, decimalPlaces)
+      : sides.map((s) => _fmt(s.width, decimalPlaces)).join('/');
+}
+
+List<({String label, BorderSide side})> _activeSidesWithLabels(Border border) {
+  const labels = ['T', 'R', 'B', 'L'];
+  final sides = [border.top, border.right, border.bottom, border.left];
+  return [
+    for (var i = 0; i < sides.length; i++)
+      if (sides[i].width > 0) (label: labels[i], side: sides[i]),
+  ];
+}
+
+// ─── Per-render-box extractors ───────────────────────────────────────────────
 
 List<PropSpec> stackProps(RenderStack target) => [
       (
@@ -638,11 +373,7 @@ List<PropSpec> stackProps(RenderStack target) => [
         ),
     ];
 
-List<PropSpec> wrapProps(
-  RenderWrap target, {
-  int decimalPlaces = 1,
-}) =>
-    [
+List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
       (
         icon: Icons.swap_horiz,
         subtitle: 'direction',
@@ -674,23 +405,12 @@ List<PropSpec> wrapProps(
         ),
     ];
 
-PropSpec? _clipBehaviorProp(Clip clipBehavior) => clipBehavior == Clip.none
-    ? null
-    : (
-        icon: Icons.crop,
-        subtitle: 'clip behavior',
-        child: Text(clipBehavior.name),
-      );
-
 List<PropSpec> clipRRectProps(
   RenderClipRRect target, {
   int decimalPlaces = 1,
 }) =>
     [
-      if (formatBorderRadius(
-        target.borderRadius,
-        decimalPlaces: decimalPlaces,
-      )
+      if (formatBorderRadius(target.borderRadius, decimalPlaces: decimalPlaces)
           case final br?)
         (
           icon: Icons.rounded_corner,
@@ -705,10 +425,7 @@ List<PropSpec> clipRSuperellipseProps(
   int decimalPlaces = 1,
 }) =>
     [
-      if (formatBorderRadius(
-        target.borderRadius,
-        decimalPlaces: decimalPlaces,
-      )
+      if (formatBorderRadius(target.borderRadius, decimalPlaces: decimalPlaces)
           case final br?)
         (
           icon: Icons.rounded_corner,
@@ -718,36 +435,23 @@ List<PropSpec> clipRSuperellipseProps(
       if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
-List<PropSpec> clipRectProps(RenderClipRect target) =>
-    _genericClipProps(target.clipper?.runtimeType, target.clipBehavior);
+List<PropSpec> clipRectProps(RenderClipRect target) => [
+      ..._clipperProps(target.clipper),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+    ];
 
-List<PropSpec> clipOvalProps(RenderClipOval target) =>
-    _genericClipProps(target.clipper?.runtimeType, target.clipBehavior);
+List<PropSpec> clipOvalProps(RenderClipOval target) => [
+      ..._clipperProps(target.clipper),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+    ];
 
 List<PropSpec> clipPathProps(
   RenderClipPath target, {
   int decimalPlaces = 1,
 }) =>
     [
-      if (target.clipper case final ShapeBorderClipper clipper)
-        ...shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces)
-      else if (target.clipper != null)
-        (
-          icon: Icons.brush,
-          subtitle: 'clipper',
-          child: Text(target.clipper.runtimeType.toString()),
-        ),
+      ..._clipperProps(target.clipper, decimalPlaces: decimalPlaces),
       if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
-    ];
-
-List<PropSpec> _genericClipProps(Type? clipperType, Clip clipBehavior) => [
-      if (clipperType != null)
-        (
-          icon: Icons.brush,
-          subtitle: 'clipper',
-          child: Text(clipperType.toString()),
-        ),
-      if (_clipBehaviorProp(clipBehavior) case final c?) c,
     ];
 
 List<PropSpec> customPaintProps(RenderCustomPaint target) => [
@@ -795,10 +499,7 @@ List<PropSpec> flexProps(RenderFlex target) => [
         ),
     ];
 
-List<PropSpec> imageProps(
-  RenderImage target, {
-  int decimalPlaces = 1,
-}) {
+List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
   final provider = resolveImageProvider(target);
   final rawImage = target.image;
   return [
@@ -852,11 +553,7 @@ List<PropSpec> imageProps(
   ];
 }
 
-List<PropSpec> opacityProps(
-  RenderOpacity target, {
-  int decimalPlaces = 1,
-}) =>
-    [
+List<PropSpec> opacityProps(RenderOpacity target, {int decimalPlaces = 1}) => [
       (
         icon: Icons.opacity,
         subtitle: 'opacity',
@@ -908,14 +605,7 @@ List<PropSpec> physicalShapeProps(
         shadowColor: target.shadowColor,
         decimalPlaces: decimalPlaces,
       ),
-      if (target.clipper case final ShapeBorderClipper clipper)
-        ...shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces)
-      else
-        (
-          icon: Icons.brush,
-          subtitle: 'clipper',
-          child: Text(target.clipper.runtimeType.toString()),
-        ),
+      ..._clipperProps(target.clipper, decimalPlaces: decimalPlaces),
     ];
 
 List<PropSpec> physicalModelProps(
@@ -988,13 +678,14 @@ List<PropSpec> transformProps(
   String f(double v) => _fmt(v, decimalPlaces);
 
   return [
-    if (tx.abs() > 0.001 || ty.abs() > 0.001)
+    if (tx.abs() > _kTransformEpsilon || ty.abs() > _kTransformEpsilon)
       (
         icon: Icons.open_with,
         subtitle: 'translate',
         child: Text('(${f(tx)}, ${f(ty)})'),
       ),
-    if ((scaleX - 1).abs() > 0.001 || (scaleY - 1).abs() > 0.001)
+    if ((scaleX - 1).abs() > _kTransformEpsilon ||
+        (scaleY - 1).abs() > _kTransformEpsilon)
       (
         icon: Icons.zoom_out_map,
         subtitle: 'scale',
@@ -1002,7 +693,7 @@ List<PropSpec> transformProps(
           scaleX == scaleY ? f(scaleX) : '${f(scaleX)}, ${f(scaleY)}',
         ),
       ),
-    if (rotationDeg.abs() > 0.01)
+    if (rotationDeg.abs() > _kRotationEpsilon)
       (
         icon: Icons.rotate_right,
         subtitle: 'rotation°',
@@ -1093,63 +784,167 @@ List<PropSpec> editableProps(RenderEditable target) => [
         ),
     ];
 
-/// Type-specific props for any [RenderBox]. Returns an empty list when the
-/// type has no known extractor.
-List<PropSpec> typeProps(
+// ─── Registry-driven dispatcher ──────────────────────────────────────────────
+//
+// Single source of truth for both [typeProps] (build the chip list for a box)
+// and [hasTypeProps] (is the box worth surfacing as a same-size wrapper).
+// To support a new RenderBox type, add one entry below — both functions pick
+// it up automatically.
+
+typedef _PropsBuilder = List<PropSpec> Function(
   RenderBox target, {
-  int decimalPlaces = 1,
-}) =>
-    [
-      if (target is RenderStack) ...stackProps(target),
-      if (target is RenderFlex) ...flexProps(target),
-      if (target is RenderWrap)
-        ...wrapProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderImage)
-        ...imageProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderOpacity)
-        ...opacityProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderAnimatedOpacity)
-        ...animatedOpacityProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderPhysicalShape)
-        ...physicalShapeProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderPhysicalModel)
-        ...physicalModelProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderClipRRect)
-        ...clipRRectProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderClipRSuperellipse)
-        ...clipRSuperellipseProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderClipRect) ...clipRectProps(target),
-      if (target is RenderClipOval) ...clipOvalProps(target),
-      if (target is RenderClipPath)
-        ...clipPathProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderCustomPaint) ...customPaintProps(target),
-      if (target is RenderFittedBox) ...fittedBoxProps(target),
-      if (target is RenderAspectRatio)
-        ...aspectRatioProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderTransform)
-        ...transformProps(target, decimalPlaces: decimalPlaces),
-      if (target is RenderBackdropFilter) ...backdropFilterProps(target),
-      if (target is RenderEditable) ...editableProps(target),
+  required int decimalPlaces,
+});
+
+/// `match`: `is`-test for the box. `build`: chip list. `wrapper`: whether
+/// this box may legitimately appear as a same-size proxy in the parent
+/// chain (used by `hasTypeProps`). Layout-shaping types (Stack, Flex, Wrap,
+/// Image, Editable, Paragraph) are not wrappers — they own their geometry.
+typedef _PropsRule = ({
+  bool Function(RenderBox) match,
+  _PropsBuilder build,
+  bool wrapper,
+});
+
+final List<_PropsRule> _propsRules = [
+  (
+    match: (b) => b is RenderStack,
+    build: (b, {required decimalPlaces}) => stackProps(b as RenderStack),
+    wrapper: false,
+  ),
+  (
+    match: (b) => b is RenderFlex,
+    build: (b, {required decimalPlaces}) => flexProps(b as RenderFlex),
+    wrapper: false,
+  ),
+  (
+    match: (b) => b is RenderWrap,
+    build: (b, {required decimalPlaces}) =>
+        wrapProps(b as RenderWrap, decimalPlaces: decimalPlaces),
+    wrapper: false,
+  ),
+  (
+    match: (b) => b is RenderImage,
+    build: (b, {required decimalPlaces}) =>
+        imageProps(b as RenderImage, decimalPlaces: decimalPlaces),
+    wrapper: false,
+  ),
+  (
+    match: (b) => b is RenderEditable,
+    build: (b, {required decimalPlaces}) => editableProps(b as RenderEditable),
+    wrapper: false,
+  ),
+  (
+    match: (b) => b is RenderOpacity,
+    build: (b, {required decimalPlaces}) =>
+        opacityProps(b as RenderOpacity, decimalPlaces: decimalPlaces),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderAnimatedOpacity,
+    build: (b, {required decimalPlaces}) => animatedOpacityProps(
+          b as RenderAnimatedOpacity,
+          decimalPlaces: decimalPlaces,
+        ),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderPhysicalShape,
+    build: (b, {required decimalPlaces}) => physicalShapeProps(
+          b as RenderPhysicalShape,
+          decimalPlaces: decimalPlaces,
+        ),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderPhysicalModel,
+    build: (b, {required decimalPlaces}) => physicalModelProps(
+          b as RenderPhysicalModel,
+          decimalPlaces: decimalPlaces,
+        ),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderClipRRect,
+    build: (b, {required decimalPlaces}) =>
+        clipRRectProps(b as RenderClipRRect, decimalPlaces: decimalPlaces),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderClipRSuperellipse,
+    build: (b, {required decimalPlaces}) => clipRSuperellipseProps(
+          b as RenderClipRSuperellipse,
+          decimalPlaces: decimalPlaces,
+        ),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderClipRect,
+    build: (b, {required decimalPlaces}) => clipRectProps(b as RenderClipRect),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderClipOval,
+    build: (b, {required decimalPlaces}) => clipOvalProps(b as RenderClipOval),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderClipPath,
+    build: (b, {required decimalPlaces}) =>
+        clipPathProps(b as RenderClipPath, decimalPlaces: decimalPlaces),
+    wrapper: true,
+  ),
+  (
+    // Skip in the wrapper chain when neither painter is set — the section
+    // would render as an empty header. typeProps still dispatches for the
+    // (rare) case where the wrapper check is bypassed.
+    match: (b) =>
+        b is RenderCustomPaint &&
+        (b.painter != null || b.foregroundPainter != null),
+    build: (b, {required decimalPlaces}) =>
+        customPaintProps(b as RenderCustomPaint),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderFittedBox,
+    build: (b, {required decimalPlaces}) =>
+        fittedBoxProps(b as RenderFittedBox),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderAspectRatio,
+    build: (b, {required decimalPlaces}) =>
+        aspectRatioProps(b as RenderAspectRatio, decimalPlaces: decimalPlaces),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderTransform,
+    build: (b, {required decimalPlaces}) =>
+        transformProps(b as RenderTransform, decimalPlaces: decimalPlaces),
+    wrapper: true,
+  ),
+  (
+    match: (b) => b is RenderBackdropFilter,
+    build: (b, {required decimalPlaces}) =>
+        backdropFilterProps(b as RenderBackdropFilter),
+    wrapper: true,
+  ),
+];
+
+/// Type-specific props for any [RenderBox]. Returns an empty list when no
+/// rule matches.
+///
+/// [RenderParagraph] is intentionally absent — `box_info_panel_widget.dart`
+/// renders paragraphs through dedicated `text` / `typography` sections via
+/// [paragraphProps] and [spanProps], so dispatching them through the generic
+/// `type` section would duplicate output.
+List<PropSpec> typeProps(RenderBox target, {int decimalPlaces = 1}) => [
+      for (final rule in _propsRules)
+        if (rule.match(target))
+          ...rule.build(target, decimalPlaces: decimalPlaces),
     ];
 
-/// Whether [typeProps] produces something for a type. Used to filter
-/// same-size ancestors in the parent chain when surfacing wrapper sections.
-///
-/// Narrower than [typeProps]'s full dispatcher: layout-shaping types
-/// (Stack, Flex, Wrap, Image, Editable, Paragraph) never act as
-/// same-size proxy wrappers around an inner target, so they are excluded.
+/// Whether [box] is worth surfacing as a same-size wrapper in the parent
+/// chain. Driven by the same registry as [typeProps].
 bool hasTypeProps(RenderBox box) =>
-    box is RenderTransform ||
-    box is RenderBackdropFilter ||
-    box is RenderClipRect ||
-    box is RenderClipRRect ||
-    box is RenderClipRSuperellipse ||
-    box is RenderClipOval ||
-    box is RenderClipPath ||
-    box is RenderFittedBox ||
-    box is RenderAspectRatio ||
-    box is RenderOpacity ||
-    box is RenderAnimatedOpacity ||
-    box is RenderPhysicalShape ||
-    box is RenderPhysicalModel ||
-    box is RenderCustomPaint;
+    _propsRules.any((r) => r.wrapper && r.match(box));
