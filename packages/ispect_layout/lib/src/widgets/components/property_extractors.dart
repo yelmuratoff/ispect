@@ -115,20 +115,63 @@ String describeTextScaler(TextScaler scaler) {
   return '${factor.toStringAsFixed(2)}×';
 }
 
-/// [ImageFilter] subclasses (`_GaussianBlurImageFilter`, `_MatrixImageFilter`,
-/// …) are private, so when `toString()` is stripped we fall back to matching
-/// substrings of the runtime type name.
+/// [ImageFilter] subclasses are library-private, so we identify the kind by
+/// comparing `runtimeType` against factory-constructed sentinels (no hardcoded
+/// names) and read parameter fields via `dynamic` (the fields themselves —
+/// `sigmaX`, `radiusX`, `innerFilter`, … — are public on the private classes).
 String describeImageFilter(ImageFilter filter) {
   final raw = filter.toString();
   if (!raw.startsWith("Instance of '")) return raw;
-  final type = filter.runtimeType.toString();
-  if (type.contains('Blur')) return 'ImageFilter.blur';
-  if (type.contains('Dilate')) return 'ImageFilter.dilate';
-  if (type.contains('Erode')) return 'ImageFilter.erode';
-  if (type.contains('Matrix')) return 'ImageFilter.matrix';
-  if (type.contains('Compose')) return 'ImageFilter.compose';
-  if (type.contains('Shader')) return 'ImageFilter.shader';
-  return type;
+  final kind = _ImageFilterKinds.lookup(filter.runtimeType);
+  if (kind == null) return 'ImageFilter';
+  try {
+    final dyn = filter as dynamic;
+    String d(Object? v) => (v as double).toStringAsFixed(1);
+    return switch (kind) {
+      _ImageFilterKinds.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
+      _ImageFilterKinds.dilate =>
+        'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
+      _ImageFilterKinds.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
+      _ImageFilterKinds.matrix => 'matrix',
+      _ImageFilterKinds.compose =>
+        'compose(${describeImageFilter(dyn.innerFilter as ImageFilter)} '
+            '→ ${describeImageFilter(dyn.outerFilter as ImageFilter)})',
+      _ => kind,
+    };
+  } catch (_) {
+    return 'ImageFilter.$kind';
+  }
+}
+
+/// Lazy `Type → kind` registry. Built by constructing one filter per public
+/// factory and recording its `runtimeType`. Survives renames of the private
+/// subclasses and never references their names.
+abstract final class _ImageFilterKinds {
+  static const blur = 'blur';
+  static const dilate = 'dilate';
+  static const erode = 'erode';
+  static const matrix = 'matrix';
+  static const compose = 'compose';
+
+  static final Map<Type, String> _byType = () {
+    final identity4x4 = Float64List.fromList(<double>[
+      1, 0, 0, 0, //
+      0, 1, 0, 0, //
+      0, 0, 1, 0, //
+      0, 0, 0, 1, //
+    ]);
+    final blurFilter = ImageFilter.blur();
+    return {
+      blurFilter.runtimeType: blur,
+      ImageFilter.dilate().runtimeType: dilate,
+      ImageFilter.erode().runtimeType: erode,
+      ImageFilter.matrix(identity4x4).runtimeType: matrix,
+      ImageFilter.compose(outer: blurFilter, inner: blurFilter).runtimeType:
+          compose,
+    };
+  }();
+
+  static String? lookup(Type t) => _byType[t];
 }
 
 BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
@@ -177,11 +220,11 @@ String describeImageProvider(ImageProvider provider) {
   return provider.runtimeType.toString();
 }
 
-/// [ColorFilter] exposes no public accessors, so in debug we parse
-/// `toString()`, and in release we peek at the private `_type` / `_blendMode`
-/// / `_color` fields via dynamic dispatch. The `_type` constants come from
-/// dart:ui (`_kTypeMode = 1`, `_kTypeMatrix = 2`,
-/// `_kTypeLinearToSrgbGamma = 3`, `_kTypeSrgbToLinearGamma = 4`).
+/// [ColorFilter] is a single class discriminated by private `_type` /
+/// `_color` / `_blendMode` / `_matrix` fields. In debug we parse the official
+/// `toString()`. In release we discriminate via `==` against parameter-less
+/// gamma sentinels and probe field nullability for mode / matrix — no magic
+/// numbers, no string heuristics.
 String describeColorFilter(ColorFilter f) {
   final s = f.toString();
   if (!s.startsWith("Instance of '")) {
@@ -191,35 +234,28 @@ String describeColorFilter(ColorFilter f) {
     }
     return s.replaceFirst('ColorFilter.', '');
   }
-  return _describeColorFilterViaPrivateFields(f);
+  if (f == _linearToSrgbGamma) return 'linearToSrgbGamma';
+  if (f == _srgbToLinearGamma) return 'srgbToLinearGamma';
+  return _describeColorFilterModeOrMatrix(f);
 }
 
-String _describeColorFilterViaPrivateFields(ColorFilter f) {
+const _linearToSrgbGamma = ColorFilter.linearToSrgbGamma();
+const _srgbToLinearGamma = ColorFilter.srgbToLinearGamma();
+
+String _describeColorFilterModeOrMatrix(ColorFilter f) {
   try {
     final dyn = f as dynamic;
-    final type = dyn._type as int;
-    switch (type) {
-      case 1: // mode
-        final blend = dyn._blendMode as BlendMode?;
-        final color = dyn._color as Color?;
-        if (blend != null && color != null) {
-          final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
-          return 'mode · ${blend.name} · #$hex';
-        }
-        if (blend != null) return 'mode · ${blend.name}';
-        return 'mode';
-      case 2:
-        return 'matrix';
-      case 3:
-        return 'linearToSrgbGamma';
-      case 4:
-        return 'srgbToLinearGamma';
-      default:
-        return 'ColorFilter';
+    final color = dyn._color as Color?;
+    final blend = dyn._blendMode as BlendMode?;
+    if (color != null && blend != null) {
+      final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
+      return 'mode · ${blend.name} · #$hex';
     }
+    if (dyn._matrix != null) return 'matrix';
   } catch (_) {
-    return 'ColorFilter';
+    // Private field renamed upstream — fall through.
   }
+  return 'ColorFilter';
 }
 
 /// Flattens all [TextStyle]s found across an [InlineSpan] tree in traversal

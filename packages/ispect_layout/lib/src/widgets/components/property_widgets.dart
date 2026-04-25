@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
+import 'package:ispect_layout/src/widgets/components/property_extractors.dart'
+    show describeAlignment;
 
 /// Declarative spec for a single info chip; rendered by [PropSection].
 typedef PropSpec = ({IconData icon, String subtitle, Widget child});
@@ -255,12 +257,12 @@ class GradientView extends StatelessWidget {
     final stops = g.stops;
     final detail = switch (g) {
       LinearGradient(:final begin, :final end, :final tileMode) => [
-          'begin:$begin',
-          'end:$end',
+          'begin:${describeAlignment(begin)}',
+          'end:${describeAlignment(end)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
       RadialGradient(:final center, :final radius, :final tileMode) => [
-          'center:$center',
+          'center:${describeAlignment(center)}',
           'r:${formatInspectorDouble(radius, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
@@ -271,7 +273,7 @@ class GradientView extends StatelessWidget {
         :final tileMode,
       ) =>
         [
-          'center:$center',
+          'center:${describeAlignment(center)}',
           'start:${formatInspectorDouble(startAngle, decimalPlaces: decimalPlaces)}',
           'end:${formatInspectorDouble(endAngle, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
