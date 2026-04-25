@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,86 @@ String formatRadius(
 
 String describeShapeBorder(ShapeBorder shape) => shape.runtimeType.toString();
 
+// ─── Release-safe value formatters ───────────────────────────────────────────
+//
+// Flutter's AOT release build strips `toString()` overrides on several
+// painting / dart:ui types (FontWeight, TextDecoration, AlignmentGeometry,
+// SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
+// `Instance of '<TypeName>'`. The helpers below read public fields (or
+// safely peek at private discriminators) so labels stay readable.
+
+String describeAlignment(AlignmentGeometry alignment) {
+  String fmt(double v) => v.toStringAsFixed(1);
+  if (alignment is Alignment) {
+    return switch ((alignment.x, alignment.y)) {
+      (-1.0, -1.0) => 'topLeft',
+      (0.0, -1.0) => 'topCenter',
+      (1.0, -1.0) => 'topRight',
+      (-1.0, 0.0) => 'centerLeft',
+      (0.0, 0.0) => 'center',
+      (1.0, 0.0) => 'centerRight',
+      (-1.0, 1.0) => 'bottomLeft',
+      (0.0, 1.0) => 'bottomCenter',
+      (1.0, 1.0) => 'bottomRight',
+      _ => '(${fmt(alignment.x)}, ${fmt(alignment.y)})',
+    };
+  }
+  if (alignment is AlignmentDirectional) {
+    return switch ((alignment.start, alignment.y)) {
+      (-1.0, -1.0) => 'topStart',
+      (0.0, -1.0) => 'topCenter',
+      (1.0, -1.0) => 'topEnd',
+      (-1.0, 0.0) => 'centerStart',
+      (0.0, 0.0) => 'center',
+      (1.0, 0.0) => 'centerEnd',
+      (-1.0, 1.0) => 'bottomStart',
+      (0.0, 1.0) => 'bottomCenter',
+      (1.0, 1.0) => 'bottomEnd',
+      _ => 'directional(${fmt(alignment.start)}, ${fmt(alignment.y)})',
+    };
+  }
+  return alignment.runtimeType.toString();
+}
+
+String describeFontWeight(FontWeight weight) => 'w${weight.value}';
+
+String describeFontStyle(FontStyle style) => style.name;
+
+String describeTextDecoration(TextDecoration decoration) {
+  final parts = <String>[
+    if (decoration.contains(TextDecoration.underline)) 'underline',
+    if (decoration.contains(TextDecoration.overline)) 'overline',
+    if (decoration.contains(TextDecoration.lineThrough)) 'lineThrough',
+  ];
+  return parts.isEmpty ? 'none' : parts.join(' + ');
+}
+
+/// `textScaleFactor` is deprecated but is the only public field shared by
+/// all [TextScaler] subclasses (linear, system, clamped).
+String describeTextScaler(TextScaler scaler) {
+  if (identical(scaler, TextScaler.noScaling)) return 'no scaling';
+  // ignore: deprecated_member_use
+  final factor = scaler.textScaleFactor;
+  if (factor == 1.0) return 'no scaling';
+  return '${factor.toStringAsFixed(2)}×';
+}
+
+/// [ImageFilter] subclasses (`_GaussianBlurImageFilter`, `_MatrixImageFilter`,
+/// …) are private, so when `toString()` is stripped we fall back to matching
+/// substrings of the runtime type name.
+String describeImageFilter(ImageFilter filter) {
+  final raw = filter.toString();
+  if (!raw.startsWith("Instance of '")) return raw;
+  final type = filter.runtimeType.toString();
+  if (type.contains('Blur')) return 'ImageFilter.blur';
+  if (type.contains('Dilate')) return 'ImageFilter.dilate';
+  if (type.contains('Erode')) return 'ImageFilter.erode';
+  if (type.contains('Matrix')) return 'ImageFilter.matrix';
+  if (type.contains('Compose')) return 'ImageFilter.compose';
+  if (type.contains('Shader')) return 'ImageFilter.shader';
+  return type;
+}
+
 BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
   if (shape is RoundedRectangleBorder) return shape.borderRadius;
   if (shape is BeveledRectangleBorder) return shape.borderRadius;
@@ -96,20 +177,49 @@ String describeImageProvider(ImageProvider provider) {
   return provider.runtimeType.toString();
 }
 
-/// Short, human-readable description of a [ColorFilter].
-///
-/// [ColorFilter] exposes no accessors for its mode/color, so we parse
-/// `toString()`. Brittle by design — the default dump
-/// (`ColorFilter.mode(Color(alpha: ..., red: ..., ...), BlendMode.xxx)`)
-/// is far too wide for a chip, and there is no alternative in the public
-/// Flutter API as of 3.35. If upstream ever exposes fields, replace this.
+/// [ColorFilter] exposes no public accessors, so in debug we parse
+/// `toString()`, and in release we peek at the private `_type` / `_blendMode`
+/// / `_color` fields via dynamic dispatch. The `_type` constants come from
+/// dart:ui (`_kTypeMode = 1`, `_kTypeMatrix = 2`,
+/// `_kTypeLinearToSrgbGamma = 3`, `_kTypeSrgbToLinearGamma = 4`).
 String describeColorFilter(ColorFilter f) {
   final s = f.toString();
-  final blend = RegExp(r'BlendMode\.(\w+)').firstMatch(s);
-  if (s.startsWith('ColorFilter.mode') && blend != null) {
-    return 'mode · ${blend.group(1)}';
+  if (!s.startsWith("Instance of '")) {
+    final blend = RegExp(r'BlendMode\.(\w+)').firstMatch(s);
+    if (s.startsWith('ColorFilter.mode') && blend != null) {
+      return 'mode · ${blend.group(1)}';
+    }
+    return s.replaceFirst('ColorFilter.', '');
   }
-  return s.replaceFirst('ColorFilter.', '');
+  return _describeColorFilterViaPrivateFields(f);
+}
+
+String _describeColorFilterViaPrivateFields(ColorFilter f) {
+  try {
+    final dyn = f as dynamic;
+    final type = dyn._type as int;
+    switch (type) {
+      case 1: // mode
+        final blend = dyn._blendMode as BlendMode?;
+        final color = dyn._color as Color?;
+        if (blend != null && color != null) {
+          final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
+          return 'mode · ${blend.name} · #$hex';
+        }
+        if (blend != null) return 'mode · ${blend.name}';
+        return 'mode';
+      case 2:
+        return 'matrix';
+      case 3:
+        return 'linearToSrgbGamma';
+      case 4:
+        return 'srgbToLinearGamma';
+      default:
+        return 'ColorFilter';
+    }
+  } catch (_) {
+    return 'ColorFilter';
+  }
 }
 
 /// Flattens all [TextStyle]s found across an [InlineSpan] tree in traversal
@@ -213,7 +323,7 @@ List<PropSpec> paragraphProps(
         (
           icon: Icons.text_fields,
           subtitle: 'text scale',
-          child: Text(target.textScaler.toString()),
+          child: Text(describeTextScaler(target.textScaler)),
         ),
     ];
 
@@ -238,13 +348,13 @@ List<PropSpec> spanProps(
         (
           icon: Icons.line_weight,
           subtitle: 'weight',
-          child: Text(style.fontWeight.toString()),
+          child: Text(describeFontWeight(style.fontWeight!)),
         ),
       if (style.fontStyle != null)
         (
           icon: Icons.format_italic,
           subtitle: 'style',
-          child: Text(style.fontStyle.toString()),
+          child: Text(describeFontStyle(style.fontStyle!)),
         ),
       if (style.color != null)
         (
@@ -274,7 +384,7 @@ List<PropSpec> spanProps(
         (
           icon: Icons.text_format,
           subtitle: 'decoration',
-          child: Text(style.decoration.toString()),
+          child: Text(describeTextDecoration(style.decoration!)),
         ),
       if (style.backgroundColor != null)
         (
@@ -343,7 +453,7 @@ List<PropSpec> _decorationImageProps(DecorationImage img) => [
         (
           icon: Icons.crop_free,
           subtitle: 'bg alignment',
-          child: EllipsizedText(img.alignment.toString()),
+          child: EllipsizedText(describeAlignment(img.alignment)),
         ),
       if (img.repeat != ImageRepeat.noRepeat)
         (
@@ -418,7 +528,7 @@ List<PropSpec> stackProps(RenderStack target) => [
       (
         icon: Icons.align_vertical_bottom,
         subtitle: 'alignment',
-        child: EllipsizedText(target.alignment.toString()),
+        child: EllipsizedText(describeAlignment(target.alignment)),
       ),
       if (target.fit != StackFit.loose)
         (
@@ -613,7 +723,7 @@ List<PropSpec> imageProps(
     (
       icon: Icons.crop_free,
       subtitle: 'alignment',
-      child: EllipsizedText(target.alignment.toString()),
+      child: EllipsizedText(describeAlignment(target.alignment)),
     ),
     if (target.width != null)
       (
@@ -746,7 +856,7 @@ List<PropSpec> fittedBoxProps(RenderFittedBox target) => [
         (
           icon: Icons.crop_free,
           subtitle: 'alignment',
-          child: EllipsizedText(target.alignment.toString()),
+          child: EllipsizedText(describeAlignment(target.alignment)),
         ),
     ];
 
@@ -808,7 +918,7 @@ List<PropSpec> transformProps(
       (
         icon: Icons.crop_free,
         subtitle: 'alignment',
-        child: EllipsizedText(target.alignment.toString()),
+        child: EllipsizedText(describeAlignment(target.alignment!)),
       ),
     if (!target.transformHitTests)
       (
@@ -823,7 +933,7 @@ List<PropSpec> backdropFilterProps(RenderBackdropFilter target) => [
       (
         icon: Icons.blur_on,
         subtitle: 'filter',
-        child: EllipsizedText(target.filter.toString()),
+        child: EllipsizedText(describeImageFilter(target.filter)),
       ),
       if (target.blendMode != BlendMode.srcOver)
         (

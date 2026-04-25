@@ -230,12 +230,9 @@ class BoxInfoPanelWidget extends StatelessWidget {
   }
 }
 
-/// Release-safe replacement for [describeIdentity].
-///
-/// Why: Flutter's `describeIdentity` uses `objectRuntimeType`, which returns
-/// the literal string `<optimized out>` in profile/release builds, producing
-/// labels like `<optimized out>#a1b2c`. Reading `runtimeType` directly works
-/// in release mode (without `--obfuscate`) and yields the real class name.
+/// Flutter's [describeIdentity] returns `<optimized out>#hash` in release
+/// because `objectRuntimeType` falls back to a hardcoded literal there.
+/// Reading `runtimeType` directly survives release (without `--obfuscate`).
 String _describeIdentity(Object? object) =>
     '${object.runtimeType}#${shortHash(object)}';
 
