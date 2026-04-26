@@ -49,19 +49,23 @@ class ZoomPainter extends CustomPainter {
       canvas.drawRect(Offset.zero & size, _backgroundPaint);
     }
 
-    final halfSize = overlaySize / 2.0;
+    // Centre on the actual canvas, not the requested overlaySize — the image
+    // area can be smaller than overlaySize when the parent reserves padding
+    // for ring decorations (e.g. ZoomableColorPickerOverlay).
+    final halfWidth = size.width / 2.0;
+    final halfHeight = size.height / 2.0;
     final scale = (1 / pixelRatio) * zoomScale;
 
     canvas
       ..save()
       ..clipRect(Offset.zero & size)
-      ..translate(halfSize, halfSize)
+      ..translate(halfWidth, halfHeight)
       ..scale(scale)
       ..drawImage(image, -imageOffset, _imagePaint)
       ..restore();
 
     if (showPixelGrid && scale >= pixelGridThreshold) {
-      _drawPixelGrid(canvas, size, scale, halfSize);
+      _drawPixelGrid(canvas, size, scale, halfWidth, halfHeight);
     }
   }
 
@@ -69,7 +73,8 @@ class ZoomPainter extends CustomPainter {
     Canvas canvas,
     Size size,
     double scale,
-    double halfSize,
+    double halfWidth,
+    double halfHeight,
   ) {
     // Each source pixel maps to `scale` logical px on screen. We draw grid
     // lines aligned with pixel boundaries of the source image, in the overlay
@@ -88,21 +93,22 @@ class ZoomPainter extends CustomPainter {
     final firstY = (centerImageY.floorToDouble() - centerImageY) * scale;
 
     canvas.save();
-    canvas.translate(halfSize, halfSize);
-    canvas
-        .clipRect(Rect.fromLTWH(-halfSize, -halfSize, size.width, size.height));
+    canvas.translate(halfWidth, halfHeight);
+    canvas.clipRect(
+      Rect.fromLTWH(-halfWidth, -halfHeight, size.width, size.height),
+    );
 
-    for (var x = firstX; x <= halfSize; x += scale) {
-      canvas.drawLine(Offset(x, -halfSize), Offset(x, halfSize), paint);
+    for (var x = firstX; x <= halfWidth; x += scale) {
+      canvas.drawLine(Offset(x, -halfHeight), Offset(x, halfHeight), paint);
     }
-    for (var x = firstX - scale; x >= -halfSize; x -= scale) {
-      canvas.drawLine(Offset(x, -halfSize), Offset(x, halfSize), paint);
+    for (var x = firstX - scale; x >= -halfWidth; x -= scale) {
+      canvas.drawLine(Offset(x, -halfHeight), Offset(x, halfHeight), paint);
     }
-    for (var y = firstY; y <= halfSize; y += scale) {
-      canvas.drawLine(Offset(-halfSize, y), Offset(halfSize, y), paint);
+    for (var y = firstY; y <= halfHeight; y += scale) {
+      canvas.drawLine(Offset(-halfWidth, y), Offset(halfWidth, y), paint);
     }
-    for (var y = firstY - scale; y >= -halfSize; y -= scale) {
-      canvas.drawLine(Offset(-halfSize, y), Offset(halfSize, y), paint);
+    for (var y = firstY - scale; y >= -halfHeight; y -= scale) {
+      canvas.drawLine(Offset(-halfWidth, y), Offset(halfWidth, y), paint);
     }
 
     canvas.restore();

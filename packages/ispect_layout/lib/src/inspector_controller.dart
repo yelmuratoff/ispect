@@ -358,6 +358,7 @@ class InspectorController {
           showColorPickerResultSnackbar(
             context: context,
             color: selectedColorStateNotifier.value!,
+            showColorSchemeMatch: isColorSchemeHintEnabled,
           );
         }
         _cleanupImage();

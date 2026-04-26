@@ -220,13 +220,23 @@ class InspectorState extends State<Inspector> {
               return const SizedBox.shrink();
             }
 
+            final pickerLeft =
+                offset.dx.clamp(0.0, screenSize.width - overlaySize);
+            final pickerTop = (offset.dy - overlaySize - _overlayOffsetY)
+                .clamp(0.0, screenSize.height - overlaySize);
+
+            // HUD-above needs at least ~52 px of clear space between picker
+            // top and screen top (chip height + margin). When the cursor
+            // hugs the top of the screen, picker.top clamps near 0 and the
+            // chip would be cropped — flip it to the right of the disc.
+            const hudReservedAbove = 52.0;
+            final hudAbove = pickerTop > hudReservedAbove;
+
             return Positioned(
-              left: offset.dx.clamp(0, screenSize.width - overlaySize),
-              top: (offset.dy - overlaySize - _overlayOffsetY)
-                  .clamp(0, screenSize.height - overlaySize),
+              left: pickerLeft,
+              top: pickerTop,
               child: ZoomableColorPickerOverlay(
                 color: color,
-                isColorSchemeHintEnabled: _controller.isColorSchemeHintEnabled,
                 image: _controller.image!,
                 imageOffset:
                     _controller.selectedColorImageOffsetNotifier.value ??
@@ -234,6 +244,7 @@ class InspectorState extends State<Inspector> {
                 overlaySize: overlaySize,
                 zoomScale: zoomScale,
                 pixelRatio: MediaQuery.devicePixelRatioOf(context),
+                hudAbove: hudAbove,
               ),
             );
           },

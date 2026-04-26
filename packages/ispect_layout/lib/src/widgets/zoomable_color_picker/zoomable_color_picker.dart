@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:ispect_layout/src/widgets/color_picker/color_scheme_inspector.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_painter.dart';
 
@@ -71,7 +70,7 @@ class ZoomableColorPickerStyle {
 /// - [_PickerCanvas] — owns the ZoomPainter (repaints on offset/scale/image).
 /// - [_PickerCrosshair] — 1-px crosshair indicating the sampled pixel.
 /// - [_PickerRingPainter] — three concentric rings + drop shadow in one paint.
-/// - [_PickerHud] — hex chip, ColorScheme tokens, WCAG contrast.
+/// - [_PickerHud] — hex + WCAG contrast chip.
 class ZoomableColorPickerOverlay extends StatelessWidget {
   const ZoomableColorPickerOverlay({
     super.key,
@@ -81,7 +80,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
     required this.zoomScale,
     required this.pixelRatio,
     required this.color,
-    this.isColorSchemeHintEnabled = false,
+    this.hudAbove = true,
     this.style = ZoomableColorPickerStyle.defaults,
   });
 
@@ -91,7 +90,12 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
   final double zoomScale;
   final double pixelRatio;
   final Color color;
-  final bool isColorSchemeHintEnabled;
+
+  /// Whether the HUD chip is rendered above the picker disc (default) or to
+  /// the right of it. The caller is expected to flip this to `false` when
+  /// the picker hugs the top of the screen and an above-disc HUD would be
+  /// clipped — in that case the chip slides to the right side of the disc.
+  final bool hudAbove;
   final ZoomableColorPickerStyle style;
 
   @override
@@ -99,64 +103,82 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final ringBorderColor = colorScheme.inverseSurface.withValues(alpha: 0.2);
 
-    final tokens = isColorSchemeHintEnabled
-        ? ColorSchemeInspector.matchingTokens(color, colorScheme)
-        : const <String>[];
-
+    // Layout footprint stays exactly overlaySize × overlaySize so the disc
+    // never shifts when the HUD reflows. The HUD is a Positioned overlay
+    // anchored at the disc's horizontal centre via a -50% self-translation,
+    // and is free to overflow below the Stack thanks to Clip.none.
     return Material(
       color: Colors.transparent,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox.square(
-            dimension: overlaySize,
-            child: _PickerCircle(
-              color: color,
-              ringBorderColor: ringBorderColor,
-              style: style,
-              child: ClipOval(
-                child: RepaintBoundary(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: _PickerCanvas(
-                          image: image,
-                          imageOffset: imageOffset,
-                          overlaySize: overlaySize,
-                          zoomScale: zoomScale,
-                          pixelRatio: pixelRatio,
-                          backgroundColor: style.backgroundColor,
+      child: SizedBox.square(
+        dimension: overlaySize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: _PickerCircle(
+                color: color,
+                ringBorderColor: ringBorderColor,
+                style: style,
+                child: ClipOval(
+                  child: RepaintBoundary(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: _PickerCanvas(
+                            image: image,
+                            imageOffset: imageOffset,
+                            overlaySize: overlaySize,
+                            zoomScale: zoomScale,
+                            pixelRatio: pixelRatio,
+                            backgroundColor: style.backgroundColor,
+                          ),
                         ),
-                      ),
-                      Positioned.fill(
-                        child: _PickerCrosshair(
-                          color: color,
-                          style: style,
+                        Positioned.fill(
+                          child: _PickerCrosshair(style: style),
                         ),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: ZoomLevelIndicator(zoomScale: zoomScale),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: ZoomLevelIndicator(zoomScale: zoomScale),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: _PickerHud(
-              color: color,
-              surface: colorScheme.surface,
-              tokens: tokens,
-              width: overlaySize,
-            ),
-          ),
-        ],
+            // HUD: by default anchored ABOVE the disc (cursor lives below
+            // the picker, putting the chip below would sit under the finger).
+            // When [hudAbove] is false — caller signals there's no room
+            // above — the chip slides to the right of the disc instead.
+            if (hudAbove)
+              Positioned(
+                left: overlaySize / 2,
+                bottom: overlaySize + 16,
+                child: FractionalTranslation(
+                  translation: const Offset(-0.5, 0),
+                  child: _PickerHud(
+                    color: color,
+                    surface: colorScheme.surface,
+                  ),
+                ),
+              )
+            else
+              Positioned(
+                left: overlaySize + 12,
+                top: overlaySize / 2,
+                child: FractionalTranslation(
+                  translation: const Offset(0, -0.5),
+                  child: _PickerHud(
+                    color: color,
+                    surface: colorScheme.surface,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -315,16 +337,14 @@ class _PickerCanvas extends StatelessWidget {
 /// Crosshair indicator with a transparent gap at the centre, so the user can
 /// see the actual sampled pixel through the cross.
 class _PickerCrosshair extends StatelessWidget {
-  const _PickerCrosshair({required this.color, required this.style});
+  const _PickerCrosshair({required this.style});
 
-  final Color color;
   final ZoomableColorPickerStyle style;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _CrosshairPainter(
-        contrastColor: getTextColorOnBackground(color).withValues(alpha: 0.7),
         thickness: style.crosshairThickness,
         length: style.crosshairLength,
         gap: style.crosshairGap,
@@ -333,57 +353,90 @@ class _PickerCrosshair extends StatelessWidget {
   }
 }
 
+/// Two-pass crosshair: a thicker semi-transparent dark outline and a thinner
+/// solid white inner line for readable contrast on any background. A thin
+/// 1-px white border (no fill, no shadow) marks the centre pixel — strictly
+/// a hairline, not a chip.
 class _CrosshairPainter extends CustomPainter {
   _CrosshairPainter({
-    required this.contrastColor,
     required this.thickness,
     required this.length,
     required this.gap,
   });
 
-  final Color contrastColor;
   final double thickness;
   final double length;
   final double gap;
+
+  static const double _boxSize = 6.0;
+  static const Radius _boxRadius = Radius.circular(1.0);
+
+  static final _outlinePaint = Paint()
+    ..color = const Color(0xCC000000)
+    ..isAntiAlias = false
+    ..style = PaintingStyle.stroke;
+  static final _innerPaint = Paint()
+    ..color = const Color(0xFFFFFFFF)
+    ..isAntiAlias = false
+    ..style = PaintingStyle.stroke;
 
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final paint = Paint()
-      ..color = contrastColor
-      ..strokeWidth = thickness
-      ..isAntiAlias = false;
 
-    canvas.drawLine(Offset(cx - length, cy), Offset(cx - gap, cy), paint);
-    canvas.drawLine(Offset(cx + gap, cy), Offset(cx + length, cy), paint);
-    canvas.drawLine(Offset(cx, cy - length), Offset(cx, cy - gap), paint);
-    canvas.drawLine(Offset(cx, cy + gap), Offset(cx, cy + length), paint);
+    void drawArms(Paint paint) {
+      canvas
+        ..drawLine(Offset(cx - length, cy), Offset(cx - gap, cy), paint)
+        ..drawLine(Offset(cx + gap, cy), Offset(cx + length, cy), paint)
+        ..drawLine(Offset(cx, cy - length), Offset(cx, cy - gap), paint)
+        ..drawLine(Offset(cx, cy + gap), Offset(cx, cy + length), paint);
+    }
+
+    _outlinePaint.strokeWidth = thickness + 2.0;
+    drawArms(_outlinePaint);
+
+    _innerPaint.strokeWidth = thickness;
+    drawArms(_innerPaint);
+
+    // Pixel marker: a single 1-px hairline outline, no fill, no inner pass.
+    // The interior shows the zoomed pixel through — that's what tells the
+    // user which pixel they're sampling. Dark stroke so it stays a visible
+    // outline (not a "container") even when the underlying pixel is white.
+    final boxRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(cx, cy),
+        width: _boxSize,
+        height: _boxSize,
+      ),
+      _boxRadius,
+    );
+    _outlinePaint.strokeWidth = 1.0;
+    canvas.drawRRect(boxRect, _outlinePaint);
   }
 
   @override
   bool shouldRepaint(covariant _CrosshairPainter oldDelegate) =>
-      contrastColor != oldDelegate.contrastColor ||
       thickness != oldDelegate.thickness ||
       length != oldDelegate.length ||
       gap != oldDelegate.gap;
 }
 
-/// HUD shown below the picker circle. Hex chip, contrast badge, and any
-/// matching ColorScheme tokens — kept outside the zoom area so the user's
-/// target pixel is never occluded.
+/// HUD shown below the picker circle. Single fixed-height chip with the
+/// hex value and a WCAG contrast hint — never reflows during pixel hunting.
+///
+/// ColorScheme token matches are intentionally not shown here: they fire too
+/// rarely (anti-aliased pixels almost never equal a pure token), and when
+/// they do, the layout shift jerks the picker. The match is surfaced in the
+/// commit snackbar instead, where it has room and timing on its side.
 class _PickerHud extends StatelessWidget {
   const _PickerHud({
     required this.color,
     required this.surface,
-    required this.tokens,
-    required this.width,
   });
 
   final Color color;
   final Color surface;
-  final List<String> tokens;
-  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -392,63 +445,32 @@ class _PickerHud extends StatelessWidget {
     final ratio = contrastRatio(color, surface);
     final wcag = wcagLevel(ratio);
 
-    return SizedBox(
-      width: width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    final hexStyle = TextStyle(
+      color: textColor.withValues(alpha: 0.9),
+      fontSize: 12,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      fontWeight: FontWeight.w600,
+    );
+    final ratioStyle = TextStyle(
+      color: textColor.withValues(alpha: 0.7),
+      fontSize: 11,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      fontWeight: FontWeight.w500,
+    );
+
+    return _Chip(
+      background: color,
+      border: textColor.withValues(alpha: 0.2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _Chip(
-            background: color,
-            border: textColor.withValues(alpha: 0.2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: Text(
-                    hex,
-                    style: TextStyle(
-                      color: textColor.withValues(alpha: 0.9),
-                      fontSize: 12,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${ratio.toStringAsFixed(2)}:1 $wcag',
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.7),
-                    fontSize: 11,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+          Text(hex, softWrap: false, style: hexStyle),
+          const SizedBox(width: 8),
+          Text(
+            '${ratio.toStringAsFixed(2)}:1 $wcag',
+            softWrap: false,
+            style: ratioStyle,
           ),
-          if (tokens.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final t in tokens)
-                  _Chip(
-                    background: color,
-                    border: textColor.withValues(alpha: 0.2),
-                    child: Text(
-                      'colorScheme.$t',
-                      style: TextStyle(
-                        color: textColor.withValues(alpha: 0.85),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
         ],
       ),
     );
