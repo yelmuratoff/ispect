@@ -113,7 +113,7 @@ class InspectorZoomState extends InspectorUiState {
     this.byteData,
     this.pointerOffset,
     this.imageOffset,
-    this.scale = 2.0,
+    this.scale = 4.0,
   });
 
   final ui.Image? image;

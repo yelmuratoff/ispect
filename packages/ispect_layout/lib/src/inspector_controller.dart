@@ -99,8 +99,10 @@ class InspectorController {
   final selectedColorImageOffsetNotifier = ValueNotifier<Offset?>(null);
 
   final zoomImageOffsetNotifier = ValueNotifier<Offset?>(null);
-  final zoomScaleNotifier = ValueNotifier<double>(2.0);
+  final zoomScaleNotifier = ValueNotifier<double>(_initialZoomScale);
   final zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
+
+  static const double _initialZoomScale = 4.0;
 
   /// Consolidated sealed-state view. Updated automatically whenever any of
   /// the legacy granular notifiers changes.
@@ -370,7 +372,7 @@ class InspectorController {
         _cleanupImage();
         zoomImageOffsetNotifier.value = null;
         zoomOverlayOffsetNotifier.value = null;
-        zoomScaleNotifier.value = 2.0;
+        zoomScaleNotifier.value = _initialZoomScale;
         break;
       case InspectorMode.none:
         break;
@@ -391,7 +393,7 @@ class InspectorController {
         break;
       case InspectorMode.zoom:
         final captureEpoch = ++_imageCaptureEpoch;
-        zoomScaleNotifier.value = 2.0;
+        zoomScaleNotifier.value = _initialZoomScale;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _extractByteData(captureEpoch);
           if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
