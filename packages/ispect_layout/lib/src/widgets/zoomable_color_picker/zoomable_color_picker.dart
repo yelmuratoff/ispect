@@ -170,10 +170,13 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
   }
 
   /// Positions the HUD chip on the requested side of the disc, with a small
-  /// gap. The chip is centred along the side's cross-axis.
+  /// gap. The chip is centred along the side's cross-axis. Gap accounts for
+  /// the rings drawn outside the canvas so the chip never overlaps them.
   Widget _hudPositioned({required Widget child}) {
-    const gapAxial = 16.0;
-    const gapLateral = 12.0;
+    final ringTotal =
+        style.outerRingWidth + style.colorRingWidth + style.innerRingWidth;
+    final gapAxial = 16.0 + ringTotal;
+    final gapLateral = 12.0 + ringTotal;
 
     switch (hudPlacement) {
       case HudPlacement.above:
@@ -231,18 +234,17 @@ class _PickerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Rings are painted OUTSIDE the canvas (the Stack above uses Clip.none),
+    // so the zoomed image fills the full overlaySize and the disc visually
+    // grows beyond its layout box — matching the legacy strokeAlignOutside
+    // look where the inner picture was never cropped by the frame.
     return CustomPaint(
       painter: _PickerRingPainter(
         color: color,
         borderColor: ringBorderColor,
         style: style,
       ),
-      child: Padding(
-        padding: EdgeInsets.all(
-          style.outerRingWidth + style.colorRingWidth + style.innerRingWidth,
-        ),
-        child: child,
-      ),
+      child: child,
     );
   }
 }
@@ -265,38 +267,41 @@ class _PickerRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final shortestSide = size.shortestSide;
     final center = Offset(size.width / 2, size.height / 2);
+    final canvasRadius = shortestSide / 2;
 
     final outerW = style.outerRingWidth;
     final colorW = style.colorRingWidth;
     final innerW = style.innerRingWidth;
 
+    // Three concentric strokes laid OUTSIDE the canvas, in the order they
+    // sit visually (closest-to-image first). The image area itself stays
+    // the full overlaySize.
     final radii = <_RingSpec>[
       _RingSpec(
-        radius: shortestSide / 2 - outerW / 2,
-        width: outerW,
+        radius: canvasRadius + innerW / 2,
+        width: innerW,
         color: borderColor,
       ),
       _RingSpec(
-        radius: shortestSide / 2 - outerW - colorW / 2,
+        radius: canvasRadius + innerW + colorW / 2,
         width: colorW,
         color: color,
       ),
       _RingSpec(
-        radius: shortestSide / 2 - outerW - colorW - innerW / 2,
-        width: innerW,
+        radius: canvasRadius + innerW + colorW + outerW / 2,
+        width: outerW,
         color: borderColor,
       ),
     ];
 
     // Drop shadow under the whole disc — drawn first so it sits behind
-    // the rings. Blur extends slightly beyond the layout box, hence Clip.none
-    // on the outer SizedBox; the visible portion is the soft ring just inside
-    // and around the outer rim.
-    final outerRadius = shortestSide / 2;
+    // the rings. Anchored at the outermost ring rim so the soft halo wraps
+    // the visible disc, not the inner image edge.
+    final discOuterRadius = canvasRadius + innerW + colorW + outerW;
     if (style.shadowColor.a > 0 && style.shadowBlur > 0) {
       canvas.drawCircle(
         center,
-        outerRadius + style.shadowSpread,
+        discOuterRadius + style.shadowSpread,
         Paint()
           ..color = style.shadowColor
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, style.shadowBlur),

@@ -76,16 +76,22 @@ class InspectorState extends State<Inspector> {
   late InspectorController _controller;
   InspectorController get controller => _controller;
 
-  static const double _overlayMinSize = 128;
-  static const double _overlayMaxSize = 246;
+  // Picker disc canvas size — image-only area; the visible disc is +40 px
+  // wider on each axis because the rings are painted outside the canvas.
+  // Tuned so the total visible disc lands roughly where the previous
+  // in-canvas-rings version was (overlay ~128–246).
+  static const double _overlayMinSize = 88;
+  static const double _overlayMaxSize = 206;
   static const double _overlayOffsetY = 16;
 
   // Approximate HUD chip footprint and the gap it sits at from the disc.
   // Used to test fit-on-screen for each candidate placement.
+  // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
+  // fit-test mirrors what _hudPositioned actually does in the overlay.
   static const double _hudWidth = 168;
   static const double _hudHeight = 32;
-  static const double _hudAxialGap = 16;
-  static const double _hudLateralGap = 12;
+  static const double _hudAxialGap = 16 + 20;
+  static const double _hudLateralGap = 12 + 20;
 
   // Vertical space at the bottom of the screen reserved for the floating
   // action bar (button + paddings); HUD-below should not overlap it.
