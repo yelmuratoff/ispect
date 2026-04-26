@@ -103,6 +103,22 @@ class InspectorController {
   final zoomOverlayOffsetNotifier = ValueNotifier<Offset?>(null);
 
   static const double _initialZoomScale = 4.0;
+  static const double _minZoomScale = 1.0;
+  static const double _maxZoomScale = 20.0;
+  static const double _zoomStep = 1.0;
+
+  double get minZoomScale => _minZoomScale;
+  double get maxZoomScale => _maxZoomScale;
+
+  void zoomIn() => _setZoomScale(zoomScaleNotifier.value + _zoomStep);
+
+  void zoomOut() => _setZoomScale(zoomScaleNotifier.value - _zoomStep);
+
+  void _setZoomScale(double next) {
+    final clamped = next.clamp(_minZoomScale, _maxZoomScale);
+    if (clamped == zoomScaleNotifier.value) return;
+    zoomScaleNotifier.value = clamped;
+  }
 
   /// Consolidated sealed-state view. Updated automatically whenever any of
   /// the legacy granular notifiers changes.
@@ -300,6 +316,31 @@ class InspectorController {
     setMode(InspectorMode.inspector);
   }
 
+  /// Commit the current selection for the active inspection mode and exit.
+  ///
+  /// Color picker: surfaces the result snackbar with the locked colour.
+  /// Zoom: there is nothing to commit, so this just exits the mode.
+  void confirmCurrentSelection({required BuildContext context}) {
+    final mode = modeNotifier.value;
+    if (mode == InspectorMode.colorPicker) {
+      final color = selectedColorStateNotifier.value;
+      if (color != null) {
+        HapticFeedback.selectionClick();
+        showColorPickerResultSnackbar(
+          context: context,
+          color: color,
+          showColorSchemeMatch: isColorSchemeHintEnabled,
+        );
+      }
+    }
+    setMode(InspectorMode.none);
+  }
+
+  /// Exit the active inspection mode without committing anything.
+  void cancelCurrentMode() {
+    setMode(InspectorMode.none);
+  }
+
   void setMode(InspectorMode mode, {BuildContext? context}) {
     if (mode == modeNotifier.value) return;
 
@@ -356,13 +397,8 @@ class InspectorController {
         }
         break;
       case InspectorMode.colorPicker:
-        if (selectedColorStateNotifier.value != null && context != null) {
-          showColorPickerResultSnackbar(
-            context: context,
-            color: selectedColorStateNotifier.value!,
-            showColorSchemeMatch: isColorSchemeHintEnabled,
-          );
-        }
+        // Snackbar is now surfaced only via confirmCurrentSelection — closing
+        // the mode through cancel / panel toggle should not commit anything.
         _cleanupImage();
         selectedColorOffsetNotifier.value = null;
         selectedColorStateNotifier.value = null;
@@ -421,18 +457,24 @@ class InspectorController {
     if (mode == InspectorMode.none) return;
 
     if (mode == InspectorMode.colorPicker) {
+      // Lock the sampled colour at the tap point but keep the mode active —
+      // user explicitly confirms / cancels via the bottom action bar.
       if (pointerOffset != null) {
         _onColorPickerHover(pointerOffset, context);
       }
       if (selectedColorStateNotifier.value != null) {
         HapticFeedback.selectionClick();
       }
-      setMode(InspectorMode.none, context: context);
       return;
     }
 
     if (mode == InspectorMode.zoom) {
-      setMode(InspectorMode.none);
+      // Same idea for zoom: the loupe stays anchored where the user tapped,
+      // and they leave via the bottom action bar.
+      if (pointerOffset != null) {
+        final ctx = stackKey.currentContext ?? context;
+        _onZoomHover(pointerOffset, ctx);
+      }
       return;
     }
 
@@ -517,14 +559,9 @@ class InspectorController {
 
   void onPointerScroll(PointerScrollEvent scrollEvent) {
     if (modeNotifier.value == InspectorMode.zoom) {
-      final newValue =
-          zoomScaleNotifier.value + 1.0 * -scrollEvent.scrollDelta.dy.sign;
-
-      if (newValue < 1.0) {
-        return;
-      }
-
-      zoomScaleNotifier.value = newValue;
+      _setZoomScale(
+        zoomScaleNotifier.value + _zoomStep * -scrollEvent.scrollDelta.dy.sign,
+      );
     }
   }
 

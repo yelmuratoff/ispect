@@ -10,6 +10,7 @@ import 'package:ispect_layout/src/widgets/ignore_tap_gesture.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect_layout/src/widgets/zoomable_color_picker/zoomable_color_picker.dart';
 
+import './widgets/panel/inspector_actions_bar.dart';
 import './widgets/panel/inspector_panel.dart';
 import 'widgets/inspector/overlay.dart';
 import 'widgets/multi_value_listenable.dart';
@@ -77,6 +78,17 @@ class InspectorState extends State<Inspector> {
   static const double _overlayMinSize = 128;
   static const double _overlayMaxSize = 246;
   static const double _overlayOffsetY = 16;
+
+  // Approximate HUD chip footprint and the gap it sits at from the disc.
+  // Used to test fit-on-screen for each candidate placement.
+  static const double _hudWidth = 168;
+  static const double _hudHeight = 32;
+  static const double _hudAxialGap = 16;
+  static const double _hudLateralGap = 12;
+
+  // Vertical space at the bottom of the screen reserved for the floating
+  // action bar (button + paddings); HUD-below should not overlap it.
+  static const double _hudBottomReserved = 96;
   static const _enterInspectorIntent = _EnterInspectorIntent();
   static const _enterColorPickerIntent = _EnterColorPickerIntent();
   static const _toggleCompareIntent = _ToggleCompareIntent();
@@ -225,12 +237,18 @@ class InspectorState extends State<Inspector> {
             final pickerTop = (offset.dy - overlaySize - _overlayOffsetY)
                 .clamp(0.0, screenSize.height - overlaySize);
 
-            // HUD-above needs at least ~52 px of clear space between picker
-            // top and screen top (chip height + margin). When the cursor
-            // hugs the top of the screen, picker.top clamps near 0 and the
-            // chip would be cropped — flip it to the right of the disc.
-            const hudReservedAbove = 52.0;
-            final hudAbove = pickerTop > hudReservedAbove;
+            // Pick the side of the disc where the HUD chip fully fits in
+            // the on-screen bounds (minus the bottom action-bar / safe area).
+            // Priority: above (default) → right → left → below — "below" is
+            // last because the user's finger lives there.
+            final placement = _resolveHudPlacement(
+              pickerLeft: pickerLeft,
+              pickerTop: pickerTop,
+              overlaySize: overlaySize,
+              screenSize: screenSize,
+              bottomReserved:
+                  MediaQuery.paddingOf(context).bottom + _hudBottomReserved,
+            );
 
             return Positioned(
               left: pickerLeft,
@@ -244,7 +262,7 @@ class InspectorState extends State<Inspector> {
                 overlaySize: overlaySize,
                 zoomScale: zoomScale,
                 pixelRatio: MediaQuery.devicePixelRatioOf(context),
-                hudAbove: hudAbove,
+                hudPlacement: placement,
               ),
             );
           },
@@ -334,6 +352,7 @@ class InspectorState extends State<Inspector> {
             );
           },
         ),
+        InspectorActionsBar(controller: _controller),
       ],
     );
 
@@ -395,6 +414,49 @@ class InspectorState extends State<Inspector> {
           ),
       ],
     );
+  }
+
+  /// Picks the first placement (in priority order) where the HUD chip's full
+  /// bounding box is on-screen. Falls back to [HudPlacement.above] if no
+  /// side fits — the chip will clip, but at least one fixed side is chosen
+  /// (rather than disappearing) so the user can still nudge the picker.
+  HudPlacement _resolveHudPlacement({
+    required double pickerLeft,
+    required double pickerTop,
+    required double overlaySize,
+    required Size screenSize,
+    required double bottomReserved,
+  }) {
+    final bottomLimit = screenSize.height - bottomReserved;
+    final centerX = pickerLeft + overlaySize / 2;
+    final centerY = pickerTop + overlaySize / 2;
+
+    bool fitsHorizontally(double centerX) {
+      final left = centerX - _hudWidth / 2;
+      return left >= 0 && left + _hudWidth <= screenSize.width;
+    }
+
+    bool fitsVertically(double centerY) {
+      final top = centerY - _hudHeight / 2;
+      return top >= 0 && top + _hudHeight <= bottomLimit;
+    }
+
+    final fitsAbove =
+        pickerTop - _hudAxialGap - _hudHeight >= 0 && fitsHorizontally(centerX);
+    final fitsBelow =
+        pickerTop + overlaySize + _hudAxialGap + _hudHeight <= bottomLimit &&
+            fitsHorizontally(centerX);
+    final fitsRight = pickerLeft + overlaySize + _hudLateralGap + _hudWidth <=
+            screenSize.width &&
+        fitsVertically(centerY);
+    final fitsLeft =
+        pickerLeft - _hudLateralGap - _hudWidth >= 0 && fitsVertically(centerY);
+
+    if (fitsAbove) return HudPlacement.above;
+    if (fitsRight) return HudPlacement.right;
+    if (fitsLeft) return HudPlacement.left;
+    if (fitsBelow) return HudPlacement.below;
+    return HudPlacement.above;
   }
 
   Map<ShortcutActivator, Intent> _buildShortcuts() {

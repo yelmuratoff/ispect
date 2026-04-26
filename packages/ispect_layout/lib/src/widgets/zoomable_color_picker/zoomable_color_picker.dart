@@ -64,6 +64,11 @@ class ZoomableColorPickerStyle {
   static const ZoomableColorPickerStyle defaults = ZoomableColorPickerStyle();
 }
 
+/// Where the HUD chip is rendered relative to the picker disc. The caller
+/// computes the best fit based on available screen space; the overlay just
+/// places the chip accordingly.
+enum HudPlacement { above, right, below, left }
+
 /// Combined overlay for the zoomable colour picker.
 ///
 /// Composition (top-down rebuild scope):
@@ -80,7 +85,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
     required this.zoomScale,
     required this.pixelRatio,
     required this.color,
-    this.hudAbove = true,
+    this.hudPlacement = HudPlacement.above,
     this.style = ZoomableColorPickerStyle.defaults,
   });
 
@@ -91,11 +96,10 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
   final double pixelRatio;
   final Color color;
 
-  /// Whether the HUD chip is rendered above the picker disc (default) or to
-  /// the right of it. The caller is expected to flip this to `false` when
-  /// the picker hugs the top of the screen and an above-disc HUD would be
-  /// clipped — in that case the chip slides to the right side of the disc.
-  final bool hudAbove;
+  /// Side of the disc the HUD chip is rendered on. The caller picks the
+  /// first side that has enough room on screen (priority above → right →
+  /// left → below), so the chip never gets clipped.
+  final HudPlacement hudPlacement;
   final ZoomableColorPickerStyle style;
 
   @override
@@ -151,36 +155,64 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
             ),
             // HUD: by default anchored ABOVE the disc (cursor lives below
             // the picker, putting the chip below would sit under the finger).
-            // When [hudAbove] is false — caller signals there's no room
-            // above — the chip slides to the right of the disc instead.
-            if (hudAbove)
-              Positioned(
-                left: overlaySize / 2,
-                bottom: overlaySize + 16,
-                child: FractionalTranslation(
-                  translation: const Offset(-0.5, 0),
-                  child: _PickerHud(
-                    color: color,
-                    surface: colorScheme.surface,
-                  ),
-                ),
-              )
-            else
-              Positioned(
-                left: overlaySize + 12,
-                top: overlaySize / 2,
-                child: FractionalTranslation(
-                  translation: const Offset(0, -0.5),
-                  child: _PickerHud(
-                    color: color,
-                    surface: colorScheme.surface,
-                  ),
-                ),
+            // The caller picks a different side when there's no room — e.g.
+            // when the picker hugs the top of the screen.
+            _hudPositioned(
+              child: _PickerHud(
+                color: color,
+                surface: colorScheme.surface,
               ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// Positions the HUD chip on the requested side of the disc, with a small
+  /// gap. The chip is centred along the side's cross-axis.
+  Widget _hudPositioned({required Widget child}) {
+    const gapAxial = 16.0;
+    const gapLateral = 12.0;
+
+    switch (hudPlacement) {
+      case HudPlacement.above:
+        return Positioned(
+          left: overlaySize / 2,
+          bottom: overlaySize + gapAxial,
+          child: FractionalTranslation(
+            translation: const Offset(-0.5, 0),
+            child: child,
+          ),
+        );
+      case HudPlacement.below:
+        return Positioned(
+          left: overlaySize / 2,
+          top: overlaySize + gapAxial,
+          child: FractionalTranslation(
+            translation: const Offset(-0.5, 0),
+            child: child,
+          ),
+        );
+      case HudPlacement.right:
+        return Positioned(
+          left: overlaySize + gapLateral,
+          top: overlaySize / 2,
+          child: FractionalTranslation(
+            translation: const Offset(0, -0.5),
+            child: child,
+          ),
+        );
+      case HudPlacement.left:
+        return Positioned(
+          right: overlaySize + gapLateral,
+          top: overlaySize / 2,
+          child: FractionalTranslation(
+            translation: const Offset(0, -0.5),
+            child: child,
+          ),
+        );
+    }
   }
 }
 
