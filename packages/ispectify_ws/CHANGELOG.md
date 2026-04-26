@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev30
+## 5.0.0-dev31
 
 ### Breaking Changes
 
@@ -27,6 +27,10 @@
 - **Logging logic:** Enhanced live tail with new-log indicators, scroll-to-edge support, and relative time formatting.
 - **UI & Visualization:** Added 21 new icons/colors for various log types and improved JSON viewer with array support and async search.
 - **Inspector controls:** Multi-key `ShortcutActivator` shortcuts via Flutter `Shortcuts`/`Actions`, `initialPanelExpanded` for default panel state, configurable `decimalPlaces`, smart panel positioning, shape-border and border-radius extraction for clipping and physical widgets, and globally-transformed hit testing for accurate overlap detection.
+- **Picker & zoom action bar:** Tap-to-commit gesture replaced with a floating Cancel / Confirm bar at the bottom of the screen, with on-bar zoom −/+ controls, a live colour preview chip (hex + tap-to-copy), and an adaptive compact layout that collapses labels on narrow screens.
+- **Smart HUD placement:** Colour-picker hex chip now picks the first side of the disc that fully fits on-screen (above → right → left → below) instead of the previous binary above/right fallback, so the readout no longer disappears when the picker hugs a corner.
+- **Live re-capture on resize:** Picker / zoom snapshot is automatically re-taken when the surface size changes (desktop window resize, web layout shift, orientation change), keeping the loupe in sync with the live UI instead of showing stale pixels.
+- **Picker disc visual:** Ring stack restored to the legacy strokeAlignOutside look — image fills the full disc, three concentric strokes are painted outside the canvas with a soft drop shadow.
 - **Configurable log formatters:** Pluggable human-readable and JSON Lines formatters with ISO-8601 timestamps for console output and exports.
 - **`consoleMessage`:** Optional parameter on trace, network, WebSocket, and BLoC logs to tailor IDE console output without affecting structured metadata.
 - **Lazy logger initialization:** `ISpect.logger` is now lazily constructed and emits a developer warning when used before `ISpect.run`.
