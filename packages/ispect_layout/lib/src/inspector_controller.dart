@@ -452,6 +452,42 @@ class InspectorController {
     byteDataStateNotifier.value = null;
   }
 
+  /// Drops the cached pixel snapshot and re-captures it on the next frame
+  /// while the user stays in [InspectorMode.colorPicker] / [InspectorMode.zoom].
+  ///
+  /// Called when the surface the snapshot was taken from changes size or
+  /// layout (window resize on desktop / web, orientation change, side panels
+  /// opening). Without this the loupe keeps showing stale pixels at stale
+  /// positions and the picker effectively desyncs from the live UI.
+  void invalidateCapturedImage() {
+    final mode = modeNotifier.value;
+    if (mode != InspectorMode.colorPicker && mode != InspectorMode.zoom) {
+      return;
+    }
+    _cleanupImage();
+    final captureEpoch = ++_imageCaptureEpoch;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _extractByteData(captureEpoch);
+      if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
+      if (_pointerHoverPosition == null || stackKey.currentContext == null) {
+        return;
+      }
+      switch (modeNotifier.value) {
+        case InspectorMode.zoom:
+          _onZoomHover(_pointerHoverPosition!, stackKey.currentContext!);
+          break;
+        case InspectorMode.colorPicker:
+          _onColorPickerHover(_pointerHoverPosition!, stackKey.currentContext!);
+          break;
+        case InspectorMode.none:
+        case InspectorMode.inspector:
+        case InspectorMode.inspectAndCompare:
+        case InspectorMode.compareSelect:
+          break;
+      }
+    });
+  }
+
   void onTap(Offset? pointerOffset, BuildContext context) {
     final mode = modeNotifier.value;
     if (mode == InspectorMode.none) return;

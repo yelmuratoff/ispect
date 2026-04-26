@@ -66,6 +66,7 @@ class Inspector extends StatefulWidget {
 
 class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
+  Size? _lastObservedSize;
 
   bool get isPanelVisible => _isPanelVisible;
 
@@ -143,6 +144,22 @@ class InspectorState extends State<Inspector> {
     super.dispose();
   }
 
+  /// Re-captures the pixel snapshot when the surface the picker / loupe is
+  /// sampling from gets resized. Without this, on desktop / web the cached
+  /// image is taken once at mode entry and the loupe keeps showing stale
+  /// pixels at stale positions after a window resize or orientation change.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final size = MediaQuery.maybeSizeOf(context);
+    if (size == null) return;
+    final previous = _lastObservedSize;
+    _lastObservedSize = size;
+    if (previous != null && previous != size) {
+      _controller.invalidateCapturedImage();
+    }
+  }
+
   /// The inspector is enabled if:
   /// 1. [widget.isEnabled] is [null] and we're running in debug mode, or
   /// 2. [widget.isEnabled] is [true]
@@ -210,6 +227,7 @@ class InspectorState extends State<Inspector> {
             _controller.selectedColorOffsetNotifier,
             _controller.selectedColorStateNotifier,
             _controller.selectedColorImageOffsetNotifier,
+            _controller.byteDataStateNotifier,
             _controller.zoomScaleNotifier,
           ],
           builder: (context) {
@@ -220,6 +238,7 @@ class InspectorState extends State<Inspector> {
 
             final offset = _controller.selectedColorOffsetNotifier.value;
             final color = _controller.selectedColorStateNotifier.value;
+            final image = _controller.image;
             final zoomScale = _controller.zoomScaleNotifier.value;
             final screenSize = MediaQuery.sizeOf(context);
             final overlaySize = ui.lerpDouble(
@@ -228,7 +247,10 @@ class InspectorState extends State<Inspector> {
               ((zoomScale - 2.0) / 10.0).clamp(0, 1),
             )!;
 
-            if (offset == null || color == null) {
+            // Image can be null briefly after a window resize / orientation
+            // change while the snapshot is being re-captured. Bail until the
+            // next frame rather than dereferencing it.
+            if (offset == null || color == null || image == null) {
               return const SizedBox.shrink();
             }
 
@@ -255,7 +277,7 @@ class InspectorState extends State<Inspector> {
               top: pickerTop,
               child: ZoomableColorPickerOverlay(
                 color: color,
-                image: _controller.image!,
+                image: image,
                 imageOffset:
                     _controller.selectedColorImageOffsetNotifier.value ??
                         Offset.zero,
