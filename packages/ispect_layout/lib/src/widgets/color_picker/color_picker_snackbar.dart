@@ -7,7 +7,7 @@ void showColorPickerResultSnackbar({
   required BuildContext context,
   required Color color,
 }) {
-  final colorString = '#${colorToHexString(color)}';
+  final colorString = colorToDisplayHex(color);
 
   ScaffoldMessenger.of(context).clearSnackBars();
 
@@ -31,6 +31,7 @@ void showColorPickerResultSnackbar({
         label: 'Copy',
         onPressed: () {
           Clipboard.setData(ClipboardData(text: colorString));
+          HapticFeedback.lightImpact();
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
         },
       ),

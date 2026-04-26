@@ -7,8 +7,12 @@ import 'package:ispect_layout/src/widgets/components/information_box_widget.dart
 /// Shared painter for the zoom overlay and zoomable color picker.
 ///
 /// Renders [image] centred at [imageOffset], scaled by `zoomScale / pixelRatio`.
-/// Fills the background with [backgroundColor] so areas outside the source
-/// image bounds don't show through stale GPU state.
+/// Uses [FilterQuality.none] (nearest-neighbour) so individual source pixels
+/// stay crisp at high zoom — essential for color picking accuracy.
+///
+/// When [showPixelGrid] is enabled and the on-screen size of one source pixel
+/// exceeds [pixelGridThreshold] logical px, a 1-logical-px hairline grid is
+/// rendered on top so the user can identify which pixel is being sampled.
 class ZoomPainter extends CustomPainter {
   ZoomPainter({
     required this.image,
@@ -17,8 +21,11 @@ class ZoomPainter extends CustomPainter {
     required this.zoomScale,
     required this.pixelRatio,
     this.backgroundColor = const Color(0x00000000),
+    this.showPixelGrid = true,
+    this.pixelGridThreshold = 8.0,
+    this.pixelGridColor = const Color(0x33000000),
   })  : _backgroundPaint = Paint()..color = backgroundColor,
-        _imagePaint = Paint()..filterQuality = FilterQuality.low;
+        _imagePaint = Paint()..filterQuality = FilterQuality.none;
 
   final ui.Image image;
   final Offset imageOffset;
@@ -26,6 +33,12 @@ class ZoomPainter extends CustomPainter {
   final double zoomScale;
   final double pixelRatio;
   final Color backgroundColor;
+
+  /// Draw a 1-logical-px hairline grid over the zoomed image when each source
+  /// pixel covers more than [pixelGridThreshold] logical pixels on screen.
+  final bool showPixelGrid;
+  final double pixelGridThreshold;
+  final Color pixelGridColor;
 
   final Paint _backgroundPaint;
   final Paint _imagePaint;
@@ -40,10 +53,59 @@ class ZoomPainter extends CustomPainter {
     final scale = (1 / pixelRatio) * zoomScale;
 
     canvas
+      ..save()
       ..clipRect(Offset.zero & size)
       ..translate(halfSize, halfSize)
       ..scale(scale)
-      ..drawImage(image, -imageOffset, _imagePaint);
+      ..drawImage(image, -imageOffset, _imagePaint)
+      ..restore();
+
+    if (showPixelGrid && scale >= pixelGridThreshold) {
+      _drawPixelGrid(canvas, size, scale, halfSize);
+    }
+  }
+
+  void _drawPixelGrid(
+    Canvas canvas,
+    Size size,
+    double scale,
+    double halfSize,
+  ) {
+    // Each source pixel maps to `scale` logical px on screen. We draw grid
+    // lines aligned with pixel boundaries of the source image, in the overlay
+    // coordinate space, so they match what the user sees.
+    final paint = Paint()
+      ..color = pixelGridColor
+      ..strokeWidth = 1.0
+      ..isAntiAlias = false;
+
+    // The image pixel currently at canvas centre.
+    final centerImageX = imageOffset.dx;
+    final centerImageY = imageOffset.dy;
+
+    // First grid line offset in screen-space relative to centre.
+    final firstX = (centerImageX.floorToDouble() - centerImageX) * scale;
+    final firstY = (centerImageY.floorToDouble() - centerImageY) * scale;
+
+    canvas.save();
+    canvas.translate(halfSize, halfSize);
+    canvas
+        .clipRect(Rect.fromLTWH(-halfSize, -halfSize, size.width, size.height));
+
+    for (var x = firstX; x <= halfSize; x += scale) {
+      canvas.drawLine(Offset(x, -halfSize), Offset(x, halfSize), paint);
+    }
+    for (var x = firstX - scale; x >= -halfSize; x -= scale) {
+      canvas.drawLine(Offset(x, -halfSize), Offset(x, halfSize), paint);
+    }
+    for (var y = firstY; y <= halfSize; y += scale) {
+      canvas.drawLine(Offset(-halfSize, y), Offset(halfSize, y), paint);
+    }
+    for (var y = firstY - scale; y >= -halfSize; y -= scale) {
+      canvas.drawLine(Offset(-halfSize, y), Offset(halfSize, y), paint);
+    }
+
+    canvas.restore();
   }
 
   @override
@@ -53,7 +115,10 @@ class ZoomPainter extends CustomPainter {
       overlaySize != oldDelegate.overlaySize ||
       zoomScale != oldDelegate.zoomScale ||
       pixelRatio != oldDelegate.pixelRatio ||
-      backgroundColor != oldDelegate.backgroundColor;
+      backgroundColor != oldDelegate.backgroundColor ||
+      showPixelGrid != oldDelegate.showPixelGrid ||
+      pixelGridThreshold != oldDelegate.pixelGridThreshold ||
+      pixelGridColor != oldDelegate.pixelGridColor;
 }
 
 /// Auto-hiding zoom level indicator. Visible for 1 s after each [zoomScale]

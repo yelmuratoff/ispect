@@ -421,6 +421,9 @@ class InspectorController {
       if (pointerOffset != null) {
         _onColorPickerHover(pointerOffset, context);
       }
+      if (selectedColorStateNotifier.value != null) {
+        HapticFeedback.selectionClick();
+      }
       setMode(InspectorMode.none, context: context);
       return;
     }

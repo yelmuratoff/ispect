@@ -197,6 +197,7 @@ class InspectorState extends State<Inspector> {
             _controller.modeNotifier,
             _controller.selectedColorOffsetNotifier,
             _controller.selectedColorStateNotifier,
+            _controller.selectedColorImageOffsetNotifier,
             _controller.zoomScaleNotifier,
           ],
           builder: (context) {
