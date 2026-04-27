@@ -1,16 +1,24 @@
 /// Unified trace summary for all categories.
 ///
-/// Default layout puts `operation` on the first line and `→ target` on the
-/// next so the target stays easy to scan even after a long log header:
+/// When a `target` is present, the default layout puts `operation` and
+/// `→ target` together on their own line so the request/key is easy to spot
+/// without scanning past the log header:
 ///
 /// ```
-/// GET FAILED
-/// → https://example.com/api/users/42
+/// FAILED
+/// → GET /api/users/42
 /// ```
+///
+/// The first body line carries only short flags (`FAILED`, optional
+/// `${ms}ms`, optional `(key)`). When nothing applies, the line is
+/// intentionally empty — the visual break makes the `→ operation target`
+/// line stand out. Without a `target`, the body falls back to a compact
+/// single-line form (`operation (key)`).
 ///
 /// Pass [printSourceInBody] / [printDurationInBody] = `true` to embed the
-/// source tag and duration into the body; by default they are omitted because
-/// the entry formatter already renders them in the header and metadata.
+/// source tag and duration into the body; by default they are omitted
+/// because the entry formatter already renders them in the header and
+/// metadata.
 ///
 /// Pass [wrapTargetOnNewLine] = `false` to keep the legacy single-line form
 /// (e.g. for grep-friendly export).
@@ -25,22 +33,30 @@ String buildTraceMessage({
   bool printDurationInBody = false,
   bool wrapTargetOnNewLine = true,
 }) {
-  final buffer = StringBuffer();
+  final hasTarget = target != null;
+  final wrap = wrapTargetOnNewLine && hasTarget;
 
+  final firstLine = <String>[];
   if (printSourceInBody && source != null && source.isNotEmpty) {
-    buffer.write('[$source] ');
+    firstLine.add('[$source]');
   }
-  buffer.write(operation);
-
-  if (key != null) buffer.write(' ($key)');
+  if (!wrap) firstLine.add(operation);
+  if (key != null) firstLine.add('($key)');
   if (printDurationInBody && duration != null) {
-    buffer.write(' ${duration.inMilliseconds}ms');
+    firstLine.add('${duration.inMilliseconds}ms');
   }
-  if (!success) buffer.write(' FAILED');
+  if (!success) firstLine.add('FAILED');
 
-  if (target != null) {
-    buffer.write(wrapTargetOnNewLine ? '\n→ $target' : ' → $target');
+  final buf = StringBuffer(firstLine.join(' '));
+
+  if (hasTarget) {
+    if (wrap) {
+      buf.write('\n→ $operation $target');
+    } else {
+      if (buf.isNotEmpty) buf.write(' ');
+      buf.write('→ $target');
+    }
   }
 
-  return buffer.toString();
+  return buf.toString();
 }

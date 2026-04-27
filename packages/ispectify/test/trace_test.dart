@@ -74,8 +74,11 @@ void main() {
         isNot(contains('ms')),
         reason: 'duration belongs to metadata (dur=…ms), not body',
       );
-      expect(msg, contains('GET'));
-      expect(msg, contains('→ /api/users'));
+      expect(
+        msg,
+        contains('→ GET /api/users'),
+        reason: 'method + URL render as a single block on the second line',
+      );
       expect(msg, contains('(id-123)'));
       expect(msg, isNot(contains('FAILED')));
     });

@@ -18,8 +18,8 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^5.0.0
-  ispectify_dio: ^5.0.0-dev31
-  ispect: ^5.0.0-dev31
+  ispectify_dio: ^5.0.0-dev32
+  ispect: ^5.0.0-dev32
 
 dev_dependencies:
   flutter_test:

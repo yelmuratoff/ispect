@@ -125,7 +125,7 @@ ISpect is a modular monorepo. Install only what your project needs — each pack
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev31
+  ispect: ^5.0.0-dev32
 ```
 
 ```dart

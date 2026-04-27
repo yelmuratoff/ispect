@@ -3,21 +3,29 @@ import 'package:ispectify/src/utils/json_truncator.dart';
 /// Builds a rich console message for network logs, respecting
 /// [BaseNetworkInterceptorSettings] print flags.
 ///
-/// Default layout splits `operation` and `target` across two lines so the URL
-/// is always easy to spot in the console:
+/// Default layout puts the method + URL together on their own line so they
+/// are easy to spot at a glance — no need to scan past a long header:
 ///
 /// ```
-/// GET FAILED
-/// → https://example.com/api/users/42
+/// FAILED
+/// → GET https://example.com/api/users/42
+/// Status: 500
 /// ```
 ///
-/// `source` and `duration` are accepted for callers who want to embed them in
-/// the body; by default they are omitted because the entry formatter already
-/// renders source in the header (`[source]`) and duration in metadata
-/// (`dur=…ms`). Set [printSourceInBody] / [printDurationInBody] to `true` to
-/// re-introduce them — useful when copying a single line out of context.
+/// The first body line carries only short status flags (`FAILED` and, when
+/// [printDurationInBody] is enabled, `${ms}ms`). When the request succeeds
+/// and no flag is enabled, the line is intentionally empty — the visual
+/// break makes the `→ METHOD URL` line stand out.
 ///
-/// Set [wrapTargetOnNewLine] to `false` to keep the legacy single-line layout.
+/// `source` and `duration` are accepted for callers who want to embed them
+/// in the body; by default they are omitted because the entry formatter
+/// already renders source in the header (`[source]`) and duration in
+/// metadata (`dur=…ms`). Set [printSourceInBody] / [printDurationInBody] to
+/// `true` to re-introduce them — useful when copying a single line out of
+/// context.
+///
+/// Set [wrapTargetOnNewLine] to `false` to keep the legacy single-line
+/// layout (`METHOD → URL`) for grep-style consumers.
 String buildNetworkConsoleMessage({
   required String operation,
   required String target,
@@ -38,18 +46,23 @@ String buildNetworkConsoleMessage({
   bool printHeaders = false,
   bool printErrorMessage = false,
 }) {
-  final buf = StringBuffer();
-
+  final firstLine = <String>[];
   if (printSourceInBody && source != null && source.isNotEmpty) {
-    buf.write('[$source] ');
+    firstLine.add('[$source]');
   }
-  buf.write(operation);
-  if (!success) buf.write(' FAILED');
+  if (!success) firstLine.add('FAILED');
   if (printDurationInBody && duration != null) {
-    buf.write(' ${duration.inMilliseconds}ms');
+    firstLine.add('${duration.inMilliseconds}ms');
   }
 
-  buf.write(wrapTargetOnNewLine ? '\n→ $target' : ' → $target');
+  final buf = StringBuffer(firstLine.join(' '));
+
+  if (wrapTargetOnNewLine) {
+    buf.write('\n→ $operation $target');
+  } else {
+    if (buf.isNotEmpty) buf.write(' ');
+    buf.write('$operation → $target');
+  }
 
   if (printStatusCode && statusCode != null) {
     buf.write('\nStatus: $statusCode');
