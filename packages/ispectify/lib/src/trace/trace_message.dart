@@ -1,22 +1,46 @@
-/// Unified format for all trace categories.
+/// Unified trace summary for all categories.
 ///
-/// Details are in the JSON viewer. Message is only a summary for the list.
+/// Default layout puts `operation` on the first line and `→ target` on the
+/// next so the target stays easy to scan even after a long log header:
+///
+/// ```
+/// GET FAILED
+/// → https://example.com/api/users/42
+/// ```
+///
+/// Pass [printSourceInBody] / [printDurationInBody] = `true` to embed the
+/// source tag and duration into the body; by default they are omitted because
+/// the entry formatter already renders them in the header and metadata.
+///
+/// Pass [wrapTargetOnNewLine] = `false` to keep the legacy single-line form
+/// (e.g. for grep-friendly export).
 String buildTraceMessage({
-  required String source,
   required String operation,
   required bool success,
+  String? source,
   String? target,
   String? key,
   Duration? duration,
+  bool printSourceInBody = false,
+  bool printDurationInBody = false,
+  bool wrapTargetOnNewLine = true,
 }) {
-  final buffer = StringBuffer()
-    ..write('[$source] ')
-    ..write(operation);
+  final buffer = StringBuffer();
 
-  if (target != null) buffer.write(' → $target');
+  if (printSourceInBody && source != null && source.isNotEmpty) {
+    buffer.write('[$source] ');
+  }
+  buffer.write(operation);
+
   if (key != null) buffer.write(' ($key)');
-  if (duration != null) buffer.write(' ${duration.inMilliseconds}ms');
+  if (printDurationInBody && duration != null) {
+    buffer.write(' ${duration.inMilliseconds}ms');
+  }
   if (!success) buffer.write(' FAILED');
+
+  if (target != null) {
+    buffer.write(wrapTargetOnNewLine ? '\n→ $target' : ' → $target');
+  }
 
   return buffer.toString();
 }

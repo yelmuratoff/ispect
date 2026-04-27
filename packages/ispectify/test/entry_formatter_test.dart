@@ -63,6 +63,31 @@ void main() {
       expect(line, contains('| tid=tx-1 cid=cid-2 dur=42ms |'));
     });
 
+    test('shortens 16-char hex IDs to 8-char prefix', () {
+      final data = _data(
+        level: LogLevel.info,
+        additionalData: const {
+          TraceKeys.transactionId: '1579f34f3e3c5521',
+          TraceKeys.correlationId: 'abcdef0123456789',
+        },
+      );
+      final line = formatter.format(data, settings);
+      expect(line, contains('tid=1579f34f'));
+      expect(line, contains('cid=abcdef01'));
+      expect(line, isNot(contains('1579f34f3e3c5521')));
+    });
+
+    test('keeps non-hex IDs intact', () {
+      final data = _data(
+        level: LogLevel.info,
+        additionalData: const {
+          TraceKeys.correlationId: 'order-batch-12345',
+        },
+      );
+      final line = formatter.format(data, settings);
+      expect(line, contains('cid=order-batch-12345'));
+    });
+
     test('omits metadata section when no correlation fields present', () {
       final data = _data(level: LogLevel.info);
       final line = formatter.format(data, settings);

@@ -18,6 +18,12 @@ class ConsoleSettings {
   /// - `fullTimestamp`: When `true`, console timestamps include the full
   ///   ISO-8601 date with timezone; when `false`, only `HH:MM:SS.mmm`
   ///   (default: `false`).
+  /// - `truncateTraceIds`: When `true`, 16-character hex trace IDs (the ones
+  ///   produced by `generateTraceId`) are shortened to their 8-character
+  ///   prefix in the console metadata column; the full value remains in
+  ///   `additionalData` for filtering and the in-app viewer. Custom
+  ///   user-supplied IDs (`msg-1`, `txn-orders-2`, …) are never trimmed.
+  ///   (default: `true`).
   ConsoleSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enabled = true,
@@ -27,6 +33,7 @@ class ConsoleSettings {
     this.maxLineWidth = 110,
     this.enableColors = true,
     this.fullTimestamp = false,
+    this.truncateTraceIds = true,
   })  : assert(maxLineWidth > 0, 'maxLineWidth must be positive'),
         colors = Map<LogLevel, AnsiPen>.unmodifiable({
           ...ConsoleUtils.ansiColors,
@@ -57,6 +64,10 @@ class ConsoleSettings {
   /// Whether to render console timestamps in full ISO-8601 form with timezone.
   final bool fullTimestamp;
 
+  /// Whether to shorten auto-generated 16-character hex trace IDs to their
+  /// 8-character prefix in the console metadata column.
+  final bool truncateTraceIds;
+
   /// Creates a new instance of `ConsoleSettings` with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
@@ -69,6 +80,7 @@ class ConsoleSettings {
     int? maxLineWidth,
     bool? enableColors,
     bool? fullTimestamp,
+    bool? truncateTraceIds,
   }) =>
       ConsoleSettings(
         colors: colors ?? this.colors,
@@ -79,5 +91,6 @@ class ConsoleSettings {
         maxLineWidth: maxLineWidth ?? this.maxLineWidth,
         enableColors: enableColors ?? this.enableColors,
         fullTimestamp: fullTimestamp ?? this.fullTimestamp,
+        truncateTraceIds: truncateTraceIds ?? this.truncateTraceIds,
       );
 }

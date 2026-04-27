@@ -59,24 +59,29 @@ void main() {
   group('buildTraceMessage', () {
     test('includes all fields', () {
       final msg = buildTraceMessage(
-        source: 'dio',
         operation: 'GET',
         success: true,
         target: '/api/users',
         key: 'id-123',
-        duration: const Duration(milliseconds: 42),
       );
-      expect(msg, contains('[dio]'));
+      expect(
+        msg,
+        isNot(contains('[dio]')),
+        reason: 'source belongs to entry header, not body',
+      );
+      expect(
+        msg,
+        isNot(contains('ms')),
+        reason: 'duration belongs to metadata (dur=…ms), not body',
+      );
       expect(msg, contains('GET'));
       expect(msg, contains('→ /api/users'));
       expect(msg, contains('(id-123)'));
-      expect(msg, contains('42ms'));
       expect(msg, isNot(contains('FAILED')));
     });
 
     test('shows FAILED for unsuccessful', () {
       final msg = buildTraceMessage(
-        source: 'http',
         operation: 'POST',
         success: false,
       );

@@ -79,22 +79,47 @@ class HumanLogEntryFormatter implements ILogEntryFormatter {
         ? ISpectDateTimeFormatter(data.time).iso8601Local
         : data.formattedTime;
 
-    final metadata = _buildMetadata(data);
+    final metadata = _buildMetadata(data, settings);
     final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
 
     return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
   }
 
-  String _buildMetadata(ISpectLogData data) {
+  String _buildMetadata(ISpectLogData data, ConsoleSettings settings) {
     final parts = <String>[];
     final tid = _readNonEmptyString(data, TraceKeys.transactionId);
-    if (tid != null) parts.add('tid=$tid');
+    if (tid != null) {
+      parts
+          .add('tid=${settings.truncateTraceIds ? _shortenTraceId(tid) : tid}');
+    }
     final cid = _readNonEmptyString(data, TraceKeys.correlationId);
-    if (cid != null) parts.add('cid=$cid');
+    if (cid != null) {
+      parts
+          .add('cid=${settings.truncateTraceIds ? _shortenTraceId(cid) : cid}');
+    }
     final dur = _readInt(data, TraceKeys.durationMs);
     if (dur != null) parts.add('dur=${dur}ms');
     return parts.join(' ');
   }
+}
+
+/// Auto-generated trace IDs are 16-character hex (see `generateTraceId`).
+/// Showing all 16 in the console is noise — the prefix is enough for visual
+/// correlation, and the full value remains in `additionalData` for filtering
+/// in the UI. Custom user-supplied IDs (e.g. `msg-1`, `txn-orders-2`) are
+/// left untouched so they stay readable.
+const int _shortIdLength = 8;
+
+String _shortenTraceId(String id) {
+  if (id.length < 16) return id;
+  for (var i = 0; i < id.length; i++) {
+    final c = id.codeUnitAt(i);
+    final isHex = (c >= 0x30 && c <= 0x39) ||
+        (c >= 0x61 && c <= 0x66) ||
+        (c >= 0x41 && c <= 0x46);
+    if (!isHex) return id;
+  }
+  return id.substring(0, _shortIdLength);
 }
 
 String? _readNonEmptyString(ISpectLogData data, String key) {

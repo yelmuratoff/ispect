@@ -799,7 +799,6 @@ void main() {
   group('buildMessage', () {
     test('includes all fields', () {
       final msg = DbMessageFormatter.build(
-        source: 'sqflite',
         operation: 'query',
         table: 'users',
         target: 'primary',
@@ -812,7 +811,12 @@ void main() {
         success: true,
         value: 'data',
       );
-      expect(msg, contains('[sqflite] query'));
+      expect(
+        msg,
+        isNot(contains('[sqflite]')),
+        reason: 'source belongs to entry header, not body',
+      );
+      expect(msg, startsWith('query'));
       expect(msg, contains('users → primary'));
       expect(msg, contains('Key: id'));
       expect(msg, contains('Items: 5'));
@@ -826,7 +830,6 @@ void main() {
 
     test('formats cache miss', () {
       final msg = DbMessageFormatter.build(
-        source: 'cache',
         operation: 'get',
         cacheHit: false,
       );
@@ -835,28 +838,24 @@ void main() {
 
     test('formats bytes correctly', () {
       final small = DbMessageFormatter.build(
-        source: 'file',
         operation: 'write',
         sizeBytes: 500,
       );
       expect(small, contains('Size: 500 B'));
 
       final kb = DbMessageFormatter.build(
-        source: 'file',
         operation: 'write',
         sizeBytes: 1536,
       );
       expect(kb, contains('Size: 1.5 KB'));
 
       final mb = DbMessageFormatter.build(
-        source: 'file',
         operation: 'write',
         sizeBytes: 2 * 1024 * 1024,
       );
       expect(mb, contains('Size: 2.0 MB'));
 
       final gb = DbMessageFormatter.build(
-        source: 'file',
         operation: 'write',
         sizeBytes: 3 * 1024 * 1024 * 1024,
       );
@@ -865,7 +864,6 @@ void main() {
 
     test('formats zero bytes', () {
       final msg = DbMessageFormatter.build(
-        source: 'file',
         operation: 'write',
         sizeBytes: 0,
       );
@@ -874,27 +872,24 @@ void main() {
 
     test('shows table only when target is null', () {
       final msg = DbMessageFormatter.build(
-        source: 'sqflite',
         operation: 'query',
         table: 'users',
       );
-      expect(msg, contains('[sqflite] query users'));
+      expect(msg, equals('query users'));
       expect(msg, isNot(contains('→')));
     });
 
     test('shows target only when table is null', () {
       final msg = DbMessageFormatter.build(
-        source: 'file',
         operation: 'read',
         target: '/data/config.json',
       );
-      expect(msg, contains('[file] read /data/config.json'));
+      expect(msg, equals('read /data/config.json'));
       expect(msg, isNot(contains('→')));
     });
 
     test('shows table → target when both present', () {
       final msg = DbMessageFormatter.build(
-        source: 'sqflite',
         operation: 'query',
         table: 'users',
         target: 'idx_email',
@@ -904,10 +899,9 @@ void main() {
 
     test('minimal message with only required fields', () {
       final msg = DbMessageFormatter.build(
-        source: 'kv',
         operation: 'get',
       );
-      expect(msg, equals('[kv] get'));
+      expect(msg, equals('get'));
     });
   });
 

@@ -123,8 +123,8 @@ extension ISpectTrace on ISpectLogger {
 
       final message = consoleMessage ??
           buildTraceMessage(
-            source: source,
             operation: operation,
+            source: source,
             target: safeTarget,
             key: key,
             duration: duration,
