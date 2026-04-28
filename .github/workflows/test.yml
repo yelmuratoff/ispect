@@ -65,9 +65,9 @@ jobs:
 
   # Flutter packages
   test-flutter:
-    name: "Test Flutter packages (${{ matrix.flutter-version }})"
+    name: "Test Flutter packages (${{ matrix.flutter.version }}, ${{ matrix.flutter.channel_signal }})"
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.flutter-version == 'stable' }}
+    continue-on-error: ${{ matrix.flutter.channel_signal == 'advisory' }}
     strategy:
       fail-fast: false
       matrix:
@@ -78,24 +78,26 @@ jobs:
           - ispectify_http
           - ispectify_ws
           - ispectify_bloc
-        flutter-version:
-          - "3.32.6"
-          - "stable"
+        flutter:
+          - version: "3.32.6"
+            channel_signal: required
+          - version: "stable"
+            channel_signal: advisory
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flutter (pinned ${{ matrix.flutter-version }})
-        if: matrix.flutter-version != 'stable'
+      - name: Setup Flutter (pinned ${{ matrix.flutter.version }})
+        if: matrix.flutter.version != 'stable'
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ matrix.flutter-version }}
+          flutter-version: ${{ matrix.flutter.version }}
           channel: stable
           cache: true
 
       - name: Setup Flutter (latest stable)
-        if: matrix.flutter-version == 'stable'
+        if: matrix.flutter.version == 'stable'
         uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -120,11 +122,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-flutter-${{ matrix.package }}-${{ matrix.flutter-version }}
+          name: coverage-flutter-${{ matrix.package }}-${{ matrix.flutter.version }}
           path: packages/${{ matrix.package }}/coverage/
 
       - name: Upload to Codecov
-        if: always() && matrix.flutter-version == '3.32.6'
+        if: always() && matrix.flutter.version == '3.32.6'
         uses: codecov/codecov-action@v5
         with:
           directory: packages/${{ matrix.package }}/coverage/

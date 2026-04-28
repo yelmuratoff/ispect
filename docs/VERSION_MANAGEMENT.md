@@ -13,6 +13,7 @@ This document explains how the version management system works for this Flutter 
 - `bash/pre-commit.sh` - Git hook to ensure versions are in sync before commits
 - `.github/workflows/sync_versions_and_changelogs.yml` - CI/CD workflow for automatic version and changelog sync
 - `.github/workflows/validate_versions.yml` - CI/CD workflow to validate versions in Pull Requests
+- `.github/workflows/production_safety.yml` - CI workflow to verify release builds with `ISPECT_ENABLED` omitted
 
 ## Usage
 
@@ -38,6 +39,7 @@ To bump the version, run:
 ```
 
 The `bump_version.sh` script will:
+
 1. Update `version.config` with the new version
 2. Run `update_versions.sh` to update all package versions and changelogs
 
@@ -46,15 +48,19 @@ The `bump_version.sh` script will:
 The GitHub Actions workflows provide several automation features:
 
 #### Sync Versions and Changelogs
+
 - Triggers when `version.config` or `CHANGELOG.md` is changed
-- Updates all package versions based on `version.config` 
+- Updates all package versions based on `version.config`
 - Syncs the main changelog to all package changelogs
+- Regenerates package README files from `docs/readme/`
 - Commits and pushes the changes back to the repository
 
 #### Version Validation
+
 - Runs on pull requests to main branches
 - Validates that all package versions are in sync
 - Ensures the CHANGELOG properly documents the current version
+- Ensures generated README files match their sources
 
 ## How It Works
 
@@ -63,12 +69,13 @@ The GitHub Actions workflows provide several automation features:
 3. Internal package dependencies (e.g. `ispect` depends on `ispectify`) are updated to use the new version
 4. The main `CHANGELOG.md` is kept as the source of truth for release notes
 5. All package `CHANGELOG.md` files are synced with the main one
-6. CI/CD ensures all versions, dependencies, and changelogs stay in sync
+6. Package README files are generated from `docs/readme/`
+7. CI/CD ensures all versions, dependencies, changelogs, and README files stay in sync
 
 ## Best Practices
 
 1. Always use the bump_version.sh script to change versions
-2. Update the main CHANGELOG.md before bumping versions 
+2. Update the main CHANGELOG.md before bumping versions
 3. Let the CI/CD handle the sync process
 4. Install the pre-commit hook to catch version inconsistencies early
 5. For larger teams, use the GitHub Actions manual version bump workflow
@@ -84,6 +91,7 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
 This hook will:
+
 1. Check that all package versions match version.config
 2. Check that all internal dependencies are consistent with the current version
 3. Validate CHANGELOG.md formatting

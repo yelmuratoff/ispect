@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-**ISpect** is a modular Flutter debugging and inspection toolkit distributed as a monorepo. The project provides network, database, performance, widget tree, logging, and device inspection tools via an in-app panel.
+**ISpect** is a modular in-app observability and QA diagnostics toolkit for Flutter, distributed as a monorepo. The project provides network, database, performance, widget tree, logging, and device inspection tools via an in-app panel.
 
 - **Architecture**: Monorepo with 7 independent pub packages (`ispect`, `ispectify`, `ispectify_dio`, `ispectify_http`, `ispectify_ws`, `ispectify_db`, `ispectify_bloc`)
 - **Package Manager**: Single-source version management via `version.config`
-- **Production Safety**: Flag-gated initialization (`--dart-define=ISPECT_ENABLED=true`) ensures zero footprint in release builds
+- **Production Safety**: Flag-gated initialization (`--dart-define=ISPECT_ENABLED=true`) keeps the toolkit inactive unless explicitly enabled
 - **Core Pattern**: Observer/interceptor pattern for passive instrumentation across HTTP, DB, WebSocket, and state management layers
 
 ## Critical Monorepo Concepts
@@ -16,14 +16,14 @@
 The entire workspace shares a **single version** defined in `version.config`:
 
 ```plaintext
-VERSION=4.4.7
+VERSION=5.0.0-dev33
 ```
 
 **Golden Rule**: Never manually edit package `pubspec.yaml` versions. Always use:
 
 ```bash
-# Bump semantic version (patch/minor/major)
-./bash/update_versions.sh --bump patch
+# Bump semantic version (patch/minor/major/dev) and propagate changes
+./bash/bump_version.sh patch
 
 # Dry-run to preview changes
 ./bash/update_versions.sh --dry-run
@@ -32,7 +32,7 @@ VERSION=4.4.7
 This script:
 1. Updates `version.config`
 2. Propagates version to all `packages/*/pubspec.yaml`
-3. Synchronizes internal dependency constraints (e.g., `ispect` depends on `^4.4.7` of `ispectify`)
+3. Synchronizes internal dependency constraints (e.g., `ispect` depends on `^5.0.0-dev33` of `ispectify`)
 4. Updates example `pubspec.yaml` files
 5. Propagates root `CHANGELOG.md` section to package changelogs
 
@@ -43,7 +43,7 @@ Packages reference each other using **caret constraints** matching the current v
 ```yaml
 # packages/ispect/pubspec.yaml
 dependencies:
-  ispectify: ^4.4.7  # Always matches version.config
+  ispectify: ^5.0.0-dev33  # Always matches version.config
 
 dependency_overrides:
   ispectify:
@@ -89,7 +89,7 @@ void main() {
 **Pre-publish checklist**:
 ```bash
 # 1. Bump version and propagate changes
-./bash/update_versions.sh --bump patch
+./bash/bump_version.sh patch
 
 # 2. Update CHANGELOG.md (root) with new section
 # 3. Rebuild package READMEs from docs/readme/ sources
@@ -140,7 +140,7 @@ Root `CHANGELOG.md` is the source of truth. Propagate changes to packages:
 ./bash/update_changelog.sh
 
 # Propagate specific version
-./bash/update_changelog.sh --version 4.4.7
+./bash/update_changelog.sh --version 5.0.0-dev33
 
 # Overwrite all package changelogs (destructive)
 ./bash/update_changelog.sh --full-copy --yes
@@ -294,7 +294,7 @@ void main() {
 # Development
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Production (flag omitted = tree-shaken)
+# Production (flag omitted = ISpect inactive and eligible for tree-shaking)
 flutter build apk
 ```
 
@@ -351,7 +351,7 @@ Validates before commit:
 
 ```bash
 # Version bump workflow
-./bash/update_versions.sh --bump patch && \
+./bash/bump_version.sh patch && \
 ./bash/update_changelog.sh && \
 ./bash/build_readme.sh
 

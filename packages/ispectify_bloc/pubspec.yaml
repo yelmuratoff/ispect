@@ -1,7 +1,8 @@
 name: ispectify_bloc
-description: BLoC state management integration for ISpect toolkit
+description: BLoC and Cubit observer for ISpect with event, transition, change, error, completion, and redacted metadata logging.
 version: 5.0.0-dev33
-homepage: https://github.com/yelmuratoff/ispect.git
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:

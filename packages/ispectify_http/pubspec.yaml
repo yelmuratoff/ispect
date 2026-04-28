@@ -1,7 +1,8 @@
 name: ispectify_http
-description: HTTP interceptor integration for ISpect toolkit using http_interceptor package
+description: http_interceptor integration for ISpect with correlated HTTP request, response, error, timing, and redacted payload logs.
 version: 5.0.0-dev33
-homepage: https://github.com/yelmuratoff/ispect.git
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:

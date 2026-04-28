@@ -92,26 +92,26 @@
 
 ISpect is designed for the gap between local debugging and production telemetry: QA builds, staging builds, dogfooding, and support sessions where you need to inspect what happened inside the app without attaching a debugger. When `ISPECT_ENABLED` is not defined at compile time, ISpect entry points become `const`-guarded no-ops and are eligible for Dart tree-shaking.
 
-| Capability | What it does |
-| --- | --- |
-| **Release-gated builds** | Compile-time guard keeps the toolkit inactive unless explicitly enabled |
-| **Visual debug panel** | Draggable overlay with custom actions, badges, and the log viewer |
-| **Widget inspector** | Tap any widget to read its render box, decorations, constraints, and transforms |
-| **Structured logs** | Typed entries with levels, categories, filtering, history, and export/import |
-| **Network capture** | Request / response / error capture for Dio, `http`, and WebSocket clients |
-| **Database tracing** | Passive observability for any storage driver via a single `dbTrace` extension |
-| **BLoC observer** | Event / state / transition / error forwarding into the log pipeline |
-| **Automatic redaction** | Tokens, passwords, PII, and credit-card data masked before they reach logs |
-| **Observer hooks** | Forward log events to your own Sentry, Crashlytics, Grafana, or backend adapter |
-| **12 languages** | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi |
+| Capability               | What it does                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| **Release-gated builds** | Compile-time guard keeps the toolkit inactive unless explicitly enabled         |
+| **Visual debug panel**   | Draggable overlay with custom actions, badges, and the log viewer               |
+| **Widget inspector**     | Tap any widget to read its render box, decorations, constraints, and transforms |
+| **Structured logs**      | Typed entries with levels, categories, filtering, history, and export/import    |
+| **Network capture**      | Request / response / error capture for Dio, `http`, and WebSocket clients       |
+| **Database tracing**     | Passive observability for any storage driver via a single `dbTrace` extension   |
+| **BLoC observer**        | Event / state / transition / error forwarding into the log pipeline             |
+| **Automatic redaction**  | Tokens, passwords, PII, and credit-card data masked before they reach logs      |
+| **Observer hooks**       | Forward log events to your own Sentry, Crashlytics, Grafana, or backend adapter |
+| **12 languages**         | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                                  |
 
 ## How it differs
 
-| Tool | Best for | Where ISpect fits |
-| --- | --- | --- |
-| Flutter DevTools | Local profiling, widget inspection, memory, CPU, and debugger workflows | ISpect runs inside QA/staging builds and can export a diagnostic session without a connected IDE |
-| Sentry / Crashlytics | Production crash reporting, release health, alerts, and long-term telemetry | ISpect gives an interactive in-app log/session viewer before forwarding selected events elsewhere |
-| Dio interceptors / loggers | Request logs and console output | ISpect correlates logs, network, database, BLoC, navigation, export, and visual inspection in one viewer |
+| Tool                       | Best for                                                                    | Where ISpect fits                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Flutter DevTools           | Local profiling, widget inspection, memory, CPU, and debugger workflows     | ISpect runs inside QA/staging builds and can export a diagnostic session without a connected IDE         |
+| Sentry / Crashlytics       | Production crash reporting, release health, alerts, and long-term telemetry | ISpect gives an interactive in-app log/session viewer before forwarding selected events elsewhere        |
+| Dio interceptors / loggers | Request logs and console output                                             | ISpect correlates logs, network, database, BLoC, navigation, export, and visual inspection in one viewer |
 
 ## Data handling
 
@@ -146,6 +146,14 @@ ISpect is a modular monorepo. Install only what your project needs — each pack
 ## Release channel
 
 The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 5.x architecture and package split. If your dependency policy allows only stable packages, pin a stable version from pub.dev until `5.0.0` is released.
+
+## Project maturity
+
+- [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
+- [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
+- [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
+- [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
+- [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
 
 ## Quick start
 

@@ -5,6 +5,7 @@ This document provides an overview of the version management system for the ISpe
 ## Tools and Files
 
 ### Key Files
+
 - `version.config` - The single source of truth for the current version
 - `CHANGELOG.md` - Contains the release notes for all versions
 - `bash/bump_version.sh` - Script to easily bump versions
@@ -14,8 +15,11 @@ This document provides an overview of the version management system for the ISpe
 - `bash/check_dependencies.sh` - Script to validate internal dependencies are consistent
 
 ### GitHub Actions Workflows
-- `update_changelogs.yml` - Automatically syncs versions, dependencies and changelogs when updated
-- `validate_versions.yml` - Validates versions and dependencies in pull requests
+
+- `sync_versions_and_changelogs.yml` - Automatically syncs versions, dependencies, changelogs, and generated README files when sources change
+- `validate_versions.yml` - Validates versions, dependencies, changelog entries, and generated README files in pull requests
+- `production_safety.yml` - Builds a release APK without `ISPECT_ENABLED` and checks residual ISpect strings
+- `test.yml` - Runs analyze, tests, and coverage collection across packages
 
 ## Version Bump Types
 
@@ -45,6 +49,7 @@ You can use the following commands to bump the version:
    - Update all internal dependencies between packages to use the same version
    - Update all example project dependencies
    - Copy the main changelog to all package changelogs
+   - Regenerate package README files from `docs/readme/`
    - Commit and push the changes
 
 2. Pull request validation:
@@ -52,6 +57,7 @@ You can use the following commands to bump the version:
    - All package versions match version.config
    - All internal dependencies are consistent
    - The CHANGELOG contains the current version
+   - Generated README files match their sources
 
 ## Internal Dependencies
 

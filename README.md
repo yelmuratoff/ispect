@@ -35,6 +35,7 @@
   </p>
 </div>
 
+
 **ISpect** is an in-app observability and QA diagnostics toolkit for Flutter and Dart. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, and data redaction — with compile-time gating so the toolkit is inactive unless `ISPECT_ENABLED=true` is provided.
 
 **[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
@@ -130,20 +131,29 @@ See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SE
 
 ISpect is a modular monorepo. Install only what your project needs — each package works independently.
 
-| Package                                                     | What it does                                                                          |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI — debug panel, log viewer, navigation observer, inspector integration      |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core — typed log entries, filtering, tracing, observers             |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction                                         |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction                                   |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction                                    |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing (SQL, ORM, KV stores)                                      |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer                                              |
+| Package | What it does |
+| --- | --- |
+| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
+| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
+
 
 ## Release channel
 
 The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 5.x architecture and package split. If your dependency policy allows only stable packages, pin a stable version from pub.dev until `5.0.0` is released.
+
+## Project maturity
+
+- [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
+- [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
+- [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
+- [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
+- [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
 
 ## Quick start
 
@@ -225,6 +235,7 @@ Release checklist:
 - verify generated artifacts if your compliance process requires binary evidence.
 
 Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. Treat this as a release-footprint check, not a promise that every textual reference disappears from the binary.
+
 
 ## Repository
 

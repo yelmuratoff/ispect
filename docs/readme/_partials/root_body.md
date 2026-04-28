@@ -97,6 +97,14 @@ See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SE
 
 The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 5.x architecture and package split. If your dependency policy allows only stable packages, pin a stable version from pub.dev until `5.0.0` is released.
 
+## Project maturity
+
+- [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
+- [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
+- [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
+- [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
+- [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
+
 ## Quick start
 
 ```yaml

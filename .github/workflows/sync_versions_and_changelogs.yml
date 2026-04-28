@@ -6,8 +6,11 @@ on:
          - "auto/sync/**"
       paths:
          - "CHANGELOG.md"
+         - "ROADMAP.md"
+         - "SECURITY.md"
          - "version.config"
          - "docs/readme/**"
+         - "docs/*.md"
          - ".github/workflows/sync_versions_and_changelogs.yml"
          - "bash/update_versions.sh"
          - "bash/update_changelog.sh"
