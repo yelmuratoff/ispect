@@ -47,8 +47,8 @@
 ```yaml
 dependencies:
   ws: ^1.0.0
-  ispectify: ^5.0.0-dev33
-  ispectify_ws: ^5.0.0-dev33
+  ispectify: ^5.0.0-dev34
+  ispectify_ws: ^5.0.0-dev34
 ```
 
 ## Quick start
