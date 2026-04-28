@@ -12,6 +12,8 @@ This roadmap is intentionally selective. It describes direction without implying
 - Keep package README files generated from `docs/readme/`.
 - Preserve package modularity so teams install only what they need.
 - Keep analyzer and tests green across the pinned Flutter SDK used in CI.
+- Keep positioning focused on internal dev, QA, staging, dogfooding, and design-review builds.
+- Complete publish dry-runs before cutting the stable `5.0.0` release.
 
 ## Next: Integration Quality
 
@@ -20,6 +22,20 @@ This roadmap is intentionally selective. It describes direction without implying
 - Expand database examples where wrappers already exist.
 - Improve test fixtures for redaction, export/import, network correlation, and session history.
 - Add stronger release-footprint reporting in CI.
+- Add a reproducible benchmark suite for startup, logging volume, export volume, history bounds, and payload capture on/off.
+- Add real-world use cases or adoption notes when they can be published without inventing numbers.
+- Review whether the Dart/Flutter SDK baseline should stay as-is for 5.0 stable or whether a wider compatibility window is practical.
+
+## Evidence Before Enterprise Adoption
+
+These items are not required to use ISpect in internal pre-release builds, but they improve trust for larger teams:
+
+- stable `5.0.0` release after the dev validation line settles;
+- published benchmark methodology and results;
+- production-safety CI result linked from documentation;
+- package publish dry-run results;
+- at least two real internal QA/staging use cases;
+- concise migration examples for deprecated 5.x APIs.
 
 ## Later: Optional Integrations
 

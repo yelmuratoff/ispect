@@ -8,6 +8,16 @@ This file is intentionally short. Public planning lives in [`ROADMAP.md`](ROADMA
 - Keep package versions and internal dependencies synced through `version.config`.
 - Keep security, production-safety, compatibility, and deprecation docs current.
 - Add tests for every behavior change in the 5.x pre-release line.
+- Run publish dry-runs for every package before the stable `5.0.0` release.
+- Verify the `production_safety.yml` workflow on GitHub Actions and document the result.
+- Add migration snippets for each 5.x deprecated API.
+
+## Evidence To Add
+
+- Create reproducible benchmark scenarios for disabled release builds and enabled internal QA/staging builds.
+- Measure logging/export/history behavior for representative event counts.
+- Add adoption notes or case studies only when they are real and attributable.
+- Add a 5-minute onboarding example that starts with metadata-only diagnostics.
 
 ## Release Checks
 
