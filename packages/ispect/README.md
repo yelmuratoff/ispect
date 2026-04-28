@@ -162,18 +162,33 @@ The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 
 
 ## Project maturity
 
+Current public signals:
+
+- **Release channel:** `5.0.0-dev` is the active 5.x validation line; teams that require stable-only dependencies can stay on the latest stable 4.x release until 5.0 is published.
+- **SDK baseline:** Dart `>=3.6.0 <4.0.0`; Flutter packages are tested against the pinned Flutter SDK used in CI, with latest stable tracked as an advisory signal.
+- **Release safety:** production-safety CI builds a release APK without `ISPECT_ENABLED` and checks the disabled footprint.
+- **Data handling:** supported network capture, exports, clipboard helpers, cURL generation, and observer boundaries share the same redaction pipeline.
+- **Migration policy:** deprecated APIs are documented with replacements and removal targets.
+
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
 - [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
+- [Performance scope](https://github.com/yelmuratoff/ispect/blob/main/docs/PERFORMANCE.md)
 - [Use cases](https://github.com/yelmuratoff/ispect/blob/main/docs/USE_CASES.md)
 - [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
+
+## Performance scope
+
+When `ISPECT_ENABLED` is omitted, ISpect entry points are inactive and eligible for tree-shaking. In internal QA/staging builds where ISpect is enabled, runtime cost depends on what the team turns on: metadata-only logging is lighter than body capture, database tracing, or high-volume BLoC/event streams.
+
+For noisy flows, use focused capture, filters, sampling, and bounded history. Public benchmark numbers are intentionally not claimed until they are measured and reproducible across supported Flutter versions.
 
 ## Quick start
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev36
+  ispect: ^5.0.0-dev37
 ```
 
 ```dart
