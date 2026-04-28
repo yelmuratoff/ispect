@@ -36,7 +36,7 @@
 </div>
 
 
-**ISpect** is a production-safe debugging toolkit for Flutter and Dart. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, and data redaction — all automatically stripped from release builds via compile-time tree-shaking.
+**ISpect** is an in-app observability and QA diagnostics toolkit for Flutter and Dart. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, and data redaction — with compile-time gating so the toolkit is inactive unless `ISPECT_ENABLED=true` is provided.
 
 **[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
 
@@ -90,11 +90,11 @@
 
 ## Why ISpect?
 
-Most Flutter debug tooling ships in your binary. ISpect doesn't — when `ISPECT_ENABLED` isn't defined at compile time, the entire toolkit compiles to `const`-guarded no-ops and Dart's tree-shaker strips it from the release APK/IPA. Zero bytes in production.
+ISpect is designed for the gap between local debugging and production telemetry: QA builds, staging builds, dogfooding, and support sessions where you need to inspect what happened inside the app without attaching a debugger. When `ISPECT_ENABLED` is not defined at compile time, ISpect entry points become `const`-guarded no-ops and are eligible for Dart tree-shaking.
 
 | Capability | What it does |
 | --- | --- |
-| **Zero-footprint builds** | Compile-time guard removes all code from release builds |
+| **Release-gated builds** | Compile-time guard keeps the toolkit inactive unless explicitly enabled |
 | **Visual debug panel** | Draggable overlay with custom actions, badges, and the log viewer |
 | **Widget inspector** | Tap any widget to read its render box, decorations, constraints, and transforms |
 | **Structured logs** | Typed entries with levels, categories, filtering, history, and export/import |
@@ -102,8 +102,30 @@ Most Flutter debug tooling ships in your binary. ISpect doesn't — when `ISPECT
 | **Database tracing** | Passive observability for any storage driver via a single `dbTrace` extension |
 | **BLoC observer** | Event / state / transition / error forwarding into the log pipeline |
 | **Automatic redaction** | Tokens, passwords, PII, and credit-card data masked before they reach logs |
-| **Observer hooks** | Forward log events to Sentry, Crashlytics, or any backend in real time |
+| **Observer hooks** | Forward log events to your own Sentry, Crashlytics, Grafana, or backend adapter |
 | **12 languages** | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi |
+
+## How it differs
+
+| Tool | Best for | Where ISpect fits |
+| --- | --- | --- |
+| Flutter DevTools | Local profiling, widget inspection, memory, CPU, and debugger workflows | ISpect runs inside QA/staging builds and can export a diagnostic session without a connected IDE |
+| Sentry / Crashlytics | Production crash reporting, release health, alerts, and long-term telemetry | ISpect gives an interactive in-app log/session viewer before forwarding selected events elsewhere |
+| Dio interceptors / loggers | Request logs and console output | ISpect correlates logs, network, database, BLoC, navigation, export, and visual inspection in one viewer |
+
+## Data handling
+
+ISpect can capture sensitive application data if you configure it to log request bodies, response bodies, database arguments, BLoC payloads, or custom messages. Redaction is enabled by default in the network packages and the shared redaction engine covers common auth headers, tokens, cookies, credentials, PII, and financial fields, but no automatic redactor can understand every domain-specific payload.
+
+Before using ISpect in shared QA, staging, customer-support, or enterprise builds:
+
+- keep body/header capture limited to what the team actually needs;
+- add project-specific redaction keys for tenant IDs, internal tokens, account numbers, and business identifiers;
+- treat exported sessions as sensitive files;
+- review observer adapters before forwarding logs to Sentry, Crashlytics, Grafana, or custom backends;
+- keep `ISPECT_ENABLED` disabled for production release builds unless you have an explicit internal policy for enabling it.
+
+See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy and recommended rollout checklist.
 
 ## The ISpect toolkit
 
@@ -120,6 +142,10 @@ ISpect is a modular monorepo. Install only what your project needs — each pack
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
 
+
+## Release channel
+
+The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 5.x architecture and package split. If your dependency policy allows only stable packages, pin a stable version from pub.dev until `5.0.0` is released.
 
 ## Quick start
 
@@ -155,7 +181,7 @@ class MyApp extends StatelessWidget {
 # Development — toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — toolkit removed via tree-shaking.
+# Release — omit the flag so ISpect remains inactive.
 flutter build apk
 ```
 
@@ -163,13 +189,13 @@ For package-specific guides (Dio, http, WS, DB, BLoC, layout inspector) see the 
 
 ## Production safety
 
-ISpect is flag-gated — with zero footprint in release builds when `ISPECT_ENABLED` is not defined at compile time. `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops and Dart's tree-shaker eliminates the entire toolkit.
+ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops and are eligible for Dart's tree-shaker in release builds.
 
 ```bash
 # Development — toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — toolkit removed by the tree-shaker.
+# Release — omit the flag so ISpect remains inactive.
 flutter build apk
 ```
 
@@ -193,7 +219,14 @@ class ISpectConfig {
 }
 ```
 
-Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. See [ispect on pub.dev](https://pub.dev/packages/ispect) for the full production-safety guide.
+Release checklist:
+
+- do not pass `--dart-define=ISPECT_ENABLED=true` to production release jobs;
+- keep debug-only setup inside `ISpect.run(...)` / `ISpectBuilder.wrap(...)` entry points;
+- prefer environment-aware guards such as `ENVIRONMENT != 'production'` for internal staging builds;
+- verify generated artifacts if your compliance process requires binary evidence.
+
+Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. Treat this as a release-footprint check, not a promise that every textual reference disappears from the binary.
 
 
 ## Repository

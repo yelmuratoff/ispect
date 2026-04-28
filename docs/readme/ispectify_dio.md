@@ -64,7 +64,7 @@ const settings = ISpectDioInterceptorSettings(
 // Verbose — full payloads, no redaction. Only for local dev.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
 
-// Redacted — production-safe defaults, body capture off.
+// Redacted — conservative defaults, body capture off.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 
 // Middle ground — useful for staging environments.

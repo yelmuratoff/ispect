@@ -41,7 +41,7 @@
 - Typed log entries with explicit severity levels and log-type keys.
 - Filtering, in-memory history, and custom truncation.
 - Trace extensions for async / sync / stream operations with timing and outcome tagging.
-- Observer hooks to forward events into Sentry, Crashlytics, Grafana, or anywhere else.
+- Observer hooks to forward events into your own Sentry, Crashlytics, Grafana, or backend adapter.
 - Built-in [redaction engine](#data-redaction) shared across the `ispectify_*` interceptor packages.
 
 ## Install
@@ -153,6 +153,8 @@ logger.addObserver(const GrafanaObserver());
 
 Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** — built-in rules cover auth headers, tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, IBAN), phone numbers, and more.
 
+Redaction is a safety layer, not a substitute for data minimization. Prefer disabling body/header capture when payload contents are not needed, and add project-specific keys for business identifiers that only your application understands.
+
 ### Custom keys and patterns
 
 ```dart
@@ -190,10 +192,12 @@ final redactor = RedactionService(
 
 Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
 
+Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be treated as sensitive artifacts even when redaction is enabled.
+
 
 ## Security
 
-Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitise user input before logging it manually.
+Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitize user input before logging it manually. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the recommended data-handling policy.
 
 ## The ISpect toolkit
 

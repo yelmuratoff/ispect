@@ -5,7 +5,7 @@
 - Typed log entries with explicit severity levels and log-type keys.
 - Filtering, in-memory history, and custom truncation.
 - Trace extensions for async / sync / stream operations with timing and outcome tagging.
-- Observer hooks to forward events into Sentry, Crashlytics, Grafana, or anywhere else.
+- Observer hooks to forward events into your own Sentry, Crashlytics, Grafana, or backend adapter.
 - Built-in [redaction engine](#data-redaction) shared across the `ispectify_*` interceptor packages.
 
 ## Install
@@ -117,7 +117,7 @@ logger.addObserver(const GrafanaObserver());
 
 ## Security
 
-Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitise user input before logging it manually.
+Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitize user input before logging it manually. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the recommended data-handling policy.
 
 <!-- partial:install_matrix -->
 
