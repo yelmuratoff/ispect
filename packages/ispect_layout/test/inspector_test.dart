@@ -32,6 +32,9 @@ import 'package:ispect_layout/ispect_layout.dart';
 
 const _containerKey = ValueKey('container');
 const _roundedMaterialChildKey = ValueKey('rounded-material-child');
+const _page1ContainerKey = ValueKey('page1-container');
+const _page2ContainerKey = ValueKey('page2-container');
+const _pushButtonKey = ValueKey('push-page2');
 
 Widget _buildBody() {
   return MaterialApp(
@@ -113,6 +116,55 @@ Widget _buildCustomShortcutBody() {
     home: Scaffold(
       backgroundColor: Colors.black,
       body: const SizedBox.expand(),
+    ),
+  );
+}
+
+Widget _buildNavigationStackBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(child: child!),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Builder(
+        builder: (context) => Stack(
+          children: [
+            Center(
+              child: Container(
+                key: _page1ContainerKey,
+                width: 100.0,
+                height: 100.0,
+                color: Colors.blue,
+              ),
+            ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: ElevatedButton(
+                key: _pushButtonKey,
+                onPressed: () => Navigator.of(context).push<void>(
+                  PageRouteBuilder<void>(
+                    // Non-opaque: the page underneath remains onstage in
+                    // Overlay's _RenderTheatre, exposing the pre-fix walk
+                    // to its render boxes. The active barrier should
+                    // absorb the centre-screen tap regardless.
+                    opaque: false,
+                    barrierColor: const Color(0x99000000),
+                    pageBuilder: (_, __, ___) => Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                        key: _page2ContainerKey,
+                        width: 30.0,
+                        height: 30.0,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('push'),
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }
@@ -409,6 +461,30 @@ void main() {
       expect(find.text('RoundedRectangleBorder'), findsOneWidget);
       expect(find.text('border radius'), findsOneWidget);
       expect(find.text('18.0'), findsOneWidget);
+    });
+
+    testWidgets(
+        'does not hit-test widgets from routes underneath the active one',
+        (tester) async {
+      await tester.pumpWidget(_buildNavigationStackBody());
+
+      await tester.tap(find.byKey(_pushButtonKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(_page2ContainerKey), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      // Centre tap lands on the barrier of the top route — the page-1
+      // 100×100 container behind it must stay invisible to the inspector.
+      final page1 =
+          tester.renderObject(find.byKey(_page1ContainerKey)) as RenderBox;
+      final position = (page1.localToGlobal(Offset.zero) & page1.size).center;
+
+      await tester.tapAt(position);
+      await tester.pump();
+
+      expect(find.text('100.0 × 100.0'), findsNothing);
     });
 
     // testWidgets('hit-test result golden test', (tester) async {

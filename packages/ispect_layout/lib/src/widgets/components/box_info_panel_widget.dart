@@ -126,7 +126,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
     Color dividerColor,
   ) {
     final theme = Theme.of(context);
-    final preview = previewText(target.text);
+    final iconGlyphs = describeAsIconGlyphs(target.text);
     final pProps = paragraphProps(target, decimalPlaces: decimalPlaces);
     final spanSections = extractTextStyles(target.text)
         .map((style) => spanProps(style, decimalPlaces: decimalPlaces))
@@ -134,30 +134,44 @@ class BoxInfoPanelWidget extends StatelessWidget {
         .toList();
 
     final out = <Widget>[];
-    if (preview.isNotEmpty || pProps.isNotEmpty) {
+
+    if (iconGlyphs != null) {
       out
         ..add(Divider(height: 20.0, color: dividerColor))
-        ..add(const _SectionHeader('text'));
-      if (preview.isNotEmpty) {
-        out.add(
-          PropChip(
-            icon: Icons.text_snippet_outlined,
-            subtitle: 'text',
-            backgroundColor: theme.chipTheme.backgroundColor,
-            expandChild: true,
-            child: Text(
-              '"$preview"',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(fontStyle: FontStyle.italic),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        );
-        if (pProps.isNotEmpty) out.add(const SizedBox(height: 6));
-      }
+        ..add(const _SectionHeader('icon'))
+        ..add(_IconGlyphPreview(glyphs: iconGlyphs));
       if (pProps.isNotEmpty) {
-        out.add(PropSection(props: pProps));
+        out
+          ..add(const SizedBox(height: 6))
+          ..add(PropSection(props: pProps));
+      }
+    } else {
+      final preview = previewText(target.text);
+      if (preview.isNotEmpty || pProps.isNotEmpty) {
+        out
+          ..add(Divider(height: 20.0, color: dividerColor))
+          ..add(const _SectionHeader('text'));
+        if (preview.isNotEmpty) {
+          out.add(
+            PropChip(
+              icon: Icons.text_snippet_outlined,
+              subtitle: 'text',
+              backgroundColor: theme.chipTheme.backgroundColor,
+              expandChild: true,
+              child: Text(
+                '"$preview"',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(fontStyle: FontStyle.italic),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+          if (pProps.isNotEmpty) out.add(const SizedBox(height: 6));
+        }
+        if (pProps.isNotEmpty) {
+          out.add(PropSection(props: pProps));
+        }
       }
     }
 
@@ -394,6 +408,53 @@ class _ComparedRow extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Renders the inspected icon glyph next to its `U+XXXX` code point.
+///
+/// Release builds with `--tree-shake-icons` (default) may render a glyph
+/// the host app never references statically as tofu — the adjacent code
+/// point keeps the row readable. Build with `--no-tree-shake-icons` if
+/// faithful glyph rendering matters in release.
+class _IconGlyphPreview extends StatelessWidget {
+  const _IconGlyphPreview({required this.glyphs});
+
+  final IconGlyphPreview glyphs;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return PropChip(
+      icon: Icons.emoji_symbols_outlined,
+      subtitle: 'icon · ${glyphs.fontFamily}',
+      backgroundColor: theme.chipTheme.backgroundColor,
+      expandChild: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            glyphs.glyphs,
+            style: TextStyle(
+              fontFamily: glyphs.fontFamily,
+              fontSize: 22.0,
+              color: theme.colorScheme.onSurface,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(width: 10.0),
+          Flexible(
+            child: Text(
+              glyphs.codePointsLabel,
+              style: theme.textTheme.bodySmall?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()]),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

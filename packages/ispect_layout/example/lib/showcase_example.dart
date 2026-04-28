@@ -30,6 +30,27 @@ class ShowcaseApp extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Inspector Showcase'),
+          actions: [
+            IconButton(
+              tooltip: 'Push opaque page',
+              icon: const Icon(Icons.layers_outlined),
+              onPressed: () => Navigator.of(context).push<void>(
+                MaterialPageRoute(builder: (_) => const _PushedPage()),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Push transparent page (modal-like)',
+              icon: const Icon(Icons.blur_on),
+              onPressed: () => Navigator.of(context).push<void>(
+                PageRouteBuilder<void>(
+                  opaque: false,
+                  barrierColor: Colors.black.withValues(alpha: 0.55),
+                  barrierDismissible: true,
+                  pageBuilder: (_, __, ___) => const _PushedTransparentPage(),
+                ),
+              ),
+            ),
+          ],
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
@@ -1229,6 +1250,93 @@ class _FieldsTab extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Navigation regression sandbox ────────────────────────────────────────────
+
+class _PushedPage extends StatelessWidget {
+  const _PushedPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Pushed page (opaque)')),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Inspect anywhere on this page. The showcase widgets from '
+              'the previous route must NOT appear in the inspector.',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              key: const ValueKey('pushed-opaque-marker'),
+              width: 220,
+              height: 120,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.deepPurple, width: 2),
+              ),
+              child: const Text(
+                'Top-route marker',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PushedTransparentPage extends StatelessWidget {
+  const _PushedTransparentPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Material(
+        color: Colors.white,
+        elevation: 8,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                key: const ValueKey('pushed-transparent-marker'),
+                width: 200,
+                height: 80,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Top-route marker'),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Tap the dark barrier — the inspector must show nothing\n'
+                '(or only the barrier), never widgets from the page below.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

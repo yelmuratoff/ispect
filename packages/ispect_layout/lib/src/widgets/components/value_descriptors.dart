@@ -271,6 +271,90 @@ String previewText(InlineSpan span) {
       : '${raw.substring(0, _kPreviewDisplayCap)}…';
 }
 
+/// A paragraph that paints icon glyphs — Private-Use-Area code points
+/// rendered with an icon font (`MaterialIcons`, `CupertinoIcons`, custom
+/// packs). Recognised so the inspector can show the actual glyph instead
+/// of tofu under the default text preview.
+class IconGlyphPreview {
+  const IconGlyphPreview({
+    required this.codePoints,
+    required this.fontFamily,
+  });
+
+  final List<int> codePoints;
+
+  /// Icon font family as stored on the [TextSpan]. Flutter encodes the
+  /// owning package as a `packages/<pkg>/<family>` prefix here, so no
+  /// separate `fontPackage` field is required to re-render the glyph.
+  final String fontFamily;
+
+  String get codePointsLabel => codePoints
+      .map((cp) => 'U+${cp.toRadixString(16).toUpperCase()}')
+      .join(' ');
+
+  String get glyphs => String.fromCharCodes(codePoints);
+}
+
+bool _isPrivateUseCodePoint(int cp) =>
+    (cp >= 0xE000 && cp <= 0xF8FF) ||
+    (cp >= 0xF0000 && cp <= 0xFFFFD) ||
+    (cp >= 0x100000 && cp <= 0x10FFFD);
+
+bool _isIconFontFamily(String? family) {
+  if (family == null) return false;
+  return family.contains('Icons') || family.startsWith('Cupertino');
+}
+
+/// Returns an [IconGlyphPreview] when [span] is composed entirely of icon
+/// glyphs, otherwise `null`. Recognition is intentionally conservative —
+/// a single non-icon character or non-icon font family anywhere in the
+/// tree disqualifies the span, so plain text never gets misread as an
+/// icon.
+IconGlyphPreview? describeAsIconGlyphs(InlineSpan span) {
+  final codePoints = <int>[];
+  String? fontFamily;
+  var ok = true;
+
+  void inspect(InlineSpan node) {
+    if (!ok) return;
+    if (node is! TextSpan) {
+      ok = false;
+      return;
+    }
+    final text = node.text;
+    if (text != null && text.isNotEmpty) {
+      final family = node.style?.fontFamily;
+      if (!_isIconFontFamily(family)) {
+        ok = false;
+        return;
+      }
+      for (final cp in text.runes) {
+        if (!_isPrivateUseCodePoint(cp)) {
+          ok = false;
+          return;
+        }
+        codePoints.add(cp);
+      }
+      fontFamily ??= family;
+    }
+    final children = node.children;
+    if (children != null) {
+      for (final c in children) {
+        inspect(c);
+        if (!ok) return;
+      }
+    }
+  }
+
+  inspect(span);
+
+  if (!ok || codePoints.isEmpty || fontFamily == null) return null;
+  return IconGlyphPreview(
+    codePoints: List.unmodifiable(codePoints),
+    fontFamily: fontFamily!,
+  );
+}
+
 // ─── Debug-only contract validation ──────────────────────────────────────────
 
 bool _contractsValidated = false;
