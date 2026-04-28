@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev32
+## 5.0.0-dev33
 
 ### Breaking Changes
 
@@ -56,6 +56,8 @@
 - **Stability:** Resolved memory leaks in UI components and improved robustness of JSON parsing for large datasets.
 - **Security:** Added protection against CSV injection in exports and limited clipboard size to prevent memory issues.
 - **Inspector overlays:** Clamped overlay rects and pointer coordinates to screen bounds — fixes off-screen tracking and out-of-viewport selection.
+- **Cross-route hit-testing:** Inspector now uses Flutter's native hit-test pipeline, so taps no longer surface widgets from routes beneath the active one (non-opaque pages, dialogs, modal sheets) or from `Offstage`/`IgnorePointer` subtrees.
+- **Icon-glyph preview:** When the selected `RenderParagraph` is actually rendering an icon (a single Private-Use-Area code point in `MaterialIcons`/`CupertinoIcons` or a similar icon font), the info panel now shows the glyph itself plus its `U+XXXX` code point under an `ICON` section, instead of unreadable tofu under `TEXT`.
 - **Inspector release safety:** Replaced `describeIdentity` and other diagnostic-only formatters with release-safe equivalents so the layout inspector no longer throws or leaks debug data in profile/release builds.
 
 ### CI/Tests
