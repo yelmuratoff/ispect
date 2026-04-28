@@ -1,6 +1,6 @@
 # Roadmap
 
-ISpect is in the `5.0.0-dev` pre-release line. The priority is to stabilize the 5.x architecture, documentation, safety guarantees, and compatibility story before publishing `5.0.0` as stable.
+ISpect is in the `5.0.0-dev` pre-release line. The priority is to stabilize the 5.x architecture, documentation, release-safety checks, and compatibility story before publishing `5.0.0` as stable.
 
 This roadmap is intentionally selective. It describes direction without implying that every possible integration is part of the next release.
 

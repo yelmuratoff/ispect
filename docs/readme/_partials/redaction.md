@@ -2,7 +2,9 @@
 
 Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** — built-in rules cover auth headers, tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, IBAN), phone numbers, and more.
 
-Redaction is a safety layer, not a substitute for data minimization. Prefer disabling body/header capture when payload contents are not needed, and add project-specific keys for business identifiers that only your application understands.
+The same redaction model is used beyond initial capture: supported exports, clipboard helpers, cURL generation, and observer payloads can pass through the shared redaction pipeline before data leaves the app/debug session.
+
+Redaction works best together with focused capture. Keep body/header logging disabled when payload contents are not needed, and register project-specific keys for business identifiers that only your application understands.
 
 ### Custom keys and patterns
 
@@ -41,4 +43,4 @@ final redactor = RedactionService(
 
 Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
 
-Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be treated as sensitive artifacts even when redaction is enabled.
+Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.

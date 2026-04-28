@@ -1,12 +1,14 @@
 ## Production safety
 
-ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops and are eligible for Dart's tree-shaker in release builds.
+ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops. Because the disabled path is known at compile time, release builds are eligible for Dart's tree-shaker to remove the inactive toolkit code.
+
+`ISPECT_ENABLED` is a build-time decision, not a runtime toggle. ISpect does not enable itself in production; release pipelines opt in only if they explicitly pass `--dart-define=ISPECT_ENABLED=true`.
 
 ```bash
 # Development — toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — omit the flag so ISpect remains inactive.
+# Release — omit the flag so ISpect stays inactive.
 flutter build apk
 ```
 
@@ -32,7 +34,7 @@ class ISpectConfig {
 
 Release checklist:
 
-- do not pass `--dart-define=ISPECT_ENABLED=true` to production release jobs;
+- keep production release jobs free of `--dart-define=ISPECT_ENABLED=true`;
 - keep debug-only setup inside `ISpect.run(...)` / `ISpectBuilder.wrap(...)` entry points;
 - prefer environment-aware guards such as `ENVIRONMENT != 'production'` for internal staging builds;
 - verify generated artifacts if your compliance process requires binary evidence.

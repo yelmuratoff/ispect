@@ -1,12 +1,14 @@
 # Security and Data Handling
 
-ISpect is a diagnostics toolkit. It can capture logs, network metadata, request/response payloads, database trace arguments, BLoC events/states, navigation events, exported sessions, and observer events depending on how you configure it.
+ISpect is a diagnostics toolkit. It captures the streams you configure: logs, network metadata, optional request/response payloads, database trace arguments, BLoC events/states, navigation events, exported sessions, and observer events.
 
-The default posture is conservative, but teams must still treat ISpect output as sensitive.
+The default posture is conservative: ISpect is compile-time gated, network redaction is enabled by default, and payload/header capture can be limited through settings. Teams should still handle ISpect output according to the data it contains.
+
+Compared with plain log viewers, ISpect provides a shared redaction pipeline for supported interceptors, export flows, clipboard helpers, cURL generation, and observer payloads. The goal is safer diagnostics by default, while keeping capture scope and external forwarding explicit.
 
 ## Production Builds
 
-ISpect is controlled by the compile-time `ISPECT_ENABLED` flag. Do not pass `--dart-define=ISPECT_ENABLED=true` to production release builds unless your organization has explicitly approved that policy.
+ISpect is controlled by the compile-time `ISPECT_ENABLED` flag. It is not a runtime switch and ISpect does not enable itself in production. Production release pipelines normally omit `--dart-define=ISPECT_ENABLED=true`; passing the flag is an explicit build configuration choice.
 
 Recommended release rule:
 
@@ -14,7 +16,7 @@ Recommended release rule:
 # Internal QA / staging only
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Production release
+# Production release: flag omitted
 flutter build apk
 ```
 
@@ -36,7 +38,7 @@ class ISpectConfig {
 
 Network redaction is enabled by default. The shared redaction engine covers common sensitive keys and patterns, including authorization headers, cookies, tokens, passwords, API keys, credentials, PII fields, phone numbers, and financial data.
 
-Automatic redaction cannot know every domain-specific field. Add custom keys for values such as:
+Domain-specific fields should be registered by the application team. Add custom keys for values such as:
 
 - tenant identifiers;
 - internal account numbers;
@@ -60,7 +62,7 @@ final redactor = RedactionService(
 
 ## Data Minimization
 
-Prefer capturing less data before relying on redaction.
+Prefer focused capture before relying on broad payload logging.
 
 Recommended defaults for shared QA, staging, and support builds:
 
@@ -68,11 +70,11 @@ Recommended defaults for shared QA, staging, and support builds:
 - keep headers disabled unless debugging authentication, caching, or routing;
 - project database traces to counts, IDs, timings, and status instead of full rows;
 - avoid logging raw user input with `logger.info(...)`;
-- avoid exporting sessions that contain customer production data.
+- export sessions only through the channels approved for the data they contain.
 
 ## Exports and Observers
 
-Exported sessions are plain-text artifacts. Observer hooks can forward events to Sentry, Crashlytics, Grafana, or a custom backend through your own adapter. Treat both exports and observer payloads as sensitive, even when redaction is enabled.
+Exported sessions are plain-text artifacts, and supported export paths apply the shared redaction pipeline before writing data out. Observer hooks can forward events to Sentry, Crashlytics, Grafana, or a custom backend through your own adapter. Handle both exports and observer payloads according to the data classes they contain.
 
 Before enabling observers:
 

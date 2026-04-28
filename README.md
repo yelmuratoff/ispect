@@ -115,15 +115,17 @@ ISpect is designed for the gap between local debugging and production telemetry:
 
 ## Data handling
 
-ISpect can capture sensitive application data if you configure it to log request bodies, response bodies, database arguments, BLoC payloads, or custom messages. Redaction is enabled by default in the network packages and the shared redaction engine covers common auth headers, tokens, cookies, credentials, PII, and financial fields, but no automatic redactor can understand every domain-specific payload.
+ISpect captures the diagnostic streams you explicitly enable: logs, network metadata, optional payloads, database traces, BLoC events, navigation events, and exports. Network redaction is enabled by default, and the shared redaction engine covers common auth headers, tokens, cookies, credentials, PII, and financial fields. Application-specific identifiers should be added to the redaction configuration by the team that owns the data model.
 
-Before using ISpect in shared QA, staging, customer-support, or enterprise builds:
+Unlike a plain log viewer, ISpect uses the same redaction pipeline across supported network interceptors, log export, clipboard helpers, and observer boundaries. This gives diagnostic workflows safer defaults while keeping capture scope and external forwarding explicit.
+
+For shared QA, staging, customer-support, or enterprise builds:
 
 - keep body/header capture limited to what the team actually needs;
 - add project-specific redaction keys for tenant IDs, internal tokens, account numbers, and business identifiers;
-- treat exported sessions as sensitive files;
+- handle exported sessions according to the data they contain;
 - review observer adapters before forwarding logs to Sentry, Crashlytics, Grafana, or custom backends;
-- keep `ISPECT_ENABLED` disabled for production release builds unless you have an explicit internal policy for enabling it.
+- keep production release pipelines free of `--dart-define=ISPECT_ENABLED=true`; passing the flag is an explicit opt-in for internal builds.
 
 See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy and recommended rollout checklist.
 
@@ -197,13 +199,15 @@ For package-specific guides (Dio, http, WS, DB, BLoC, layout inspector) see the 
 
 ## Production safety
 
-ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops and are eligible for Dart's tree-shaker in release builds.
+ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder`, and `ISpectLocalizations.delegates()` become `const`-guarded no-ops. Because the disabled path is known at compile time, release builds are eligible for Dart's tree-shaker to remove the inactive toolkit code.
+
+`ISPECT_ENABLED` is a build-time decision, not a runtime toggle. ISpect does not enable itself in production; release pipelines opt in only if they explicitly pass `--dart-define=ISPECT_ENABLED=true`.
 
 ```bash
 # Development — toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — omit the flag so ISpect remains inactive.
+# Release — omit the flag so ISpect stays inactive.
 flutter build apk
 ```
 
@@ -229,7 +233,7 @@ class ISpectConfig {
 
 Release checklist:
 
-- do not pass `--dart-define=ISPECT_ENABLED=true` to production release jobs;
+- keep production release jobs free of `--dart-define=ISPECT_ENABLED=true`;
 - keep debug-only setup inside `ISpect.run(...)` / `ISpectBuilder.wrap(...)` entry points;
 - prefer environment-aware guards such as `ENVIRONMENT != 'production'` for internal staging builds;
 - verify generated artifacts if your compliance process requires binary evidence.
