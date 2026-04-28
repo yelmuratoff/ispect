@@ -161,7 +161,7 @@ The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev34
+  ispect: ^5.0.0-dev35
 ```
 
 ```dart

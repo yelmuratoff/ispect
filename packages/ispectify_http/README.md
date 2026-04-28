@@ -48,8 +48,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^5.0.0-dev34
-  ispectify_http: ^5.0.0-dev34
+  ispectify: ^5.0.0-dev35
+  ispectify_http: ^5.0.0-dev35
 ```
 
 ## Quick start
