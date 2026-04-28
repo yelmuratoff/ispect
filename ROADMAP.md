@@ -15,7 +15,7 @@ This roadmap is intentionally selective. It describes direction without implying
 
 ## Next: Integration Quality
 
-- Improve observer examples for external sinks such as Sentry, Crashlytics, Grafana, and custom backends without presenting them as bundled official adapters.
+- Improve observer examples for internal tools without presenting them as bundled official production-telemetry adapters.
 - Add focused examples for common QA/staging rollout patterns.
 - Expand database examples where wrappers already exist.
 - Improve test fixtures for redaction, export/import, network correlation, and session history.

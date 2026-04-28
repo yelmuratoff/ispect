@@ -41,14 +41,14 @@
 - Typed log entries with explicit severity levels and log-type keys.
 - Filtering, in-memory history, and custom truncation.
 - Trace extensions for async / sync / stream operations with timing and outcome tagging.
-- Observer hooks to forward events into your own Sentry, Crashlytics, Grafana, or backend adapter.
+- Observer hooks to forward selected events into internal tools through your own adapter.
 - Built-in [redaction engine](#data-redaction) shared across the `ispectify_*` interceptor packages.
 
 ## Install
 
 ```yaml
 dependencies:
-  ispectify: ^5.0.0-dev35
+  ispectify: ^5.0.0-dev36
 ```
 
 ## Quick start

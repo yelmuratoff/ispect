@@ -65,7 +65,7 @@ Standalone package — works independently of the rest of the [ISpect toolkit](#
 
 ```yaml
 dependencies:
-  ispect_layout: ^5.0.0-dev35
+  ispect_layout: ^5.0.0-dev36
 ```
 
 ## Quick start

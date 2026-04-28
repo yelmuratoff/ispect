@@ -36,7 +36,7 @@
 </div>
 
 
-**ISpect** is an in-app observability and QA diagnostics toolkit for Flutter and Dart. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, and data redaction — with compile-time gating so the toolkit is inactive unless `ISPECT_ENABLED=true` is provided.
+**ISpect** is an internal pre-release diagnostics toolkit for Flutter and Dart. It is built for development, QA, staging, dogfooding, and design-review builds — not for public production releases. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, export/import, and data redaction, with compile-time gating so the toolkit is inactive unless `ISPECT_ENABLED=true` is provided.
 
 **[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
 
@@ -90,7 +90,7 @@
 
 ## Why ISpect?
 
-ISpect is designed for the gap between local debugging and production telemetry: QA builds, staging builds, dogfooding, and support sessions where you need to inspect what happened inside the app without attaching a debugger. When `ISPECT_ENABLED` is not defined at compile time, ISpect entry points become `const`-guarded no-ops and are eligible for Dart tree-shaking.
+ISpect is designed for the pre-release gap between local debugging and shipped production: QA builds, staging builds, dogfooding, and design-review builds where testers, designers, and developers need to inspect what happened inside the app without attaching a debugger. When `ISPECT_ENABLED` is not defined at compile time, ISpect entry points become `const`-guarded no-ops and are eligible for Dart tree-shaking.
 
 | Capability               | What it does                                                                    |
 | ------------------------ | ------------------------------------------------------------------------------- |
@@ -102,7 +102,7 @@ ISpect is designed for the gap between local debugging and production telemetry:
 | **Database tracing**     | Passive observability for any storage driver via a single `dbTrace` extension   |
 | **BLoC observer**        | Event / state / transition / error forwarding into the log pipeline             |
 | **Automatic redaction**  | Tokens, passwords, PII, and credit-card data masked before they reach logs      |
-| **Observer hooks**       | Forward log events to your own Sentry, Crashlytics, Grafana, or backend adapter |
+| **Observer hooks**       | Forward selected events to internal tools through your own adapter              |
 | **12 languages**         | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                                  |
 
 ## How it differs
@@ -110,7 +110,7 @@ ISpect is designed for the gap between local debugging and production telemetry:
 | Tool                       | Best for                                                                    | Where ISpect fits                                                                                        |
 | -------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Flutter DevTools           | Local profiling, widget inspection, memory, CPU, and debugger workflows     | ISpect runs inside QA/staging builds and can export a diagnostic session without a connected IDE         |
-| Sentry / Crashlytics       | Production crash reporting, release health, alerts, and long-term telemetry | ISpect gives an interactive in-app log/session viewer before forwarding selected events elsewhere        |
+| Sentry / Crashlytics       | Production crash reporting, release health, alerts, and long-term telemetry | ISpect is for pre-release in-app inspection before the app ships                                        |
 | Dio interceptors / loggers | Request logs and console output                                             | ISpect correlates logs, network, database, BLoC, navigation, export, and visual inspection in one viewer |
 
 ## Data handling
@@ -119,15 +119,26 @@ ISpect captures the diagnostic streams you explicitly enable: logs, network meta
 
 Unlike a plain log viewer, ISpect uses the same redaction pipeline across supported network interceptors, log export, clipboard helpers, and observer boundaries. This gives diagnostic workflows safer defaults while keeping capture scope and external forwarding explicit.
 
-For shared QA, staging, customer-support, or enterprise builds:
+For shared dev, QA, staging, dogfooding, and design-review builds:
 
 - keep body/header capture limited to what the team actually needs;
 - add project-specific redaction keys for tenant IDs, internal tokens, account numbers, and business identifiers;
 - handle exported sessions according to the data they contain;
-- review observer adapters before forwarding logs to Sentry, Crashlytics, Grafana, or custom backends;
+- review observer adapters before forwarding logs to internal tools;
 - keep production release pipelines free of `--dart-define=ISPECT_ENABLED=true`; passing the flag is an explicit opt-in for internal builds.
 
 See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy and recommended rollout checklist.
+
+## Minimal safe setup
+
+Start with the UI shell and metadata-only diagnostics, then enable deeper capture only for the pre-release problem you are investigating.
+
+1. Add `ispect` and wrap the app with `ISpect.run(...)` / `ISpectBuilder.wrap(...)`.
+2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
+3. Keep production release jobs free of that flag.
+4. Enable network/database/BLoC modules one at a time.
+5. Keep body/header capture off until payload details are needed.
+6. Add project-specific redaction keys before sharing exported sessions outside the development team.
 
 ## The ISpect toolkit
 
@@ -155,13 +166,14 @@ The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
 - [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
+- [Use cases](https://github.com/yelmuratoff/ispect/blob/main/docs/USE_CASES.md)
 - [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
 
 ## Quick start
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev35
+  ispect: ^5.0.0-dev36
 ```
 
 ```dart
