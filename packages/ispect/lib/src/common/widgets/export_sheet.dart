@@ -209,6 +209,7 @@ class _ActionButtons extends StatelessWidget {
                   : () async {
                       final messenger = ScaffoldMessenger.maybeOf(context);
                       final capturedL10n = context.ispectL10n;
+                      final onOpenFile = context.iSpect.options.onOpenFile;
 
                       _closeSheet(context);
 
@@ -233,6 +234,32 @@ class _ActionButtons extends StatelessWidget {
                           ),
                         );
                       } else {
+                        final SnackBarAction action;
+                        if (onOpenFile != null) {
+                          action = SnackBarAction(
+                            label: capturedL10n.openPath,
+                            onPressed: () {
+                              onOpenFile(path).catchError((Object error) {
+                                assert(() {
+                                  debugPrint('Failed to open file: $error');
+                                  return true;
+                                }());
+                              });
+                            },
+                          );
+                        } else {
+                          action = SnackBarAction(
+                            label: capturedL10n.copyPath,
+                            onPressed: () {
+                              copyClipboard(
+                                null,
+                                value: path,
+                                messenger: messenger,
+                                l10n: capturedL10n,
+                              );
+                            },
+                          );
+                        }
                         unawaited(
                           ISpectToaster.showInfoToast(
                             null,
@@ -240,17 +267,7 @@ class _ActionButtons extends StatelessWidget {
                             duration: const Duration(seconds: 6),
                             messenger: messenger,
                             l10n: capturedL10n,
-                            action: SnackBarAction(
-                              label: capturedL10n.copyPath,
-                              onPressed: () {
-                                copyClipboard(
-                                  null,
-                                  value: path,
-                                  messenger: messenger,
-                                  l10n: capturedL10n,
-                                );
-                              },
-                            ),
+                            action: action,
                           ),
                         );
                       }

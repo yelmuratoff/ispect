@@ -13,9 +13,10 @@ import 'package:ispectify/src/utils/json_truncator.dart';
 /// ```
 ///
 /// The first body line carries only short status flags (`FAILED` and, when
-/// [printDurationInBody] is enabled, `${ms}ms`). When the request succeeds
-/// and no flag is enabled, the line is intentionally empty — the visual
-/// break makes the `→ METHOD URL` line stand out.
+/// [printDurationInBody] is enabled, `${ms}ms`). When no flag applies, the
+/// `→ METHOD URL` line becomes the first line of the body — no leading
+/// blank line is emitted, which keeps UI renderers and JSON inspectors
+/// from showing an empty paragraph.
 ///
 /// `source` and `duration` are accepted for callers who want to embed them
 /// in the body; by default they are omitted because the entry formatter
@@ -58,7 +59,8 @@ String buildNetworkConsoleMessage({
   final buf = StringBuffer(firstLine.join(' '));
 
   if (wrapTargetOnNewLine) {
-    buf.write('\n→ $operation $target');
+    if (buf.isNotEmpty) buf.write('\n');
+    buf.write('→ $operation $target');
   } else {
     if (buf.isNotEmpty) buf.write(' ');
     buf.write('$operation → $target');

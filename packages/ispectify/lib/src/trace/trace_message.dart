@@ -10,10 +10,11 @@
 /// ```
 ///
 /// The first body line carries only short flags (`FAILED`, optional
-/// `${ms}ms`, optional `(key)`). When nothing applies, the line is
-/// intentionally empty — the visual break makes the `→ operation target`
-/// line stand out. Without a `target`, the body falls back to a compact
-/// single-line form (`operation (key)`).
+/// `${ms}ms`, optional `(key)`). When nothing applies, the
+/// `→ operation target` line becomes the first body line — no leading
+/// blank line is emitted, which keeps UI renderers and JSON inspectors
+/// from showing an empty paragraph. Without a `target`, the body falls
+/// back to a compact single-line form (`operation (key)`).
 ///
 /// Pass [printSourceInBody] / [printDurationInBody] = `true` to embed the
 /// source tag and duration into the body; by default they are omitted
@@ -51,7 +52,8 @@ String buildTraceMessage({
 
   if (hasTarget) {
     if (wrap) {
-      buf.write('\n→ $operation $target');
+      if (buf.isNotEmpty) buf.write('\n');
+      buf.write('→ $operation $target');
     } else {
       if (buf.isNotEmpty) buf.write(' ');
       buf.write('→ $target');
