@@ -188,7 +188,7 @@ For noisy flows, use focused capture, filters, sampling, and bounded history. Pu
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev38
+  ispect: ^5.0.0-dev39
 ```
 
 ```dart
