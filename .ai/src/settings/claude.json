@@ -6,27 +6,58 @@
     "defaultMode": "default",
     "allow": [
       "Bash(git status)",
+      "Bash(git status --short)",
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git blame *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(sed *)",
+      "Bash(dart pub get)",
+      "Bash(dart analyze *)",
+      "Bash(dart test *)",
+      "Bash(dart format *)",
+      "Bash(flutter pub get)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter test *)",
+      "Bash(flutter build web *)",
+      "Bash(./bash/check_version_sync.sh)",
+      "Bash(./bash/check_dependencies.sh)",
+      "Bash(./bash/build_readme.sh *)",
+      "Bash(./bash/update_versions.sh --dry-run)",
+      "Bash(./bash/update_changelog.sh *)",
+      "Bash(./bash/release_prep.sh *)",
+      "Bash(./bash/publish.sh --dry-run)",
       "Read",
       "Write",
       "Edit"
     ],
     "ask": [
       "Bash(git push *)",
-      "Bash(git reset --hard *)",
-      "Bash(git rebase *)"
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "Bash(./bash/update_versions.sh *)",
+      "Bash(./bash/publish.sh --auto)",
+      "Bash(flutter build apk *)",
+      "Bash(flutter build appbundle *)",
+      "Bash(flutter build ipa *)"
     ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(curl *)",
       "Bash(wget *)",
+      "Bash(gh secret *)",
       "Read(.env)",
       "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
       "Read(**/secrets/**)",
       "Read(**/*.pem)",
-      "Read(**/id_rsa*)"
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
+      "Read(**/google-services.json)",
+      "Read(**/GoogleService-Info.plist)"
     ]
   }
 }

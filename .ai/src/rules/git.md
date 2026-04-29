@@ -2,22 +2,18 @@
 
 ## Commits
 
-- Match the project's existing commit style (check `git log --oneline -10`). If none is established, default to Conventional Commits: `<type>: <subject>` with `feat`, `fix`, `refactor`, `docs`, `test`, `chore`.
-- One logical change per commit. Don't mix unrelated work.
-- Subject in imperative mood, ≤72 chars. Body explains *why*, not *what* — skip the body when the subject says enough.
+- Match the repo's mixed history: Conventional Commits are preferred for structured changes (`feat(ispectify): ...`, `fix(ispect): ...`, `chore(release): ...`), while short docs commits also exist.
+- Keep one logical package or workflow change per commit.
+- Mention the affected package in the scope when the change is package-specific.
 
-## Branches
+## Review Prep
 
-- Use descriptive names: `feat/<slug>`, `fix/<slug>`, `refactor/<slug>`.
-- Rebase onto the default branch before opening a PR.
+- Use `git status --short` and `git diff --stat` before summarizing work.
+- Review generated README/version/changelog diffs separately from source changes.
+- Do not hide failing hooks with `--no-verify`; fix version, dependency, README, analyzer, or test failures.
 
-## Pull Requests
+## Anti-Patterns
 
-- Link the related ticket or issue in the description.
-- Don't force-push to shared branches without coordination.
-- Don't bypass `--no-verify` or pre-commit hooks to make CI green — fix the failure.
-
-## What Never Goes In
-
-- Generated artifacts, lockfile binaries, secrets, `.env*` files.
-- Use `.gitignore` for environment-specific or generated output.
+- Do not force-push, reset hard, or delete branches unless the user asks.
+- Do not commit `.env*`, credentials, certificates, build output, or coverage output.
+- Do not mix release automation changes with feature implementation unless the task is release prep.
