@@ -1,370 +1,56 @@
-# ISpect Workspace - AI Coding Agent Guide
-
-## Project Overview
-
-**ISpect** is a modular in-app observability and QA diagnostics toolkit for Flutter, distributed as a monorepo. The project provides network, database, performance, widget tree, logging, and device inspection tools via an in-app panel.
-
-- **Architecture**: Monorepo with 7 independent pub packages (`ispect`, `ispectify`, `ispectify_dio`, `ispectify_http`, `ispectify_ws`, `ispectify_db`, `ispectify_bloc`)
-- **Package Manager**: Single-source version management via `version.config`
-- **Production Safety**: Flag-gated initialization (`--dart-define=ISPECT_ENABLED=true`) keeps the toolkit inactive unless explicitly enabled
-- **Core Pattern**: Observer/interceptor pattern for passive instrumentation across HTTP, DB, WebSocket, and state management layers
-
-## Critical Monorepo Concepts
-
-### Version Synchronization (Single Source of Truth)
-
-The entire workspace shares a **single version** defined in `version.config`:
-
-```plaintext
-VERSION=5.0.0-dev33
-```
-
-**Golden Rule**: Never manually edit package `pubspec.yaml` versions. Always use:
-
-```bash
-# Bump semantic version (patch/minor/major/dev) and propagate changes
-./bash/bump_version.sh patch
-
-# Dry-run to preview changes
-./bash/update_versions.sh --dry-run
-```
-
-This script:
-1. Updates `version.config`
-2. Propagates version to all `packages/*/pubspec.yaml`
-3. Synchronizes internal dependency constraints (e.g., `ispect` depends on `^5.0.0-dev33` of `ispectify`)
-4. Updates example `pubspec.yaml` files
-5. Propagates root `CHANGELOG.md` section to package changelogs
-
-### Internal Dependency Management
-
-Packages reference each other using **caret constraints** matching the current version:
-
-```yaml
-# packages/ispect/pubspec.yaml
-dependencies:
-  ispectify: ^5.0.0-dev33  # Always matches version.config
-
-dependency_overrides:
-  ispectify:
-    path: ../ispectify  # Local dev override
-```
-
-The `dependency_overrides` section is **intentional** for monorepo development. Don't remove it.
-
-**Validation Commands**:
-```bash
-./bash/check_version_sync.sh      # Verify all versions match
-./bash/check_dependencies.sh      # Verify internal dep constraints
-```
-
-## Essential Developer Workflows
-
-### Running Tests
-
-**Never use raw `dart test` commands**. Use workspace tasks or package-specific commands:
-
-```bash
-# Via VS Code tasks (preferred)
-# Run > Run Task > Select appropriate test task
-
-# Manual invocation
-cd packages/ispectify && dart test
-cd packages/ispectify_http && dart test
-```
-
-**Common test pattern** (seen in `curl_utils_test.dart`, `logger_settings_test.dart`):
-```dart
-void main() {
-  group('FeatureName', () {
-    test('description of behavior', () {
-      // Arrange, Act, Assert
-    });
-  });
-}
-```
-
-### Building & Publishing
-
-**Pre-publish checklist**:
-```bash
-# 1. Bump version and propagate changes
-./bash/bump_version.sh patch
-
-# 2. Update CHANGELOG.md (root) with new section
-# 3. Rebuild package READMEs from docs/readme/ sources
-./bash/build_readme.sh
-
-# 4. Dry-run publish to validate
-./bash/publish.sh --dry-run
-
-# 5. Real publish (dependency-ordered, logs in .publish_logs/)
-./bash/publish.sh --auto
-```
-
-The `publish.sh` script enforces:
-- Dependency-ordered publishing (e.g., `ispectify` before `ispect`)
-- No `any` version constraints
-- No committed `Podfile.lock` files
-
-### README Management
-
-Package READMEs are **generated** from per-package sources in `docs/readme/`. Edit the source, not the generated output.
-
-```bash
-# Rebuild every README from docs/readme/ sources.
-./bash/build_readme.sh
-
-# Verify generated files match sources (pre-commit / CI).
-./bash/build_readme.sh --check
-
-# Rebuild one package only.
-./bash/build_readme.sh --package ispectify_dio
-```
-
-Sources:
-
-- `docs/readme/<package>.md` — body for the corresponding package.
-- `docs/readme/root.md` — body for the repo-root README.
-- `docs/readme/_partials/*.md` — shared fragments (header, footer, install matrix, redaction, production safety).
-- Markers: `<!-- partial:NAME -->`, `{{version}}`, `{{package}}`.
-
-Never edit `packages/*/README.md` directly — changes are overwritten on the next build.
-
-### CHANGELOG Management
-
-Root `CHANGELOG.md` is the source of truth. Propagate changes to packages:
-
-```bash
-# Append latest root section to package changelogs (safe, default)
-./bash/update_changelog.sh
-
-# Propagate specific version
-./bash/update_changelog.sh --version 5.0.0-dev33
-
-# Overwrite all package changelogs (destructive)
-./bash/update_changelog.sh --full-copy --yes
-```
-
-## Package-Specific Patterns
-
-### Interceptor Architecture (Dio/HTTP/WebSocket)
-
-All network interceptors follow a consistent pattern:
-
-1. **Settings class**: Configures what to log
-2. **Interceptor class**: Implements framework-specific interface
-3. **Redaction support**: Masks sensitive data via `RedactionService`
-4. **Logger integration**: Calls `logger.logData()` with typed log models
-
-**Example** (`ispectify_dio/lib/src/interceptor.dart`):
-```dart
-class ISpectDioInterceptor extends Interceptor {
-  ISpectDioInterceptor({
-    ISpectLogger? logger,
-    this.settings = const ISpectDioInterceptorSettings(),
-    RedactionService? redactor,
-  }) {
-    _logger = logger ?? ISpectLogger();
-    _redactor = redactor ?? RedactionService();
-  }
-
-  // Override onRequest, onResponse, onError
-  // Call _logger.logData() with DioRequestLog/DioResponseLog
-}
-```
-
-**Redaction pattern**:
-```dart
-final redactedHeaders = _redactHeaders(options.headers, useRedaction);
-final redactedBody = _redactBody(options.data, useRedaction);
-```
-
-### Observer Pattern (BLoC/Navigation)
-
-State management and routing use observer pattern:
-
-```dart
-// BLoC observer
-class ISpectBlocObserver extends BlocObserver {
-  @override
-  void onEvent(Bloc bloc, Object? event) {
-    logger.logData(BlocEventLog(...));
-  }
-}
-
-// Navigation observer
-class ISpectNavigatorObserver extends NavigatorObserver {
-  @override
-  void didPush(Route route, Route? previousRoute) {
-    logger.logData(RouteLog(...));
-  }
-}
-```
-
-### Database Tracing Pattern (`ispectify_db`)
-
-DB operations are wrapped in `logger.dbTrace()`:
-
-```dart
-final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
-  source: 'sqflite',
-  operation: 'query',
-  statement: 'SELECT * FROM users WHERE id = ?',
-  args: [userId],
-  table: 'users',
-  run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
-  projectResult: (rows) => {'rows': rows.length},
-);
-```
-
-Configuration is global:
-```dart
-ISpectDbCore.config = const ISpectDbConfig(
-  sampleRate: 1.0,
-  redact: true,
-  slowQueryThreshold: Duration(milliseconds: 400),
-);
-```
-
-## Code Quality Standards (From User Instructions)
-
-### Flutter/Dart Best Practices
-
-1. **SOLID Principles**: Apply DRY, KISS, YAGNI, composition-first design
-2. **Widget Decomposition**: Extract large widgets into focused components
-3. **const Constructors**: Use wherever possible for performance
-4. **Resource Disposal**: Always dispose `TextEditingController`, `FocusNode`, `AnimationController`
-5. **Context Safety**: Check `context.mounted` before `setState` in async operations
-6. **State Management**: Use `FutureBuilder`/`StreamBuilder`/`ValueListenableBuilder` appropriately
-
-### Property Access (Specific to This Project)
-
-**DO**:
-```dart
-Theme.of(context).colorScheme.primary
-Gap(8)
-EdgeInsets.only(left: 16)
-```
-
-**DON'T**:
-```dart
-getPrimary(colorScheme)  // Wrapper functions
-Constants.defaultPadding  // Extracted primitives (unless requested)
-```
-
-### Required Linter Compliance
-
-From `analysis_options.yaml`:
-```yaml
-linter:
-  rules:
-    - avoid_print
-    - prefer_const_constructors
-    - use_key_in_widget_constructors
-    - prefer_final_locals
-    - always_declare_return_types
-    - prefer_typing_uninitialized_variables
-    - avoid_dynamic_calls
-```
-
-### Complete File Delivery
-
-**Always deliver complete Dart files**, not snippets. Never use placeholders like `...existing code...`.
-
-## Production Safety Pattern
-
-All ISpect initialization is gated behind a flag:
-
-```dart
-const bool kEnableISpect = bool.fromEnvironment('ISPECT_ENABLED', defaultValue: false);
-
-void main() {
-  if (kEnableISpect) {
-    final logger = ISpectFlutter.init();
-    ISpect.run(() => runApp(MyApp()), logger: logger);
-  } else {
-    runApp(const MyApp());
-  }
-}
-```
-
-**Build commands**:
-```bash
-# Development
-flutter run --dart-define=ISPECT_ENABLED=true
-
-# Production (flag omitted = ISpect inactive and eligible for tree-shaking)
-flutter build apk
-```
-
-## CI/CD Automation
-
-### GitHub Actions Workflows
-
-1. **Version Validation** (`.github/workflows/validate_versions.yml`)
-   - Runs on PRs to `main`/`master`/`develop`
-   - Validates version sync across packages
-   - Checks internal dependency constraints
-   - Ensures CHANGELOG documents current version
-
-2. **Sync Versions, Changelogs, and READMEs** (`.github/workflows/sync_versions_and_changelogs.yml`)
-   - Triggers on changes to `version.config`, `CHANGELOG.md`, or `docs/readme/**`
-   - Runs `update_versions.sh` and `build_readme.sh`
-   - Auto-commits updated `pubspec.yaml`, CHANGELOG, and README files to all packages
-
-### Pre-Commit Hook
-
-Install for local validation:
-```bash
-cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-```
-
-Validates before commit:
-- Version synchronization
-- Internal dependency versions
-- CHANGELOG formatting
-
-## Key Files to Reference
-
-| File/Directory | Purpose |
-|---|---|
-| `version.config` | Single source of truth for version |
-| `bash/update_versions.sh` | Semantic version bumping + propagation |
-| `bash/publish.sh` | Dependency-ordered multi-package publishing |
-| `bash/build_readme.sh` | Assemble per-package READMEs from `docs/readme/` sources |
-| `docs/readme/` | Per-package README sources and shared partials |
-| `packages/ispect/lib/ispect.dart` | Main export barrel file |
-| `packages/ispectify/lib/src/ispectify.dart` | Core logging engine |
-| `packages/ispectify_*/lib/src/interceptor.dart` | Interceptor implementations |
-
-## Common Pitfalls
-
-1. **Don't manually edit package versions** → Use `./bash/update_versions.sh`
-2. **Don't edit package READMEs directly** → Edit the matching `docs/readme/<package>.md` (or a shared partial) then run `./bash/build_readme.sh`
-3. **Don't remove `dependency_overrides`** → Required for local monorepo development
-4. **Don't use raw `dart test`** → Use workspace tasks or navigate to package directory
-5. **Don't commit ISpect-enabled builds** → Always gate behind `--dart-define=ISPECT_ENABLED`
-6. **Don't use placeholders in edits** → Deliver complete, runnable files
-
-## Quick Reference Commands
-
-```bash
-# Version bump workflow
-./bash/bump_version.sh patch && \
-./bash/update_changelog.sh && \
-./bash/build_readme.sh
-
-# Validation workflow
-./bash/check_version_sync.sh && \
-./bash/check_dependencies.sh && \
-./bash/build_readme.sh --check
-
-# Publish workflow
-./bash/publish.sh --dry-run && \
-./bash/publish.sh --auto
-```
-
----
-
-**When in doubt**: Check `bash/README.md` or `docs/VERSION_MANAGEMENT.md` for detailed automation docs.
+# ISpect Agent
+
+You are a senior Flutter/Dart engineer working on the ISpect monorepo: an internal pre-release diagnostics toolkit for Flutter and Dart apps.
+
+## Product Context
+
+ISpect optimizes for safe observability in development, QA, staging, dogfooding, and design-review builds.
+Production safety matters more than convenience: the toolkit is compile-time gated by `ISPECT_ENABLED` and should tree-shake away when the flag is omitted.
+Captured diagnostics can contain sensitive data, so redaction and data minimization shape network, database, export, and observer changes.
+
+## Tech Stack
+
+- Dart SDK `>=3.6.0 <4.0.0`; Flutter packages target Flutter `>=3.22.0`, with CI pinned to Flutter `3.32.6`.
+- Pure Dart packages: `packages/ispectify`, `packages/ispectify_db`.
+- Flutter packages: `packages/ispect`, `packages/ispect_layout`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`.
+- `web_logs_viewer` is a Flutter web demo using local path overrides to the packages.
+- No Melos workspace is configured; run `pub get`, analyzer, and tests inside affected package directories.
+
+## Approach
+
+1. Read the affected package, its tests, and any related package that consumes its public API.
+2. Identify whether the change touches core logging, redaction, network/database capture, Flutter UI, generated docs, or release/version automation.
+3. Keep package boundaries intact: reusable logging and redaction belong in `ispectify`; client-specific adapters stay in their `ispectify_*` package; Flutter UI belongs in `ispect` or `ispect_layout`.
+4. Implement the smallest package-scoped change, then add or update tests in that package.
+5. Run analyzer and tests for affected packages, plus README/version checks when docs or pubspecs change.
+
+## Commands
+
+- Root dependency check: `dart pub get`
+- Dart package setup: `cd packages/ispectify && dart pub get`
+- Flutter package setup: `cd packages/ispect && flutter pub get`
+- Dart analyze: `cd packages/<package> && dart analyze --fatal-infos`
+- Dart tests: `cd packages/<package> && dart test --coverage=coverage`
+- Flutter analyze: `cd packages/<package> && flutter analyze --fatal-infos`
+- Flutter tests: `cd packages/<package> && flutter test --coverage`
+- Web demo: `cd web_logs_viewer && flutter pub get && flutter analyze && flutter test`
+- Format changed Dart files: `dart format <paths>`
+- README drift check: `./bash/build_readme.sh --check`
+- Version/dependency checks: `./bash/check_version_sync.sh && ./bash/check_dependencies.sh`
+
+## Project Rules
+
+- Prefer `final class`, `base class`, `abstract interface class`, and sealed state hierarchies where the current package already uses them.
+- Keep public exports explicit in each package's top-level library file; add new public API there only when it is meant for package consumers.
+- Preserve `dependency_overrides` used for local monorepo development.
+- Use `ISpectLogger`, trace APIs, and typed log metadata instead of `print` or ad hoc console output.
+- Keep network and database redaction enabled by default; opt-out settings need tests that prove unredacted behavior is deliberate.
+- Update root `CHANGELOG.md` for user-facing package changes; package changelogs and READMEs are generated or propagated by scripts.
+
+## Do Not
+
+- Do not manually edit package versions or internal dependency constraints; use `version.config` and `bash/update_versions.sh`.
+- Do not edit generated READMEs under `packages/*/README.md` as the source of truth; change `docs/readme/*` and run `./bash/build_readme.sh`.
+- Do not pass `--dart-define=ISPECT_ENABLED=true` to public production release builds.
+- Do not introduce a monorepo tool, code generator, Redux, styled-components, or new state-management framework unless the task explicitly requires it.
+- Do not log tokens, cookies, credentials, PII, raw payloads, or database rows without redaction and a narrowly scoped debugging reason.
