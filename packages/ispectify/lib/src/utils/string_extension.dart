@@ -1,6 +1,46 @@
 /// Default truncation limit for strings across the package.
 const int kDefaultStringTruncateLimit = 10000;
 
+/// Default maximum stack frames passed to the console logger.
+///
+/// Frames beyond this limit are dropped from the console view; the full
+/// trace is still stored in [ISpectLogData.stackTrace] and visible in the
+/// ISpect UI.
+const int kDefaultStackFrameLimit = 30;
+
+/// Truncates [stackTrace] to [maxFrames] frames while keeping it a proper
+/// [StackTrace] so that tools like Flutter DevTools can still parse and
+/// display clickable frame links.
+///
+/// Returns the original object when it is already within the limit, so no
+/// allocation occurs in the common case.
+StackTrace? truncateStackTrace(
+  StackTrace? stackTrace, {
+  int maxFrames = kDefaultStackFrameLimit,
+}) {
+  if (stackTrace == null) return null;
+  final lines = stackTrace
+      .toString()
+      .split('\n')
+      .where((l) => l.isNotEmpty)
+      .toList(growable: false);
+  if (lines.length <= maxFrames) return stackTrace;
+  final truncated = [
+    ...lines.take(maxFrames),
+    '... (${lines.length - maxFrames} more frames)',
+  ].join('\n');
+  return StackTrace.fromString(truncated);
+}
+
+/// Matches standard ANSI SGR / cursor escape sequences.
+final RegExp ansiEscapePattern = RegExp(r'\x1B\[[0-9;]*[mGKH]');
+
+/// Returns [value] with all ANSI escape sequences removed.
+String stripAnsi(String value) => value.replaceAll(ansiEscapePattern, '');
+
+/// Returns `true` if [value] contains any ANSI escape sequence.
+bool containsAnsi(String value) => value.contains(ansiEscapePattern);
+
 /// Truncates [value] to [maxLength], avoiding surrogate pair splits.
 ///
 /// Appends `...` if the string was truncated.

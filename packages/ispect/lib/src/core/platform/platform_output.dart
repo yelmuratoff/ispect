@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Platform-aware output utility to centralize platform detection logic.
 ///
@@ -27,7 +28,7 @@ final class PlatformOutput {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         developer.log(
-          message,
+          stripAnsi(message),
           name: 'ISpect',
           level: level,
           error: error,

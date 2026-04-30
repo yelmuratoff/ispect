@@ -15,7 +15,6 @@ class ErrorHandlerService {
   final List<String> filters;
 
   bool _isHandlingPrint = false;
-  static final RegExp _ansiPattern = RegExp(r'\x1B\[[0-9;]*[mGKH]');
 
   void setupErrorHandling({
     required ISpectLogOptions options,
@@ -212,7 +211,7 @@ class ErrorHandlerService {
     }
   }
 
-  bool _containsAnsi(String line) => line.contains(_ansiPattern);
+  bool _containsAnsi(String line) => containsAnsi(line);
 
   _ErrorSnapshot _captureStrings(Object? exception, StackTrace? stack) {
     final message = exception?.toString() ?? '<null exception>';
