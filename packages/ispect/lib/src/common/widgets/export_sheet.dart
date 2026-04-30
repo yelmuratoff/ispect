@@ -260,10 +260,11 @@ class _ActionButtons extends StatelessWidget {
                             },
                           );
                         }
+                        final fileName = path.split(RegExp(r'[/\\]')).last;
                         unawaited(
                           ISpectToaster.showInfoToast(
                             null,
-                            title: capturedL10n.logsFileSaved(path),
+                            title: capturedL10n.logsFileSaved(fileName),
                             duration: const Duration(seconds: 6),
                             messenger: messenger,
                             l10n: capturedL10n,
