@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
-import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
@@ -166,95 +164,83 @@ class _LogCardHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-        button: true,
-        expanded: isExpanded,
-        label:
-            '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: $_message',
-        onTap: onTap,
-        child: Material(
-          type: MaterialType.transparency,
-          child: GestureDetector(
+  Widget build(BuildContext context) {
+    void openDetail() {
+      LogDetailView(
+        activeData: data,
+        onClose: () => Navigator.of(context).pop(),
+        onShowRelated: onShowRelated != null
+            ? (id) {
+                onShowRelated!(id);
+                Navigator.of(context).pop();
+              }
+            : null,
+      ).push(context);
+    }
+
+    void openMenu(Offset position) {
+      showLogContextMenu(
+        context: context,
+        position: position,
+        data: data,
+        message: _message,
+        onShareTap: onShareTap,
+        onOpenDetail: openDetail,
+        onNavigationFlowTap: data.isRouteLog && observer != null
+            ? () => ISpectNavigationFlowScreen(
+                  observer: observer!,
+                  log: data,
+                ).push(context)
+            : null,
+      );
+    }
+
+    return Semantics(
+      button: true,
+      expanded: isExpanded,
+      label:
+          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: $_message',
+      onTap: onTap,
+      child: Material(
+        type: MaterialType.transparency,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onLongPressStart: (details) => openMenu(details.globalPosition),
+          child: InkWell(
             excludeFromSemantics: true,
-            onLongPressStart: (details) => showLogContextMenu(
-              context: context,
-              position: details.globalPosition,
-              data: data,
-              message: _message,
-              onShareTap: onShareTap,
-              onOpenDetail: () => LogDetailView(
-                activeData: data,
-                onClose: () => Navigator.of(context).pop(),
-                onShowRelated: onShowRelated != null
-                    ? (id) {
-                        onShowRelated!(id);
-                        Navigator.of(context).pop();
-                      }
-                    : null,
-              ).push(context),
+            onTap: onTap,
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(10),
+              bottomRight: Radius.circular(10),
             ),
-            child: InkWell(
-              excludeFromSemantics: true,
-              onTap: onTap,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-              child: ColoredBox(
-                color: isExpanded
-                    ? color.withValues(alpha: 0.08)
-                    : Colors.transparent,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  child: CollapsedBody(
-                    icon: icon,
-                    color: color,
-                    title:
-                        ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
-                            data.key,
-                    dateTime: data.formattedTime,
-                    onShareTap: onShareTap,
-                    onRouteTap: data.isRouteLog && observer != null
-                        ? () => ISpectNavigationFlowScreen(
-                              observer: observer!,
-                              log: data,
-                            ).push(context)
-                        : null,
-                    onExpandTap: () => LogDetailView(
-                      activeData: data,
-                      onClose: () => Navigator.of(context).pop(),
-                      onShowRelated: onShowRelated != null
-                          ? (id) {
-                              onShowRelated!(id);
-                              Navigator.of(context).pop();
-                            }
-                          : null,
-                    ).push(context),
-                    message: data.textMessage,
-                    errorMessage: data.httpLogText,
-                    expanded: isExpanded,
-                    isHTTP: data.key == ISpectLogType.httpRequest.key,
-                    statusCode: data.httpStatusCode,
-                    slowDurationMs:
-                        (data.traceSlow ?? false) ? data.traceDurationMs : null,
-                    onCopyCurlTap: () {
-                      final curl = data.curlCommandWith(
-                        redactor: defaultCurlRedactor,
-                      );
-                      if (curl != null) {
-                        copyClipboard(context, value: curl);
-                      }
-                    },
-                  ),
+            child: ColoredBox(
+              color: isExpanded
+                  ? color.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 6, 6),
+                child: CollapsedBody(
+                  icon: icon,
+                  color: color,
+                  title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
+                      data.key,
+                  dateTime: data.formattedTime,
+                  message: data.textMessage,
+                  errorMessage: data.httpLogText,
+                  expanded: isExpanded,
+                  statusCode: data.httpStatusCode,
+                  slowDurationMs:
+                      (data.traceSlow ?? false) ? data.traceDurationMs : null,
+                  onExpandTap: openDetail,
+                  onMenuTap: () => openMenu(Offset.zero),
                 ),
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _ExpandedContent extends StatelessWidget {

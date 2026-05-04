@@ -73,14 +73,22 @@ class LogTypeFilterSection extends StatelessWidget {
                   child: GestureDetector(
                     excludeFromSemantics: true,
                     onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
-                    child: Text(
-                      _isAllEnabled
-                          ? context.ispectL10n.deselectAll
-                          : context.ispectL10n.selectAll,
-                      style: context.appTheme.textTheme.labelSmall?.copyWith(
-                        color: context.ispectTheme.primary?.resolve(context) ??
-                            context.appTheme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        _isAllEnabled
+                            ? context.ispectL10n.deselectAll
+                            : context.ispectL10n.selectAll,
+                        style: context.appTheme.textTheme.labelSmall?.copyWith(
+                          color: context.appTheme.textColor
+                              .withValues(alpha: 0.55),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.4,
+                        ),
                       ),
                     ),
                   ),

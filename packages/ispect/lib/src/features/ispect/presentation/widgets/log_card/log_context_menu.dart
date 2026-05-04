@@ -13,6 +13,7 @@ enum LogContextAction {
   share,
   copyCurl,
   openDetail,
+  navigationFlow,
   showOnlyType,
   hideType,
 }
@@ -24,20 +25,31 @@ Future<void> showLogContextMenu({
   required String message,
   VoidCallback? onShareTap,
   VoidCallback? onOpenDetail,
+  VoidCallback? onNavigationFlowTap,
   void Function(String)? onTypeFilterTap,
 }) async {
   final l10n = context.ispectL10n;
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
+  final hasNavigationFlow = onNavigationFlowTap != null;
+
+  // Sheet sizing roughly tracks how many tiles we render.
+  final tileCount = 3 // copy, share, expand always present
+      +
+      (data.curlCommand != null ? 1 : 0) +
+      (hasNavigationFlow ? 1 : 0) +
+      (hasFilterActions ? 2 : 0);
+  final estimatedSize = (0.18 + 0.07 * tileCount).clamp(0.35, 0.7);
 
   final action = await showISpectSheet<LogContextAction>(
     context,
-    initialChildSize: hasFilterActions ? 0.45 : 0.35,
-    maxChildSize: hasFilterActions ? 0.55 : 0.45,
+    initialChildSize: estimatedSize,
+    maxChildSize: (estimatedSize + 0.1).clamp(0.45, 0.85),
     topOnlyRadius: true,
     builder: (context, scrollController) => SafeArea(
       child: _LogContextMenuSheet(
         hasCurl: data.curlCommand != null,
+        hasNavigationFlow: hasNavigationFlow,
         hasFilterActions: hasFilterActions,
         l10n: l10n,
         scrollController: scrollController,
@@ -57,6 +69,8 @@ Future<void> showLogContextMenu({
       if (curl != null) copyClipboard(context, value: curl);
     case LogContextAction.openDetail:
       onOpenDetail?.call();
+    case LogContextAction.navigationFlow:
+      onNavigationFlowTap?.call();
     case LogContextAction.showOnlyType:
       final key = data.key;
       if (key != null) onTypeFilterTap?.call('__show_only__$key');
@@ -69,12 +83,14 @@ Future<void> showLogContextMenu({
 class _LogContextMenuSheet extends StatelessWidget {
   const _LogContextMenuSheet({
     required this.hasCurl,
+    required this.hasNavigationFlow,
     required this.hasFilterActions,
     required this.l10n,
     this.scrollController,
   });
 
   final bool hasCurl;
+  final bool hasNavigationFlow;
   final bool hasFilterActions;
   final ISpectGeneratedLocalization l10n;
   final ScrollController? scrollController;
@@ -130,6 +146,15 @@ class _LogContextMenuSheet extends StatelessWidget {
                     LogContextAction.openDetail,
                   ),
                 ),
+                if (hasNavigationFlow)
+                  _ActionTile(
+                    icon: Icons.compare_arrows_rounded,
+                    label: l10n.navigationFlow,
+                    onTap: () => Navigator.pop(
+                      context,
+                      LogContextAction.navigationFlow,
+                    ),
+                  ),
                 if (hasFilterActions) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),

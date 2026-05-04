@@ -262,7 +262,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               ),
             ),
           ),
-          // Actions section — grid of action buttons
+          // Actions section — uniform 2-column grid of action buttons
           if (widget.actions.isNotEmpty) ...[
             SliverToBoxAdapter(
               child: ISpectSectionLabel(
@@ -272,12 +272,23 @@ class _SettingsContentState extends State<_SettingsContent> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: widget.actions
-                      .map((action) => _ActionTile(action: action))
-                      .toList(),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    const spacing = 8.0;
+                    final tileWidth = (constraints.maxWidth - spacing) / 2;
+                    return Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: widget.actions
+                          .map(
+                            (action) => SizedBox(
+                              width: tileWidth,
+                              child: _ActionTile(action: action),
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
                 ),
               ),
             ),
@@ -330,21 +341,25 @@ class _ActionTile extends StatelessWidget {
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   action.icon,
-                  size: 15,
+                  size: 14,
                   color: primaryColor,
                 ),
                 const Gap(6),
-                Text(
-                  action.title,
-                  style: context.appTheme.textTheme.labelMedium?.copyWith(
-                    color: context.appTheme.textColor,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    action.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.appTheme.textTheme.labelMedium?.copyWith(
+                      color: context.appTheme.textColor,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],

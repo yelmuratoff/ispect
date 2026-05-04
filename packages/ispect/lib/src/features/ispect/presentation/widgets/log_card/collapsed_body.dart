@@ -6,14 +6,11 @@ class CollapsedBody extends StatelessWidget {
     required this.color,
     required this.title,
     required this.dateTime,
-    required this.onShareTap,
-    required this.onCopyCurlTap,
     required this.onExpandTap,
-    required this.onRouteTap,
+    required this.onMenuTap,
     required this.message,
     required this.errorMessage,
     required this.expanded,
-    required this.isHTTP,
     this.statusCode,
     this.slowDurationMs,
     super.key,
@@ -23,15 +20,12 @@ class CollapsedBody extends StatelessWidget {
   final Color color;
   final String? title;
   final String dateTime;
-  final VoidCallback? onShareTap;
-  final VoidCallback? onCopyCurlTap;
   final VoidCallback? onExpandTap;
-  final VoidCallback? onRouteTap;
+  final VoidCallback? onMenuTap;
 
   final String? message;
   final String? errorMessage;
   final bool expanded;
-  final bool isHTTP;
   final int? statusCode;
   final int? slowDurationMs;
 
@@ -39,39 +33,45 @@ class CollapsedBody extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: DecoratedLeadingIcon(icon: icon, color: color),
+          ),
+          const Gap(ISpectConstants.standardGap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
                   children: [
-                    DecoratedLeadingIcon(icon: icon, color: color),
-                    const Gap(ISpectConstants.standardGap),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            dateTime,
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: context.appTheme.textColor
-                                  .withValues(alpha: 0.4),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+                    Flexible(
+                      child: Text(
+                        title ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.1,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                    ),
+                    const Gap(6),
+                    Text(
+                      dateTime,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color:
+                            context.appTheme.textColor.withValues(alpha: 0.45),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1.1,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
@@ -93,70 +93,17 @@ class CollapsedBody extends StatelessWidget {
             const Gap(4),
             SlowBadge(durationMs: slowDurationMs!),
           ],
-          const Gap(4),
-          _ActionButtons(
-            color: color,
-            onShareTap: onShareTap,
-            onCopyCurlTap: onCopyCurlTap,
-            onExpandTap: onExpandTap,
-            onRouteTap: onRouteTap,
-            isHTTP: isHTTP,
-          ),
-        ],
-      );
-}
-
-class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({
-    required this.color,
-    required this.onShareTap,
-    required this.onCopyCurlTap,
-    required this.onExpandTap,
-    required this.onRouteTap,
-    required this.isHTTP,
-  });
-
-  final Color color;
-  final VoidCallback? onShareTap;
-  final VoidCallback? onCopyCurlTap;
-  final VoidCallback? onExpandTap;
-  final VoidCallback? onRouteTap;
-  final bool isHTTP;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (onRouteTap != null) ...[
-            SquareIconButton(
-              icon: Icons.compare_arrows_rounded,
-              color: color,
-              tooltip: context.ispectL10n.navigationFlow,
-              onPressed: onRouteTap,
-            ),
-            const Gap(2),
-          ],
-          SquareIconButton(
-            icon: Icons.share_rounded,
-            color: color,
-            tooltip: context.ispectL10n.share,
-            onPressed: onShareTap,
-          ),
-          const Gap(3),
-          if (isHTTP) ...[
-            SquareIconButton(
-              icon: Icons.terminal_rounded,
-              color: color,
-              tooltip: context.ispectL10n.copyAsCurl,
-              onPressed: onCopyCurlTap,
-            ),
-            const Gap(2),
-          ],
           SquareIconButton(
             icon: Icons.open_in_full_rounded,
             color: color,
             tooltip: context.ispectL10n.expandLogs,
             onPressed: onExpandTap,
+          ),
+          SquareIconButton(
+            icon: Icons.more_vert_rounded,
+            color: color,
+            tooltip: context.ispectL10n.actions,
+            onPressed: onMenuTap,
           ),
         ],
       );
@@ -183,14 +130,15 @@ class _CollapsedMessage extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: 5),
       child: Text(
         displayMessage,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: context.appTheme.textColor.withValues(alpha: 0.6),
+          color: context.appTheme.textColor.withValues(alpha: 0.7),
           fontSize: 11,
+          height: 1.25,
           fontWeight: FontWeight.w400,
         ),
       ),
@@ -222,19 +170,22 @@ class SquareIconButton extends StatelessWidget {
         excludeFromSemantics: true,
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: Icon(
-                icon,
-                size: 15,
-                color: color.withValues(alpha: 0.7),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.06),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Icon(
+                  icon,
+                  size: 14,
+                  color: color.withValues(alpha: 0.75),
+                ),
               ),
             ),
           ),
@@ -263,15 +214,15 @@ class DecoratedLeadingIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          color: color.withValues(alpha: 0.12),
+          borderRadius: const BorderRadius.all(Radius.circular(7)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(5),
           child: Icon(
             icon,
             color: color,
-            size: 16,
+            size: 14,
           ),
         ),
       );
