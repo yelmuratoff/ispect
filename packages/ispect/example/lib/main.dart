@@ -96,7 +96,7 @@ const _localeOptions = <_LocaleOption>[
 
 void main() {
   final logger = ISpectFlutter.init();
-  logger.addObserver(SentryISpectObserver());
+  // logger.addObserver(SentryISpectObserver());
   ISpect.run(logger: logger, () => runApp(const MyApp()));
 }
 

@@ -101,8 +101,12 @@ class LogPipeline {
         level: level,
         pen: pen,
         time: data.time,
-        error: data.error ?? data.exception,
-        stackTrace: truncateStackTrace(data.stackTrace),
+        error: _options.forwardErrorToConsole
+            ? data.error ?? data.exception
+            : null,
+        stackTrace: _options.forwardErrorToConsole
+            ? truncateStackTrace(data.stackTrace)
+            : null,
       );
     } catch (e) {
       // Prevent console logging errors from propagating.

@@ -15,6 +15,10 @@ class ISpectLoggerOptions {
   /// - `enabled`: Whether logging is enabled.
   /// - `useHistory`: Whether to store logs in history.
   /// - `useConsoleLogs`: Whether to print logs to the console.
+  /// - `forwardErrorToConsole`: Whether to forward `error` and `stackTrace` to
+  ///   the underlying `dart:developer` log call. Enables separate error/stack
+  ///   visibility in DevTools and IDE consoles, but causes duplication in
+  ///   plain-text terminals because the formatted message already includes them.
   /// - `maxHistoryItems`: Maximum number of logs to retain in history.
   /// - `logTruncateLength`: Maximum length for log messages in console.
   /// - `customColors`: Custom log colors that override registry defaults.
@@ -22,6 +26,7 @@ class ISpectLoggerOptions {
     this.enabled = true,
     bool useHistory = true,
     bool useConsoleLogs = true,
+    bool forwardErrorToConsole = false,
     int maxHistoryItems = 10000,
     int logTruncateLength = kDefaultStringTruncateLimit,
     Map<String, AnsiPen>? customColors,
@@ -32,6 +37,7 @@ class ISpectLoggerOptions {
         ),
         _useHistory = useHistory,
         _useConsoleLogs = useConsoleLogs,
+        _forwardErrorToConsole = forwardErrorToConsole,
         _maxHistoryItems = maxHistoryItems,
         _logTruncateLength = logTruncateLength,
         _customColors =
@@ -44,6 +50,14 @@ class ISpectLoggerOptions {
   /// Whether console logging is enabled.
   bool get useConsoleLogs => _useConsoleLogs && enabled;
   final bool _useConsoleLogs;
+
+  /// Whether `error` and `stackTrace` are forwarded to the underlying
+  /// `dart:developer` log call, making them visible in DevTools / IDE consoles.
+  ///
+  /// Disabled by default to avoid duplication: the formatted console message
+  /// already renders both fields as text.
+  bool get forwardErrorToConsole => _forwardErrorToConsole && enabled;
+  final bool _forwardErrorToConsole;
 
   /// Maximum number of stored log history items.
   int get maxHistoryItems => _maxHistoryItems;
@@ -85,6 +99,7 @@ class ISpectLoggerOptions {
     bool? enabled,
     bool? useHistory,
     bool? useConsoleLogs,
+    bool? forwardErrorToConsole,
     int? maxHistoryItems,
     int? logTruncateLength,
     Map<String, AnsiPen>? customColors,
@@ -93,6 +108,7 @@ class ISpectLoggerOptions {
         enabled: enabled ?? this.enabled,
         useHistory: useHistory ?? _useHistory,
         useConsoleLogs: useConsoleLogs ?? _useConsoleLogs,
+        forwardErrorToConsole: forwardErrorToConsole ?? _forwardErrorToConsole,
         maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
         logTruncateLength: logTruncateLength ?? _logTruncateLength,
         customColors: customColors ?? _customColors,
