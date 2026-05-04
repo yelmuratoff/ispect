@@ -49,8 +49,7 @@ class HumanLogEntryFormatter implements ILogEntryFormatter {
       if (lines.length == 1) {
         buffer.write(lines.single);
       } else {
-        buffer.write(lines.first);
-        for (final line in lines.skip(1)) {
+        for (final line in lines) {
           buffer
             ..write('\n  ')
             ..write(line);
@@ -80,7 +79,7 @@ class HumanLogEntryFormatter implements ILogEntryFormatter {
         : data.formattedTime;
 
     final metadata = _buildMetadata(data, settings);
-    final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
+    final metadataSection = metadata.isEmpty ? '' : ' $metadata';
 
     return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
   }
