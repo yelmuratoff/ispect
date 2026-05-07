@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev43
+## 5.0.0-dev44
 
 ### Breaking Changes
 
@@ -44,11 +44,15 @@
 - **Redaction by default:** All network interceptors now have PII redaction enabled by default using an expanded list of sensitive keys.
 - **BLoC correlation:** `ISpectBlocObserver` now automatically correlates events, transitions, and changes for easier debugging.
 - **Tips dialog:** Moved from automatic popup to a dedicated app bar icon.
+- **Auto-wired navigator observer:** `ISpectNavigatorObserver.observers()` now publishes the installed observer in `ISpectNavigatorObserver.current`, and `ISpectBuilder.wrap` falls back to it when `ISpectOptions.observer` is not provided. The canonical quick-start no longer requires sharing the same observer instance between `MaterialApp.navigatorObservers` and `ISpectOptions.observer` — the navigation drill-down screen wires up automatically. Explicit `ISpectOptions.observer` still wins.
+- **`ISpect.logger` lazy fallback:** Removed the developer warning that was previously emitted via `debugPrint` when the logger was accessed before `ISpect.run`/`ISpect.initialize`. The lazy fallback continues to return a default `ISpectLogger`; UI integration still requires explicit initialization.
 
 ### Deprecations
 
 - **`ISpectScopeController.of(context)` is deprecated** in favor of the canonical `ISpect.read(context)`. The two were duplicate entry points to the same `InheritedNotifier` lookup. `of` remains as a forwarder and will be removed in 6.0.0.
 - **Per-callback network filters** (`requestFilter`, `responseFilter`, `errorFilter`) on `ispectify_dio`, `ispectify_http`, and `ispectify_ws` are deprecated in favor of the new composable filter chain. Existing callbacks continue to work as forwarders and will be removed in 6.0.0.
+- **`ISpectBuilder(...)` constructor** is deprecated in favor of `ISpectBuilder.wrap(...)`. The factory short-circuits before constructing the widget when `kISpectEnabled` is `false`, preserving tree-shaking — the constructor defers the disabled-build short-circuit to `build()`, which keeps the state class reachable. The constructor will be made private in a stable 5.x release.
+- **`ISpectLocalizations.delegates(...)` is deprecated** in favor of the new `ISpectLocalizations.delegate(...)`. The legacy method injects `GlobalMaterialLocalizations`/`Cupertino`/`Widgets` along with ISpect's delegate, which mutates the host app's localization stack even in release builds. The new method returns only ISpect's delegate concatenated with the host's list, leaving the Globals to the host. Migrate by listing the three `Global*Localizations.delegate` entries yourself and spreading `...ISpectLocalizations.delegate()` after them. The legacy method continues to work as a forwarder during 5.x and will be removed in 6.0.0.
 
 ### Bug Fixes
 
