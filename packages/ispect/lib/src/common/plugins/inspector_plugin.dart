@@ -23,7 +23,7 @@ import 'package:flutter/widgets.dart';
 /// }
 ///
 /// // 2. Register
-/// ISpectBuilder(
+/// ISpectBuilder.wrap(
 ///   options: ISpectOptions(
 ///     plugins: [DeviceInfoPlugin()],
 ///   ),

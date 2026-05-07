@@ -44,15 +44,35 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.enableArgumentRedaction = true,
   });
 
+  /// The most recently installed `ISpectNavigatorObserver`.
+  ///
+  /// Populated by [observers] when ISpect is enabled. Lets `ISpectBuilder`
+  /// auto-wire the route observer for the navigation drill-down screen
+  /// without requiring callers to pass the same instance into both
+  /// `MaterialApp.navigatorObservers` and `ISpectOptions.observer`.
+  ///
+  /// Always `null` in builds where `kISpectEnabled` is `false`.
+  static ISpectNavigatorObserver? get current => _current;
+  static ISpectNavigatorObserver? _current;
+
+  /// Resets the [current] slot. Intended for `ISpect.dispose()` and tests.
+  static void resetCurrent() => _current = null;
+
   /// Returns a list of navigator observers for use in MaterialApp.
   ///
-  /// When `kISpectEnabled` is `true`, includes ISpect observer.
-  /// When disabled, returns only [additional] observers.
+  /// When `kISpectEnabled` is `true`, includes the ISpect observer and
+  /// publishes it via [current] so `ISpectBuilder.wrap` can pick it up
+  /// without explicit `ISpectOptions.observer` wiring. Repeated calls reuse
+  /// the auto-created singleton.
+  ///
+  /// When `kISpectEnabled` is `false`, returns only [additional] observers
+  /// and never touches [current].
   ///
   /// Simple usage:
   /// ```dart
   /// MaterialApp(
   ///   navigatorObservers: ISpectNavigatorObserver.observers(),
+  ///   builder: (_, child) => ISpectBuilder.wrap(child: child!),
   /// )
   /// ```
   ///
@@ -75,10 +95,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   }) {
     if (!kISpectEnabled) return additional;
 
-    return [
-      observer ?? ISpectNavigatorObserver(),
-      ...additional,
-    ];
+    final effective = observer ?? _current ?? ISpectNavigatorObserver();
+    _current = effective;
+
+    return [effective, ...additional];
   }
 
   final int maxTransitions;

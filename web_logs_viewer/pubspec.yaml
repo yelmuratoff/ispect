@@ -25,6 +25,8 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   ispect: ^5.0.0
   ispectify_dio: ^5.0.0
   ispectify_http: ^5.0.0

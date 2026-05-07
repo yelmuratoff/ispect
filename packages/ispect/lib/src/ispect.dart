@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/extensions/init.dart';
+import 'package:ispect/src/common/observers/route_observer.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
 import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
@@ -13,34 +14,24 @@ final class ISpect {
 
   static ISpectLogger? _logger;
   static bool _isInitialized = false;
-  static bool _warnedAboutLazyInit = false;
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
   ///
   /// Lazily creates a default [ISpectLogger] on first access so call-sites
   /// built before [run]/[initialize] (early DI wiring, hot-restart, tests)
-  /// don't crash. The returned instance is fully functional, but it has no
-  /// access to the options/error handler that [run] would have configured —
-  /// so if `kISpectEnabled` is `true` and no explicit initialization happened,
-  /// a one-time warning is emitted via [debugPrint] to nudge the developer
-  /// toward calling [initialize] or [run].
+  /// don't crash. The returned instance is fully functional but unconfigured —
+  /// it has no access to the options or error handler that [run] would set
+  /// up. UI integration (panel, observers) requires [run]/[initialize] to be
+  /// called explicitly; the lazy fallback only keeps logging usable.
   ///
   /// When `kISpectEnabled` is `false` (default in release builds), the lazy
-  /// fallback stays silent — the logger is effectively unreachable from the
-  /// rest of ISpect and gets tree-shaken.
+  /// instance is effectively unreachable from the rest of ISpect and gets
+  /// tree-shaken.
   static ISpectLogger get logger {
     if (!_isInitialized) {
       _logger = ISpectLogger();
       _isInitialized = true;
-      if (kISpectEnabled && !_warnedAboutLazyInit) {
-        _warnedAboutLazyInit = true;
-        debugPrint(
-          '⚠️ ISpect: logger accessed before initialize(). Falling back to '
-          'a default ISpectLogger. Call ISpect.initialize() or ISpect.run() '
-          'to wire up options, error handling and UI integration.',
-        );
-      }
     }
     return _logger!;
   }
@@ -60,16 +51,12 @@ final class ISpect {
   }
 
   /// Disposes current ISpect state (useful for testing or hot restart).
-  ///
-  /// Resets the lazy-init warning flag so a subsequent uninitialized access
-  /// emits the warning again — dispose is treated as a full reset, not a
-  /// suppression.
   static Future<void> dispose() async {
     await _logger?.dispose();
     _isInitialized = false;
     _logger = null;
     _errorHandler = null;
-    _warnedAboutLazyInit = false;
+    ISpectNavigatorObserver.resetCurrent();
   }
 
   /// Reads the nearest [ISpectScopeModel] from the widget tree.

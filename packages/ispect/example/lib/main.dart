@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_db/ispectify_db.dart';
@@ -14,12 +15,6 @@ import 'package:share_plus/share_plus.dart';
 // ---------------------------------------------------------------------------
 // Observer example
 // ---------------------------------------------------------------------------
-//
-// Advanced: forward ISpect events to an external sink (Sentry, Datadog, ...).
-// Wire it via a custom logger:
-//
-//   final logger = ISpectFlutter.init(observer: SentryISpectObserver());
-//   ISpect.run(logger: logger, () => runApp(const MyApp()));
 
 class SentryISpectObserver implements ISpectObserver {
   @override
@@ -126,7 +121,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       locale: _locale,
       supportedLocales: _localeOptions.map((o) => o.locale),
-      localizationsDelegates: ISpectLocalizations.delegates(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        ...ISpectLocalizations.delegate(),
+      ],
       navigatorObservers:
           ISpectNavigatorObserver.observers(observer: _observer),
       themeMode: _themeMode,

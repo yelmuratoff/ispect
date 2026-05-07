@@ -19,16 +19,16 @@ import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
 ///
 /// ## Safe Usage
 ///
-/// ```dart
-/// const bool kEnableISpect = bool.fromEnvironment('ISPECT_ENABLED');
+/// Prefer the [ISpectBuilder.wrap] factory — it short-circuits before
+/// constructing the widget when `kISpectEnabled` is `false`, which lets the
+/// Dart compiler tree-shake the ISpect widget tree out of release builds.
+/// The public constructor is kept for backwards compatibility but defers
+/// the disabled-build short-circuit to `build()`, which keeps the state
+/// class reachable from a code-size standpoint.
 ///
+/// ```dart
 /// MaterialApp(
-///   builder: (context, child) {
-///     if (kEnableISpect) {
-///       return ISpectBuilder(child: child);
-///     }
-///     return child;
-///   },
+///   builder: (_, child) => ISpectBuilder.wrap(child: child!),
 ///   home: MyApp(),
 /// )
 /// ```
@@ -46,6 +46,12 @@ class ISpectBuilder extends StatefulWidget {
   ///
   /// Set [isISpectEnabled] to false to hide the panel at runtime (e.g. non-admin users).
   /// Compile-time gating is handled by [kISpectEnabled] via `--dart-define=ISPECT_ENABLED=true`.
+  @Deprecated(
+    'Use ISpectBuilder.wrap. The wrap factory short-circuits before '
+    'constructing the widget when kISpectEnabled is false, preserving '
+    'tree-shaking in release builds. The constructor is scheduled to be '
+    'made private in a stable 5.x release.',
+  )
   const ISpectBuilder({
     required this.child,
     required this.options,
@@ -71,6 +77,7 @@ class ISpectBuilder extends StatefulWidget {
   }) {
     if (!kISpectEnabled || !isISpectEnabled) return child;
 
+    // ignore: deprecated_member_use_from_same_package
     return ISpectBuilder(
       options: options,
       theme: theme,
@@ -116,6 +123,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     model
       ..isISpectEnabled = widget.isISpectEnabled
       ..options = (widget.options ?? model.options).copyWith(
+        observer: widget.options?.observer ?? ISpectNavigatorObserver.current,
         onShare: widget.options?.onShare,
         onOpenFile: widget.options?.onOpenFile,
       )

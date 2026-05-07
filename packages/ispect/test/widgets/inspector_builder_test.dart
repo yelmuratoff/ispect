@@ -1,3 +1,7 @@
+// Tests pin down `_ISpectBuilderState` lifecycle, which is unreachable
+// through `ISpectBuilder.wrap` in disabled builds.
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
@@ -202,6 +206,69 @@ void main() {
           );
 
           expect(identical(wrapped, child), isTrue);
+        },
+      );
+    });
+
+    group('auto-wired navigator observer', () {
+      setUp(ISpectNavigatorObserver.resetCurrent);
+      tearDown(ISpectNavigatorObserver.resetCurrent);
+
+      testWidgets(
+        'options.observer falls back to ISpectNavigatorObserver.current',
+        (tester) async {
+          if (!kISpectEnabled) return;
+
+          final installed = ISpectNavigatorObserver.observers()
+              .whereType<ISpectNavigatorObserver>()
+              .single;
+
+          ISpectScopeModel? captured;
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ISpectBuilder(
+                options: const ISpectOptions(),
+                child: Builder(
+                  builder: (context) {
+                    captured = ISpect.read(context);
+                    return const Text('child');
+                  },
+                ),
+              ),
+            ),
+          );
+
+          expect(captured, isNotNull);
+          expect(captured!.options.observer, same(installed));
+        },
+      );
+
+      testWidgets(
+        'explicit options.observer beats current',
+        (tester) async {
+          if (!kISpectEnabled) return;
+
+          ISpectNavigatorObserver.observers();
+          final explicit = ISpectNavigatorObserver();
+
+          ISpectScopeModel? captured;
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ISpectBuilder(
+                options: ISpectOptions(observer: explicit),
+                child: Builder(
+                  builder: (context) {
+                    captured = ISpect.read(context);
+                    return const Text('child');
+                  },
+                ),
+              ),
+            ),
+          );
+
+          expect(captured!.options.observer, same(explicit));
         },
       );
     });

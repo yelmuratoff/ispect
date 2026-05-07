@@ -143,6 +143,7 @@ dependencies:
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 
 void main() {
@@ -155,7 +156,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: ISpectLocalizations.delegates(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        ...ISpectLocalizations.delegate(),
+      ],
       navigatorObservers: ISpectNavigatorObserver.observers(),
       builder: (_, child) => ISpectBuilder.wrap(child: child!),
       home: const HomePage(),

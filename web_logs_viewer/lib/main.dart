@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
@@ -47,9 +48,14 @@ class _MyAppState extends State<MyApp> {
         navigatorObservers: ISpectNavigatorObserver.observers(
           additional: [_observer],
         ),
-        localizationsDelegates: ISpectLocalizations.delegates(
-          delegates: [ExampleGeneratedLocalization.delegate],
-        ),
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          ...ISpectLocalizations.delegate(
+            delegates: [ExampleGeneratedLocalization.delegate],
+          ),
+        ],
         supportedLocales: ExampleGeneratedLocalization.supportedLocales,
         themeMode: ThemeMode.light,
         theme: ThemeData(
