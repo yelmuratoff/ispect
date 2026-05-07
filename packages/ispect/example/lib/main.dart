@@ -14,6 +14,12 @@ import 'package:share_plus/share_plus.dart';
 // ---------------------------------------------------------------------------
 // Observer example
 // ---------------------------------------------------------------------------
+//
+// Advanced: forward ISpect events to an external sink (Sentry, Datadog, ...).
+// Wire it via a custom logger:
+//
+//   final logger = ISpectFlutter.init(observer: SentryISpectObserver());
+//   ISpect.run(logger: logger, () => runApp(const MyApp()));
 
 class SentryISpectObserver implements ISpectObserver {
   @override
@@ -95,9 +101,7 @@ const _localeOptions = <_LocaleOption>[
 // ---------------------------------------------------------------------------
 
 void main() {
-  final logger = ISpectFlutter.init();
-  // logger.addObserver(SentryISpectObserver());
-  ISpect.run(logger: logger, () => runApp(const MyApp()));
+  ISpect.run(() => runApp(const MyApp()));
 }
 
 // ---------------------------------------------------------------------------
