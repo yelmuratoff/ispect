@@ -924,6 +924,17 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get tipKeyboard => 'مفاتيح الأسهم للتنقل، Enter للفتح، / للبحث';
 
   @override
+  String get tipNavigationFlow =>
+      'افتح تدفق التنقل من الإعدادات لرؤية سجل المسارات بصريًا';
+
+  @override
+  String get tipShareSession =>
+      'شارك ملف السجلات لتقارير الأخطاء — يتم إخفاء البيانات تلقائيًا';
+
+  @override
+  String get tipReverseLogs => 'اضغط على الأسهم في الشريط لعكس ترتيب السجلات';
+
+  @override
   String get gotIt => 'فهمت';
 
   @override

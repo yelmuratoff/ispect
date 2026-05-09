@@ -957,6 +957,18 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
       'Pfeiltasten zum Navigieren, Enter zum Öffnen, / zum Suchen';
 
   @override
+  String get tipNavigationFlow =>
+      'Öffne den Navigations-Fluss in den Einstellungen, um den Routenverlauf visuell zu sehen';
+
+  @override
+  String get tipShareSession =>
+      'Teile die Log-Datei für Fehlerberichte — Daten werden automatisch maskiert';
+
+  @override
+  String get tipReverseLogs =>
+      'Tippe die Pfeile in der Leiste, um die Log-Reihenfolge umzukehren';
+
+  @override
   String get gotIt => 'Verstanden';
 
   @override

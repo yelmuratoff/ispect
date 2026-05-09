@@ -56,6 +56,21 @@ class _OnboardingContent extends StatelessWidget {
             icon: Icons.open_in_full_rounded,
             text: l10n.tipExpand,
           ),
+          const Gap(12),
+          _HintRow(
+            icon: Icons.alt_route_rounded,
+            text: l10n.tipNavigationFlow,
+          ),
+          const Gap(12),
+          _HintRow(
+            icon: Icons.ios_share_rounded,
+            text: l10n.tipShareSession,
+          ),
+          const Gap(12),
+          _HintRow(
+            icon: Icons.swap_vert_rounded,
+            text: l10n.tipReverseLogs,
+          ),
           if (isDesktop) ...[
             const Gap(12),
             _HintRow(

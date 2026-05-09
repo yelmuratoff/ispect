@@ -916,6 +916,15 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get tipKeyboard => '화살표 키로 이동, Enter로 열기, /로 검색';
 
   @override
+  String get tipNavigationFlow => '설정에서 내비게이션 흐름을 열어 경로 기록을 시각적으로 확인';
+
+  @override
+  String get tipShareSession => '버그 리포트용으로 로그 파일을 공유 — 데이터는 자동으로 가려집니다';
+
+  @override
+  String get tipReverseLogs => '앱 바의 화살표를 눌러 로그 순서를 뒤집기';
+
+  @override
   String get gotIt => '확인';
 
   @override

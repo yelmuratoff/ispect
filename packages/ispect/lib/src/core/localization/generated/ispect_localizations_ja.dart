@@ -916,6 +916,15 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tipKeyboard => '矢印キーで移動、Enterで開く、/で検索';
 
   @override
+  String get tipNavigationFlow => '設定からナビゲーションフローを開いてルート履歴を可視化';
+
+  @override
+  String get tipShareSession => 'バグ報告用にログファイルを共有 — データは自動的にマスクされます';
+
+  @override
+  String get tipReverseLogs => 'アプリバーの矢印をタップしてログの順序を反転';
+
+  @override
   String get gotIt => '了解';
 
   @override

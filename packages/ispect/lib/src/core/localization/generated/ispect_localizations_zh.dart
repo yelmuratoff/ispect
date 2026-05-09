@@ -916,6 +916,15 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get tipKeyboard => '方向键导航，回车打开，/ 搜索';
 
   @override
+  String get tipNavigationFlow => '在设置中打开导航流，可视化查看路由历史';
+
+  @override
+  String get tipShareSession => '分享日志文件用于错误报告 — 数据会自动脱敏';
+
+  @override
+  String get tipReverseLogs => '点击顶栏的箭头反转日志顺序';
+
+  @override
   String get gotIt => '知道了';
 
   @override

@@ -951,6 +951,18 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
       'Setas para navegar, Enter para abrir, / para pesquisar';
 
   @override
+  String get tipNavigationFlow =>
+      'Abra Fluxo de navegação nas configurações para ver o histórico de rotas';
+
+  @override
+  String get tipShareSession =>
+      'Compartilhe o arquivo de logs para relatórios de bug — os dados são mascarados automaticamente';
+
+  @override
+  String get tipReverseLogs =>
+      'Toque nas setas na barra para inverter a ordem dos logs';
+
+  @override
   String get gotIt => 'Entendi';
 
   @override

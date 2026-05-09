@@ -1817,6 +1817,24 @@ abstract class ISpectGeneratedLocalization {
   /// **'Use arrow keys to navigate, Enter to open, / to search'**
   String get tipKeyboard;
 
+  /// No description provided for @tipNavigationFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Navigation Flow from settings to see route history visually'**
+  String get tipNavigationFlow;
+
+  /// No description provided for @tipShareSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the log file for bug reports — payloads are auto-redacted'**
+  String get tipShareSession;
+
+  /// No description provided for @tipReverseLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the reverse arrows in the app bar to flip log order'**
+  String get tipReverseLogs;
+
   /// No description provided for @gotIt.
   ///
   /// In en, this message translates to:

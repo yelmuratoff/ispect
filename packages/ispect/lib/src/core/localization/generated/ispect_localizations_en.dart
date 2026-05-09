@@ -936,6 +936,18 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       'Use arrow keys to navigate, Enter to open, / to search';
 
   @override
+  String get tipNavigationFlow =>
+      'Open Navigation Flow from settings to see route history visually';
+
+  @override
+  String get tipShareSession =>
+      'Share the log file for bug reports — payloads are auto-redacted';
+
+  @override
+  String get tipReverseLogs =>
+      'Tap the reverse arrows in the app bar to flip log order';
+
+  @override
   String get gotIt => 'Got it';
 
   @override

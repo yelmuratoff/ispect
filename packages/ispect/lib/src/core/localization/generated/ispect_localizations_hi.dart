@@ -942,6 +942,17 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
       'नेविगेट करने के लिए तीर कुंजियाँ, खोलने के लिए Enter, खोज के लिए /';
 
   @override
+  String get tipNavigationFlow =>
+      'रूट इतिहास देखने के लिए सेटिंग्स से नेविगेशन फ्लो खोलें';
+
+  @override
+  String get tipShareSession =>
+      'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें — डेटा स्वतः छिपाया जाता है';
+
+  @override
+  String get tipReverseLogs => 'लॉग क्रम पलटने के लिए ऐप बार में तीर दबाएँ';
+
+  @override
   String get gotIt => 'समझ गया';
 
   @override

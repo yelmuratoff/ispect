@@ -939,6 +939,18 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Навигация үшін көрсеткілер, ашу үшін Enter, іздеу үшін /';
 
   @override
+  String get tipNavigationFlow =>
+      'Маршруттар тарихын көру үшін баптаулардан Навигация ағынын ашыңыз';
+
+  @override
+  String get tipShareSession =>
+      'Бағ-есептер үшін лог файлымен бөлісіңіз — деректер автоматты түрде жасырылады';
+
+  @override
+  String get tipReverseLogs =>
+      'Логтар ретін аудару үшін тақырыптағы көрсеткілерді басыңыз';
+
+  @override
   String get gotIt => 'Түсінікті';
 
   @override

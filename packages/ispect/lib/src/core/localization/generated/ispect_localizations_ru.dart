@@ -941,6 +941,18 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Стрелки для навигации, Enter для открытия, / для поиска';
 
   @override
+  String get tipNavigationFlow =>
+      'Открой Поток навигации в настройках — увидишь историю маршрутов';
+
+  @override
+  String get tipShareSession =>
+      'Поделись файлом логов для багрепортов — данные маскируются автоматически';
+
+  @override
+  String get tipReverseLogs =>
+      'Нажми стрелки в шапке, чтобы перевернуть порядок логов';
+
+  @override
   String get gotIt => 'Понятно';
 
   @override

@@ -959,6 +959,18 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
       'Flèches pour naviguer, Entrée pour ouvrir, / pour rechercher';
 
   @override
+  String get tipNavigationFlow =>
+      'Ouvre Flux de navigation dans les paramètres pour voir l\'historique des routes';
+
+  @override
+  String get tipShareSession =>
+      'Partage le fichier de logs pour les rapports de bug — les données sont masquées automatiquement';
+
+  @override
+  String get tipReverseLogs =>
+      'Touche les flèches dans la barre pour inverser l\'ordre des logs';
+
+  @override
   String get gotIt => 'Compris';
 
   @override
