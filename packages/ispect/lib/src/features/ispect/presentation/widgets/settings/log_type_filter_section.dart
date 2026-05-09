@@ -52,7 +52,7 @@ class LogTypeFilterSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -195,14 +195,14 @@ class _LogTypeGroup extends StatelessWidget {
         context.appTheme.cardColor;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 2),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -213,7 +213,7 @@ class _LogTypeGroup extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const Gap(8),
+              const Gap(4),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
