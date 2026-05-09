@@ -20,12 +20,17 @@ class DioRequestData {
         NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra);
     final normalizedData = _normalizeBody(requestOptions.data);
 
+    final url = requestOptions.uri.toString();
+    final baseUrl = requestOptions.baseUrl;
+    final path = requestOptions.path;
+
     return <String, dynamic>{
       // --- Identity: what & where ---
       NetworkJsonKeys.method: requestOptions.method,
-      NetworkJsonKeys.url: requestOptions.uri.toString(),
-      NetworkJsonKeys.baseUrl: requestOptions.baseUrl,
-      NetworkJsonKeys.path: requestOptions.path,
+      NetworkJsonKeys.url: url,
+
+      if (baseUrl.isNotEmpty) NetworkJsonKeys.baseUrl: baseUrl,
+      if (path != url) NetworkJsonKeys.path: path,
       NetworkJsonKeys.queryParameters: normalizedQuery,
 
       // --- Payload ---
@@ -88,7 +93,6 @@ class DioRequestData {
       key: NetworkJsonKeys.extra,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
-      preserveKeys: {NetworkJsonKeys.ispectRequestId},
     );
   }
 

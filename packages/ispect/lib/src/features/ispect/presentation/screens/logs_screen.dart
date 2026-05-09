@@ -769,15 +769,16 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 ? () => widget.logsViewController
                     .selectAndFollowDetail(entry.request)
                 : () {
+                    final navigator = Navigator.of(context);
                     final responseLog = entry.response ?? entry.error;
                     LogDetailView(
                       activeData: entry.request,
-                      onClose: () => Navigator.of(context).pop(),
+                      onClose: navigator.pop,
                       correlatedLog: responseLog,
                       correlationDuration: entry.duration,
                       onShowRelated: (id) {
                         widget.logsViewController.searchByCorrelationId(id);
-                        Navigator.of(context).pop();
+                        navigator.pop();
                       },
                     ).push(context);
                   },
@@ -787,15 +788,16 @@ class _MainLogsViewState extends State<_MainLogsView> {
                           entry.response ?? entry.error!,
                         )
                     : () {
+                        final navigator = Navigator.of(context);
                         final log = entry.response ?? entry.error!;
                         LogDetailView(
                           activeData: log,
-                          onClose: () => Navigator.of(context).pop(),
+                          onClose: navigator.pop,
                           correlatedLog: entry.request,
                           correlationDuration: entry.duration,
                           onShowRelated: (id) {
                             widget.logsViewController.searchByCorrelationId(id);
-                            Navigator.of(context).pop();
+                            navigator.pop();
                           },
                         ).push(context);
                       }

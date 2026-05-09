@@ -29,11 +29,11 @@ class ISpectDioInterceptor extends Interceptor
   @override
   RedactionService get redactor => _redactor;
 
-  static const _requestIdExtraKey = NetworkJsonKeys.ispectRequestId;
-  static const _stopwatchExtraKey = '_ispect_sw';
-
   ISpectDioInterceptorSettings get settings => _settings;
   ISpectDioInterceptorSettings _settings;
+
+  final Expando<String> _requestIds = Expando<String>('ispect_rid');
+  final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
 
   final String? addonId;
 
@@ -59,8 +59,8 @@ class ISpectDioInterceptor extends Interceptor
     }
 
     final requestId = generateTraceId();
-    options.extra[_requestIdExtraKey] = requestId;
-    options.extra[_stopwatchExtraKey] = Stopwatch()..start();
+    _requestIds[options] = requestId;
+    _stopwatches[options] = Stopwatch()..start();
 
     final useRedaction = settings.enableRedaction;
     final (:url, path: _) = redactUrlAndPath(
@@ -106,8 +106,8 @@ class ISpectDioInterceptor extends Interceptor
     }
 
     final requestOptions = response.requestOptions;
-    final requestId = requestOptions.extra[_requestIdExtraKey] as String?;
-    final sw = requestOptions.extra[_stopwatchExtraKey] as Stopwatch?;
+    final requestId = _requestIds[requestOptions];
+    final sw = _stopwatches[requestOptions];
     sw?.stop();
 
     final useRedaction = settings.enableRedaction;
@@ -161,8 +161,8 @@ class ISpectDioInterceptor extends Interceptor
     }
 
     final requestOptions = err.requestOptions;
-    final requestId = requestOptions.extra[_requestIdExtraKey] as String?;
-    final sw = requestOptions.extra[_stopwatchExtraKey] as Stopwatch?;
+    final requestId = _requestIds[requestOptions];
+    final sw = _stopwatches[requestOptions];
     sw?.stop();
 
     final useRedaction = settings.enableRedaction;
