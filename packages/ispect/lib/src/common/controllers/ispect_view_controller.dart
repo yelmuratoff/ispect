@@ -51,11 +51,14 @@ class ISpectViewController implements Listenable {
   ISpectViewController({
     ISpectShareCallback? onShare,
     ISpectSettingsState? initialSettings,
+    ISpectSettingsChangedCallback? onSettingsChanged,
     bool groupHttpLogs = true,
   })  : _exportService = LogExportService(onShare: onShare),
         _importService = const LogImportService() {
-    _display = DisplayController()
-      ..setInitialGroupHttpLogs(value: groupHttpLogs);
+    _display = DisplayController(initialSettings: initialSettings);
+    if (initialSettings == null) {
+      _display.setInitialGroupHttpLogs(value: groupHttpLogs);
+    }
 
     _filterManager = FilterManager(
       initialFilter: ISpectFilter(),
@@ -64,6 +67,7 @@ class ISpectViewController implements Listenable {
     _settingsManager = SettingsManager(
       initialSettings: initialSettings,
       onChanged: _onSubNotify,
+      onUserSettingsChanged: onSettingsChanged,
     );
 
     _selection = SelectionController();
@@ -72,6 +76,11 @@ class ISpectViewController implements Listenable {
       isLogOrderReversed: () => _display.isLogOrderReversed,
     );
 
+    // Mirror display toggles back into settings so action-chip flips reach
+    // `onSettingsChanged`. Equality guards in `SettingsManager` and
+    // `DisplayController` prevent the bidirectional sync from looping.
+    _display.addListener(_syncDisplayToSettings);
+
     _merged = Listenable.merge([
       _selection,
       _search,
@@ -79,6 +88,19 @@ class ISpectViewController implements Listenable {
       _display,
       _pipelineNotifier,
     ]);
+  }
+
+  void _syncDisplayToSettings() {
+    final current = _settingsManager.settings;
+    final next = current.copyWith(
+      expandedLogs: _display.expandedLogs,
+      isLogOrderReversed: _display.isLogOrderReversed,
+      groupHttpLogs: _display.groupHttpLogs,
+      useRelativeTime: _display.useRelativeTime,
+    );
+    if (next != current) {
+      _settingsManager.updateSettings(next);
+    }
   }
 
   // --- Sub-controllers (exposed for targeted listening) ---
@@ -206,8 +228,10 @@ class ISpectViewController implements Listenable {
 
   ISpectSettingsState get settings => _settingsManager.settings;
 
-  void updateSettings(ISpectSettingsState newSettings) =>
-      _settingsManager.updateSettings(newSettings);
+  void updateSettings(ISpectSettingsState newSettings) {
+    _settingsManager.updateSettings(newSettings);
+    _display.applyFromSettings(newSettings);
+  }
 
   // --- Filter delegation ---
 
@@ -345,6 +369,7 @@ class ISpectViewController implements Listenable {
   void update() => _pipelineNotifier.notify();
 
   void dispose() {
+    _display.removeListener(_syncDisplayToSettings);
     _search.dispose();
     _selection.dispose();
     _sorting.dispose();

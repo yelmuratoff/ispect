@@ -40,81 +40,155 @@ typedef ISpectSettingsChangedCallback = void Function(
   ISpectSettingsState settings,
 );
 
-/// Represents the current state of ISpect settings.
-///
-/// This class encapsulates all configurable settings including:
-/// - Logger enabled state
-/// - Console logs enabled state
-/// - History enabled state
-/// - Disabled log types for filtering
-///
-/// Can be serialized to JSON for persistence and restored on app restart.
+/// Mirrors `ISpectLoggerOptions.maxHistoryItems` default.
+const int kDefaultMaxHistoryItems = 10000;
+
+/// Mirrors `ISpectLoggerOptions.logTruncateLength` default
+/// (`kDefaultStringTruncateLimit`).
+const int kDefaultLogTruncateLength = 10000;
+
+/// Snapshot of every runtime-configurable ISpect setting exposed in the
+/// Settings sheet. Serialized via [toJson] and restored on app restart
+/// through `ISpectOptions.initialSettings`.
 @immutable
 final class ISpectSettingsState {
-  /// Creates a snapshot of the current ISpect settings.
   const ISpectSettingsState({
     required this.enabled,
     required this.useConsoleLogs,
     required this.useHistory,
+    this.forwardErrorToConsole = false,
+    this.maxHistoryItems = kDefaultMaxHistoryItems,
+    this.logTruncateLength = kDefaultLogTruncateLength,
     this.disabledLogTypes = const {},
-  });
+    this.expandedLogs = false,
+    this.isLogOrderReversed = true,
+    this.groupHttpLogs = true,
+    this.useRelativeTime = false,
+    this.isLogPageEnabled = true,
+    this.isPerformanceEnabled = true,
+    this.isInspectorEnabled = true,
+    this.isColorPickerEnabled = true,
+  })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
+        assert(
+          logTruncateLength >= 0,
+          'logTruncateLength must be non-negative',
+        );
 
-  /// Whether logging is enabled globally.
   final bool enabled;
-
-  /// Whether console logging is enabled.
   final bool useConsoleLogs;
-
-  /// Whether log history storage is enabled.
   final bool useHistory;
 
-  /// Set of disabled log type keys. If empty, all log types are enabled.
-  ///
-  /// Use [ISpectLogType.key] values to populate this set.
+  /// Forwards `error` and `stackTrace` to `dart:developer.log`, surfacing
+  /// them separately in DevTools/IDE consoles at the cost of duplication
+  /// in plain-text terminals.
+  final bool forwardErrorToConsole;
+
+  final int maxHistoryItems;
+  final int logTruncateLength;
+
+  /// Disabled [ISpectLogType.key] values. Empty set means "all enabled".
   final Set<String> disabledLogTypes;
 
-  /// Returns true if all log types are enabled (no disabled types).
+  final bool expandedLogs;
+  final bool isLogOrderReversed;
+  final bool groupHttpLogs;
+  final bool useRelativeTime;
+
+  final bool isLogPageEnabled;
+  final bool isPerformanceEnabled;
+  final bool isInspectorEnabled;
+  final bool isColorPickerEnabled;
+
   bool get isAllLogTypesEnabled => disabledLogTypes.isEmpty;
 
-  /// Returns true if a specific log type is enabled (not in disabled set).
-  bool isLogTypeEnabled(String logTypeKey) {
-    return !disabledLogTypes.contains(logTypeKey);
-  }
+  bool isLogTypeEnabled(String logTypeKey) =>
+      !disabledLogTypes.contains(logTypeKey);
 
-  /// Converts settings to JSON for persistence.
   Map<String, dynamic> toJson() => {
         'enabled': enabled,
         'useConsoleLogs': useConsoleLogs,
         'useHistory': useHistory,
+        'forwardErrorToConsole': forwardErrorToConsole,
+        'maxHistoryItems': maxHistoryItems,
+        'logTruncateLength': logTruncateLength,
         'disabledLogTypes': disabledLogTypes.toList(),
+        'expandedLogs': expandedLogs,
+        'isLogOrderReversed': isLogOrderReversed,
+        'groupHttpLogs': groupHttpLogs,
+        'useRelativeTime': useRelativeTime,
+        'isLogPageEnabled': isLogPageEnabled,
+        'isPerformanceEnabled': isPerformanceEnabled,
+        'isInspectorEnabled': isInspectorEnabled,
+        'isColorPickerEnabled': isColorPickerEnabled,
       };
 
-  /// Creates settings from JSON, falling back to permissive defaults when
-  /// fields are missing.
+  /// Missing fields fall back to permissive defaults; negative numeric
+  /// inputs are coerced to the matching `kDefault*` constant.
   factory ISpectSettingsState.fromJson(Map<String, dynamic> json) {
+    int readInt(String key, int fallback) {
+      final raw = json[key];
+      if (raw is int && raw >= 0) return raw;
+      if (raw is num && raw >= 0) return raw.toInt();
+      return fallback;
+    }
+
     return ISpectSettingsState(
       enabled: json['enabled'] as bool? ?? true,
       useConsoleLogs: json['useConsoleLogs'] as bool? ?? true,
       useHistory: json['useHistory'] as bool? ?? true,
+      forwardErrorToConsole: json['forwardErrorToConsole'] as bool? ?? false,
+      maxHistoryItems: readInt('maxHistoryItems', kDefaultMaxHistoryItems),
+      logTruncateLength:
+          readInt('logTruncateLength', kDefaultLogTruncateLength),
       disabledLogTypes: (json['disabledLogTypes'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toSet() ??
           const {},
+      expandedLogs: json['expandedLogs'] as bool? ?? false,
+      isLogOrderReversed: json['isLogOrderReversed'] as bool? ?? true,
+      groupHttpLogs: json['groupHttpLogs'] as bool? ?? true,
+      useRelativeTime: json['useRelativeTime'] as bool? ?? false,
+      isLogPageEnabled: json['isLogPageEnabled'] as bool? ?? true,
+      isPerformanceEnabled: json['isPerformanceEnabled'] as bool? ?? true,
+      isInspectorEnabled: json['isInspectorEnabled'] as bool? ?? true,
+      isColorPickerEnabled: json['isColorPickerEnabled'] as bool? ?? true,
     );
   }
 
-  /// Returns a copy with the provided fields replaced.
   ISpectSettingsState copyWith({
     bool? enabled,
     bool? useConsoleLogs,
     bool? useHistory,
+    bool? forwardErrorToConsole,
+    int? maxHistoryItems,
+    int? logTruncateLength,
     Set<String>? disabledLogTypes,
+    bool? expandedLogs,
+    bool? isLogOrderReversed,
+    bool? groupHttpLogs,
+    bool? useRelativeTime,
+    bool? isLogPageEnabled,
+    bool? isPerformanceEnabled,
+    bool? isInspectorEnabled,
+    bool? isColorPickerEnabled,
   }) {
     return ISpectSettingsState(
       enabled: enabled ?? this.enabled,
       useConsoleLogs: useConsoleLogs ?? this.useConsoleLogs,
       useHistory: useHistory ?? this.useHistory,
+      forwardErrorToConsole:
+          forwardErrorToConsole ?? this.forwardErrorToConsole,
+      maxHistoryItems: maxHistoryItems ?? this.maxHistoryItems,
+      logTruncateLength: logTruncateLength ?? this.logTruncateLength,
       disabledLogTypes: disabledLogTypes ?? this.disabledLogTypes,
+      expandedLogs: expandedLogs ?? this.expandedLogs,
+      isLogOrderReversed: isLogOrderReversed ?? this.isLogOrderReversed,
+      groupHttpLogs: groupHttpLogs ?? this.groupHttpLogs,
+      useRelativeTime: useRelativeTime ?? this.useRelativeTime,
+      isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
+      isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
+      isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
+      isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
     );
   }
 
@@ -127,23 +201,56 @@ final class ISpectSettingsState {
         other.enabled == enabled &&
         other.useConsoleLogs == useConsoleLogs &&
         other.useHistory == useHistory &&
-        setEquals(other.disabledLogTypes, disabledLogTypes);
+        other.forwardErrorToConsole == forwardErrorToConsole &&
+        other.maxHistoryItems == maxHistoryItems &&
+        other.logTruncateLength == logTruncateLength &&
+        setEquals(other.disabledLogTypes, disabledLogTypes) &&
+        other.expandedLogs == expandedLogs &&
+        other.isLogOrderReversed == isLogOrderReversed &&
+        other.groupHttpLogs == groupHttpLogs &&
+        other.useRelativeTime == useRelativeTime &&
+        other.isLogPageEnabled == isLogPageEnabled &&
+        other.isPerformanceEnabled == isPerformanceEnabled &&
+        other.isInspectorEnabled == isInspectorEnabled &&
+        other.isColorPickerEnabled == isColorPickerEnabled;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         enabled,
         useConsoleLogs,
         useHistory,
+        forwardErrorToConsole,
+        maxHistoryItems,
+        logTruncateLength,
         const DeepCollectionEquality().hash(disabledLogTypes),
-      );
+        expandedLogs,
+        isLogOrderReversed,
+        groupHttpLogs,
+        useRelativeTime,
+        isLogPageEnabled,
+        isPerformanceEnabled,
+        isInspectorEnabled,
+        isColorPickerEnabled,
+      ]);
 
   @override
   String toString() => '''ISpectSettingsState(
       enabled: $enabled,
       useConsoleLogs: $useConsoleLogs,
       useHistory: $useHistory,
+      forwardErrorToConsole: $forwardErrorToConsole,
+      maxHistoryItems: $maxHistoryItems,
+      logTruncateLength: $logTruncateLength,
       disabledLogTypes: $disabledLogTypes,
+      expandedLogs: $expandedLogs,
+      isLogOrderReversed: $isLogOrderReversed,
+      groupHttpLogs: $groupHttpLogs,
+      useRelativeTime: $useRelativeTime,
+      isLogPageEnabled: $isLogPageEnabled,
+      isPerformanceEnabled: $isPerformanceEnabled,
+      isInspectorEnabled: $isInspectorEnabled,
+      isColorPickerEnabled: $isColorPickerEnabled,
       )''';
 }
 

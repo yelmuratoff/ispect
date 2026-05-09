@@ -19,6 +19,7 @@ class ISpectScopeModel extends ChangeNotifier {
     ISpectOptions? options,
     ISpectTheme theme = const ISpectTheme(),
     NavigatorObserver? observer,
+    ISpectSettingsState? settings,
   })  : assert(_debugValidateTheme(theme)),
         _isISpectEnabled = isISpectEnabled,
         _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
@@ -29,7 +30,13 @@ class ISpectScopeModel extends ChangeNotifier {
             ...theme.logIcons,
           },
         ),
-        _observer = observer;
+        _observer = observer,
+        _settings = settings ??
+            const ISpectSettingsState(
+              enabled: true,
+              useConsoleLogs: true,
+              useHistory: true,
+            );
 
   /// Runs [ISpectTheme.debugValidate] and prints any warnings via [debugPrint].
   /// Always returns `true` so it can be used inside an `assert`.
@@ -48,6 +55,7 @@ class ISpectScopeModel extends ChangeNotifier {
   bool _isPerformanceTrackingEnabled;
   ISpectOptions _options;
   ISpectTheme _theme;
+  ISpectSettingsState _settings;
 
   /// Helper method to update a value and notify listeners if changed.
   void _updateValue<T>(T currentValue, T newValue, void Function(T) setter) {
@@ -100,6 +108,16 @@ class ISpectScopeModel extends ChangeNotifier {
   NavigatorObserver? get observer => _observer;
   set observer(NavigatorObserver? value) =>
       _updateValue(_observer, value, (v) => _observer = v);
+
+  /// Snapshot of runtime settings shared across the ISpect UI surface.
+  ///
+  /// Acts as the single source of truth for feature-toggle visibility
+  /// (log page, performance, inspector, color picker) so the inspector
+  /// panel re-renders the moment the Settings sheet flips a toggle —
+  /// without waiting for a logs-screen rebuild.
+  ISpectSettingsState get settings => _settings;
+  set settings(ISpectSettingsState value) =>
+      _updateValue(_settings, value, (v) => _settings = v);
 
   /// Toggles the ISpect state.
   void toggleISpect() {

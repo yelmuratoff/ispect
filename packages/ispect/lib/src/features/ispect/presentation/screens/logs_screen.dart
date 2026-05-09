@@ -60,23 +60,58 @@ class _LogsScreenState extends State<LogsScreen> {
   /// detail panel. Rebuilt lazily when the input list identity changes.
   final _correlationIndex = LogCorrelationIndex();
 
+  // Bridges controller settings to the global scope so feature-toggle flips
+  // reach the inspector panel without waiting for a logs-screen rebuild.
+  ISpectScopeModel? _scope;
+  bool _scopeBootstrapped = false;
+  bool _ownController = false;
+
   @override
   void initState() {
     super.initState();
+    _ownController = widget.controller == null;
     _logsViewController = widget.controller ??
         ISpectViewController(
           onShare: widget.options.onShare,
           initialSettings: widget.options.initialSettings,
+          onSettingsChanged: _handleSettingsChanged,
         );
-    _logsViewController.expandedLogs = false;
+    _logsViewController.addListener(_mirrorSettingsToScope);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final scope = ISpect.read(context);
+    if (identical(_scope, scope)) return;
+    _scope = scope;
+    if (!_scopeBootstrapped && _ownController) {
+      _scopeBootstrapped = true;
+      _logsViewController.updateSettings(scope.settings);
+    }
+    _mirrorSettingsToScope();
+  }
+
+  void _handleSettingsChanged(ISpectSettingsState settings) {
+    _scope?.settings = settings;
+    widget.options.onSettingsChanged?.call(settings);
+  }
+
+  void _mirrorSettingsToScope() {
+    final scope = _scope;
+    if (scope == null) return;
+    final next = _logsViewController.settings;
+    if (scope.settings != next) {
+      scope.settings = next;
+    }
   }
 
   @override
   void dispose() {
     _searchFocusNode.dispose();
     _titleFiltersController.dispose();
-    // Dispose only if we own the controller instance.
-    if (widget.controller == null) {
+    _logsViewController.removeListener(_mirrorSettingsToScope);
+    if (_ownController) {
       _logsViewController.dispose();
     }
     _logsScrollController.dispose();

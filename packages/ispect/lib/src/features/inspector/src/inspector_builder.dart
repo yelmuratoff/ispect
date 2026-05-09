@@ -129,10 +129,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       )
       ..theme = widget.theme ?? model.theme;
 
-    // Apply initial settings to logger if provided
+    final initialSettings = widget.options?.initialSettings;
+    if (initialSettings != null) {
+      model.settings = initialSettings;
+    }
+
     _applyInitialSettings();
 
-    // Initialize plugins
     for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
       plugin.onInit();
     }
@@ -142,13 +145,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     ErrorWidget.builder = _buildErrorWidget;
   }
 
-  /// Applies initial settings from options to the logger.
   void _applyInitialSettings() {
     final initialSettings = widget.options?.initialSettings;
     if (initialSettings != null) {
-      // Convert disabled types to enabled types for filter
       final enabledTypes = initialSettings.disabledLogTypes.isEmpty
-          ? <String>[] // Empty = no filter (all enabled)
+          ? <String>[]
           : ISpectLogType.builtIn
               .map((e) => e.key)
               .where((key) => !initialSettings.disabledLogTypes.contains(key))
@@ -159,6 +160,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           enabled: initialSettings.enabled,
           useConsoleLogs: initialSettings.useConsoleLogs,
           useHistory: initialSettings.useHistory,
+          forwardErrorToConsole: initialSettings.forwardErrorToConsole,
+          maxHistoryItems: initialSettings.maxHistoryItems,
+          logTruncateLength: initialSettings.logTruncateLength,
         ),
         filter: enabledTypes.isNotEmpty
             ? ISpectFilter(logTypeKeys: enabledTypes)
@@ -233,6 +237,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     final iSpect = ISpect.read(context);
     final options = iSpect.options;
     final theme = context.ispectTheme;
+    final settings = iSpect.settings;
 
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -244,7 +249,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
         controller: _panelController,
         items: [
-          if (options.isLogPageEnabled)
+          if (settings.isLogPageEnabled)
             DraggablePanelItem(
               icon: _logPageController.inLoggerPage
                   ? Icons.undo_rounded
@@ -255,14 +260,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                   ? context.ispectL10n.backToMainScreen
                   : context.ispectL10n.openLogViewer,
             ),
-          if (options.isPerformanceEnabled)
+          if (settings.isPerformanceEnabled)
             DraggablePanelItem(
               icon: Icons.monitor_heart_outlined,
               enableBadge: iSpect.isPerformanceTrackingEnabled,
               onTap: (_) => iSpect.togglePerformanceTracking(),
               description: context.ispectL10n.togglePerformanceTracking,
             ),
-          if (options.isInspectorEnabled)
+          if (settings.isInspectorEnabled)
             DraggablePanelItem(
               icon: Icons.format_shapes_rounded,
               enableBadge: controller.modeNotifier.value ==
@@ -275,7 +280,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
               ),
               description: context.ispectL10n.inspectWidgets,
             ),
-          if (options.isColorPickerEnabled)
+          if (settings.isColorPickerEnabled)
             DraggablePanelItem(
               icon: Icons.colorize_rounded,
               enableBadge: controller.modeNotifier.value ==
