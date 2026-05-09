@@ -93,6 +93,8 @@ class ArraySuffixWidget extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4),
           child: Text(
             '[$length]',
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: style.copyWith(
               color: JsonColors.arrayColorFor(
                 Theme.of(context).brightness,
@@ -114,6 +116,8 @@ class MapSuffixWidget extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4),
           child: Text(
             '{$length}',
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: style.copyWith(
               color: JsonColors.objectColorFor(
                 Theme.of(context).brightness,

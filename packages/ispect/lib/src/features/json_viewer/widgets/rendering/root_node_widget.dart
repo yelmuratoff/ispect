@@ -40,7 +40,7 @@ class RootNodeWidget extends StatelessWidget {
     final text = _keyName();
 
     if (!hasSearchResults) {
-      return Row(children: [Text(text, style: attributeKeyStyle)]);
+      return Text(text, style: attributeKeyStyle);
     }
 
     return HighlightedText(

@@ -274,8 +274,11 @@ class _JsonAttributeState extends State<JsonAttribute> {
       child: nodeKey,
     );
 
+    if (!widget.node.isRoot) {
+      return jsonCard;
+    }
     return switch (widget.maxRootNodeWidth) {
-      null => jsonCard,
+      null => Flexible(child: jsonCard),
       final v => Flexible(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: v),
