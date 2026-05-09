@@ -11,6 +11,7 @@ class CollapsedBody extends StatelessWidget {
     required this.message,
     required this.errorMessage,
     required this.expanded,
+    this.subtitle,
     this.statusCode,
     this.slowDurationMs,
     super.key,
@@ -26,6 +27,12 @@ class CollapsedBody extends StatelessWidget {
   final String? message;
   final String? errorMessage;
   final bool expanded;
+
+  /// Subtitle shown below the title row when [expanded] is `true`.
+  /// Use it to surface stable context (log id, level, source) that is not
+  /// duplicated by the message body shown beneath the divider.
+  final String? subtitle;
+
   final int? statusCode;
   final int? slowDurationMs;
 
@@ -76,7 +83,26 @@ class CollapsedBody extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (!expanded)
+                if (expanded) ...[
+                  if (subtitle != null && subtitle!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color:
+                              context.appTheme.textColor.withValues(alpha: 0.5),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          height: 1.1,
+                          letterSpacing: 0.1,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                ] else
                   _CollapsedMessage(
                     color: color,
                     message: message,
@@ -171,19 +197,19 @@ class SquareIconButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
         child: SizedBox(
-          width: 36,
-          height: 36,
+          width: 28,
+          height: 28,
           child: Center(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.06),
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                borderRadius: const BorderRadius.all(Radius.circular(7)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(4),
                 child: Icon(
                   icon,
-                  size: 14,
+                  size: 13,
                   color: color.withValues(alpha: 0.75),
                 ),
               ),

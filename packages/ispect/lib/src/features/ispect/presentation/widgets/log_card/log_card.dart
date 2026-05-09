@@ -225,6 +225,7 @@ class _LogCardHeader extends StatelessWidget {
                   title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
                       data.key,
                   dateTime: data.formattedTime,
+                  subtitle: _buildSubtitle(data),
                   message: data.textMessage,
                   errorMessage: data.httpLogText,
                   expanded: isExpanded,
@@ -241,6 +242,55 @@ class _LogCardHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Builds the subtitle line shown beneath the title row when a log card is
+/// expanded.
+String? _buildSubtitle(ISpectLogData data) {
+  final parts = <String>['#${data.id}'];
+
+  final source = data.traceSource;
+  if (source != null && source.isNotEmpty) parts.add(source);
+
+  final op = data.traceOperation;
+  final target = data.traceTarget;
+  if (op != null && target != null) {
+    parts.add('$op $target');
+  } else if (op != null) {
+    parts.add(op);
+  } else if (target != null) {
+    parts.add(target);
+  }
+
+  final ms = data.traceDurationMs;
+  if (ms != null) parts.add(_formatTraceDuration(ms));
+
+  final raised = data.exception ?? data.error;
+  if (raised != null) {
+    final typeName = raised.runtimeType.toString();
+    if (typeName.isNotEmpty && typeName != 'Null') {
+      final clean = typeName.startsWith('_') ? typeName.substring(1) : typeName;
+      parts.add(clean);
+    }
+  }
+
+  if (parts.length == 1) {
+    final levelName = data.logLevel?.name;
+    if (levelName != null) {
+      final title =
+          ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? '';
+      if (title.toLowerCase() != levelName.toLowerCase()) {
+        parts.add(levelName.toUpperCase());
+      }
+    }
+  }
+
+  return parts.join(' · ');
+}
+
+String _formatTraceDuration(int ms) {
+  if (ms < 1000) return '${ms}ms';
+  return '${(ms / 1000).toStringAsFixed(1)}s';
 }
 
 class _ExpandedContent extends StatelessWidget {
