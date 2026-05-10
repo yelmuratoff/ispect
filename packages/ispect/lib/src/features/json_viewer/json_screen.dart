@@ -156,15 +156,27 @@ class _JsonScreenState extends State<JsonScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.unfold_more_rounded, size: 22),
-            tooltip: context.ispectL10n.expandLogs,
-            onPressed: _store.expandAll,
-          ),
-          IconButton(
-            icon: const Icon(Icons.unfold_less_rounded, size: 22),
-            tooltip: context.ispectL10n.collapseLogs,
-            onPressed: _store.collapseAll,
+          JsonStoreSelector<bool>(
+            store: _store,
+            selector: (s) => s.hasExpandableNodes,
+            builder: (context, hasExpandable) {
+              if (!hasExpandable) return const SizedBox.shrink();
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.unfold_more_rounded, size: 22),
+                    tooltip: context.ispectL10n.expandLogs,
+                    onPressed: _store.expandAll,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.unfold_less_rounded, size: 22),
+                    tooltip: context.ispectL10n.collapseLogs,
+                    onPressed: _store.collapseAll,
+                  ),
+                ],
+              );
+            },
           ),
           if (context.iSpect.options.onShare != null)
             IconButton(

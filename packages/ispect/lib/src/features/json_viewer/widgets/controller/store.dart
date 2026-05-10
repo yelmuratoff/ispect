@@ -39,6 +39,9 @@ class JsonExplorerStore extends ChangeNotifier {
   UnmodifiableListView<NodeViewModelState> get displayNodes =>
       UnmodifiableListView(_displayNodes);
 
+  /// Whether the tree contains at least one expandable (object/array) node.
+  bool get hasExpandableNodes => _allNodes.any((n) => n.isRoot);
+
   /// Whether an async search is currently in progress.
   bool get isSearching => _isSearching;
 
