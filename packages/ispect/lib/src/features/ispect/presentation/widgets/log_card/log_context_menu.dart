@@ -32,6 +32,8 @@ Future<void> showLogContextMenu({
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
   final hasNavigationFlow = onNavigationFlowTap != null;
+  final logDescription =
+      context.iSpect.theme.getTypeDescription(context, key: data.key);
 
   // Sheet sizing roughly tracks how many tiles we render.
   final tileCount = 3 // copy, share, expand always present
@@ -39,7 +41,7 @@ Future<void> showLogContextMenu({
       (data.curlCommand != null ? 1 : 0) +
       (hasNavigationFlow ? 1 : 0) +
       (hasFilterActions ? 2 : 0);
-  final estimatedSize = (0.18 + 0.07 * tileCount).clamp(0.35, 0.7);
+  final estimatedSize = (0.18 + 0.06 * tileCount).clamp(0.32, 0.7);
 
   final action = await showISpectSheet<LogContextAction>(
     context,
@@ -52,6 +54,7 @@ Future<void> showLogContextMenu({
         hasNavigationFlow: hasNavigationFlow,
         hasFilterActions: hasFilterActions,
         l10n: l10n,
+        subtitle: logDescription,
         scrollController: scrollController,
       ),
     ),
@@ -86,6 +89,7 @@ class _LogContextMenuSheet extends StatelessWidget {
     required this.hasNavigationFlow,
     required this.hasFilterActions,
     required this.l10n,
+    this.subtitle,
     this.scrollController,
   });
 
@@ -93,6 +97,7 @@ class _LogContextMenuSheet extends StatelessWidget {
   final bool hasNavigationFlow;
   final bool hasFilterActions;
   final ISpectGeneratedLocalization l10n;
+  final String? subtitle;
   final ScrollController? scrollController;
 
   @override
@@ -104,6 +109,7 @@ class _LogContextMenuSheet extends StatelessWidget {
           const Gap(8),
           ISpectBottomSheetHeader(
             title: l10n.actions,
+            subtitle: subtitle,
             icon: Icons.more_horiz_rounded,
           ),
           const Gap(8),
@@ -204,50 +210,60 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = context.ispectTheme.primary?.resolve(context) ??
         context.appTheme.colorScheme.primary;
+    final borderColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
 
     return Semantics(
       button: true,
       label: label,
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 3),
         child: Material(
           color: Colors.transparent,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: InkWell(
             excludeFromSemantics: true,
             onTap: onTap,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Row(
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(icon, size: 18, color: primaryColor),
-                    ),
-                  ),
-                  const Gap(14),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                        color: context.appTheme.textColor,
-                        fontWeight: FontWeight.w500,
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: borderColor),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Row(
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(icon, size: 16, color: primaryColor),
                       ),
                     ),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: context.appTheme.textColor.withValues(alpha: 0.3),
-                  ),
-                ],
+                    const Gap(10),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                          color: context.appTheme.textColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: context.appTheme.textColor.withValues(alpha: 0.3),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
