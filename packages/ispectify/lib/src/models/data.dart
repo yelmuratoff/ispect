@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
 import 'package:ispectify/src/models/log_id.dart';
@@ -138,35 +137,12 @@ base class ISpectLogData {
     }
   }
 
-  static const _deepEquality = DeepCollectionEquality();
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is ISpectLogData && other.id == id);
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ISpectLogData &&
-        other.time == time &&
-        other.key == key &&
-        other.message == message &&
-        other.logLevel == logLevel &&
-        _deepEquality.equals(other.additionalData, additionalData) &&
-        other.exception == exception &&
-        other.error == error &&
-        other.stackTrace == stackTrace;
-  }
-
-  // [pen] excluded: presentation (console color), not content.
-  @override
-  int get hashCode => Object.hash(
-        time,
-        key,
-        message,
-        logLevel,
-        _deepEquality.hash(additionalData),
-        exception,
-        error,
-        stackTrace,
-      );
+  int get hashCode => id.hashCode;
 
   @override
   String toString() => '''ISpectLogData(

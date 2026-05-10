@@ -73,7 +73,7 @@ class LogDetailView extends StatelessWidget {
         Expanded(
           child: RepaintBoundary(
             child: JsonScreen(
-              key: ValueKey(activeData.hashCode),
+              key: ValueKey(activeData.id),
               data: json,
               truncatedData: activeData.toJson(truncated: true),
               onClose: onClose,

@@ -402,7 +402,7 @@ class _DetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RepaintBoundary(
         child: LogDetailView(
-          key: ValueKey(activeData.hashCode),
+          key: ValueKey(activeData.id),
           activeData: activeData,
           onClose: onClose,
         ),
