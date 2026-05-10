@@ -122,6 +122,8 @@ class _SearchModeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.appTheme.colorScheme.primary;
+    final borderColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,6 +160,7 @@ class _SearchModeSection extends StatelessWidget {
               selected: {searchMode},
               onSelectionChanged: (selected) => onChanged(selected.first),
               style: SegmentedButton.styleFrom(
+                side: BorderSide(color: borderColor),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),

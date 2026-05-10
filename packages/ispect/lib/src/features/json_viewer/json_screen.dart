@@ -69,7 +69,8 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void didUpdateWidget(covariant JsonScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.data, widget.data)) {
+
+    if (oldWidget.data['id'] != widget.data['id']) {
       _store.buildNodes(widget.data);
     }
   }
@@ -196,47 +197,63 @@ class _JsonScreenState extends State<JsonScreen> {
               builder: (context, hasText, _) => Row(
                 children: [
                   Expanded(
-                    child: SearchBar(
-                      controller: _searchController,
-                      constraints: const BoxConstraints(minHeight: 48),
-                      backgroundColor: WidgetStatePropertyAll(
-                        context.ispectTheme.card?.resolve(context),
-                      ),
-                      shape: const WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                      ),
-                      leading: Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Icon(
-                          Icons.search_rounded,
-                          size: 20,
-                          color: context.appTheme.colorScheme.onSurface
-                              .withValues(alpha: 0.5),
-                        ),
-                      ),
-                      trailing: [
-                        if (hasText)
-                          IconButton(
-                            iconSize: 18,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 36,
-                              height: 36,
-                            ),
-                            padding: EdgeInsets.zero,
-                            onPressed: _onSearchClear,
-                            tooltip: context.ispectL10n.clearSearch,
-                            icon: Icon(
-                              Icons.close_rounded,
-                              color: context.appTheme.colorScheme.onSurface
-                                  .withValues(alpha: 0.5),
+                    child: Builder(
+                      builder: (context) {
+                        final onSurface =
+                            context.appTheme.colorScheme.onSurface;
+                        return SearchBar(
+                          controller: _searchController,
+                          constraints: const BoxConstraints(minHeight: 40),
+                          backgroundColor: WidgetStatePropertyAll(
+                            context.ispectTheme.card?.resolve(context) ??
+                                context
+                                    .appTheme.colorScheme.surfaceContainerHigh,
+                          ),
+                          shape: const WidgetStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
-                      ],
-                      hintText: context.ispectL10n.search,
-                      onChanged: _onSearchChanged,
-                      elevation: const WidgetStatePropertyAll(0),
+                          padding: const WidgetStatePropertyAll(
+                            EdgeInsets.symmetric(horizontal: 10),
+                          ),
+                          textStyle: WidgetStatePropertyAll(
+                            TextStyle(fontSize: 14, color: onSurface),
+                          ),
+                          hintStyle: WidgetStatePropertyAll(
+                            TextStyle(
+                              fontSize: 14,
+                              color: onSurface.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          leading: Icon(
+                            Icons.search_rounded,
+                            size: 18,
+                            color: onSurface.withValues(alpha: 0.5),
+                          ),
+                          trailing: [
+                            if (hasText)
+                              IconButton(
+                                iconSize: 16,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 32,
+                                  height: 32,
+                                ),
+                                padding: EdgeInsets.zero,
+                                onPressed: _onSearchClear,
+                                tooltip: context.ispectL10n.clearSearch,
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: onSurface.withValues(alpha: 0.5),
+                                ),
+                              ),
+                          ],
+                          hintText: context.ispectL10n.search,
+                          onChanged: _onSearchChanged,
+                          elevation: const WidgetStatePropertyAll(0),
+                        );
+                      },
                     ),
                   ),
                   JsonStoreSelector<
@@ -277,12 +294,14 @@ class _JsonScreenState extends State<JsonScreen> {
               ),
             ),
           ),
-          // Breadcrumb path
+          // Breadcrumb path: hidden for root-level selection (no path to show).
           AnimatedBuilder(
             animation: _store,
             builder: (context, _) {
               final selectedNode = _store.selectedNode;
-              if (selectedNode == null) return const SizedBox.shrink();
+              if (selectedNode == null || selectedNode.parent == null) {
+                return const SizedBox.shrink();
+              }
               return _BreadcrumbBar(
                 node: selectedNode,
                 onSegmentTap: (node) {
@@ -306,14 +325,24 @@ class _JsonScreenState extends State<JsonScreen> {
             child: AnimatedBuilder(
               animation: _store,
               builder: (context, _) => Padding(
-                padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
-                child: JsonExplorer(
-                  store: _store,
-                  nodes: _store.displayNodes,
-                  listController: _listController,
-                  scrollController: _scrollController,
-                  theme: _jsonTheme,
-                  onNodeTap: _store.selectNode,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  child: ColoredBox(
+                    color: context.ispectTheme.card?.resolve(context) ??
+                        context.appTheme.colorScheme.surfaceContainerHigh,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+                      child: JsonExplorer(
+                        store: _store,
+                        nodes: _store.displayNodes,
+                        listController: _listController,
+                        scrollController: _scrollController,
+                        theme: _jsonTheme,
+                        onNodeTap: _store.selectNode,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -672,43 +701,67 @@ class _BreadcrumbBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = _buildPath(node);
-    final mutedColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4);
-    final activeColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final mutedColor = onSurface.withValues(alpha: 0.45);
+    final activeColor = onSurface.withValues(alpha: 0.85);
+
+    final chipColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: SizedBox(
-        height: 24,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: path.length,
-          separatorBuilder: (_, __) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              size: 14,
-              color: mutedColor,
-            ),
-          ),
-          itemBuilder: (context, index) {
-            final segment = path[index];
-            final isLast = index == path.length - 1;
-            return GestureDetector(
-              onTap: () => onSegmentTap(segment),
-              child: Center(
-                child: Text(
-                  segment.key,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isLast ? FontWeight.w600 : FontWeight.w400,
-                    color: isLast ? activeColor : mutedColor,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: chipColor,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: SizedBox(
+            height: 22,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_tree_outlined,
+                  size: 13,
+                  color: mutedColor,
+                ),
+                const Gap(8),
+                Expanded(
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: path.length,
+                    separatorBuilder: (_, __) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 13,
+                        color: mutedColor,
+                      ),
+                    ),
+                    itemBuilder: (context, index) {
+                      final segment = path[index];
+                      final isLast = index == path.length - 1;
+                      return GestureDetector(
+                        onTap: () => onSegmentTap(segment),
+                        child: Center(
+                          child: Text(
+                            segment.key,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight:
+                                  isLast ? FontWeight.w600 : FontWeight.w400,
+                              color: isLast ? activeColor : mutedColor,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -14,31 +14,32 @@ class ISpectFilterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.appTheme.colorScheme.primary;
-    final cardColor = context.ispectTheme.card?.resolve(context);
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
 
     return Tooltip(
       message: context.ispectL10n.filters,
       child: SizedBox(
-        width: 48,
-        height: 48,
+        width: 40,
+        height: 40,
         child: Material(
           color:
               hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Semantics(
             button: true,
             label: context.ispectL10n.filters,
             onTap: onPressed,
             child: InkWell(
               excludeFromSemantics: true,
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
               onTap: onPressed,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Icon(
                     Icons.tune_rounded,
-                    size: 22,
+                    size: 18,
                     color: hasActiveState
                         ? primaryColor
                         : context.appTheme.colorScheme.onSurface
@@ -46,14 +47,14 @@ class ISpectFilterButton extends StatelessWidget {
                   ),
                   if (hasActiveState)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 6,
+                      right: 6,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: primaryColor,
                           shape: BoxShape.circle,
                         ),
-                        child: const SizedBox(width: 8, height: 8),
+                        child: const SizedBox(width: 6, height: 6),
                       ),
                     ),
                 ],

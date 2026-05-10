@@ -30,25 +30,33 @@ class ISpectSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context);
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
 
     return SearchBar(
       focusNode: focusNode,
       controller: searchController,
       backgroundColor: WidgetStatePropertyAll(cardColor),
-      constraints: const BoxConstraints(minHeight: 48),
+      constraints: const BoxConstraints(minHeight: 40),
       shape: const WidgetStatePropertyAll(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
       ),
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Icon(
-          Icons.search_rounded,
-          size: 22,
-          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
-        ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: 10),
+      ),
+      textStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, color: onSurface),
+      ),
+      hintStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.5)),
+      ),
+      leading: Icon(
+        Icons.search_rounded,
+        size: 18,
+        color: onSurface.withValues(alpha: 0.5),
       ),
       trailing: [
         if (isHighlightMode && hasSearchText)
@@ -60,18 +68,17 @@ class ISpectSearchBar extends StatelessWidget {
           )
         else if (hasSearchText)
           IconButton(
-            iconSize: 20,
+            iconSize: 16,
             constraints: const BoxConstraints.tightFor(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
             ),
             padding: EdgeInsets.zero,
             onPressed: onClear,
             tooltip: context.ispectL10n.clearSearch,
             icon: Icon(
               Icons.close_rounded,
-              color:
-                  context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: onSurface.withValues(alpha: 0.5),
             ),
           )
         else if (context.screenSize.isDesktop)
@@ -152,9 +159,9 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        iconSize: 18,
+        iconSize: 16,
         padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
         onPressed: onPressed,
         tooltip: tooltip,
         icon: Icon(icon, color: color),
