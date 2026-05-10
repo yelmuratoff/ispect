@@ -8,6 +8,7 @@
 - **Log data overhaul:** Replaced inheritance-based log types with a flattened, metadata-driven `ISpectLogData` structure. Specific getters like `isNetwork` or `httpStatusCode` are now available via extensions.
 - **Typed subclasses removed:** Classes such as `NetworkRequestLog`, `DioResponseLog`, and `BlocLifecycleLog` have been removed in favor of the new trace system.
 - **`ISpectLogType` converted from `enum` to `final class`:** `ISpectLogType.values` no longer exists — use `ISpectLogType.builtIn` instead. Exhaustive `switch` on enum values is no longer possible. Custom types can now be created directly: `const ISpectLogType('my-key', category: 'firebase')`.
+- **Log identity:** `ISpectLogData.id` is now a 26-character ULID `String` instead of a per-isolate auto-incrementing `int`. IDs are lexicographically sortable, globally unique across processes, isolates, and reloaded log files, and survive JSON round-trips via the new optional `id` constructor parameter. Equality and `hashCode` now use `id` only — two distinct entries with identical content are no longer considered equal, which fixes set/list deduplication on persisted history.
 
 ### Added
 
@@ -38,6 +39,9 @@
 - **Log correlation index:** O(1) request/response/error lookup in the log screen, removing scan-time matching on large histories.
 - **Database tracing:** `DbSqlDigest` for normalized SQL grouping, `DbMessageFormatter` for consistent log construction, and new `sizeBytes` and `cacheHit` fields for performance insight.
 - **Accessibility:** Semantic labels on log cards and transaction widgets, increased touch targets (36dp minimum), and tooltips on app bar navigation, search, and filter actions.
+- **LogCard expanded subtitle:** Expanded log cards now show a single-line metadata strip — id, trace source, operation/target, duration, and exception type — directly under the title, removing a hop into the detail view for the most common triage info.
+- **Context menu header:** Log action sheet now displays the log type's description in the header so the user can confirm the type they are acting on without opening the log details.
+- **Action button polish:** Reduced log-card action button footprint to 28dp with tighter context-menu tile spacing for higher density on phones.
 
 ### Behavioral Changes
 
@@ -63,6 +67,7 @@
 - **Cross-route hit-testing:** Inspector now uses Flutter's native hit-test pipeline, so taps no longer surface widgets from routes beneath the active one (non-opaque pages, dialogs, modal sheets) or from `Offstage`/`IgnorePointer` subtrees.
 - **Icon-glyph preview:** When the selected `RenderParagraph` is actually rendering an icon (a single Private-Use-Area code point in `MaterialIcons`/`CupertinoIcons` or a similar icon font), the info panel now shows the glyph itself plus its `U+XXXX` code point under an `ICON` section, instead of unreadable tofu under `TEXT`.
 - **Inspector release safety:** Replaced `describeIdentity` and other diagnostic-only formatters with release-safe equivalents so the layout inspector no longer throws or leaks debug data in profile/release builds.
+- **JSON viewer rebuilds:** `JsonScreen.didUpdateWidget` now compares the data's `id` instead of object identity, so the viewer no longer rebuilds its node tree (and discards expansion state) when the parent supplies a fresh map with the same content.
 
 ### CI/Tests
 
