@@ -461,7 +461,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
   late final LogsScreenController _controller;
   final _transactionService = NetworkTransactionService();
 
-  Map<int, int> _idToDataIndex = const {};
+  Map<String, int> _idToDataIndex = const {};
   List<ISpectLogData>? _lastIdToDataIndexInput;
   int _cachedSortedLength = 0;
   bool _cachedIsReversed = false;
@@ -491,7 +491,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
 
   void _scrollToFocusedMatch() {
     final focusedId = widget.logsViewController.focusedMatchId;
-    if (focusedId < 0) return;
+    if (focusedId == null) return;
 
     final dataIndex = _idToDataIndex[focusedId];
     if (dataIndex == null) return;
@@ -540,7 +540,7 @@ class _MainLogsViewState extends State<_MainLogsView> {
       widget.logsViewController.updateSearchMatches(matches);
 
       if (!identical(sortedEntries, _lastIdToDataIndexInput)) {
-        final map = <int, int>{};
+        final map = <String, int>{};
         for (var i = 0; i < sortedEntries.length; i++) {
           map[sortedEntries[i].id] = i;
         }

@@ -247,7 +247,7 @@ class _LogCardHeader extends StatelessWidget {
 /// Builds the subtitle line shown beneath the title row when a log card is
 /// expanded.
 String? _buildSubtitle(ISpectLogData data) {
-  final parts = <String>['#${data.id}'];
+  final parts = <String>['#${_shortId(data.id)}'];
 
   final source = data.traceSource;
   if (source != null && source.isNotEmpty) parts.add(source);
@@ -292,6 +292,11 @@ String _formatTraceDuration(int ms) {
   if (ms < 1000) return '${ms}ms';
   return '${(ms / 1000).toStringAsFixed(1)}s';
 }
+
+/// Trims a ULID down to a copy-friendly visual stub. The full id stays in
+/// JSON exports for cross-session lookup; the UI just needs something short
+/// and visually distinct.
+String _shortId(String id) => id.length <= 6 ? id : id.substring(id.length - 6);
 
 class _ExpandedContent extends StatelessWidget {
   const _ExpandedContent({

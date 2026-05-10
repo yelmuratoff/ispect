@@ -13,18 +13,18 @@ class SearchHighlightController extends ChangeNotifier {
   final searchController = TextEditingController();
 
   SearchMode _searchMode = SearchMode.highlight;
-  List<int> _searchMatchIds = const [];
-  Set<int> _searchMatchIdSet = const {};
+  List<String> _searchMatchIds = const [];
+  Set<String> _searchMatchIdSet = const {};
   int _focusedMatchIndex = -1;
   List<ISpectLogData>? _lastUpdateMatchesInput;
 
   SearchMode get searchMode => _searchMode;
 
   /// Ordered list of matched log IDs.
-  List<int> get searchMatchIds => _searchMatchIds;
+  List<String> get searchMatchIds => _searchMatchIds;
 
   /// Set of matched log IDs for O(1) lookup.
-  Set<int> get searchMatchIdSet => _searchMatchIdSet;
+  Set<String> get searchMatchIdSet => _searchMatchIdSet;
 
   int get focusedMatchIndex => _focusedMatchIndex;
 
@@ -36,11 +36,12 @@ class SearchHighlightController extends ChangeNotifier {
 
   bool get hasSearchMatches => _searchMatchIds.isNotEmpty;
 
-  /// The ID of the currently focused search match, or -1.
-  int get focusedMatchId {
+  /// The ID of the currently focused search match, or `null` when no match
+  /// is focused (no results, or controller in non-highlight mode).
+  String? get focusedMatchId {
     if (_focusedMatchIndex < 0 ||
         _focusedMatchIndex >= _searchMatchIds.length) {
-      return -1;
+      return null;
     }
     return _searchMatchIds[_focusedMatchIndex];
   }

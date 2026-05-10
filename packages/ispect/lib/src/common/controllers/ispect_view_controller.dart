@@ -170,13 +170,13 @@ class ISpectViewController implements Listenable {
   SearchMode get searchMode => _search.searchMode;
   set searchMode(SearchMode mode) => _search.searchMode = mode;
 
-  List<int> get searchMatchIds => _search.searchMatchIds;
-  Set<int> get searchMatchIdSet => _search.searchMatchIdSet;
+  List<String> get searchMatchIds => _search.searchMatchIds;
+  Set<String> get searchMatchIdSet => _search.searchMatchIdSet;
   int get focusedMatchIndex => _search.focusedMatchIndex;
   int get focusedMatchPosition => _search.focusedMatchPosition;
   int get searchMatchCount => _search.searchMatchCount;
   bool get hasSearchMatches => _search.hasSearchMatches;
-  int get focusedMatchId => _search.focusedMatchId;
+  String? get focusedMatchId => _search.focusedMatchId;
 
   void updateSearchMatches(List<ISpectLogData> matches) =>
       _search.updateSearchMatches(matches);

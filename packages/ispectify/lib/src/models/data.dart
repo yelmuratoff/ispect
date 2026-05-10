@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
+import 'package:ispectify/src/models/log_id.dart';
 import 'package:meta/meta.dart';
 
 /// Core log entry model. All fields are immutable after construction.
@@ -20,7 +21,8 @@ base class ISpectLogData {
     this.pen,
     this.key,
     Map<String, dynamic>? additionalData,
-  })  : id = _nextId++,
+    String? id,
+  })  : id = id ?? LogId.generate(),
         message = message?.toString(),
         additionalData = additionalData == null
             ? null
@@ -29,10 +31,12 @@ base class ISpectLogData {
               ),
         time = time ?? DateTime.now();
 
-  static int _nextId = 0;
-
-  /// Auto-incrementing identifier, unique per isolate.
-  final int id;
+  /// ULID-style identifier — globally unique across processes, isolates, and
+  /// reloaded log files. Lexicographically sortable by creation time.
+  ///
+  /// Pass an explicit [id] when reconstructing entries from persisted JSON to
+  /// preserve the original identity; otherwise a fresh ULID is generated.
+  final String id;
 
   final DateTime time;
   final String? key;

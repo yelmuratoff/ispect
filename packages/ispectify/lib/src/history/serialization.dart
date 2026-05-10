@@ -180,6 +180,7 @@ class ISpectLogDataJsonUtils {
       stackTrace: json['stack-trace'] != null
           ? StackTrace.fromString(json['stack-trace'].toString())
           : null,
+      id: json['id']?.toString(),
     );
   }
 }
