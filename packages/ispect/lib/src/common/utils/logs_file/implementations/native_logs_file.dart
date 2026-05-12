@@ -16,6 +16,17 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 /// - Usage example: `final logsFile = NativeLogsFile(); await logsFile.createFile(logs);`
 /// - Edge case notes: Handles platform-specific directory selection and file system errors
 class NativeLogsFile extends BaseLogsFile {
+  /// Subdirectory inside the platform temp dir for files created for sharing.
+  ///
+  /// Isolating share files in a dedicated folder lets us sweep stale entries
+  /// on the next share without risking unrelated files in the temp root.
+  static const String _shareSubdirName = 'ispect_share';
+
+  /// How long share temp files are kept before the next [createAndShareLogs]
+  /// sweeps them out. Generous enough for any platform share-sheet workflow
+  /// (Android Intent recipients, iOS share extensions) to finish reading.
+  static const Duration _shareRetention = Duration(hours: 1);
+
   @override
   bool get supportsNativeFiles => true;
 
@@ -31,13 +42,11 @@ class NativeLogsFile extends BaseLogsFile {
       final file = await _createLogFile(logsDir, fileName, fileType, logs);
 
       return file;
-    } on FileSystemException catch (e) {
-      throw FileSystemException(
-        'Failed to create log file: ${e.message}',
-        e.path,
+    } on FileSystemException catch (e, st) {
+      Error.throwWithStackTrace(
+        FileSystemException('Failed to create log file: ${e.message}', e.path),
+        st,
       );
-    } catch (e) {
-      throw Exception('Unexpected error creating log file: $e');
     }
   }
 
@@ -70,7 +79,7 @@ class NativeLogsFile extends BaseLogsFile {
   ) async {
     final timestamp = DateFormatter.nowAsFileTimestamp();
     final safeFileName = _sanitizeFileName(fileName);
-    final safeFileType = fileType.replaceAll(RegExp(r'[^\w]'), '');
+    final safeFileType = _sanitizeFileType(fileType);
     final fullFileName = '${safeFileName}_$timestamp.$safeFileType';
     final file = File('${logsDir.path}/$fullFileName');
 
@@ -83,10 +92,13 @@ class NativeLogsFile extends BaseLogsFile {
   /// Strips directory separators to prevent path traversal, then removes
   /// any remaining non-alphanumeric characters except dashes, underscores,
   /// and dots.
-  String _sanitizeFileName(String fileName) {
+  static String _sanitizeFileName(String fileName) {
     final baseName = fileName.split(RegExp(r'[/\\]')).last;
     return baseName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
   }
+
+  static String _sanitizeFileType(String fileType) =>
+      fileType.replaceAll(RegExp(r'[^\w]'), '');
 
   @override
   String getFilePath(Object file) {
@@ -135,7 +147,7 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   @override
-  Future<void> downloadFile(
+  Future<void> shareFile(
     Object file, {
     String? fileName,
     String fileType = 'json',
@@ -151,54 +163,43 @@ class NativeLogsFile extends BaseLogsFile {
       );
     }
 
-    try {
-      await onShare(
-        ISpectShareRequest(
-          filePaths: [file.path],
-          text: 'ISpect Application Logs',
-          subject: 'Application Logs - ${DateTime.now().toIso8601String()}',
-        ),
-      );
-    } catch (e) {
-      throw Exception('Failed to share log file: $e');
-    }
+    await onShare(
+      ISpectShareRequest(
+        filePaths: [file.path],
+        text: 'ISpect Application Logs',
+        subject: 'Application Logs - ${DateTime.now().toIso8601String()}',
+      ),
+    );
   }
 
-  /// Creates and immediately shares a log file
+  /// Creates a temp log file and hands it to the platform share sheet.
   ///
-  /// - Parameters: logs (content), fileName (base name), fileType (extension)
-  /// - Return: void (shares file through system dialog)
-  /// - Usage example: `await NativeLogsFile.createAndShareLogs(logs);`
-  /// - Edge case notes: Creates temporary file, handles sharing errors
+  /// The file is left behind on success — share sheets (Android Intents, iOS
+  /// share extensions) can read it asynchronously after the callback resolves.
+  /// Stale files from prior calls are swept here based on [_shareRetention],
+  /// so the temp subdirectory does not grow unbounded.
+  ///
+  /// On failure the just-created file is removed best-effort, since no share
+  /// happened and the file is orphaned.
   static Future<void> createAndShareLogs(
     String logs, {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
   }) async {
-    File? file;
+    await _sweepStaleShareFiles();
+
+    final file = await _createTemporaryFile(logs, fileName, fileType);
     try {
-      file = await _createTemporaryFile(logs, fileName, fileType);
       await _shareFile(file, onShare: onShare);
-    } catch (e) {
-      throw Exception('Failed to create and share log file: $e');
-    } finally {
-      try {
-        if (file != null && await file.exists()) {
-          await file.delete();
-        }
-      } catch (_) {
-        // Best-effort cleanup; temp directory will be purged by the OS.
-      }
+    } catch (_) {
+      await _bestEffortDelete(file);
+      rethrow;
     }
   }
 
-  /// Creates temporary file for sharing
-  static Future<File> _createTemporaryFile(
-    String logs,
-    String fileName,
-    String fileType,
-  ) async {
+  /// Resolves the dedicated subdirectory for share temp files.
+  static Future<Directory> _shareTempDir() async {
     final tempResult = await platformDirectoryProvider.tempDirectory();
     if (tempResult is! Directory) {
       throw StateError(
@@ -207,10 +208,21 @@ class NativeLogsFile extends BaseLogsFile {
         'This method must not be called on web.',
       );
     }
-    final dir = tempResult;
+    final dir = Directory('${tempResult.path}/$_shareSubdirName');
+    await dir.create(recursive: true);
+    return dir;
+  }
+
+  /// Creates temporary file for sharing
+  static Future<File> _createTemporaryFile(
+    String logs,
+    String fileName,
+    String fileType,
+  ) async {
+    final dir = await _shareTempDir();
     final timestamp = DateFormatter.nowAsFileTimestamp();
-    final safeFileName = fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
-    final safeFileType = fileType.replaceAll(RegExp(r'[^\w]'), '');
+    final safeFileName = _sanitizeFileName(fileName);
+    final safeFileType = _sanitizeFileType(fileType);
     final fullFileName = '${safeFileName}_$timestamp.$safeFileType';
     final file = File('${dir.path}/$fullFileName');
 
@@ -230,5 +242,39 @@ class NativeLogsFile extends BaseLogsFile {
         subject: 'Application Logs - ${DateTime.now().toIso8601String()}',
       ),
     );
+  }
+
+  /// Best-effort cleanup of share temp files older than [_shareRetention].
+  ///
+  /// Swallows individual file errors; the OS will eventually purge the temp
+  /// directory anyway, so the sweep should never abort a share flow.
+  static Future<void> _sweepStaleShareFiles() async {
+    try {
+      final dir = await _shareTempDir();
+      final cutoff = DateTime.now().subtract(_shareRetention);
+      await for (final entry in dir.list(followLinks: false)) {
+        if (entry is! File) continue;
+        try {
+          final stat = await entry.stat();
+          if (stat.modified.isBefore(cutoff)) {
+            await entry.delete();
+          }
+        } catch (_) {
+          // Per-file failure must not abort the sweep.
+        }
+      }
+    } catch (_) {
+      // Sweep is best-effort; never propagate.
+    }
+  }
+
+  static Future<void> _bestEffortDelete(File file) async {
+    try {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Cleanup is best-effort; OS will reclaim the temp directory.
+    }
   }
 }

@@ -34,37 +34,34 @@ abstract class BaseLogsFile {
   /// Deletes the file.
   Future<void> deleteFile(Object file);
 
-  /// Downloads or shares the log file.
+  /// Hands the log file to the platform's user-mediated transfer mechanism.
   ///
   /// **Platform-specific behavior:**
-  /// - **Web**: Triggers browser download
-  /// - **Native**: Opens share dialog
+  /// - **Native**: opens the system share sheet via [onShare]
+  /// - **Web**: triggers a browser download (the web equivalent of "share")
   ///
   /// **Parameters:**
-  /// - [file]: The file object to download/share
+  /// - [file]: The file object to share
   /// - [fileName]: Optional custom filename (defaults to file's original name)
-  Future<void> downloadFile(
+  /// - [onShare]: Required on native, ignored on web
+  Future<void> shareFile(
     Object file, {
     String? fileName,
     String fileType = 'json',
     ISpectShareCallback? onShare,
   });
 
-  /// Creates and immediately downloads/shares a log file.
+  /// Creates and immediately shares a log file.
   ///
-  /// **Convenience method** that combines [createFile] and [downloadFile].
-  ///
-  /// **Parameters:**
-  /// - [logs]: The log content to write
-  /// - [fileName]: Base name for the file (default: 'ispect_all_logs')
-  Future<void> createAndDownloadFile(
+  /// **Convenience method** that combines [createFile] and [shareFile].
+  Future<void> createAndShareFile(
     String logs, {
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
     ISpectShareCallback? onShare,
   }) async {
     final file = await createFile(logs, fileName: fileName, fileType: fileType);
-    await downloadFile(
+    await shareFile(
       file,
       fileName: fileName,
       fileType: fileType,

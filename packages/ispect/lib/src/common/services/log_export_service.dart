@@ -11,9 +11,9 @@ class LogExportService {
   final ISpectShareCallback? _onShare;
   final LogsJsonService _logsJsonService;
 
-  Future<void> downloadLogsFile(String logs) async {
+  Future<void> shareLogsFile(String logs) async {
     final shareCallback = _ensureShareCallback();
-    await LogsFileFactory.downloadFile(logs, onShare: shareCallback);
+    await LogsFileFactory.shareFile(logs, onShare: shareCallback);
   }
 
   Future<void> shareFilteredLogsAsFile(

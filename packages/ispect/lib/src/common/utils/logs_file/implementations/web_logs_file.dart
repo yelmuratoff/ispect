@@ -140,12 +140,12 @@ class WebLogsFile extends BaseLogsFile {
   }) async {
     final blob = await createFile(logs, fileName: fileName, fileType: fileType);
     final savedName = _fileNames[blob] ?? '$fileName.$fileType';
-    await downloadFile(blob, fileType: fileType);
+    await shareFile(blob, fileType: fileType);
     return savedName;
   }
 
   @override
-  Future<void> downloadFile(
+  Future<void> shareFile(
     Object file, {
     String? fileName,
     String fileType = 'json',

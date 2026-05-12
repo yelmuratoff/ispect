@@ -67,7 +67,7 @@ class ExportController extends ChangeNotifier {
     final shareCallback = onShare;
     if (shareCallback == null) return;
     await _run(ExportAction.share, contentBuilder, (content) async {
-      await LogsFileFactory.downloadFile(
+      await LogsFileFactory.shareFile(
         content,
         fileName: _fileName,
         fileType: _selectedFormat.extension,

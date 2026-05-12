@@ -241,7 +241,7 @@ class LogsJsonService {
       redactionService: redactionService,
       enableRedaction: enableRedaction,
     );
-    await LogsFileFactory.downloadFile(
+    await LogsFileFactory.shareFile(
       jsonContent,
       fileName: fileName,
       onShare: onShare,
@@ -280,7 +280,7 @@ class LogsJsonService {
       redactKeys: redactKeys,
     );
 
-    await LogsFileFactory.downloadFile(
+    await LogsFileFactory.shareFile(
       content,
       fileName: fileName,
       fileType: fileType,

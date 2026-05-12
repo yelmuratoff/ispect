@@ -282,8 +282,8 @@ class ISpectViewController implements Listenable {
 
   // --- Data operations (stateless delegation) ---
 
-  Future<void> downloadLogsFile(String logs) async =>
-      _exportService.downloadLogsFile(logs);
+  Future<void> shareLogsFile(String logs) async =>
+      _exportService.shareLogsFile(logs);
 
   void copyLogEntryText(
     BuildContext context,
