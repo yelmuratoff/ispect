@@ -1,10 +1,10 @@
 <!-- partial:header -->
 
-**ispectify_http** is an [`http_interceptor`](https://pub.dev/packages/http_interceptor) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests made through the `package:http` client, pairs them into transactions, and redacts sensitive data before logging.
+`ispectify_http` is an [`http_interceptor`](https://pub.dev/packages/http_interceptor) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests made through the `package:http` client, pairs them into transactions, and redacts sensitive data before logging.
 
-- Request / response / error capture with headers, body, status, and duration.
-- Redaction of auth headers, tokens, PII, and financial data (on by default).
-- Compatible with every `InterceptedClient` from `http_interceptor`.
+- Request, response, and error capture with headers, body, status, and duration.
+- Redaction of auth headers, tokens, PII, and financial data. On by default.
+- Works with any `InterceptedClient` from `http_interceptor`.
 
 ## Install
 
@@ -44,7 +44,7 @@ ISpect.run(
 
 ## Settings
 
-`ISpectHttpInterceptorSettings` mirrors the Dio variant — headers / body capture toggles, with `enableRedaction: true` by default.
+`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and body capture toggles, with `enableRedaction: true` by default.
 
 ```dart
 const settings = ISpectHttpInterceptorSettings(
@@ -56,7 +56,7 @@ const settings = ISpectHttpInterceptorSettings(
 );
 ```
 
-Preset factories and a builder are available too — see the source of `ISpectHttpInterceptorSettingsBuilder` for `development()`, `staging()`, `production()` presets.
+Preset factories and a builder are also available. See `ISpectHttpInterceptorSettingsBuilder` for the `development()`, `staging()`, and `production()` presets.
 
 <!-- partial:redaction -->
 

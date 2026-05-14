@@ -35,10 +35,9 @@
   </p>
 </div>
 
+ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside internal builds (developer machines, QA, staging) and gives testers and engineers a way to look at logs, network calls, database operations, BLoC events, navigation, and the widget tree without attaching a debugger. The toolkit is compile-time gated. Omit `--dart-define=ISPECT_ENABLED=true` and every entry point becomes a `const`-guarded no-op that Dart's tree-shaker can drop from release builds.
 
-**ISpect** is an internal pre-release diagnostics toolkit for Flutter and Dart. It is built for development, QA, staging, dogfooding, and design-review builds — not for public production releases. It provides a visual debug panel, structured logging, network monitoring, database tracing, widget-tree inspection, export/import, and data redaction, with compile-time gating so the toolkit is inactive unless `ISPECT_ENABLED=true` is provided.
-
-**[Live web demo](https://yelmuratoff.github.io/ispect/)** — drag and drop exported log files to explore them in the browser.
+[Live web demo](https://yelmuratoff.github.io/ispect/). Drop an exported log file in to walk through a session in the browser.
 
 ## Preview
 
@@ -71,7 +70,7 @@
 </table>
 
 <details>
-  <summary><strong>Mobile showcase</strong></summary>
+  <summary><strong>Mobile screenshots</strong></summary>
   <br />
   <div align="center">
     <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="180" alt="Settings panel" />
@@ -88,87 +87,90 @@
   </div>
 </details>
 
-## Why ISpect?
+## What it covers
 
-ISpect is designed for the pre-release gap between local debugging and shipped production: QA builds, staging builds, dogfooding, and design-review builds where testers, designers, and developers need to inspect what happened inside the app without attaching a debugger. When `ISPECT_ENABLED` is not defined at compile time, ISpect entry points become `const`-guarded no-ops and are eligible for Dart tree-shaking.
+The toolkit handles the diagnostics most projects rebuild by hand for every new app.
 
-| Capability               | What it does                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------- |
-| **Release-gated builds** | Compile-time guard keeps the toolkit inactive unless explicitly enabled         |
-| **Visual debug panel**   | Draggable overlay with custom actions, badges, and the log viewer               |
-| **Widget inspector**     | Tap any widget to read its render box, decorations, constraints, and transforms |
-| **Structured logs**      | Typed entries with levels, categories, filtering, history, and export/import    |
-| **Network capture**      | Request / response / error capture for Dio, `http`, and WebSocket clients       |
-| **Database tracing**     | Passive observability for any storage driver via a single `dbTrace` extension   |
-| **BLoC observer**        | Event / state / transition / error forwarding into the log pipeline             |
-| **Automatic redaction**  | Tokens, passwords, PII, and credit-card data masked before they reach logs      |
-| **Observer hooks**       | Forward selected events to internal tools through your own adapter              |
-| **12 languages**         | en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi                                  |
+| Capability       | What it does                                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Release gating   | `kISpectEnabled` is a compile-time constant. Disabled builds tree-shake the toolkit out, so production binaries do not carry it.        |
+| Debug panel      | Draggable in-app overlay with the log viewer, custom actions, and badges.                                                               |
+| Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style.                                      |
+| Structured logs  | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import.                                           |
+| Network capture  | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
+| Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold.                   |
+| BLoC observer    | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline.                                     |
+| Redaction        | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper.         |
+| Observer hooks   | Forward selected log categories to your own sink through an `ISpectObserver` adapter.                                                   |
+| Localization     | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi.                                                                        |
 
-## How it differs
+## Compared to the obvious alternatives
 
-| Tool                       | Best for                                                                    | Where ISpect fits                                                                                        |
-| -------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Flutter DevTools           | Local profiling, widget inspection, memory, CPU, and debugger workflows     | ISpect runs inside QA/staging builds and can export a diagnostic session without a connected IDE         |
-| Sentry / Crashlytics       | Production crash reporting, release health, alerts, and long-term telemetry | ISpect is for pre-release in-app inspection before the app ships                                        |
-| Dio interceptors / loggers | Request logs and console output                                             | ISpect correlates logs, network, database, BLoC, navigation, export, and visual inspection in one viewer |
+| Tool                    | What it does well                                                            | Where ISpect fits                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Flutter DevTools        | Profiling, memory, CPU, debugger, widget inspector when the IDE is attached. | DevTools needs an IDE connection. ISpect runs inside the app and lets a QA build export a session for offline inspection.           |
+| Sentry, Crashlytics     | Production crash reporting, release health, alerts, retention.               | ISpect captures detail before the app ships. It is not a production telemetry replacement.                                          |
+| Per-client interceptors | Logging request bodies to the console.                                       | ISpect correlates network, logs, database calls, BLoC events, and navigation in one viewer that shares a single redaction pipeline. |
 
 ## Data handling
 
-ISpect captures the diagnostic streams you explicitly enable: logs, network metadata, optional payloads, database traces, BLoC events, navigation events, and exports. Network redaction is enabled by default, and the shared redaction engine covers common auth headers, tokens, cookies, credentials, PII, and financial fields. Application-specific identifiers should be added to the redaction configuration by the team that owns the data model.
+ISpect only captures what you enable. Logs, network metadata, optional bodies and headers, database trace arguments, BLoC events, navigation, and exports are all opt-in at the call site.
 
-Unlike a plain log viewer, ISpect uses the same redaction pipeline across supported network interceptors, log export, clipboard helpers, and observer boundaries. This gives diagnostic workflows safer defaults while keeping capture scope and external forwarding explicit.
+Redaction is on by default for every supported network and database interceptor. The shared engine masks auth headers, cookies, bearer tokens, passwords, API keys, common PII (emails, phone numbers, SSN-class IDs), and financial fields. Application-specific keys (tenant IDs, internal tokens, account numbers) live in your `RedactionService` configuration, because only your team knows what counts as sensitive in your data model.
 
-For shared dev, QA, staging, dogfooding, and design-review builds:
+The same redactor runs across every boundary that can leak. Interceptors, log export, clipboard helpers, cURL generation, and observer payloads all pass through it. A request masked in the viewer is also masked in the exported session, the cURL you paste into a ticket, and the payload an observer ships to an internal sink.
 
-- keep body/header capture limited to what the team actually needs;
-- add project-specific redaction keys for tenant IDs, internal tokens, account numbers, and business identifiers;
-- handle exported sessions according to the data they contain;
-- review observer adapters before forwarding logs to internal tools;
-- keep production release pipelines free of `--dart-define=ISPECT_ENABLED=true`; passing the flag is an explicit opt-in for internal builds.
+A few habits that pay off on shared internal builds:
 
-See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy and recommended rollout checklist.
+- Capture metadata first. Turn body and header logging on only for the bug you are chasing.
+- Register your domain-specific redaction keys before sharing exported sessions outside the engineering team.
+- Treat exported `.json` sessions according to the data class they contain. They are plain-text artifacts and travel through the same channels as any internal log.
+- Review observer adapters before pointing them at a centralized sink. An observer sees whatever category you choose to forward.
+- Keep release pipelines free of `--dart-define=ISPECT_ENABLED=true`. The flag is the only thing that turns the toolkit on.
+
+`docs/SECURITY.md` has the full data-handling policy and a rollout checklist.
 
 ## Minimal safe setup
 
-Start with the UI shell and metadata-only diagnostics, then enable deeper capture only for the pre-release problem you are investigating.
+Start with the UI shell and metadata-only diagnostics. Turn deeper capture on for the specific problem you are investigating.
 
-1. Add `ispect` and wrap the app with `ISpect.run(...)` / `ISpectBuilder.wrap(...)`.
+1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
-3. Keep production release jobs free of that flag.
-4. Enable network/database/BLoC modules one at a time.
-5. Keep body/header capture off until payload details are needed.
-6. Add project-specific redaction keys before sharing exported sessions outside the development team.
+3. Keep production jobs free of that flag.
+4. Add network, database, and BLoC modules one at a time as you need them.
+5. Leave body and header capture off until a payload-level investigation needs it.
+6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
 ## The ISpect toolkit
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
+ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
 
 ## Release channel
 
-The `5.0.0-dev` line is a pre-release channel for teams validating the upcoming 5.x architecture and package split. If your dependency policy allows only stable packages, pin a stable version from pub.dev until `5.0.0` is released.
+`5.0.0-dev` is the active pre-release line for the 5.x architecture. If your dependency policy disallows pre-release versions, pin the latest stable 4.x release from pub.dev. `5.0.0` stable will follow once the dev line settles.
 
-## Project maturity
+## Project state
 
-Current public signals:
+What you can verify from the repository today:
 
-- **Release channel:** `5.0.0-dev` is the active 5.x validation line; teams that require stable-only dependencies can stay on the latest stable 4.x release until 5.0 is published.
-- **SDK baseline:** Dart `>=3.6.0 <4.0.0`; Flutter packages are tested against the pinned Flutter SDK used in CI, with latest stable tracked as an advisory signal.
-- **Release safety:** production-safety CI builds a release APK without `ISPECT_ENABLED` and checks the disabled footprint.
-- **Data handling:** supported network capture, exports, clipboard helpers, cURL generation, and observer boundaries share the same redaction pipeline.
-- **Migration policy:** deprecated APIs are documented with replacements and removal targets.
+- The current line is `5.0.0-dev`. 4.x stable is still available on pub.dev for teams that need it.
+- SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
+- A `production_safety` CI job builds a release APK without `ISPECT_ENABLED` and counts residual `"ispect"` strings in the binary.
+- Network capture, export, clipboard, cURL generation, and observer boundaries share the same `RedactionService`.
+- Deprecations come with replacements and removal targets in `docs/DEPRECATIONS.md`.
+
+Linked policies:
 
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
@@ -180,9 +182,7 @@ Current public signals:
 
 ## Performance scope
 
-When `ISPECT_ENABLED` is omitted, ISpect entry points are inactive and eligible for tree-shaking. In internal QA/staging builds where ISpect is enabled, runtime cost depends on what the team turns on: metadata-only logging is lighter than body capture, database tracing, or high-volume BLoC/event streams.
-
-For noisy flows, use focused capture, filters, sampling, and bounded history. Public benchmark numbers are intentionally not claimed until they are measured and reproducible across supported Flutter versions.
+Disabled builds are inactive at compile time, so there is nothing to benchmark when the flag is omitted. When the toolkit is on, cost depends on what you turn on. Metadata logging is the lightest mode. Body capture and database tracing add per-call work proportional to payload size. High-volume BLoC or event streams may need filters or sampling. There are no published benchmark numbers yet, and there will not be any until they are reproducible against the SDK baseline.
 
 ## Quick start
 
@@ -221,26 +221,26 @@ class MyApp extends StatelessWidget {
 ```
 
 ```bash
-# Development — toolkit active.
+# Internal build, toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — omit the flag so ISpect remains inactive.
+# Release build, toolkit inactive.
 flutter build apk
 ```
 
-For package-specific guides (Dio, http, WS, DB, BLoC, layout inspector) see the individual package READMEs linked in the table above.
+Per-client guides (Dio, `http`, WebSocket, DB, BLoC, layout inspector) live in the individual package READMEs linked in the table above.
 
 ## Production safety
 
-ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder.wrap(...)`, and `ISpectLocalizations.delegate()` become `const`-guarded no-ops. Because the disabled path is known at compile time, release builds are eligible for Dart's tree-shaker to remove the inactive toolkit code.
+ISpect is flag-gated at compile time. When `ISPECT_ENABLED` is not defined, `ISpect.run()`, `ISpectBuilder.wrap(...)`, and `ISpectLocalizations.delegate()` resolve to `const`-guarded no-ops. Because the disabled path is a compile-time constant, release builds let Dart's tree-shaker drop the inactive toolkit code.
 
-`ISPECT_ENABLED` is a build-time decision, not a runtime toggle. ISpect does not enable itself in production; release pipelines opt in only if they explicitly pass `--dart-define=ISPECT_ENABLED=true`.
+The flag is a build-time decision, not a runtime toggle. ISpect does not enable itself in production. A release pipeline opts in only if it explicitly passes `--dart-define=ISPECT_ENABLED=true`.
 
 ```bash
-# Development — toolkit active.
+# Internal build, toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — omit the flag so ISpect stays inactive.
+# Release build, toolkit inactive.
 flutter build apk
 ```
 
@@ -266,21 +266,20 @@ class ISpectConfig {
 
 Release checklist:
 
-- keep production release jobs free of `--dart-define=ISPECT_ENABLED=true`;
-- keep debug-only setup inside `ISpect.run(...)` / `ISpectBuilder.wrap(...)` entry points;
-- prefer environment-aware guards such as `ENVIRONMENT != 'production'` for internal staging builds;
-- verify generated artifacts if your compliance process requires binary evidence.
+- Keep production jobs free of `--dart-define=ISPECT_ENABLED=true`.
+- Keep debug-only setup inside `ISpect.run(...)` and `ISpectBuilder.wrap(...)` entry points.
+- Add an environment guard (`ENVIRONMENT != 'production'`) for internal staging builds that share the same pipeline as production.
+- Check the generated artifact if your compliance process needs binary evidence.
 
-Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. Treat this as a release-footprint check, not a promise that every textual reference disappears from the binary.
-
+Measured footprint on an obfuscated release APK built without `--dart-define=ISPECT_ENABLED`: 6 residual `"ispect"` strings, compared to 276 in a development build. Treat the number as a release-footprint sanity check, not a guarantee that every textual reference disappears from the binary.
 
 ## Repository
 
-This repository is a monorepo containing every package above plus a standalone web-based log viewer, with shared tooling for versioning, publishing, and doc sync. See [`bash/README.md`](https://github.com/yelmuratoff/ispect/blob/main/bash/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
+This is a monorepo. Every package above plus the standalone web log viewer lives in the same tree, with shared scripts for versioning, publishing, and doc sync. See [`bash/README.md`](https://github.com/yelmuratoff/ispect/blob/main/bash/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
 
 ## Documentation workflow
 
-Each package README is generated from a per-package source in `docs/readme/`. Shared fragments (header, footer, install matrix, redaction block, production-safety block) live in `docs/readme/_partials/`. Regenerate with `./bash/build_readme.sh`; verify in CI with `./bash/build_readme.sh --check`. Do not edit `packages/*/README.md` by hand — edits are overwritten on the next build.
+Package READMEs are generated. Sources live in `docs/readme/<package>.md` and shared fragments in `docs/readme/_partials/`. Run `./bash/build_readme.sh` to regenerate, and `./bash/build_readme.sh --check` in CI to catch drift. Hand-edits to `packages/*/README.md` get overwritten on the next build.
 
 ## Contributing
 
@@ -288,7 +287,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

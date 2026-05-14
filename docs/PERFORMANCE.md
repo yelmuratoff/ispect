@@ -1,29 +1,29 @@
 # Performance Scope
 
-ISpect is intended for internal dev, QA, staging, dogfooding, and design-review builds. Runtime cost should be evaluated in that context.
+ISpect runs inside internal builds. Runtime cost should be evaluated in that context, not against production traffic.
 
-## Disabled Builds
+## Disabled builds
 
-When `ISPECT_ENABLED` is omitted, ISpect entry points are inactive. The disabled path is known at compile time, so release builds are eligible for Dart tree-shaking of inactive toolkit code.
+When `ISPECT_ENABLED` is omitted, every ISpect entry point is inactive. The disabled path is a compile-time constant, so release builds let Dart's tree-shaker drop the inactive toolkit code.
 
-## Enabled Internal Builds
+## Enabled internal builds
 
-When ISpect is enabled for an internal build, overhead depends on what is captured:
+When the toolkit is on, overhead depends on what you capture:
 
-- metadata-only logs are the lightest mode;
-- request/response body capture costs more than metadata capture;
-- database tracing cost depends on trace volume and result projection;
-- high-volume BLoC/event streams should use filters;
-- long sessions should use bounded history and export only the relevant window.
+- Metadata-only logs are the lightest mode.
+- Request and response body capture is heavier than metadata, proportional to payload size.
+- Database tracing cost scales with trace volume and result projection. Counts and IDs are cheap. Dumping full row contents is not.
+- High-volume BLoC and event streams need filters or sampling.
+- Long sessions need bounded history and exports limited to the relevant window.
 
-## Recommended Controls
+## Controls
 
 - Start with the debug panel and metadata-only diagnostics.
-- Enable payload/body capture only for targeted debugging.
-- Use filters and sampling for noisy categories.
-- Prefer result projection over full database rows.
-- Keep history bounded for long QA sessions.
+- Turn payload and body capture on for targeted debugging only.
+- Filter or sample noisy categories.
+- Prefer a result projection over a full database row.
+- Keep the history bounded for long QA sessions.
 
 ## Benchmarks
 
-Public benchmark numbers should be added only when they are reproducible across the supported Flutter/Dart baseline. Until then, documentation should describe the performance model and recommended controls instead of claiming generic overhead numbers.
+There are no published benchmark numbers yet. They will appear when they are reproducible against the supported Flutter and Dart baseline. Until then, this document describes the performance model and the controls you can apply, not generic overhead numbers.

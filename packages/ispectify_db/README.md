@@ -35,14 +35,13 @@
   </p>
 </div>
 
+`ispectify_db` adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension with timing, row counts, slow-query detection, and redaction.
 
-**ispectify_db** adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension — with timing, row counts, slow-query detection, and redaction.
-
-- Works with any driver: sqflite, drift, Isar, ObjectBox, shared_preferences, hive, etc. — just wrap the call.
-- Redaction of argument values by configured keys.
-- Slow-query threshold triggers a separate log entry so perf outliers stand out.
-- Optional stack trace capture on errors, without paying the cost on the hot path.
-- Pure Dart — no Flutter binding required.
+- Works with any driver. sqflite, drift, Isar, ObjectBox, shared_preferences, hive, and the rest. Wrap the call and the tracing is automatic.
+- Argument redaction by configured keys.
+- A slow-query threshold emits a separate log entry so perf outliers stand out.
+- Optional stack trace capture on errors, paid for only when an error happens.
+- Pure Dart. No Flutter binding required.
 
 ## Install
 
@@ -63,7 +62,7 @@ ISpectDbCore.config = const ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
-  slowQueryThreshold: Duration(milliseconds: 400),
+  slowThreshold: Duration(milliseconds: 400),
 );
 ```
 
@@ -83,41 +82,40 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 );
 ```
 
-`source` and `operation` become the grouping key in the log viewer; `projectResult` lets you record "just the counts" without dumping row contents.
+`source` and `operation` become the grouping key in the log viewer. `projectResult` lets you record "just the counts" instead of dumping row contents.
 
 ## Configuration
 
-| Field | Default | What it does |
-| --- | --- | --- |
-| `sampleRate` | `1.0` | Fraction of calls to log (e.g. `0.1` = 10%). |
-| `redact` | `true` | Mask sensitive keys in `args` and `statement`. |
-| `redactKeys` | built-in set | Override the redaction key list. |
-| `attachStackOnError` | `true` | Capture and log stack trace on failure. |
-| `slowQueryThreshold` | `null` | If set, durations above the threshold are re-logged as `db-slow-query`. |
+| Field                | Default      | What it does                                                                                                  |
+| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
+| `sampleRate`         | `1.0`        | Fraction of calls to log. `0.1` keeps 10% of them.                                                            |
+| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
+| `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
+| `attachStackOnError` | `true`       | Capture and log a stack trace on failure.                                                                     |
+| `slowThreshold`      | `null`       | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
 ISpectDbCore.config = const ISpectDbConfig(
   redact: true,
   redactKeys: ['password', 'token', 'secret'],
-  slowQueryThreshold: Duration(milliseconds: 250),
+  slowThreshold: Duration(milliseconds: 250),
 );
 ```
 
 ## The ISpect toolkit
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
+ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
 
 ## Contributing
 
@@ -125,7 +123,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

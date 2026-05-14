@@ -1,12 +1,12 @@
 <!-- partial:header -->
 
-**ispectify** is the logging backbone of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter — usable in CLI tools, server-side Dart, and shared business-logic packages.
+`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages.
 
 - Typed log entries with explicit severity levels and log-type keys.
-- Filtering, in-memory history, and custom truncation.
-- Trace extensions for async / sync / stream operations with timing and outcome tagging.
-- Observer hooks to forward selected events into internal tools through your own adapter.
-- Built-in [redaction engine](#data-redaction) shared across the `ispectify_*` interceptor packages.
+- Filtering, bounded in-memory history, and configurable truncation.
+- Trace extensions for async, sync, and stream operations with timing and outcome tagging.
+- Observer hooks that forward selected events to your own sink.
+- A built-in [redaction engine](#data-redaction) shared with the `ispectify_*` interceptor packages.
 
 ## Install
 
@@ -23,7 +23,7 @@ import 'package:ispectify/ispectify.dart';
 final logger = ISpectLogger();
 
 logger.info('Application started');
-logger.warning('Cache miss — falling back to network');
+logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
 
@@ -51,7 +51,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Streaming-only** (no in-memory history — useful when every event is forwarded to an observer):
+Streaming-only, with no in-memory history. Use this when every event is forwarded to an observer:
 
 ```dart
 final logger = ISpectLogger(
@@ -59,7 +59,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Filter by log-type key** (suppress noisy categories without changing call sites):
+Filter by log-type key. Suppress noisy categories without changing call sites:
 
 ```dart
 final logger = ISpectLogger(
@@ -67,7 +67,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Filter by level** (drop `debug`/`verbose`, keep `info` and above):
+Filter by level. Drop `debug` and `verbose`, keep `info` and above:
 
 ```dart
 final logger = ISpectLogger(
@@ -79,10 +79,19 @@ final logger = ISpectLogger(
 
 ## Tracing
 
-Trace extensions wrap work in a start/end log pair with duration, outcome, and optional result projection — so you can see one-line "did this domain action succeed?" entries in the log viewer.
+Trace extensions wrap work in a paired start/end log entry with duration, outcome, and an optional result projection. You get one-line "did this domain action succeed?" entries in the log viewer instead of a flood of unrelated logs.
+
+Each trace call takes an `ISpectTraceCategory`. Pre-built ones (`networkCategory`, `dbCategory`, `authCategory`, `storageCategory`, `paymentCategory`, and the rest) live in `package:ispectify/ispectify.dart`, or you can declare your own.
 
 ```dart
+const userRepoCategory = ISpectTraceCategory(
+  id: 'user-repo',
+  successKey: 'user-repo-ok',
+  errorKey: 'user-repo-error',
+);
+
 final users = await logger.traceAsync<List<User>>(
+  category: userRepoCategory,
   source: 'user_repository',
   operation: 'fetch_list',
   run: () => userRepository.fetchAll(),
@@ -90,11 +99,11 @@ final users = await logger.traceAsync<List<User>>(
 );
 ```
 
-Also available: `traceSync`, `traceStream`. Each reports duration, exception, and stack trace on failure.
+`traceSync` and `traceStream` are also available. Each one records the duration, the exception, and the stack trace on failure.
 
 ## Observers
 
-Observers receive every log event in real time — attach one per external sink:
+Observers receive every log event in real time. Attach one per external sink.
 
 ```dart
 class GrafanaObserver extends ISpectObserver {
@@ -117,7 +126,7 @@ logger.addObserver(const GrafanaObserver());
 
 ## Security
 
-Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitize user input before logging it manually. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the recommended data-handling policy.
+Exported logs are plain-text JSON. Do not write PII (emails, phone numbers, tokens) directly through `logger.info(...)`. Rely on the redaction engine when values flow through network interceptors, and sanitize user input before passing it to a manual log call. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy.
 
 <!-- partial:install_matrix -->
 

@@ -1,10 +1,10 @@
 # Quality Gates
 
-This document describes the quality signals expected before changes are merged.
+Signals expected before a change is merged.
 
-## Required Local Checks
+## Local checks
 
-Run checks from the affected package directory:
+Run from the affected package directory:
 
 ```bash
 dart analyze --fatal-infos
@@ -24,27 +24,27 @@ Generated README files must match `docs/readme/`:
 ./bash/build_readme.sh --check
 ```
 
-Package versions and internal dependencies must remain synchronized:
+Package versions and internal dependencies must stay synchronized:
 
 ```bash
 ./bash/check_version_sync.sh
 ./bash/check_dependencies.sh
 ```
 
-## CI Signals
+## CI signals
 
 | Signal                                          | Required | Notes                                                                     |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------------------- |
-| Dart package analyze/tests                      | Yes      | Runs for pure Dart packages                                               |
-| Flutter package analyze/tests on pinned Flutter | Yes      | Compatibility baseline                                                    |
-| Flutter package analyze/tests on latest stable  | Advisory | Tracks future breakage without blocking unrelated work                    |
-| README generation check                         | Yes      | Prevents generated README drift                                           |
-| Version/dependency sync                         | Yes      | Keeps monorepo package versions aligned                                   |
-| Production-safety APK check                     | Yes      | Builds a release APK without `ISPECT_ENABLED` and checks residual strings |
+| Dart package analyze and tests                  | Yes      | Runs for pure Dart packages.                                              |
+| Flutter package analyze and tests, pinned SDK   | Yes      | Compatibility baseline.                                                   |
+| Flutter package analyze and tests, latest stable | Advisory | Tracks future breakage without blocking unrelated work.                   |
+| README generation check                         | Yes      | Catches drift in generated READMEs.                                       |
+| Version and dependency sync                     | Yes      | Keeps monorepo package versions aligned.                                  |
+| Production-safety APK check                     | Yes      | Builds a release APK without `ISPECT_ENABLED` and checks residual strings. |
 
-## Coverage Policy
+## Coverage policy
 
-Coverage is reported to Codecov. Before the stable `5.0.0` release, coverage gates should be introduced package by package, starting with business-critical core packages:
+Coverage is reported to Codecov. Before the stable `5.0.0` release, coverage gates land package by package, starting with the business-critical core packages:
 
 - `ispectify`
 - `ispectify_dio`
@@ -53,4 +53,4 @@ Coverage is reported to Codecov. Before the stable `5.0.0` release, coverage gat
 - `ispectify_ws`
 - `ispectify_bloc`
 
-Do not add a repository-wide threshold until generated code, examples, and UI-heavy packages are excluded or measured separately.
+A repository-wide threshold will not land until generated code, examples, and UI-heavy packages are either excluded or measured separately.

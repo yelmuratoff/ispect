@@ -4,7 +4,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

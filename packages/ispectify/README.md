@@ -35,14 +35,13 @@
   </p>
 </div>
 
-
-**ispectify** is the logging backbone of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter — usable in CLI tools, server-side Dart, and shared business-logic packages.
+`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages.
 
 - Typed log entries with explicit severity levels and log-type keys.
-- Filtering, in-memory history, and custom truncation.
-- Trace extensions for async / sync / stream operations with timing and outcome tagging.
-- Observer hooks to forward selected events into internal tools through your own adapter.
-- Built-in [redaction engine](#data-redaction) shared across the `ispectify_*` interceptor packages.
+- Filtering, bounded in-memory history, and configurable truncation.
+- Trace extensions for async, sync, and stream operations with timing and outcome tagging.
+- Observer hooks that forward selected events to your own sink.
+- A built-in [redaction engine](#data-redaction) shared with the `ispectify_*` interceptor packages.
 
 ## Install
 
@@ -59,7 +58,7 @@ import 'package:ispectify/ispectify.dart';
 final logger = ISpectLogger();
 
 logger.info('Application started');
-logger.warning('Cache miss — falling back to network');
+logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
 
@@ -87,7 +86,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Streaming-only** (no in-memory history — useful when every event is forwarded to an observer):
+Streaming-only, with no in-memory history. Use this when every event is forwarded to an observer:
 
 ```dart
 final logger = ISpectLogger(
@@ -95,7 +94,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Filter by log-type key** (suppress noisy categories without changing call sites):
+Filter by log-type key. Suppress noisy categories without changing call sites:
 
 ```dart
 final logger = ISpectLogger(
@@ -103,7 +102,7 @@ final logger = ISpectLogger(
 );
 ```
 
-**Filter by level** (drop `debug`/`verbose`, keep `info` and above):
+Filter by level. Drop `debug` and `verbose`, keep `info` and above:
 
 ```dart
 final logger = ISpectLogger(
@@ -115,10 +114,19 @@ final logger = ISpectLogger(
 
 ## Tracing
 
-Trace extensions wrap work in a start/end log pair with duration, outcome, and optional result projection — so you can see one-line "did this domain action succeed?" entries in the log viewer.
+Trace extensions wrap work in a paired start/end log entry with duration, outcome, and an optional result projection. You get one-line "did this domain action succeed?" entries in the log viewer instead of a flood of unrelated logs.
+
+Each trace call takes an `ISpectTraceCategory`. Pre-built ones (`networkCategory`, `dbCategory`, `authCategory`, `storageCategory`, `paymentCategory`, and the rest) live in `package:ispectify/ispectify.dart`, or you can declare your own.
 
 ```dart
+const userRepoCategory = ISpectTraceCategory(
+  id: 'user-repo',
+  successKey: 'user-repo-ok',
+  errorKey: 'user-repo-error',
+);
+
 final users = await logger.traceAsync<List<User>>(
+  category: userRepoCategory,
   source: 'user_repository',
   operation: 'fetch_list',
   run: () => userRepository.fetchAll(),
@@ -126,11 +134,11 @@ final users = await logger.traceAsync<List<User>>(
 );
 ```
 
-Also available: `traceSync`, `traceStream`. Each reports duration, exception, and stack trace on failure.
+`traceSync` and `traceStream` are also available. Each one records the duration, the exception, and the stack trace on failure.
 
 ## Observers
 
-Observers receive every log event in real time — attach one per external sink:
+Observers receive every log event in real time. Attach one per external sink.
 
 ```dart
 class GrafanaObserver extends ISpectObserver {
@@ -151,11 +159,11 @@ logger.addObserver(const GrafanaObserver());
 
 ## Data redaction
 
-Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** — built-in rules cover auth headers, tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, IBAN), phone numbers, and more.
+Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redaction model is used beyond initial capture: supported exports, clipboard helpers, cURL generation, and observer payloads can pass through the shared redaction pipeline before data leaves the app/debug session.
+The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
 
-Redaction works best together with focused capture. Keep body/header logging disabled when payload contents are not needed, and register project-specific keys for business identifiers that only your application understands.
+Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
 
 ### Custom keys and patterns
 
@@ -171,7 +179,7 @@ final redactor = RedactionService(
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely (not edge-masked).
+  // Keys where the value is replaced entirely instead of edge-masked.
   fullyMaskedKeys: {'filename'},
   placeholder: '***',
   visibleEdgeLength: 3,
@@ -184,7 +192,7 @@ final redactor = RedactionService(
 
 ```dart
 final redactor = RedactionService(
-  // e.g., ?mobile=true is a platform flag, not a phone number.
+  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -196,26 +204,24 @@ Each interceptor accepts `enableRedaction: false` on its settings object. See th
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 ## Security
 
-Exported logs are plain-text JSON. Never write PII (emails, phone numbers, tokens) directly via `logger.info(...)` — rely on the redaction engine when values flow through network interceptors, and sanitize user input before logging it manually. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the recommended data-handling policy.
+Exported logs are plain-text JSON. Do not write PII (emails, phone numbers, tokens) directly through `logger.info(...)`. Rely on the redaction engine when values flow through network interceptors, and sanitize user input before passing it to a manual log call. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy.
 
 ## The ISpect toolkit
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
+ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
 
 ## Contributing
 
@@ -223,7 +229,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

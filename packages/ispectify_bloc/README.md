@@ -35,12 +35,11 @@
   </p>
 </div>
 
+`ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
-**ispectify_bloc** plugs the [`bloc`](https://pub.dev/packages/bloc) / [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). It forwards every event, state change, transition, and error through a single `BlocObserver` so you can see the entire state-management timeline in the log viewer.
-
-- Events, transitions, errors, create / close lifecycle hooks.
-- Per-type filtering — mute specific `Bloc`/`Cubit` classes without touching their code.
-- Zero-config: set `Bloc.observer` and you're done.
+- Events, transitions, errors, and create/close lifecycle hooks.
+- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
+- Zero configuration. Set `Bloc.observer` and the rest is done.
 
 ## Install
 
@@ -67,23 +66,22 @@ ISpect.run(
 );
 ```
 
-The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, and `bloc-create`/`bloc-close` log-type keys — filter them in the debug panel or via `ISpectSettingsState.disabledLogTypes`.
+The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, `bloc-create`, and `bloc-close` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
 
 ## The ISpect toolkit
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
+ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
 
 ## Contributing
 
@@ -91,7 +89,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

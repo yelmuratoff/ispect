@@ -1,14 +1,14 @@
 ## Production safety
 
-ISpect is flag-gated. When `ISPECT_ENABLED` is not defined at compile time, `ISpect.run()`, `ISpectBuilder.wrap(...)`, and `ISpectLocalizations.delegate()` become `const`-guarded no-ops. Because the disabled path is known at compile time, release builds are eligible for Dart's tree-shaker to remove the inactive toolkit code.
+ISpect is flag-gated at compile time. When `ISPECT_ENABLED` is not defined, `ISpect.run()`, `ISpectBuilder.wrap(...)`, and `ISpectLocalizations.delegate()` resolve to `const`-guarded no-ops. Because the disabled path is a compile-time constant, release builds let Dart's tree-shaker drop the inactive toolkit code.
 
-`ISPECT_ENABLED` is a build-time decision, not a runtime toggle. ISpect does not enable itself in production; release pipelines opt in only if they explicitly pass `--dart-define=ISPECT_ENABLED=true`.
+The flag is a build-time decision, not a runtime toggle. ISpect does not enable itself in production. A release pipeline opts in only if it explicitly passes `--dart-define=ISPECT_ENABLED=true`.
 
 ```bash
-# Development — toolkit active.
+# Internal build, toolkit active.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Release — omit the flag so ISpect stays inactive.
+# Release build, toolkit inactive.
 flutter build apk
 ```
 
@@ -34,9 +34,9 @@ class ISpectConfig {
 
 Release checklist:
 
-- keep production release jobs free of `--dart-define=ISPECT_ENABLED=true`;
-- keep debug-only setup inside `ISpect.run(...)` / `ISpectBuilder.wrap(...)` entry points;
-- prefer environment-aware guards such as `ENVIRONMENT != 'production'` for internal staging builds;
-- verify generated artifacts if your compliance process requires binary evidence.
+- Keep production jobs free of `--dart-define=ISPECT_ENABLED=true`.
+- Keep debug-only setup inside `ISpect.run(...)` and `ISpectBuilder.wrap(...)` entry points.
+- Add an environment guard (`ENVIRONMENT != 'production'`) for internal staging builds that share the same pipeline as production.
+- Check the generated artifact if your compliance process needs binary evidence.
 
-Measured impact on an obfuscated release APK (no `--dart-define=ISPECT_ENABLED`): 6 residual `"ispect"` strings vs. 276 in a development build. Treat this as a release-footprint check, not a promise that every textual reference disappears from the binary.
+Measured footprint on an obfuscated release APK built without `--dart-define=ISPECT_ENABLED`: 6 residual `"ispect"` strings, compared to 276 in a development build. Treat the number as a release-footprint sanity check, not a guarantee that every textual reference disappears from the binary.

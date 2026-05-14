@@ -35,12 +35,11 @@
   </p>
 </div>
 
+`ispectify_http` is an [`http_interceptor`](https://pub.dev/packages/http_interceptor) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests made through the `package:http` client, pairs them into transactions, and redacts sensitive data before logging.
 
-**ispectify_http** is an [`http_interceptor`](https://pub.dev/packages/http_interceptor) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests made through the `package:http` client, pairs them into transactions, and redacts sensitive data before logging.
-
-- Request / response / error capture with headers, body, status, and duration.
-- Redaction of auth headers, tokens, PII, and financial data (on by default).
-- Compatible with every `InterceptedClient` from `http_interceptor`.
+- Request, response, and error capture with headers, body, status, and duration.
+- Redaction of auth headers, tokens, PII, and financial data. On by default.
+- Works with any `InterceptedClient` from `http_interceptor`.
 
 ## Install
 
@@ -80,7 +79,7 @@ ISpect.run(
 
 ## Settings
 
-`ISpectHttpInterceptorSettings` mirrors the Dio variant — headers / body capture toggles, with `enableRedaction: true` by default.
+`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and body capture toggles, with `enableRedaction: true` by default.
 
 ```dart
 const settings = ISpectHttpInterceptorSettings(
@@ -92,15 +91,15 @@ const settings = ISpectHttpInterceptorSettings(
 );
 ```
 
-Preset factories and a builder are available too — see the source of `ISpectHttpInterceptorSettingsBuilder` for `development()`, `staging()`, `production()` presets.
+Preset factories and a builder are also available. See `ISpectHttpInterceptorSettingsBuilder` for the `development()`, `staging()`, and `production()` presets.
 
 ## Data redaction
 
-Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** — built-in rules cover auth headers, tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, IBAN), phone numbers, and more.
+Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redaction model is used beyond initial capture: supported exports, clipboard helpers, cURL generation, and observer payloads can pass through the shared redaction pipeline before data leaves the app/debug session.
+The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
 
-Redaction works best together with focused capture. Keep body/header logging disabled when payload contents are not needed, and register project-specific keys for business identifiers that only your application understands.
+Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
 
 ### Custom keys and patterns
 
@@ -116,7 +115,7 @@ final redactor = RedactionService(
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely (not edge-masked).
+  // Keys where the value is replaced entirely instead of edge-masked.
   fullyMaskedKeys: {'filename'},
   placeholder: '***',
   visibleEdgeLength: 3,
@@ -129,7 +128,7 @@ final redactor = RedactionService(
 
 ```dart
 final redactor = RedactionService(
-  // e.g., ?mobile=true is a platform flag, not a phone number.
+  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -140,7 +139,6 @@ final redactor = RedactionService(
 Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
-
 
 Custom redactor:
 
@@ -155,19 +153,18 @@ ISpectHttpInterceptor(
 
 ## The ISpect toolkit
 
-ISpect is a modular monorepo. Install only what your project needs — each package works independently.
+ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI — debug panel, log viewer, navigation observer, inspector integration |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector — sizes, constraints, decorations, compare mode, color picker |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core — typed log entries, filtering, tracing, observers |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing (SQL, ORM, KV stores) |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event / state / transition observer |
-
+| Package                                                     | What it does                                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
 
 ## Contributing
 
@@ -175,7 +172,7 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/yelmuratoff/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/yelmuratoff/ispect/blob/main/LICENSE).
 
 ---
 

@@ -1,11 +1,11 @@
 <!-- partial:header -->
 
-**ispectify_dio** is a [Dio](https://pub.dev/packages/dio) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures every request/response, pairs them into correlated transactions, and redacts sensitive data before logging.
+`ispectify_dio` is a [Dio](https://pub.dev/packages/dio) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests and responses, pairs them into correlated transactions by a request ID, and redacts sensitive data before logging.
 
-- Request / response / error capture with headers, body, status, and duration.
-- Per-call redaction of auth headers, tokens, PII, and credit-card data (on by default).
+- Request, response, and error capture with headers, body, status, and duration.
+- Per-call redaction of auth headers, tokens, PII, and credit-card data. On by default.
 - Builder and factory presets for development, staging, and production setups.
-- Works with any `Dio` instance — attach the interceptor and you're done.
+- Works with any `Dio` instance. Attach the interceptor and the rest is automatic.
 
 ## Install
 
@@ -46,7 +46,7 @@ ISpect.run(
 
 ## Settings
 
-`ISpectDioInterceptorSettings` controls which slices of each call are captured and whether they are redacted before logging. `enableRedaction` defaults to **`true`** on every constructor.
+`ISpectDioInterceptorSettings` controls which parts of each call are captured and whether they are redacted before logging. `enableRedaction` defaults to `true` on every constructor.
 
 ```dart
 const settings = ISpectDioInterceptorSettings(
@@ -61,13 +61,13 @@ const settings = ISpectDioInterceptorSettings(
 ### Preset factories
 
 ```dart
-// Verbose — full payloads, no redaction. Only for local dev.
+// Verbose. Full payloads, no redaction. Only for local development.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
 
-// Redacted — conservative defaults, body capture off.
+// Redacted. Conservative defaults, body capture off.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 
-// Middle ground — useful for staging environments.
+// Middle ground for staging environments.
 final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 ```
 
@@ -77,13 +77,13 @@ final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 final settings = ISpectDioInterceptorSettingsBuilder()
     .withRequestHeaders()
     .withResponseHeaders()
-    .withoutRedaction() // not recommended — see "Data redaction" below.
+    .withoutRedaction() // not recommended, see "Data redaction" below.
     .build();
 ```
 
 <!-- partial:redaction -->
 
-Disable redaction for a single interceptor instance (not recommended — use only for deterministic replay in test environments):
+Disable redaction on a single interceptor instance (only for deterministic replay in test environments):
 
 ```dart
 ISpectDioInterceptor(

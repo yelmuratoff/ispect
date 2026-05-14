@@ -1,58 +1,58 @@
 # Roadmap
 
-ISpect is in the `5.0.0-dev` pre-release line. The priority is to stabilize the 5.x architecture, documentation, release-safety checks, and compatibility story before publishing `5.0.0` as stable.
+ISpect is on the `5.0.0-dev` line. The priority is to stabilize the 5.x architecture, documentation, release-safety checks, and the compatibility story before `5.0.0` ships as stable.
 
-This roadmap is intentionally selective. It describes direction without implying that every possible integration is part of the next release.
+This roadmap is short on purpose. It describes the direction, not a promise that every imaginable integration ships in the next release.
 
-## Now: 5.0 Stabilization
+## Now: 5.0 stabilization
 
 - Harden production-safety checks for builds where `ISPECT_ENABLED` is omitted.
-- Keep redaction enabled by default and expand coverage for realistic payloads.
-- Document data-handling, security, deprecations, compatibility, and release channels.
-- Keep package README files generated from `docs/readme/`.
+- Keep redaction on by default and expand coverage for realistic payloads.
+- Document data handling, security, deprecations, compatibility, and release channels.
+- Keep package READMEs generated from `docs/readme/`.
 - Preserve package modularity so teams install only what they need.
-- Keep analyzer and tests green across the pinned Flutter SDK used in CI.
-- Keep positioning focused on internal dev, QA, staging, dogfooding, and design-review builds.
-- Complete publish dry-runs before cutting the stable `5.0.0` release.
+- Keep analyzer and tests green against the pinned Flutter SDK used in CI.
+- Keep positioning focused on internal builds.
+- Complete publish dry-runs before cutting stable `5.0.0`.
 
-## Next: Integration Quality
+## Next: integration quality
 
-- Improve observer examples for internal tools without presenting them as bundled official production-telemetry adapters.
-- Add focused examples for common QA/staging rollout patterns.
+- Improve observer examples for internal tools, without presenting them as bundled production-telemetry adapters.
+- Add focused examples for common QA and staging rollout patterns.
 - Expand database examples where wrappers already exist.
 - Improve test fixtures for redaction, export/import, network correlation, and session history.
 - Add stronger release-footprint reporting in CI.
-- Add a reproducible benchmark suite for startup, logging volume, export volume, history bounds, and payload capture on/off.
-- Add real-world use cases or adoption notes when they can be published without inventing numbers.
-- Review whether the Dart/Flutter SDK baseline should stay as-is for 5.0 stable or whether a wider compatibility window is practical.
+- Add a reproducible benchmark suite for startup cost, logging volume, export volume, history bounds, and payload capture on/off.
+- Add real-world use cases or adoption notes when they can be published with concrete numbers, not invented ones.
+- Decide whether the Dart and Flutter SDK baseline should stay as-is for 5.0 stable or whether a wider compatibility window is practical.
 
-## Evidence Before Enterprise Adoption
+## Evidence before enterprise adoption
 
-These items are not required to use ISpect in internal pre-release builds, but they improve trust for larger teams:
+These are not required to use ISpect on internal builds, but they help larger teams trust the project:
 
-- stable `5.0.0` release after the dev validation line settles;
-- published benchmark methodology and results;
-- production-safety CI result linked from documentation;
-- package publish dry-run results;
-- at least two real internal QA/staging use cases;
-- concise migration examples for deprecated 5.x APIs.
+- A stable `5.0.0` release after the dev validation line settles.
+- Published benchmark methodology and results.
+- A link from the docs to the production-safety CI result.
+- Package publish dry-run results.
+- At least two real internal QA or staging use cases.
+- Migration examples for deprecated 5.x APIs.
 
-## Later: Optional Integrations
+## Later: optional integrations
 
-Potential integrations are evaluated only when there is clear demand and a maintainable API surface:
+Potential integrations land only when there is real demand and a maintainable API surface:
 
-- GraphQL clients;
-- gRPC clients;
-- Riverpod observer;
-- GoRouter and AutoRoute navigation diagnostics;
-- Firebase and Supabase wrappers;
-- analytics and crash-reporting breadcrumbs;
-- push notification diagnostics;
-- cache and background-task diagnostics.
+- GraphQL clients.
+- gRPC clients.
+- Riverpod observer.
+- GoRouter and AutoRoute navigation diagnostics.
+- Firebase and Supabase wrappers.
+- Analytics and crash-reporting breadcrumbs.
+- Push notification diagnostics.
+- Cache and background-task diagnostics.
 
-## Not Goals
+## Not goals
 
-- Replacing Flutter DevTools profiling/debugger workflows.
-- Replacing production telemetry platforms such as Sentry or Crashlytics.
+- Replacing Flutter DevTools profiling and debugger workflows.
+- Replacing production telemetry platforms (Sentry, Crashlytics, and the rest).
 - Capturing all application data by default.
 - Shipping every ecosystem integration in the core package.

@@ -1,10 +1,10 @@
 <!-- partial:header -->
 
-**ispectify_ws** is a WebSocket interceptor for the [ISpect toolkit](#the-ispect-toolkit), built on top of the [`ws`](https://pub.dev/packages/ws) client. It captures every sent/received frame, exposes connection lifecycle events, and redacts sensitive data before logging.
+`ispectify_ws` is a WebSocket interceptor for the [ISpect toolkit](#the-ispect-toolkit), built on the [`ws`](https://pub.dev/packages/ws) client. It captures every sent and received frame, surfaces connection lifecycle events, and redacts sensitive data before logging.
 
 - Frame-level capture for sent and received messages.
 - Error and close-event logging with stack traces.
-- Pluggable redaction — reuses the same engine as the HTTP interceptors.
+- Same redaction engine as the HTTP interceptors.
 
 ## Install
 

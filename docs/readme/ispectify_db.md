@@ -1,12 +1,12 @@
 <!-- partial:header -->
 
-**ispectify_db** adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension — with timing, row counts, slow-query detection, and redaction.
+`ispectify_db` adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension with timing, row counts, slow-query detection, and redaction.
 
-- Works with any driver: sqflite, drift, Isar, ObjectBox, shared_preferences, hive, etc. — just wrap the call.
-- Redaction of argument values by configured keys.
-- Slow-query threshold triggers a separate log entry so perf outliers stand out.
-- Optional stack trace capture on errors, without paying the cost on the hot path.
-- Pure Dart — no Flutter binding required.
+- Works with any driver. sqflite, drift, Isar, ObjectBox, shared_preferences, hive, and the rest. Wrap the call and the tracing is automatic.
+- Argument redaction by configured keys.
+- A slow-query threshold emits a separate log entry so perf outliers stand out.
+- Optional stack trace capture on errors, paid for only when an error happens.
+- Pure Dart. No Flutter binding required.
 
 ## Install
 
@@ -27,7 +27,7 @@ ISpectDbCore.config = const ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
-  slowQueryThreshold: Duration(milliseconds: 400),
+  slowThreshold: Duration(milliseconds: 400),
 );
 ```
 
@@ -47,23 +47,23 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 );
 ```
 
-`source` and `operation` become the grouping key in the log viewer; `projectResult` lets you record "just the counts" without dumping row contents.
+`source` and `operation` become the grouping key in the log viewer. `projectResult` lets you record "just the counts" instead of dumping row contents.
 
 ## Configuration
 
 | Field | Default | What it does |
 | --- | --- | --- |
-| `sampleRate` | `1.0` | Fraction of calls to log (e.g. `0.1` = 10%). |
+| `sampleRate` | `1.0` | Fraction of calls to log. `0.1` keeps 10% of them. |
 | `redact` | `true` | Mask sensitive keys in `args` and `statement`. |
 | `redactKeys` | built-in set | Override the redaction key list. |
-| `attachStackOnError` | `true` | Capture and log stack trace on failure. |
-| `slowQueryThreshold` | `null` | If set, durations above the threshold are re-logged as `db-slow-query`. |
+| `attachStackOnError` | `true` | Capture and log a stack trace on failure. |
+| `slowThreshold` | `null` | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
 ISpectDbCore.config = const ISpectDbConfig(
   redact: true,
   redactKeys: ['password', 'token', 'secret'],
-  slowQueryThreshold: Duration(milliseconds: 250),
+  slowThreshold: Duration(milliseconds: 250),
 );
 ```
 

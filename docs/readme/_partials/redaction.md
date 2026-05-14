@@ -1,10 +1,10 @@
 ## Data redaction
 
-Sensitive data is automatically masked before it reaches logs or observers. Redaction is **enabled by default** — built-in rules cover auth headers, tokens, passwords, API keys, cookies, PII (SSN, passport, driver's license), financial data (credit cards, IBAN), phone numbers, and more.
+Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redaction model is used beyond initial capture: supported exports, clipboard helpers, cURL generation, and observer payloads can pass through the shared redaction pipeline before data leaves the app/debug session.
+The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
 
-Redaction works best together with focused capture. Keep body/header logging disabled when payload contents are not needed, and register project-specific keys for business identifiers that only your application understands.
+Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
 
 ### Custom keys and patterns
 
@@ -20,7 +20,7 @@ final redactor = RedactionService(
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely (not edge-masked).
+  // Keys where the value is replaced entirely instead of edge-masked.
   fullyMaskedKeys: {'filename'},
   placeholder: '***',
   visibleEdgeLength: 3,
@@ -33,7 +33,7 @@ final redactor = RedactionService(
 
 ```dart
 final redactor = RedactionService(
-  // e.g., ?mobile=true is a platform flag, not a phone number.
+  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );

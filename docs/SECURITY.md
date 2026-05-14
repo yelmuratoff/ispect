@@ -1,26 +1,24 @@
 # Security and Data Handling
 
-ISpect is an internal pre-release diagnostics toolkit. It captures the streams you configure for development, QA, staging, dogfooding, and design-review builds: logs, network metadata, optional request/response payloads, database trace arguments, BLoC events/states, navigation events, exported sessions, and observer events.
+ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network metadata, optional request and response payloads, database trace arguments, BLoC events and states, navigation events, exported sessions, and observer events.
 
-The default posture is conservative: ISpect is compile-time gated, network redaction is enabled by default, and payload/header capture can be limited through settings. Teams should still handle ISpect output according to the data it contains.
+The default posture is conservative. Compile-time gating, network redaction on by default, and per-interceptor settings let you keep payload and header capture narrow. The toolkit gives you safer defaults. The team using it still has to handle the output according to the data class it contains.
 
-Compared with plain log viewers, ISpect provides a shared redaction pipeline for supported interceptors, export flows, clipboard helpers, cURL generation, and observer payloads. The goal is safer pre-release diagnostics by default, while keeping capture scope and external forwarding explicit.
+The shared redaction pipeline is what sets ISpect apart from a plain log viewer. The same redactor runs across interceptors, export flows, clipboard helpers, cURL generation, and observer payloads. A request masked in the viewer stays masked in every place it can leak.
 
-## Production Builds
+## Production builds
 
-ISpect is controlled by the compile-time `ISPECT_ENABLED` flag. It is not a runtime switch and ISpect does not enable itself in production. Public production release pipelines normally omit `--dart-define=ISPECT_ENABLED=true`; passing the flag is an explicit build configuration choice for internal builds.
-
-Recommended release rule:
+ISpect is controlled by the `ISPECT_ENABLED` compile-time flag. It is not a runtime switch, and it does not enable itself in production. A release pipeline opts in only when it explicitly passes `--dart-define=ISPECT_ENABLED=true`.
 
 ```bash
-# Internal dev / QA / staging only
+# Internal dev, QA, staging.
 flutter run --dart-define=ISPECT_ENABLED=true
 
-# Production release: flag omitted
+# Production release. Flag omitted.
 flutter build apk
 ```
 
-Use an additional environment guard when your pipeline has multiple non-production channels:
+Add an environment guard when the same pipeline produces multiple non-production channels:
 
 ```dart
 class ISpectConfig {
@@ -34,27 +32,18 @@ class ISpectConfig {
 }
 ```
 
-Recommended CI policy:
+CI policy:
 
-- production jobs do not pass `--dart-define=ISPECT_ENABLED=true`;
-- internal dev/QA/staging jobs may pass the flag explicitly;
-- release artifacts can be checked with the repository's `production_safety.yml` workflow;
-- any intentional public-production enablement should be reviewed as a separate internal policy decision.
+- Production jobs do not pass `--dart-define=ISPECT_ENABLED=true`.
+- Internal dev, QA, and staging jobs may pass it explicitly.
+- Release artifacts can be checked with the repository's `production_safety.yml` workflow.
+- Any intentional production enablement should be reviewed as a separate internal policy decision.
 
 ## Redaction
 
-Network redaction is enabled by default. The shared redaction engine covers common sensitive keys and patterns, including authorization headers, cookies, tokens, passwords, API keys, credentials, PII fields, phone numbers, and financial data.
+Network redaction is on by default. The shared engine covers common sensitive keys and patterns: authorization headers, cookies, tokens, passwords, API keys, credentials, PII, phone numbers, and financial data.
 
-Domain-specific fields should be registered by the application team. Add custom keys for values such as:
-
-- tenant identifiers;
-- internal account numbers;
-- organization-specific tokens;
-- customer references;
-- business-sensitive IDs;
-- proprietary request fields.
-
-Example:
+Domain-specific fields belong to the application team. Register custom keys for values such as tenant identifiers, internal account numbers, organization-specific tokens, customer references, business-sensitive IDs, and proprietary request fields.
 
 ```dart
 final redactor = RedactionService(
@@ -67,46 +56,46 @@ final redactor = RedactionService(
 );
 ```
 
-## Data Minimization
+## Data minimization
 
-Prefer focused capture before relying on broad payload logging.
+Capture metadata first. Reach for broad payload logging only when metadata is not enough.
 
-Recommended defaults for shared dev, QA, staging, dogfooding, and design-review builds:
+Defaults that work for shared internal builds:
 
-- keep request/response body capture disabled unless needed;
-- keep headers disabled unless debugging authentication, caching, or routing;
-- project database traces to counts, IDs, timings, and status instead of full rows;
-- avoid logging raw user input with `logger.info(...)`;
-- export sessions only through the channels approved for the data they contain.
+- Keep request and response body capture off unless you need it.
+- Keep headers off unless you are debugging auth, caching, or routing.
+- Project database traces to counts, IDs, timings, and status fields instead of full rows.
+- Do not pipe raw user input through `logger.info(...)`.
+- Export sessions only through the channels approved for the data class they contain.
 
-Recommended rollout:
+A safe rollout:
 
 1. Start with the debug panel, structured logs, and metadata-only network diagnostics.
-2. Enable body/header capture only for targeted debugging sessions.
+2. Turn body and header capture on for a specific debugging session, then turn it back off.
 3. Add domain-specific redaction keys before sharing logs outside the engineering team.
-4. Use filters and sampling for noisy categories.
-5. Review observer adapters before forwarding data to external systems.
+4. Apply filters and sampling to noisy categories.
+5. Review observer adapters before pointing them at external systems.
 
-## Exports and Observers
+## Exports and observers
 
-Exported sessions are plain-text artifacts for internal diagnostic handoff, and supported export paths apply the shared redaction pipeline before writing data out. Observer hooks can forward selected events to internal tools through your own adapter. Handle both exports and observer payloads according to the data classes they contain.
+Exported sessions are plain-text artifacts for internal diagnostic handoff. Supported export paths run them through the same redaction pipeline before writing. Observer hooks can forward selected events to internal tools through your own adapter. Both should be handled according to the data class they contain.
 
-Before enabling observers:
+Before enabling an observer:
 
-- review which categories are forwarded;
-- apply server-side retention and access controls;
-- avoid forwarding full payloads when metadata is enough;
-- verify that the internal destination is approved for the data class being sent.
+- Review which categories are forwarded.
+- Apply retention and access controls on the receiving side.
+- Avoid forwarding full payloads when metadata is enough.
+- Confirm the receiving system is approved for the data class being sent.
 
-Export handling is intentionally left to the application team's policy because teams use different channels for QA, design review, and pre-release debugging. ISpect provides redacted export paths; the project decides where exported diagnostic files may be stored, shared, and retained.
+Export handling is left to the application team's policy on purpose. Teams use different channels for QA, design review, and pre-release debugging. ISpect provides redacted export paths. The project decides where exported diagnostic files may be stored, shared, and retained.
 
-## Reporting Security Issues
+## Reporting security issues
 
-Please do not open public issues for suspected security problems. Send a private report to the project maintainer with:
+Do not open a public issue for a suspected security problem. Send a private report to the project maintainer with:
 
-- affected package and version;
-- reproduction steps;
-- expected and actual redaction behavior;
-- whether exported logs, observer events, or release builds are affected.
+- The affected package and version.
+- Reproduction steps.
+- Expected and actual redaction behavior.
+- Whether exported logs, observer events, or release builds are affected.
 
 The maintainer will coordinate a fix and disclose details after patched versions are available.

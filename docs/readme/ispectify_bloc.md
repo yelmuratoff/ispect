@@ -1,10 +1,10 @@
 <!-- partial:header -->
 
-**ispectify_bloc** plugs the [`bloc`](https://pub.dev/packages/bloc) / [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). It forwards every event, state change, transition, and error through a single `BlocObserver` so you can see the entire state-management timeline in the log viewer.
+`ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
-- Events, transitions, errors, create / close lifecycle hooks.
-- Per-type filtering — mute specific `Bloc`/`Cubit` classes without touching their code.
-- Zero-config: set `Bloc.observer` and you're done.
+- Events, transitions, errors, and create/close lifecycle hooks.
+- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
+- Zero configuration. Set `Bloc.observer` and the rest is done.
 
 ## Install
 
@@ -31,7 +31,7 @@ ISpect.run(
 );
 ```
 
-The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, and `bloc-create`/`bloc-close` log-type keys — filter them in the debug panel or via `ISpectSettingsState.disabledLogTypes`.
+The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, `bloc-create`, and `bloc-close` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
 
 <!-- partial:install_matrix -->
 
