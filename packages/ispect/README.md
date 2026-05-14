@@ -35,6 +35,7 @@
   </p>
 </div>
 
+
 ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside internal builds (developer machines, QA, staging) and gives testers and engineers a way to look at logs, network calls, database operations, BLoC events, navigation, and the widget tree without attaching a debugger. The toolkit is compile-time gated. Omit `--dart-define=ISPECT_ENABLED=true` and every entry point becomes a `const`-guarded no-op that Dart's tree-shaker can drop from release builds.
 
 [Live web demo](https://yelmuratoff.github.io/ispect/). Drop an exported log file in to walk through a session in the browser.
@@ -91,26 +92,26 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
 
 The toolkit handles the diagnostics most projects rebuild by hand for every new app.
 
-| Capability       | What it does                                                                                                                            |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Release gating   | `kISpectEnabled` is a compile-time constant. Disabled builds tree-shake the toolkit out, so production binaries do not carry it.        |
-| Debug panel      | Draggable in-app overlay with the log viewer, custom actions, and badges.                                                               |
-| Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style.                                      |
-| Structured logs  | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import.                                           |
-| Network capture  | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
-| Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold.                   |
-| BLoC observer    | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline.                                     |
-| Redaction        | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper.         |
-| Observer hooks   | Forward selected log categories to your own sink through an `ISpectObserver` adapter.                                                   |
-| Localization     | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi.                                                                        |
+| Capability | What it does |
+| --- | --- |
+| Release gating | `kISpectEnabled` is a compile-time constant. Disabled builds tree-shake the toolkit out, so production binaries do not carry it. |
+| Debug panel | Draggable in-app overlay with the log viewer, custom actions, and badges. |
+| Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style. |
+| Structured logs | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import. |
+| Network capture | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
+| Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold. |
+| BLoC observer | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline. |
+| Redaction | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper. |
+| Observer hooks | Forward selected log categories to your own sink through an `ISpectObserver` adapter. |
+| Localization | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi. |
 
 ## Compared to the obvious alternatives
 
-| Tool                    | What it does well                                                            | Where ISpect fits                                                                                                                   |
-| ----------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Flutter DevTools        | Profiling, memory, CPU, debugger, widget inspector when the IDE is attached. | DevTools needs an IDE connection. ISpect runs inside the app and lets a QA build export a session for offline inspection.           |
-| Sentry, Crashlytics     | Production crash reporting, release health, alerts, retention.               | ISpect captures detail before the app ships. It is not a production telemetry replacement.                                          |
-| Per-client interceptors | Logging request bodies to the console.                                       | ISpect correlates network, logs, database calls, BLoC events, and navigation in one viewer that shares a single redaction pipeline. |
+| Tool | What it does well | Where ISpect fits |
+| --- | --- | --- |
+| Flutter DevTools | Profiling, memory, CPU, debugger, widget inspector when the IDE is attached. | DevTools needs an IDE connection. ISpect runs inside the app and lets a QA build export a session for offline inspection. |
+| Sentry, Crashlytics | Production crash reporting, release health, alerts, retention. | ISpect captures detail before the app ships. It is not a production telemetry replacement. |
+| Per-client interceptors | Logging request bodies to the console. | ISpect correlates network, logs, database calls, BLoC events, and navigation in one viewer that shares a single redaction pipeline. |
 
 ## Data handling
 
@@ -145,16 +146,17 @@ Start with the UI shell and metadata-only diagnostics. Turn deeper capture on fo
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package                                                     | What it does                                                                                    |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [`ispect`](https://pub.dev/packages/ispect)                 | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout)   | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
-| [`ispectify`](https://pub.dev/packages/ispectify)           | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)   | Dio HTTP interceptor with automatic redaction.                                                  |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction.                                            |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)     | WebSocket traffic capture with automatic redaction.                                             |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db)     | Database operation tracing for SQL, ORMs, and KV stores.                                        |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer.                                              |
+| Package | What it does |
+| --- | --- |
+| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI: debug panel, log viewer, navigation observer, inspector integration. |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core: typed log entries, filtering, tracing, observers. |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction. |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction. |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction. |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing for SQL, ORMs, and KV stores. |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer. |
+
 
 ## Release channel
 
@@ -188,7 +190,7 @@ Disabled builds are inactive at compile time, so there is nothing to benchmark w
 
 ```yaml
 dependencies:
-  ispect: ^5.0.0-dev48
+  ispect: ^5.0.0-dev49
 ```
 
 ```dart
@@ -272,6 +274,7 @@ Release checklist:
 - Check the generated artifact if your compliance process needs binary evidence.
 
 Measured footprint on an obfuscated release APK built without `--dart-define=ISPECT_ENABLED`: 6 residual `"ispect"` strings, compared to 276 in a development build. Treat the number as a release-footprint sanity check, not a guarantee that every textual reference disappears from the binary.
+
 
 ## Repository
 
