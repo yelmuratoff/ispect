@@ -70,8 +70,6 @@ class ISpectExportSheet extends StatelessWidget {
                   children: [
                     if (controller.availableFormats.length > 1)
                       _FormatChips(controller: controller),
-                    if (controller.showRedaction)
-                      _RedactionToggle(controller: controller),
                     const Gap(8),
                     _ActionButtons(
                       controller: controller,
@@ -114,52 +112,6 @@ class _FormatChips extends StatelessWidget {
               visualDensity: VisualDensity.compact,
             ),
         ],
-      ),
-    );
-  }
-}
-
-// ── Redaction toggle ──────────────────────────────────────────────────────
-
-class _RedactionToggle extends StatelessWidget {
-  const _RedactionToggle({required this.controller});
-  final ExportController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final onSurface = context.appTheme.colorScheme.onSurface;
-
-    return SizedBox(
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          children: [
-            Icon(
-              Icons.shield_outlined,
-              size: 16,
-              color: onSurface.withValues(alpha: 0.5),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                context.ispectL10n.includeSensitiveData,
-                style: context.appTheme.textTheme.bodySmall?.copyWith(
-                  color: onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 28,
-              child: FittedBox(
-                child: Switch(
-                  value: !controller.redact,
-                  onChanged: (_) => controller.toggleRedaction(),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -281,18 +233,9 @@ class _ActionButtons extends StatelessWidget {
                 onPressed: isExporting
                     ? null
                     : () async {
-                        final messenger = ScaffoldMessenger.maybeOf(context);
-                        final capturedL10n = context.ispectL10n;
                         await controller.share(contentBuilder);
                         if (!context.mounted) return;
                         _closeSheet(context);
-                        unawaited(
-                          ISpectToaster.showInfoToast(
-                            null,
-                            title: capturedL10n.share,
-                            messenger: messenger,
-                          ),
-                        );
                       },
               ),
             ISpectSheetActionButton(

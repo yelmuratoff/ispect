@@ -18,7 +18,6 @@ class ISpectShareLogBottomSheet {
     final shareCallback = context.iSpect.options.onShare;
     final controller = ExportController(
       availableFormats: ExportFormat.values,
-      showRedaction: true,
       onShare: shareCallback,
     );
 

@@ -22,7 +22,9 @@ enum ExportAction { share, download, copy }
 
 /// Builds the export content string for a given [format] and [action].
 ///
-/// [redactKeys] is non-null when the user has opted to redact sensitive data.
+/// [redactKeys] names sensitive keys to mask during export. The export
+/// controller passes the default sensitive-key set; callers may pass null
+/// to skip the export-time redaction pass.
 typedef ExportContentBuilder = Future<String> Function(
   ExportFormat format, {
   required ExportAction action,

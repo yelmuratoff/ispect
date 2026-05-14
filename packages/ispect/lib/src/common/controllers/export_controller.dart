@@ -17,14 +17,12 @@ class ExportController extends ChangeNotifier {
   ExportController({
     required this.availableFormats,
     this.onShare,
-    this.showRedaction = false,
   }) : _selectedFormat = availableFormats.first;
 
   // ── Configuration (immutable after construction) ──────────────────────
 
   final List<ExportFormat> availableFormats;
   final ISpectShareCallback? onShare;
-  final bool showRedaction;
 
   bool get canShare => onShare != null;
 
@@ -32,9 +30,6 @@ class ExportController extends ChangeNotifier {
 
   ExportFormat _selectedFormat;
   ExportFormat get selectedFormat => _selectedFormat;
-
-  bool _redact = true;
-  bool get redact => _redact;
 
   ExportState _state = ExportState.idle;
   ExportState get state => _state;
@@ -50,15 +45,12 @@ class ExportController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleRedaction() {
-    _redact = !_redact;
-    notifyListeners();
-  }
-
   // ── Export actions ────────────────────────────────────────────────────
 
-  Set<String>? get _effectiveRedactKeys =>
-      showRedaction && _redact ? defaultSensitiveKeys : null;
+  // Network/db interceptors already redact at capture time. This is a
+  // defense-in-depth pass for plain string log entries that bypass the
+  // interceptors.
+  Set<String> get _effectiveRedactKeys => defaultSensitiveKeys;
 
   /// Shares the content via the platform share dialog.
   ///
