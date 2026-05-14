@@ -804,17 +804,13 @@ class _MainLogsViewState extends State<_MainLogsView> {
                 ? () => widget.logsViewController
                     .selectAndFollowDetail(entry.request)
                 : () {
-                    final navigator = Navigator.of(context);
                     final responseLog = entry.response ?? entry.error;
                     LogDetailView(
                       activeData: entry.request,
-                      onClose: navigator.pop,
                       correlatedLog: responseLog,
                       correlationDuration: entry.duration,
-                      onShowRelated: (id) {
-                        widget.logsViewController.searchByCorrelationId(id);
-                        navigator.pop();
-                      },
+                      onShowRelated:
+                          widget.logsViewController.searchByCorrelationId,
                     ).push(context);
                   },
             onOpenResponseDetail: (entry.response ?? entry.error) != null
@@ -823,17 +819,13 @@ class _MainLogsViewState extends State<_MainLogsView> {
                           entry.response ?? entry.error!,
                         )
                     : () {
-                        final navigator = Navigator.of(context);
                         final log = entry.response ?? entry.error!;
                         LogDetailView(
                           activeData: log,
-                          onClose: navigator.pop,
                           correlatedLog: entry.request,
                           correlationDuration: entry.duration,
-                          onShowRelated: (id) {
-                            widget.logsViewController.searchByCorrelationId(id);
-                            navigator.pop();
-                          },
+                          onShowRelated:
+                              widget.logsViewController.searchByCorrelationId,
                         ).push(context);
                       }
                 : null,

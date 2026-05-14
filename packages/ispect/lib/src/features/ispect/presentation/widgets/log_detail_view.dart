@@ -11,7 +11,7 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 class LogDetailView extends StatelessWidget {
   const LogDetailView({
     required this.activeData,
-    required this.onClose,
+    this.onClose,
     this.correlatedLog,
     this.correlationDuration,
     this.onNavigateToCorrelated,
@@ -20,26 +20,38 @@ class LogDetailView extends StatelessWidget {
   });
 
   final ISpectLogData activeData;
-  final VoidCallback onClose;
-
-  /// The correlated log (request for a response, response for a request).
+  final VoidCallback? onClose;
   final ISpectLogData? correlatedLog;
-
-  /// Duration between request and response/error.
   final Duration? correlationDuration;
-
-  /// Callback to navigate to the correlated log.
   final VoidCallback? onNavigateToCorrelated;
-
-  /// Callback to filter logs by correlationId or transactionId.
-  /// Receives the ID string to filter by.
   final void Function(String id)? onShowRelated;
 
-  /// Push as a full-screen page (mobile).
   void push(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => Scaffold(body: SafeArea(child: this)),
+        builder: (routeContext) {
+          final showRelated = onShowRelated;
+          return Scaffold(
+            body: SafeArea(
+              child: LogDetailView(
+                activeData: activeData,
+                correlatedLog: correlatedLog,
+                correlationDuration: correlationDuration,
+                onNavigateToCorrelated: onNavigateToCorrelated,
+                onClose: () {
+                  onClose?.call();
+                  Navigator.of(routeContext).pop();
+                },
+                onShowRelated: showRelated == null
+                    ? null
+                    : (id) {
+                        showRelated(id);
+                        Navigator.of(routeContext).pop();
+                      },
+              ),
+            ),
+          );
+        },
         settings: const RouteSettings(name: 'ISpect Log Detail'),
       ),
     );
