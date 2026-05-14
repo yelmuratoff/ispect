@@ -74,7 +74,6 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
   <summary><strong>Mobile screenshots</strong></summary>
   <br />
   <div align="center">
-    <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="180" alt="Settings panel" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" alt="Typography inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" alt="Layout inspector on mobile" />
     <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" alt="Spacing inspector on mobile" />
