@@ -33,7 +33,20 @@ class _MyAppState extends State<MyApp> {
       ),
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
-        options: ISpectOptions(observer: _ispectObserver),
+        options: ISpectOptions(
+          observer: _ispectObserver,
+          onOpenFile: (path) async {
+            //
+          },
+          onShare: (request) async {
+            //
+          },
+          onSettingsChanged: (settings) {
+            // Here you can save changed settings to local storage
+          },
+          // Here you can attach saved settings from local storage
+          initialSettings: null,
+        ),
       ),
       home: const _HomePage(),
     );
