@@ -13,24 +13,29 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
 
 <table>
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspector.png?raw=true" width="240" alt="Inspector panel" /><br />
       <sub><strong>Inspector</strong><br />Render tree, layout, spacing, transforms.</sub>
     </td>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/color_picker.png?raw=true" width="240" alt="Color picker" /><br />
       <sub><strong>Color picker</strong><br />Read on-screen colors and compare values.</sub>
     </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
+    <td align="center" width="34%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/json_viewer.png?raw=true" width="240" alt="JSON viewer" /><br />
       <sub><strong>JSON viewer</strong><br />Inspect structured payloads without leaving the app.</sub>
     </td>
-    <td align="center" width="50%">
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="240" alt="Settings panel" /><br />
+      <sub><strong>Settings</strong><br />Tune filters, history, and debug flags.</sub>
+    </td>
+    <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
       <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
     </td>
+    <td align="center" width="34%"></td>
   </tr>
 </table>
 
