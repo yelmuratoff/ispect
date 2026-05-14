@@ -1,14 +1,35 @@
+// ISpect quick start.
+//
+// Run with the toolkit enabled:
+//   flutter run --dart-define=ISPECT_ENABLED=true
+//
+// Without that flag every entry point is a const no-op and tree-shakes away
+// from release builds.
+//
+// For a full feature tour (custom themes, locales, log generators, Dio/HTTP/DB
+// interceptors, observers, etc.) run `lib/complex_example.dart`.
+
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 
+// Forward ISpect events to your crash reporter / analytics.
+// Wire it into ISpect.run(logger: ISpectFlutter.init(observer: SentryISpectObserver())).
+class SentryISpectObserver implements ISpectObserver {
+  @override
+  void onLog(ISpectLogData data) {/* Sentry.addBreadcrumb(...) */}
+  @override
+  void onError(ISpectLogData data) {/* Sentry.captureException(...) */}
+  @override
+  void onException(ISpectLogData data) {/* Sentry.captureException(...) */}
+}
+
 void main() {
-  // ISpect.run wraps the app in a guarded Zone and installs error handlers.
-  // Build with `--dart-define=ISPECT_ENABLED=true` to enable; without the
-  // flag every ISpect entry point is a no-op and gets tree-shaken away.
+  // ISpect.run wraps the app in a guarded Zone and installs error handlers
+  // (FlutterError, PlatformDispatcher, runZonedGuarded).
   ISpect.run(
     () => runApp(const MyApp()),
     // Provide a custom logger if you need a non-default ISpectFlutter setup.
-    // logger: ISpectFlutter.init(),
+    // logger: ISpectFlutter.init(observer: SentryISpectObserver()),
     //
     // Lifecycle hooks fire before/after the zoned callback.
     // onInit: () {},
@@ -17,7 +38,7 @@ void main() {
     // Filter out noisy log messages by substring match.
     // filters: ['Heartbeat', 'metrics.tick'],
     //
-    // Forward errors to Sentry, Crashlytics, etc.
+    // Forward uncaught zone errors to Sentry, Crashlytics, etc.
     // onZonedError: (e, st) => Sentry.captureException(e, stackTrace: st),
   );
 }
@@ -57,13 +78,17 @@ class _MyAppState extends State<MyApp> {
         // Compile-time gating already happens via kISpectEnabled.
         // isISpectEnabled: currentUser.isAdmin,
         //
-        // Custom theme for the ISpect UI (colors, log icons, page title).
+        // Custom theme for the ISpect UI (colors, log icons, page title,
+        // custom log types, panel theme).
         // theme: const ISpectTheme(
         //   pageTitle: 'My Diagnostics',
         //   primary: ISpectDynamicColor(
         //     light: Color(0xFF1565C0),
         //     dark: Color(0xFF64B5F6),
         //   ),
+        //   // logColors: {'http-request': Colors.blue},
+        //   // logIcons: {'http-request': Icons.cloud_upload},
+        //   // customLogTypes: [...],
         // ),
         options: ISpectOptions(
           observer: _ispectObserver,
@@ -119,6 +144,17 @@ class _HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // All log methods are static on ISpect.logger. They all become no-ops
+    // when kISpectEnabled is false, so feel free to scatter them in code.
+    final logger = ISpect.logger;
+
+    // Adapter packages (add the one(s) you need to pubspec.yaml):
+    //   ispectify_dio    — Dio interceptor
+    //   ispectify_http   — package:http interceptor
+    //   ispectify_ws     — WebSocket logger
+    //   ispectify_bloc   — Bloc.observer = ISpectBlocObserver()
+    //   ispectify_db     — Database tracing (Hive, SharedPreferences, …)
+
     return Scaffold(
       appBar: AppBar(title: const Text('ISpect Quick Start')),
       body: Center(
@@ -126,25 +162,45 @@ class _HomePage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             FilledButton(
-              onPressed: () => ISpect.logger.info('Hello from ISpect!'),
-              child: const Text('Log info'),
+              onPressed: () => logger.info('Hello from ISpect!'),
+              child: const Text('info'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             FilledButton.tonal(
-              onPressed: () => ISpect.logger.warning('Cache nearly full'),
-              child: const Text('Log warning'),
+              onPressed: () => logger.good('Order placed successfully'),
+              child: const Text('good'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             FilledButton.tonal(
-              onPressed: () => ISpect.logger.error(
+              onPressed: () => logger.warning('Cache nearly full'),
+              child: const Text('warning'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.tonal(
+              onPressed: () => logger.error(
                 'Something went wrong',
                 exception: StateError('Demo error'),
                 stackTrace: StackTrace.current,
               ),
-              child: const Text('Log error'),
+              child: const Text('error'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.tonal(
+              onPressed: () => logger.track(
+                'sign_in_tapped',
+                event: 'ui',
+                analytics: 'amplitude',
+                parameters: const {'screen': 'home'},
+              ),
+              child: const Text('track (analytics)'),
             ),
             const SizedBox(height: 24),
             const Text('Tap the floating ISpect button to open the panel.'),
+            // Other available methods:
+            //   logger.debug / verbose / critical / print
+            //   logger.route('/home → /details')
+            //   logger.provider('AuthProvider rebuilt')
+            //   logger.handle(exception: e, stackTrace: st, message: '...')
           ],
         ),
       ),
