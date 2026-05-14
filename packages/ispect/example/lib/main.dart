@@ -117,8 +117,13 @@ class _MyAppState extends State<MyApp> {
           // Here you can attach saved settings from local storage
           initialSettings: null,
           // Add custom buttons to the action sheet (logs export, share, etc.).
-          actionItems: const [
-            // ISpectActionItem(title: 'Reset cache', icon: Icons.refresh, onTap: ...),
+          actionItems: [
+            ISpectActionItem(
+              title: 'Reset cache',
+              icon: Icons.refresh,
+              description: 'Clears local cache and reloads',
+              onTap: (context) => ISpect.logger.info('Cache reset requested'),
+            ),
           ],
           // Extra buttons on the bottom of the draggable panel.
           panelButtons: const [
@@ -201,6 +206,11 @@ class _HomePage extends StatelessWidget {
             //   logger.route('/home → /details')
             //   logger.provider('AuthProvider rebuilt')
             //   logger.handle(exception: e, stackTrace: st, message: '...')
+            //
+            // Access the scope model from any widget under ISpectBuilder:
+            //   final scope = ISpect.read(context);
+            //   scope.toggleISpect(); // show / hide the panel
+            //   scope.options = scope.options.copyWith(locale: Locale('ru'));
           ],
         ),
       ),
