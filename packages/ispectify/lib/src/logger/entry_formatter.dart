@@ -1,5 +1,6 @@
 import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/network/network_log_renderer.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 import 'package:ispectify/src/utils/datetime_formatter.dart';
 
@@ -41,7 +42,14 @@ class HumanLogEntryFormatter implements ILogEntryFormatter {
   @override
   String format(ISpectLogData data, ConsoleSettings settings) {
     final buffer = StringBuffer(_buildHeader(data, settings));
-    final body = data.textMessage;
+    final headline = data.textMessage;
+    final networkBody = NetworkLogRenderer.isNetworkLog(data)
+        ? NetworkLogRenderer.renderBody(data)
+        : '';
+    final body = networkBody.isEmpty
+        ? headline
+        : (headline.isEmpty ? networkBody : '$headline\n$networkBody');
+
     if (body.isEmpty) {
       buffer.write('(empty log message)');
     } else {

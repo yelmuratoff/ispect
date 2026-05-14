@@ -6,7 +6,11 @@ import 'package:ispectify/ispectify.dart';
 extension ISpectLogDataSerialization on ISpectLogData {
   /// Converts the log data into a JSON representation.
   ///
-  /// Omits `null` values for a cleaner output.
+  /// Omits `null` values for a cleaner output. Recursively strips private
+  /// presentation hints (keys starting with `_`, by convention) such as the
+  /// network renderer's `_render-hints` — these are an internal contract
+  /// between log producers and the console renderer and have no place in
+  /// exported, shared, or persisted output.
   Map<String, dynamic> toJson({
     bool truncated = false,
   }) =>
@@ -27,7 +31,8 @@ extension ISpectLogDataSerialization on ISpectLogData {
           'stack-trace': truncated
               ? stackTrace.toString().truncate()
               : stackTrace.toString(),
-        if (additionalData != null) 'additional-data': additionalData,
+        if (additionalData != null)
+          'additional-data': _stripPrivateKeys(additionalData!),
       };
 
   /// Plain text — for sharing, copying, human reading.
@@ -37,7 +42,8 @@ extension ISpectLogDataSerialization on ISpectLogData {
     final buffer = StringBuffer()..writeln('[$formattedTime] [$key] $message');
 
     if (additionalData != null && additionalData!.isNotEmpty) {
-      for (final entry in additionalData!.entries) {
+      final sanitized = _stripPrivateKeys(additionalData!);
+      for (final entry in sanitized.entries) {
         // Skip TraceKeys.error — raw error string may contain PII.
         // Error info printed below in dedicated section with Layer 3 redaction.
         if (entry.key == TraceKeys.error) continue;
@@ -100,7 +106,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     }
 
     if (additionalData != null && additionalData!.isNotEmpty) {
-      final safeData = Map<String, dynamic>.of(additionalData!)
+      final safeData = _stripPrivateKeys(additionalData!)
         ..remove(TraceKeys.error);
       if (safeData.isNotEmpty) {
         buffer
@@ -142,6 +148,26 @@ extension ISpectLogDataSerialization on ISpectLogData {
         LogLevel.debug => '[DEBUG]',
         _ => '[-]',
       };
+}
+
+/// Recursively drops `_`-prefixed keys from [data] and any nested maps.
+/// Keeps internal presentation hints (e.g. the network renderer's
+/// `_render-hints`) out of exported JSON / text / markdown — those keys are
+/// a private contract between log producers and the console renderer.
+Map<String, dynamic> _stripPrivateKeys(Map<String, dynamic> data) {
+  final out = <String, dynamic>{};
+  for (final entry in data.entries) {
+    if (entry.key.startsWith('_')) continue;
+    final value = entry.value;
+    if (value is Map<String, dynamic>) {
+      out[entry.key] = _stripPrivateKeys(value);
+    } else if (value is Map) {
+      out[entry.key] = _stripPrivateKeys(Map<String, dynamic>.from(value));
+    } else {
+      out[entry.key] = value;
+    }
+  }
+  return out;
 }
 
 /// Utility class for ISpectLogData JSON operations.

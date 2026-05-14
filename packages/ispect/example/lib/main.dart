@@ -1409,6 +1409,8 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
         settings: const ISpectDioInterceptorSettings(
           printRequestHeaders: true,
           printResponseHeaders: true,
+          printRequestData: true,
+          printResponseData: true,
           enableRedaction: true,
         ),
       ),

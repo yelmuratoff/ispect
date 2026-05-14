@@ -77,20 +77,13 @@ class ISpectDioInterceptor extends Interceptor
       target: url,
       correlationId: requestId,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-      consoleMessage: buildNetworkConsoleMessage(
-        source: 'dio',
-        operation: options.method,
-        target: url,
-        printBody: settings.printRequestData,
-        printHeaders: settings.printRequestHeaders,
-        body: requestDataJson[NetworkJsonKeys.data],
-        headers: BaseNetworkInterceptor.asStringMap(
-          requestDataJson[NetworkJsonKeys.headers],
-        ),
-      ),
       meta: {
         'request-id': requestId,
         'request-data': requestDataJson,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: settings.printRequestData,
+          NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
+        },
       },
     );
   }
@@ -129,26 +122,15 @@ class ISpectDioInterceptor extends Interceptor
       correlationId: requestId,
       duration: sw?.elapsed,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-      consoleMessage: buildNetworkConsoleMessage(
-        source: 'dio',
-        operation: requestOptions.method,
-        target: url,
-        duration: sw?.elapsed,
-        statusCode: response.statusCode,
-        statusMessage: response.statusMessage,
-        body: responseDataJson[NetworkJsonKeys.data],
-        headers: BaseNetworkInterceptor.asStringMap(
-          responseDataJson[NetworkJsonKeys.headers],
-        ),
-        printStatusCode: true,
-        printStatusMessage: settings.printResponseMessage,
-        printBody: settings.printResponseData,
-        printHeaders: settings.printResponseHeaders,
-      ),
       meta: {
         if (requestId != null) 'request-id': requestId,
         'status-code': response.statusCode,
         'response-data': responseDataJson,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: settings.printResponseData,
+          NetworkLogRenderer.hintPrintHeaders: settings.printResponseHeaders,
+          NetworkLogRenderer.hintPrintMessage: settings.printResponseMessage,
+        },
       },
     );
   }
@@ -181,9 +163,6 @@ class ISpectDioInterceptor extends Interceptor
     ).toJson();
     if (useRedaction) DioErrorData.redact(errorDataJson, redactor);
 
-    final errorResponseJson =
-        errorDataJson[NetworkJsonKeys.response] as Map<String, dynamic>?;
-
     _logger.httpError(
       source: 'dio',
       operation: requestOptions.method,
@@ -193,31 +172,15 @@ class ISpectDioInterceptor extends Interceptor
       correlationId: requestId,
       duration: sw?.elapsed,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-      consoleMessage: buildNetworkConsoleMessage(
-        source: 'dio',
-        operation: requestOptions.method,
-        target: url,
-        duration: sw?.elapsed,
-        success: false,
-        statusCode: err.response?.statusCode,
-        statusMessage: err.response?.statusMessage,
-        errorMessage: settings.printErrorMessage
-            ? errorDataJson[NetworkJsonKeys.message] as String?
-            : null,
-        body: errorResponseJson?[NetworkJsonKeys.data],
-        headers: BaseNetworkInterceptor.asStringMap(
-          errorResponseJson?[NetworkJsonKeys.headers],
-        ),
-        printStatusCode: true,
-        printStatusMessage: settings.printErrorMessage,
-        printErrorMessage: settings.printErrorMessage,
-        printBody: settings.printErrorData,
-        printHeaders: settings.printErrorHeaders,
-      ),
       meta: {
         if (requestId != null) 'request-id': requestId,
         'status-code': err.response?.statusCode,
         'error-data': errorDataJson,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: settings.printErrorData,
+          NetworkLogRenderer.hintPrintHeaders: settings.printErrorHeaders,
+          NetworkLogRenderer.hintPrintMessage: settings.printErrorMessage,
+        },
       },
     );
   }

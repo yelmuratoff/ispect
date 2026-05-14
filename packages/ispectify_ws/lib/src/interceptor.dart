@@ -108,15 +108,10 @@ final class ISpectWSInterceptor
         if (metricsMap != null) 'metrics': metricsMap,
         'url': url,
         'path': path,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: includeData,
+        },
       };
-
-      final consoleMsg = buildNetworkConsoleMessage(
-        source: 'ws',
-        operation: operation,
-        target: url,
-        body: includeData ? safeData : null,
-        printBody: includeData,
-      );
 
       if (type == wsTypeRequest) {
         _logger.wsSend(
@@ -126,7 +121,6 @@ final class ISpectWSInterceptor
           correlationId: _connectionId,
           config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: traceMeta,
-          consoleMessage: consoleMsg,
         );
       } else {
         _logger.wsReceive(
@@ -136,7 +130,6 @@ final class ISpectWSInterceptor
           correlationId: _connectionId,
           config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
           meta: traceMeta,
-          consoleMessage: consoleMsg,
         );
       }
     } catch (e, s) {

@@ -72,20 +72,13 @@ class ISpectHttpInterceptor extends InterceptorContract
       target: url,
       correlationId: requestId,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-      consoleMessage: buildNetworkConsoleMessage(
-        source: 'http',
-        operation: request.method,
-        target: url,
-        printBody: settings.printRequestData,
-        printHeaders: settings.printRequestHeaders,
-        body: requestDataJson[NetworkJsonKeys.data],
-        headers: BaseNetworkInterceptor.asStringMap(
-          requestDataJson[NetworkJsonKeys.headers],
-        ),
-      ),
       meta: {
         'request-id': requestId,
         'request-data': requestDataJson,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: settings.printRequestData,
+          NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
+        },
       },
     );
     return request;
@@ -133,7 +126,7 @@ class ISpectHttpInterceptor extends InterceptorContract
 
     final responseDataJson = responseData.toJson();
     if (useRedaction) HttpResponseData.redact(responseDataJson, redactor);
-    final sharedMeta = <String, Object?>{
+    final baseMeta = <String, Object?>{
       if (requestId != null) 'request-id': requestId,
       'status-code': response.statusCode,
       'response-data': responseDataJson,
@@ -149,24 +142,14 @@ class ISpectHttpInterceptor extends InterceptorContract
         correlationId: requestId,
         duration: sw?.elapsed,
         config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-        consoleMessage: buildNetworkConsoleMessage(
-          source: 'http',
-          operation: method,
-          target: url,
-          duration: sw?.elapsed,
-          success: false,
-          statusCode: response.statusCode,
-          statusMessage: response.reasonPhrase,
-          body: responseDataJson[NetworkJsonKeys.body],
-          headers: BaseNetworkInterceptor.asStringMap(
-            responseDataJson[NetworkJsonKeys.headers],
-          ),
-          printStatusCode: true,
-          printStatusMessage: settings.printErrorMessage,
-          printBody: settings.printErrorData,
-          printHeaders: settings.printErrorHeaders,
-        ),
-        meta: sharedMeta,
+        meta: {
+          ...baseMeta,
+          NetworkLogRenderer.renderHintsKey: {
+            NetworkLogRenderer.hintPrintBody: settings.printErrorData,
+            NetworkLogRenderer.hintPrintHeaders: settings.printErrorHeaders,
+            NetworkLogRenderer.hintPrintMessage: settings.printErrorMessage,
+          },
+        },
       );
     } else {
       _logger.httpResponse(
@@ -176,23 +159,14 @@ class ISpectHttpInterceptor extends InterceptorContract
         correlationId: requestId,
         duration: sw?.elapsed,
         config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
-        consoleMessage: buildNetworkConsoleMessage(
-          source: 'http',
-          operation: method,
-          target: url,
-          duration: sw?.elapsed,
-          statusCode: response.statusCode,
-          statusMessage: response.reasonPhrase,
-          body: responseDataJson[NetworkJsonKeys.body],
-          headers: BaseNetworkInterceptor.asStringMap(
-            responseDataJson[NetworkJsonKeys.headers],
-          ),
-          printStatusCode: true,
-          printStatusMessage: settings.printResponseMessage,
-          printBody: settings.printResponseData,
-          printHeaders: settings.printResponseHeaders,
-        ),
-        meta: sharedMeta,
+        meta: {
+          ...baseMeta,
+          NetworkLogRenderer.renderHintsKey: {
+            NetworkLogRenderer.hintPrintBody: settings.printResponseData,
+            NetworkLogRenderer.hintPrintHeaders: settings.printResponseHeaders,
+            NetworkLogRenderer.hintPrintMessage: settings.printResponseMessage,
+          },
+        },
       );
     }
 
