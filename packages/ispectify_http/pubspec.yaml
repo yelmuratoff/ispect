@@ -1,6 +1,6 @@
 name: ispectify_http
 description: http_interceptor integration for ISpect with correlated HTTP request, response, error, timing, and redacted payload logs.
-version: 5.0.0-dev50
+version: 5.0.0-dev51
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
@@ -15,7 +15,7 @@ dependency_overrides:
 dependencies:
   http: ^1.5.0
   http_interceptor: ^2.0.0
-  ispectify: ^5.0.0-dev50
+  ispectify: ^5.0.0-dev51
 
 dev_dependencies:
   lints: ^5.1.1
