@@ -1,10 +1,12 @@
 # Core Rules
 
-## Changes
+Write code that fits the project's existing patterns, surfaces failures explicitly, and keeps the change scoped to what the task asked for.
 
-- Change only what the task requires. Leave unrelated code as-is.
-- Wait for real duplication before extracting a helper — three similar lines beat a premature abstraction.
-- Delete dead code outright and rely on git for history.
+## Scope of Changes
+
+- Touch only what the task requires. Adjacent code stays as-is until asked.
+- Three similar lines beat a premature abstraction — let real duplication drive helpers.
+- Delete dead code outright; git keeps the history.
 
 ## Errors
 
@@ -14,12 +16,27 @@
 
 ## Tests
 
-- Test business logic and error paths. Skip framework internals.
-- Keep tests deterministic — local fixtures only, no real network, no randomness, no time-based sleeps.
-- Name tests by behavior verified, not by method called.
+- Cover business logic and error paths. Skip framework internals and trivial getters.
+- Keep tests deterministic — local fixtures only, with no real network, no randomness, no time-based sleeps.
+- Name tests by the behaviour verified, not by the method called.
 
 ## Security
 
-- Keep secrets, API keys, and credentials out of source. Load them at runtime from the project's secret store.
+- Load secrets, API keys, and credentials at runtime from the project's secret store — keep them out of source.
 - Keep tokens, passwords, and PII out of logs.
-- Store sensitive values via the project's secure storage primitive.
+- Store sensitive values through the project's secure storage primitive.
+
+## Examples
+
+```
+# Surface the failure with structure:
+- catch (e) { return null; }
++ catch (e) {
++   logger.error("user fetch failed", { userId, error: e });
++   throw new UserFetchError(userId, { cause: e });
++ }
+
+# Name the test by what it proves:
+- test("test_fetch")
++ test("returns empty list when the user has no orders")
+```

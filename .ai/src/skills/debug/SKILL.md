@@ -24,8 +24,8 @@ Systematically find and fix the root cause of a bug.
 
 ## Gotchas
 
-- Don't wrap the error in try-catch to silence it — that's hiding, not fixing.
-- Don't fix symptoms without understanding the cause.
-- Don't make speculative changes ("maybe this will fix it") — understand first.
-- Don't change multiple things at once — isolate the fix so you know what worked.
-- Don't assume the bug is where the error is thrown — trace upstream to the root cause.
+- Let the error surface until you understand it. A silent try-catch hides the cause and breeds a worse bug later.
+- Trace to the root cause before applying the fix. Symptom-level patches return as new bugs.
+- Form a hypothesis grounded in the data before changing code. Speculation burns more time than diagnosis.
+- Change one thing at a time so you can tell what fixed the bug.
+- Trace upstream from the error site. The bug usually lives where the bad value is produced, not where it explodes.

@@ -1,31 +1,54 @@
-# Comment Rules
+# Comments
 
-## Default: code over commentary
+A comment earns its place when it captures something the code itself cannot show — a hidden constraint, an external quirk, a workaround, or a surprise the reader would otherwise question. Everything else lives in the code.
 
-- Make the code self-explanatory first. Reach for a clearer name, a smaller function, or a better type before adding a comment.
-- Write a comment only when the code _cannot_ carry the meaning on its own — a hidden constraint, an external quirk, a workaround, or a surprise a reader would otherwise question.
-- If a comment can be removed without confusing a future reader, leave it out.
+## The test
 
-## When a comment earns its place
+Read the line without the comment. If a competent reader still understands the code, leave the comment out. Reach for a sharper identifier (`isExpired` beats `// check if expired`) or a smaller function before reaching for prose.
 
-- **Hidden constraints**: a non-obvious invariant, ordering requirement, performance assumption, or external API quirk a reader can't see from the code.
-- **Workarounds**: a fix for a specific bug or upstream issue — name the system, link the issue if you have one.
-- **Surprises**: behavior that would make a reasonable reader pause ("why is this list reversed?", "why catch this error silently?").
-- **Public APIs**: document the contract (inputs, outputs, errors, side effects) using the language's doc-comment syntax (`///`, `/** */`, docstrings).
+## Where a comment helps
+
+- **Hidden constraint** — a non-obvious invariant, ordering requirement, performance assumption, or external API quirk.
+- **Workaround** — a fix for a specific upstream bug or platform behaviour. Name the system, link the issue when you have one.
+- **Surprise** — behaviour that would make a reasonable reader pause ("why is this list reversed?", "why catch this error silently?").
+- **Public API contract** — inputs, outputs, errors, side effects — via the language's doc-comment syntax (`///`, `/** */`, docstrings). Internal helpers stay quiet unless they hide a constraint.
 
 ## Style
 
-- Comment _why_, not _what_. State the reason, the constraint, or the surprise — leave the mechanism to the code.
-- Keep inline comments to one line. If a paragraph feels necessary, the surrounding code probably wants renaming or splitting first.
-- One space after the comment marker: `// like this`.
-- Use the language's doc-comment syntax for public APIs only. Internal helpers stay quiet unless they hide a non-obvious constraint.
-- Match the project's existing comment density and tone — read 5–10 nearby files before changing the style.
+- Describe *why*, not *what*. The code shows the mechanism; the comment supplies the reason.
+- One line where possible. A paragraph usually signals the surrounding code wants splitting or renaming.
+- Single space after the marker: `// like this`.
+- Match the file's existing density and tone — scan 5–10 nearby files before changing the style.
+- Pair every `TODO` / `FIXME` with an owner or a tracked issue, or resolve it now.
+- Match section banners (`// ===== HELPERS =====`) to what the file already uses.
 
-## Keep out
+## Examples
 
-- Narration of what the code does ("// increment counter", "// loop through users").
-- Planning artifacts and AI thought trails ("// Step 1:", "// now we will…", "// this handles the case where…").
-- References to the current task, PR, ticket, or caller — that context lives in the commit message.
-- Commented-out code. Delete it; git keeps history.
-- `TODO`/`FIXME` markers without an owner or tracked issue — either resolve them now or file a ticket.
-- Decorative banners and dividers (`// ===== HELPERS =====`) unless the file already uses them consistently.
+```
+// Sharper name beats a narrating comment:
+- // check if user is an adult
+- if (user.age >= 18) { ... }
++ const isAdult = user.age >= 18;
++ if (isAdult) { ... }
+
+// Step markers and narration belong in the diff, not the file:
+- // Step 1: fetch users
+- const users = await fetchUsers();
+- // loop through users
+- for (const u of users) { ... }
++ const users = await fetchUsers();
++ for (const u of users) { ... }
+
+// A real "why" comment earns its keep:
++ // Backend returns 404 for "no data yet" on new accounts — treat as empty.
++ if (isNotFound(e)) return;
+
+// Doc comments capture the contract on a public API:
++ /**
++  * Synchronizes user records with the remote backend.
++  * Throws SyncError on network failure or malformed payload.
++  */
++ async function syncUsers() { ... }
+```
+
+Unused code belongs in git history rather than in commented-out blocks. Task numbers, PR references, and caller lists belong in the commit message rather than in the source.

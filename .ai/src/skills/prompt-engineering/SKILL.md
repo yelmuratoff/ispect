@@ -16,10 +16,10 @@ A workflow and toolbox for writing prompts that steer modern LLMs reliably — s
 ## Workflow
 
 1. **Define success first** — write one sentence: *what must the output be, and for whom*. Define the eval criteria *before* the prompt. If you can't, the prompt isn't ready.
-2. **Draft with the minimal components** — Objective + Instructions + (if needed) Context, Role, Format, Examples. Don't add a component you can't justify.
+2. **Draft with the minimal components** — Objective + Instructions + (if needed) Context, Role, Format, Examples. Add a component only when you can justify it.
 3. **Build a test set** — 3+ diverse inputs: happy path, edge cases, malformed input. Tiny is fine; some signal beats none.
 4. **Run and grade** — code-grade where possible (JSON/regex/Python parse, length, keyword presence), model-grade for quality, human-grade for nuance. Always demand reasoning + score from a model grader, not a bare score.
-5. **Diagnose, don't patch** — name the cause (ambiguous scope? missing context? conflicting instruction? wrong format?). Fix the cause, not the symptom. If you can't pinpoint the cause, run metaprompting (see `references/metaprompting.md`).
+5. **Diagnose before patching** — name the cause (ambiguous scope? missing context? conflicting instruction? wrong format?). Fix the cause, not the symptom. When the cause is unclear, run metaprompting (see `references/metaprompting.md`).
 6. **Change one thing at a time** — otherwise you won't know what worked.
 7. **Iterate** — re-run the same test set, compare versions; stop when stable across all of them, not when "looks good once".
 8. **Pin and version** — for production, pin to a specific model snapshot (e.g., `claude-opus-4-7`, `gpt-5.3-codex`) and re-run evals when upgrading.
@@ -102,16 +102,16 @@ Before shipping a prompt, check:
 
 ## Gotchas
 
-- Don't blindly copy tips across tools — a prompt tuned for GPT-4 can under- or over-trigger on Claude Opus 4.7 and vice versa.
-- Don't keep adding rules when the model misbehaves — first check if an existing rule is ambiguous or conflicts with another. Metaprompting (`references/metaprompting.md`) often surfaces these.
-- Don't mix instructions and raw data in the same paragraph — always separate with XML tags or clear headings.
-- Don't put the question at the top when the context is long — questions at the bottom of a long prompt perform meaningfully better.
-- Don't demand JSON/structured output only via prose — show the schema or use the native structured-outputs feature of the tool.
-- Don't use prefilled assistant messages on Claude 4.6+ — deprecated; use structured outputs or explicit format instructions instead.
-- Don't skip evals. Every non-trivial prompt change needs a test set — otherwise you're tuning on vibes.
-- Don't optimise a prompt before you've defined what "good output" means. The eval criteria come first; the prompt serves them.
-- Don't ship a prompt without a snapshot pin in production — model upgrades silently shift behaviour, and your evals are the only way to know.
-- Don't trust a single model-grader score — ask for *strengths, weaknesses, reasoning, and score* together, otherwise the grader collapses to default-middling 5–7s.
-- Don't conflate "the model failed" with "the prompt is wrong" without checking effort/reasoning settings first — shallow output at low effort isn't a prompt problem.
-- Don't stack two personality blocks (Friendly + Pragmatic) in one agent persona — they cancel each other. See `references/agent-persona.md` for picking one.
-- Don't paste snippets verbatim without checking conflicts — `default_to_action` and `do_not_act_before_instructions` are mutually exclusive; reducing-verbosity fights state-tracking persistence.
+- Re-test prompts when crossing tools — a prompt tuned for GPT-4 can under- or over-trigger on Claude Opus 4.7 and vice versa.
+- When the model misbehaves, audit existing rules for ambiguity or conflict before adding a new one. Metaprompting (`references/metaprompting.md`) often surfaces these.
+- Separate instructions from raw data using XML tags or clear headings — a mixed paragraph blurs scope.
+- Place the question at the bottom of a long prompt — bottom placement performs meaningfully better than top.
+- Show the schema or use the tool's native structured-outputs feature when you need JSON. Prose alone drifts off-format.
+- On Claude 4.6+, reach for structured outputs or explicit format instructions. Prefilled assistant messages are deprecated.
+- Run an eval for every non-trivial prompt change — tuning on vibes drifts you off-target.
+- Define what "good output" means before optimising. The eval criteria come first; the prompt serves them.
+- Pin production prompts to a specific model snapshot. Model upgrades silently shift behaviour, and your evals are the only signal.
+- Ask a model grader for *strengths, weaknesses, reasoning, and score* together. A bare score collapses to default-middling 5–7s.
+- Check effort and reasoning settings before blaming the prompt — shallow output at low effort is a settings issue, not a prompt one.
+- Pick one personality block per agent persona. Stacking Friendly and Pragmatic cancels them out (see `references/agent-persona.md`).
+- Check snippets for conflicts before pasting. `default_to_action` and `do_not_act_before_instructions` are mutually exclusive; reducing-verbosity fights state-tracking persistence.

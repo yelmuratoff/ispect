@@ -13,15 +13,15 @@ Safely restructure code while preserving existing behavior.
 2. **Name the problem** — What exactly is wrong?
    - Duplicated logic? Function doing too many things? Poor naming? Tangled dependencies? Wrong abstraction?
 3. **Plan the change** — Describe what you'll do before doing it. Small, safe steps.
-4. **One change at a time** — Each step keeps the code working. Don't rewrite everything at once.
+4. **One change at a time** — Each step keeps the code working. Big rewrites collapse on themselves; small steps stay reversible.
 5. **Run tests after each step** — If tests fail, you changed behavior. Undo and try smaller.
 6. **Stop when good enough** — Clear, tested, easy to change = done.
 
 ## Gotchas
 
-- Don't extract abstractions used only once — three similar lines is better than a premature abstraction.
-- Don't add design patterns just to demonstrate knowledge.
-- Don't rename things across the entire codebase without asking.
-- Don't change public APIs without understanding downstream impact.
-- Don't refactor and add features in the same change — separate commits/PRs.
-- Don't refactor code that works, is clear, and is tested just because you'd write it differently.
+- Extract abstractions only when there is real duplication — three similar lines beat a premature helper.
+- Reach for a design pattern when the problem calls for one, not to demonstrate knowledge.
+- Confirm with the user before renaming across the entire codebase — the blast radius is bigger than it looks.
+- Map the downstream callers before touching a public API.
+- Keep refactors and feature work in separate commits or PRs.
+- Leave code alone when it works, is clear, and is tested — personal preference is not a reason to refactor.

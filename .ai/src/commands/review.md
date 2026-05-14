@@ -1,25 +1,25 @@
 ---
-description: Review the current branch diff using ISpect package boundaries and safety rules
-argument-hint: "[base-ref]"
+description: Review the current branch diff for issues before merging
 ---
 
-Base ref: `${ARGUMENTS:-main}`
+## Changes
 
-Changed files:
-!`git diff --name-only ${ARGUMENTS:-main}...HEAD`
+!`git diff --name-only main...HEAD`
 
-Diff:
-!`git diff ${ARGUMENTS:-main}...HEAD`
+## Diff
 
-Review the branch as an ISpect maintainer.
+!`git diff main...HEAD`
 
-Prioritize:
+Review the above changes. Cover:
 
-1. Production-safety regressions around `ISPECT_ENABLED`, disabled initialization, tree-shaking assumptions, or release build instructions.
-2. Redaction/data exposure in network, DB, export, clipboard, observer, cURL, and log metadata paths.
-3. Public API compatibility: package exports, constructor signatures, log keys, trace category IDs, metadata keys, localization keys.
-4. Package boundary drift between `ispectify`, `ispectify_*`, `ispect`, `ispect_layout`, examples, and `web_logs_viewer`.
-5. Missing tests for request/response/error, disabled logging, redaction opt-outs, and generated README/version changes.
+1. **Correctness** — logic errors, off-by-one bugs, missing edge cases, race conditions.
+2. **Security** — hardcoded secrets, injection risks, missing validation, exposed PII.
+3. **Error handling** — swallowed exceptions, missing error paths, raw strings instead of typed errors.
+4. **Architecture** — does this respect existing layer boundaries and patterns?
+5. **Test coverage** — are new behaviors and error paths tested?
 
-For each finding, include severity, confidence, exact file/line, and a concrete fix.
-If no issues are found, say the branch is production-ready and list any checks that still need to run.
+Report **every issue you find**, including ones you're uncertain about or consider low-severity. Don't filter for importance at this stage — coverage matters more than precision; a downstream pass can rank findings. For each finding, include a confidence level (`high`/`medium`/`low`) and severity (`blocking`/`suggestion`/`nit`) so they can be triaged.
+
+Point to the exact file and line. Explain *why* it's a problem, not just *what* to change. Suggest a concrete fix when possible.
+
+If the code is solid, say so plainly — don't manufacture criticism.

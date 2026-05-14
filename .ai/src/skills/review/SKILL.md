@@ -23,7 +23,7 @@ Systematically review changes for correctness, security, and maintainability.
    - Explain *why* it's a problem, not just *what* to change.
    - Suggest a fix when possible.
    - Mark as **blocking** (must fix) or **suggestion** (nice to have).
-5. If the code is solid, say so. Don't manufacture criticism.
+5. When the code is solid, say so plainly. Manufactured criticism erodes review trust.
 
 ## Output Format
 
@@ -41,7 +41,7 @@ Systematically review changes for correctness, security, and maintainability.
 
 ## Gotchas
 
-- Don't nitpick style if a formatter/linter handles it.
-- Don't rewrite the author's approach — review what's there, not what you'd have written.
-- Don't approve with unresolved blocking issues just to be polite.
+- Skip style nitpicks that a formatter or linter would catch — those are noise.
+- Review what's there, not what you would have written. The author's approach stands unless it has a concrete flaw.
+- Resolve every blocking issue before approving — politeness is not a reason to ship a known bug.
 - Check the full PR, not just the latest commit — bugs often hide in earlier commits.
