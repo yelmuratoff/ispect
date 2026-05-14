@@ -166,13 +166,14 @@ class _LogCardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void openDetail() {
+      final navigator = Navigator.of(context);
       LogDetailView(
         activeData: data,
-        onClose: () => Navigator.of(context).pop(),
+        onClose: navigator.pop,
         onShowRelated: onShowRelated != null
             ? (id) {
                 onShowRelated!(id);
-                Navigator.of(context).pop();
+                navigator.pop();
               }
             : null,
       ).push(context);
