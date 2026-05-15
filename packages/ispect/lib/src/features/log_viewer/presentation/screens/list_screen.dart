@@ -10,6 +10,7 @@ import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_row.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_table_header.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
