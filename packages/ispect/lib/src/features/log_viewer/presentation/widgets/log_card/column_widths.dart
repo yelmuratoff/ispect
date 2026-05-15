@@ -1,16 +1,15 @@
-/// Width applied to the type column when LayoutBuilder reports a viewport
-/// narrower than [kDesktopLogCompactBreakpoint]. Wide enough to fit the
-/// "TYPE" header alongside the sort icon (sort icon + gap take ~14 px), and
-/// matches the data cell widths used in the row layouts.
+/// Width of the type column in the compact log-row layout.
 const double kCompactTypeColumnWidth = 52;
 
-/// Below this viewport width the desktop log/transaction rows switch to a
-/// compact layout: the time column disappears and the type column shrinks to
-/// [kCompactTypeColumnWidth].
+/// Viewport width below which desktop log rows switch to the compact layout.
 const double kDesktopLogCompactBreakpoint = 480;
 
-/// Proportionally scale type/time column widths so they never overflow.
-/// Both columns shrink equally when space is tight.
+/// Below this width the HTTP transaction row hides its hover-action cluster.
+const double kHoverActionsMinWidth = 400;
+
+/// Below this width Request/Response chips render as icon-only buttons.
+const double kFullChipLabelsMinWidth = 720;
+
 ({double typeWidth, double timeWidth}) scaleColumnWidths({
   required double available,
   required double typeWidth,
@@ -19,7 +18,6 @@ const double kDesktopLogCompactBreakpoint = 480;
   final totalColumns = typeWidth + timeWidth;
   if (totalColumns <= 0) return (typeWidth: typeWidth, timeWidth: timeWidth);
 
-  // Columns should use at most half the available width
   final maxForColumns = available * 0.5;
   if (totalColumns > maxForColumns) {
     final scale = maxForColumns / totalColumns;

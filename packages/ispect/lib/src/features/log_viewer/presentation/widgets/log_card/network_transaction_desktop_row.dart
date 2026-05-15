@@ -109,12 +109,14 @@ class _NetworkTransactionDesktopRowState
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final canShowHoverActions = constraints.maxWidth >= 400;
-                      final isCompact =
-                          constraints.maxWidth < kDesktopLogCompactBreakpoint;
-                      final compactDetailChips = constraints.maxWidth < 720;
+                      final width = constraints.maxWidth;
+                      final canShowHoverActions =
+                          width >= kHoverActionsMinWidth;
+                      final isCompact = width < kDesktopLogCompactBreakpoint;
+                      final compactDetailChips =
+                          width < kFullChipLabelsMinWidth;
                       final scaled = scaleColumnWidths(
-                        available: constraints.maxWidth,
+                        available: width,
                         typeWidth: isCompact
                             ? kCompactTypeColumnWidth
                             : widget.typeColumnWidth,

@@ -3,11 +3,9 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 
-/// Styled `SearchBar` shared across the log list and JSON viewer screens.
+/// Styled search field shared across log list and JSON viewer screens.
 ///
-/// Callers compose the [trailing] widgets, letting each screen contribute its
-/// own match-navigation or clear-button affordances without duplicating the
-/// surrounding chrome (background, hint style, search-leading icon, etc).
+/// Callers compose the [trailing] widgets per screen.
 class ISpectSearchField extends StatelessWidget {
   const ISpectSearchField({
     required this.controller,
@@ -85,8 +83,6 @@ class ISpectSearchClearButton extends StatelessWidget {
   }
 }
 
-/// Log list search bar — wraps [ISpectSearchField] with the match-navigation
-/// and keyboard-shortcut affordances that only the log list needs.
 class ISpectSearchBar extends StatelessWidget {
   const ISpectSearchBar({
     required this.focusNode,

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 
-/// Wraps an AppBar title so every `Text` inside scales down on desktop.
-///
-/// Callers keep writing their natural font sizes; scaling is applied via
-/// `MediaQuery.textScaler` so the call site stays free of conditionals.
+/// Wraps an AppBar title so every `Text` inside scales down on desktop via
+/// `MediaQuery.textScaler`, letting call sites keep their natural font sizes.
 class ISpectAppBarTitle extends StatelessWidget {
   const ISpectAppBarTitle({required this.child, super.key});
 
@@ -28,7 +26,7 @@ class ISpectAppBarTitle extends StatelessWidget {
 }
 
 /// Composes the inherited [TextScaler] with an additional multiplier so the
-/// user's accessibility scaling is preserved on top of our desktop tweak.
+/// user's accessibility scaling is preserved on top of our scale.
 class _MultipliedTextScaler extends TextScaler {
   const _MultipliedTextScaler({required this.base, required this.factor});
 
