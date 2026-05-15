@@ -110,6 +110,11 @@ class _NetworkTransactionDesktopRowState
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final isCompact = constraints.maxWidth < 480;
+                      // Below this width the fixed-width chip cluster no longer
+                      // fits next to the URL/status/duration; suppress it so
+                      // Row never overflows. Expanding the row still surfaces
+                      // request/response details inline.
+                      final canShowHoverActions = constraints.maxWidth >= 360;
                       final scaled = scaleColumnWidths(
                         available: constraints.maxWidth,
                         typeWidth: isCompact ? 40 : widget.typeColumnWidth,
@@ -183,7 +188,7 @@ class _NetworkTransactionDesktopRowState
                               label: ISpectLocalization.of(context).pending,
                             ),
                           ],
-                          if (_isHovered) ...[
+                          if (_isHovered && canShowHoverActions) ...[
                             const Gap(8),
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -192,6 +197,7 @@ class _NetworkTransactionDesktopRowState
                                 tx: tx,
                                 color: color,
                                 useDesktopStyle: true,
+                                compactDetailChips: isCompact,
                                 onOpenRequestDetail: widget.onOpenRequestDetail,
                                 onOpenResponseDetail:
                                     widget.onOpenResponseDetail,

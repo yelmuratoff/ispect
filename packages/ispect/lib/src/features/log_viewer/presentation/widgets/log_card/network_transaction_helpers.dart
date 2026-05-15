@@ -90,6 +90,7 @@ List<Widget> buildActionWidgets({
   required NetworkTransaction tx,
   required Color color,
   required bool useDesktopStyle,
+  bool compactDetailChips = false,
   VoidCallback? onOpenRequestDetail,
   VoidCallback? onOpenResponseDetail,
 }) {
@@ -146,6 +147,10 @@ List<Widget> buildActionWidgets({
       DetailChip(
         label: l10n.httpRequest,
         color: color,
+        icon: compactDetailChips
+            ? Icons.arrow_upward_rounded
+            : Icons.open_in_new_rounded,
+        iconOnly: compactDetailChips,
         onTap: onOpenRequestDetail,
       ),
     ]);
@@ -157,6 +162,10 @@ List<Widget> buildActionWidgets({
       DetailChip(
         label: l10n.httpResponse,
         color: color,
+        icon: compactDetailChips
+            ? Icons.arrow_downward_rounded
+            : Icons.open_in_new_rounded,
+        iconOnly: compactDetailChips,
         onTap: onOpenResponseDetail,
       ),
     ]);
