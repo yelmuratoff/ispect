@@ -109,12 +109,9 @@ class _NetworkTransactionDesktopRowState
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      final canShowHoverActions = constraints.maxWidth >= 400;
                       final isCompact = constraints.maxWidth < 480;
-                      // Below this width the fixed-width chip cluster no longer
-                      // fits next to the URL/status/duration; suppress it so
-                      // Row never overflows. Expanding the row still surfaces
-                      // request/response details inline.
-                      final canShowHoverActions = constraints.maxWidth >= 360;
+                      final compactDetailChips = constraints.maxWidth < 720;
                       final scaled = scaleColumnWidths(
                         available: constraints.maxWidth,
                         typeWidth: isCompact ? 40 : widget.typeColumnWidth,
@@ -197,7 +194,7 @@ class _NetworkTransactionDesktopRowState
                                 tx: tx,
                                 color: color,
                                 useDesktopStyle: true,
-                                compactDetailChips: isCompact,
+                                compactDetailChips: compactDetailChips,
                                 onOpenRequestDetail: widget.onOpenRequestDetail,
                                 onOpenResponseDetail:
                                     widget.onOpenResponseDetail,
