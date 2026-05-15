@@ -10,6 +10,7 @@ import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
@@ -150,7 +151,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             ),
           const Gap(6),
         ],
-        title: _AppBarTitle(title: widget.title),
+        title: ISpectAppBarTitle(child: _AppBarTitle(title: widget.title)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Padding(
@@ -273,8 +274,8 @@ class _AppBarTitle extends StatelessWidget {
               Flexible(
                 child: Text(
                   title ?? '',
-                  style: TextStyle(
-                    fontSize: context.ispectAppBarTitleSize(26),
+                  style: const TextStyle(
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.5,
                   ),

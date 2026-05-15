@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
@@ -120,8 +121,6 @@ class _JsonScreenState extends State<JsonScreen> {
     final compactDensity = context.ispectAppBarButtonDensity;
     final toolbarHeight = context.ispectAppBarToolbarHeight;
     final iconSize = context.ispectAppBarIconSize;
-    final titleFontSize = context.ispectAppBarTitleSize(16);
-    final titleIconSize = context.ispectAppBarTitleSize(28);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -139,35 +138,33 @@ class _JsonScreenState extends State<JsonScreen> {
           tooltip: context.ispectL10n.back,
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (logColor != null)
-              Container(
-                width: titleIconSize,
-                height: titleIconSize,
-                decoration: BoxDecoration(
-                  color: logColor.withValues(alpha: 0.12),
-                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+        title: ISpectAppBarTitle(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (logColor != null)
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: logColor.withValues(alpha: 0.12),
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  ),
+                  child: Icon(logIcon, size: 16, color: logColor),
                 ),
-                child: Icon(
-                  logIcon,
-                  size: titleIconSize * (16 / 28),
-                  color: logColor,
-                ),
-              ),
-            const Gap(10),
-            Flexible(
-              child: Text(
-                logKey ?? 'JSON Viewer',
-                style: TextStyle(
-                  fontSize: titleFontSize,
-                  fontWeight: FontWeight.w600,
-                  color: logColor,
+              const Gap(10),
+              Flexible(
+                child: Text(
+                  logKey ?? 'JSON Viewer',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: logColor,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           JsonStoreSelector<bool>(

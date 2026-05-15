@@ -4,6 +4,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/navigation_transition_card.dart';
 
@@ -61,9 +62,8 @@ class _ISpectNavigationFlowScreenState
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         toolbarHeight: toolbarHeight ?? kToolbarHeight,
-        title: Text(
-          context.ispectL10n.navigationFlow,
-          style: TextStyle(fontSize: context.ispectAppBarTitleSize(20)),
+        title: ISpectAppBarTitle(
+          child: Text(context.ispectL10n.navigationFlow),
         ),
         backgroundColor: context.ispectTheme.background?.resolve(context) ??
             context.appTheme.scaffoldBackgroundColor,

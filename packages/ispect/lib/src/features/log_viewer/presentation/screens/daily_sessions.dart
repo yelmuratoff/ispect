@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
+import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
 
 class DailySessionsScreen extends StatefulWidget {
@@ -117,12 +118,14 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         backgroundColor:
             backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
         toolbarHeight: toolbarHeight ?? kToolbarHeight,
-        title: Text(
-          context.ispectL10n.sessions,
-          style: TextStyle(
-            fontSize: context.ispectAppBarTitleSize(18),
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
+        title: ISpectAppBarTitle(
+          child: Text(
+            context.ispectL10n.sessions,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
         leading: IconButton(

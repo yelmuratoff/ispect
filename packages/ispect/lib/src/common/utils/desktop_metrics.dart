@@ -63,10 +63,6 @@ extension ISpectDesktopMetricsContextExtension on BuildContext {
   double? get ispectAppBarToolbarHeight =>
       _isIspectDesktop ? ISpectDesktopMetrics.toolbarHeight : null;
 
-  /// Scales an app bar title's font size for desktop's tighter chrome.
-  double ispectAppBarTitleSize(double base) =>
-      _isIspectDesktop ? base * ISpectDesktopMetrics.titleScale : base;
-
   /// Icon size for IconButtons rendered inside AppBars.
   double get ispectAppBarIconSize => _isIspectDesktop
       ? ISpectDesktopMetrics.iconSize
